@@ -22,7 +22,7 @@
 
 [Models]
   [model]
-    type = MaxwellViscoelasticity
+    type = LinearDashpot
     viscosity = 1000
   []
 []

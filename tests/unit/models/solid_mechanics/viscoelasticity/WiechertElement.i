@@ -56,7 +56,7 @@
 
 [Models]
   [model]
-    type = WiechertViscoelasticity
+    type = WiechertElement
     equilibrium_modulus = 1000
     modulus_1 = 500
     viscosity_1 = 100

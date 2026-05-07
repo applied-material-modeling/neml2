@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/viscoelasticity/ZenerViscoelasticity.h"
+#include "neml2/models/solid_mechanics/viscoelasticity/ZenerElement.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
@@ -30,10 +30,10 @@
 
 namespace neml2
 {
-register_NEML2_object(ZenerViscoelasticity);
+register_NEML2_object(ZenerElement);
 
 OptionSet
-ZenerViscoelasticity::expected_options()
+ZenerElement::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
@@ -53,7 +53,7 @@ ZenerViscoelasticity::expected_options()
   return options;
 }
 
-ZenerViscoelasticity::ZenerViscoelasticity(const OptionSet & options)
+ZenerElement::ZenerElement(const OptionSet & options)
   : Model(options),
     _E(declare_input_variable<SR2>("strain")),
     _Ev(declare_input_variable<SR2>("viscous_strain")),
@@ -66,7 +66,7 @@ ZenerViscoelasticity::ZenerViscoelasticity(const OptionSet & options)
 }
 
 void
-ZenerViscoelasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+ZenerElement::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   // Maxwell branch stress: sigma_M = E_M * (E - Ev)
   auto Ediff = _E - _Ev;

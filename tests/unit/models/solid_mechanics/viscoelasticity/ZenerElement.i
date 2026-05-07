@@ -47,7 +47,7 @@
 
 [Models]
   [model]
-    type = ZenerViscoelasticity
+    type = ZenerElement
     equilibrium_modulus = 1000
     maxwell_modulus = 500
     maxwell_viscosity = 100

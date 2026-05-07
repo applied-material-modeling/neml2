@@ -1,4 +1,4 @@
-# Verification of MaxwellViscoelasticity against the closed-form solution for the dashpot
+# Verification of LinearDashpot against the closed-form solution for the dashpot
 # under constant prescribed stress.
 #
 # The Maxwell dashpot equation is dε_v/dt = σ/η. Under a constant stress σ held from t = 0
@@ -59,7 +59,7 @@
 
 [Models]
   [maxwell]
-    type = MaxwellViscoelasticity
+    type = LinearDashpot
     viscosity = 100
   []
   [integrate_Ev]

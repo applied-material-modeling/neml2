@@ -59,7 +59,7 @@
 
 [Models]
   [burgers]
-    type = BurgersViscoelasticity
+    type = BurgersElement
     maxwell_modulus = 5000
     maxwell_viscosity = 200
     kelvin_modulus = 2000

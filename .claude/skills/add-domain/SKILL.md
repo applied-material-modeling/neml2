@@ -69,6 +69,32 @@ The hardest part of adding a domain is not C++ — it's deciding **which equatio
 
 NEML2 models are small composable pieces, not monoliths. A constitutive theory typically becomes 3–5 small Models that compose with existing utilities to form a complete simulation. Pick the wrong split and you either (a) build a god-object that's hard to reuse, or (b) build pieces that don't compose with the rest of NEML2.
 
+### Survey the registry first — `neml2-syntax`, not `ls`
+
+**Before designing anything, query the registered-object catalog with `neml2-syntax`.** This is the most important sub-step in the whole workflow, and the easiest one to skip. Filesystem layout (`ls include/neml2/...`) tells you where files live, not what they *do*; class names mislead — `MaxwellViscoelasticity` was, for years, a class that did nothing more than `ε̇ = σ/η`, i.e., a generic dashpot. Reading the registry's one-line docstrings is the fastest way to find out which existing primitives compose into what you want, and what the closest-named existing thing actually is.
+
+Three flags make this fast:
+
+- `--section Models` filters by input-file section (also valid: `Solvers`, `Drivers`, `Tensors`, `Schedulers`, `Data`, `EquationSystems`, `Settings`).
+- `--summary` drops the per-option detail and emits just `type`, `section`, and `doc` — the right level of detail for picking candidates.
+- `--type <Name>` narrows to one specific object — use this *after* the summary catalog has helped you pick a name.
+
+The intended two-step workflow:
+
+```bash
+# 1. Browse one-line descriptions of every registered Model. Read it end-to-end —
+#    the catalog is small enough, and skimming for unexpected matches is the whole point.
+./build/dev/src/tools/neml2-syntax --section Models --summary | less
+
+# 2. Once you've picked a candidate, drill in for its full option list.
+./build/dev/src/tools/neml2-syntax --type SR2BackwardEulerTimeIntegration
+
+# Or dump everything to a file (the catalog used by the doc generator).
+./build/dev/src/tools/neml2-syntax --yaml /tmp/syntax.yml
+```
+
+The summary catalog catches utilities that `ls` and even an Explore agent miss — e.g., the `*BackwardEulerTimeIntegration` and `*VariableRate` helpers live under `models/common/`, not where you'd guess from a physics theme. Do this *before* spawning Explore agents to read source files; the catalog is one command and answers most "is there already a piece that does X?" questions outright.
+
 **For each model the user wants, draft a short specification and ask the user to confirm before writing code:**
 
 ```
@@ -92,35 +118,12 @@ Then list the **composition plan** — what existing NEML2 pieces this model nee
 - `ConstantExtrapolationPredictor` — initial guess for the implicit solve
 - `TransientDriver` + `TransientRegression` — drive a load history and compare against a gold reference
 
-Survey the target subdirectory (`ls include/neml2/models/<submodule>/`) and any obviously-related subdirectories before drafting. Often a domain interface already exists (e.g., `IsotropicHardening`, `FlowRule`, `Elasticity`) that the new models should subclass instead of `Model` directly. **Check before deciding** — copying the wrong base class is the most common architectural mistake.
-
-For a structured catalog of registered objects, use `neml2-syntax`. Three flags make planning fast:
-
-- `--section Models` filters by input-file section (also valid: `Solvers`, `Drivers`, `Tensors`, `Schedulers`, `Data`, `EquationSystems`, `Settings`).
-- `--summary` drops the per-option detail and emits just `type`, `section`, and `doc` — exactly the level of detail you need to pick candidates.
-- `--type <Name>` narrows to one specific object — use this *after* the summary catalog has helped you pick a name.
-
-The intended two-step workflow:
-
-```bash
-# 1. Browse one-line descriptions of every registered Model.
-./build/dev/src/tools/neml2-syntax --section Models --summary | less
-
-# 2. Once you've picked a candidate, drill in for its full option list.
-./build/dev/src/tools/neml2-syntax --type SR2BackwardEulerTimeIntegration
-
-# Or dump everything to a file (the catalog used by the doc generator).
-./build/dev/src/tools/neml2-syntax --yaml /tmp/syntax.yml
-```
-
-The summary catalog catches utilities that `ls` misses (e.g., the `*BackwardEulerTimeIntegration` and `*VariableRate` helpers live under `models/common/`, not where you'd guess from a physics theme), and is small enough to read end-to-end without grep gymnastics. `--type` then gives you the per-option detail without dumping the whole registry.
-
 **Why this step exists:** it is far cheaper to revise an ASCII spec in chat than to revise five `.h`/`.cxx`/`.i` triples that already compile. Skipping the spec step doesn't make you faster; it makes you re-do work. *Do not start writing code until the user has signed off on the spec.*
 
 ### Example spec (from a real session)
 
 ```
-Model: ZenerViscoelasticity
+Model: ZenerElement
 Physics:        Standard Linear Solid — equilibrium spring in parallel with a Maxwell branch
 Inputs:         strain : SR2, viscous_strain : SR2 (Maxwell-branch internal state)
 Outputs:        stress : SR2, viscous_strain_rate : SR2
@@ -259,4 +262,4 @@ pre-commit run --files \
 
 ## Reference: anatomy of a domain (real example)
 
-`models/solid_mechanics/viscoelasticity/` ships five Models — `MaxwellViscoelasticity`, `KelvinVoigtViscoelasticity`, `ZenerViscoelasticity`, `WiechertViscoelasticity`, `BurgersViscoelasticity` — with one `.i` unit test each and five regression scenarios under `tests/regression/solid_mechanics/viscoelasticity/{maxwell,kelvin_voigt,zener,burgers,wiechert}/`. Browse it for a working layout — the family-level naming conventions (`viscosity`, `modulus`, `viscous_strain`, `viscous_strain_rate`) are a good template for any new constitutive-theory domain.
+`models/solid_mechanics/viscoelasticity/` ships one leaf primitive — `LinearDashpot` (the dashpot rate equation `ε̇ = σ/η`) — and four pre-assembled element models on top of it: `KelvinVoigtElement`, `ZenerElement`, `WiechertElement`, `BurgersElement`. With `LinearIsotropicElasticity` as the spring leaf, arbitrary rheological networks compose via `ComposedModel` + variable-name wiring; the four element models are convenience wrappers for common topologies. One `.i` unit test per Model and five regression scenarios under `tests/regression/solid_mechanics/viscoelasticity/{maxwell,kelvin_voigt,zener,burgers,wiechert}/`. Browse it for a working layout — the family-level naming conventions (`viscosity`, `modulus`, `viscous_strain`, `viscous_strain_rate`) are a good template for any new constitutive-theory domain.

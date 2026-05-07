@@ -32,34 +32,30 @@ class Scalar;
 class SR2;
 
 /**
- * @brief Stress response of a Kelvin-Voigt viscoelastic element.
+ * @brief Newtonian dashpot constitutive law: \f$ \dot{\boldsymbol{\varepsilon}} =
+ * \boldsymbol{\sigma}/\eta \f$.
  *
- * The Kelvin-Voigt element consists of a linear spring and a Newtonian dashpot connected in
- * parallel. Both elements share the same strain, so the total stress is the sum of the spring and
- * dashpot contributions: \f$ \boldsymbol{\sigma} = E \boldsymbol{\varepsilon} + \eta
- * \dot{\boldsymbol{\varepsilon}} \f$.
+ * Maps the stress acting across a dashpot to the rate of viscous strain through it. This is the
+ * leaf "dashpot" element in any rheological network: composed in series with
+ * `LinearIsotropicElasticity` to form a Maxwell branch, in parallel with
+ * `LinearIsotropicElasticity` to form a Kelvin-Voigt element, and in arbitrary series/parallel
+ * combinations for more complex topologies.
  */
-class KelvinVoigtViscoelasticity : public Model
+class LinearDashpot : public Model
 {
 public:
   static OptionSet expected_options();
 
-  KelvinVoigtViscoelasticity(const OptionSet & options);
+  LinearDashpot(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Strain shared by spring and dashpot
-  const Variable<SR2> & _E;
+  /// Stress acting across the dashpot
+  const Variable<SR2> & _S;
 
-  /// Strain rate shared by spring and dashpot
-  const Variable<SR2> & _E_dot;
-
-  /// Stress in the Kelvin-Voigt element
-  Variable<SR2> & _S;
-
-  /// Spring modulus
-  const Scalar & _K;
+  /// Rate of viscous strain
+  Variable<SR2> & _Ev_dot;
 
   /// Dashpot viscosity
   const Scalar & _eta;

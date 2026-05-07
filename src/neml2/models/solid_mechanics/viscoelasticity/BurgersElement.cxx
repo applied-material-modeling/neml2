@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/viscoelasticity/BurgersViscoelasticity.h"
+#include "neml2/models/solid_mechanics/viscoelasticity/BurgersElement.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
@@ -30,10 +30,10 @@
 
 namespace neml2
 {
-register_NEML2_object(BurgersViscoelasticity);
+register_NEML2_object(BurgersElement);
 
 OptionSet
-BurgersViscoelasticity::expected_options()
+BurgersElement::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
@@ -56,7 +56,7 @@ BurgersViscoelasticity::expected_options()
   return options;
 }
 
-BurgersViscoelasticity::BurgersViscoelasticity(const OptionSet & options)
+BurgersElement::BurgersElement(const OptionSet & options)
   : Model(options),
     _E(declare_input_variable<SR2>("strain")),
     _EvM(declare_input_variable<SR2>("maxwell_viscous_strain")),
@@ -72,7 +72,7 @@ BurgersViscoelasticity::BurgersViscoelasticity(const OptionSet & options)
 }
 
 void
-BurgersViscoelasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+BurgersElement::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   // Shared series stress: sigma = E_M * (E - EvM - EK)
   auto Eel = _E - _EvM - _EK;

@@ -45,7 +45,7 @@ main(int argc, char * argv[])
             "Tensors, Schedulers, Data, EquationSystems, Settings)")
       .default_value(std::string(""));
   program.add_argument("--type")
-      .help("only emit the object whose registered type matches (e.g. MaxwellViscoelasticity); "
+      .help("only emit the object whose registered type matches (e.g. LinearDashpot); "
             "intended for drilling into a single object's full option list")
       .default_value(std::string(""));
   program.add_argument("--summary")

@@ -32,23 +32,26 @@ class Scalar;
 class SR2;
 
 /**
- * @brief Zener (Standard Linear Solid) viscoelastic model.
+ * @brief Wiechert (generalized Maxwell) viscoelastic model with two Maxwell branches.
  *
- * The Zener model is an equilibrium spring (modulus \f$ E_\infty \f$) connected in parallel with a
- * Maxwell branch (spring \f$ E_M \f$ and dashpot \f$ \eta_M \f$ in series). Letting \f$
- * \boldsymbol{\varepsilon}_v \f$ be the viscous strain in the Maxwell branch's dashpot, the Maxwell
- * branch stress is \f$ \boldsymbol{\sigma}_M = E_M (\boldsymbol{\varepsilon} -
- * \boldsymbol{\varepsilon}_v) \f$ and the total stress reduces to \f$ \boldsymbol{\sigma} =
- * (E_\infty + E_M) \boldsymbol{\varepsilon} - E_M \boldsymbol{\varepsilon}_v \f$. The viscous
- * strain evolves according to \f$ \dot{\boldsymbol{\varepsilon}}_v = \boldsymbol{\sigma}_M / \eta_M
- * \f$.
+ * The Wiechert (generalized Maxwell) model is an equilibrium spring (modulus \f$ E_\infty \f$)
+ * connected in parallel with \f$ N \f$ Maxwell branches. This implementation uses \f$ N = 2 \f$ to
+ * give a finite-parameter Prony-series approximation of relaxation behavior; chain additional
+ * Maxwell branches via input-file composition for higher-order responses. The total stress and the
+ * viscous strain rates are
+ * \f{align*}{
+ *   \boldsymbol{\sigma} &= \left( E_\infty + E_1 + E_2 \right) \boldsymbol{\varepsilon} -
+ *     E_1 \boldsymbol{\varepsilon}_{v,1} - E_2 \boldsymbol{\varepsilon}_{v,2}, \\
+ *   \dot{\boldsymbol{\varepsilon}}_{v,i} &= E_i (\boldsymbol{\varepsilon} -
+ *     \boldsymbol{\varepsilon}_{v,i}) / \eta_i, \quad i = 1, 2.
+ * \f}
  */
-class ZenerViscoelasticity : public Model
+class WiechertElement : public Model
 {
 public:
   static OptionSet expected_options();
 
-  ZenerViscoelasticity(const OptionSet & options);
+  WiechertElement(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -56,22 +59,34 @@ protected:
   /// Total strain
   const Variable<SR2> & _E;
 
-  /// Viscous strain in the Maxwell branch
-  const Variable<SR2> & _Ev;
+  /// Viscous strain in the first Maxwell branch
+  const Variable<SR2> & _Ev1;
+
+  /// Viscous strain in the second Maxwell branch
+  const Variable<SR2> & _Ev2;
 
   /// Total stress
   Variable<SR2> & _S;
 
-  /// Rate of viscous strain
-  Variable<SR2> & _Ev_dot;
+  /// Rate of viscous strain in the first Maxwell branch
+  Variable<SR2> & _Ev1_dot;
+
+  /// Rate of viscous strain in the second Maxwell branch
+  Variable<SR2> & _Ev2_dot;
 
   /// Equilibrium spring modulus
   const Scalar & _Einf;
 
-  /// Maxwell branch modulus
-  const Scalar & _EM;
+  /// First Maxwell branch modulus
+  const Scalar & _E1;
 
-  /// Maxwell branch viscosity
-  const Scalar & _etaM;
+  /// First Maxwell branch viscosity
+  const Scalar & _eta1;
+
+  /// Second Maxwell branch modulus
+  const Scalar & _E2;
+
+  /// Second Maxwell branch viscosity
+  const Scalar & _eta2;
 };
 } // namespace neml2

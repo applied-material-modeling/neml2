@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/viscoelasticity/WiechertViscoelasticity.h"
+#include "neml2/models/solid_mechanics/viscoelasticity/WiechertElement.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
@@ -30,10 +30,10 @@
 
 namespace neml2
 {
-register_NEML2_object(WiechertViscoelasticity);
+register_NEML2_object(WiechertElement);
 
 OptionSet
-WiechertViscoelasticity::expected_options()
+WiechertElement::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
@@ -57,7 +57,7 @@ WiechertViscoelasticity::expected_options()
   return options;
 }
 
-WiechertViscoelasticity::WiechertViscoelasticity(const OptionSet & options)
+WiechertElement::WiechertElement(const OptionSet & options)
   : Model(options),
     _E(declare_input_variable<SR2>("strain")),
     _Ev1(declare_input_variable<SR2>("viscous_strain_1")),
@@ -74,7 +74,7 @@ WiechertViscoelasticity::WiechertViscoelasticity(const OptionSet & options)
 }
 
 void
-WiechertViscoelasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+WiechertElement::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   auto diff1 = _E - _Ev1;
   auto diff2 = _E - _Ev2;

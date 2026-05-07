@@ -27,7 +27,7 @@
 
 [Models]
   [model]
-    type = KelvinVoigtViscoelasticity
+    type = KelvinVoigtElement
     modulus = 1000
     viscosity = 500
   []

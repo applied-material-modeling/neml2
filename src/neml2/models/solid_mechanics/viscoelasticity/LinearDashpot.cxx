@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/viscoelasticity/MaxwellViscoelasticity.h"
+#include "neml2/models/solid_mechanics/viscoelasticity/LinearDashpot.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
@@ -30,16 +30,18 @@
 
 namespace neml2
 {
-register_NEML2_object(MaxwellViscoelasticity);
+register_NEML2_object(LinearDashpot);
 
 OptionSet
-MaxwellViscoelasticity::expected_options()
+LinearDashpot::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
-      "Dashpot evolution equation for a Maxwell viscoelastic element, i.e., \\f$ "
-      "\\dot{\\boldsymbol{\\varepsilon}}_v = \\boldsymbol{\\sigma} / \\eta \\f$, where \\f$ \\eta "
-      "\\f$ is the viscosity.";
+      "Newtonian dashpot constitutive law, \\f$ \\dot{\\boldsymbol{\\varepsilon}} = "
+      "\\boldsymbol{\\sigma} / \\eta \\f$, where \\f$ \\eta \\f$ is the viscosity. This is the "
+      "leaf "
+      "dashpot element used in any rheological network composition (Maxwell, Kelvin-Voigt, Zener, "
+      "Wiechert, Burgers, and arbitrary user-defined topologies).";
 
   options.add_input("stress", "Stress acting across the dashpot");
   options.add_output("viscous_strain_rate",
@@ -50,7 +52,7 @@ MaxwellViscoelasticity::expected_options()
   return options;
 }
 
-MaxwellViscoelasticity::MaxwellViscoelasticity(const OptionSet & options)
+LinearDashpot::LinearDashpot(const OptionSet & options)
   : Model(options),
     _S(declare_input_variable<SR2>("stress")),
     _Ev_dot(declare_output_variable<SR2>("viscous_strain_rate")),
@@ -59,7 +61,7 @@ MaxwellViscoelasticity::MaxwellViscoelasticity(const OptionSet & options)
 }
 
 void
-MaxwellViscoelasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+LinearDashpot::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
     _Ev_dot = _S / _eta;

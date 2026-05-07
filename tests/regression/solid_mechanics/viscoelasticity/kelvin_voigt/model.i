@@ -62,7 +62,7 @@
     variable = 'strain'
   []
   [kv]
-    type = KelvinVoigtViscoelasticity
+    type = KelvinVoigtElement
     modulus = 1000
     viscosity = 100
   []

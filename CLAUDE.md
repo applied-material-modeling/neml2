@@ -41,6 +41,15 @@ Tests are Catch2 binaries built into `build/<preset>/tests/`. Run individual bin
 
 Catch2 selectors apply: `./unit_tests "[base/Factory]"` runs by tag, `./unit_tests -# "test_Foo"` runs a single test case. To exercise CUDA paths pass `--devices cuda` (CI sets `TEST_DEVICE_ARGS` accordingly on the `gpu_runner`).
 
+For spot-checks after a code change, run individual scenarios — not the full suite. `regression_tests` and `verification_tests` each have one `TEST_CASE` per submodule and discover scenarios as Catch2 sections, so target a single scenario via `-c` (the `add-regression` and `add-verification` skills document the exact pattern):
+
+```bash
+./build/dev/tests/regression/regression_tests "solid mechanics" -c "viscoelasticity/maxwell/model.i"
+./build/dev/tests/verification/verification_tests "solid mechanics" -c "viscoelasticity/zener/zener.i"
+```
+
+Reserve unfiltered `regression_tests` / `verification_tests` runs for final confirmation.
+
 Python tests:
 
 ```bash

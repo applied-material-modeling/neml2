@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/viscoelasticity/KelvinVoigtViscoelasticity.h"
+#include "neml2/models/solid_mechanics/viscoelasticity/KelvinVoigtElement.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
@@ -30,10 +30,10 @@
 
 namespace neml2
 {
-register_NEML2_object(KelvinVoigtViscoelasticity);
+register_NEML2_object(KelvinVoigtElement);
 
 OptionSet
-KelvinVoigtViscoelasticity::expected_options()
+KelvinVoigtElement::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
@@ -50,7 +50,7 @@ KelvinVoigtViscoelasticity::expected_options()
   return options;
 }
 
-KelvinVoigtViscoelasticity::KelvinVoigtViscoelasticity(const OptionSet & options)
+KelvinVoigtElement::KelvinVoigtElement(const OptionSet & options)
   : Model(options),
     _E(declare_input_variable<SR2>("strain")),
     _E_dot(declare_input_variable<SR2>(rate_name(_E.name()))),
@@ -61,7 +61,7 @@ KelvinVoigtViscoelasticity::KelvinVoigtViscoelasticity(const OptionSet & options
 }
 
 void
-KelvinVoigtViscoelasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+KelvinVoigtElement::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
     _S = _K * _E + _eta * _E_dot;

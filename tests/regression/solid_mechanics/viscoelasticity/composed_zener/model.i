@@ -1,7 +1,13 @@
-# Maxwell stress relaxation: a single Maxwell element (spring + dashpot in series) under a ramped
-# strain. The Maxwell dashpot rate equation is composed with linear isotropic elasticity by
-# decomposing the total strain into elastic and viscous parts and applying the elasticity to the
-# elastic strain. Under sustained strain the stress relaxes asymptotically to zero.
+# Zener (Standard Linear Solid) response built from primitives — equilibrium spring in parallel
+# with a Maxwell branch (spring + dashpot in series). Same load history and parameters as
+# `zener/model.i`; gold reference matches that scenario's gold within Newton-solve tolerance.
+# Composition pattern:
+#   - eq_spring: scalar-modulus spring on the total strain (parallel branch)
+#   - elastic_strain = strain - viscous_strain (Maxwell-branch strain decomposition)
+#   - maxwell_spring: scalar-modulus spring on the elastic strain
+#   - dashpot: LinearDashpot consumes maxwell_stress and produces viscous_strain_rate
+#   - stress_sum: parallel branch sum (eq_stress + maxwell_stress)
+#   - SR2BackwardEulerTimeIntegration on viscous_strain closes the implicit system
 [Tensors]
   [end_time]
     type = LogspaceScalar
@@ -59,22 +65,34 @@
 []
 
 [Models]
+  [eq_spring]
+    type = SR2LinearCombination
+    from = 'strain'
+    weights = '1000'
+    to = 'eq_stress'
+  []
   [elastic_strain]
     type = SR2LinearCombination
     from = 'strain viscous_strain'
-    to = 'elastic_strain'
     weights = '1 -1'
+    to = 'elastic_strain'
   []
-  [elasticity]
-    type = LinearIsotropicElasticity
-    coefficients = '1e4 0.3'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'elastic_strain'
-    stress = 'stress'
+  [maxwell_spring]
+    type = SR2LinearCombination
+    from = 'elastic_strain'
+    weights = '5000'
+    to = 'maxwell_stress'
   []
   [dashpot]
     type = LinearDashpot
+    stress = 'maxwell_stress'
     viscosity = 100
+  []
+  [stress_sum]
+    type = SR2LinearCombination
+    from = 'eq_stress maxwell_stress'
+    weights = '1 1'
+    to = 'stress'
   []
   [integrate_Ev]
     type = SR2BackwardEulerTimeIntegration
@@ -82,7 +100,7 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'elastic_strain elasticity dashpot integrate_Ev'
+    models = 'eq_spring elastic_strain maxwell_spring dashpot stress_sum integrate_Ev'
   []
 []
 
@@ -118,7 +136,7 @@
   []
   [model]
     type = ComposedModel
-    models = 'update elastic_strain elasticity'
+    models = 'update eq_spring elastic_strain maxwell_spring dashpot stress_sum'
     additional_outputs = 'viscous_strain'
   []
 []

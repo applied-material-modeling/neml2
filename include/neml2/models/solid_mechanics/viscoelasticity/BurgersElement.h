@@ -49,12 +49,12 @@ class SR2;
  *     \boldsymbol{\varepsilon}_{K}) / \eta_K.
  * \f}
  */
-class BurgersViscoelasticity : public Model
+class BurgersElement : public Model
 {
 public:
   static OptionSet expected_options();
 
-  BurgersViscoelasticity(const OptionSet & options);
+  BurgersElement(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;

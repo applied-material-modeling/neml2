@@ -32,31 +32,34 @@ class Scalar;
 class SR2;
 
 /**
- * @brief Dashpot evolution equation for a Maxwell viscoelastic element.
+ * @brief Stress response of a Kelvin-Voigt viscoelastic element.
  *
- * The Maxwell element consists of a linear spring and a Newtonian dashpot connected in series.
- * Total strain decomposes as \f$ \boldsymbol{\varepsilon} = \boldsymbol{\varepsilon}_e +
- * \boldsymbol{\varepsilon}_v \f$, the spring carries the entire stress \f$ \boldsymbol{\sigma} = E
- * \boldsymbol{\varepsilon}_e \f$, and the dashpot's viscous flow is governed by
- * \f$ \dot{\boldsymbol{\varepsilon}}_v = \boldsymbol{\sigma}/\eta \f$.
- * This object implements only the dashpot rate equation; it is intended to be composed with a
- * linear elasticity model to form a complete Maxwell element.
+ * The Kelvin-Voigt element consists of a linear spring and a Newtonian dashpot connected in
+ * parallel. Both elements share the same strain, so the total stress is the sum of the spring and
+ * dashpot contributions: \f$ \boldsymbol{\sigma} = E \boldsymbol{\varepsilon} + \eta
+ * \dot{\boldsymbol{\varepsilon}} \f$.
  */
-class MaxwellViscoelasticity : public Model
+class KelvinVoigtElement : public Model
 {
 public:
   static OptionSet expected_options();
 
-  MaxwellViscoelasticity(const OptionSet & options);
+  KelvinVoigtElement(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Stress acting across the dashpot
-  const Variable<SR2> & _S;
+  /// Strain shared by spring and dashpot
+  const Variable<SR2> & _E;
 
-  /// Rate of viscous strain
-  Variable<SR2> & _Ev_dot;
+  /// Strain rate shared by spring and dashpot
+  const Variable<SR2> & _E_dot;
+
+  /// Stress in the Kelvin-Voigt element
+  Variable<SR2> & _S;
+
+  /// Spring modulus
+  const Scalar & _K;
 
   /// Dashpot viscosity
   const Scalar & _eta;
