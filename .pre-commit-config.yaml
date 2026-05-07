@@ -5,6 +5,11 @@ repos:
     -   id: clang-format
         files: \.(cxx|h)$
         pass_filenames: true
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 26.3.1
+    hooks:
+      - id: black
+        files: ^python/(neml2|tests)/.*\.py$
   - repo: https://github.com/mwouts/jupytext
     rev: v1.19.1
     hooks:
@@ -12,3 +17,11 @@ repos:
         args: [--sync]
         files: ^python/examples/.*\.ipynb$
         pass_filenames: true
+  - repo: local
+    hooks:
+      - id: check-copyright
+        name: check copyright headers
+        entry: scripts/check_copyright.py --modify
+        language: script
+        pass_filenames: true
+        files: \.(h|cxx|py|sh|js)$

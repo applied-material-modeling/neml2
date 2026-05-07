@@ -30,6 +30,22 @@ import sys
 import argparse
 
 
+extensions = {".h": "//", ".cxx": "//", ".py": "#", ".sh": "#", ".js": "//"}
+additional_files = {}
+
+exclude_dirs = [
+    "contrib",
+    "cmake",
+    "doc/content",
+    "doc/tutorials",
+    "doc/config",
+    "tests/integration",
+]
+exclude_files = []
+
+rootdir = Path(".")
+
+
 def should_check(path):
     for exclude_dir in exclude_dirs:
         if Path(rootdir) / Path(exclude_dir) in path.parents:
@@ -123,33 +139,26 @@ if __name__ == "__main__":
         help="Modify the files to have the correct copyright heading",
         action="store_true",
     )
+    parser.add_argument(
+        "files",
+        nargs="*",
+        help="Files to check. If omitted, all git-tracked files are checked.",
+    )
     args = parser.parse_args()
 
-    extensions = {".h": "//", ".cxx": "//", ".py": "#", ".sh": "#", ".js": "//"}
-    additional_files = {}
-
-    exclude_dirs = [
-        "contrib",
-        "cmake",
-        "doc/content",
-        "doc/tutorials",
-        "doc/config",
-        "tests/integration",
-    ]
-    exclude_files = []
-
-    rootdir = Path(".")
-
-    files = subprocess.run(
-        ["git", "ls-tree", "-r", "HEAD", "--name-only"], capture_output=True, text=True
-    ).stdout
+    if args.files:
+        candidate_files = args.files
+    else:
+        candidate_files = subprocess.run(
+            ["git", "ls-tree", "-r", "HEAD", "--name-only"], capture_output=True, text=True
+        ).stdout.splitlines()
 
     copyright = Path(rootdir / "LICENSE").read_text()
     print("The copyright statement is:\n")
     print(copyright)
 
     success = True
-    for file in files.splitlines():
+    for file in candidate_files:
         file_path = Path(file)
         if should_check(file_path):
             if file_path.suffix in extensions:
