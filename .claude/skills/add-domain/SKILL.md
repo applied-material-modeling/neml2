@@ -63,14 +63,26 @@ Then list the **composition plan** — what existing NEML2 pieces this model nee
 
 Survey the target subdirectory (`ls include/neml2/models/<submodule>/`) and any obviously-related subdirectories before drafting. Often a domain interface already exists (e.g., `IsotropicHardening`, `FlowRule`, `Elasticity`) that the new models should subclass instead of `Model` directly. **Check before deciding** — copying the wrong base class is the most common architectural mistake.
 
-For a structured catalog of *every* registered object — type names, doc strings, every option's type/default/required-flag — dump the registry with `neml2-syntax`:
+For a structured catalog of registered objects, use `neml2-syntax`. Three flags make planning fast:
+
+- `--section Models` filters by input-file section (also valid: `Solvers`, `Drivers`, `Tensors`, `Schedulers`, `Data`, `EquationSystems`, `Settings`).
+- `--summary` drops the per-option detail and emits just `type`, `section`, and `doc` — exactly the level of detail you need to pick candidates.
+- `--type <Name>` narrows to one specific object — use this *after* the summary catalog has helped you pick a name.
+
+The intended two-step workflow:
 
 ```bash
-./build/dev/src/tools/neml2-syntax --yaml /tmp/syntax.yml   # writes a YAML catalog
-./build/dev/src/tools/neml2-syntax | less                   # or read on stdout
+# 1. Browse one-line descriptions of every registered Model.
+./build/dev/src/tools/neml2-syntax --section Models --summary | less
+
+# 2. Once you've picked a candidate, drill in for its full option list.
+./build/dev/src/tools/neml2-syntax --type SR2BackwardEulerTimeIntegration
+
+# Or dump everything to a file (the catalog used by the doc generator).
+./build/dev/src/tools/neml2-syntax --yaml /tmp/syntax.yml
 ```
 
-Grep this for likely candidates before assuming you need a new Model — `grep -A3 -B1 'Strain' /tmp/syntax.yml` will surface every object whose docs mention "Strain", along with its option list. This is much faster than browsing headers, and it catches utilities that `ls` misses (e.g., the `*BackwardEulerTimeIntegration` and `*VariableRate` helpers live under `models/common/`, not where you'd guess from a physics theme).
+The summary catalog catches utilities that `ls` misses (e.g., the `*BackwardEulerTimeIntegration` and `*VariableRate` helpers live under `models/common/`, not where you'd guess from a physics theme), and is small enough to read end-to-end without grep gymnastics. `--type` then gives you the per-option detail without dumping the whole registry.
 
 **Why this step exists:** it is far cheaper to revise an ASCII spec in chat than to revise five `.h`/`.cxx`/`.i` triples that already compile. Skipping the spec step doesn't make you faster; it makes you re-do work. *Do not start writing code until the user has signed off on the spec.*
 
