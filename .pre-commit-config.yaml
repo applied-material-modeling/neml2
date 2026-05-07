@@ -25,3 +25,9 @@ repos:
         language: script
         pass_filenames: true
         files: \.(h|cxx|py|sh|js)$
+      - id: check-dependencies
+        name: check dependency consistency
+        entry: scripts/dep_manager.py check
+        language: script
+        pass_filenames: false
+        always_run: true

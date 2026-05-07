@@ -70,64 +70,71 @@ def generate_copyright_heading(copyright, prefix):
     ]
 
 
-def get_first_comment_block(path, prefix):
-    # Find the starting and ending line numbers of the first comment block
-    # (It's okay if the license header doesn't start from the first line.
-    #  This relaxation is useful for things like shebang which have to be on the first line.)
-    with path.open("r", encoding="utf-8") as file:
-        lines = file.readlines()
-        state = 0
-        lineno_start = -1
-        lineno_end = -1
-        for i, line in enumerate(lines):
-            if state == 0 and (line.startswith(prefix + " ") or line == prefix + "\n"):
-                lineno_start = i
-                state = 1
-            elif state == 1 and not (line.startswith(prefix + " ") or line == prefix + "\n"):
-                lineno_end = i
-                break
-
-    return lines, lineno_start, lineno_end
+def _is_comment_line(line, prefix):
+    return line.startswith(prefix + " ") or line == prefix + "\n"
 
 
-def has_correct_heading(lines, start, end, correct_heading):
-    if start < 0:
-        return False
-    if end <= start:
-        return lines[start:] == correct_heading
-    if end > start:
-        return lines[start:end] == correct_heading
-    return False
+def find_header_position(lines, prefix):
+    """Locate the copyright heading at the top of the file.
 
+    The heading is only ever recognized in this position, in this order:
+      [#!shebang]      (optional, any line starting with "#!")
+      [blank line]     (optional, only consumed when a shebang is present)
+      <comment block>  (the heading itself, or absent)
 
-def update_heading(path, lines, start, end, correct_heading):
-    if start >= 0:
-        if end > start:
-            newlines = lines[:start] + correct_heading + lines[end:]
-        else:
-            newlines = lines[:start] + correct_heading
-    else:
-        newlines = correct_heading
+    This prevents the search from latching onto an unrelated comment block
+    further down (e.g. a section header in the middle of the file).
 
-    with path.open("w", encoding="utf-8") as file:
-        for line in newlines:
-            file.write(line)
+    Returns (insert_at, existing_start, existing_end):
+      - insert_at: where a missing heading would be inserted
+      - (existing_start, existing_end): half-open range of an existing heading
+        block at this position, or (-1, -1) if none is present
+    """
+    i = 0
+    if i < len(lines) and lines[i].startswith("#!"):
+        i += 1
+        if i < len(lines) and lines[i].strip() == "":
+            i += 1
 
-    print("Corrected copyright heading for " + str(path))
+    insert_at = i
+    if i < len(lines) and _is_comment_line(lines[i], prefix):
+        existing_start = i
+        while i < len(lines) and _is_comment_line(lines[i], prefix):
+            i += 1
+        return insert_at, existing_start, i
+
+    return insert_at, -1, -1
 
 
 def update_heading_ondemand(path, copyright, prefix, modify):
     heading = generate_copyright_heading(copyright, prefix)
-    lines, lineno_start, lineno_end = get_first_comment_block(path, prefix)
-    correct = has_correct_heading(lines, lineno_start, lineno_end, heading)
+    with path.open("r", encoding="utf-8") as file:
+        lines = file.readlines()
 
-    if not modify:
-        return correct
+    insert_at, existing_start, existing_end = find_header_position(lines, prefix)
 
-    if correct:
+    if existing_start >= 0 and lines[existing_start:existing_end] == heading:
         return True
 
-    update_heading(path, lines, lineno_start, lineno_end, heading)
+    if not modify:
+        return False
+
+    if existing_start >= 0:
+        new_lines = lines[:existing_start] + heading + lines[existing_end:]
+    else:
+        prefix_lines = lines[:insert_at]
+        suffix_lines = lines[insert_at:]
+        block = list(heading)
+        if prefix_lines and prefix_lines[-1].strip() != "":
+            block.insert(0, "\n")
+        if suffix_lines and suffix_lines[0].strip() != "":
+            block.append("\n")
+        new_lines = prefix_lines + block + suffix_lines
+
+    with path.open("w", encoding="utf-8") as file:
+        file.writelines(new_lines)
+
+    print("Corrected copyright heading for " + str(path))
     return True
 
 
