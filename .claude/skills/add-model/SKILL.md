@@ -128,6 +128,49 @@ Notes on the source template:
 - If the model has parameters (calibratable scalars/tensors), declare them with `declare_parameter<...>("name")` and add a matching `options.add<...>("name")` in `expected_options()`. Look at `LinearIsotropicHardening` or `FredrickArmstrongPlasticHardening` for parameterized examples.
 - If `set_value` provides analytic first derivatives, NEML2 will cross-check them against finite differencing in the unit test (see step 3). If you can't yet provide them, set `check_first_derivatives = false` in the `.i` file.
 
+### Naming convention for rates, histories, and residuals — DERIVE, don't request
+
+When a variable's name is the *rate*, *history*, or *residual* form of another variable, **derive the name from the base variable using the helper functions** (`rate_name`, `history_name`, `residual_name` from `NEML2Object`) — do **not** add a separate `add_input`/`add_output` option that lets the user name it directly.
+
+These helpers respect the global `[Settings]` block, where users can override `rate_prefix`, `rate_suffix` (default `_rate`), `history_separator` (default `~`), `residual_prefix`, and `residual_suffix` (default `_residual`). A model that hardcodes the literal name `viscous_strain_rate` works correctly only by accident with default settings — change `rate_suffix = '.dot'` and the model and the rest of the framework no longer agree. Worse, a model that requests the rate name as a separate input option lets the user *type a different name from the base variable* — the model and `BackwardEulerTimeIntegration` would silently disagree on which buffer is the rate, and the integration would degenerate (the rate input falls back to zero) without any error.
+
+Pattern from `BackwardEulerTimeIntegration`:
+
+```cpp
+// In expected_options(): only add_input the BASE variable.
+options.add_input("variable", "Variable being integrated");
+options.add_input("time", "t", "Time");
+
+// In the constructor: derive the rate, history, and residual names from the base.
+_s(declare_input_variable<T>("variable")),
+_sn(declare_input_variable<T>(history_name(_s.name(), /*nstep=*/1))),     // x~1
+_rate(declare_input_variable<T>(rate_name(_s.name()))),                   // x_rate
+_r(declare_output_variable<T>(residual_name(_s.name())))                  // x_residual
+```
+
+Same pattern for outputs. From `IsotropicHardeningStaticRecovery`:
+
+```cpp
+// expected_options(): only add the base variable.
+options.add_input("isotropic_hardening", "Isotropic hardening variable");
+// no add_output for the rate
+
+// constructor: rate output name is derived.
+_h(declare_input_variable<Scalar>("isotropic_hardening")),
+_h_dot(declare_output_variable<Scalar>(rate_name(_h.name())))
+```
+
+**Don't declare a base variable as input just to give yourself a name to derive from.** If your model's equation does not actually use the value of the underlying state variable, declaring it as an input lies about the model's dependency graph — the dependency resolver will think this model needs the variable when it doesn't, which can force a spurious order on `ComposedModel` or block evaluation when the variable isn't yet defined. In that case, expose the rate as a freestanding `add_output` option and let the user name it explicitly. They are responsible for choosing a name that lines up with `rate_name` of whatever state variable the time integrator owns.
+
+`MaxwellViscoelasticity` is the canonical example: the dashpot equation `dε_v/dt = σ/η` depends only on stress. Declaring `viscous_strain` as an unused input would falsely couple Maxwell to that variable. So Maxwell takes only `stress`, and `viscous_strain_rate` is a freestanding `add_output` option with a default name that happens to match `rate_name(viscous_strain)` at default settings — but the option's docstring should make explicit that the user is on the hook for keeping it consistent with their integrator. `PlasticFlowRate` is similar: `flow_rate` is the rate of a "consistency parameter" that doesn't exist as a state variable anywhere, so it's a freestanding output option.
+
+Quick checklist when declaring an input or output:
+
+- Does this variable's *value* enter the equation, AND is it the rate/history/residual of another input variable that's also used? → derive the name with `rate_name`/`history_name`/`residual_name`, no `add_<input/output>` for it.
+- Is this freestanding — either no underlying base variable exists (e.g. `flow_rate`, `stress`, `strain`), or the model genuinely doesn't use the base variable's value (e.g. Maxwell's `viscous_strain_rate`)? → `add_<input/output>` with the literal name, document the user's responsibility in the option docstring if it's a rate-like quantity that needs to align with an integrator.
+
+Don't add a literal-name `add_<input/output>` just because it's easier — that's the failure mode this convention exists to prevent. Reserve it for genuine standalone variables.
+
 ### 3. Unit-test input — `tests/unit/models/<Domain>/<Name>.i`
 
 The test binary `unit_tests` auto-discovers every `.i` file under `tests/unit/models/`. There is no need to add the file anywhere else.

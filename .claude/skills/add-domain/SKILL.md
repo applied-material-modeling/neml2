@@ -24,10 +24,11 @@ For a **brand-new top-level submodule** (a sibling of `models/`, `solvers/`, `dr
 2. **Scaffold each model** via `add-model`, then fill in the constitutive equations and analytic derivatives.
 3. **Verify each model in isolation** with `ModelUnitTest` (`.i` files) — both forward values and derivatives.
 4. **Verify the composition** with `neml2-inspect` *before* trying to time-step — confirm the wiring before the simulation.
-5. **Stand up regression tests** by driving once with `neml2-run`, promoting `result.pt` to `gold/result.pt`, and verifying with the `regression_tests` binary.
-6. **Document the new domain** under `doc/content/modules/` so that the physics, the equations, and a worked input file land in the user-facing docs.
+5. **Verify against ground truth** with `add-verification` — establish that the model produces a *correct* answer (not just a stable one). When no defensible reference exists, surface the uncertainty to the user and skip only with their consent.
+6. **Pin the verified behavior** with `add-regression` — freeze the now-known-good output so future changes don't silently break it.
+7. **Document the new domain** under `doc/content/modules/` so that the physics and a worked input file land in the user-facing docs.
 
-The first step is where this skill earns its keep. The rest is mechanical, but the gotchas in steps 4–6 are easy to miss.
+The first step is where this skill earns its keep. The rest is mechanical, but the gotchas in steps 4–7 are easy to miss.
 
 ---
 
@@ -104,6 +105,7 @@ For each model in the spec, follow the `add-model` skill — do not duplicate it
 Two things specific to a multi-model domain:
 
 - **Use the same naming and parameter conventions across the family.** If one model in the domain calls its dashpot parameter `viscosity`, every model in the family should call it `viscosity` (not `eta` or `damping`). Inputs and parameter names show up in user-facing input files; inconsistency forces users to context-switch.
+- **Derive rate, history, and residual variable names — never request them as input options.** When a model produces (or consumes) a *rate* of an existing state variable, the rate name must come from `rate_name(<base>.name())` so it lines up with whatever `BackwardEulerTimeIntegration` and friends derive. Same for `history_name` (previous-step values) and `residual_name`. These helpers respect `[Settings]` overrides for the prefix/suffix/separator. If you `add_input`/`add_output` a literal name like `"viscous_strain_rate"`, the model agrees with the framework only by accident at default settings — and the user can supply a name that silently mismatches the integrator. See the `add-model` skill's "Naming convention for rates, histories, and residuals" section for the pattern. This is the most common naming bug across the family: review every `_dot` / `_rate` / `~1` / `_residual` declaration before you ship.
 - **Provide analytic derivatives** unless you have a strong reason not to. The `ModelUnitTest` cross-checks them against finite differencing; getting them right pays off immediately and never has to be revisited. If you can't derive them quickly, scaffold with `check_first_derivatives = false` in the `.i`, but treat that as a TODO, not a long-term state.
 
 ---
@@ -148,48 +150,37 @@ If `neml2-inspect` shows a problem, you haven't started time-stepping yet — fi
 
 ---
 
-## Step 5 — Stand up regression tests
+## Step 5 — Verify against ground truth (when feasible)
 
-The `regression_tests` binary auto-discovers any `.i` file under `tests/regression/<submodule>/`. The convention is one directory per scenario:
+A verification test answers *did the model produce a physically correct result?* The reference data comes from outside the model — an analytical solution (e.g., Maxwell stress relaxation \f$ \sigma(t) = \sigma_0 e^{-t/\tau} \f$ for a step strain), an established benchmark code (NEML1, WARP3D, etc.), or a strong physical-intuition result when no closed form exists (long-time stress, monotonicity, recoverability after fully reversed loading).
 
-```
-tests/regression/<submodule>/<domain>/<scenario>/
-  ├── model.i
-  └── gold/
-      └── result.pt
-```
+Use the `add-verification` skill for the workflow — it covers the `.vtest` reference-data format, the `VTestVerification` driver, where the harness expects the driver to be named, and how to choose tolerances. For each qualitatively distinct model in the domain, pick the most defensible source of truth available; even a "weaker" intuition check is independent evidence the unit tests cannot provide on their own.
 
-`model.i` declares both a `TransientDriver` (saving to `result.pt`) and a `TransientRegression` (reading from `gold/result.pt`).
+For the viscoelasticity domain we built as a worked example, none of the five models had `.vtest` benchmark data on hand — but each has a closed-form long-time / short-time response that's straightforward to check (Maxwell relaxes to zero, Zener relaxes to \f$ E_\infty \boldsymbol{\varepsilon} \f$, Kelvin-Voigt creeps to \f$ \boldsymbol{\sigma}/E \f$, etc.). Those analytical limits are the right verification reference.
 
-**Bootstrap the gold file** by running the driver alone first:
+**When verification is not feasible.** Sometimes a defensible reference genuinely doesn't exist — the model captures novel physics with no published benchmark, no closed-form limit you can isolate, and no intuition test that would distinguish a correct implementation from a plausible-looking wrong one. **Do not fabricate a reference to check a box.** A verification test that compares the model against itself, or against a hand-tuned tolerance on a number you pulled from running the model and squinting at the plot, is worse than no verification test at all — it gives false confidence and pins a guess.
 
-```bash
-cd tests/regression/<submodule>/<domain>/<scenario>
-neml2-run model.i driver        # produces result.pt; ignore the warning about TransientRegression
-mv result.pt gold/result.pt
-```
+When you are unsure what to verify against:
 
-`neml2-run` will print a benign warning that `TransientRegression` is not a registered driver — that's expected, since `TransientRegression` only exists inside the `regression_tests` binary. The warning means "I'm skipping that block," not "something failed."
-
-**Then verify** with the regression binary:
-
-```bash
-./build/dev/tests/regression/regression_tests "<submodule-test-name>" -c "<domain>/<scenario>/model.i"
-```
-
-The test-case name is the string passed to `TEST_CASE(…)` in `tests/regression/<submodule>/regression_<submodule>.cxx` — usually a phrase like `"solid mechanics"`. Find it with `grep TEST_CASE tests/regression/<submodule>/*.cxx`.
-
-**Clean up** any stray `result.pt` left in the scenario directory after generating gold — only `model.i` and `gold/result.pt` should be checked in. Easy to forget; checked-in `result.pt` files muddle diffs.
-
-For a multi-model domain, add at least one regression test per *qualitatively distinct* model — typically:
-
-- One scenario per model that has internal state (these exercise the `ImplicitUpdate` path).
-- One scenario for each "pure forward" model, if any (e.g., a constitutive law that has no internal state).
-- For models that need composition with elasticity (Maxwell-style dashpots), include the composition in the scenario file — that's the more useful regression.
+- Surface the uncertainty to the user *before* skipping. State concretely what you considered (analytical limits, benchmark codes, intuition checks) and why each one is too weak or unavailable for this model. Ask whether they know of a reference you don't, or whether to skip with a TODO.
+- If the user consents, skip the verification step for that model. Note the gap in the regression scenario's input file (a `# TODO: no verification reference yet — gold reflects current behavior, not known-good behavior.` comment near the `TransientRegression` block is a useful signal to future readers) and proceed to step 6.
+- If only *some* models in the domain have defensible references, do verification for those and skip the rest with the same surfacing-and-consent flow. Partial verification is much better than none.
 
 ---
 
-## Step 6 — Document the new domain
+## Step 6 — Pin the verified behavior with regression tests
+
+A regression test answers *did the model's output drift from what it produced last time?* It's a change-detection tool — useful for catching unintended numerical changes from refactors, dependency bumps, or unrelated edits. The reference (`gold/result.pt`) is the model's own previous output, not external truth.
+
+Use the `add-regression` skill for the workflow — it covers the directory layout (`<scenario>/model.i` + `gold/result.pt`), the `neml2-run` bootstrap with the benign `TransientRegression not registered` warning, the cleanup of stray `result.pt` files, and the Catch2 silent-pass-with-bad-section trap.
+
+The reason verification (step 5) comes first: a regression test by itself only freezes whatever the model happens to produce on the day you bootstrap it — including bugs. Verifying first means the gold you commit is gold, not just lead.
+
+For a multi-model domain, add at least one regression scenario per *qualitatively distinct* model — typically one per model with internal state (these exercise the `ImplicitUpdate` path), one for each "pure forward" model if any, and one for the typical composition pattern users will reach for (e.g., for Maxwell-style dashpots, regress the composition with elasticity rather than the bare rate equation).
+
+---
+
+## Step 7 — Document the new domain
 
 Add a new `##` section to the appropriate `doc/content/modules/<submodule>.md` — for a domain inside an existing submodule (e.g. viscoelasticity inside `solid_mechanics`), no XML edits are needed; the in-page TOC builds itself. For a brand-new top-level physics module, both `doc/config/DoxygenLayout.xml` and `doc/config/DoxygenLayoutPython.xml` must be updated to make the page appear in the sidebar.
 
