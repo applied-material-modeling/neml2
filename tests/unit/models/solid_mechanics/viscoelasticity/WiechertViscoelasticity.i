@@ -4,7 +4,7 @@
     model = 'model'
     input_SR2_names = 'strain viscous_strain_1 viscous_strain_2'
     input_SR2_values = 'E Ev1 Ev2'
-    output_SR2_names = 'stress viscous_strain_rate_1 viscous_strain_rate_2'
+    output_SR2_names = 'stress viscous_strain_1_rate viscous_strain_2_rate'
     output_SR2_values = 'S Ev1_dot Ev2_dot'
   []
 []

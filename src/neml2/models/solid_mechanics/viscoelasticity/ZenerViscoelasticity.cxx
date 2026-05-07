@@ -46,7 +46,6 @@ ZenerViscoelasticity::expected_options()
   options.add_input("strain", "Total strain");
   options.add_input("viscous_strain", "Viscous strain in the Maxwell branch");
   options.add_output("stress", "Total stress");
-  options.add_output("viscous_strain_rate", "Rate of viscous strain in the Maxwell branch");
   options.add_parameter<Scalar>("equilibrium_modulus", "Equilibrium spring modulus");
   options.add_parameter<Scalar>("maxwell_modulus", "Maxwell branch spring modulus");
   options.add_parameter<Scalar>("maxwell_viscosity", "Maxwell branch dashpot viscosity");
@@ -59,7 +58,7 @@ ZenerViscoelasticity::ZenerViscoelasticity(const OptionSet & options)
     _E(declare_input_variable<SR2>("strain")),
     _Ev(declare_input_variable<SR2>("viscous_strain")),
     _S(declare_output_variable<SR2>("stress")),
-    _Ev_dot(declare_output_variable<SR2>("viscous_strain_rate")),
+    _Ev_dot(declare_output_variable<SR2>(rate_name(_Ev.name()))),
     _Einf(declare_parameter<Scalar>("Einf", "equilibrium_modulus", true)),
     _EM(declare_parameter<Scalar>("EM", "maxwell_modulus", true)),
     _etaM(declare_parameter<Scalar>("etaM", "maxwell_viscosity", true))

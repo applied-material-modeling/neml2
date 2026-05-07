@@ -48,9 +48,6 @@ WiechertViscoelasticity::expected_options()
   options.add_input("viscous_strain_1", "Viscous strain in the first Maxwell branch");
   options.add_input("viscous_strain_2", "Viscous strain in the second Maxwell branch");
   options.add_output("stress", "Total stress");
-  options.add_output("viscous_strain_rate_1", "Rate of viscous strain in the first Maxwell branch");
-  options.add_output("viscous_strain_rate_2",
-                     "Rate of viscous strain in the second Maxwell branch");
   options.add_parameter<Scalar>("equilibrium_modulus", "Equilibrium spring modulus");
   options.add_parameter<Scalar>("modulus_1", "Spring modulus of the first Maxwell branch");
   options.add_parameter<Scalar>("viscosity_1", "Dashpot viscosity of the first Maxwell branch");
@@ -66,8 +63,8 @@ WiechertViscoelasticity::WiechertViscoelasticity(const OptionSet & options)
     _Ev1(declare_input_variable<SR2>("viscous_strain_1")),
     _Ev2(declare_input_variable<SR2>("viscous_strain_2")),
     _S(declare_output_variable<SR2>("stress")),
-    _Ev1_dot(declare_output_variable<SR2>("viscous_strain_rate_1")),
-    _Ev2_dot(declare_output_variable<SR2>("viscous_strain_rate_2")),
+    _Ev1_dot(declare_output_variable<SR2>(rate_name(_Ev1.name()))),
+    _Ev2_dot(declare_output_variable<SR2>(rate_name(_Ev2.name()))),
     _Einf(declare_parameter<Scalar>("Einf", "equilibrium_modulus", true)),
     _E1(declare_parameter<Scalar>("E1", "modulus_1", true)),
     _eta1(declare_parameter<Scalar>("eta1", "viscosity_1", true)),

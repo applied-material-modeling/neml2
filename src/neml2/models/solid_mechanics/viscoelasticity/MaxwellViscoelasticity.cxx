@@ -42,7 +42,9 @@ MaxwellViscoelasticity::expected_options()
       "\\f$ is the viscosity.";
 
   options.add_input("stress", "Stress acting across the dashpot");
-  options.add_output("viscous_strain_rate", "Rate of viscous strain");
+  options.add_output("viscous_strain_rate",
+                     "Rate of viscous strain. Override to match the rate name expected by the "
+                     "time integrator if your state variable is not named `viscous_strain`.");
   options.add_parameter<Scalar>("viscosity", "Dashpot viscosity");
 
   return options;

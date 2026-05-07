@@ -43,7 +43,6 @@ KelvinVoigtViscoelasticity::expected_options()
       "\\eta \\f$ is the dashpot viscosity.";
 
   options.add_input("strain", "Strain shared by the spring and the dashpot");
-  options.add_input("strain_rate", "Strain rate shared by the spring and the dashpot");
   options.add_output("stress", "Stress in the Kelvin-Voigt element");
   options.add_parameter<Scalar>("modulus", "Spring modulus");
   options.add_parameter<Scalar>("viscosity", "Dashpot viscosity");
@@ -54,7 +53,7 @@ KelvinVoigtViscoelasticity::expected_options()
 KelvinVoigtViscoelasticity::KelvinVoigtViscoelasticity(const OptionSet & options)
   : Model(options),
     _E(declare_input_variable<SR2>("strain")),
-    _E_dot(declare_input_variable<SR2>("strain_rate")),
+    _E_dot(declare_input_variable<SR2>(rate_name(_E.name()))),
     _S(declare_output_variable<SR2>("stress")),
     _K(declare_parameter<Scalar>("K", "modulus", true)),
     _eta(declare_parameter<Scalar>("eta", "viscosity", true))

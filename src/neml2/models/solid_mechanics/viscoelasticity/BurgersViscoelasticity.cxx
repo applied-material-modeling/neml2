@@ -48,9 +48,6 @@ BurgersViscoelasticity::expected_options()
   options.add_input("maxwell_viscous_strain", "Viscous strain in the Maxwell branch dashpot");
   options.add_input("kelvin_voigt_strain", "Strain in the Kelvin-Voigt branch");
   options.add_output("stress", "Total stress (shared between Maxwell and Kelvin-Voigt elements)");
-  options.add_output("maxwell_viscous_strain_rate",
-                     "Rate of viscous strain in the Maxwell branch dashpot");
-  options.add_output("kelvin_voigt_strain_rate", "Rate of strain in the Kelvin-Voigt branch");
   options.add_parameter<Scalar>("maxwell_modulus", "Maxwell branch spring modulus");
   options.add_parameter<Scalar>("maxwell_viscosity", "Maxwell branch dashpot viscosity");
   options.add_parameter<Scalar>("kelvin_modulus", "Kelvin-Voigt branch spring modulus");
@@ -65,8 +62,8 @@ BurgersViscoelasticity::BurgersViscoelasticity(const OptionSet & options)
     _EvM(declare_input_variable<SR2>("maxwell_viscous_strain")),
     _EK(declare_input_variable<SR2>("kelvin_voigt_strain")),
     _S(declare_output_variable<SR2>("stress")),
-    _EvM_dot(declare_output_variable<SR2>("maxwell_viscous_strain_rate")),
-    _EK_dot(declare_output_variable<SR2>("kelvin_voigt_strain_rate")),
+    _EvM_dot(declare_output_variable<SR2>(rate_name(_EvM.name()))),
+    _EK_dot(declare_output_variable<SR2>(rate_name(_EK.name()))),
     _EM(declare_parameter<Scalar>("EM", "maxwell_modulus", true)),
     _etaM(declare_parameter<Scalar>("etaM", "maxwell_viscosity", true)),
     _EK_param(declare_parameter<Scalar>("EK", "kelvin_modulus", true)),
