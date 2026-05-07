@@ -18,8 +18,11 @@ Trigger this skill when the user wants to introduce a *theme* of models, not jus
 For a **single new Model**, use `add-model` directly — the planning overhead in this skill is wasted on one class.
 For a **brand-new top-level submodule** (a sibling of `models/`, `solvers/`, `drivers/`, etc.) — that needs `neml2_add_submodule(...)`, a `link_anchor.cxx`, and a force-link symbol declared in `include/neml2/neml2.h`. Surface that to the user instead of attempting it; this skill targets *domain subfolders inside an existing submodule*, not new submodules.
 
+**Always confirm the destination before scaffolding** (see Step 0). A request like "add a bunch of crystal plasticity models" can land in the existing `models/solid_mechanics/crystal_plasticity/` folder rather than a new domain — picking wrong creates a parallel directory tree that fragments the same theory across two locations and is painful to undo.
+
 ## The workflow
 
+0. **Confirm the destination** — verify with the user *whether* a new domain folder is needed and *where* it goes. Skip nothing here even if the request seems unambiguous.
 1. **Plan the math and the composition** — interactively, with the user, before writing code.
 2. **Scaffold each model** via `add-model`, then fill in the constitutive equations and analytic derivatives.
 3. **Verify each model in isolation** with `ModelUnitTest` (`.i` files) — both forward values and derivatives.
@@ -29,6 +32,34 @@ For a **brand-new top-level submodule** (a sibling of `models/`, `solvers/`, `dr
 7. **Document the new domain** under `doc/content/modules/` so that the physics and a worked input file land in the user-facing docs.
 
 The first step is where this skill earns its keep. The rest is mechanical, but the gotchas in steps 4–7 are easy to miss.
+
+---
+
+## Step 0 — Confirm the destination (do this BEFORE Step 1)
+
+The skill is named `add-domain`, but adding a domain is *not always the right answer*. A request that names a theory ("add some crystal plasticity slip rules", "implement a few damage models") can mean any of:
+
+1. **Add to an existing domain folder** — the theory already lives somewhere in NEML2. New models go *into* `models/solid_mechanics/crystal_plasticity/`, not into a new sibling folder. This is the common case and the skill should default to assuming it.
+2. **Add a new domain folder under an existing submodule** — the theory is genuinely new to NEML2 (or is a distinct sub-theory that doesn't fit the existing folder). This is what the rest of this skill covers.
+3. **Add a brand-new top-level submodule** — out of scope for this skill (see "When to use" above); surface to the user.
+
+Before doing any planning, do this small audit:
+
+```bash
+# What submodules exist?
+ls include/neml2/models/
+
+# What domain folders exist inside the most plausible submodule?
+ls include/neml2/models/<submodule>/
+```
+
+Then **explicitly confirm with the user** which of (1)/(2)/(3) applies. Frame it concretely — name the existing folder you found and ask whether the new models belong there or in a new folder, and *why*. For example:
+
+> I see `models/solid_mechanics/crystal_plasticity/` already exists with `{...list a few files...}`. Should the new slip rules go in there, or do you want a new sibling folder (e.g. `crystal_plasticity_<something>/`)? If the latter, what distinguishes it from the existing folder?
+
+If the answer is (1), drop out of this skill and use `add-model` per file instead — the multi-model planning workflow below is still useful, but the directory creation and doc registration in steps 1, 7 don't apply.
+
+Skipping this step is the most common way `add-domain` goes wrong: a new folder gets stood up next to a perfectly good existing one, and the theory ends up split across two locations. Renaming or merging folders later is much more painful than asking one question now.
 
 ---
 
