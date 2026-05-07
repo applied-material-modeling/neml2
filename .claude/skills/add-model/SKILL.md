@@ -18,6 +18,20 @@ Do **not** use this skill for:
 
 Adding a brand-new *domain directory* under an existing submodule (e.g. `models/electrochemistry/`) is fine — `models/` is already a submodule and its CMake glob is recursive, so any new subdirectory is picked up automatically.
 
+## Survey the registry first — `neml2-syntax`, not `ls` or grep
+
+**Before gathering requirements, browse the registered-object catalog.** Filesystem layout (`ls include/neml2/...`) tells you where files live, not what they *do*; class names mislead — `MaxwellViscoelasticity` was, for years, a class that did nothing more than `ε̇ = σ/η`, i.e., a generic dashpot. The single best way to find out (a) whether the model the user wants already exists, (b) what the closest near-miss is, and (c) which existing primitives compose into the proposed behavior is to read the registry's one-line docstrings:
+
+```bash
+# Browse one-line descriptions of every registered Model.
+./build/dev/src/tools/neml2-syntax --section Models --summary | less
+
+# Drill into a candidate's full option list once you've picked one.
+./build/dev/src/tools/neml2-syntax --type LinearDashpot
+```
+
+The summary catalog is small enough to read end-to-end and catches things `ls` / Explore agents miss — utilities under `models/common/` that compose into your model, near-misses with misleading names, etc. Run this *before* spawning Explore agents on source files; it's faster and answers most "is there already a piece that does X?" questions outright. Skipping this step is how single-model designs end up duplicating existing primitives.
+
 ## Required information from the user
 
 Before writing files, confirm:

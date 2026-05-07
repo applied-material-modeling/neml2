@@ -67,6 +67,11 @@ The doc build pipeline (`neml2-stub` → `doc/scripts/examples.py` → `doc/scri
 
 When `NEML2_TOOLS=ON` (default in most presets), `src/tools/` builds executables: `neml2-run`, `neml2-inspect`, `neml2-diagnose`, `neml2-syntax`, `neml2-time`. The Python package re-exposes the same entry points as `neml2-run`, `neml2-inspect`, etc., wired through `python/neml2/_cli.py`.
 
+When designing or debugging, reach for these inspection tools before reading source or spawning Explore agents — they're faster and answer most "is there already an X?" / "is my wiring right?" questions outright:
+- `neml2-syntax --section Models --summary` browses the registered-object catalog with one-line docstrings (use `--type <Name>` to drill into one). Run this when planning *any* new Model or wondering whether a primitive already does what you want.
+- `neml2-inspect <file.i>` shows the resolved input/output graph of a wired-up input file. Use this *before* `neml2-run` when composing models — wiring bugs surface here as obvious mismatches instead of cryptic shape errors deep in Newton.
+- `neml2-diagnose <file.i>` runs each model's `diagnose()` to catch misconfigurations the parser can't see statically.
+
 ## Architecture
 
 The C++ library is split into co-equal submodules under `src/neml2/`, each producing a separate `libneml2_<name>` shared library and a public header tree under `include/neml2/<name>/`. The umbrella `libneml2` (target `neml2`) just `PUBLIC`-links them all.
