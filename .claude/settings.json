@@ -1,0 +1,19 @@
+{
+  "enabledPlugins": {
+    "code-simplifier@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -d .git ] && ! grep -q 'pre-commit' .git/hooks/pre-commit 2>/dev/null; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"This project uses pre-commit hooks (clang-format for C++, black for Python, jupytext sync for notebooks). They are not installed in this clone. Before the user makes any commit, suggest they run: pre-commit install\"}}\\n'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

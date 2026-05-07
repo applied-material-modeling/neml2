@@ -1,0 +1,149 @@
+// Copyright 2024, UChicago Argonne, LLC
+// All Rights Reserved
+// Software Name: NEML2 -- the New Engineering material Model Library, version 2
+// By: Argonne National Laboratory
+// OPEN SOURCE LICENSE (MIT)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+#include "neml2/models/kwn/RateLimitedPrecipitateGrowthRate.h"
+
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/diagonalize.h"
+#include "neml2/tensors/functions/imap.h"
+
+namespace neml2
+{
+register_NEML2_object(RateLimitedPrecipitateGrowthRate);
+
+OptionSet
+RateLimitedPrecipitateGrowthRate::expected_options()
+{
+  OptionSet options = Model::expected_options();
+  options.doc() = "Compute the rate-limited precipitate growth rate for a single species.";
+
+  options.add_parameter<Scalar>("radius", "Precipitate radius per size bin");
+
+  options.add_input("current_concentration", "Current concentration in solution");
+
+  options.add_parameter<Scalar>("equilibrium_concentration",
+                                "Equilibrium concentration in solution");
+
+  options.add_parameter<Scalar>("concentration_difference",
+                                "Concentration difference between precipitate and equilibrium");
+
+  options.add_parameter<Scalar>("diffusivity", "Species diffusivity in solution");
+
+  options.add_output("growth_rate", "Precipitate growth rate per size bin");
+
+  return options;
+}
+
+RateLimitedPrecipitateGrowthRate::RateLimitedPrecipitateGrowthRate(const OptionSet & options)
+  : Model(options),
+    _R(declare_parameter<Scalar>("R", "radius", true)),
+    _x(declare_input_variable<Scalar>("current_concentration")),
+    _x_eq(declare_parameter<Scalar>("x_eq", "equilibrium_concentration", true)),
+    _dx(declare_parameter<Scalar>("dx", "concentration_difference", true)),
+    _D(declare_parameter<Scalar>("D", "diffusivity", true)),
+    _R_dot(declare_output_variable<Scalar>("growth_rate"))
+{
+}
+
+void
+RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
+  const auto nbin = _R.intmd_size(-1);
+  const auto R = _R;
+  const auto x_inf = (_x.intmd_dim() == 0 ? _x().intmd_expand(nbin) : _x());
+  const auto x_eq = (_x_eq.intmd_dim() == 0 ? _x_eq.intmd_expand(nbin) : _x_eq);
+  const auto dx = (_dx.intmd_dim() == 0 ? _dx.intmd_expand(nbin) : _dx);
+  const auto D = (_D.intmd_dim() == 0 ? _D.intmd_expand(nbin) : _D);
+
+  const auto numer = x_inf - x_eq;
+  const auto coef = D / R;
+
+  if (out)
+    _R_dot = coef * numer / dx;
+
+  if (dout_din)
+  {
+    const auto dx2 = dx * dx;
+
+    if (const auto * const R_param = nl_param("R"))
+    {
+      const auto d_rate_dR = -coef * numer / (dx * R);
+      const auto r_map = imap_v<Scalar>(_R.options()).intmd_expand(nbin);
+      const auto diag_r = intmd_diagonalize(r_map);
+      _R_dot.d(*R_param, 2, 1, 1) = d_rate_dR.intmd_unsqueeze(1) * diag_r;
+    }
+
+    {
+      const auto d_rate_dx = coef / dx;
+      if (_x.intmd_dim() == 0)
+        _R_dot.d(_x, 1, 1, 0) = d_rate_dx;
+      else
+      {
+        const auto x_map = imap_v<Scalar>(_x.options()).intmd_expand(nbin);
+        const auto diag_x = intmd_diagonalize(x_map);
+        _R_dot.d(_x, 2, 1, 1) = d_rate_dx.intmd_unsqueeze(1) * diag_x;
+      }
+    }
+
+    if (const auto * const x_eq_param = nl_param("x_eq"))
+    {
+      const auto d_rate_dx_eq = -D / (R * dx);
+      if (x_eq_param->intmd_dim() == 0)
+        _R_dot.d(*x_eq_param, 1, 1, 0) = d_rate_dx_eq;
+      else
+      {
+        const auto xeq_map = imap_v<Scalar>(_x_eq.options()).intmd_expand(nbin);
+        const auto diag_xeq = intmd_diagonalize(xeq_map);
+        _R_dot.d(*x_eq_param, 2, 1, 1) = d_rate_dx_eq.intmd_unsqueeze(1) * diag_xeq;
+      }
+    }
+
+    if (const auto * const dx_param = nl_param("dx"))
+    {
+      const auto d_rate_ddx = -D * numer / (R * dx2);
+      if (dx_param->intmd_dim() == 0)
+        _R_dot.d(*dx_param, 1, 1, 0) = d_rate_ddx;
+      else
+      {
+        const auto dx_map = imap_v<Scalar>(_dx.options()).intmd_expand(nbin);
+        const auto diag_dx = intmd_diagonalize(dx_map);
+        _R_dot.d(*dx_param, 2, 1, 1) = d_rate_ddx.intmd_unsqueeze(1) * diag_dx;
+      }
+    }
+
+    if (const auto * const D_param = nl_param("D"))
+    {
+      const auto d_rate_dD = numer / (R * dx);
+      if (D_param->intmd_dim() == 0)
+        _R_dot.d(*D_param, 1, 1, 0) = d_rate_dD;
+      else
+      {
+        const auto d_map = imap_v<Scalar>(_D.options()).intmd_expand(nbin);
+        const auto diag_d = intmd_diagonalize(d_map);
+        _R_dot.d(*D_param, 2, 1, 1) = d_rate_dD.intmd_unsqueeze(1) * diag_d;
+      }
+    }
+  }
+}
+} // namespace neml2

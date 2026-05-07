@@ -62,4 +62,5 @@ Testing
 *.json
 
 # Agents
-.claude
+.claude/settings.local.json
+!.claude/settings.json
