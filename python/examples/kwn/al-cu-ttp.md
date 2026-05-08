@@ -21,6 +21,10 @@ The notebook is split into two parts.
 
 Note running these examples requires some additional python packages, listed in the `requirements.txt` in this folder.
 
+***Important***
+
+To run this example you will need to obtain the thermodynamic database from [this](https://doi.org/10.1016/j.calphad.2015.10.004) paper (available as supplemental material) and save it in this folder as `AlCu-Liang-Schmid-Fetzer.tdb`.
+
 +++
 
 ### Define alloy composition and conditions
