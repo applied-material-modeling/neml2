@@ -34,7 +34,7 @@ Each precipitate population evolves according to
   \frac{\partial n}{\partial t} + \frac{\partial \left(n \dot{R}\right)}{\partial R} = J_{\text{nuc}},
 \f]
 
-a 1D advection equation in radius space with a nucleation source on the right-hand side. Spatial discretization is provided by the [finite volume](@ref finite-volume) module: cells are defined on \f$R\f$, the growth rate \f$\dot{R}\f$ becomes the advection velocity at cell edges, and the nucleation source is dumped into the smallest bin near the critical radius via `DumpInSmallestBin`.
+a 1D advection equation in radius space with a nucleation source on the right-hand side. Spatial discretization is provided by the [finite volume](@ref finite-volume) module: cells are defined on \f$R\f$, the growth rate \f$\dot{R}\f$ becomes the advection velocity at cell edges, and the nucleation source is placed into the first (smallest-radius) bin via `DumpInSmallestBin`. If that bin is intended to represent nuclei at or near the critical radius, the radius grid should be constructed accordingly.
 
 ### Growth rate
 
