@@ -30,6 +30,7 @@
 namespace neml2
 {
 class Scalar;
+class Vec;
 
 /**
  * @brief Bilinear mixed-mode cohesive-zone traction-separation law with isotropic scalar damage.
@@ -37,9 +38,11 @@ class Scalar;
  * Camanho-Davila bilinear envelope in the mode-mixity plane combined with the Benzeggagh-Kenane
  * (BK) or power-law mixed-mode propagation criterion. Damage is irreversible. The normal
  * compressive branch is restored through a Macaulay split so interpenetration does not soften
- * the interface. Variable Jacobians \f$ \partial T/\partial \delta \f$, \f$ \partial T/\partial
- * d_{old} \f$, \f$ \partial d/\partial \delta \f$, and \f$ \partial d/\partial d_{old} \f$ are
- * derived analytically.
+ * the interface. Variable Jacobians w.r.t. the current displacement jump, the lagged
+ * displacement jump, and the previous-step damage are derived analytically. The optional
+ * `lag_mode_mixity` flag selects the MOOSE-style convention where mode mixity (and the
+ * derived `delta_init`/`delta_final`) is evaluated at the previous-step jump; otherwise the
+ * fully-implicit current-step jump is used.
  */
 class BiLinearMixedModeTractionSeparation : public TractionSeparation
 {
@@ -56,6 +59,9 @@ protected:
 
   /// Previous-step damage state (for irreversibility)
   const Variable<Scalar> & _d_old;
+
+  /// Previous-step displacement jump (consumed when `lag_mode_mixity` is true; otherwise unused)
+  const Variable<Vec> & _delta_old;
 
   /// Penalty elastic stiffness (same in normal and tangential directions)
   const Scalar & _K;
@@ -80,5 +86,10 @@ protected:
 
   /// Small regularizer added inside sqrt() to keep its derivative bounded at zero jump
   const double _eps;
+
+  /// If true, mode mixity / `delta_init` / `delta_final` are evaluated at the previous-step
+  /// displacement jump (MOOSE convention); otherwise they are evaluated at the current jump,
+  /// giving a fully-implicit Jacobian chain through the current step.
+  const bool _lag_mode_mixity;
 };
 } // namespace neml2

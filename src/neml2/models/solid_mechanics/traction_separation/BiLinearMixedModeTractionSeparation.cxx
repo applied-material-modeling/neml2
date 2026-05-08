@@ -65,6 +65,13 @@ BiLinearMixedModeTractionSeparation::expected_options()
                       1e-16,
                       "Small regularizer added inside sqrt() and pow() bases to keep their "
                       "derivatives bounded at zero displacement jump");
+  options.add<bool>("lag_mode_mixity",
+                    false,
+                    "If true, mode mixity (and the derived initiation / full-degradation jumps) "
+                    "is evaluated at the previous-step displacement jump, matching the MOOSE "
+                    "BiLinearMixedModeTraction convention. Default false uses the current "
+                    "displacement jump, giving a fully-implicit Jacobian chain through the "
+                    "current step.");
 
   return options;
 }
@@ -73,6 +80,7 @@ BiLinearMixedModeTractionSeparation::BiLinearMixedModeTractionSeparation(const O
   : TractionSeparation(options),
     _d(declare_output_variable<Scalar>("damage")),
     _d_old(declare_input_variable<Scalar>(history_name(_d.name(), /*nstep=*/1))),
+    _delta_old(declare_input_variable<Vec>(history_name(_delta.name(), /*nstep=*/1))),
     _K(declare_parameter<Scalar>("K", "penalty_stiffness", true)),
     _GIc(declare_parameter<Scalar>("GIc", "normal_fracture_energy", true)),
     _GIIc(declare_parameter<Scalar>("GIIc", "shear_fracture_energy", true)),
@@ -80,7 +88,8 @@ BiLinearMixedModeTractionSeparation::BiLinearMixedModeTractionSeparation(const O
     _S(declare_parameter<Scalar>("S", "shear_strength", true)),
     _eta(declare_parameter<Scalar>("eta", "eta", true)),
     _criterion(options.get<EnumSelection>("criterion")),
-    _eps(options.get<double>("epsilon"))
+    _eps(options.get<double>("epsilon")),
+    _lag_mode_mixity(options.get<bool>("lag_mode_mixity"))
 {
 }
 
@@ -90,36 +99,47 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
   // ============================================================
   // Forward
   // ============================================================
+
+  // The Macaulay split, the effective separation `delta_m`, and the traction assembly always
+  // use the current displacement jump `_delta()`. The mode-mixity chain
+  // (beta -> delta_init -> delta_final) is evaluated either at the current jump (default) or
+  // at the previous-step jump `_delta_old()` when `lag_mode_mixity = true`.
+  const auto & jump_mix = _lag_mode_mixity ? _delta_old() : _delta();
+
   const auto dn = _delta()(0);
   const auto ds1 = _delta()(1);
   const auto ds2 = _delta()(2);
+
+  const auto dn_mix = jump_mix(0);
+  const auto ds1_mix = jump_mix(1);
+  const auto ds2_mix = jump_mix(2);
 
   const auto zero_s = Scalar::zeros_like(dn);
   const auto one_s = Scalar::ones_like(dn);
   const auto zero_v = Vec::zeros_like(_delta());
 
-  // Macaulay split on the normal jump.
+  // Macaulay split on the current normal jump (used by the traction/active split and delta_m).
   // H = d(macaulay)/d(dn): 1 in opening, 0 in compression.
   const auto delta_n_pos = neml2::macaulay(dn);
   const auto delta_n_neg = dn - delta_n_pos;
   const auto H = neml2::heaviside(dn);
   const auto one_minus_H = 1.0 - H;
 
-  // Tangential magnitude (regularized so its derivative is finite at zero).
+  // Tangential magnitudes (regularized so derivatives stay finite at zero).
   const auto delta_s_sq = ds1 * ds1 + ds2 * ds2;
-  const auto delta_s = neml2::sqrt(delta_s_sq + _eps);
+  const auto delta_s_mix_sq = ds1_mix * ds1_mix + ds2_mix * ds2_mix;
+  const auto delta_s_mix = neml2::sqrt(delta_s_mix_sq + _eps);
 
-  // Mode mixity beta = delta_s / delta_n is only meaningful for opening.
-  // The "safe" denominator gives finite values in the compression branch so
-  // the masked-off `where` doesn't trip on division by zero.
-  // All where()-conditions are detached because (1) `where` does not backpropagate
-  // through its condition, so the gradient information is unused, and (2) the
-  // TorchScript tracer rejects grad-tracking masks captured into the JIT graph
-  // ("Cannot insert a Tensor that requires grad as a constant.").
-  const auto pos_mask = (dn > 0.0).detach();
-  const auto safe_delta_n_pos = neml2::where(pos_mask, delta_n_pos, one_s);
-  const auto beta_open = delta_s / safe_delta_n_pos;
-  const auto beta = neml2::where(pos_mask, beta_open, zero_s);
+  // Mode mixity beta = delta_s / delta_n on `jump_mix`. The "safe" denominator gives finite
+  // values in the compression branch so the masked-off `where` doesn't trip on division by zero.
+  // All where()-conditions are detached because (1) `where` does not backpropagate through its
+  // condition, and (2) the TorchScript tracer rejects grad-tracking masks captured into the JIT
+  // graph ("Cannot insert a Tensor that requires grad as a constant.").
+  const auto pos_mask_mix = (dn_mix > 0.0).detach();
+  const auto delta_n_pos_mix = neml2::macaulay(dn_mix);
+  const auto safe_dn_mix = neml2::where(pos_mask_mix, delta_n_pos_mix, one_s);
+  const auto beta_open = delta_s_mix / safe_dn_mix;
+  const auto beta = neml2::where(pos_mask_mix, beta_open, zero_s);
   const auto beta_sq = beta * beta;
 
   // Initiation displacement jump (mixed-mode in opening, pure-shear in compression).
@@ -130,7 +150,7 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
   const auto delta_mixed_init = neml2::sqrt(delta_mixed_init_sq);
   const auto delta_init_mixed =
       delta_normal0 * delta_shear0 * neml2::sqrt(1.0 + beta_sq) / delta_mixed_init;
-  const auto delta_init = neml2::where(pos_mask, delta_init_mixed, delta_shear0);
+  const auto delta_init = neml2::where(pos_mask_mix, delta_init_mixed, delta_shear0);
 
   // Final (full-degradation) displacement jump per the active criterion.
   const auto Kdelta_init_mixed = _K * delta_init_mixed;
@@ -150,9 +170,9 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
         (2.0 + 2.0 * beta_sq) / Kdelta_init_mixed * neml2::pow(Gc_mixed, -1.0 / _eta);
   }
   const auto delta_final_default = Scalar::full_like(dn, std::sqrt(2.0)) * 2.0 * _GIIc / _S;
-  const auto delta_final = neml2::where(pos_mask, delta_final_mixed, delta_final_default);
+  const auto delta_final = neml2::where(pos_mask_mix, delta_final_mixed, delta_final_default);
 
-  // Effective mixed-mode displacement jump.
+  // Effective mixed-mode displacement jump (always from the current jump).
   const auto delta_m = neml2::sqrt(delta_n_pos * delta_n_pos + delta_s_sq + _eps);
 
   // Bilinear damage (with safe denominator for the masked-off branches).
@@ -189,30 +209,39 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
   // ============================================================
   // Analytical Jacobians
   // ============================================================
+  //
+  // The bilinear law has two distinct dependency chains:
+  //   1) Through delta_m (always carried by the current jump _delta).
+  //   2) Through beta -> delta_init / delta_final (carried by jump_mix; this is _delta_old when
+  //      lag_mode_mixity = true and _delta when false).
+  //
+  // We compute both partial chains and then route them to either _delta or _delta_old based on
+  // the lag flag. When lag_mode_mixity = false, _delta_old is unused by the forward path and its
+  // Jacobians collapse to zero.
 
-  // ---- d(beta)/d(delta) in the opening branch ----
-  // dbeta/ddn = -delta_s / delta_n^2
-  // dbeta/dds_i = ds_i / (delta_s * delta_n)
-  const auto inv_dn = 1.0 / safe_delta_n_pos;
-  const auto inv_ds = 1.0 / delta_s; // delta_s is bounded below by sqrt(eps) > 0
-  const auto dbeta_ddn_open = -delta_s * inv_dn * inv_dn;
-  const auto dbeta_dds1_open = ds1 * inv_ds * inv_dn;
-  const auto dbeta_dds2_open = ds2 * inv_ds * inv_dn;
-  const auto dbeta_ddelta_open = Vec::fill(dbeta_ddn_open, dbeta_dds1_open, dbeta_dds2_open);
+  // ---- d(beta)/d(jump_mix) in the opening branch ----
+  // dbeta/ddn = -delta_s / delta_n^2;  dbeta/dds_i = ds_i / (delta_s * delta_n)
+  const auto inv_dn_mix = 1.0 / safe_dn_mix;
+  const auto inv_ds_mix = 1.0 / delta_s_mix; // delta_s_mix is bounded below by sqrt(eps) > 0
+  const auto dbeta_ddn_open = -delta_s_mix * inv_dn_mix * inv_dn_mix;
+  const auto dbeta_dds1_open = ds1_mix * inv_ds_mix * inv_dn_mix;
+  const auto dbeta_dds2_open = ds2_mix * inv_ds_mix * inv_dn_mix;
+  const auto dbeta_djump_mix_open = Vec::fill(dbeta_ddn_open, dbeta_dds1_open, dbeta_dds2_open);
 
-  // ---- d(delta_init)/d(delta) in the opening branch ----
+  // ---- d(delta_init)/d(jump_mix) in the opening branch ----
   // d(delta_init)/d(beta) = delta_init * beta * [1/(1+beta^2) - delta_n0^2/delta_mixed^2]
   const auto ddelta_init_dbeta =
       delta_init_mixed * beta *
       (1.0 / (1.0 + beta_sq) - delta_normal0 * delta_normal0 / delta_mixed_init_sq);
-  const auto ddelta_init_ddelta_open = ddelta_init_dbeta * dbeta_ddelta_open;
-  const auto ddelta_init_ddelta = neml2::where(pos_mask, ddelta_init_ddelta_open, zero_v);
+  const auto ddelta_init_djump_mix_open = ddelta_init_dbeta * dbeta_djump_mix_open;
+  const auto ddelta_init_djump_mix =
+      neml2::where(pos_mask_mix, ddelta_init_djump_mix_open, zero_v);
 
-  // ---- d(delta_final)/d(delta) in the opening branch ----
+  // ---- d(delta_final)/d(jump_mix) in the opening branch ----
   // Both criteria share the form delta_final = h(delta_init, beta), so
-  // d(delta_final)/d(delta) = (d/dinit)(delta_final) * d(init)/d(delta) +
-  //                            (d/dbeta)(delta_final) * d(beta)/d(delta).
-  Vec ddelta_final_ddelta_open = zero_v;
+  // d(delta_final)/d(jump_mix) = (d/dinit)(delta_final) * d(init)/d(jump_mix) +
+  //                              (d/dbeta)(delta_final) * d(beta)/d(jump_mix).
+  Vec ddelta_final_djump_mix_open = zero_v;
   if (_criterion == "BK")
   {
     const auto beta_sq_ratio = beta_sq / (1.0 + beta_sq);
@@ -225,8 +254,8 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
     // d(delta_final)/d(beta) = (2/(K*delta_init)) * (GIIc - GIc) * eta * (r+eps)^(eta-1) * dr/dbeta
     const auto ddelta_final_dbeta_BK = (2.0 / Kdelta_init_mixed) * (_GIIc - _GIc) * _eta *
                                        neml2::pow(pow_base_BK, _eta - 1.0) * dbeta_sq_ratio_dbeta;
-    ddelta_final_ddelta_open = ddelta_final_ddelta_init_BK * ddelta_init_ddelta_open +
-                               ddelta_final_dbeta_BK * dbeta_ddelta_open;
+    ddelta_final_djump_mix_open = ddelta_final_ddelta_init_BK * ddelta_init_djump_mix_open +
+                                  ddelta_final_dbeta_BK * dbeta_djump_mix_open;
   }
   else // POWER_LAW
   {
@@ -242,18 +271,19 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
     const auto dGc_term_dbeta =
         (-1.0 / _eta) * neml2::pow(Gc_mixed, -1.0 / _eta - 1.0) * dGc_mixed_dbeta;
     const auto ddelta_final_dbeta_PL = dprefactor_dbeta * Gc_term + prefactor * dGc_term_dbeta;
-    ddelta_final_ddelta_open = ddelta_final_ddelta_init_PL * ddelta_init_ddelta_open +
-                               ddelta_final_dbeta_PL * dbeta_ddelta_open;
+    ddelta_final_djump_mix_open = ddelta_final_ddelta_init_PL * ddelta_init_djump_mix_open +
+                                  ddelta_final_dbeta_PL * dbeta_djump_mix_open;
   }
-  const auto ddelta_final_ddelta = neml2::where(pos_mask, ddelta_final_ddelta_open, zero_v);
+  const auto ddelta_final_djump_mix =
+      neml2::where(pos_mask_mix, ddelta_final_djump_mix_open, zero_v);
 
-  // ---- d(delta_m)/d(delta) ----
-  // delta_m = sqrt(delta_n_pos^2 + delta_s_sq + eps).
-  // The normal component is delta_n_pos / delta_m, which already vanishes in compression.
+  // ---- d(delta_m)/d(_delta) ----
+  // delta_m = sqrt(delta_n_pos^2 + delta_s_sq + eps); the normal component is delta_n_pos/delta_m,
+  // which already vanishes in compression.
   const auto inv_dm = 1.0 / delta_m;
   const auto ddelta_m_ddelta = Vec::fill(delta_n_pos * inv_dm, ds1 * inv_dm, ds2 * inv_dm);
 
-  // ---- d(d_trial)/d(delta) in the linear damage regime ----
+  // ---- d(d_trial)/d(...) in the linear damage regime ----
   // d_trial = delta_final * (delta_m - delta_init) / (delta_m * (delta_final - delta_init))
   // Partials (derivation in design/.../BiLinearMixedModeTraction_spec_simple.md):
   //   d/d(delta_m)     =  delta_final * delta_init / (delta_m^2 * (delta_final - delta_init))
@@ -267,30 +297,45 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
   const auto dd_trial_ddm = delta_final * delta_init * inv_dm_sq * inv_df_minus_di;
   const auto dd_trial_ddinit = delta_final * (delta_m - delta_final) * inv_dm * inv_df_minus_di_sq;
   const auto dd_trial_ddfinal = -delta_init * (delta_m - delta_init) * inv_dm * inv_df_minus_di_sq;
-  const auto dd_trial_ddelta_linear = dd_trial_ddm * ddelta_m_ddelta +
-                                      dd_trial_ddinit * ddelta_init_ddelta +
-                                      dd_trial_ddfinal * ddelta_final_ddelta;
-  const auto dd_trial_ddelta = neml2::where(linear_mask, dd_trial_ddelta_linear, zero_v);
 
-  // ---- Irreversibility: d/dd_old picks up the frozen branch ----
+  // Chain piece carried by the current jump (always via delta_m).
+  const auto dd_trial_ddelta_via_dm = dd_trial_ddm * ddelta_m_ddelta;
+  // Chain piece carried by jump_mix (via delta_init and delta_final).
+  const auto dd_trial_djump_mix_via_initfinal =
+      dd_trial_ddinit * ddelta_init_djump_mix + dd_trial_ddfinal * ddelta_final_djump_mix;
+
+  Vec dd_trial_ddelta_linear = dd_trial_ddelta_via_dm;
+  Vec dd_trial_ddelta_old_linear = zero_v;
+  if (_lag_mode_mixity)
+    dd_trial_ddelta_old_linear = dd_trial_djump_mix_via_initfinal;
+  else
+    dd_trial_ddelta_linear = dd_trial_ddelta_via_dm + dd_trial_djump_mix_via_initfinal;
+
+  const auto dd_trial_ddelta = neml2::where(linear_mask, dd_trial_ddelta_linear, zero_v);
+  const auto dd_trial_ddelta_old = neml2::where(linear_mask, dd_trial_ddelta_old_linear, zero_v);
+
+  // ---- Irreversibility freezes the partials when the trial damage doesn't advance ----
   const auto dd_ddelta = neml2::where(advance_mask, dd_trial_ddelta, zero_v);
+  const auto dd_ddelta_old = neml2::where(advance_mask, dd_trial_ddelta_old, zero_v);
   const auto dd_dd_old = neml2::where(advance_mask, zero_s, one_s);
 
-  // ---- d(T)/d(delta) ----
+  // ---- d(T)/d(_delta) ----
   // T = K*(1-d)*delta_active + K*delta_inactive
-  //   d(delta_active)/d(delta)   = diag(H, 1, 1)
-  //   d(delta_inactive)/d(delta) = diag(1-H, 0, 0)
-  // dT/d(delta) = K*(1-d) * diag(H, 1, 1) + K * diag(1-H, 0, 0)
-  //               - K * outer(delta_active, dd/d(delta))
+  //   d(delta_active)/d(_delta)   = diag(H, 1, 1)
+  //   d(delta_inactive)/d(_delta) = diag(1-H, 0, 0)
+  // dT/d(_delta) = K*(1-d) * diag(H, 1, 1) + K * diag(1-H, 0, 0)
+  //                - K * outer(delta_active, dd/d(_delta))
   const auto active_jac = R2::fill(H, one_s, one_s);
   const auto inactive_jac = R2::fill(one_minus_H, zero_s, zero_s);
   _T.d(_delta) =
       _K * (1.0 - d) * active_jac + _K * inactive_jac - _K * neml2::outer(delta_active, dd_ddelta);
 
-  // ---- d(T)/d(d_old) = -K * delta_active * d(d)/d(d_old) ----
+  // ---- d(T)/d(_delta_old) and d(T)/d(_d_old) come purely from the damage chain ----
+  _T.d(_delta_old) = -_K * neml2::outer(delta_active, dd_ddelta_old);
   _T.d(_d_old) = -_K * delta_active * dd_dd_old;
 
   _d.d(_delta) = dd_ddelta;
+  _d.d(_delta_old) = dd_ddelta_old;
   _d.d(_d_old) = dd_dd_old;
 }
 } // namespace neml2

@@ -2,8 +2,8 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Vec_names = 'displacement_jump'
-    input_Vec_values = 'jump'
+    input_Vec_names = 'displacement_jump displacement_jump~1'
+    input_Vec_values = 'jump zero_jump'
     input_Scalar_names = 'damage~1'
     input_Scalar_values = '0.0'
     output_Vec_names = 'traction'
@@ -22,6 +22,10 @@
   [jump]
     type = Vec
     values = '0.02 0.01 0.0'
+  []
+  [zero_jump]
+    type = Vec
+    values = '0.0 0.0 0.0'
   []
   # Mixed-mode opening with the POWER_LAW criterion (GIc != GIIc, asymmetric strength):
   #   delta_n0 = N/K = 0.01, delta_s0 = S/K = 0.015
