@@ -2,8 +2,8 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Vec_names = 'displacement_jump displacement_jump~1'
-    input_Vec_values = 'jump jump_old'
+    input_Vec_names = 'displacement_jump'
+    input_Vec_values = 'jump'
     input_Scalar_names = 'damage~1'
     input_Scalar_values = '0.0'
     output_Vec_names = 'traction'
@@ -11,31 +11,25 @@
     output_Scalar_names = 'damage'
     output_Scalar_values = '0.7487630162'
     value_abs_tol = 1e-6
-    derivative_abs_tol = 1e-2
-    # Input-variable derivatives come from torch AD (see request_AD in the
-    # source). The smoothing parameter alpha enters the regularizer and is
-    # poorly conditioned at the tight value used here (1e-8), so AD-vs-FD on
-    # alpha is dominated by numerical noise. Skip the AD parameter check on
-    # this scenario; the other TSL models keep it on.
-    check_AD_parameter_derivatives = false
+    # Bilinear damage has a stiff slope (~150 per unit jump) and the analytic
+    # derivative is exact, so the FD-vs-analytic gap is dominated by the FD
+    # truncation error at h = 1e-6.
+    derivative_rel_tol = 1e-3
+    derivative_abs_tol = 1e-3
   []
 []
 
 [Tensors]
-  [jump_old]
-    type = Vec
-    values = '0.01 0.01 0.0'
-  []
   [jump]
     type = Vec
     values = '0.02 0.02 0.02'
   []
   # Mixed-mode opening with GIc = GIIc (BK exponent term cancels):
   #   delta_n0 = N/K = 0.01, delta_s0 = S/K = 0.01
-  #   beta ~ 1, delta_init ~ 0.01, delta_final = 2 GIc/(K delta_n0) = 0.2
+  #   beta = sqrt(2), delta_init = 0.01, delta_final = 2 GIc/(K delta_n0) = 0.2
   #   delta_m = sqrt(3) * 0.02 = 0.034641016
-  #   d = 0.2*(delta_m - 0.01)/(delta_m*0.19) = 0.7487630162
-  #   T_n = T_t1 = T_t2 = (1 - d)*K*0.02 = 5.0247397
+  #   d = 0.2 * (delta_m - 0.01) / (delta_m * 0.19) = 0.7487630162
+  #   T_n = T_t1 = T_t2 = (1 - d) * K * 0.02 = 5.0247397
   [traction]
     type = Vec
     values = '5.0247396757 5.0247396757 5.0247396757'
@@ -51,6 +45,6 @@
     normal_strength = 10.0
     shear_strength = 10.0
     eta = 2.0
-    alpha = 1e-8
+    criterion = 'BK'
   []
 []

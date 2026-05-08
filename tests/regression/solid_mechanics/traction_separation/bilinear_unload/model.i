@@ -54,6 +54,5 @@
     normal_strength = 10.0
     shear_strength = 10.0
     eta = 2.0
-    alpha = 1e-6
   []
 []
