@@ -153,7 +153,7 @@ N0 = 1e16
     projected_diffusivity_sum = 'diff_sum'
   []
   [growth_rate]
-    type = SFFKGPrecipitationGrowthRate
+    type = SFFKPrecipitationGrowthRate
     radius = 'centers'
     projected_diffusivity_sum = 'diff_sum'
     gibbs_free_energy_difference = chemical_potential_difference
@@ -220,7 +220,7 @@ N0 = 1e16
     predictor = 'predictor'
   []
   [nucleation_barrier_and_critical_radius]
-    type = NucleationBarrierandCriticalRadius
+    type = NucleationBarrierAndCriticalRadius
     surface_energy = ${gamma}
     total_gibbs_free_energy_difference = chemical_potential_difference
     molar_volume = ${Vm}

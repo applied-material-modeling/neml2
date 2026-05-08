@@ -99,8 +99,8 @@ The KWN module exposes the following objects, each implementing one of the equat
 | `ProjectedDiffusivitySum`             | Computes the multi-species sum \f$S\f$ shared by SFFK and nucleation       |
 | `ChemicalGibbsFreeEnergyDifference`   | Assembles \f$\Delta G_{\text{chem}}\f$ from per-species potentials         |
 | `RateLimitedPrecipitateGrowthRate`    | Single-species, equilibrium-driven growth rate \f$\dot{R}\f$               |
-| `SFFKGPrecipitationGrowthRate`        | SFFK multi-component growth rate \f$\dot{R}\f$                             |
-| `NucleationBarrierandCriticalRadius`  | Computes \f$R_{\text{crit}}\f$ and \f$\Delta G^*\f$                        |
+| `SFFKPrecipitationGrowthRate`         | SFFK multi-component growth rate \f$\dot{R}\f$                             |
+| `NucleationBarrierAndCriticalRadius`  | Computes \f$R_{\text{crit}}\f$ and \f$\Delta G^*\f$                        |
 | `ZeldovichFactor`                     | Computes \f$Z\f$                                                           |
 | `KineticFactor`                       | Computes \f$\beta\f$                                                       |
 | `NucleationFluxMagnitude`             | Assembles the prefactor \f$Z \beta N_0 \exp(-\Delta G^*/kT)\f$             |
@@ -115,7 +115,7 @@ Putting these pieces together, a single-precipitate KWN model is built as follow
 
 The growth-rate piece is responsible for setting \f$\dot{R}\f$ at every cell center; everything from `scaled_cell_velocity` onward is generic finite-volume advection of \f$n\f$ in radius space and is identical between the growth-only and full nucleation+growth cases.
 
-To add nucleation, the same model is augmented with `NucleationBarrierandCriticalRadius`, `ZeldovichFactor`, `KineticFactor`, `NucleationFluxMagnitude`, and `DumpInSmallestBin`, and the resulting source term is added to the flux divergence via a `ScalarLinearCombination`. The full composition is shown in `tests/regression/kwn/growth-nucleation-scaled/model.i`.
+To add nucleation, the same model is augmented with `NucleationBarrierAndCriticalRadius`, `ZeldovichFactor`, `KineticFactor`, `NucleationFluxMagnitude`, and `DumpInSmallestBin`, and the resulting source term is added to the flux divergence via a `ScalarLinearCombination`. The full composition is shown in `tests/regression/kwn/growth-nucleation-scaled/model.i`.
 
 ## Tests and examples
 

@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/kwn/NucleationBarrierandCriticalRadius.h"
+#include "neml2/models/kwn/NucleationBarrierAndCriticalRadius.h"
 
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/pow.h"
@@ -30,10 +30,10 @@
 
 namespace neml2
 {
-register_NEML2_object(NucleationBarrierandCriticalRadius);
+register_NEML2_object(NucleationBarrierAndCriticalRadius);
 
 OptionSet
-NucleationBarrierandCriticalRadius::expected_options()
+NucleationBarrierAndCriticalRadius::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the nucleation critical radius and Gibbs free energy barrier.";
@@ -52,7 +52,7 @@ NucleationBarrierandCriticalRadius::expected_options()
   return options;
 }
 
-NucleationBarrierandCriticalRadius::NucleationBarrierandCriticalRadius(const OptionSet & options)
+NucleationBarrierAndCriticalRadius::NucleationBarrierAndCriticalRadius(const OptionSet & options)
   : Model(options),
     _gamma(declare_parameter<Scalar>("gamma", "surface_energy", true)),
     _dg_total(declare_parameter<Scalar>(
@@ -64,7 +64,7 @@ NucleationBarrierandCriticalRadius::NucleationBarrierandCriticalRadius(const Opt
 }
 
 void
-NucleationBarrierandCriticalRadius::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+NucleationBarrierAndCriticalRadius::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto gamma = _gamma;
   const auto dg_total = _dg_total;

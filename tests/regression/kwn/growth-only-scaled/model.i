@@ -170,7 +170,7 @@ D = 297794
     projected_diffusivity_sum = 'diff_sum'
   []
   [growth_rate]
-    type = SFFKGPrecipitationGrowthRate
+    type = SFFKPrecipitationGrowthRate
     radius = 'true_centers'
     projected_diffusivity_sum = 'diff_sum'
     gibbs_free_energy_difference = chemical_potential_difference

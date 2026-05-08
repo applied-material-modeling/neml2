@@ -31,7 +31,7 @@
 
 [Models]
   [model]
-    type = NucleationBarrierandCriticalRadius
+    type = NucleationBarrierAndCriticalRadius
     surface_energy = 'gamma'
     total_gibbs_free_energy_difference = 'dg_total'
     molar_volume = 2.0

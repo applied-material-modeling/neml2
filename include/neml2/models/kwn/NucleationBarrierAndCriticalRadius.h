@@ -30,33 +30,30 @@ namespace neml2
 {
 class Scalar;
 
-/// SFFK precipitate growth rate for a single precipitate population.
-class SFFKGPrecipitationGrowthRate : public Model
+/// Critical radius and nucleation barrier for nucleation.
+class NucleationBarrierAndCriticalRadius : public Model
 {
 public:
   static OptionSet expected_options();
 
-  SFFKGPrecipitationGrowthRate(const OptionSet & options);
+  NucleationBarrierAndCriticalRadius(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Precipitate radius per size bin
-  const Scalar & _R;
+  /// Surface energy
+  const Scalar & _gamma;
 
-  /// Projected diffusivity sum
-  const Variable<Scalar> & _proj_sum;
+  /// Total Gibbs free energy difference driving nucleation
+  const Scalar & _dg_total;
 
-  /// Gibbs free energy difference
-  const Scalar & _dg;
+  /// Molar volume of the precipitate
+  const Scalar & _V_m;
 
-  /// Temperature
-  const Variable<Scalar> & _T;
+  /// Gibbs free energy barrier for nucleation
+  Variable<Scalar> & _dg;
 
-  /// Gas constant
-  const Scalar & _R_g;
-
-  /// Growth rate per size bin
-  Variable<Scalar> & _R_dot;
+  /// Critical radius
+  Variable<Scalar> & _R_crit;
 };
 } // namespace neml2

@@ -39,7 +39,7 @@
 
 [Models]
   [model]
-    type = SFFKGPrecipitationGrowthRate
+    type = SFFKPrecipitationGrowthRate
     radius = 'R'
     projected_diffusivity_sum = 'state/sum'
     gibbs_free_energy_difference = 'dg'

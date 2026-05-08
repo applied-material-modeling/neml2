@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/kwn/SFFKGPrecipitationGrowthRate.h"
+#include "neml2/models/kwn/SFFKPrecipitationGrowthRate.h"
 
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/diagonalize.h"
@@ -30,10 +30,10 @@
 
 namespace neml2
 {
-register_NEML2_object(SFFKGPrecipitationGrowthRate);
+register_NEML2_object(SFFKPrecipitationGrowthRate);
 
 OptionSet
-SFFKGPrecipitationGrowthRate::expected_options()
+SFFKPrecipitationGrowthRate::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the SFFK precipitate growth rate.";
@@ -53,7 +53,7 @@ SFFKGPrecipitationGrowthRate::expected_options()
   return options;
 }
 
-SFFKGPrecipitationGrowthRate::SFFKGPrecipitationGrowthRate(const OptionSet & options)
+SFFKPrecipitationGrowthRate::SFFKPrecipitationGrowthRate(const OptionSet & options)
   : Model(options),
     _R(declare_parameter<Scalar>("R", "radius", true)),
     _proj_sum(declare_input_variable<Scalar>("projected_diffusivity_sum")),
@@ -65,7 +65,7 @@ SFFKGPrecipitationGrowthRate::SFFKGPrecipitationGrowthRate(const OptionSet & opt
 }
 
 void
-SFFKGPrecipitationGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+SFFKPrecipitationGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto nbin = _R.intmd_size(-1);
   const auto R = _R;
