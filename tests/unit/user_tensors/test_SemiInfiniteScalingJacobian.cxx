@@ -34,15 +34,21 @@ TEST_CASE("SemiInfiniteScalingJacobian", "[user_tensors]")
 {
   auto factory = load_input("user_tensors/test_SemiInfiniteScalingJacobian.i");
 
-  SECTION("load correctly")
+  const auto x = factory->get_object<Scalar>("Tensors", "x");
+  const auto s = factory->get_object<Scalar>("Tensors", "s");
+  const auto diff = Scalar::ones_like(*x) - *x;
+
+  SECTION("forward Jacobian")
   {
-    const auto x = factory->get_object<Scalar>("Tensors", "x");
-    const auto s = factory->get_object<Scalar>("Tensors", "s");
     const auto y = factory->get_object<Scalar>("Tensors", "y");
-
-    const auto diff = Scalar::ones_like(*x) - *x;
     const auto expected = *s / (diff * diff);
-
     REQUIRE(at::allclose(*y, expected));
+  }
+
+  SECTION("inverse Jacobian")
+  {
+    const auto y_inv = factory->get_object<Scalar>("Tensors", "y_inv");
+    const auto expected = diff * diff / *s;
+    REQUIRE(at::allclose(*y_inv, expected));
   }
 }

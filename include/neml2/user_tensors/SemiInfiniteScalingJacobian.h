@@ -29,7 +29,8 @@
 namespace neml2
 {
 /**
- * @brief Compute the semi-infinite scaling Jacobian $s / (1 - x)^2$.
+ * @brief Compute the semi-infinite scaling Jacobian $s / (1 - x)^2$, or its inverse $(1 - x)^2 / s$
+ *        when the `inverse` option is true.
  *
  * @tparam T The concrete tensor derived from TensorBase
  */
@@ -50,5 +51,8 @@ private:
 
   /// The scaling tensor s
   const TensorName<T> _s;
+
+  /// Whether to return the inverse Jacobian $(1 - x)^2 / s$ instead
+  const bool _inverse;
 };
 } // namespace neml2

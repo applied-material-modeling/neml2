@@ -16,4 +16,10 @@
     x = 'x'
     s = 's'
   []
+  [y_inv]
+    type = SemiInfiniteScalingJacobianScalar
+    x = 'x'
+    s = 's'
+    inverse = true
+  []
 []

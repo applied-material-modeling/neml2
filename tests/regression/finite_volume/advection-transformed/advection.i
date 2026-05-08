@@ -48,9 +48,10 @@ t = 1.0
     s = 'scale_factor'
   []
   [center_inverse_jacobian]
-    type = InverseSemiInfiniteScalingJacobianScalar
+    type = SemiInfiniteScalingJacobianScalar
     x = 'centers'
     s = 'scale_factor'
+    inverse = true
   []
 
   [cell_velocity]

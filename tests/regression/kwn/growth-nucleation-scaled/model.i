@@ -62,9 +62,10 @@ N0 = 1e16
     s = 'scale_factor'
   []
   [center_inverse_jacobian]
-    type = InverseSemiInfiniteScalingJacobianScalar
+    type = SemiInfiniteScalingJacobianScalar
     x = 'centers'
     s = 'scale_factor'
+    inverse = true
   []
 
   [unscaled_ic]

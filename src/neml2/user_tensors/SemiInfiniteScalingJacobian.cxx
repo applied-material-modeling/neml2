@@ -33,11 +33,14 @@ SemiInfiniteScalingJacobianTmpl<T>::expected_options()
 {
   OptionSet options = UserTensorBase<T>::expected_options();
   options.doc() = "Construct a " + UserTensorBase<T>::tensor_type() +
-                  " using the semi-infinite scaling Jacobian $s / (1 - x)^2$.";
+                  " using the semi-infinite scaling Jacobian $s / (1 - x)^2$. If `inverse` is set "
+                  "to true, the inverse Jacobian $(1 - x)^2 / s$ is returned instead.";
 
   options.add<TensorName<T>>("x", "The input tensor x");
 
   options.add<TensorName<T>>("s", "The scaling tensor s");
+
+  options.add<bool>("inverse", false, "Return the inverse Jacobian $(1 - x)^2 / s$ instead");
 
   return options;
 }
@@ -46,7 +49,8 @@ template <typename T>
 SemiInfiniteScalingJacobianTmpl<T>::SemiInfiniteScalingJacobianTmpl(const OptionSet & options)
   : UserTensorBase<T>(options),
     _x(options.get<TensorName<T>>("x")),
-    _s(options.get<TensorName<T>>("s"))
+    _s(options.get<TensorName<T>>("s")),
+    _inverse(options.get<bool>("inverse"))
 {
 }
 
@@ -62,6 +66,8 @@ SemiInfiniteScalingJacobianTmpl<T>::make() const
   const auto one = T::ones_like(x);
   const auto diff = one - x;
 
+  if (_inverse)
+    return diff * diff / s;
   return s / (diff * diff);
 }
 
