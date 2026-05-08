@@ -1,0 +1,13 @@
+<map id="TensorBase&lt; Derived &gt;" name="TensorBase&lt; Derived &gt;">
+<area shape="rect" id="Node000001" title="NEML2&#39;s enhanced tensor type." alt="" coords="125,70,303,95"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1PrimitiveTensor.html" title=" " alt="" coords="364,5,557,45"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="282,64,374,43,375,48,283,69"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1PrimitiveTensor.html" title=" " alt="" coords="351,70,571,95"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="316,80,350,80,350,85,316,85"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1PrimitiveTensor.html" title="PrimitiveTensor inherits from TensorBase and additionally templates on the base shape." alt="" coords="351,119,571,145"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="292,95,397,117,396,122,291,101"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,70,77,95"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,80,125,80,125,85,91,85"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1VecBase.html" title="Base class 3&#45;vector." alt="" coords="619,70,777,95"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="584,80,618,80,618,85,584,85"/>
+</map>
