@@ -36,11 +36,11 @@ TractionSeparation::expected_options()
       "Concrete subclasses implement specific cohesive-zone constitutive laws.";
 
   options.add_input("displacement_jump",
-                    "Displacement jump in the local interface frame, ordered "
-                    "\\f$ [\\delta_n, \\delta_{s1}, \\delta_{s2}] \\f$.");
+                    "Displacement jump in the local interface frame, ordered as "
+                    "[normal, shear 1, shear 2].");
   options.add_output("traction",
-                     "Traction in the local interface frame, ordered "
-                     "\\f$ [T_n, T_{s1}, T_{s2}] \\f$.");
+                     "Traction in the local interface frame, ordered as "
+                     "[normal, shear 1, shear 2].");
 
   return options;
 }
