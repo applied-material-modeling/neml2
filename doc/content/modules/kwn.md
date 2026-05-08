@@ -8,7 +8,16 @@ A complete KWN model in NEML2 is composed by combining the precipitation buildin
 
 ## Theory
 
-The state of the system is the precipitate number density per unit volume, \f$n_i\f$, in each radius bin \f$\left[R_{i-1/2}, R_{i+1/2}\right]\f$ with center \f$R_i\f$. Concentrations are stored as mole fractions \f$x_i\f$. The matrix is treated as a homogeneous reservoir whose composition is determined by mass conservation against the precipitates.
+This section uses the following indexing conventions for the size distribution of precipitates:
+1. Subscripts indicate the particle size bin index in the finite volume distretization of the size distribution: \f$f_i\f$.
+2. Parenthetical superscripts indicates the number of precipitates being considered: \f$f^{(j)}\f$.
+and the following conventions for the chemical concentration of the varioius elements contributing to reactions:
+1. Subscripts indicates the number of species in the matrix, which must be the union of all the species contributing to all the precipitate reactions: \f$x_k\f$.
+2. The set of chemical species contributing to precipitate \f$(j)\f$ is \f$\mathcal{S}_j\f$.
+
+The model can consider multiple precipitate species competing for the same resivoir of checmical species in the matrix.  The state of the system is the precipitate number density per unit volume, \f$n_i^{(j)}\f$, in each radius bin \f$\left[R^{(j)}_{i-1/2}, R^{j}_{i+1/2}\right]\f$ with center \f$R^{j}_i\f$ for each precipitate \f$(j)\f$. 
+
+Concentrations are stored as mole fractions \f$x_k\f$. The matrix is treated as a homogeneous reservoir whose composition is determined by mass conservation against the precipitates.
 
 ### Mass conservation
 
