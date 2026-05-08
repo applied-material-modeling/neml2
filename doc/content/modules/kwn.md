@@ -11,110 +11,123 @@ A complete KWN model in NEML2 is composed by combining the precipitation buildin
 This section uses the following indexing conventions for the size distribution of precipitates:
 1. Subscripts indicate the particle size bin index in the finite volume distretization of the size distribution: \f$f_i\f$.
 2. Parenthetical superscripts indicates the number of precipitates being considered: \f$f^{(j)}\f$.
+
 and the following conventions for the chemical concentration of the varioius elements contributing to reactions:
 1. Subscripts indicates the number of species in the matrix, which must be the union of all the species contributing to all the precipitate reactions: \f$x_k\f$.
 2. The set of chemical species contributing to precipitate \f$(j)\f$ is \f$\mathcal{S}_j\f$.
 
-The model can consider multiple precipitate species competing for the same resivoir of checmical species in the matrix.  The state of the system is the precipitate number density per unit volume, \f$n_i^{(j)}\f$, in each radius bin \f$\left[R^{(j)}_{i-1/2}, R^{j}_{i+1/2}\right]\f$ with center \f$R^{j}_i\f$ for each precipitate \f$(j)\f$. 
+The model can consider multiple precipitate species competing for the same resivoir of checmical species in the matrix.  The state of the system is the precipitate number density per unit volume, \f$n_i^{(j)}\f$, in each radius bin \f$\left[R^{(j)}_{i-1/2}, R^{(j)}_{i+1/2}\right]\f$ with center \f$R^{(j)}_i\f$ for each precipitate \f$(j)\f$. 
 
 Concentrations are stored as mole fractions \f$x_k\f$. The matrix is treated as a homogeneous reservoir whose composition is determined by mass conservation against the precipitates.
 
+The finite volume discretization assumes that the size of all the particles in a single bin is the same.
+
 ### Mass conservation
 
-The volume fraction of a given precipitate population is obtained by integrating the size distribution,
+The volume fraction of precipitate \f$(j)\f$ is obtained by integrating its size distribution,
 
 \f[
-  f = \sum_i \frac{4}{3}\pi R_i^3 n_i,
+  f^{(j)} = \sum_i \frac{4}{3}\pi \left(R_i^{(j)}\right)^3 n_i^{(j)},
 \f]
 
-and the current matrix concentration of species \f$i\f$ follows from the closure that everything not locked up in precipitates must be in solution,
+and the current matrix concentration of species \f$k\f$ follows from the closure that everything not locked up in precipitates must be in solution,
 
 \f[
-  x^\infty_i = \frac{x_{0,i} - \sum_k f_k x^p_{k,i}}{1 - \sum_k f_k},
+  x^\infty_k = \frac{x_{0,k} - \sum_j f^{(j)} x^{(j)}_k}{1 - \sum_j f^{(j)}},
 \f]
 
-where \f$x_{0,i}\f$ is the initial concentration, \f$f_k\f$ is the volume fraction of the \f$k\f$-th precipitate, and \f$x^p_{k,i}\f$ is the concentration of species \f$i\f$ in that precipitate.
+where \f$x_{0,k}\f$ is the initial matrix concentration of species \f$k\f$, \f$f^{(j)}\f$ is the volume fraction of precipitate \f$(j)\f$, and \f$x^{(j)}_k\f$ is the concentration of species \f$k\f$ in that precipitate (taken as zero for \f$k \notin \mathcal{S}_j\f$).  This assumes the initial volume fraction of the precipitates is zero.
 
 ### Population balance
 
 Each precipitate population evolves according to
 
 \f[
-  \frac{\partial n}{\partial t} + \frac{\partial \left(n \dot{R}\right)}{\partial R} = J_{\text{nuc}},
+  \frac{\partial n^{(j)}}{\partial t} + \frac{\partial \left(n^{(j)} \dot{R}^{(j)}\right)}{\partial R^{(j)}} = J^{(j)}_{\text{nuc}},
 \f]
 
-a 1D advection equation in radius space with a nucleation source on the right-hand side. Spatial discretization is provided by the [finite volume](@ref finite-volume) module: cells are defined on \f$R\f$, the growth rate \f$\dot{R}\f$ becomes the advection velocity at cell edges, and the nucleation source is placed into the first (smallest-radius) bin via `DumpInSmallestBin`. If that bin is intended to represent nuclei at or near the critical radius, the radius grid should be constructed accordingly.
+a 1D advection equation in radius space with a nucleation source on the right-hand side. Spatial discretization is provided by the [finite volume](@ref finite-volume) module: cells are defined on \f$R^{(j)}\f$, the growth rate \f$\dot{R}^{(j)}\f$ becomes the advection velocity at cell edges, and the nucleation source dumps the newly created precipitates in the bin containing the critical radius indicated by classical nucleation theory (but see below for some caveats). 
 
 ### Growth rate
 
 Two growth-rate models are provided.
 
-The simpler **rate-limited** form solves for a single rate-limiting species \f$\eta\f$,
+The simpler **rate-limited** form solves for a single rate-limiting species \f$\star \in \mathcal{S}_j\f$,
 
 \f[
-  \dot{R} = \frac{1}{R} D_\eta \frac{x^\infty_\eta - x^*_\eta}{x^p_\eta - x^*_\eta},
+  \dot{R}^{(j)} = \frac{1}{R^{(j)}}\, D_\star\, \frac{x^\infty_\star - x^{*,(j)}_\star}{x^{(j)}_\star - x^{*,(j)}_\star},
 \f]
 
-with \f$x^*_\eta\f$ the matrix equilibrium concentration. The growth rate vanishes correctly as \f$x^\infty_\eta \rightarrow x^*_\eta\f$.
+with \f$x^{*,(j)}_\star\f$ the matrix equilibrium concentration of the rate-limiting species in equilibrium with precipitate \f$(j)\f$. The growth rate vanishes correctly as \f$x^\infty_\star \rightarrow x^{*,(j)}_\star\f$.
 
 The more general **SFFK** form (Svoboda–Fischer–Fratzl–Kozeschnik) handles multi-component diffusion in the dilute, diffusion-limited regime,
 
 \f[
-  \dot{R} = \frac{1}{R}\, \frac{\Delta G_{\text{chem}} + \Delta G_{\text{surf}} + \Delta G_{\text{el}}}{R_g T \, S},
+  \dot{R}^{(j)} = \frac{1}{R^{(j)}}\, \frac{\Delta G^{(j)}_{\text{chem}} + \Delta G^{(j)}_{\text{surf}} + \Delta G^{(j)}_{\text{el}}}{R_g T \, S^{(j)}},
   \qquad
-  S = \sum_i \frac{(\Delta x_i)^2}{D_i x^\infty_i},
+  S^{(j)} = \sum_{k \in \mathcal{S}_j} \frac{\left(\Delta x^{(j)}_k\right)^2}{D_k\, x^\infty_k},
 \f]
 
-with \f$\Delta x_i = x^p_i - x^*_i\f$. The driving force is split into chemical, surface, and elastic contributions:
+with \f$\Delta x^{(j)}_k = x^{(j)}_k - x^{*,(j)}_k\f$ and \f$D_k\f$ the matrix diffusivity of species \f$k\f$. The driving force is split into chemical, surface, and elastic contributions:
 
 \f[
-  \Delta G_{\text{chem}} = \sum_i \Delta x_i \left[\mu^{\text{matrix}}_i(x^\infty) - \mu^{\text{equil}}_i\right], \quad
-  \Delta G_{\text{surf}} = -\frac{2 \gamma V_m}{R}, \quad
-  \Delta G_{\text{el}} = -3 V_m \varepsilon_0 \sigma_h + \frac{6 V_m \mu K}{3K + 4\mu}\varepsilon_0^2.
+  \Delta G^{(j)}_{\text{chem}} = \sum_{k \in \mathcal{S}_j} \Delta x^{(j)}_k \left[\mu^{\text{matrix}}_k(x^\infty) - \mu^{\text{equil},(j)}_k\right], \quad
+  \Delta G^{(j)}_{\text{surf}} = -\frac{2 \gamma^{(j)} V_m^{(j)}}{R^{(j)}}, \quad
+  \Delta G^{(j)}_{\text{el}} = -3 V_m^{(j)} \varepsilon_0^{(j)} \sigma_h + \frac{6 V_m^{(j)} \mu K}{3K + 4\mu}\left(\varepsilon_0^{(j)}\right)^2.
 \f]
 
-The \f$\Delta G_{\text{el}}\f$ term is the standard expression for a coherent, isotropic spherical inclusion in an isotropic matrix with misfit strain \f$\varepsilon_0\f$.
+In these expressions \f$V_m^{(j)}\f$ is the molar volume of the precipitate.
+
+The chemical driving force is the sum of the chemical potential difference between the species in the matrix \f$\mu_{k}^{\text{matrix}}\f$ as a function of the current matrix composition and the species in the precipitate \f$\mu^{\text{equil},(j)}_k\f$, assuming that the precipitate is always at equilibrium concentraiton.
+
+The surface eenergy driving force is just the contribution of a spherical precipitate at a given size, with \f$\gamma^{(j)}\f$ the surface energy.
+
+The \f$\Delta G^{(j)}_{\text{el}}\f$ term is the standard expression for a coherent, isotropic spherical inclusion in an isotropic matrix with misfit strain \f$\varepsilon_0^{(j)}\f$; \f$\mu\f$ and \f$K\f$ are the matrix shear and bulk moduli, and \f$\sigma_h\f$ the matrix hydrostatic stress.
 
 ### Nucleation flux
 
-All nucleation occurs at the critical radius,
+Nucleation occurs at the critical radius,
 
 \f[
-  J_{\text{nuc}} = Z \beta N_0 \exp\left(-\frac{\Delta G^*}{kT}\right) \delta(R - R_{\text{crit}}),
+  J^{(j)}_{\text{nuc}} = Z^{(j)} \beta^{(j)} N_0^{(j)} \exp\left(-\frac{\Delta G^{*,(j)}}{k_B T}\right) \delta\left(R^{(j)} - R^{(j)}_{\text{crit}}\right),
 \f]
 
 with the classical-nucleation-theory expressions
 
 \f[
-  R_{\text{crit}} = \frac{2 \gamma V_m}{\Delta g_v}, \qquad
-  \Delta G^* = \frac{16 \pi}{3}\, \frac{\gamma^3 V_m^2}{(\Delta g_v)^2},
+  R^{(j)}_{\text{crit}} = \frac{2 \gamma^{(j)} V_m^{(j)}}{\Delta g^{(j)}_v}, \qquad
+  \Delta G^{*,(j)} = \frac{16 \pi}{3}\, \frac{\left(\gamma^{(j)}\right)^3 \left(V_m^{(j)}\right)^2}{\left(\Delta g^{(j)}_v\right)^2},
 \f]
 
 \f[
-  Z = \frac{V_m}{2\pi N_a R_{\text{crit}}^2}\sqrt{\frac{\gamma}{kT}}, \qquad
-  \beta = \frac{4 \pi R_{\text{crit}}^2 N_a^{4/3}}{V_m^{4/3}}\, \frac{1}{S}.
+  Z^{(j)} = \frac{V_m^{(j)}}{2\pi N_a \left(R^{(j)}_{\text{crit}}\right)^2}\sqrt{\frac{\gamma^{(j)}}{k_B T}}, \qquad
+  \beta^{(j)} = \frac{4 \pi \left(R^{(j)}_{\text{crit}}\right)^2 N_a^{4/3}}{\left(V_m^{(j)}\right)^{4/3}}\, \frac{1}{S^{(j)}}.
 \f]
 
-\f$\gamma\f$ is the precipitate surface energy, \f$V_m\f$ its molar volume, \f$N_0\f$ the nucleation site density, \f$N_a\f$ Avogadro's number, \f$k\f$ the Boltzmann constant, and \f$S\f$ the same projected diffusivity sum that appears in the SFFK growth rate. The Dirac delta is approximated discretely by `DumpInSmallestBin`, which deposits the flux magnitude into the bin containing the critical radius.
+\f$\gamma^{(j)}\f$ is the precipitate surface energy, \f$V_m^{(j)}\f$ its molar volume, \f$\Delta g^{(j)}_v\f$ the volumetric driving force for nucleation of precipitate \f$(j)\f$, \f$N_0^{(j)}\f$ the nucleation site density, \f$N_a\f$ Avogadro's number, \f$k_B\f$ the Boltzmann constant, and \f$S^{(j)}\f$ the same projected diffusivity sum that appears in the SFFK growth rate. 
+
+The critical radius \f$R^{(j)}_{\text{crit}}\f$ is the minimum stable size of a precipitate in the classical theory, i.e. when a stable precipitate can nucleate because the chemical driving force overcomes the surface energy requird to form a (spherical) precipitate.
+
+***However***, for most systems \f$R_{\text{crit}}\f$ will be much smaller than the smallest cell size for a reasonably-sized finite volume discretization.  Therefore, in the examples, the Dirac delta at the critical radius is approximated discretely by `DumpInSmallestBin`, which deposits the flux magnitude into the smallest bin. 
 
 ## Building blocks
 
 The KWN module exposes the following objects, each implementing one of the equations above. They are designed to be composed together (typically inside a `ComposedModel` driven by `ImplicitUpdate`) rather than used in isolation.
 
-| Object                                | Role                                                                       |
-| :------------------------------------ | :------------------------------------------------------------------------- |
-| `PrecipitateVolumeFraction`           | Sums \f$\tfrac{4}{3}\pi R^3 n\f$ over bins to obtain \f$f\f$               |
-| `CurrentConcentration`                | Mass-balance closure for \f$x^\infty\f$ given the precipitate populations  |
-| `ProjectedDiffusivitySum`             | Computes the multi-species sum \f$S\f$ shared by SFFK and nucleation       |
-| `ChemicalGibbsFreeEnergyDifference`   | Assembles \f$\Delta G_{\text{chem}}\f$ from per-species potentials         |
-| `RateLimitedPrecipitateGrowthRate`    | Single-species, equilibrium-driven growth rate \f$\dot{R}\f$               |
-| `SFFKPrecipitationGrowthRate`         | SFFK multi-component growth rate \f$\dot{R}\f$                             |
-| `NucleationBarrierAndCriticalRadius`  | Computes \f$R_{\text{crit}}\f$ and \f$\Delta G^*\f$                        |
-| `ZeldovichFactor`                     | Computes \f$Z\f$                                                           |
-| `KineticFactor`                       | Computes \f$\beta\f$                                                       |
-| `NucleationFluxMagnitude`             | Assembles the prefactor \f$Z \beta N_0 \exp(-\Delta G^*/kT)\f$             |
+| Object                                | Role                                                                                       |
+| :------------------------------------ | :----------------------------------------------------------------------------------------- |
+| `PrecipitateVolumeFraction`           | Sums \f$\tfrac{4}{3}\pi (R_i^{(j)})^3 n_i^{(j)}\f$ over bins to obtain \f$f^{(j)}\f$       |
+| `CurrentConcentration`                | Mass-balance closure for \f$x^\infty_k\f$ given the precipitate populations                |
+| `ProjectedDiffusivitySum`             | Computes the multi-species sum \f$S^{(j)}\f$ shared by SFFK and nucleation                 |
+| `ChemicalGibbsFreeEnergyDifference`   | Assembles \f$\Delta G^{(j)}_{\text{chem}}\f$ from per-species potentials                   |
+| `RateLimitedPrecipitateGrowthRate`    | Single-species, equilibrium-driven growth rate \f$\dot{R}^{(j)}\f$                         |
+| `SFFKPrecipitationGrowthRate`         | SFFK multi-component growth rate \f$\dot{R}^{(j)}\f$                                       |
+| `NucleationBarrierAndCriticalRadius`  | Computes \f$R^{(j)}_{\text{crit}}\f$ and \f$\Delta G^{*,(j)}\f$                            |
+| `ZeldovichFactor`                     | Computes \f$Z^{(j)}\f$                                                                     |
+| `KineticFactor`                       | Computes \f$\beta^{(j)}\f$                                                                 |
+| `NucleationFluxMagnitude`             | Assembles the prefactor \f$Z^{(j)} \beta^{(j)} N_0^{(j)} \exp(-\Delta G^{*,(j)}/k_B T)\f$  |
 
-The Dirac delta in the nucleation flux and the spatial discretization of the population balance equation are provided by the [finite volume](@ref finite-volume) module — `DumpInSmallestBin` for the nucleation source, and `LinearlyInterpolateToCellEdges`, `FiniteVolumeUpwindedAdvectiveFlux`, `FiniteVolumeAppendBoundaryCondition`, and `FiniteVolumeGradient` for the advection of \f$n\f$ in radius space. Refer to [Syntax Documentation](@ref syntax-models) for the complete catalog of options for each KWN object.
+The Dirac delta in the nucleation flux and the spatial discretization of the population balance equation are provided by the [finite volume](@ref finite-volume) module — `DumpInSmallestBin` for the nucleation source, and `LinearlyInterpolateToCellEdges`, `FiniteVolumeUpwindedAdvectiveFlux`, `FiniteVolumeAppendBoundaryCondition`, and `FiniteVolumeGradient` for the advection of \f$n^{(j)}\f$ in radius space. Refer to [Syntax Documentation](@ref syntax-models) for the complete catalog of options for each KWN object.
 
 ## Composition pattern
 
@@ -122,13 +135,13 @@ Putting these pieces together, a single-precipitate KWN model is built as follow
 
 @list-input:tests/regression/kwn/growth-only-scaled/model.i:Models,EquationSystems,Solvers
 
-The growth-rate piece is responsible for setting \f$\dot{R}\f$ at every cell center; everything from `scaled_cell_velocity` onward is generic finite-volume advection of \f$n\f$ in radius space and is identical between the growth-only and full nucleation+growth cases.
+The growth-rate piece is responsible for setting \f$\dot{R}^{(j)}\f$ at every cell center; everything from `scaled_cell_velocity` onward is generic finite-volume advection of \f$n^{(j)}\f$ in radius space and is identical between the growth-only and full nucleation+growth cases.
 
 To add nucleation, the same model is augmented with `NucleationBarrierAndCriticalRadius`, `ZeldovichFactor`, `KineticFactor`, `NucleationFluxMagnitude`, and `DumpInSmallestBin`, and the resulting source term is added to the flux divergence via a `ScalarLinearCombination`. The full composition is shown in `tests/regression/kwn/growth-nucleation-scaled/model.i`.
 
 ## Tests and examples
 
-Unit tests for each KWN object live in `tests/unit/models/kwn/`, one input file per class. They exercise the forward evaluation and AD derivatives in isolation. For instance, the `PrecipitateVolumeFraction` unit test fixes a three-bin radius grid and verifies the analytic value of \f$f\f$:
+Unit tests for each KWN object live in `tests/unit/models/kwn/`, one input file per class. They exercise the forward evaluation and AD derivatives in isolation. For instance, the `PrecipitateVolumeFraction` unit test fixes a three-bin radius grid and verifies the analytic value of \f$f^{(j)}\f$:
 
 @list-input:tests/unit/models/kwn/PrecipitateVolumeFraction.i
 
