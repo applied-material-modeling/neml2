@@ -19,11 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run black style check
-        uses: psf/black@stable
+      - uses: actions/setup-python@v5
         with:
-          options: "--check -v"
-          src: "python/neml2 python/tests"
+          # dependencies: python.version_min
+          python-version: "3.9"
+      - name: Run black style check
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: black --all-files
 
   test:
     needs: black

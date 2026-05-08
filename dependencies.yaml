@@ -28,6 +28,22 @@ pyzag:
   files:
     - pyproject.toml
 
+# ---- Formatters / pre-commit hooks ----
+clang_format:
+  version: "v22.1.3"
+  files:
+    - .pre-commit-config.yaml
+
+black:
+  version: "25.11.0"
+  files:
+    - .pre-commit-config.yaml
+
+jupytext:
+  version: "v1.19.1"
+  files:
+    - .pre-commit-config.yaml
+
 # ---- C++ libraries ----
 catch2:
   version: "v3.5.4"

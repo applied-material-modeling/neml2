@@ -24,6 +24,22 @@ Below is an example input file that defines a linear elasticity model.
 
 @list-input:tests/unit/models/solid_mechanics/elasticity/LinearIsotropicElasticity.i:Models
 
+## Viscoelasticity
+
+Viscoelastic models describe time-dependent stress-strain behavior in which the response is partially elastic (recoverable) and partially viscous (rate-dependent). Unlike elasticity, viscoelastic models retain a memory of past loading through internal strain variables, but unlike plasticity the response is linear in the constitutive sense — there is no yield surface and no consistency parameter.
+
+NEML2 builds viscoelastic models from two primitive rheological elements — a linear *spring* with modulus \f$ E \f$, and a Newtonian *dashpot* with viscosity \f$ \eta \f$ — combined in series and parallel. Each model treats the spring and dashpot relations component-wise on \f$ \boldsymbol{\sigma} \f$ and \f$ \boldsymbol{\varepsilon} \f$, so the same parameters describe both the deviatoric and volumetric response (a common simplification when only one effective modulus is available from experiment). Internal strain variables evolve as rates and are time-integrated implicitly with `SR2BackwardEulerTimeIntegration` inside an `ImplicitUpdate` Newton solve.
+
+Standard textbook configurations are pre-assembled as named element models for convenience: `KelvinVoigtElement` (spring + dashpot in parallel), `ZenerElement` (Standard Linear Solid), `WiechertElement` (generalized Maxwell), and `BurgersElement` (Maxwell in series with Kelvin-Voigt). The example input file below uses the Zener element directly — the constitutive object provides both the stress and the viscous-strain rate; `SR2BackwardEulerTimeIntegration` turns the rate into an implicit residual; and the resulting nonlinear system is solved at each time step by a Newton solver.
+
+@list-input:tests/regression/solid_mechanics/viscoelasticity/zener/model.i:Models,EquationSystems,Solvers
+
+For topologies that don't match a pre-assembled element — for example, a 5-element generalized Maxwell or a custom series-parallel network — assemble the network from primitives directly: `LinearDashpot` for each dashpot leaf (mapping stress to viscous strain rate via \f$ \dot{\boldsymbol{\varepsilon}} = \boldsymbol{\sigma}/\eta \f$), `LinearIsotropicElasticity` (or a scalar-modulus `SR2LinearCombination`) for each spring, `SR2LinearCombination` for the strain decompositions and stress sums that encode series and parallel topology, and one `ComposedModel` to glue it all together. The wiring is purely by variable naming — series-chain elements share a stress variable, parallel branches share a strain variable, and each dashpot's strain is one unknown in the `NonlinearSystem`. Worked examples for every named topology, plus a 5-element generalized Maxwell, live under `tests/regression/solid_mechanics/viscoelasticity/composed_*/`. The Burgers composition (Maxwell branch in series with a Kelvin-Voigt block, two unknowns sharing the chain stress) is the most instructive of the set:
+
+@list-input:tests/regression/solid_mechanics/viscoelasticity/composed_burgers/model.i:Models,EquationSystems
+
+Refer to [Syntax Documentation](@ref syntax-models) for the complete catalog of viscoelastic objects, including each one's parameters, inputs, and outputs.
+
 ## Plasticity (macroscale)
 
 Generally speaking, plasticity models describe (oftentimes irreversible and dissipative) history-dependent deformation of solid materials. The plastic deformation is governed by the plastic loading/unloading conditions (or more generally the Karush-Kuhn-Tucker conditions):

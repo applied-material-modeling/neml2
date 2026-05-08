@@ -40,6 +40,17 @@ main(int argc, char * argv[])
   program.add_argument("--yaml")
       .help("redirect output to a YAML file")
       .default_value(std::string("syntax.yml"));
+  program.add_argument("--section")
+      .help("only emit objects whose input-file section matches (e.g. Models, Solvers, Drivers, "
+            "Tensors, Schedulers, Data, EquationSystems, Settings)")
+      .default_value(std::string(""));
+  program.add_argument("--type")
+      .help("only emit the object whose registered type matches (e.g. LinearDashpot); "
+            "intended for drilling into a single object's full option list")
+      .default_value(std::string(""));
+  program.add_argument("--summary")
+      .help("emit only the type, section, and doc string for each object (omit per-option detail)")
+      .flag();
 
   // Force link dynamic libraries
   neml2::force_link_runtime();
@@ -62,14 +73,34 @@ main(int argc, char * argv[])
     out = &ofs;
   }
 
-  auto settings = neml2::Settings::expected_options();
-  *out << settings << '\n';
+  const auto section_filter = program.get<std::string>("--section");
+  const auto type_filter = program.get<std::string>("--type");
+  const bool summary = program.get<bool>("--summary");
 
-  for (const auto & [type, info] : neml2::Registry::info())
+  auto emit = [&](const neml2::OptionSet & opts)
   {
-    auto options = info.expected_options;
-    *out << options << '\n';
-  }
+    if (!section_filter.empty() && opts.section() != section_filter)
+      return;
+    if (!type_filter.empty() && opts.type() != type_filter)
+      return;
+    if (summary)
+    {
+      *out << opts.type() << ":\n";
+      *out << "  section: " << opts.section() << '\n';
+      if (opts.doc().empty())
+        *out << "  doc:\n";
+      else
+        *out << "  doc: |-\n    " << opts.doc() << '\n';
+    }
+    else
+    {
+      *out << opts << '\n';
+    }
+  };
+
+  emit(neml2::Settings::expected_options());
+  for (const auto & [type, info] : neml2::Registry::info())
+    emit(info.expected_options);
 
   if (ofs.is_open())
     ofs.close();
