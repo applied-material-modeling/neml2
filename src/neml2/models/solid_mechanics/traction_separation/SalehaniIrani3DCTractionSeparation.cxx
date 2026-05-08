@@ -47,9 +47,9 @@ SalehaniIrani3DCTractionSeparation::expected_options()
 
   options.add_parameter<Scalar>("normal_characteristic_length",
                                 "Normal characteristic length (raw user input)");
-  options.add_parameter<Scalar>(
-      "tangential_characteristic_length",
-      "Tangential characteristic length (raw user input; the internal value is sqrt(2) times this)");
+  options.add_parameter<Scalar>("tangential_characteristic_length",
+                                "Tangential characteristic length (raw user input; the internal "
+                                "value is sqrt(2) times this)");
   options.add_parameter<Scalar>("maximum_normal_traction", "Maximum normal traction");
   options.add_parameter<Scalar>("maximum_shear_traction", "Maximum shear traction");
 
@@ -123,15 +123,8 @@ SalehaniIrani3DCTractionSeparation::set_value(bool out, bool dout_din, bool /*d2
     const auto dTs2_ds1 = a_t * exp_x * (zero - b_s2 * dx_ds1);
     const auto dTs2_ds2 = a_t * exp_x * (db_t_dt - b_s2 * dx_ds2);
 
-    _T.d(_delta) = R2::fill(dTn_dn,
-                            dTn_ds1,
-                            dTn_ds2,
-                            dTs1_dn,
-                            dTs1_ds1,
-                            dTs1_ds2,
-                            dTs2_dn,
-                            dTs2_ds1,
-                            dTs2_ds2);
+    _T.d(_delta) = R2::fill(
+        dTn_dn, dTn_ds1, dTn_ds2, dTs1_dn, dTs1_ds1, dTs1_ds2, dTs2_dn, dTs2_ds1, dTs2_ds2);
   }
 }
 } // namespace neml2

@@ -234,8 +234,7 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
       delta_init_mixed * beta *
       (1.0 / (1.0 + beta_sq) - delta_normal0 * delta_normal0 / delta_mixed_init_sq);
   const auto ddelta_init_djump_mix_open = ddelta_init_dbeta * dbeta_djump_mix_open;
-  const auto ddelta_init_djump_mix =
-      neml2::where(pos_mask_mix, ddelta_init_djump_mix_open, zero_v);
+  const auto ddelta_init_djump_mix = neml2::where(pos_mask_mix, ddelta_init_djump_mix_open, zero_v);
 
   // ---- d(delta_final)/d(jump_mix) in the opening branch ----
   // Both criteria share the form delta_final = h(delta_init, beta), so

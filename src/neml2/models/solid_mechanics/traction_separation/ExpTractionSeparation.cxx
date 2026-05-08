@@ -49,9 +49,8 @@ ExpTractionSeparation::expected_options()
 
   options.add_parameter<Scalar>("fracture_energy", "Fracture energy G_c");
   options.add_parameter<Scalar>("characteristic_length", "Softening length scale delta_0");
-  options.add_parameter<Scalar>(
-      "tangential_weight",
-      "Tangential weighting factor beta in the effective separation");
+  options.add_parameter<Scalar>("tangential_weight",
+                                "Tangential weighting factor beta in the effective separation");
   options.add_parameter<Scalar>(
       "regularizer",
       "Small constant added inside the effective-separation square root to avoid the AD "
@@ -151,8 +150,7 @@ ExpTractionSeparation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
     // d T_i / d kappa_n = -c delta_i (dd/dkappa)(dkappa/d kappa_n)
     const auto cdd_dkn = c * dd_dkappa * dk_dkn;
-    _T.d(_kappa_n) =
-        Vec::fill(-cdd_dkn * delta_n, -cdd_dkn * delta_s1, -cdd_dkn * delta_s2);
+    _T.d(_kappa_n) = Vec::fill(-cdd_dkn * delta_n, -cdd_dkn * delta_s1, -cdd_dkn * delta_s2);
 
     // d kappa / d delta_j and d kappa / d kappa_n
     _kappa.d(_delta) = Vec::fill(dk_ddn, dk_dds1, dk_dds2);
