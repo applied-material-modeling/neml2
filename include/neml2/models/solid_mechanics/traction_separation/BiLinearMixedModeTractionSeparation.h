@@ -54,12 +54,12 @@ class Vec;
  *
  * Derivatives are computed by torch automatic differentiation through the regularized model.
  */
-class BiLinearMixedModeTraction : public TractionSeparation
+class BiLinearMixedModeTractionSeparation : public TractionSeparation
 {
 public:
   static OptionSet expected_options();
 
-  BiLinearMixedModeTraction(const OptionSet & options);
+  BiLinearMixedModeTractionSeparation(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -93,6 +93,6 @@ protected:
   const Scalar & _eta;
 
   /// Smoothing parameter for the regularized Heaviside
-  const double _alpha;
+  const Scalar & _alpha;
 };
 } // namespace neml2

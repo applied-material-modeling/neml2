@@ -40,6 +40,25 @@ For topologies that don't match a pre-assembled element — for example, a 5-ele
 
 Refer to [Syntax Documentation](@ref syntax-models) for the complete catalog of viscoelastic objects, including each one's parameters, inputs, and outputs.
 
+## Cohesive zone models
+
+Cohesive zone models — also known as traction-separation laws (TSLs) — describe the constitutive response of an interface as a relation between the displacement jump \f$ \boldsymbol{\delta} = [\delta_n, \delta_{s1}, \delta_{s2}] \f$ and the traction \f$ \boldsymbol{T} = [T_n, T_{s1}, T_{s2}] \f$ in the local interface frame. The first component is the normal jump (opening / closing); the other two are the in-plane shear jumps. Most TSLs are damage-driven: a scalar damage variable accumulates as the effective separation grows, and the traction degrades from an initial elastic response toward zero at full debonding.
+
+NEML2 ships four traction-separation laws, all sharing the same `displacement_jump` / `traction` interface so they are interchangeable inside a larger composition:
+
+- `PureElasticTractionSeparation` — orthotropic linear elasticity \f$ \boldsymbol{T} = \operatorname{diag}(K_n, K_t, K_t)\,\boldsymbol{\delta} \f$, no internal state. Use as a baseline or to penalize relative interface motion in stiff regions.
+- `ExpTractionSeparation` — exponential damage law driven by an effective scalar separation \f$ \delta_{\text{eff}} = \sqrt{\delta_n^2 + \beta(\delta_{s1}^2 + \delta_{s2}^2) + \varepsilon} \f$, with damage \f$ d = 1 - \exp(-\kappa/\delta_0) \f$ and the option to freeze \f$ \kappa \f$ at the historical maximum (`irreversible_damage = true`) for non-healing behavior.
+- `BiLinearMixedModeTractionSeparation` — Camanho/Davila-style bilinear cohesive law with the BK mixed-mode propagation criterion. Mode mixity and damage onset / completion jumps are computed from the previous-step displacement jump (lagged-mixity convention) so the in-step Jacobian remains tractable; damage is irreversible and the normal jump uses a smooth Macaulay split so compression is resisted elastically.
+- `SalehaniIrani3DCTractionSeparation` — 3D exponential cohesive law of Salehani and Irani in which the normal direction enters linearly and the two tangential directions enter quadratically in a single coupling exponent.
+
+The example below pairs the exponential law with a `TransientDriver` that prescribes a mixed-mode opening ramp; the model exposes its damage history (`effective_displacement_jump_max`) as an internal state variable that the framework time-integrates from step to step.
+
+@list-input:tests/regression/solid_mechanics/traction_separation/exp_monotonic/model.i:Models,Drivers
+
+Both `ExpTractionSeparation` and `BiLinearMixedModeTractionSeparation` carry irreversible internal state (the damage history), so under load–unload–reload schedules the unloading limb returns elastically along the secant of the current damaged stiffness and reloading resumes the softening branch only after the historical peak separation is exceeded. The `bilinear_unload` and `exp_unload` regression scenarios under `tests/regression/solid_mechanics/traction_separation/` exercise this behavior.
+
+Refer to [Syntax Documentation](@ref syntax-models) for the complete catalog of cohesive-zone objects, including each one's parameters, inputs, and outputs.
+
 ## Plasticity (macroscale)
 
 Generally speaking, plasticity models describe (oftentimes irreversible and dissipative) history-dependent deformation of solid materials. The plastic deformation is governed by the plastic loading/unloading conditions (or more generally the Karush-Kuhn-Tucker conditions):

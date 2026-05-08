@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/traction_separation/BiLinearMixedModeTraction.h"
+#include "neml2/models/solid_mechanics/traction_separation/BiLinearMixedModeTractionSeparation.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/functions/pow.h"
@@ -33,10 +33,10 @@
 
 namespace neml2
 {
-register_NEML2_object(BiLinearMixedModeTraction);
+register_NEML2_object(BiLinearMixedModeTractionSeparation);
 
 OptionSet
-BiLinearMixedModeTraction::expected_options()
+BiLinearMixedModeTractionSeparation::expected_options()
 {
   OptionSet options = TractionSeparation::expected_options();
   options.doc() =
@@ -56,10 +56,11 @@ BiLinearMixedModeTraction::expected_options()
   options.add_parameter<Scalar>("shear_strength", "Shear strength S");
   options.add_parameter<Scalar>("eta", "BK power-law exponent");
 
-  options.add<double>("alpha",
-                      1e-4,
-                      "Smoothing parameter for the regularized Heaviside used in the Macaulay "
-                      "bracket and for guarding divisions / square roots");
+  options.add_parameter<Scalar>("alpha",
+                                "Smoothing parameter for the regularized Heaviside used in the "
+                                "Macaulay bracket and for guarding divisions / square roots. "
+                                "Calibratable like the other parameters; pick a value small "
+                                "compared to the smallest expected displacement jump.");
 
   // The model relies on automatic differentiation, which is incompatible with JIT tracing.
   options.set<bool>("jit", false);
@@ -67,7 +68,7 @@ BiLinearMixedModeTraction::expected_options()
   return options;
 }
 
-BiLinearMixedModeTraction::BiLinearMixedModeTraction(const OptionSet & options)
+BiLinearMixedModeTractionSeparation::BiLinearMixedModeTractionSeparation(const OptionSet & options)
   : TractionSeparation(options),
     _d(declare_output_variable<Scalar>("damage")),
     _d_old(declare_input_variable<Scalar>(history_name(_d.name(), /*nstep=*/1))),
@@ -78,19 +79,19 @@ BiLinearMixedModeTraction::BiLinearMixedModeTraction(const OptionSet & options)
     _N(declare_parameter<Scalar>("N", "normal_strength", true)),
     _S(declare_parameter<Scalar>("S", "shear_strength", true)),
     _eta(declare_parameter<Scalar>("eta", "eta", true)),
-    _alpha(options.get<double>("alpha"))
+    _alpha(declare_parameter<Scalar>("alpha", "alpha", true))
 {
 }
 
 void
-BiLinearMixedModeTraction::request_AD()
+BiLinearMixedModeTractionSeparation::request_AD()
 {
   _T.request_AD({&_delta, &_delta_old, &_d_old});
   _d.request_AD({&_delta, &_delta_old, &_d_old});
 }
 
 void
-BiLinearMixedModeTraction::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
+BiLinearMixedModeTractionSeparation::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
 {
   if (!out)
     return;

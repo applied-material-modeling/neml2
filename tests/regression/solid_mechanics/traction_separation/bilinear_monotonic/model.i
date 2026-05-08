@@ -43,7 +43,7 @@
 
 [Models]
   [model]
-    type = BiLinearMixedModeTraction
+    type = BiLinearMixedModeTractionSeparation
     penalty_stiffness = 1000.0
     normal_fracture_energy = 1.0
     shear_fracture_energy = 1.0

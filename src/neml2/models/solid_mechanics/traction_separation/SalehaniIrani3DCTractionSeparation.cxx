@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/traction_separation/SalehaniIrani3DCTraction.h"
+#include "neml2/models/solid_mechanics/traction_separation/SalehaniIrani3DCTractionSeparation.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/R2.h"
@@ -32,10 +32,10 @@
 
 namespace neml2
 {
-register_NEML2_object(SalehaniIrani3DCTraction);
+register_NEML2_object(SalehaniIrani3DCTractionSeparation);
 
 OptionSet
-SalehaniIrani3DCTraction::expected_options()
+SalehaniIrani3DCTractionSeparation::expected_options()
 {
   OptionSet options = TractionSeparation::expected_options();
   options.doc() =
@@ -56,7 +56,7 @@ SalehaniIrani3DCTraction::expected_options()
   return options;
 }
 
-SalehaniIrani3DCTraction::SalehaniIrani3DCTraction(const OptionSet & options)
+SalehaniIrani3DCTractionSeparation::SalehaniIrani3DCTractionSeparation(const OptionSet & options)
   : TractionSeparation(options),
     _delta_u0_n(declare_parameter<Scalar>("delta_u0_n", "normal_characteristic_length", true)),
     _delta_u0_t(declare_parameter<Scalar>("delta_u0_t", "tangential_characteristic_length", true)),
@@ -66,7 +66,7 @@ SalehaniIrani3DCTraction::SalehaniIrani3DCTraction(const OptionSet & options)
 }
 
 void
-SalehaniIrani3DCTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+SalehaniIrani3DCTractionSeparation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   using std::exp;
   using std::sqrt;

@@ -41,7 +41,7 @@
 
 [Models]
   [model]
-    type = SalehaniIrani3DCTraction
+    type = SalehaniIrani3DCTractionSeparation
     normal_characteristic_length = 1.0
     tangential_characteristic_length = 1.0
     maximum_normal_traction = 1.0

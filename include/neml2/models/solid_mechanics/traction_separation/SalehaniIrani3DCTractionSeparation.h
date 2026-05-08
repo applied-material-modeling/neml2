@@ -52,12 +52,12 @@ class Scalar;
  * (i.e. interpenetration produces an attractive force). Pair with a contact penalty if interface
  * compression is possible.
  */
-class SalehaniIrani3DCTraction : public TractionSeparation
+class SalehaniIrani3DCTractionSeparation : public TractionSeparation
 {
 public:
   static OptionSet expected_options();
 
-  SalehaniIrani3DCTraction(const OptionSet & options);
+  SalehaniIrani3DCTractionSeparation(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
