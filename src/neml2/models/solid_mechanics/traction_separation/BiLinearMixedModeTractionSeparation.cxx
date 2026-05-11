@@ -68,10 +68,14 @@ BiLinearMixedModeTractionSeparation::expected_options()
   options.add<bool>("lag_mode_mixity",
                     false,
                     "If true, mode mixity (and the derived initiation / full-degradation jumps) "
-                    "is evaluated at the previous-step displacement jump, matching the MOOSE "
-                    "BiLinearMixedModeTraction convention. Default false uses the current "
-                    "displacement jump, giving a fully-implicit Jacobian chain through the "
-                    "current step.");
+                    "is evaluated at the previous-step displacement jump. Default false uses "
+                    "the current displacement jump, giving a fully-implicit Jacobian chain "
+                    "through the current step.");
+  options.add<bool>("lag_displacement_jump",
+                    false,
+                    "If true, the effective displacement jump delta_m (and therefore the "
+                    "damage state) is computed from the previous-step displacement jump. "
+                    "Default false uses the current jump.");
 
   return options;
 }
@@ -89,7 +93,8 @@ BiLinearMixedModeTractionSeparation::BiLinearMixedModeTractionSeparation(const O
     _eta(declare_parameter<Scalar>("eta", "eta", true)),
     _criterion(options.get<EnumSelection>("criterion")),
     _eps(options.get<double>("epsilon")),
-    _lag_mode_mixity(options.get<bool>("lag_mode_mixity"))
+    _lag_mode_mixity(options.get<bool>("lag_mode_mixity")),
+    _lag_displacement_jump(options.get<bool>("lag_displacement_jump"))
 {
 }
 
@@ -100,11 +105,13 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
   // Forward
   // ============================================================
 
-  // The Macaulay split, the effective separation `delta_m`, and the traction assembly always
-  // use the current displacement jump `_delta()`. The mode-mixity chain
-  // (beta -> delta_init -> delta_final) is evaluated either at the current jump (default) or
-  // at the previous-step jump `_delta_old()` when `lag_mode_mixity = true`.
+  // The traction's active/inactive split always uses the current displacement jump `_delta()`.
+  // The mode-mixity chain (beta -> delta_init -> delta_final) is evaluated either at the
+  // current jump (default) or at the previous-step jump `_delta_old()` when
+  // `lag_mode_mixity = true`. The effective separation `delta_m` is similarly evaluated at
+  // either the current or previous-step jump per `lag_displacement_jump`.
   const auto & jump_mix = _lag_mode_mixity ? _delta_old() : _delta();
+  const auto & jump_dm = _lag_displacement_jump ? _delta_old() : _delta();
 
   const auto dn = _delta()(0);
   const auto ds1 = _delta()(1);
@@ -114,19 +121,27 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
   const auto ds1_mix = jump_mix(1);
   const auto ds2_mix = jump_mix(2);
 
+  const auto dn_dm = jump_dm(0);
+  const auto ds1_dm = jump_dm(1);
+  const auto ds2_dm = jump_dm(2);
+
   const auto zero_s = Scalar::zeros_like(dn);
   const auto one_s = Scalar::ones_like(dn);
   const auto zero_v = Vec::zeros_like(_delta());
 
-  // Macaulay split on the current normal jump (used by the traction/active split and delta_m).
+  // Macaulay split on the current normal jump (used by the traction's active/inactive split).
   // H = d(macaulay)/d(dn): 1 in opening, 0 in compression.
   const auto delta_n_pos = neml2::macaulay(dn);
   const auto delta_n_neg = dn - delta_n_pos;
   const auto H = neml2::heaviside(dn);
   const auto one_minus_H = 1.0 - H;
 
+  // Macaulay split on the jump driving delta_m (current jump by default; previous-step jump
+  // when lag_displacement_jump = true).
+  const auto delta_n_pos_dm = neml2::macaulay(dn_dm);
+
   // Tangential magnitudes (regularized so derivatives stay finite at zero).
-  const auto delta_s_sq = ds1 * ds1 + ds2 * ds2;
+  const auto delta_s_dm_sq = ds1_dm * ds1_dm + ds2_dm * ds2_dm;
   const auto delta_s_mix_sq = ds1_mix * ds1_mix + ds2_mix * ds2_mix;
   const auto delta_s_mix = neml2::sqrt(delta_s_mix_sq + _eps);
 
@@ -172,8 +187,8 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
   const auto delta_final_default = Scalar::full_like(dn, std::sqrt(2.0)) * 2.0 * _GIIc / _S;
   const auto delta_final = neml2::where(pos_mask_mix, delta_final_mixed, delta_final_default);
 
-  // Effective mixed-mode displacement jump (always from the current jump).
-  const auto delta_m = neml2::sqrt(delta_n_pos * delta_n_pos + delta_s_sq + _eps);
+  // Effective mixed-mode displacement jump (driven by jump_dm; current jump by default).
+  const auto delta_m = neml2::sqrt(delta_n_pos_dm * delta_n_pos_dm + delta_s_dm_sq + _eps);
 
   // Bilinear damage (with safe denominator for the masked-off branches).
   const auto df_minus_di = delta_final - delta_init;
@@ -211,13 +226,14 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
   // ============================================================
   //
   // The bilinear law has two distinct dependency chains:
-  //   1) Through delta_m (always carried by the current jump _delta).
+  //   1) Through delta_m (carried by jump_dm; this is _delta_old when
+  //      lag_displacement_jump = true and _delta when false).
   //   2) Through beta -> delta_init / delta_final (carried by jump_mix; this is _delta_old when
   //      lag_mode_mixity = true and _delta when false).
   //
-  // We compute both partial chains and then route them to either _delta or _delta_old based on
-  // the lag flag. When lag_mode_mixity = false, _delta_old is unused by the forward path and its
-  // Jacobians collapse to zero.
+  // We compute both partial chains and then route each independently to _delta or _delta_old
+  // based on its lag flag. When neither lag is on, _delta_old is unused by the forward path and
+  // its Jacobians collapse to zero.
 
   // ---- d(beta)/d(jump_mix) in the opening branch ----
   // dbeta/ddn = -delta_s / delta_n^2;  dbeta/dds_i = ds_i / (delta_s * delta_n)
@@ -276,11 +292,12 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
   const auto ddelta_final_djump_mix =
       neml2::where(pos_mask_mix, ddelta_final_djump_mix_open, zero_v);
 
-  // ---- d(delta_m)/d(_delta) ----
-  // delta_m = sqrt(delta_n_pos^2 + delta_s_sq + eps); the normal component is delta_n_pos/delta_m,
-  // which already vanishes in compression.
+  // ---- d(delta_m)/d(jump_dm) ----
+  // delta_m = sqrt(delta_n_pos_dm^2 + delta_s_dm_sq + eps); the normal component is
+  // delta_n_pos_dm/delta_m, which already vanishes in compression of jump_dm.
   const auto inv_dm = 1.0 / delta_m;
-  const auto ddelta_m_ddelta = Vec::fill(delta_n_pos * inv_dm, ds1 * inv_dm, ds2 * inv_dm);
+  const auto ddelta_m_djump_dm =
+      Vec::fill(delta_n_pos_dm * inv_dm, ds1_dm * inv_dm, ds2_dm * inv_dm);
 
   // ---- d(d_trial)/d(...) in the linear damage regime ----
   // d_trial = delta_final * (delta_m - delta_init) / (delta_m * (delta_final - delta_init))
@@ -297,18 +314,22 @@ BiLinearMixedModeTractionSeparation::set_value(bool out, bool dout_din, bool /*d
   const auto dd_trial_ddinit = delta_final * (delta_m - delta_final) * inv_dm * inv_df_minus_di_sq;
   const auto dd_trial_ddfinal = -delta_init * (delta_m - delta_init) * inv_dm * inv_df_minus_di_sq;
 
-  // Chain piece carried by the current jump (always via delta_m).
-  const auto dd_trial_ddelta_via_dm = dd_trial_ddm * ddelta_m_ddelta;
+  // Chain piece carried by jump_dm (via delta_m).
+  const auto dd_trial_djump_dm_via_dm = dd_trial_ddm * ddelta_m_djump_dm;
   // Chain piece carried by jump_mix (via delta_init and delta_final).
   const auto dd_trial_djump_mix_via_initfinal =
       dd_trial_ddinit * ddelta_init_djump_mix + dd_trial_ddfinal * ddelta_final_djump_mix;
 
-  Vec dd_trial_ddelta_linear = dd_trial_ddelta_via_dm;
+  Vec dd_trial_ddelta_linear = zero_v;
   Vec dd_trial_ddelta_old_linear = zero_v;
-  if (_lag_mode_mixity)
-    dd_trial_ddelta_old_linear = dd_trial_djump_mix_via_initfinal;
+  if (_lag_displacement_jump)
+    dd_trial_ddelta_old_linear = dd_trial_ddelta_old_linear + dd_trial_djump_dm_via_dm;
   else
-    dd_trial_ddelta_linear = dd_trial_ddelta_via_dm + dd_trial_djump_mix_via_initfinal;
+    dd_trial_ddelta_linear = dd_trial_ddelta_linear + dd_trial_djump_dm_via_dm;
+  if (_lag_mode_mixity)
+    dd_trial_ddelta_old_linear = dd_trial_ddelta_old_linear + dd_trial_djump_mix_via_initfinal;
+  else
+    dd_trial_ddelta_linear = dd_trial_ddelta_linear + dd_trial_djump_mix_via_initfinal;
 
   const auto dd_trial_ddelta = neml2::where(linear_mask, dd_trial_ddelta_linear, zero_v);
   const auto dd_trial_ddelta_old = neml2::where(linear_mask, dd_trial_ddelta_old_linear, zero_v);
