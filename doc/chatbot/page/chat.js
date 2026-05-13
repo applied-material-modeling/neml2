@@ -169,6 +169,40 @@
     return list;
   }
 
+  // Filter the retrieved sources down to those the model actually cited in
+  // its response, and renumber both the citations in the text and the
+  // sources list so the footer reads [1] [2] [3] in the order the model
+  // mentioned them. Dead `[N]` markers (where N points at a source that
+  // doesn't exist) are left as-is.
+  function renumberCitations(text, sources) {
+    const sourcesByN = new Map(sources.map((s) => [s.n, s]));
+    const order = [];
+    const seen = new Set();
+    const markerRe = /\[(\d+)\]/g;
+    let m;
+    while ((m = markerRe.exec(text)) !== null) {
+      const n = Number.parseInt(m[1], 10);
+      if (!seen.has(n) && sourcesByN.has(n)) {
+        seen.add(n);
+        order.push(n);
+      }
+    }
+    if (order.length === 0) {
+      return { text: text, sources: [] };
+    }
+    const remap = new Map();
+    order.forEach((oldN, i) => remap.set(oldN, i + 1));
+    const newText = text.replace(/\[(\d+)\]/g, function (full, ns) {
+      const n = Number.parseInt(ns, 10);
+      return remap.has(n) ? "[" + remap.get(n) + "]" : full;
+    });
+    const newSources = order.map(function (oldN) {
+      const src = sourcesByN.get(oldN);
+      return { n: remap.get(oldN), url: src.url, title: src.title, ref: src.ref };
+    });
+    return { text: newText, sources: newSources };
+  }
+
   function parseSseStream(stream, onToken, onSources, onDone, onError) {
     const reader = stream.getReader();
     const decoder = new TextDecoder();
@@ -311,15 +345,32 @@
             messages.scrollTop = messages.scrollHeight;
           },
           (srcs) => {
+            // Don't render the footer yet — wait for the `done` event so we
+            // can filter to only the sources the model actually cited and
+            // renumber them in mention order.
             sources = srcs;
-            if (srcs.length) aWrap.appendChild(citationFooter(srcs));
           },
           () => {
-            history.push({ role: "assistant", content: acc, sources });
+            // Filter dead sources + renumber citations in the order the model
+            // mentioned them. Re-render the bubble so the in-text markers
+            // match the trimmed footer (one final flash; happens once).
+            const finalized = renumberCitations(acc, sources);
+            setBubbleContent(aBody, "assistant", finalized.text);
+            if (finalized.sources.length) {
+              aWrap.appendChild(citationFooter(finalized.sources));
+            }
+            // Persist the renumbered version, so reloads from sessionStorage
+            // show the clean state without re-running the filter.
+            history.push({
+              role: "assistant",
+              content: finalized.text,
+              sources: finalized.sources,
+            });
             saveHistory(history);
-            // Math is left as raw `\(...\)` during streaming (typesetting per
-            // token would be expensive and visually noisy). Now that the
-            // stream is complete, run MathJax over this bubble once.
+            // Math was left as raw `\(...\)` during streaming (typesetting
+            // per token would be expensive and visually noisy). Now that the
+            // stream is complete and the bubble has its final text, run
+            // MathJax over it once.
             typesetMath(aBody);
           },
           (err) => {
