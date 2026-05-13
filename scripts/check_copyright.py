@@ -30,7 +30,7 @@ import sys
 import argparse
 
 
-extensions = {".h": "//", ".cxx": "//", ".py": "#", ".sh": "#", ".js": "//"}
+extensions = {".h": "//", ".cxx": "//", ".py": "#", ".sh": "#", ".js": "//", ".ts": "//"}
 additional_files = {}
 
 exclude_dirs = [

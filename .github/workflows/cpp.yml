@@ -29,6 +29,7 @@ jobs:
         btype: [Debug, Release]
     runs-on: ${{ matrix.runner }}
     steps:
+      - uses: actions/checkout@v4
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
@@ -74,6 +75,7 @@ jobs:
     needs: clang-format
     runs-on: macos-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
@@ -91,6 +93,7 @@ jobs:
     needs: clang-format
     runs-on: macos-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
@@ -111,6 +114,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: actions/checkout@v4
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
@@ -133,6 +137,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: actions/checkout@v4
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
@@ -157,6 +162,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: actions/checkout@v4
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min

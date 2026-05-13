@@ -15,6 +15,7 @@ jobs:
   notebooks:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min

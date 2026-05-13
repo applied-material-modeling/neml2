@@ -2,6 +2,7 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="mainpage" visible="yes"/>
+    <tab type="user" url="../chatbot.html" title="Ask AI"/>
     <tab type="usergroup" title="Installation">
       <tab type="user" url="../install.html" title="Basic Installation"/>
       <tab type="user" url="../build-customization.html" title="Build Customization"/>

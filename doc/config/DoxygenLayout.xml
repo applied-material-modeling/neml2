@@ -2,6 +2,7 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="mainpage" visible="yes"/>
+    <tab type="user" url="@ref chatbot" title="Ask AI"/>
     <tab type="usergroup" title="Installation">
       <tab type="user" url="@ref install" title="Basic Installation"/>
       <tab type="user" url="@ref dependency-management" title="Dependency Management"/>

@@ -15,9 +15,11 @@ jobs:
   add_subdirectory:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
         with:
           path: neml2
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
           # dependencies: python.version_min
           python-version: 3.9
           # dependencies: cmake.version_min
@@ -37,9 +39,11 @@ jobs:
   find_package:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
         with:
           path: neml2-src
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
           # dependencies: python.version_min
           python-version: 3.9
           # dependencies: cmake.version_min
@@ -64,9 +68,11 @@ jobs:
   gnumake:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
         with:
           path: neml2-src
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
           # dependencies: python.version_min
           python-version: 3.9
           # dependencies: cmake.version_min

@@ -63,6 +63,14 @@ Test layout under `tests/unit/` mirrors `include/neml2/`. When adding a `Model` 
 
 The doc build pipeline (`neml2-stub` → `doc/scripts/examples.py` → `doc/scripts/genhtml.py`) requires a non-editable `neml2` install. Use the `/build-docs` skill, or see `doc/content/tutorials/contributing.md` for the full workflow.
 
+### Chatbot
+
+`doc/chatbot/` is the in-repo half of the "Ask AI" chatbot — only the chat UI: `page/chat.js` + `page/chat.css`, mounted into the Doxygen-rendered `doc/content/chatbot.md` (registered in `DoxygenLayout(Python).xml`). The page assets are wired through `HTML_EXTRA_FILES`/`HTML_EXTRA_STYLESHEET` in `doc/config/HTML.in` and only mount on `chatbot.html`. The chat page reads the worker URL from a `data-endpoint` attribute on its mount div.
+
+Everything credentialed (the Cloudflare Worker that serves `POST /chat`, the Python indexer that populates Vectorize from the doc build's preprocessed markdown, the scheduled reindex CI, the secrets) lives in [`neml2-chat-worker`](https://github.com/applied-material-modeling/neml2-chat-worker). The neml2 docs CI does not need any Cloudflare secrets. The page → worker contract (Vectorize metadata field names, SSE wire format) is documented in both `doc/chatbot/README.md` here and the worker repo's README.
+
+A doc-build invariant the indexer depends on: every preprocessed page under `build/doc/content/` must begin with `# Title {#ref}`. `doc/scripts/preprocess.py` already guarantees this — breaking that line would silently make the affected pages disappear from the chatbot's index on the next scheduled reindex.
+
 ## CLI tools
 
 When `NEML2_TOOLS=ON` (default in most presets), `src/tools/` builds executables: `neml2-run`, `neml2-inspect`, `neml2-diagnose`, `neml2-syntax`, `neml2-time`. The Python package re-exposes the same entry points as `neml2-run`, `neml2-inspect`, etc., wired through `python/neml2/_cli.py`.

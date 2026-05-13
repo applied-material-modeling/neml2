@@ -12,12 +12,14 @@ HTML_EXTRA_FILES       = ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesom
                          ${repo_root}/doc/js/components/work-dispatcher.js \
                          ${repo_root}/doc/js/components/static-hybrid-scheduler.js \
                          ${repo_root}/doc/js/components/simple-scheduler-demo.js \
-                         ${repo_root}/doc/js/components/static-hybrid-scheduler-demo.js
+                         ${repo_root}/doc/js/components/static-hybrid-scheduler-demo.js \
+                         ${repo_root}/doc/chatbot/page/chat.js
 HTML_EXTRA_STYLESHEET  = ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome.css \
                          ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome-sidebar-only.css \
                          ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css \
                          ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome-tabs.js \
-                         ${repo_root}/doc/config/custom.css
+                         ${repo_root}/doc/config/custom.css \
+                         ${repo_root}/doc/chatbot/page/chat.css
 HTML_COLORSTYLE        = LIGHT
 GENERATE_TREEVIEW      = YES
 PAGE_OUTLINE_PANEL     = NO
