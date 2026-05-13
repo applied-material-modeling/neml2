@@ -80,10 +80,49 @@
     }
   }
 
+  // Configure DOMPurify to open every link in a new tab. Done once at script
+  // load; subsequent sanitize() calls all benefit. The hook is a no-op when
+  // DOMPurify isn't available.
+  if (typeof DOMPurify !== "undefined") {
+    DOMPurify.addHook("afterSanitizeAttributes", function (node) {
+      if (node.tagName === "A") {
+        node.setAttribute("target", "_blank");
+        node.setAttribute("rel", "noopener noreferrer");
+      }
+    });
+  }
+
+  // Render assistant text as markdown -> sanitized HTML. Returns null when
+  // the marked/DOMPurify libs failed to load, so the caller can fall back to
+  // textContent and the chat still works (just without formatting).
+  function renderMarkdown(text) {
+    if (typeof marked === "undefined" || typeof DOMPurify === "undefined") return null;
+    try {
+      const html = marked.parse(text, { breaks: true, gfm: true });
+      return DOMPurify.sanitize(html);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Set a bubble's content, honoring the role:
+  //   - assistant: parse as markdown when libs are available, else textContent.
+  //   - user: always textContent (don't render user input as HTML).
+  function setBubbleContent(body, role, text) {
+    if (role === "assistant") {
+      const html = renderMarkdown(text);
+      if (html !== null) {
+        body.innerHTML = html;
+        return;
+      }
+    }
+    body.textContent = text;
+  }
+
   function bubble(role, text) {
     const wrap = el("div", { class: `neml2-chat-bubble neml2-chat-${role}` });
     const body = el("div", { class: "neml2-chat-bubble-body" });
-    body.textContent = text;
+    setBubbleContent(body, role, text);
     wrap.appendChild(body);
     return { wrap, body };
   }
@@ -229,9 +268,12 @@
         await parseSseStream(
           resp.body,
           (tok) => {
-            if (acc === "") aBody.textContent = "";
             acc += tok;
-            aBody.textContent = acc;
+            // Re-render on every token. Markdown libs handle partial input
+            // gracefully; the user sees text appear in formatted form, with
+            // partial-link/code-fence flicker that resolves once the token
+            // finishes streaming.
+            setBubbleContent(aBody, "assistant", acc);
             messages.scrollTop = messages.scrollHeight;
           },
           (srcs) => {
