@@ -92,6 +92,25 @@
     });
   }
 
+  // Convert Doxygen math delimiters to MathJax delimiters, then double-escape
+  // every `\(`, `\)`, `\[`, `\]` so marked doesn't strip the backslash via
+  // its standard escape rule. After marked runs, `\\(` becomes `\(` in the
+  // HTML output, where MathJax (loaded by Doxygen on every page) picks it up
+  // when we call typesetMath() on the bubble.
+  function preprocessMath(text) {
+    // \f$ delimiters are symmetric — alternate between open and close.
+    let inMath = false;
+    text = text.replace(/\\f\$/g, function () {
+      inMath = !inMath;
+      return inMath ? "\\(" : "\\)";
+    });
+    // \f[ ... \f] is asymmetric (opening vs closing).
+    text = text.replace(/\\f\[/g, "\\[").replace(/\\f\]/g, "\\]");
+    // Protect MathJax delimiters from marked's `\X` -> `X` escape rule.
+    text = text.replace(/\\([()[\]])/g, "\\\\$1");
+    return text;
+  }
+
   // Render assistant text as markdown -> sanitized HTML. Returns null when
   // the marked/DOMPurify libs failed to load, so the caller can fall back to
   // textContent and the chat still works (just without formatting).
@@ -105,12 +124,25 @@
     }
   }
 
+  // Run MathJax over an element. No-op when MathJax isn't available (e.g.
+  // because the parent Doxygen page didn't load it). Call after the stream
+  // completes — typesetting per-token would be expensive and re-flow the
+  // bubble noisily.
+  function typesetMath(element) {
+    if (typeof MathJax === "undefined" || typeof MathJax.typesetPromise !== "function") return;
+    MathJax.typesetPromise([element]).catch(function () {
+      // Swallow typeset errors (malformed math) — we'd rather leave raw text
+      // visible than break the whole render.
+    });
+  }
+
   // Set a bubble's content, honoring the role:
-  //   - assistant: parse as markdown when libs are available, else textContent.
+  //   - assistant: preprocess math + parse as markdown when libs are
+  //     available, else textContent.
   //   - user: always textContent (don't render user input as HTML).
   function setBubbleContent(body, role, text) {
     if (role === "assistant") {
-      const html = renderMarkdown(text);
+      const html = renderMarkdown(preprocessMath(text));
       if (html !== null) {
         body.innerHTML = html;
         return;
@@ -224,6 +256,8 @@
         }
         messages.appendChild(wrap);
       }
+      // Typeset math across the whole rendered history in one MathJax pass.
+      typesetMath(messages);
       messages.scrollTop = messages.scrollHeight;
     }
 
@@ -283,6 +317,10 @@
           () => {
             history.push({ role: "assistant", content: acc, sources });
             saveHistory(history);
+            // Math is left as raw `\(...\)` during streaming (typesetting per
+            // token would be expensive and visually noisy). Now that the
+            // stream is complete, run MathJax over this bubble once.
+            typesetMath(aBody);
           },
           (err) => {
             aBody.textContent = `Error: ${err.message}`;
