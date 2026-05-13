@@ -1,6 +1,6 @@
 # NEML2 docs chatbot
 
-The "Ask AI" page on the deployed docs is a retrieval-augmented chatbot. The neml2 repo owns only the page UI and its Doxygen wiring. Everything else — the Cloudflare Worker that serves `POST /chat`, the indexer that populates Vectorize, and all credentialed CI — lives in the [`neml2-chat-worker`](https://github.com/applied-material-modeling/neml2-chat-worker) repo.
+The "Chat with Docs" page on the deployed docs is a retrieval-augmented chatbot. The neml2 repo owns only the page UI and its Doxygen wiring. Everything else — the Cloudflare Worker that serves `POST /chat`, the indexer that populates Vectorize, and all credentialed CI — lives in the [`neml2-chat-worker`](https://github.com/applied-material-modeling/neml2-chat-worker) repo.
 
 ```
 chatbot.html (Doxygen-rendered page in this repo)
@@ -15,7 +15,7 @@ What lives where:
 | Component | Repo | Lifecycle |
 |---|---|---|
 | `page/chat.js`, `page/chat.css` — chat UI | this repo (`doc/chatbot/page/`) | Built into the docs by Doxygen via `HTML_EXTRA_FILES` / `HTML_EXTRA_STYLESHEET` |
-| `chatbot.md` — the page itself | this repo (`doc/content/chatbot.md`) | Registered as the top-level "Ask AI" tab in `DoxygenLayout(.xml,Python.xml)` |
+| `chatbot.md` — the page itself | this repo (`doc/content/chatbot.md`) | Registered as the top-level "Chat with Docs" tab in `DoxygenLayout(.xml,Python.xml)` |
 | Cloudflare Worker (`POST /chat`, RAG + LLM streaming) | `neml2-chat-worker` (`src/`) | Maintainer-owned; deploys independently |
 | Indexer that populates Vectorize | `neml2-chat-worker` (`ingest/`) | Maintainer-owned; runs on a schedule (typically weekly) |
 | Cloudflare account, Vectorize index, AI Gateway, secrets | The maintainer's Cloudflare account | Provisioned once per `BRING-UP.md` in the worker repo |

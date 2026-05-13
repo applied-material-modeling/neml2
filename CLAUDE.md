@@ -65,7 +65,7 @@ The doc build pipeline (`neml2-stub` → `doc/scripts/examples.py` → `doc/scri
 
 ### Chatbot
 
-`doc/chatbot/` is the in-repo half of the "Ask AI" chatbot — only the chat UI: `page/chat.js` + `page/chat.css`, mounted into the Doxygen-rendered `doc/content/chatbot.md` (registered in `DoxygenLayout(Python).xml`). The page assets are wired through `HTML_EXTRA_FILES`/`HTML_EXTRA_STYLESHEET` in `doc/config/HTML.in` and only mount on `chatbot.html`. The chat page reads the worker URL from a `data-endpoint` attribute on its mount div.
+`doc/chatbot/` is the in-repo half of the "Chat with Docs" chatbot — only the chat UI: `page/chat.js` + `page/chat.css`, mounted into the Doxygen-rendered `doc/content/chatbot.md` (registered in `DoxygenLayout(Python).xml`). The page assets are wired through `HTML_EXTRA_FILES`/`HTML_EXTRA_STYLESHEET` in `doc/config/HTML.in` and only mount on `chatbot.html`. The chat page reads the worker URL from a `data-endpoint` attribute on its mount div.
 
 Everything credentialed (the Cloudflare Worker that serves `POST /chat`, the Python indexer that populates Vectorize from the doc build's preprocessed markdown, the scheduled reindex CI, the secrets) lives in [`neml2-chat-worker`](https://github.com/applied-material-modeling/neml2-chat-worker). The neml2 docs CI does not need any Cloudflare secrets. The page → worker contract (Vectorize metadata field names, SSE wire format) is documented in both `doc/chatbot/README.md` here and the worker repo's README.
 

@@ -165,7 +165,7 @@ python3 -m http.server -d build/doc/build/html 8000
 
 > **Avoid the `firefox build/doc/build/html/index.html` (i.e. `file://`) shortcut.** Several features expect to load over HTTP:
 >
-> - The "Ask AI" chat page makes a `fetch` call to the deployed Cloudflare Worker. With `file://` the browser sets `Origin: null`, which never matches the worker's CORS allowlist, and the chat panel returns "Failed to fetch" with no further detail. To test against a local `wrangler dev --remote` (in the [`neml2-chat-worker`](https://github.com/applied-material-modeling/neml2-chat-worker) repo) you must serve from `http://localhost:8000/` — the chat page detects `localhost` and routes to `http://localhost:8787/chat` automatically.
+> - The "Chat with Docs" page makes a `fetch` call to the deployed Cloudflare Worker. With `file://` the browser sets `Origin: null`, which never matches the worker's CORS allowlist, and the chat panel returns "Failed to fetch" with no further detail. To test against a local `wrangler dev --remote` (in the [`neml2-chat-worker`](https://github.com/applied-material-modeling/neml2-chat-worker) repo) you must serve from `http://localhost:8000/` — the chat page detects `localhost` and routes to `http://localhost:8787/chat` automatically.
 > - Some browsers also restrict module scripts and `fetch()` over `file://`, which can break other interactive pieces of the site silently.
 >
 > If you really need `file://` for a quick visual check, anything that doesn't talk to a backend will still render — but the chatbot won't.
