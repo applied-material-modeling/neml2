@@ -1,4 +1,4 @@
-#include "neml2/models/solid_mechanics/crystal_plasticity/ThermallyActivatedDislocationMobility.h"
+#include "neml2/models/solid_mechanics/crystal_plasticity/ThermallyActivatedDislocationMobility_diag.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/exp.h"
@@ -9,53 +9,29 @@
 
 namespace neml2
 {
-register_NEML2_object(ThermallyActivatedDislocationMobility);
+register_NEML2_object(ThermallyActivatedDislocationMobility_diag);
 
 OptionSet
-ThermallyActivatedDislocationMobility::expected_options()
+ThermallyActivatedDislocationMobility_diag::expected_options()
 {
-    OptionSet options = Model::expected_options();
-    options.set_input("effective_shear");
-    options.set_input("athermal_shear");
-    options.set_input("dislocation_density");
-    options.set_input("temperature");
-    options.set_buffer<TensorName<Scalar>>("h");
-    options.set_buffer<TensorName<Scalar>>("b");
-    options.set_buffer<TensorName<Scalar>>("a");
-    options.set_parameter<TensorName<Scalar>>("Bk");
-    options.set_parameter<TensorName<Scalar>>("tau_p");
-    options.set_parameter<TensorName<Scalar>>("T_0");
-    options.set_parameter<TensorName<Scalar>>("p");
-    options.set_parameter<TensorName<Scalar>>("q");
-    options.set_parameter<TensorName<Scalar>>("H_0");
-    options.set_buffer<TensorName<Scalar>>("k_B");
-    options.set_parameter<TensorName<Scalar>>("s");
-    options.set_output("v_disl");
+    OptionSet options = ThermallyActivatedDislocationMobility::expected_options();
+    options.set_output("tau_ratio");
+    options.set_output("D_G");
+    options.set_output("mclD_G");
+    options.set_output("exp_arg");
 
     return options;
 }
-ThermallyActivatedDislocationMobility::ThermallyActivatedDislocationMobility(const OptionSet & options) : Model(options),
-    _tau_eff(declare_input_variable<Scalar>("effective_shear")),
-    _tau_a(declare_input_variable<Scalar>("athermal_shear")),
-    _rho_m(declare_input_variable<Scalar>("dislocation_density")),
-    _T(declare_input_variable<Scalar>("temperature")),
-    _h(declare_buffer<Scalar>("h", "h")),
-    _b(declare_buffer<Scalar>("b", "b")),
-    _a(declare_buffer<Scalar>("a", "a")),
-    _Bk(declare_parameter<Scalar>("Bk", "Bk", true)),
-    _tau_p(declare_parameter<Scalar>("tau_p", "tau_p", true)),
-    _T_0(declare_parameter<Scalar>("T_0", "T_0", true)),
-    _p(declare_parameter<Scalar>("p", "p", true)),
-    _q(declare_parameter<Scalar>("q", "q", true)),
-    _D_H(declare_parameter<Scalar>("H_0", "H_0", true)),
-    _k_B(declare_buffer<Scalar>("k_B", "k_B")),
-    _s(declare_parameter<Scalar>("s","s", true)),
-    _v(declare_output_variable<Scalar>("v_disl"))
+ThermallyActivatedDislocationMobility_diag::ThermallyActivatedDislocationMobility_diag(const OptionSet & options) : ThermallyActivatedDislocationMobility(options),
+    _tau_ratio(declare_output_variable<Scalar>("tau_ratio")),
+    _D_G(declare_output_variable<Scalar>("D_G")),
+    _mclD_G(declare_output_variable<Scalar>("mclD_G")),
+    _exp_arg(declare_output_variable<Scalar>("exp_arg"))
 
 {
 }
 void
-ThermallyActivatedDislocationMobility::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+ThermallyActivatedDislocationMobility_diag::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
     // Precompute common subexpressions
     const auto L_eff        = pow(_rho_m(), -0.5);                          // Dislocation segment length L = 1/sqrt(rho_m)
@@ -73,6 +49,10 @@ ThermallyActivatedDislocationMobility::set_value(bool out, bool dout_din, bool /
     if (out)
     {
         _v = v_kp;
+        _tau_ratio = tau_ratio;
+        _D_G = D_G;
+        _mclD_G = dg1;
+        _exp_arg = exp_core;
     }
 
 

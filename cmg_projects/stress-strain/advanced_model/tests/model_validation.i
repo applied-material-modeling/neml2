@@ -21,12 +21,8 @@
     []
     [S]
         type = Scalar
-        values = 10.0
-        batch_shape = '(1)'
-    []
-    [tau_a]
-        type = Scalar
         values = 0
+        batch_shape = '(1)'
     []
     [tau_p] # MPa
         type = Scalar
@@ -38,7 +34,7 @@
     []
     [alpha]
         type = Scalar
-        values = 0.0
+        values = 0
     []
     [p]
         type = Scalar
@@ -56,17 +52,17 @@
         type = Scalar
         values = 2956
     []
-    [a] #mm
+    [a] #m
         type = Scalar
-        values = 3.16e-7
+        values = 3.16e-10
     []
-    [b] #mm
+    [b] #m
         type = Scalar
-        values = 2.737e-7
+        values = 2.737e-10
     []
-    [h] #mm
+    [h] #m
         type = Scalar
-        values = 2.581e-7
+        values = 2.581e-10
     []
     [k_B] # eV/K
         type = Scalar
@@ -122,21 +118,16 @@
     [yield]
         type = YieldFunction
         yield_stress = '0.0'
-    []
-    [full_yield]
-        type = ScalarLinearCombination
-        from_var = 'state/internal/fp state/internal/s_a'
-        to_var = 'state/internal/fp_n'
-        coefficients = '1 -1'
+        isotropic_hardening = 'state/internal/s_a'
     []
     [flow]
         type = ComposedModel
-        models = 'overstress vonmises yield full_yield'
+        models = 'overstress vonmises yield'
     []
     [normality]
         type = Normality
         model = 'flow'
-        function = 'state/internal/fp_n'
+        function = 'state/internal/fp'
         from = 'state/internal/M'
         to = 'state/internal/NM'
     []
@@ -164,6 +155,29 @@
         s = 'S'
         H_0 = 'H_0'
         v_disl = 'state/internal/v_disl'
+    []
+    [v_disl_diag]
+        type = ThermallyActivatedDislocationMobility_diag
+        effective_shear      = 'state/internal/tau_eff'
+        athermal_shear       = 'state/internal/s_a'
+        dislocation_density  = 'state/internal/rho_m'
+        temperature          = 'forces/T'
+        h    = 'h'
+        b    = 'b'
+        a    = 'a'
+        Bk   = 'Bk'
+        tau_p = 'tau_p'
+        T_0  = 'T_0'
+        p    = 'p'
+        q    = 'q'
+        k_B  = 'k_B'
+        s    = 'S'
+        H_0  = 'H_0'
+        v_disl    = 'state/internal/v_disl'
+        tau_ratio = 'state/internal/tau_ratio'
+        D_G       = 'state/internal/D_G'
+        mclD_G    = 'state/internal/mclD_G'
+        exp_arg   = 'state/internal/exp_arg'
     []
     [rho_m_rate]
         type = KocksMeckingDislocationDensity

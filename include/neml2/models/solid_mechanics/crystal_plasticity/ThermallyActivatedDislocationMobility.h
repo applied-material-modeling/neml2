@@ -23,7 +23,7 @@ protected:
 
     // Variables from equation
     const Scalar & _h;      // buffer
-    const Scalar & _b;      // biffer
+    const Scalar & _b;      // buffer
     const Scalar & _a;      // buffer
     const Scalar & _Bk;     // parameter
     const Scalar & _tau_p;  // parameter
