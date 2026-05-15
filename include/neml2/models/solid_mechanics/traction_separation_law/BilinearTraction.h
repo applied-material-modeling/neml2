@@ -32,35 +32,44 @@ class Scalar;
 class Vec;
 
 /**
- * @brief Exponential cohesive-zone traction with internal damage state.
+ * @brief Bilinear cohesive-zone traction with internal damage state.
  *
- * Given the current effective separation \f$ \delta_\text{eff} \f$ and the
- * per-component displacement-jump pieces, this model:
+ * Given the effective separation \f$ \delta_m \f$, the initiation /
+ * full-degradation thresholds \f$ \delta_\text{init} \f$ and
+ * \f$ \delta_\text{final} \f$, and the per-component displacement-jump
+ * pieces, this model:
  *
- *   1. Computes the trial damage
- *      \f$ d_\text{trial} = 1 - \exp(-\delta_\text{eff} / \delta_0) \f$.
+ *   1. Computes the bilinear damage variable
+ *      \f[
+ *         d_\text{trial} = \begin{cases}
+ *           0 & \delta_m \le \delta_\text{init} \\
+ *           \dfrac{\delta_\text{final} (\delta_m - \delta_\text{init})}
+ *                 {\delta_m (\delta_\text{final} - \delta_\text{init})}
+ *             & \delta_\text{init} < \delta_m < \delta_\text{final} \\
+ *           1 & \delta_m \ge \delta_\text{final}
+ *         \end{cases}
+ *      \f]
  *   2. Caps it for irreversibility: \f$ d = \max(d_\text{trial}, d_{n-1}) \f$
  *      where \f$ d_{n-1} \f$ is the previous-step damage (auto-declared via
  *      `history_name` on the `damage` output).
  *   3. Assembles the traction:
  *      \f[
- *         T_n = (1 - d) \frac{G_c}{\delta_0^2} \delta_n^\text{sep}
- *               + [K_\text{pen}\,\delta_n^\text{pen}], \quad
- *         T_{si} = (1 - d) \frac{G_c}{\delta_0^2} \delta_{si}.
+ *         T_n = K(1-d)\delta_n^+ + K \delta_n^-, \quad
+ *         T_{si} = K(1-d)\delta_{si}.
  *      \f]
  *
- * The bracketed interpenetration term is included only if the user supplies
- * `normal_penetration` (and the corresponding `penalty_stiffness` parameter).
- * The damage variable is exposed as a secondary output for inspection;
- * irreversibility is handled internally via the auto-declared `damage~1`
- * history input — no external `IrreversibleScalar` is needed in the recipe.
+ * The damage variable is intentionally an internal computational artifact of
+ * the bilinear law — it is exposed as a secondary `damage` output for
+ * inspection but the framework's history-variable mechanism (and the cap in
+ * step 2) handles irreversibility internally; no external `IrreversibleScalar`
+ * is needed.
  */
-class ExponentialTraction : public Model
+class BilinearTraction : public Model
 {
 public:
   static OptionSet expected_options();
 
-  ExponentialTraction(const OptionSet & options);
+  BilinearTraction(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -74,26 +83,27 @@ protected:
   /// Damage scalar (previous step, auto-declared via `history_name`)
   const Variable<Scalar> & _d_old;
 
-  /// Current effective separation \f$ \delta_\text{eff} \f$
-  const Variable<Scalar> & _delta_eff;
+  /// Effective separation \f$ \delta_m \f$
+  const Variable<Scalar> & _delta_m;
 
-  /// Normal separation \f$ \delta_n^\text{sep} \f$
+  /// Initiation threshold \f$ \delta_\text{init} \f$
+  const Variable<Scalar> & _delta_init;
+
+  /// Full-degradation threshold \f$ \delta_\text{final} \f$
+  const Variable<Scalar> & _delta_final;
+
+  /// Normal separation \f$ \delta_n^\text{sep} \f$ (typically Macaulay-positive)
   const Variable<Scalar> & _dn_sep;
 
-  /// Optional normal penetration \f$ \delta_n^\text{pen} \f$; nullptr if not supplied
+  /// Optional normal penetration \f$ \delta_n^\text{pen} \f$ (typically Macaulay-negative);
+  /// nullptr if the user did not supply it
   const Variable<Scalar> * _dn_pen;
 
+  /// Tangential separations
   const Variable<Scalar> & _ds1;
   const Variable<Scalar> & _ds2;
 
-  /// Fracture toughness G_c
-  const Scalar & _Gc;
-
-  /// Softening length scale \f$ \delta_0 \f$
-  const Scalar & _delta0;
-
-  /// Optional penalty stiffness for interpenetration; nullptr if `normal_penetration` was not
-  /// supplied
-  const Scalar * _Kpen;
+  /// Penalty stiffness K
+  const Scalar & _K;
 };
 } // namespace neml2

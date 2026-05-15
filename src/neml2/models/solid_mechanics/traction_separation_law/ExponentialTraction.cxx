@@ -23,12 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/traction_separation_law/ExponentialTraction.h"
-#include "neml2/misc/types.h"
+#include "neml2/misc/assertions.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
-#include "neml2/tensors/R2.h"
 #include "neml2/tensors/functions/exp.h"
-#include "neml2/tensors/functions/sqrt.h"
 #include "neml2/tensors/functions/where.h"
 
 namespace neml2
@@ -38,123 +36,125 @@ register_NEML2_object(ExponentialTraction);
 OptionSet
 ExponentialTraction::expected_options()
 {
-  OptionSet options = TractionSeparationLaw::expected_options();
+  OptionSet options = Model::expected_options();
   options.doc() =
-      "Exponential cohesive-zone traction-separation law with isotropic scalar damage. "
-      "An effective scalar separation \\f$ \\delta_{\\text{eff}} = "
-      "\\sqrt{\\delta_n^2 + \\beta(\\delta_{s1}^2 + \\delta_{s2}^2) + \\varepsilon} \\f$ drives "
-      "an exponential damage \\f$ d = 1 - \\exp(-\\kappa/\\delta_0) \\f$, and the traction is "
-      "\\f$ \\boldsymbol{T} = (1 - d)\\,(G_c/\\delta_0^2)\\,\\boldsymbol{\\delta} \\f$. "
-      "When `irreversible_damage` is true, \\f$ \\kappa \\f$ is the historical maximum of "
-      "\\f$ \\delta_{\\text{eff}} \\f$ (no healing); otherwise it tracks the current value.";
+      "Exponential cohesive-zone traction with internal damage state. Computes "
+      "\\f$ d_\\text{trial} = 1 - \\exp(-\\delta_\\text{eff}/\\delta_0) \\f$ from the current "
+      "effective separation, caps it for irreversibility against the previous-step value "
+      "(auto-declared via `history_name`), and assembles \\f$ T_n = (1-d)(G_c/\\delta_0^2) "
+      "\\delta_n^\\text{sep}, T_{si} = (1-d)(G_c/\\delta_0^2) \\delta_{si} \\f$. If "
+      "`normal_penetration` is supplied, \\f$ K_\\text{pen}\\,\\delta_n^\\text{pen} \\f$ is "
+      "added to \\f$ T_n \\f$ as a penalty term resisting interpenetration "
+      "(`penalty_stiffness` becomes required).";
 
+  options.add_input("effective_separation",
+                    "Current effective separation \\f$ \\delta_\\text{eff} \\f$ (typically "
+                    "computed by an upstream `ScalarPNorm`)");
+  options.add_input("normal_separation",
+                    "Normal separation \\f$ \\delta_n^\\text{sep} \\f$ (typically the "
+                    "Macaulay-positive part of the normal jump)");
+  options.add_input("normal_penetration",
+                    "Optional normal penetration \\f$ \\delta_n^\\text{pen} \\f$. When "
+                    "supplied, \\f$ K_\\text{pen}\\,\\delta_n^\\text{pen} \\f$ is added to "
+                    "\\f$ T_n \\f$ as a penalty term resisting interpenetration. Requires "
+                    "`penalty_stiffness` to be supplied as well.");
+  options.add_input("tangential_separation_1",
+                    "First tangential separation \\f$ \\delta_{s1} \\f$");
+  options.add_input("tangential_separation_2",
+                    "Second tangential separation \\f$ \\delta_{s2} \\f$");
+  options.add_output("to", "Traction Vec");
+  options.add_output("damage", "Damage scalar (current step, irreversibility-capped)");
   options.add_parameter<Scalar>("fracture_toughness", "Fracture toughness G_c");
-  options.add_parameter<Scalar>("characteristic_length", "Softening length scale delta_0");
-  options.add_parameter<Scalar>("tangential_weight",
-                                "Tangential weighting factor beta in the effective separation");
-
-  options.add<bool>(
-      "irreversible_damage",
-      true,
-      "If true, freeze damage at the historical peak effective separation (no healing). "
-      "If false, damage tracks the current effective separation reversibly.");
+  options.add_parameter<Scalar>("characteristic_length",
+                                "Softening length scale \\f$ \\delta_0 \\f$");
+  // Optional with default 0 — the constructor asserts this is supplied iff `normal_penetration` is.
+  options.add_parameter<Scalar>(
+      "penalty_stiffness",
+      TensorName<Scalar>("0"),
+      "Penalty stiffness used to resist interpenetration. Required when `normal_penetration` "
+      "is supplied; ignored otherwise.");
 
   return options;
 }
 
 ExponentialTraction::ExponentialTraction(const OptionSet & options)
-  : TractionSeparationLaw(options),
-    _kappa(declare_output_variable<Scalar>("effective_displacement_jump_max")),
-    _kappa_n(declare_input_variable<Scalar>(history_name(_kappa.name(), /*nstep=*/1))),
-    // allow_nonlinear=false: this model does not provide _T.d(*Gc) / etc., so the parameters
-    // must be declared as plain (non-nonlinear) parameters.
+  : Model(options),
+    _to(declare_output_variable<Vec>("to")),
+    _d(declare_output_variable<Scalar>("damage")),
+    _d_old(declare_input_variable<Scalar>(history_name(_d.name(), /*nstep=*/1))),
+    _delta_eff(declare_input_variable<Scalar>("effective_separation")),
+    _dn_sep(declare_input_variable<Scalar>("normal_separation")),
+    _dn_pen(options.user_specified("normal_penetration")
+                ? &declare_input_variable<Scalar>("normal_penetration")
+                : nullptr),
+    _ds1(declare_input_variable<Scalar>("tangential_separation_1")),
+    _ds2(declare_input_variable<Scalar>("tangential_separation_2")),
     _Gc(declare_parameter<Scalar>("Gc", "fracture_toughness", false)),
     _delta0(declare_parameter<Scalar>("delta0", "characteristic_length", false)),
-    _beta(declare_parameter<Scalar>("beta", "tangential_weight", false)),
-    _irreversible(options.get<bool>("irreversible_damage"))
+    _Kpen(_dn_pen ? &declare_parameter<Scalar>("Kpen", "penalty_stiffness", false) : nullptr)
 {
+  neml_assert(options.user_specified("normal_penetration") ==
+                  options.user_specified("penalty_stiffness"),
+              "ExponentialTraction: `normal_penetration` and `penalty_stiffness` must be "
+              "supplied together (or neither).");
 }
 
 void
 ExponentialTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  // Component access on the underlying Vec
-  const auto delta_n = _delta()(0);
-  const auto delta_s1 = _delta()(1);
-  const auto delta_s2 = _delta()(2);
+  // -------- Trial damage from the current effective separation.
+  const auto exp_term = neml2::exp(-_delta_eff() / _delta0);
+  const auto d_trial = 1.0 - exp_term;
 
-  // Effective scalar separation, regularized with the dtype's machine epsilon to avoid the AD
-  // singularity of sqrt() at zero jump.
-  const auto eps = machine_precision(_delta.scalar_type());
-  const auto delta_eff_sq = delta_n * delta_n + _beta * (delta_s1 * delta_s1 + delta_s2 * delta_s2);
-  const auto delta_eff = neml2::sqrt(delta_eff_sq + eps);
+  // -------- Irreversibility cap: damage = max(d_trial, d_old).
+  const auto advance = (d_trial > _d_old()).detach();
+  const auto d = neml2::where(advance, d_trial, _d_old());
 
-  // Damage driver: irreversible -> max(kappa_n, delta_eff); reversible -> delta_eff
-  const auto kappa = _irreversible ? neml2::where(delta_eff > _kappa_n(), delta_eff, _kappa_n())
-                                   : Scalar(delta_eff);
-
-  // Damage and degraded stiffness scalar
-  const auto d = Scalar::ones_like(_Gc) - neml2::exp(-kappa / _delta0);
   const auto c = _Gc / (_delta0 * _delta0);
-  const auto factor = (Scalar::ones_like(_Gc) - d) * c;
+  const auto active_scale = (1.0 - d) * c;
 
   if (out)
   {
-    _T = Vec::fill(factor * delta_n, factor * delta_s1, factor * delta_s2);
-    _kappa = kappa;
+    auto T_n = active_scale * _dn_sep();
+    if (_dn_pen)
+      T_n = T_n + (*_Kpen) * (*_dn_pen)();
+    _to = Vec::fill(T_n, active_scale * _ds1(), active_scale * _ds2());
+    _d = d;
   }
 
-  if (dout_din)
-  {
-    // d delta_eff / d delta_j
-    const auto dde_ddn = delta_n / delta_eff;
-    const auto dde_dds1 = _beta * delta_s1 / delta_eff;
-    const auto dde_dds2 = _beta * delta_s2 / delta_eff;
+  if (!dout_din)
+    return;
 
-    // d kappa / d input. In irreversible mode, kappa freezes when delta_eff <= kappa_n.
-    const auto zero_s = Scalar::zeros_like(_Gc);
-    const auto one_s = Scalar::ones_like(_Gc);
+  // -------- Jacobians.
+  // d(d_trial)/d(delta_eff) = (1/delta_0) * exp(-delta_eff/delta_0)
+  const auto dt_ddeff = exp_term / _delta0;
+  // Irreversibility freezes the partial when d_trial doesn't advance.
+  // (Keep `zero`/`one` as Scalar tensors because `where` requires both branches to be
+  // typed Tensors of matching shape — literal doubles aren't accepted directly.)
+  const auto zero = Scalar::zeros_like(_delta_eff());
+  const auto one = Scalar::ones_like(_delta_eff());
+  const auto dd_ddeff = neml2::where(advance, dt_ddeff, zero);
+  const auto dd_dd_old = neml2::where(advance, zero, one);
 
-    Scalar dk_ddn = dde_ddn;
-    Scalar dk_dds1 = dde_dds1;
-    Scalar dk_dds2 = dde_dds2;
-    Scalar dk_dkn = zero_s;
-    if (_irreversible)
-    {
-      const auto advancing = delta_eff > _kappa_n();
-      dk_ddn = neml2::where(advancing, dde_ddn, zero_s);
-      dk_dds1 = neml2::where(advancing, dde_dds1, zero_s);
-      dk_dds2 = neml2::where(advancing, dde_dds2, zero_s);
-      dk_dkn = neml2::where(advancing, zero_s, one_s);
-    }
+  _d.d(_delta_eff) = dd_ddeff;
+  _d.d(_d_old) = dd_dd_old;
 
-    // d d / d kappa = (1/delta_0) * exp(-kappa/delta_0)
-    const auto dd_dkappa = neml2::exp(-kappa / _delta0) / _delta0;
+  // d(traction)/...
+  // For each component i, T_active_i = (1-d)*c*δ_i, so
+  //   dT_i/d(d)   = -c * δ_i
+  //   dT_i/d(δ_i) =  (1-d)*c   (direct — d held fixed)
+  const auto dT_dd_n = -c * _dn_sep();
+  const auto dT_dd_s1 = -c * _ds1();
+  const auto dT_dd_s2 = -c * _ds2();
 
-    // d T_i / d delta_j = (1-d) c delta_ij - c delta_i (dd/dkappa)(dkappa/d delta_j)
-    const auto cdd_ddn = c * dd_dkappa * dk_ddn;
-    const auto cdd_dds1 = c * dd_dkappa * dk_dds1;
-    const auto cdd_dds2 = c * dd_dkappa * dk_dds2;
+  _to.d(_delta_eff) = Vec::fill(dT_dd_n * dd_ddeff, dT_dd_s1 * dd_ddeff, dT_dd_s2 * dd_ddeff);
+  _to.d(_d_old) = Vec::fill(dT_dd_n * dd_dd_old, dT_dd_s1 * dd_dd_old, dT_dd_s2 * dd_dd_old);
 
-    const auto J11 = factor - cdd_ddn * delta_n;
-    const auto J12 = -cdd_dds1 * delta_n;
-    const auto J13 = -cdd_dds2 * delta_n;
-    const auto J21 = -cdd_ddn * delta_s1;
-    const auto J22 = factor - cdd_dds1 * delta_s1;
-    const auto J23 = -cdd_dds2 * delta_s1;
-    const auto J31 = -cdd_ddn * delta_s2;
-    const auto J32 = -cdd_dds1 * delta_s2;
-    const auto J33 = factor - cdd_dds2 * delta_s2;
+  _to.d(_dn_sep) = Vec::fill(active_scale, zero, zero);
+  _to.d(_ds1) = Vec::fill(zero, active_scale, zero);
+  _to.d(_ds2) = Vec::fill(zero, zero, active_scale);
 
-    _T.d(_delta) = R2::fill(J11, J12, J13, J21, J22, J23, J31, J32, J33);
-
-    // d T_i / d kappa_n = -c delta_i (dd/dkappa)(dkappa/d kappa_n)
-    const auto cdd_dkn = c * dd_dkappa * dk_dkn;
-    _T.d(_kappa_n) = Vec::fill(-cdd_dkn * delta_n, -cdd_dkn * delta_s1, -cdd_dkn * delta_s2);
-
-    // d kappa / d delta_j and d kappa / d kappa_n
-    _kappa.d(_delta) = Vec::fill(dk_ddn, dk_dds1, dk_dds2);
-    _kappa.d(_kappa_n) = dk_dkn;
-  }
+  if (_dn_pen)
+    _to.d(*_dn_pen) = Vec::fill(Scalar(*_Kpen), zero, zero);
 }
 } // namespace neml2

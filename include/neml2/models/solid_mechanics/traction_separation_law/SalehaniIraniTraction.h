@@ -24,35 +24,45 @@
 
 #pragma once
 
-#include "neml2/models/solid_mechanics/traction_separation_law/TractionSeparationLaw.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
 class Scalar;
+class Vec;
 
 /**
- * @brief 3D exponential cohesive-zone traction-separation law of Salehani and Irani.
+ * @brief 3D coupled exponential cohesive law of Salehani & Irani with internal damage state.
  *
- * Defines a smooth exponential coupling of normal and shear separations:
  * \f[
- *   T_i = a_i \frac{\delta_i}{\delta_{u0,i}} \exp(-x), \qquad
- *   x = \frac{\delta_n}{\delta_{u0,n}}
- *       + \left(\frac{\delta_{s1}}{\delta_{u0,t}}\right)^2
- *       + \left(\frac{\delta_{s2}}{\delta_{u0,t}}\right)^2,
+ *   T_i = a_i b_i (1 - d), \quad
+ *   x = b_n + b_{s1}^2 + b_{s2}^2,
  * \f]
- * with \f$ a_n = e\, T_n^{\max} \f$ and \f$ a_t = \sqrt{2e}\, T_t^{\max} \f$. The normal component
- * enters linearly (\f$\alpha=1\f$) while the shear components enter quadratically (\f$\alpha=2\f$).
+ * where \f$ b_n = \delta_n^\text{sep} / \delta_{u0,n} \f$,
+ * \f$ b_{si} = \delta_{si} / (\sqrt{2}\,\delta_{u0,t}) \f$,
+ * \f$ a_n = e\, T_n^{\max} \f$, and \f$ a_t = \sqrt{2e}\, T_t^{\max} \f$.
+ * The damage variable is computed as
+ * \f[
+ *   d_\text{trial} = 1 - \exp(-x), \quad d = \max(d_\text{trial}, d_{n-1}),
+ * \f]
+ * with \f$ d_{n-1} \f$ the previous-step damage (auto-declared via
+ * `history_name` on the `damage` output). For monotonically increasing
+ * \f$ x \f$ the formulation reduces exactly to the original
+ * \f$ T_i = a_i b_i \exp(-x) \f$; for load-unload-reload schedules the
+ * damage cap freezes the softness at its historical peak, preventing the
+ * un-physical healing that the bare exponential law would otherwise produce.
  *
- * Following the original implementation, the *internal* tangential characteristic length is
- * \f$ \sqrt{2}\, \delta_{u0,t} \f$ even though the user supplies \f$ \delta_{u0,t} \f$ directly.
- * Parameter values ported from references that use the same convention will reproduce the
- * published results exactly.
+ * The internal tangential characteristic length is \f$ \sqrt{2}\,\delta_{u0,t} \f$
+ * to match the original publication's convention.
  *
- * No compression branch: the normal traction is negative for \f$ \delta_n < 0 \f$
- * (i.e. interpenetration produces an attractive force). Pair with a contact penalty if interface
- * compression is possible.
+ * The cohesive law uses only the *separation* part of the normal jump
+ * (\f$ \delta_n^\text{sep} \f$), so it produces zero normal traction under
+ * interpenetration. To resist interpenetration, supply the optional
+ * `normal_penetration` input along with the required `penalty_stiffness`
+ * parameter; the model then adds \f$ K_\text{pen}\,\delta_n^\text{pen} \f$
+ * to \f$ T_n \f$.
  */
-class SalehaniIraniTraction : public TractionSeparationLaw
+class SalehaniIraniTraction : public Model
 {
 public:
   static OptionSet expected_options();
@@ -61,6 +71,25 @@ public:
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
+
+  /// Traction Vec
+  Variable<Vec> & _to;
+
+  /// Damage scalar (current step, irreversibility-capped)
+  Variable<Scalar> & _d;
+
+  /// Damage scalar (previous step, auto-declared via `history_name`)
+  const Variable<Scalar> & _d_old;
+
+  /// Normal separation \f$ \delta_n^\text{sep} \f$ (typically Macaulay-positive)
+  const Variable<Scalar> & _dn_sep;
+
+  /// Optional normal penetration \f$ \delta_n^\text{pen} \f$; nullptr if the user did not
+  /// supply it
+  const Variable<Scalar> * _dn_pen;
+
+  const Variable<Scalar> & _ds1;
+  const Variable<Scalar> & _ds2;
 
   /// Normal characteristic length (raw user input)
   const Scalar & _delta_u0_n;
@@ -73,5 +102,9 @@ protected:
 
   /// Maximum shear traction
   const Scalar & _Tmax_t;
+
+  /// Optional penalty stiffness for interpenetration; nullptr if `normal_penetration` was not
+  /// supplied (in which case `penalty_stiffness` is also not declared)
+  const Scalar * _Kpen;
 };
 } // namespace neml2

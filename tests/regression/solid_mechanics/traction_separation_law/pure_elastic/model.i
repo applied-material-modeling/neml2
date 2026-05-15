@@ -1,5 +1,5 @@
 # Linear-elastic traction-separation under a monotonic mixed-mode jump ramp.
-# Traction is a constant orthotropic stiffness times the displacement jump:
+# Composed from VecComponents + OrthotropicLinearTraction.
 # T = diag(K_n, K_t, K_t) * delta. No internal state.
 [Tensors]
   [times]
@@ -41,9 +41,22 @@
 []
 
 [Models]
-  [model]
-    type = LinearTraction
+  [decompose]
+    type = VecComponents
+    from = 'displacement_jump'
+    to = 'delta_n delta_s1 delta_s2'
+  []
+  [linear_traction]
+    type = OrthotropicLinearTraction
+    normal_separation = 'delta_n'
+    tangential_separation_1 = 'delta_s1'
+    tangential_separation_2 = 'delta_s2'
+    to = 'traction'
     normal_stiffness = 1000.0
     tangential_stiffness = 500.0
+  []
+  [model]
+    type = ComposedModel
+    models = 'decompose linear_traction'
   []
 []

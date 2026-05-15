@@ -24,39 +24,41 @@
 
 #pragma once
 
-#include "neml2/models/solid_mechanics/traction_separation_law/BilinearMixedModeTraction.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
+class Scalar;
+
 /**
- * @brief Bilinear mixed-mode cohesive-zone law with the power-law propagation criterion
- *        (Alfano & Crisfield 2001).
+ * @brief Mode-mixity ratio \f$ \beta = \delta_s / \delta_n^+ \f$ in the
+ *        opening branch; \f$ \beta = 0 \f$ in compression.
  *
- * Specializes BilinearMixedModeTraction with the power-law formula for the full-degradation
- * jump in the opening branch. The mixed-mode total fracture toughness is determined by
- * \f[
- *   \left(\frac{G_I}{G_{Ic}}\right)^\eta + \left(\frac{G_{II}}{G_{IIc}}\right)^\eta = 1,
- * \f]
- * which under the bilinear envelope yields
- * \f[
- *   \delta_\text{final} = \frac{2(1+\beta^2)}{K\,\delta_\text{init}}
- *     \left[\left(\frac{1}{G_{Ic}}\right)^\eta
- *         + \left(\frac{\beta^2}{G_{IIc}}\right)^\eta\right]^{-1/\eta}.
- * \f]
- * The exponent \f$ \eta \f$ is the power-law shape parameter (commonly 1 or 2).
+ * Uses a `where`-and-detach safe-divisor pattern so the masked-off
+ * compression branch doesn't trip on a division by zero. The condition is
+ * detached so the TorchScript tracer doesn't try to capture a grad-tracking
+ * mask into the JIT graph.
  *
- * Reference: Alfano, G. & Crisfield, M.A. (2001). "Finite element interface models for the
- * delamination analysis of laminated composites: mechanical and computational issues."
- * International Journal for Numerical Methods in Engineering 50, 1701–1736.
+ * The `normal` input is expected to be the Macaulay (non-negative) part of
+ * the normal jump — typically the `to_positive` output of `MacaulaySplit`.
  */
-class AlfanoCrisfieldTraction : public BilinearMixedModeTraction
+class ModeMixity : public Model
 {
 public:
   static OptionSet expected_options();
 
-  AlfanoCrisfieldTraction(const OptionSet & options);
+  ModeMixity(const OptionSet & options);
 
 protected:
-  DeltaFinalResult compute_delta_final(const DeltaFinalContext & ctx, bool dout_din) const override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+
+  /// Mode-mixity ratio \f$ \beta \f$
+  Variable<Scalar> & _to;
+
+  /// Macaulay-positive normal jump \f$ \delta_n^+ \f$
+  const Variable<Scalar> & _dn_pos;
+
+  /// Tangential magnitude \f$ \delta_s \f$
+  const Variable<Scalar> & _ds;
 };
 } // namespace neml2

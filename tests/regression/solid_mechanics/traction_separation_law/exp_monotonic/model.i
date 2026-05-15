@@ -41,11 +41,32 @@
 []
 
 [Models]
-  [model]
+  [decompose]
+    type = VecComponents
+    from = 'displacement_jump'
+    to = 'delta_n delta_s1 delta_s2'
+  []
+  [delta_eff]
+    # Weighted Euclidean norm: sqrt(δ_n² + β_w (δ_s1² + δ_s2²) + ε), β_w = 1.0
+    type = ScalarPNorm
+    from = 'delta_n delta_s1 delta_s2'
+    to = 'delta_eff'
+    exponent = 2.0
+    weights = '1.0 1.0 1.0'
+  []
+  [traction]
     type = ExponentialTraction
+    effective_separation = 'delta_eff'
+    normal_separation = 'delta_n'
+    tangential_separation_1 = 'delta_s1'
+    tangential_separation_2 = 'delta_s2'
+    to = 'traction'
+    damage = 'damage'
     fracture_toughness = 2.0
     characteristic_length = 1.0
-    tangential_weight = 1.0
-    irreversible_damage = true
+  []
+  [model]
+    type = ComposedModel
+    models = 'decompose delta_eff traction'
   []
 []

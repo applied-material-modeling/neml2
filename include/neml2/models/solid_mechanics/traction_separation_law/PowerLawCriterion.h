@@ -24,35 +24,42 @@
 
 #pragma once
 
-#include "neml2/models/solid_mechanics/traction_separation_law/BilinearMixedModeTraction.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
+class Scalar;
+
 /**
- * @brief Bilinear mixed-mode cohesive-zone law with the Benzeggagh-Kenane (BK) propagation
- *        criterion (Camanho & Davila 2002).
+ * @brief Power-law (Alfano-Crisfield) mixed-mode propagation criterion: full-degradation jump.
  *
- * Specializes BilinearMixedModeTraction with the BK formula for the full-degradation jump in
- * the opening branch:
+ * Opening branch (\f$ \delta_n^+ > 0 \f$):
  * \f[
- *   \delta_\text{final} = \frac{2}{K\,\delta_\text{init}} \left(
- *     G_{Ic} + (G_{IIc} - G_{Ic}) \left(\frac{\beta^2}{1+\beta^2}\right)^\eta
- *   \right).
+ *   \delta_\text{final} = \frac{2(1+\beta^2)}{K \delta_\text{init}}
+ *     \left[ \left(\frac{1}{G_{Ic}}\right)^\eta + \left(\frac{\beta^2}{G_{IIc}}\right)^\eta
+ *     \right]^{-1/\eta}.
  * \f]
- * The exponent \f$ \eta \f$ is the BK material parameter (typically 1.5–2.5 for laminated
- * composites).
- *
- * Reference: Camanho, P.P. & Davila, C.G. (2002). "Mixed-Mode Decohesion Finite Elements for
- * the Simulation of Delamination in Composite Materials." NASA TM-2002-211737.
+ * Compression branch: \f$ \delta_\text{final} = 2 G_{IIc}/S \f$ (pure-shear closed form).
  */
-class CamanhoDavilaTraction : public BilinearMixedModeTraction
+class PowerLawCriterion : public Model
 {
 public:
   static OptionSet expected_options();
 
-  CamanhoDavilaTraction(const OptionSet & options);
+  PowerLawCriterion(const OptionSet & options);
 
 protected:
-  DeltaFinalResult compute_delta_final(const DeltaFinalContext & ctx, bool dout_din) const override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+
+  Variable<Scalar> & _to;
+  const Variable<Scalar> & _beta;
+  const Variable<Scalar> & _delta_init;
+  const Variable<Scalar> & _dn_pos;
+
+  const Scalar & _K;
+  const Scalar & _GIc;
+  const Scalar & _GIIc;
+  const Scalar & _S;
+  const Scalar & _eta;
 };
 } // namespace neml2

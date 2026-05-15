@@ -24,41 +24,58 @@
 
 #pragma once
 
-#include "neml2/models/solid_mechanics/traction_separation_law/TractionSeparationLaw.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
 class Scalar;
+class Vec;
 
 /**
- * @brief Purely linear-elastic traction-separation law.
+ * @brief Orthotropic linear-elastic interface traction.
  *
- * Maps the displacement jump to traction through a constant orthotropic stiffness:
  * \f[
- *   \boldsymbol{T} = \begin{bmatrix} K_n & 0 & 0 \\ 0 & K_t & 0 \\ 0 & 0 & K_t \end{bmatrix}
- *                    \boldsymbol{\delta},
+ *   T_n = K_n \delta_n^\text{sep} + [K_\text{pen} \delta_n^\text{pen}], \quad
+ *   T_{si} = K_t \delta_{si}.
  * \f]
- * where \f$ K_n \f$ is the normal stiffness and \f$ K_t \f$ is the tangential stiffness (assumed
- * isotropic in the two tangential directions). The Jacobian is a constant diagonal matrix.
  *
- * The model treats opening (\f$ \delta_n > 0 \f$) and closing (\f$ \delta_n < 0 \f$) symmetrically;
- * if interface compression must be penalized differently, pair this law with a separate contact
- * penalty term.
+ * The bracketed interpenetration term is included only if the user supplies
+ * the optional `normal_penetration` input (typically the Macaulay-negative
+ * part of the normal jump produced by `MacaulaySplit`) along with the
+ * required `penalty_stiffness` parameter. When omitted, the model produces
+ * zero normal traction under interpenetration; the user opts in to elastic
+ * interpenetration resistance by wiring both. The penalty stiffness is
+ * declared separately from the elastic normal stiffness so the user can
+ * choose a stiffer contact penalty than the bonded normal stiffness.
  */
-class LinearTraction : public TractionSeparationLaw
+class OrthotropicLinearTraction : public Model
 {
 public:
   static OptionSet expected_options();
 
-  LinearTraction(const OptionSet & options);
+  OrthotropicLinearTraction(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Elastic stiffness in the normal direction
-  const Scalar & _Kn;
+  /// Traction Vec (assembled internally via Vec::fill)
+  Variable<Vec> & _to;
 
-  /// Elastic stiffness in both tangential directions
+  /// Normal separation \f$ \delta_n^\text{sep} \f$ (typically Macaulay-positive)
+  const Variable<Scalar> & _dn_sep;
+
+  /// Optional normal penetration \f$ \delta_n^\text{pen} \f$ (typically Macaulay-negative);
+  /// nullptr if the user did not supply it
+  const Variable<Scalar> * _dn_pen;
+
+  const Variable<Scalar> & _ds1;
+  const Variable<Scalar> & _ds2;
+
+  const Scalar & _Kn;
   const Scalar & _Kt;
+
+  /// Optional penalty stiffness for interpenetration; nullptr if `normal_penetration` was not
+  /// supplied
+  const Scalar * _Kpen;
 };
 } // namespace neml2

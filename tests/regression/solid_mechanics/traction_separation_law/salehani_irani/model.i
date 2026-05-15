@@ -40,11 +40,24 @@
 []
 
 [Models]
-  [model]
+  [decompose]
+    type = VecComponents
+    from = 'displacement_jump'
+    to = 'delta_n delta_s1 delta_s2'
+  []
+  [traction]
     type = SalehaniIraniTraction
+    normal_separation = 'delta_n'
+    tangential_separation_1 = 'delta_s1'
+    tangential_separation_2 = 'delta_s2'
+    to = 'traction'
     normal_characteristic_length = 1.0
     tangential_characteristic_length = 1.0
     maximum_normal_traction = 1.0
     maximum_shear_traction = 1.0
+  []
+  [model]
+    type = ComposedModel
+    models = 'decompose traction'
   []
 []

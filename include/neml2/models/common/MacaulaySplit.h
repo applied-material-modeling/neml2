@@ -28,29 +28,34 @@
 
 namespace neml2
 {
-class Vec;
+class Scalar;
 
 /**
- * @brief Common base for cohesive-zone traction-separation laws.
+ * @brief Split a `Scalar` into its Macaulay (positive) and negative parts.
  *
- * A traction-separation law (TSL) maps a 3-vector displacement jump in the local interface frame
- * \f$ \boldsymbol{\delta} = [\delta_n, \delta_{s1}, \delta_{s2}] \f$ to a 3-vector traction
- * \f$ \boldsymbol{T} = [T_n, T_{s1}, T_{s2}] \f$ in the same frame. Concrete subclasses provide the
- * specific constitutive relation \f$ \boldsymbol{T}(\boldsymbol{\delta}) \f$ and may declare
- * additional parameters, internal state variables (e.g. damage), and option flags.
+ * Emits both \f$ \langle x \rangle_+ = \max(x, 0) \f$ and \f$ \langle x
+ * \rangle_- = x - \langle x \rangle_+ \f$ as separate output Variables, so
+ * downstream models can use either branch without recomputing the split.
+ * Wraps `neml2::macaulay()` and `neml2::heaviside()` from
+ * `tensors/functions/`.
  */
-class TractionSeparationLaw : public Model
+class MacaulaySplit : public Model
 {
 public:
   static OptionSet expected_options();
 
-  TractionSeparationLaw(const OptionSet & options);
+  MacaulaySplit(const OptionSet & options);
 
 protected:
-  /// Displacement jump in the local interface frame [delta_n, delta_s1, delta_s2]
-  const Variable<Vec> & _delta;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Traction in the local interface frame [T_n, T_s1, T_s2]
-  Variable<Vec> & _T;
+  /// The Scalar to split
+  const Variable<Scalar> & _from;
+
+  /// Macaulay (positive) part \f$ \langle x \rangle_+ \f$
+  Variable<Scalar> & _to_pos;
+
+  /// Negative part \f$ \langle x \rangle_- = x - \langle x \rangle_+ \f$
+  Variable<Scalar> & _to_neg;
 };
 } // namespace neml2
