@@ -163,7 +163,7 @@ Each `.i` file under `tests/unit/models/<submodule>/<domain>/` is auto-discovere
 - Hand-computed reference outputs (don't accept whatever the model produces — that defeats the test)
 - `check_first_derivatives = true` (the default) so analytic derivatives are cross-checked against FD
 
-After building (`cmake --build --preset dev`), run each test by section name:
+After building (`cmake --build --preset dev -j$(nproc)` — always pass `-j$(nproc)`; CMake defaults to `-j1` under Make), run each test by section name:
 
 ```bash
 ./build/dev/tests/unit/unit_tests "models" -c "<submodule>/<domain>/<Name>.i"

@@ -240,8 +240,8 @@ Scaffolded:
   src/neml2/models/<Domain>/<Name>.cxx
   tests/unit/models/<Domain>/<Name>.i
 
-Build:
-  cmake --build --preset dev
+Build (always pass `-j$(nproc)`; CMake defaults to `-j1` under Make):
+  cmake --build --preset dev -j$(nproc)
 
 Run only this test:
   ./build/dev/tests/unit/unit_tests models -c <Domain>/<Name>.i

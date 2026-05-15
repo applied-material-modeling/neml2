@@ -152,8 +152,8 @@ Print to the user:
 ```
 Scaffolded tests/unit/<dir>/test_<Name>.cxx (TEST_CASE "<Name>", tag [<dir>]).
 
-Build:
-  cmake --build --preset dev
+Build (always pass `-j$(nproc)`; CMake defaults to `-j1` under Make):
+  cmake --build --preset dev -j$(nproc)
 
 Run only this test case:
   ./build/dev/tests/unit/<binary> "<Name>"
