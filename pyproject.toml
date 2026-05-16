@@ -99,7 +99,7 @@ build-verbosity = 1
 build-frontend = {name = "build", args = ["--no-isolation"]}
 
 before-all = ""
-before-build = "python -m pip install torch"
+before-build = "python -m pip install scikit-build-core torch"
 
 # dependencies: pyzag.version
 test-requires = "pytest torch pyzag==1.1.1"
