@@ -25,6 +25,7 @@ jobs:
   documentation:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
@@ -75,6 +76,7 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
@@ -99,6 +101,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min

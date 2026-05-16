@@ -36,6 +36,7 @@ jobs:
         runner: [ubuntu-latest, macos-latest, gpu_runner]
     runs-on: ${{ matrix.runner }}
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
