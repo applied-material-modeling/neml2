@@ -96,6 +96,7 @@ skip = "*win* *manylinux_i686 *manylinux_aarch64 *manylinux_ppc64le *manylinux_s
 
 environment = { CMAKE_GENERATOR = "Ninja" }
 build-verbosity = 1
+build-frontend = {name = "build", args = ["--no-isolation"]}
 
 before-all = ""
 before-build = "python -m pip install torch"
