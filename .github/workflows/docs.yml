@@ -28,7 +28,7 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
-          python-version: 3.10
+          python-version: "3.10"
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
@@ -78,7 +78,7 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
-          python-version: 3.10
+          python-version: "3.10"
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
@@ -102,7 +102,7 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
-          python-version: 3.10
+          python-version: "3.10"
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version

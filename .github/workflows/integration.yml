@@ -19,7 +19,7 @@ jobs:
         with:
           path: neml2
           # dependencies: python.version_min
-          python-version: 3.10
+          python-version: "3.10"
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
@@ -41,7 +41,7 @@ jobs:
         with:
           path: neml2-src
           # dependencies: python.version_min
-          python-version: 3.10
+          python-version: "3.10"
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
@@ -68,7 +68,7 @@ jobs:
         with:
           path: neml2-src
           # dependencies: python.version_min
-          python-version: 3.10
+          python-version: "3.10"
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
