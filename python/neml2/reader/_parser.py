@@ -23,12 +23,10 @@
 # THE SOFTWARE.
 
 import dataclasses
-import re
 from pathlib import Path
 from typing import Union
 
-SECTION_OPEN_RE = re.compile(r"^\[(.+?)\]$")
-PARAM_RE = re.compile(r"^(\w[\w.]*)\s*=\s*(.+)$")
+import nmhit
 
 
 @dataclasses.dataclass
@@ -48,48 +46,25 @@ class ModelEntry:
     """Nested subsections as {section_name: [ModelEntry, ...]}."""
 
 
-def _strip_value(raw: str) -> str:
-    """Strip inline comments and surrounding single quotes from a parameter value."""
-    value = raw.split("#")[0].strip()
-    if value.startswith("'") and value.endswith("'") and len(value) >= 2:
-        value = value[1:-1]
-    return value
-
-
-def _node_to_entries(node: dict) -> list:
-    """
-    Convert an internal node's children into a list of ModelEntry objects.
-    Each child of the node becomes one ModelEntry.
-    """
-    entries = []
-    for child_name, child_nodes in node["children"].items():
-        for child_node in child_nodes:
-            params = dict(child_node["params"])
-            type_val = params.get("type", "")
-            # Recursively convert deeper nesting (rare, but handle it)
-            nested_children = {}
-            for grandchild_name, grandchild_nodes in child_node["children"].items():
-                nested_children[grandchild_name] = _node_to_entries(
-                    {"children": {grandchild_name: grandchild_nodes}}
-                )
-            entries.append(
-                ModelEntry(
-                    name=child_name,
-                    type=type_val,
-                    params=params,
-                    children=nested_children,
-                )
-            )
-    return entries
+def _section_to_entry(section: nmhit.Section) -> ModelEntry:
+    params = {f.path(): f.param_str() for f in section.children(nmhit.NodeType.Field)}
+    children = {}
+    for subsection in section.children(nmhit.NodeType.Section):
+        sub_name = subsection.path()
+        children[sub_name] = [
+            _section_to_entry(s) for s in subsection.children(nmhit.NodeType.Section)
+        ]
+    return ModelEntry(
+        name=section.path(),
+        type=params.get("type", ""),
+        params=params,
+        children=children,
+    )
 
 
 def parse_input(path: Union[str, Path]) -> dict:
     """
     Parse a HIT input file into a structured dictionary.
-
-    The HIT format uses bracketed section headers ``[Name]`` to open a section
-    and ``[]`` to close it. Sections can be nested. Key-value parameters inside
-    a section follow the pattern ``key = value``.
 
     Args:
         path: Path to the HIT input file.
@@ -97,63 +72,21 @@ def parse_input(path: Union[str, Path]) -> dict:
     Returns:
         A dict mapping top-level section names (e.g. ``"Models"``, ``"Tensors"``)
         to lists of :class:`ModelEntry` objects — one per named subsection.
-        Multiple blocks with the same top-level section name (e.g. two
-        ``[Models]`` blocks) are merged into a single list.
+        Multiple blocks with the same top-level section name are merged into a
+        single list.
 
     Raises:
         FileNotFoundError: If the file does not exist.
-        ValueError: If the file has unclosed sections or unmatched closing
-            brackets.
+        nmhit.Error: If the file contains invalid HIT syntax.
     """
     path = Path(path)
-    with open(path, "r") as f:
-        lines = f.readlines()
-
-    # Each node: {"params": {key: value, ...}, "children": {name: [node, ...]}}
-    root_node: dict = {"params": {}, "children": {}}
-    # Stack: list of (section_name, node_dict). Root has a dummy entry.
-    stack = [("ROOT", root_node)]
-
-    for lineno, raw_line in enumerate(lines, start=1):
-        line = raw_line.strip().split("#")[0].strip()
-        if not line:
-            continue
-
-        if line == "[]":
-            if len(stack) == 1:
-                raise ValueError(f"Unmatched [] at line {lineno}")
-            stack.pop()
-            continue
-
-        m = SECTION_OPEN_RE.fullmatch(line)
-        if m:
-            sec_name = m.group(1).strip()
-            parent_node = stack[-1][1]
-            new_node: dict = {"params": {}, "children": {}}
-            parent_node["children"].setdefault(sec_name, []).append(new_node)
-            stack.append((sec_name, new_node))
-            continue
-
-        # Key-value parameter: capture only when inside a subsection (depth >= 2 means
-        # stack has ROOT + top-level-section + current-entry = at least 3 entries)
-        if len(stack) >= 3:
-            pm = PARAM_RE.match(line)
-            if pm:
-                key = pm.group(1)
-                value = _strip_value(pm.group(2))
-                stack[-1][1]["params"][key] = value
-
-    if len(stack) != 1:
-        open_sections = [name for name, _ in stack[1:]]
-        raise ValueError(f"Unclosed sections at EOF: {open_sections}")
-
-    # Build result: for each top-level section, collect all entries across all
-    # occurrences of that section (merging duplicate section names).
+    if not path.is_file():
+        raise FileNotFoundError(f"No such file: {path}")
+    root = nmhit.parse_file(path)
     result: dict = {}
-    for sec_name, top_nodes in root_node["children"].items():
-        entries: list = []
-        for top_node in top_nodes:
-            entries.extend(_node_to_entries(top_node))
-        result[sec_name] = entries
-
+    for top_section in root.children(nmhit.NodeType.Section):
+        sec_name = top_section.path()
+        result.setdefault(sec_name, []).extend(
+            _section_to_entry(s) for s in top_section.children(nmhit.NodeType.Section)
+        )
     return result

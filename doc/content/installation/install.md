@@ -7,9 +7,9 @@
 Compiling the NEML2 core library requires
 - A C++ compiler with C++17 support
 <!-- dependencies: python.version_min -->
-- [Python](https://www.python.org/downloads/) >= 3.9
+- [Python](https://www.python.org/downloads/) >= 3.10
 <!-- dependencies: torch.version -->
-- [PyTorch](https://pytorch.org/get-started/locally/) ~= 2.8.0
+- [PyTorch](https://pytorch.org/get-started/locally/) ~= 2.12.0
 <!-- dependencies: cmake.version_min -->
 - [CMake](https://cmake.org/download/) >= 3.26.1
 

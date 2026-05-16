@@ -28,11 +28,11 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: 3.10
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: 2.12.0
           # dependencies: doxygen.version
           doxygen-version: 1.16.1
       - uses: actions/setup-node@v4
@@ -78,11 +78,11 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: 3.10
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: 2.12.0
       - name: Configure
         run: cmake --preset coverage -GNinja -S .
       - name: Build
@@ -102,11 +102,11 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: 3.10
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: 2.12.0
       - name: Install clang-tidy
         run: sudo apt-get install -y clang-tidy
       - name: Install CodeChecker

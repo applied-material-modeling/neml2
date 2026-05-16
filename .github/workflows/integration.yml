@@ -19,11 +19,11 @@ jobs:
         with:
           path: neml2
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: 3.10
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: 2.12.0
       - name: Create an example CMake project
         run: |
           cp neml2/tests/integration/cmake_add_subdirectory/main.cxx .
@@ -41,11 +41,11 @@ jobs:
         with:
           path: neml2-src
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: 3.10
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: 2.12.0
       - name: Install neml2
         run: |
           cmake --preset release -GNinja -S neml2-src -B neml2-build
@@ -68,11 +68,11 @@ jobs:
         with:
           path: neml2-src
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: 3.10
           # dependencies: cmake.version_min
           cmake-version: 3.26.1
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: 2.12.0
       - name: Install neml2
         run: |
           cmake --preset release -GNinja -S neml2-src -B neml2-build

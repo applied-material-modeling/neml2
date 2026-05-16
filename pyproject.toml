@@ -44,9 +44,14 @@ authors = [
 description = "GPU-enabled vectorized material modeling library"
 readme = "README.md"
 # dependencies: python.version_min
-requires-python = ">=3.9"
-# dependencies: pyzag.version
-dependencies = ["torch", "pyzag==1.1.1"]
+requires-python = ">=3.10"
+dependencies = [
+  "torch",
+  # dependencies: pyzag.version
+  "pyzag==1.1.1",
+  # dependencies: nmhit.version
+  "nmhit==0.1.0",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -86,7 +91,7 @@ no-build-isolation-package = ["neml2"]
 line-length = 100
 
 [tool.cibuildwheel]
-build = "cp39-* cp310-* cp311-* cp312-* cp313-*"
+build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
 skip = "*win* *manylinux_i686 *manylinux_aarch64 *manylinux_ppc64le *manylinux_s390x *manylinux_armv7l *musllinux*"
 
 environment = { CMAKE_GENERATOR = "Ninja" }

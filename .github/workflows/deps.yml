@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           # dependencies: python.version_min
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Install PyYAML
         run: pip install pyyaml
       - name: Check dependency consistency

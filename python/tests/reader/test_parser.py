@@ -25,6 +25,7 @@
 import textwrap
 from pathlib import Path
 
+import nmhit
 import pytest
 
 from neml2.reader._parser import ModelEntry, parse_input
@@ -188,7 +189,7 @@ def test_unmatched_close_raises(tmp_path):
     content = "[]  # nothing open\n"
     p = tmp_path / "bad.i"
     p.write_text(content)
-    with pytest.raises(ValueError, match="Unmatched"):
+    with pytest.raises(nmhit.Error):
         parse_input(p)
 
 
@@ -196,7 +197,7 @@ def test_unclosed_section_raises(tmp_path):
     content = "[Models]\n  [m]\n    type = Foo\n"
     p = tmp_path / "unclosed.i"
     p.write_text(content)
-    with pytest.raises(ValueError, match="Unclosed"):
+    with pytest.raises(nmhit.Error):
         parse_input(p)
 
 
