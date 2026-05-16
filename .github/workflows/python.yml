@@ -36,14 +36,14 @@ jobs:
         runner: [ubuntu-latest, macos-latest, gpu_runner]
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
           cpu-torch: ${{ matrix.runner != 'gpu_runner' }}
       - name: Install
         run: pip install ".[dev]" -v

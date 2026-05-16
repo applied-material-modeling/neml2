@@ -25,16 +25,16 @@ jobs:
   documentation:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
           # dependencies: doxygen.version
-          doxygen-version: 1.16.1
+          doxygen-version: "1.16.1"
       - uses: actions/setup-node@v4
       - name: Install NEML2 Python package
         run: pip install ".[dev]" -v
@@ -75,14 +75,14 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
       - name: Configure
         run: cmake --preset coverage -GNinja -S .
       - name: Build
@@ -99,14 +99,14 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
       - name: Install clang-tidy
         run: sudo apt-get install -y clang-tidy
       - name: Install CodeChecker

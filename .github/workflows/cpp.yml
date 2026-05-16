@@ -29,14 +29,14 @@ jobs:
         btype: [Debug, Release]
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
           cpu-torch: ${{ matrix.runner != 'gpu_runner' && 'true' || 'false' }}
       - name: Configure
         if: matrix.btype == 'Release'
@@ -74,14 +74,14 @@ jobs:
     needs: clang-format
     runs-on: macos-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
       - name: Configure
         run: cmake --preset dev -GNinja -DNEML2_PCH=OFF -S .
       - name: Build
@@ -91,14 +91,14 @@ jobs:
     needs: clang-format
     runs-on: macos-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
       - name: Configure
         run: cmake --preset dev -GNinja -DNEML2_JSON=OFF -DNEML2_CSV=OFF -DNEML2_WORK_DISPATCHER=OFF -S .
       - name: Build
@@ -111,14 +111,14 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
       - name: Configure
         run: cmake --preset release -GNinja -S .
       - name: Build
@@ -133,14 +133,14 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
       - name: Configure
         run: cmake --preset profiling -GNinja -S .
       - name: Build
@@ -157,14 +157,14 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
       - name: Configure
         run: cmake --preset tsan -GNinja -S .
       - name: Build

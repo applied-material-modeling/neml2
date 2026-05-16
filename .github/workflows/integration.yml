@@ -15,15 +15,15 @@ jobs:
   add_subdirectory:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           path: neml2
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
       - name: Create an example CMake project
         run: |
           cp neml2/tests/integration/cmake_add_subdirectory/main.cxx .
@@ -37,15 +37,15 @@ jobs:
   find_package:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           path: neml2-src
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
       - name: Install neml2
         run: |
           cmake --preset release -GNinja -S neml2-src -B neml2-build
@@ -64,15 +64,15 @@ jobs:
   gnumake:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: ./.github/actions/neml2-ci
         with:
           path: neml2-src
           # dependencies: python.version_min
           python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.12.0
+          torch-version: "2.12.0"
       - name: Install neml2
         run: |
           cmake --preset release -GNinja -S neml2-src -B neml2-build

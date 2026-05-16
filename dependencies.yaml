@@ -16,6 +16,7 @@
 torch:
   version: "2.12.0"
   files:
+    - .github/actions/neml2-ci/action.yml
     - .github/workflows/cpp.yml
     - .github/workflows/python.yml
     - .github/workflows/notebooks.yml
@@ -79,6 +80,7 @@ gperftools:
 cmake:
   version_min: "3.26.1"
   files:
+    - .github/actions/neml2-ci/action.yml
     - CMakeLists.txt
     - .github/workflows/cpp.yml
     - .github/workflows/python.yml
@@ -91,6 +93,7 @@ cmake:
 python:
   version_min: "3.10"
   files:
+    - .github/actions/neml2-ci/action.yml
     - .github/workflows/deps.yml
     - .github/workflows/copyright.yml
     - .github/workflows/cpp.yml
@@ -104,6 +107,7 @@ python:
 doxygen:
   version: "1.16.1"
   files:
+    - .github/actions/neml2-ci/action.yml
     - .github/workflows/docs.yml
 
 # ---- Project version ----
