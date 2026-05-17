@@ -184,6 +184,7 @@ if(NOT nmhit_FOUND)
       endif()
       set(nmhit_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/nmhit CACHE PATH "nmhit install prefix")
       custom_install(nmhit contrib/install_nmhit.sh ${NEML2_SOURCE_DIR}/contrib/nmhit-src ${NEML2_CONTRIB_PREFIX}/nmhit-build ${nmhit_INSTALL_PREFIX})
+      # dependencies: nmhit.version_min
       find_package(nmhit 0.1.2 CONFIG REQUIRED PATHS ${nmhit_INSTALL_PREFIX} NO_DEFAULT_PATH)
 endif()
 

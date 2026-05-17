@@ -35,10 +35,10 @@ namespace
 std::string
 _remove_namespaces(std::string type)
 {
-  for (const std::string & ns :
-       {"std::__cxx11::", "std::", "torch::", "c10::", "at::", "neml2::", "utils::", "jit::"})
+  for (const std::string & ns : std::vector<std::string>{
+           "std::__cxx11::", "std::", "torch::", "c10::", "at::", "neml2::", "utils::", "jit::"})
   {
-    std::size_t pos;
+    std::size_t pos = 0;
     while ((pos = type.find(ns)) != std::string::npos)
       type.erase(pos, ns.size());
   }
@@ -46,7 +46,7 @@ _remove_namespaces(std::string type)
 }
 
 std::string
-_normalize_string(std::string type)
+_normalize_string(const std::string & type)
 {
   static const std::regex re(
       R"((?:\w+::)*basic_string\s*<\s*char\s*,\s*(?:\w+::)*char_traits\s*<\s*char\s*>\s*,\s*(?:\w+::)*allocator\s*<\s*char\s*>\s*>)");
@@ -54,7 +54,7 @@ _normalize_string(std::string type)
 }
 
 std::string
-_normalize_vector(std::string type)
+_normalize_vector(const std::string & type)
 {
   static const std::regex re(
       R"((?:\w+::)*vector\s*<\s*([^,>]+)\s*,\s*(?:\w+::)*allocator\s*<[^>]+>\s*>)");
@@ -62,14 +62,14 @@ _normalize_vector(std::string type)
 }
 
 std::string
-_normalize_small_vector(std::string type)
+_normalize_small_vector(const std::string & type)
 {
   static const std::regex re(R"((?:\w+::)*SmallVector\s*<[^>]*>)");
   return std::regex_replace(type, re, "tensor shape");
 }
 
 std::string
-_normalize_tensor_name(std::string type)
+_normalize_tensor_name(const std::string & type)
 {
   static const std::regex re(R"((?:\w+::)*TensorName\s*<\s*([^>]+)\s*>)");
   return std::regex_replace(type, re, "$1");
@@ -123,6 +123,7 @@ user_readable_type(const std::string & type)
   }
   return t;
 }
+
 bool
 options_compatible(const OptionSet & opts, const OptionSet & additional_opts)
 {

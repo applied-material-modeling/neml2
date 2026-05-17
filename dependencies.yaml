@@ -35,8 +35,9 @@ pyzag:
     - pyproject.toml
 
 nmhit:
-  version: "0.1.2"
+  version_min: "0.1.2"
   files:
+    - CMakeLists.txt
     - pyproject.toml
 
 # ---- Formatters / pre-commit hooks ----
