@@ -26,55 +26,12 @@
 
 import yaml
 import sys
-import re
 from pathlib import Path
 from loguru import logger
 import unicodedata as ud
 from typing import Union
 
 
-def remove_namespace(type):
-    type = type.replace("std::", "")
-    type = type.replace("torch::", "")
-    type = type.replace("c10::", "")
-    type = type.replace("at::", "")
-    type = type.replace("neml2::", "")
-    type = type.replace("utils::", "")
-    type = type.replace("jit::", "")
-    return type
-
-
-def normalize_string_types(type):
-    return re.sub(
-        r"(?:\b[\w:]+::)?basic_string<\s*char\s*,\s*(?:[\w:]+::)?char_traits<char>\s*,\s*(?:[\w:]+::)?allocator<char>\s*>\s*",
-        "std::string",
-        type,
-    )
-
-
-def normalize_vector_types(type):
-    return re.sub(
-        r"(?:\b[\w:]+::)?vector<\s*([^,>]+)\s*,\s*(?:[\w:]+::)?allocator<[^>]+>\s*>\s*",
-        r"vector<\1>",
-        type,
-    )
-
-
-def demangle(type):
-    type = re.sub(r"SmallVector<[^>]*>", "tensor shape", type)
-    type = normalize_string_types(type)
-    type = normalize_vector_types(type)
-    type = re.sub(r",\s*(?:[\w:]+::)?allocator<[^>]+>\s*", "", type)
-    type = remove_namespace(type)
-    type = re.sub("TensorName<(.+)>", r"\1 🔗", type)
-    type = re.sub("vector<(.+)>", r"list of \1", type)
-    # Call all integral/floating point types "number", as this syntax documentation faces the general audience potentially without computer science background
-    type = type.replace("int", "number")
-    type = type.replace("long", "number")
-    type = type.replace("double", "number")
-    type = type.replace("unsigned", "non-negative")
-
-    return type
 
 
 def postprocess(value, type):
@@ -237,7 +194,7 @@ def syntax_to_md(syntax_file: Path, outdir: Path, logfile: Path) -> int:
                         if info["suppressed"]:
                             continue
 
-                        param_type = demangle(info["type"])
+                        param_type = info["type"]
                         param_value = postprocess(info["value"], param_type)
                         stream.write("<details>\n")
                         if not info["doc"]:

@@ -50,7 +50,7 @@ dependencies = [
   # dependencies: pyzag.version
   "pyzag==1.1.1",
   # dependencies: nmhit.version
-  "nmhit==0.1.2",
+  "nmhit>=0.1.2",
 ]
 
 [project.optional-dependencies]
