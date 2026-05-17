@@ -38,7 +38,7 @@ jobs:
           doxygen-version: "1.16.1"
       - uses: actions/setup-node@v4
       - name: Install NEML2 Python package
-        run: pip install ".[dev]" -v
+        run: pip install ".[dev]" -v -C cmake.define.NEML2_WORK_DISPATCHER=ON -C cmake.define.NEML2_JSON=ON -C cmake.define.NEML2_CSV=ON
       - name: Generate stubs for documentation
         run: neml2-stub
       - name: Install graphviz
