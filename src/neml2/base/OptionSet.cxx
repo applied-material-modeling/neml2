@@ -23,12 +23,107 @@
 // THE SOFTWARE.
 
 #include <iostream>
+#include <regex>
 
 #include "neml2/base/OptionSet.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
 {
+namespace
+{
+std::string
+_remove_namespaces(std::string type)
+{
+  for (const std::string & ns : std::vector<std::string>{
+           "std::__cxx11::", "std::", "torch::", "c10::", "at::", "neml2::", "utils::", "jit::"})
+  {
+    std::size_t pos = 0;
+    while ((pos = type.find(ns)) != std::string::npos)
+      type.erase(pos, ns.size());
+  }
+  return type;
+}
+
+std::string
+_normalize_string(const std::string & type)
+{
+  static const std::regex re(
+      R"((?:\w+::)*basic_string\s*<\s*char\s*,\s*(?:\w+::)*char_traits\s*<\s*char\s*>\s*,\s*(?:\w+::)*allocator\s*<\s*char\s*>\s*>)");
+  return std::regex_replace(type, re, "string");
+}
+
+std::string
+_normalize_vector(const std::string & type)
+{
+  static const std::regex re(
+      R"((?:\w+::)*vector\s*<\s*([^,>]+)\s*,\s*(?:\w+::)*allocator\s*<[^>]+>\s*>)");
+  return std::regex_replace(type, re, "vector<$1>");
+}
+
+std::string
+_normalize_small_vector(const std::string & type)
+{
+  static const std::regex re(R"((?:\w+::)*SmallVector\s*<[^>]*>)");
+  return std::regex_replace(type, re, "tensor shape");
+}
+
+std::string
+_normalize_tensor_name(const std::string & type)
+{
+  static const std::regex re(R"((?:\w+::)*TensorName\s*<\s*([^>]+)\s*>)");
+  return std::regex_replace(type, re, "$1");
+}
+
+std::string
+_vector_to_list(std::string type)
+{
+  // Apply iteratively to handle nested vectors: vector<vector<T>> → list of list of T.
+  static const std::regex re(R"(vector\s*<\s*([^<>]+)\s*>)");
+  std::string prev;
+  do
+  {
+    prev = type;
+    type = std::regex_replace(type, re, "list of $1");
+  } while (type != prev);
+  return type;
+}
+
+std::string
+_normalize_numeric_types(std::string type)
+{
+  static const std::regex int_re(R"(\bint\b)");
+  static const std::regex long_re(R"(\blong\b)");
+  static const std::regex double_re(R"(\bdouble\b)");
+  static const std::regex unsigned_re(R"(\bunsigned\b)");
+  type = std::regex_replace(type, unsigned_re, "non-negative");
+  type = std::regex_replace(type, int_re, "number");
+  type = std::regex_replace(type, long_re, "number");
+  type = std::regex_replace(type, double_re, "number");
+  return type;
+}
+} // namespace
+
+std::string
+user_readable_type(const std::string & type)
+{
+  std::string t = type;
+  for (int i = 0; i < 8; ++i)
+  {
+    std::string prev = t;
+    t = _normalize_small_vector(t);
+    t = _normalize_string(t);
+    t = _normalize_tensor_name(t);
+    t = _remove_namespaces(t);
+    t = _normalize_vector(t);
+    t = _vector_to_list(t);
+    t = _normalize_numeric_types(t);
+    if (t == prev)
+      break;
+  }
+  return t;
+}
+
 bool
 options_compatible(const OptionSet & opts, const OptionSet & additional_opts)
 {
@@ -199,7 +294,7 @@ OptionSet::to_str() const
   while (it != _values.end())
   {
     os << "  " << it->first << ":\n";
-    os << "    type: " << it->second->type() << '\n';
+    os << "    type: " << user_readable_type(it->second->type()) << '\n';
     os << "    ftype: " << it->second->ftype() << '\n';
     if (it->second->doc().empty())
       os << "    doc:\n";

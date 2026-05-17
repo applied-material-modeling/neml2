@@ -4,7 +4,7 @@
 # dependencies: cmake.version_min
 cmake_minimum_required(VERSION 3.26.1)
 # dependencies: neml2.version
-project(NEML2 VERSION 2.1.3 LANGUAGES C CXX)
+project(NEML2 VERSION 2.1.4 LANGUAGES C CXX)
 
 # ----------------------------------------------------------------------------
 # Policy
@@ -159,7 +159,7 @@ endif()
 # ----------------------------------------------------------------------------
 # nmhit (neml2-hit)
 # ----------------------------------------------------------------------------
-find_package(nmhit CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/nmhit)
+find_package(nmhit 0.1.2 CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/nmhit)
 
 if(NOT nmhit_FOUND)
       # nmhit is a git submodule, so we can just check it out and build it if it's not found.
@@ -184,7 +184,8 @@ if(NOT nmhit_FOUND)
       endif()
       set(nmhit_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/nmhit CACHE PATH "nmhit install prefix")
       custom_install(nmhit contrib/install_nmhit.sh ${NEML2_SOURCE_DIR}/contrib/nmhit-src ${NEML2_CONTRIB_PREFIX}/nmhit-build ${nmhit_INSTALL_PREFIX})
-      find_package(nmhit CONFIG REQUIRED PATHS ${nmhit_INSTALL_PREFIX} NO_DEFAULT_PATH)
+      # dependencies: nmhit.version_min
+      find_package(nmhit 0.1.2 CONFIG REQUIRED PATHS ${nmhit_INSTALL_PREFIX} NO_DEFAULT_PATH)
 endif()
 
 # extract library path and include dir from the imported target

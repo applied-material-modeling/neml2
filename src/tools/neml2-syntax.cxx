@@ -29,6 +29,11 @@
 
 #include <argparse/argparse.hpp>
 
+#ifdef NEML2_JSON
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+#endif
+
 int
 main(int argc, char * argv[])
 {
@@ -50,6 +55,9 @@ main(int argc, char * argv[])
       .default_value(std::string(""));
   program.add_argument("--summary")
       .help("emit only the type, section, and doc string for each object (omit per-option detail)")
+      .flag();
+  program.add_argument("--server")
+      .help("run as a long-lived JSON server on stdin/stdout (requires NEML2_JSON)")
       .flag();
 
   // Force link dynamic libraries
@@ -76,6 +84,140 @@ main(int argc, char * argv[])
   const auto section_filter = program.get<std::string>("--section");
   const auto type_filter = program.get<std::string>("--type");
   const bool summary = program.get<bool>("--summary");
+  const bool server_mode = program.get<bool>("--server");
+
+  if (server_mode && (program.is_used("--yaml") || program.is_used("--section") ||
+                      program.is_used("--type") || summary))
+  {
+    std::cerr << "error: --server is incompatible with --yaml, --section, --type, and --summary\n";
+    return 1;
+  }
+
+#ifdef NEML2_JSON
+  if (server_mode)
+  {
+    // Collect all OptionSets once; build pointer list after vector is fully populated
+    std::vector<neml2::OptionSet> all_opts_storage;
+    all_opts_storage.push_back(neml2::Settings::expected_options());
+    for (const auto & [type, info] : neml2::Registry::info())
+      all_opts_storage.push_back(info.expected_options);
+    std::vector<const neml2::OptionSet *> all_opts;
+    for (const auto & opts : all_opts_storage)
+      all_opts.push_back(&opts);
+
+    auto ftype_str = [](neml2::FType f) -> std::string
+    {
+      if (f == neml2::FType::INPUT)
+        return "INPUT";
+      if (f == neml2::FType::OUTPUT)
+        return "OUTPUT";
+      if (f == neml2::FType::PARAMETER)
+        return "PARAMETER";
+      if (f == neml2::FType::BUFFER)
+        return "BUFFER";
+      return "NONE";
+    };
+
+    auto opts_to_json = [&](const neml2::OptionSet & opts) -> json
+    {
+      json j;
+      j["type"] = opts.type();
+      j["section"] = opts.section();
+      j["doc"] = opts.doc();
+      json options = json::array();
+      for (const auto & [name, opt] : opts)
+      {
+        if (opt->suppressed())
+          continue;
+        json o;
+        o["name"] = name;
+        o["doc"] = opt->doc();
+        o["ftype"] = ftype_str(opt->ftype());
+        o["required"] = opt->required();
+        o["type"] = neml2::user_readable_type(opt->type());
+        options.push_back(std::move(o));
+      }
+      j["options"] = std::move(options);
+      return j;
+    };
+
+    std::string line;
+    while (std::getline(std::cin, line))
+    {
+      if (line.empty())
+        continue;
+      json req;
+      try
+      {
+        req = json::parse(line);
+      }
+      catch (...)
+      {
+        std::cout << json{{"id", nullptr}, {"error", "parse error"}}.dump() << "\n";
+        std::cout.flush();
+        continue;
+      }
+
+      const auto id = req.value("id", json{});
+      const std::string method = req.value("method", "");
+      json result;
+
+      if (method == "list_sections")
+      {
+        std::set<std::string> sections;
+        for (const auto * opts : all_opts)
+          if (!opts->section().empty())
+            sections.insert(opts->section());
+        result = json::array();
+        for (const auto & s : sections)
+          result.push_back(s);
+      }
+      else if (method == "list_types")
+      {
+        const std::string section = req.value("section", "");
+        result = json::array();
+        for (const auto * opts : all_opts)
+        {
+          if (!section.empty() && opts->section() != section)
+            continue;
+          if (opts->type().empty())
+            continue;
+          result.push_back(
+              {{"type", opts->type()}, {"section", opts->section()}, {"doc", opts->doc()}});
+        }
+      }
+      else if (method == "get_options")
+      {
+        const std::string type = req.value("type", "");
+        result = nullptr;
+        for (const auto * opts : all_opts)
+        {
+          if (opts->type() == type)
+          {
+            result = opts_to_json(*opts);
+            break;
+          }
+        }
+      }
+      else
+      {
+        std::cout << json{{"id", id}, {"error", "unknown method"}}.dump() << "\n";
+        std::cout.flush();
+        continue;
+      }
+
+      std::cout << json{{"id", id}, {"result", std::move(result)}}.dump() << "\n";
+      std::cout.flush();
+    }
+    return 0;
+  }
+#else
+  if (server_mode)
+  {
+    std::cerr << "neml2-syntax --server requires NEML2_JSON=ON\n";
+    return 1;
+  }
+#endif
 
   auto emit = [&](const neml2::OptionSet & opts)
   {

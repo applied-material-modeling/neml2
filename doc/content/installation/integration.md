@@ -63,7 +63,7 @@ FetchContent_Declare(
   neml2
   GIT_REPOSITORY https://github.com/applied-material-modeling/neml2.git
   <!-- dependencies: neml2.version -->
-  GIT_TAG v2.1.3
+  GIT_TAG v2.1.4
 )
 FetchContent_MakeAvailable(neml2)
 add_executable(foo main.cxx)

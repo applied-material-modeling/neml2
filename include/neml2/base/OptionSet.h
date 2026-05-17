@@ -42,6 +42,9 @@ struct TensorName;
 
 bool options_compatible(const OptionSet & opts, const OptionSet & additional_opts);
 
+/// Convert a raw C++ type string into a human-readable form suitable for end users.
+std::string user_readable_type(const std::string & type);
+
 // Streaming operators
 std::ostream & operator<<(std::ostream & os, const OptionSet & p);
 
