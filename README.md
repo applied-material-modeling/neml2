@@ -1,7 +1,7 @@
 <img src="doc/asset/logo_light.png#gh-light-mode-only" class="logo-light" alt="Logo" style="width: 35%">
 <img src="doc/asset/logo_dark.png#gh-dark-mode-only" class="logo-dark" alt="Logo" style="width: 35%">
 
-[![Documentation](https://github.com/applied-material-modeling/neml2/actions/workflows/docs.yml/badge.svg?branch=main)](https://applied-material-modeling.github.io/neml2/) [![C++ backend testing](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yml) [![Python package testing](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yml)
+[![Documentation](https://github.com/applied-material-modeling/neml2/actions/workflows/docs.yml/badge.svg?branch=main)](https://applied-material-modeling.github.io/neml2/) [![C++ backend testing](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yml) [![Python package testing](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yml) [![PyPI](https://img.shields.io/pypi/v/neml2)](https://pypi.org/project/neml2/)
 
 ## Overview
 
@@ -21,9 +21,23 @@ NEML2 is provided as open source software under a MIT [license](https://raw.gith
 
 ### Quick installation
 
-Building should be as easy as cloning the repository, configuring with CMake, compiling with `make`, and installing with `make install`. Refer to the [installation guide](https://applied-material-modeling.github.io/neml2/install.html) for more detailed instructions and finer control over various dependencies as well as other build customization.
+**Python package (recommended):** Pre-built wheels are available on [PyPI](https://pypi.org/project/neml2/):
 
-Once NEML2 is built/installed, refer to the [getting started](https://applied-material-modeling.github.io/neml2/tutorials-getting-started.html) guide for commonly used APIs.
+```shell
+pip install neml2
+```
+
+**C++ library:** Clone the repository, configure with CMake, and build:
+
+```shell
+git clone -b main https://github.com/applied-material-modeling/neml2.git
+cmake --preset release -S neml2
+cmake --build --preset release
+```
+
+Refer to the [installation guide](https://applied-material-modeling.github.io/neml2/install.html) for more detailed instructions and finer control over various dependencies as well as other build customization.
+
+Once NEML2 is installed, refer to the [getting started](https://applied-material-modeling.github.io/neml2/tutorials-getting-started.html) guide for commonly used APIs.
 
 ### Features and design philosophy
 

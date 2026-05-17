@@ -4,6 +4,9 @@
 
 ## Prerequisites
 
+\note
+The prerequisites below apply to **source builds** (C++ library or Python package built from source). If you are installing the Python package via the pre-built wheels on PyPI, you only need Python and PyTorch — see the [Python package](#install-python) section below.
+
 Compiling the NEML2 core library requires
 - A C++ compiler with C++17 support
 <!-- dependencies: python.version_min -->
@@ -20,7 +23,7 @@ Refer to [dependency management](@ref dependency-management) for a list of depen
 ## Build {#install-user}
 
 \note
-NEML2 is available both as a C++ library and as a Python package. Instructions for building and installing each variant are provided below. If you only need one of them, the other can be skipped.
+NEML2 is available both as a C++ library and as a Python package. Instructions for each variant are provided below. If you only need one of them, the other can be skipped.
 
 ### C++ backend
 
@@ -46,28 +49,36 @@ The `--prefix` option specifies the path where NEML2 will be installed. Write pe
 - `libneml2`: core libraries and public headers
 - `libneml2-bin`: utility binaries
 
-### Python package
+### Python package {#install-python}
 
-NEML2 also offers a Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. Package source distributions are available on PyPI. Python wheel deployment is planned and currently under development.
+NEML2 offers a Python package with bindings for the primitive tensors and parsers for deserializing and running material models.
 
-To install the NEML2 Python package, first make sure Python development headers and libraries are installed. Then, install [PyTorch](https://pytorch.org/get-started/locally/) and run the following command at the repository's root.
+#### Installing from PyPI (recommended)
+
+Pre-built wheels are available on [PyPI](https://pypi.org/project/neml2/) for Linux and macOS:
 
 ```shell
-pip install .
+pip install neml2
 ```
 
-The installation will take a while, as it needs to build both the library and its bindings. Pass `-v` to see additional details.
-After installation from source, optionally generate Python stub files with
-```shell
-neml2-stub
-```
-These stubs improve IDE autocomplete, type hints, and documentation generation for compiled bindings.
-
-\note
-Planned PyPI wheels are expected to ship with stubs pre-generated, in which case the `neml2-stub` step will no longer be needed for wheel installs.
+[PyTorch](https://pytorch.org/get-started/locally/) is listed as a dependency and will be installed automatically if not already present. Wheels ship with Python stub files pre-generated, so IDE autocomplete and type hints work out of the box — no extra steps are needed.
 
 Once installed, the package can be imported in Python scripts using
 
 ```python
 import neml2
 ```
+
+#### Building from source
+
+To build and install the Python package from source (e.g., to modify the C++ source or build against a custom LibTorch), first make sure Python development headers and libraries are installed and [PyTorch](https://pytorch.org/get-started/locally/) is importable. Then, at the repository root:
+
+```shell
+pip install .
+```
+
+The installation will take a while as it compiles both the library and its bindings. Pass `-v` to see additional details. After installation from source, generate Python stub files with
+```shell
+neml2-stub
+```
+These stubs improve IDE autocomplete, type hints, and documentation generation for compiled bindings.
