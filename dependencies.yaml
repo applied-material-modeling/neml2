@@ -13,6 +13,11 @@
 #   <line containing the version value>
 
 # ---- Python packages ----
+pybind11_stubgen:
+  version_min: "2.5.5"
+  files:
+    - pyproject.toml
+
 torch:
   version: "2.12.0"
   files:

@@ -60,6 +60,7 @@ dev = [
   "pytest-xdist",
   "nbmake",
   # doc
+  # dependencies: pybind11_stubgen.version_min
   "pybind11-stubgen>=2.5.5",
   "PyYAML",
   "matplotlib",
@@ -99,14 +100,15 @@ build-verbosity = 1
 build-frontend = {name = "build", args = ["--no-isolation"]}
 
 before-all = ""
-before-build = "python -m pip install scikit-build-core ninja torch"
+# dependencies: pybind11_stubgen.version_min
+before-build = "python -m pip install scikit-build-core ninja torch pybind11-stubgen>=2.5.5 wheel"
 
 # dependencies: pyzag.version
 test-requires = "pytest torch pyzag==1.1.1"
 test-command = "pytest -v {project}/python/tests"
 
 [tool.cibuildwheel.linux]
-repair-wheel-command = ""
+repair-wheel-command = "python {project}/scripts/repair_wheel.py {wheel} {dest_dir}"
 
 [tool.cibuildwheel.macos]
-repair-wheel-command = ""
+repair-wheel-command = "python {project}/scripts/repair_wheel.py {wheel} {dest_dir}"
