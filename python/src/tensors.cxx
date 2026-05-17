@@ -66,9 +66,16 @@ PYBIND11_MODULE(tensors, m)
   FOR_ALL_PRIMITIVETENSOR(IMPLICITLY_CONVERTIBLE_TO_TENSOR);
 
   // Tensor-like (for typing purposes)
+  // PyObject_GetItem is used instead of Union.attr("__getitem__")(...) because Python 3.14
+  // changed typing.Union to a proper class whose __getitem__ is a C descriptor that rejects
+  // the old unbound-call pattern Union.__getitem__(tuple).
   auto typing = py::module_::import("typing");
   auto Union = typing.attr("Union");
 #define pytypeof(T) py::type::of<T>()
-  auto TensorLike = Union.attr("__getitem__")(py::make_tuple(FOR_ALL_TENSORBASE_COMMA(pytypeof)));
+  auto types_tuple = py::make_tuple(FOR_ALL_TENSORBASE_COMMA(pytypeof));
+  auto TensorLike =
+      py::reinterpret_steal<py::object>(PyObject_GetItem(Union.ptr(), types_tuple.ptr()));
+  if (!TensorLike)
+    throw py::error_already_set();
   m.attr("TensorLike") = TensorLike;
 }
