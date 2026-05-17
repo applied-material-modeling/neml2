@@ -107,12 +107,19 @@
         tensor = 'state/internal/O'
         invariant = 'state/internal/s'
     []
+    [L]
+        type = MeanFreePath
+        use_L2 = false
+        use_L3 = false
+        rho_m = 'state/internal/rho_m'
+        L = 'state/internal/L'
+    []
     [athermal]
         type = AthermalStress
         shear_modulus = 'G'
         alpha = 'alpha'
         b = 'b'
-        dislocation_density = 'state/internal/rho_m'
+        L = 'state/internal/L'
         athermal_stress = 'state/internal/s_a'
     []
     [yield]
@@ -141,7 +148,7 @@
         type = ThermallyActivatedDislocationMobility
         effective_shear = 'state/internal/tau_eff'
         athermal_shear = 'state/internal/s_a'
-        dislocation_density = 'state/internal/rho_m'
+        L = 'state/internal/L'
         temperature = 'forces/T'
         h = 'h'
         b = 'b'
@@ -160,7 +167,7 @@
         type = ThermallyActivatedDislocationMobility_diag
         effective_shear      = 'state/internal/tau_eff'
         athermal_shear       = 'state/internal/s_a'
-        dislocation_density  = 'state/internal/rho_m'
+        L                    = 'state/internal/L'
         temperature          = 'forces/T'
         h    = 'h'
         b    = 'b'
@@ -246,6 +253,6 @@
     []
     [implicit_rate]
         type = ComposedModel
-        models = 'mandel_stress kinharden overstress vonmises athermal normality shear_eff v_disl rho_m_rate flow_rate Eprate Erate Eerate elasticity integrate_rho_m integrate_stress integrate_X mixed mixed_old rename'
+        models = 'mandel_stress kinharden overstress vonmises L athermal normality shear_eff v_disl rho_m_rate flow_rate Eprate Erate Eerate elasticity integrate_rho_m integrate_stress integrate_X mixed mixed_old rename'
     []
 []

@@ -18,7 +18,7 @@ protected:
     // Input variables (effective shear and athermal shear)
     const Variable<Scalar> & _tau_eff;
     const Variable<Scalar> & _tau_a;
-    const Variable<Scalar> & _rho_m;
+    const Variable<Scalar> & _L;
     const Variable<Scalar> & _T;
 
     // Variables from equation

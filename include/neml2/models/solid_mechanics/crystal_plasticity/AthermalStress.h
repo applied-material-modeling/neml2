@@ -21,7 +21,7 @@ protected:
     const Scalar & _b;
 
     // Input variable
-    const Variable<Scalar> & _rho_m;
+    const Variable<Scalar> & _L;
 
     // Output (athermal stress)
     Variable<Scalar> & _sigma_a;

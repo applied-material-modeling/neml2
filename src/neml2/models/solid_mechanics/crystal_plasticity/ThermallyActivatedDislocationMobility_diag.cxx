@@ -34,8 +34,7 @@ void
 ThermallyActivatedDislocationMobility_diag::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
     // Precompute common subexpressions
-    const auto L_eff        = pow(_rho_m(), -0.5);                          // Dislocation segment length L = 1/sqrt(rho_m)
-    const auto K            = (_h * L_eff * _b) / (pow(_a, 2.0) * _Bk);     // Kink-pair prefactor: K = h·L·b / (a²·Bk)
+    const auto K            = (_h * _L() * _b) / (pow(_a, 2.0) * _Bk);     // Kink-pair prefactor: K = h·L·b / (a²·Bk)
     const auto mcl_eff      = macaulay(_tau_eff());                         // Positive effective shear stress (for pre-exponential driving force)
     const auto tau_1        = macaulay(_tau_eff() - _tau_a());              // Excess stress above athermal threshold
     const auto tau_tilda    = tau_1 / _tau_p;
@@ -84,10 +83,10 @@ ThermallyActivatedDislocationMobility_diag::set_value(bool out, bool dout_din, b
 
         // -------- CHAIN RULE COMPUTATION for dv_drho_m --------
 
-        const auto dv_kp_drho_m         = - _h * _b * pow(_rho_m(), -1.5) / (2.0 * pow(_a, 2.0) * _Bk) * mcl_eff * exp_val;
+        const auto dv_kp_dL         = _h * _b / (pow(_a, 2.0) * _Bk) * mcl_eff * exp_val;
 
-        if (_rho_m.is_dependent())
-            _v.d(_rho_m) = dv_kp_drho_m;
+        if (_L.is_dependent())
+            _v.d(_L) = dv_kp_dL;
 
         // -------- CHAIN RULE COMPUTATION for dv_dT --------
 
@@ -99,7 +98,7 @@ ThermallyActivatedDislocationMobility_diag::set_value(bool out, bool dout_din, b
 
         // -------- CHAIN RULE COMPUTATION for dv_dBk --------
 
-        const auto dv_kp_dBk            = -(_h * L_eff * _b) / (pow(_a, 2.0) * pow(_Bk, 2.0)) * mcl_eff * exp_val;
+        const auto dv_kp_dBk            = -(_h * _L() * _b) / (pow(_a, 2.0) * pow(_Bk, 2.0)) * mcl_eff * exp_val;
 
         if (const auto * const Bk = nl_param("Bk"))
             _v.d(*Bk) = dv_kp_dBk;
