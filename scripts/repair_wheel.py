@@ -73,6 +73,7 @@ def _generate_stubs(wheel: Path) -> list[Path]:
 
 def _inject_stubs(wheel: Path, stubs: list[Path], dest_dir: Path) -> None:
     """Unpack wheel, copy .pyi files into neml2/, repack into dest_dir."""
+    dest_dir.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run(["wheel", "unpack", str(wheel), "--dest", tmp], check=True)
         pkg_dir = next(Path(tmp).iterdir())
