@@ -15,14 +15,15 @@ jobs:
   notebooks:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: "2.12.0"
       - name: Install NEML2 and dev dependencies
         run: pip install ".[dev]" -v
       - name: Run all notebooks with nbmake

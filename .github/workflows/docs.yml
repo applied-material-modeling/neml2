@@ -25,19 +25,20 @@ jobs:
   documentation:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: "2.12.0"
           # dependencies: doxygen.version
-          doxygen-version: 1.16.1
+          doxygen-version: "1.16.1"
       - uses: actions/setup-node@v4
       - name: Install NEML2 Python package
-        run: pip install ".[dev]" -v
+        run: pip install ".[dev]" -v -C cmake.define.NEML2_WORK_DISPATCHER=ON -C cmake.define.NEML2_JSON=ON -C cmake.define.NEML2_CSV=ON
       - name: Generate stubs for documentation
         run: neml2-stub
       - name: Install graphviz
@@ -75,14 +76,15 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: "2.12.0"
       - name: Configure
         run: cmake --preset coverage -GNinja -S .
       - name: Build
@@ -99,14 +101,15 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: "2.12.0"
       - name: Install clang-tidy
         run: sudo apt-get install -y clang-tidy
       - name: Install CodeChecker

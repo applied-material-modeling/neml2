@@ -14,8 +14,9 @@
 
 # ---- Python packages ----
 torch:
-  version: "2.8.0"
+  version: "2.12.0"
   files:
+    - .github/actions/neml2-ci/action.yml
     - .github/workflows/cpp.yml
     - .github/workflows/python.yml
     - .github/workflows/notebooks.yml
@@ -25,6 +26,11 @@ torch:
 
 pyzag:
   version: "1.1.1"
+  files:
+    - pyproject.toml
+
+nmhit:
+  version: "0.1.2"
   files:
     - pyproject.toml
 
@@ -74,6 +80,7 @@ gperftools:
 cmake:
   version_min: "3.26.1"
   files:
+    - .github/actions/neml2-ci/action.yml
     - CMakeLists.txt
     - .github/workflows/cpp.yml
     - .github/workflows/python.yml
@@ -84,8 +91,9 @@ cmake:
     - doc/content/installation/install.md
 
 python:
-  version_min: "3.9"
+  version_min: "3.10"
   files:
+    - .github/actions/neml2-ci/action.yml
     - .github/workflows/deps.yml
     - .github/workflows/copyright.yml
     - .github/workflows/cpp.yml
@@ -99,6 +107,7 @@ python:
 doxygen:
   version: "1.16.1"
   files:
+    - .github/actions/neml2-ci/action.yml
     - .github/workflows/docs.yml
 
 # ---- Project version ----

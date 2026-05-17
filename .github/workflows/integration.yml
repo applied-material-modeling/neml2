@@ -15,15 +15,18 @@ jobs:
   add_subdirectory:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           path: neml2
+      - uses: ./.github/actions/neml2-ci
+        with:
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: "2.12.0"
       - name: Create an example CMake project
         run: |
           cp neml2/tests/integration/cmake_add_subdirectory/main.cxx .
@@ -37,24 +40,24 @@ jobs:
   find_package:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/neml2-ci
         with:
-          path: neml2-src
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: "2.12.0"
       - name: Install neml2
         run: |
-          cmake --preset release -GNinja -S neml2-src -B neml2-build
+          cmake --preset release -GNinja -S . -B neml2-build
           cmake --build neml2-build
           cmake --install neml2-build --prefix neml2-install --component libneml2
       - name: Create an example CMake project
         run: |
-          cp neml2-src/tests/integration/cmake_find_package/main.cxx .
-          cp neml2-src/tests/integration/cmake_find_package/CMakeLists.txt .
+          cp tests/integration/cmake_find_package/main.cxx .
+          cp tests/integration/cmake_find_package/CMakeLists.txt .
       - name: Configure with CMake
         run: cmake -GNinja -Dneml2_ROOT=neml2-install -B build -S .
       - name: Compile
@@ -64,24 +67,24 @@ jobs:
   gnumake:
     runs-on: ubuntu-latest
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/neml2-ci
         with:
-          path: neml2-src
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: "2.12.0"
       - name: Install neml2
         run: |
-          cmake --preset release -GNinja -S neml2-src -B neml2-build
+          cmake --preset release -GNinja -S . -B neml2-build
           cmake --build neml2-build
           cmake --install neml2-build --prefix neml2-install --component libneml2
       - name: Create an example project using gnumake
         run: |
-          cp neml2-src/tests/integration/gnumake_pkgcfg/main.cxx .
-          cp neml2-src/tests/integration/gnumake_pkgcfg/Makefile .
+          cp tests/integration/gnumake_pkgcfg/main.cxx .
+          cp tests/integration/gnumake_pkgcfg/Makefile .
       - name: Compile with gnumake and pkg-config
         run: |
           PKG_CONFIG_PATH=neml2-install/share/pkgconfig make

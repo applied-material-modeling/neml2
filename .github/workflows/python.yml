@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           # dependencies: python.version_min
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Run black style check
         uses: pre-commit/action@v3.0.1
         with:
@@ -36,14 +36,15 @@ jobs:
         runner: [ubuntu-latest, macos-latest, gpu_runner]
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: applied-material-modeling/neml2-ci@main
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
-          python-version: 3.9
+          python-version: "3.10"
           # dependencies: cmake.version_min
-          cmake-version: 3.26.1
+          cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: 2.8.0
+          torch-version: "2.12.0"
           cpu-torch: ${{ matrix.runner != 'gpu_runner' }}
       - name: Install
         run: pip install ".[dev]" -v
@@ -59,25 +60,38 @@ jobs:
           action_fail: true
           comment_mode: off
 
-  # TODO: Re-enable the wheels job when we get the enterprise runners with larger disk space
-
-  # wheels:
-  #   needs: black
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os: [ubuntu-latest, macos-latest]
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Install cibuildwheel
-  #       run: pip install cibuildwheel
-  #     - name: Build wheels
-  #       run: cibuildwheel --output-dir wheelhouse
-  #     - uses: actions/upload-artifact@v4
-  #       with:
-  #         path: wheelhouse/*.whl
-  #         name: packages-${{matrix.os}}
+  wheels:
+    needs: black
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Free disk space
+        if: runner.os == 'Linux'
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+      - name: Install cibuildwheel
+        run: pip install cibuildwheel
+      - name: Build wheels
+        run: cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_BUILD: ${{ github.event_name == 'release' && 'cp310-* cp311-* cp312-* cp313-* cp314-*' || 'cp310-* cp314-*' }}
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'release' && github.event.action == 'published'
+        with:
+          name: packages-wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
 
   sdist:
     runs-on: ubuntu-latest
@@ -93,7 +107,7 @@ jobs:
           path: dist/*.tar.gz
 
   PyPI:
-    needs: sdist
+    needs: [sdist, wheels]
     environment: pypi
     permissions:
       id-token: write
@@ -103,6 +117,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           pattern: package-sdist
+          path: dist
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: packages-wheels-*
           path: dist
           merge-multiple: true
       - uses: pypa/gh-action-pypi-publish@release/v1

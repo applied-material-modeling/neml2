@@ -1,0 +1,89 @@
+name: "NEML2 dependencies"
+description: "Set up Python, CMake, PyTorch, and system dependencies for building NEML2"
+inputs:
+  python-version:
+    required: false
+    # dependencies: python.version_min
+    default: "3.10"
+  cmake-version:
+    required: false
+    # dependencies: cmake.version_min
+    default: "3.26.1"
+  torch-version:
+    required: false
+    # dependencies: torch.version
+    default: "2.12.0"
+  doxygen-version:
+    required: false
+    default: ""
+  cpu-torch:
+    required: false
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install system dependencies (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt install -y lcov mpich ninja-build build-essential
+
+    - name: Install system dependencies (MacOS)
+      shell: bash
+      if: runner.os == 'macOS'
+      run: |
+        brew install autoconf automake libtool
+        brew install lcov mpich
+
+    - name: Install CMake (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        CMAKE_VERSION="${{ inputs.cmake-version }}"
+        wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz
+        tar -xzf cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz
+        mv cmake-${CMAKE_VERSION}-linux-x86_64 "$HOME/cmake"
+        echo "$HOME/cmake/bin" >> $GITHUB_PATH
+
+    - name: Install CMake (MacOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        CMAKE_VERSION="${{ inputs.cmake-version }}"
+        wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-macos-universal.tar.gz
+        tar -xzf cmake-${CMAKE_VERSION}-macos-universal.tar.gz
+        mv cmake-${CMAKE_VERSION}-macos-universal "$HOME/cmake"
+        echo "$HOME/cmake/bin" >> $GITHUB_PATH
+
+    - name: Install PyTorch (Linux)
+      if: ${{ runner.os == 'Linux' && inputs.cpu-torch == 'true' }}
+      shell: bash
+      run: |
+        pip install torch==${{ inputs.torch-version }} --index-url https://download.pytorch.org/whl/cpu
+
+    - name: Install PyTorch (Linux, with CUDA)
+      if: ${{ runner.os == 'Linux' && inputs.cpu-torch == 'false' }}
+      shell: bash
+      run: |
+        pip install torch==${{ inputs.torch-version }}
+
+    - name: Install PyTorch (MacOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        pip install torch==${{ inputs.torch-version }}
+
+    - name: Install Doxygen (Linux)
+      if: runner.os == 'Linux' && inputs.doxygen-version != ''
+      shell: bash
+      run: |
+        DOXYGEN_VERSION="${{ inputs.doxygen-version }}"
+        DOXYGEN_RELEASE="${DOXYGEN_VERSION//./_}"
+        wget https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_RELEASE}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz
+        tar -xzf doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz
+        mv doxygen-${DOXYGEN_VERSION} "$HOME/doxygen"
+        echo "$HOME/doxygen/bin" >> $GITHUB_PATH

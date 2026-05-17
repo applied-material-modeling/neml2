@@ -88,8 +88,8 @@ def parse_input(input: Path) -> dict[str, list[tuple[int, Union[int, None], dict
     stack = [("ROOT", {"start": None, "end": None, "children": root_children})]
 
     for lineno, raw_line in enumerate(lines, start=1):  # 1-based line numbers
-        line = raw_line.strip()
-        if not line or line.startswith("#"):
+        line = raw_line.split("#")[0].strip()
+        if not line:
             continue
 
         # Closing a section: line is exactly []
