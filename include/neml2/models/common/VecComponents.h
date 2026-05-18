@@ -52,6 +52,6 @@ protected:
   const Variable<Vec> & _from;
 
   /// The three Scalar component outputs (in order: 0, 1, 2 of `_from`)
-  std::array<Variable<Scalar> *, 3> _to;
+  std::array<Variable<Scalar> *, 3> _to{};
 };
 } // namespace neml2

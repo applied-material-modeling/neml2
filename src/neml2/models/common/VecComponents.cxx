@@ -46,8 +46,7 @@ VecComponents::expected_options()
 
 VecComponents::VecComponents(const OptionSet & options)
   : Model(options),
-    _from(declare_input_variable<Vec>("from")),
-    _to{}
+    _from(declare_input_variable<Vec>("from"))
 {
   const auto to_names = options.get<std::vector<VariableName>>("to");
   neml_assert(to_names.size() == 3,
