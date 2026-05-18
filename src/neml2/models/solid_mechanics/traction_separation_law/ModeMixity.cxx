@@ -39,29 +39,31 @@ ModeMixity::expected_options()
                   "`where`-and-detach pattern so the masked-off compression branch does not "
                   "trip on a division by zero.";
 
-  options.add_input("normal", "Macaulay-positive normal jump \\f$ \\delta_n^+ \\f$");
-  options.add_input("tangential", "Tangential magnitude \\f$ \\delta_s \\f$");
-  options.add_output("to", "Mode-mixity ratio \\f$ \\beta \\f$");
+  options.add_input("normal_separation",
+                    "Normal separation \\f$ \\delta_n \\f$ (typically the Macaulay-positive part "
+                    "of the normal jump)");
+  options.add_input("tangential_separation", "Tangential separation magnitude \\f$ \\delta_s \\f$");
+  options.add_output("mode_mixity", "Mode-mixity ratio \\f$ \\beta \\f$");
 
   return options;
 }
 
 ModeMixity::ModeMixity(const OptionSet & options)
   : Model(options),
-    _to(declare_output_variable<Scalar>("to")),
-    _dn_pos(declare_input_variable<Scalar>("normal")),
-    _ds(declare_input_variable<Scalar>("tangential"))
+    _to(declare_output_variable<Scalar>("mode_mixity")),
+    _dn(declare_input_variable<Scalar>("normal_separation")),
+    _ds(declare_input_variable<Scalar>("tangential_separation"))
 {
 }
 
 void
 ModeMixity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto pos_mask = (_dn_pos() > 0.0).detach();
-  const auto one = Scalar::ones_like(_dn_pos());
-  const auto zero = Scalar::zeros_like(_dn_pos());
+  const auto pos_mask = (_dn() > 0.0).detach();
+  const auto one = Scalar::ones_like(_dn());
+  const auto zero = Scalar::zeros_like(_dn());
   // Safe denominator: 1 in the masked-off branch so beta_open division doesn't trip on 0.
-  const auto safe_dn = neml2::where(pos_mask, _dn_pos(), one);
+  const auto safe_dn = neml2::where(pos_mask, _dn(), one);
   const auto inv_dn = 1.0 / safe_dn;
 
   if (out)
@@ -72,7 +74,7 @@ ModeMixity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     // d(beta)/d(delta_s)     = 1 / delta_n  (opening) ; 0 (compression)
     // d(beta)/d(delta_n_pos) = -delta_s / delta_n^2  (opening) ; 0 (compression)
     _to.d(_ds) = neml2::where(pos_mask, inv_dn, zero);
-    _to.d(_dn_pos) = neml2::where(pos_mask, -_ds() * inv_dn * inv_dn, zero);
+    _to.d(_dn) = neml2::where(pos_mask, -_ds() * inv_dn * inv_dn, zero);
   }
 }
 } // namespace neml2

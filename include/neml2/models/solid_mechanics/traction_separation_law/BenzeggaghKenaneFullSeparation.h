@@ -31,48 +31,45 @@ namespace neml2
 class Scalar;
 
 /**
- * @brief Camanho-Davila mixed-mode initiation displacement jump.
+ * @brief Benzeggagh-Kenane (BK) mixed-mode propagation criterion: full (failure) separation.
  *
- * In the opening branch (\f$ \delta_n^+ > 0 \f$):
+ * Opening branch (\f$ \delta_n^+ > 0 \f$):
  * \f[
- *   \delta_\text{init} =
- *     \frac{\delta_{n0} \delta_{s0} \sqrt{1 + \beta^2}}
- *          {\sqrt{\delta_{s0}^2 + \beta^2 \delta_{n0}^2}},
+ *   \delta_f = \frac{2}{K \delta_c}
+ *     \left( G_{Ic} + (G_{IIc} - G_{Ic}) \left(\frac{\beta^2}{1+\beta^2}\right)^\eta \right).
  * \f]
- * with \f$ \delta_{n0} = N/K \f$ and \f$ \delta_{s0} = S/K \f$.
- * In the compression branch, \f$ \delta_\text{init} = \delta_{s0} \f$.
+ * Compression branch: \f$ \delta_f = 2 G_{IIc}/S \f$ (pure-shear closed form).
  *
- * The mask is taken from `normal > 0` and is detached so the TorchScript
- * tracer does not capture a grad-tracking mask into the JIT graph. The
- * dtype-aware regularizer for the inner `sqrt` comes from
- * `neml2::machine_precision()`.
+ * `critical_separation` is declared as a nonlinear-capable parameter so the user can supply it
+ * either as a plain numeric literal or wire it to an upstream
+ * `CamanhoDavilaCriticalSeparation`.
  */
-class CamanhoDavilaInitiation : public Model
+class BenzeggaghKenaneFullSeparation : public Model
 {
 public:
   static OptionSet expected_options();
 
-  CamanhoDavilaInitiation(const OptionSet & options);
+  BenzeggaghKenaneFullSeparation(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Initiation displacement jump \f$ \delta_\text{init} \f$
+  /// Full (failure) separation \f$ \delta_f \f$
   Variable<Scalar> & _to;
 
-  /// Mode-mixity ratio \f$ \beta \f$
-  const Variable<Scalar> & _beta;
-
   /// Macaulay-positive normal jump (only needed to determine the opening/compression branch)
-  const Variable<Scalar> & _dn_pos;
+  const Variable<Scalar> & _dn;
 
-  /// Penalty stiffness K
+  /// Mode-mixity ratio \f$ \beta \f$ (nonlinear-capable parameter)
+  const Scalar & _beta;
+
+  /// Critical (damage-onset) separation \f$ \delta_c \f$ (nonlinear-capable parameter)
+  const Scalar & _delta_init;
+
   const Scalar & _K;
-
-  /// Tensile (normal) strength N
-  const Scalar & _N;
-
-  /// Shear strength S
+  const Scalar & _GIc;
+  const Scalar & _GIIc;
   const Scalar & _S;
+  const Scalar & _eta;
 };
 } // namespace neml2

@@ -28,7 +28,7 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_Vec_names = 'displacement_jump'
+    force_Vec_names = 'separation'
     force_Vec_values = 'jumps'
     save_as = 'result.pt'
   []
@@ -50,70 +50,56 @@
 [Models]
   [decompose]
     type = VecComponents
-    from = 'displacement_jump'
-    to = 'delta_n delta_s1 delta_s2'
+    from = 'separation'
+    to = 'signed_normal_separation tangential_separation_1 tangential_separation_2'
   []
-  [delta_s]
+  [tangential_separation]
     type = ScalarPNorm
-    from = 'delta_s1 delta_s2'
-    to = 'delta_s'
+    from = 'tangential_separation_1 tangential_separation_2'
+    to = 'tangential_separation'
     exponent = 2.0
   []
   [macaulay_n]
     type = MacaulaySplit
-    from = 'delta_n'
-    to_positive = 'delta_n_pos'
-    to_negative = 'delta_n_neg'
+    from = 'signed_normal_separation'
+    to_positive = 'normal_separation'
+    to_negative = 'normal_penetration'
   []
-  [beta]
+  [mode_mixity]
     type = ModeMixity
-    normal = 'delta_n_pos'
-    tangential = 'delta_s'
-    to = 'beta'
   []
-  [delta_init]
-    type = CamanhoDavilaInitiation
-    mixity = 'beta'
-    normal = 'delta_n_pos'
-    to = 'delta_init'
+  [critical_separation]
+    type = CamanhoDavilaCriticalSeparation
+    mode_mixity = 'mode_mixity'
     penalty_stiffness = 1000.0
     normal_strength = 10.0
     shear_strength = 15.0
   []
-  [delta_final]
-    type = BKCriterion
-    mixity = 'beta'
-    initiation = 'delta_init'
-    normal = 'delta_n_pos'
-    to = 'delta_final'
+  [full_separation]
+    type = BenzeggaghKenaneFullSeparation
+    mode_mixity = 'mode_mixity'
+    critical_separation = 'critical_separation'
     penalty_stiffness = 1000.0
-    normal_fracture_toughness = 1.0
-    shear_fracture_toughness = 2.0
+    mode_I_fracture_toughness = 1.0
+    mode_II_fracture_toughness = 2.0
     shear_strength = 15.0
     eta = 2.0
   []
-  [delta_m]
+  [effective_separation]
     type = ScalarPNorm
-    from = 'delta_n_pos delta_s'
-    to = 'delta_m'
+    from = 'normal_separation tangential_separation'
+    to = 'effective_separation'
     exponent = 2.0
   []
   [traction]
     type = BilinearTraction
-    separation = 'delta_m'
-    activation = 'delta_init'
-    saturation = 'delta_final'
-    normal_separation = 'delta_n_pos'
-    normal_penetration = 'delta_n_neg'
-    tangential_separation_1 = 'delta_s1'
-    tangential_separation_2 = 'delta_s2'
-    to = 'traction'
-    damage = 'damage'
+    critical_separation = 'critical_separation'
+    full_separation = 'full_separation'
+    normal_penetration = 'normal_penetration'
     penalty_stiffness = 1000.0
   []
   [model]
     type = ComposedModel
-    models = 'decompose delta_s macaulay_n beta delta_init
-              delta_final delta_m traction'
+    models = 'decompose tangential_separation macaulay_n effective_separation traction'
   []
 []

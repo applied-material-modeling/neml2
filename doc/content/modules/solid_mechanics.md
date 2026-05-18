@@ -58,16 +58,16 @@ The primitives are organized by role:
 - `ModeMixity` — \f$ \beta = \delta_s / \delta_n^+ \f$ in the opening branch; \f$ \beta = 0 \f$ in compression.
 
 **Constitutive formulas** (TSL-specific):
-- `CamanhoDavilaInitiation` — Camanho-Davila mixed-mode initiation jump \f$ \delta_\text{init}(\beta) \f$.
-- `BKCriterion` — Benzeggagh-Kenane mixed-mode propagation criterion: \f$ \delta_\text{final}(\beta, \delta_\text{init}) \f$.
-- `PowerLawCriterion` — Alfano-Crisfield power-law mixed-mode propagation criterion.
+- `CamanhoDavilaCriticalSeparation` — Camanho-Davila mixed-mode critical (damage-onset) separation \f$ \delta_c(\beta) \f$.
+- `BenzeggaghKenaneFullSeparation` — Mixed-mode full (failure) separation under the Benzeggagh-Kenane criterion: \f$ \delta_f(\beta, \delta_c) \f$.
+- `PowerLawFullSeparation` — Mixed-mode full (failure) separation under the Alfano-Crisfield power-law criterion.
 
 **Traction-assembly primitives** (each emits the public `traction` `Vec`):
 - `OrthotropicLinearTraction` — orthotropic linear elasticity \f$ T_n = K_n \delta_n^\text{sep}, T_{si} = K_t \delta_{si} \f$, no internal state. Optionally accepts `normal_penetration` (with a separate `penalty_stiffness` parameter) to elastically resist interpenetration.
 - `BilinearTraction` — Camanho/Davila-style cohesive-zone assembly. Takes \f$ \delta_m, \delta_\text{init}, \delta_\text{final} \f$ and the per-component jumps; internally computes the bilinear damage \f$ d \f$, caps it for irreversibility against the previous-step value, and assembles \f$ T_n = K(1-d) \delta_n^+ + K \delta_n^-, T_{si} = K(1-d) \delta_{si} \f$. Damage is a virtual quantity of the bilinear law (the variable for which \f$ (1-d)\,K\,\delta_m \f$ produces a piecewise-linear traction); it is exposed as a secondary `damage` output for inspection but is not meaningful outside this primitive's interior.
 - `SalehaniIraniTraction` — 3D coupled exponential law of Salehani & Irani in which the normal direction enters linearly and the two tangential directions enter quadratically in a single coupling exponent. Internally damaged: `damage = 1 − exp(−x)` capped against the previous-step value, so `T_i = a_i b_i (1 − damage)`. For monotonic loading this is identical to the bare exponential form; under load–unload–reload the cap freezes the softness at its historical peak (no un-physical healing).
 
-The example below assembles the Camanho-Davila bilinear law (BK criterion) from these primitives. Damage is irreversible across time steps, the normal jump uses a smooth Macaulay split so compression is resisted elastically, and the entire mode-mixity chain evaluates implicitly at the current displacement jump so the Jacobian is fully consistent with the in-step state. To swap to the Alfano-Crisfield power-law criterion, replace `BKCriterion` with `PowerLawCriterion` — every other sub-model stays the same.
+The example below assembles the Camanho-Davila bilinear law (BK criterion) from these primitives. Damage is irreversible across time steps, the normal jump uses a smooth Macaulay split so compression is resisted elastically, and the entire mode-mixity chain evaluates implicitly at the current displacement jump so the Jacobian is fully consistent with the in-step state. To swap to the Alfano-Crisfield power-law criterion, replace `BenzeggaghKenaneFullSeparation` with `PowerLawFullSeparation` — every other sub-model stays the same.
 
 @list-input:tests/regression/solid_mechanics/traction_separation_law/bilinear_monotonic/model.i:Models,Drivers
 

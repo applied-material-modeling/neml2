@@ -28,7 +28,7 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_Vec_names = 'displacement_jump'
+    force_Vec_names = 'separation'
     force_Vec_values = 'jumps'
     save_as = 'result.pt'
   []
@@ -42,19 +42,15 @@
 [Models]
   [decompose]
     type = VecComponents
-    from = 'displacement_jump'
-    to = 'delta_n delta_s1 delta_s2'
+    from = 'separation'
+    to = 'normal_separation tangential_separation_1 tangential_separation_2'
   []
   [traction]
     type = SalehaniIraniTraction
-    normal_separation = 'delta_n'
-    tangential_separation_1 = 'delta_s1'
-    tangential_separation_2 = 'delta_s2'
-    to = 'traction'
     normal_characteristic_length = 1.0
     tangential_characteristic_length = 1.0
-    maximum_normal_traction = 1.0
-    maximum_shear_traction = 1.0
+    normal_strength = 1.0
+    shear_strength = 1.0
   []
   [model]
     type = ComposedModel

@@ -55,7 +55,7 @@ OrthotropicLinearTraction::expected_options()
                     "First tangential separation \\f$ \\delta_{s1} \\f$");
   options.add_input("tangential_separation_2",
                     "Second tangential separation \\f$ \\delta_{s2} \\f$");
-  options.add_output("to", "Traction Vec");
+  options.add_output("traction", "Traction Vec");
   options.add_parameter<Scalar>("normal_stiffness", "Normal stiffness K_n");
   options.add_parameter<Scalar>("tangential_stiffness", "Tangential stiffness K_t (isotropic)");
   // Optional with default 0 — the constructor asserts this is supplied iff `normal_penetration` is.
@@ -70,7 +70,7 @@ OrthotropicLinearTraction::expected_options()
 
 OrthotropicLinearTraction::OrthotropicLinearTraction(const OptionSet & options)
   : Model(options),
-    _to(declare_output_variable<Vec>("to")),
+    _to(declare_output_variable<Vec>("traction")),
     _dn_sep(declare_input_variable<Scalar>("normal_separation")),
     _dn_pen(options.user_specified("normal_penetration")
                 ? &declare_input_variable<Scalar>("normal_penetration")

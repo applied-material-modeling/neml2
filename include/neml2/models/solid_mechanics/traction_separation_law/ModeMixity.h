@@ -39,7 +39,7 @@ class Scalar;
  * detached so the TorchScript tracer doesn't try to capture a grad-tracking
  * mask into the JIT graph.
  *
- * The `normal` input is expected to be the Macaulay (non-negative) part of
+ * The `normal_separation` input is expected to be the Macaulay (non-negative) part of
  * the normal jump — typically the `to_positive` output of `MacaulaySplit`.
  */
 class ModeMixity : public Model
@@ -55,8 +55,8 @@ protected:
   /// Mode-mixity ratio \f$ \beta \f$
   Variable<Scalar> & _to;
 
-  /// Macaulay-positive normal jump \f$ \delta_n^+ \f$
-  const Variable<Scalar> & _dn_pos;
+  /// Normal separation \f$ \delta_n \f$ (typically Macaulay-positive)
+  const Variable<Scalar> & _dn;
 
   /// Tangential magnitude \f$ \delta_s \f$
   const Variable<Scalar> & _ds;

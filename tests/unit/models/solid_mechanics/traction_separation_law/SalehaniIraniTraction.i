@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'dn ds1 ds2 damage~1'
+    input_Scalar_names = 'normal_separation tangential_separation_1 tangential_separation_2 damage~1'
     input_Scalar_values = '0.5 0.5 0.5 0.0'
     output_Vec_names = 'traction'
     output_Vec_values = 'T_expected'
@@ -29,14 +29,9 @@
 [Models]
   [model]
     type = SalehaniIraniTraction
-    normal_separation = 'dn'
-    tangential_separation_1 = 'ds1'
-    tangential_separation_2 = 'ds2'
-    to = 'traction'
-    damage = 'damage'
     normal_characteristic_length = 1.0
     tangential_characteristic_length = 1.0
-    maximum_normal_traction = 1.0
-    maximum_shear_traction = 1.0
+    normal_strength = 1.0
+    shear_strength = 1.0
   []
 []

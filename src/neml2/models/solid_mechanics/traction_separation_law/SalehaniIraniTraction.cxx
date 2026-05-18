@@ -63,15 +63,15 @@ SalehaniIraniTraction::expected_options()
                     "First tangential separation \\f$ \\delta_{s1} \\f$");
   options.add_input("tangential_separation_2",
                     "Second tangential separation \\f$ \\delta_{s2} \\f$");
-  options.add_output("to", "Traction Vec");
+  options.add_output("traction", "Traction Vec");
   options.add_output("damage", "Damage scalar (current step, irreversibility-capped)");
   options.add_parameter<Scalar>("normal_characteristic_length",
                                 "Normal characteristic length (raw user input)");
   options.add_parameter<Scalar>("tangential_characteristic_length",
                                 "Tangential characteristic length (raw user input; the internal "
                                 "value is sqrt(2) times this)");
-  options.add_parameter<Scalar>("maximum_normal_traction", "Maximum normal traction");
-  options.add_parameter<Scalar>("maximum_shear_traction", "Maximum shear traction");
+  options.add_parameter<Scalar>("normal_strength", "Normal strength (peak normal traction)");
+  options.add_parameter<Scalar>("shear_strength", "Shear strength (peak shear traction)");
   // Optional with default 0 — the constructor asserts this is supplied iff `normal_penetration` is.
   options.add_parameter<Scalar>(
       "penalty_stiffness",
@@ -84,7 +84,7 @@ SalehaniIraniTraction::expected_options()
 
 SalehaniIraniTraction::SalehaniIraniTraction(const OptionSet & options)
   : Model(options),
-    _to(declare_output_variable<Vec>("to")),
+    _to(declare_output_variable<Vec>("traction")),
     _d(declare_output_variable<Scalar>("damage")),
     _d_old(declare_input_variable<Scalar>(history_name(_d.name(), /*nstep=*/1))),
     _dn_sep(declare_input_variable<Scalar>("normal_separation")),
@@ -95,8 +95,8 @@ SalehaniIraniTraction::SalehaniIraniTraction(const OptionSet & options)
     _ds2(declare_input_variable<Scalar>("tangential_separation_2")),
     _delta_u0_n(declare_parameter<Scalar>("delta_u0_n", "normal_characteristic_length", false)),
     _delta_u0_t(declare_parameter<Scalar>("delta_u0_t", "tangential_characteristic_length", false)),
-    _Tmax_n(declare_parameter<Scalar>("Tmax_n", "maximum_normal_traction", false)),
-    _Tmax_t(declare_parameter<Scalar>("Tmax_t", "maximum_shear_traction", false)),
+    _Tmax_n(declare_parameter<Scalar>("Tmax_n", "normal_strength", false)),
+    _Tmax_t(declare_parameter<Scalar>("Tmax_t", "shear_strength", false)),
     _Kpen(_dn_pen ? &declare_parameter<Scalar>("Kpen", "penalty_stiffness", false) : nullptr)
 {
   neml_assert(options.user_specified("normal_penetration") ==

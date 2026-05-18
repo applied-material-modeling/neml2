@@ -34,19 +34,18 @@ class Vec;
 /**
  * @brief Bilinear cohesive-zone traction with internal damage state.
  *
- * Given the effective separation \f$ \delta_m \f$, the initiation /
- * full-degradation thresholds \f$ \delta_\text{init} \f$ and
- * \f$ \delta_\text{final} \f$, and the per-component displacement-jump
- * pieces, this model:
+ * Given the effective separation \f$ \delta_m \f$, the critical (damage-onset)
+ * and full (failure) separations \f$ \delta_c \f$ and \f$ \delta_f \f$, and the
+ * per-component displacement-jump pieces, this model:
  *
  *   1. Computes the bilinear damage variable
  *      \f[
  *         d_\text{trial} = \begin{cases}
- *           0 & \delta_m \le \delta_\text{init} \\
- *           \dfrac{\delta_\text{final} (\delta_m - \delta_\text{init})}
- *                 {\delta_m (\delta_\text{final} - \delta_\text{init})}
- *             & \delta_\text{init} < \delta_m < \delta_\text{final} \\
- *           1 & \delta_m \ge \delta_\text{final}
+ *           0 & \delta_m \le \delta_c \\
+ *           \dfrac{\delta_f (\delta_m - \delta_c)}
+ *                 {\delta_m (\delta_f - \delta_c)}
+ *             & \delta_c < \delta_m < \delta_f \\
+ *           1 & \delta_m \ge \delta_f
  *         \end{cases}
  *      \f]
  *   2. Caps it for irreversibility: \f$ d = \max(d_\text{trial}, d_{n-1}) \f$
@@ -57,6 +56,11 @@ class Vec;
  *         T_n = K(1-d)\delta_n^+ + K \delta_n^-, \quad
  *         T_{si} = K(1-d)\delta_{si}.
  *      \f]
+ *
+ * `critical_separation` and `full_separation` are declared with
+ * `allow_nonlinear=true` so the user can supply them either as plain numeric
+ * literals or wire them to upstream models (e.g.
+ * `CamanhoDavilaCriticalSeparation`, `BenzeggaghKenaneFullSeparation`).
  *
  * The damage variable is intentionally an internal computational artifact of
  * the bilinear law — it is exposed as a secondary `damage` output for
@@ -86,11 +90,11 @@ protected:
   /// Effective separation \f$ \delta_m \f$
   const Variable<Scalar> & _delta_m;
 
-  /// Initiation threshold \f$ \delta_\text{init} \f$
-  const Variable<Scalar> & _delta_init;
+  /// Critical (damage-onset) separation \f$ \delta_c \f$ (nonlinear-capable parameter)
+  const Scalar & _delta_init;
 
-  /// Full-degradation threshold \f$ \delta_\text{final} \f$
-  const Variable<Scalar> & _delta_final;
+  /// Full (failure) separation \f$ \delta_f \f$ (nonlinear-capable parameter)
+  const Scalar & _delta_final;
 
   /// Normal separation \f$ \delta_n^\text{sep} \f$ (typically Macaulay-positive)
   const Variable<Scalar> & _dn_sep;

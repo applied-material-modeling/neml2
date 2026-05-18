@@ -31,36 +31,39 @@ namespace neml2
 class Scalar;
 
 /**
- * @brief Benzeggagh-Kenane (BK) mixed-mode propagation criterion: full-degradation jump.
+ * @brief Power-law (Alfano-Crisfield) mixed-mode propagation criterion: full (failure)
+ * separation.
  *
  * Opening branch (\f$ \delta_n^+ > 0 \f$):
  * \f[
- *   \delta_\text{final} = \frac{2}{K \delta_\text{init}}
- *     \left( G_{Ic} + (G_{IIc} - G_{Ic}) \left(\frac{\beta^2}{1+\beta^2}\right)^\eta \right).
+ *   \delta_f = \frac{2(1+\beta^2)}{K \delta_c}
+ *     \left[ \left(\frac{1}{G_{Ic}}\right)^\eta + \left(\frac{\beta^2}{G_{IIc}}\right)^\eta
+ *     \right]^{-1/\eta}.
  * \f]
- * Compression branch: \f$ \delta_\text{final} = 2 G_{IIc}/S \f$ (pure-shear closed form).
+ * Compression branch: \f$ \delta_f = 2 G_{IIc}/S \f$ (pure-shear closed form).
+ *
+ * `critical_separation` is declared as a nonlinear-capable parameter so the user can supply it
+ * either as a plain numeric literal or wire it to an upstream
+ * `CamanhoDavilaCriticalSeparation`.
  */
-class BKCriterion : public Model
+class PowerLawFullSeparation : public Model
 {
 public:
   static OptionSet expected_options();
 
-  BKCriterion(const OptionSet & options);
+  PowerLawFullSeparation(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Full-degradation displacement jump \f$ \delta_\text{final} \f$
   Variable<Scalar> & _to;
+  const Variable<Scalar> & _dn;
 
-  /// Mode-mixity ratio \f$ \beta \f$
-  const Variable<Scalar> & _beta;
+  /// Mode-mixity ratio \f$ \beta \f$ (nonlinear-capable parameter)
+  const Scalar & _beta;
 
-  /// Initiation displacement jump \f$ \delta_\text{init} \f$
-  const Variable<Scalar> & _delta_init;
-
-  /// Macaulay-positive normal jump (only needed to determine the opening/compression branch)
-  const Variable<Scalar> & _dn_pos;
+  /// Critical (damage-onset) separation \f$ \delta_c \f$ (nonlinear-capable parameter)
+  const Scalar & _delta_init;
 
   const Scalar & _K;
   const Scalar & _GIc;
