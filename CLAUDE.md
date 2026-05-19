@@ -11,9 +11,11 @@ NEML2 is a C++17 material modeling library that vectorizes constitutive model ev
 CMake presets in `CMakePresets.json` are the canonical entry point. Use `--preset` rather than passing raw flags so the build/install dirs (`build/<preset>`, `installed/<preset>`) stay consistent.
 
 ```bash
-cmake --preset dev          # configure (Debug + tests + tools + dispatcher + JSON + CSV)
-cmake --build --preset dev  # build the `tests` and `tools` targets
+cmake --preset dev                       # configure (Debug + tests + tools + dispatcher + JSON + CSV)
+cmake --build --preset dev -j$(nproc)    # build the `tests` and `tools` targets in parallel
 ```
+
+Always pass `-j$(nproc)` to `cmake --build`. CMake's default parallelism depends on the underlying generator — Make falls back to `-j1`, which is dramatically slower on this codebase. Explicit `-j$(nproc)` makes both Make and Ninja use all cores.
 
 Other notable presets: `release`, `cc` (exports `compile_commands.json` and symlinks it into the repo root), `coverage`, `asan`, `tsan`, `profiling`. CI also exercises a `-DNEML2_PCH=OFF` build (no precompiled headers) and a "no optional" build that disables `NEML2_JSON`, `NEML2_CSV`, and `NEML2_WORK_DISPATCHER` — keep those guarded with `#ifdef NEML2_HAS_*` where relevant.
 

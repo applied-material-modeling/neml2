@@ -40,6 +40,41 @@ For topologies that don't match a pre-assembled element — for example, a 5-ele
 
 Refer to [Syntax Documentation](@ref syntax-models) for the complete catalog of viscoelastic objects, including each one's parameters, inputs, and outputs.
 
+## Cohesive zone models
+
+Cohesive zone models — also known as traction-separation laws (TSLs) — describe the constitutive response of an interface as a relation between the displacement jump \f$ \boldsymbol{\delta} = [\delta_n, \delta_{s1}, \delta_{s2}] \f$ and the traction \f$ \boldsymbol{T} = [T_n, T_{s1}, T_{s2}] \f$ in the local interface frame. The first component is the normal jump (opening / closing); the other two are the in-plane shear jumps. Most TSLs are damage-driven: a scalar damage variable accumulates as the effective separation grows, and the traction degrades from an initial elastic response toward zero at full debonding.
+
+Rather than ship monolithic TSL classes, NEML2 provides a catalog of small composable primitives that you assemble into a TSL via `ComposedModel`. Each primitive does exactly one mathematical step, so a custom TSL — e.g. a different damage formula paired with the bilinear envelope, or the Camanho-Davila initiation paired with a new propagation criterion — needs no C++ at all; just write a new input file.
+
+The primitives are organized by role:
+
+**Kinematic helpers**:
+- `VecComponents` (in `models/common/`) — split the displacement-jump `Vec` into three named `Scalar` components.
+- `MacaulaySplit` (in `models/common/`) — split the normal jump into its positive and negative parts \f$ \langle \delta_n \rangle_\pm \f$.
+- `ScalarPNorm` (in `models/common/`) — weighted \f$ p \f$-norm of an arbitrary number of `Scalar` inputs, \f$ y = (\sum_i w_i |x_i|^p + \varepsilon)^{1/p} \f$. With \f$ p = 2 \f$ and unit weights this is the Euclidean norm (used for the tangential magnitude \f$ \delta_s = \sqrt{\delta_{s1}^2 + \delta_{s2}^2} \f$ and the bilinear effective separation \f$ \delta_m = \sqrt{(\delta_n^+)^2 + \delta_s^2} \f$). With non-uniform weights \f$ \boldsymbol{w} = [1, \beta_w, \beta_w] \f$ it gives the Exp-style effective separation \f$ \delta_\text{eff} = \sqrt{\delta_n^2 + \beta_w(\delta_{s1}^2 + \delta_{s2}^2) + \varepsilon} \f$.
+- `IrreversibleScalar` (in `models/common/`) — monotonically-increasing ratchet \f$ y = \max(y_{n-1}, x) \f$. Use it to enforce damage irreversibility or any history-max state.
+
+**TSL-specific kinematics**:
+- `ModeMixity` — \f$ \beta = \delta_s / \delta_n^+ \f$ in the opening branch; \f$ \beta = 0 \f$ in compression.
+
+**Constitutive formulas** (TSL-specific):
+- `CamanhoDavilaCriticalSeparation` — Camanho-Davila mixed-mode critical (damage-onset) separation \f$ \delta_c(\beta) \f$.
+- `BenzeggaghKenaneFullSeparation` — Mixed-mode full (failure) separation under the Benzeggagh-Kenane criterion: \f$ \delta_f(\beta, \delta_c) \f$.
+- `PowerLawFullSeparation` — Mixed-mode full (failure) separation under the Alfano-Crisfield power-law criterion.
+
+**Traction-assembly primitives** (each emits the public `traction` `Vec`):
+- `OrthotropicLinearTraction` — orthotropic linear elasticity \f$ T_n = K_n \delta_n^\text{sep}, T_{si} = K_t \delta_{si} \f$, no internal state. Optionally accepts `normal_penetration` (with a separate `penalty_stiffness` parameter) to elastically resist interpenetration.
+- `BilinearTraction` — Camanho/Davila-style cohesive-zone assembly. Takes \f$ \delta_m, \delta_\text{init}, \delta_\text{final} \f$ and the per-component jumps; internally computes the bilinear damage \f$ d \f$, caps it for irreversibility against the previous-step value, and assembles \f$ T_n = K(1-d) \delta_n^+ + K \delta_n^-, T_{si} = K(1-d) \delta_{si} \f$. Damage is a virtual quantity of the bilinear law (the variable for which \f$ (1-d)\,K\,\delta_m \f$ produces a piecewise-linear traction); it is exposed as a secondary `damage` output for inspection but is not meaningful outside this primitive's interior.
+- `SalehaniIraniTraction` — 3D coupled exponential law of Salehani & Irani in which the normal direction enters linearly and the two tangential directions enter quadratically in a single coupling exponent. Internally damaged: `damage = 1 − exp(−x)` capped against the previous-step value, so `T_i = a_i b_i (1 − damage)`. For monotonic loading this is identical to the bare exponential form; under load–unload–reload the cap freezes the softness at its historical peak (no un-physical healing).
+
+The example below assembles the Camanho-Davila bilinear law (BK criterion) from these primitives. Damage is irreversible across time steps, the normal jump uses a smooth Macaulay split so compression is resisted elastically, and the entire mode-mixity chain evaluates implicitly at the current displacement jump so the Jacobian is fully consistent with the in-step state. To swap to the Alfano-Crisfield power-law criterion, replace `BenzeggaghKenaneFullSeparation` with `PowerLawFullSeparation` — every other sub-model stays the same.
+
+@list-input:tests/regression/solid_mechanics/traction_separation_law/bilinear_monotonic/model.i:Models,Drivers
+
+The bilinear TSLs (`BilinearTraction`, with `damage` capped internally) and `SalehaniIraniTraction` both carry irreversible internal state. Under load–unload–reload schedules the unloading limb returns elastically along the secant of the current damaged stiffness and reloading resumes the softening branch only after the historical peak separation is exceeded. The `bilinear_unload` regression scenario under `tests/regression/solid_mechanics/traction_separation_law/` exercises this behavior.
+
+Refer to [Syntax Documentation](@ref syntax-models) for the complete catalog of cohesive-zone primitives, including each one's parameters, inputs, and outputs.
+
 ## Plasticity (macroscale)
 
 Generally speaking, plasticity models describe (oftentimes irreversible and dissipative) history-dependent deformation of solid materials. The plastic deformation is governed by the plastic loading/unloading conditions (or more generally the Karush-Kuhn-Tucker conditions):
