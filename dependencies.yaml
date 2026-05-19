@@ -118,7 +118,7 @@ doxygen:
 
 # ---- Project version ----
 neml2:
-  version: "2.1.4"
+  version: "2.1.5"
   files:
     - CMakeLists.txt
     - pyproject.toml
