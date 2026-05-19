@@ -34,3 +34,15 @@ repos:
         language: script
         pass_filenames: false
         always_run: true
+      - id: check-compat-matrix
+        name: check torch compatibility matrix is internally consistent
+        entry: scripts/compat_matrix.py check
+        language: script
+        pass_filenames: false
+        always_run: true
+      - id: render-compat-matrix
+        name: rerender torch compatibility matrix table
+        entry: scripts/compat_matrix.py render --in-place doc/content/installation/compatibility.md
+        language: script
+        pass_filenames: false
+        files: ^(compatibility\.yaml|doc/content/installation/compatibility\.md|scripts/compat_matrix\.py)$

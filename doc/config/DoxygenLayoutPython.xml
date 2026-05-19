@@ -4,6 +4,7 @@
     <tab type="mainpage" visible="yes"/>
     <tab type="usergroup" title="Installation">
       <tab type="user" url="../install.html" title="Basic Installation"/>
+      <tab type="user" url="../torch-compat.html" title="Torch Compatibility"/>
       <tab type="user" url="../build-customization.html" title="Build Customization"/>
       <tab type="user" url="../dependency-management.html" title="Dependency Management"/>
       <tab type="user" url="../external-project-integration.html" title="External Project Integration"/>

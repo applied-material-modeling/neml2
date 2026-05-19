@@ -1,0 +1,85 @@
+# Compatibility matrix for NEML2 wheels published to PyPI.
+#
+# Each row in `combinations` asserts: a NEML2 wheel built for the listed
+# `python` on `os`, installed alongside `torch == torch`, MUST pass the
+# Python test suite (python/tests).
+#
+# CI (.github/workflows/compat.yml) enforces this on every PR and push
+# to main. Adding a row tightens the supported set; removing one drops
+# support.
+#
+# To regenerate the seeded list from PyPI:
+#   python scripts/compat_matrix.py seed
+
+# The torch version the wheels are compiled against. Mirrors
+# torch.version in dependencies.yaml; CI fails if they drift.
+# dependencies: torch.version
+build_torch: "2.12.0"
+
+combinations:
+  - { torch: "2.7.1", python: "3.10", os: macos-latest }
+  - { torch: "2.7.1", python: "3.10", os: ubuntu-latest }
+  - { torch: "2.7.1", python: "3.11", os: macos-latest }
+  - { torch: "2.7.1", python: "3.11", os: ubuntu-latest }
+  - { torch: "2.7.1", python: "3.12", os: macos-latest }
+  - { torch: "2.7.1", python: "3.12", os: ubuntu-latest }
+  - { torch: "2.7.1", python: "3.13", os: macos-latest }
+  - { torch: "2.7.1", python: "3.13", os: ubuntu-latest }
+  - { torch: "2.8.0", python: "3.10", os: macos-latest }
+  - { torch: "2.8.0", python: "3.10", os: ubuntu-latest }
+  - { torch: "2.8.0", python: "3.11", os: macos-latest }
+  - { torch: "2.8.0", python: "3.11", os: ubuntu-latest }
+  - { torch: "2.8.0", python: "3.12", os: macos-latest }
+  - { torch: "2.8.0", python: "3.12", os: ubuntu-latest }
+  - { torch: "2.8.0", python: "3.13", os: macos-latest }
+  - { torch: "2.8.0", python: "3.13", os: ubuntu-latest }
+  - { torch: "2.9.0", python: "3.10", os: macos-latest }
+  - { torch: "2.9.0", python: "3.10", os: ubuntu-latest }
+  - { torch: "2.9.0", python: "3.11", os: macos-latest }
+  - { torch: "2.9.0", python: "3.11", os: ubuntu-latest }
+  - { torch: "2.9.0", python: "3.12", os: macos-latest }
+  - { torch: "2.9.0", python: "3.12", os: ubuntu-latest }
+  - { torch: "2.9.0", python: "3.13", os: macos-latest }
+  - { torch: "2.9.0", python: "3.13", os: ubuntu-latest }
+  - { torch: "2.9.0", python: "3.14", os: macos-latest }
+  - { torch: "2.9.0", python: "3.14", os: ubuntu-latest }
+  - { torch: "2.9.1", python: "3.10", os: macos-latest }
+  - { torch: "2.9.1", python: "3.10", os: ubuntu-latest }
+  - { torch: "2.9.1", python: "3.11", os: macos-latest }
+  - { torch: "2.9.1", python: "3.11", os: ubuntu-latest }
+  - { torch: "2.9.1", python: "3.12", os: macos-latest }
+  - { torch: "2.9.1", python: "3.12", os: ubuntu-latest }
+  - { torch: "2.9.1", python: "3.13", os: macos-latest }
+  - { torch: "2.9.1", python: "3.13", os: ubuntu-latest }
+  - { torch: "2.9.1", python: "3.14", os: macos-latest }
+  - { torch: "2.9.1", python: "3.14", os: ubuntu-latest }
+  - { torch: "2.10.0", python: "3.10", os: macos-latest }
+  - { torch: "2.10.0", python: "3.10", os: ubuntu-latest }
+  - { torch: "2.10.0", python: "3.11", os: macos-latest }
+  - { torch: "2.10.0", python: "3.11", os: ubuntu-latest }
+  - { torch: "2.10.0", python: "3.12", os: macos-latest }
+  - { torch: "2.10.0", python: "3.12", os: ubuntu-latest }
+  - { torch: "2.10.0", python: "3.13", os: macos-latest }
+  - { torch: "2.10.0", python: "3.13", os: ubuntu-latest }
+  - { torch: "2.10.0", python: "3.14", os: macos-latest }
+  - { torch: "2.10.0", python: "3.14", os: ubuntu-latest }
+  - { torch: "2.11.0", python: "3.10", os: macos-latest }
+  - { torch: "2.11.0", python: "3.10", os: ubuntu-latest }
+  - { torch: "2.11.0", python: "3.11", os: macos-latest }
+  - { torch: "2.11.0", python: "3.11", os: ubuntu-latest }
+  - { torch: "2.11.0", python: "3.12", os: macos-latest }
+  - { torch: "2.11.0", python: "3.12", os: ubuntu-latest }
+  - { torch: "2.11.0", python: "3.13", os: macos-latest }
+  - { torch: "2.11.0", python: "3.13", os: ubuntu-latest }
+  - { torch: "2.11.0", python: "3.14", os: macos-latest }
+  - { torch: "2.11.0", python: "3.14", os: ubuntu-latest }
+  - { torch: "2.12.0", python: "3.10", os: macos-latest }
+  - { torch: "2.12.0", python: "3.10", os: ubuntu-latest }
+  - { torch: "2.12.0", python: "3.11", os: macos-latest }
+  - { torch: "2.12.0", python: "3.11", os: ubuntu-latest }
+  - { torch: "2.12.0", python: "3.12", os: macos-latest }
+  - { torch: "2.12.0", python: "3.12", os: ubuntu-latest }
+  - { torch: "2.12.0", python: "3.13", os: macos-latest }
+  - { torch: "2.12.0", python: "3.13", os: ubuntu-latest }
+  - { torch: "2.12.0", python: "3.14", os: macos-latest }
+  - { torch: "2.12.0", python: "3.14", os: ubuntu-latest }
