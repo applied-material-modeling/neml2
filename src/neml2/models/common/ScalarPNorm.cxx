@@ -47,13 +47,13 @@ ScalarPNorm::expected_options()
 
   options.add<std::vector<VariableName>, FType::INPUT>("from", "Scalar variables to be combined");
   options.add_output("to", "The weighted p-norm output");
-  options.add_parameter<Scalar>("exponent", "The exponent \\f$ p \\f$");
+  options.add_parameter<Scalar>("exponent", "The exponent");
 
   options.add<std::vector<TensorName<Scalar>>, FType::BUFFER>(
       "weights",
       {TensorName<Scalar>("1")},
-      "Per-input weights \\f$ w_i \\f$. List length must be 1 or `from`-length; a single "
-      "value is broadcast to all inputs.");
+      "Per-input weights. List length must be 1 or `from`-length; a single value is broadcast "
+      "to all inputs.");
   options.add<std::vector<bool>>(
       "weight_as_parameter",
       {false},
