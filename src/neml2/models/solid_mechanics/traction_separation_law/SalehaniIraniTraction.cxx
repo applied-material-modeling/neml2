@@ -52,17 +52,13 @@ SalehaniIraniTraction::expected_options()
       "\\f$ is added to \\f$ T_n \\f$ (`penalty_stiffness` becomes required).";
 
   options.add_input("normal_separation",
-                    "Normal separation \\f$ \\delta_n^\\text{sep} \\f$ (typically the "
-                    "Macaulay-positive part of the normal jump)");
+                    "Normal separation (typically the Macaulay-positive part of the normal jump)");
   options.add_input("normal_penetration",
-                    "Optional normal penetration \\f$ \\delta_n^\\text{pen} \\f$. When "
-                    "supplied, \\f$ K_\\text{pen}\\,\\delta_n^\\text{pen} \\f$ is added to "
-                    "\\f$ T_n \\f$ as a penalty term resisting interpenetration. Requires "
-                    "`penalty_stiffness` to be supplied as well.");
-  options.add_input("tangential_separation_1",
-                    "First tangential separation \\f$ \\delta_{s1} \\f$");
-  options.add_input("tangential_separation_2",
-                    "Second tangential separation \\f$ \\delta_{s2} \\f$");
+                    "Optional normal penetration. When supplied, the penalty stiffness times this "
+                    "is added to the normal traction as a penalty term resisting interpenetration. "
+                    "Requires `penalty_stiffness` to be supplied as well.");
+  options.add_input("tangential_separation_1", "First tangential separation");
+  options.add_input("tangential_separation_2", "Second tangential separation");
   options.add_output("traction", "Traction Vec");
   options.add_output("damage", "Damage scalar (current step, irreversibility-capped)");
   options.add_parameter<Scalar>("normal_characteristic_length",

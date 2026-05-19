@@ -43,21 +43,17 @@ OrthotropicLinearTraction::expected_options()
       "interpenetration produces zero normal traction.";
 
   options.add_input("normal_separation",
-                    "Normal separation \\f$ \\delta_n^\\text{sep} \\f$ (typically the "
-                    "Macaulay-positive part of the normal jump)");
+                    "Normal separation (typically the Macaulay-positive part of the normal jump)");
   options.add_input("normal_penetration",
-                    "Optional normal penetration \\f$ \\delta_n^\\text{pen} \\f$ (typically the "
-                    "Macaulay-negative part of the normal jump). When supplied, "
-                    "\\f$ K_\\text{pen} \\delta_n^\\text{pen} \\f$ is added to \\f$ T_n \\f$ "
-                    "as a penalty term resisting interpenetration. Requires "
+                    "Optional normal penetration (typically the Macaulay-negative part of the "
+                    "normal jump). When supplied, the penalty stiffness times this is added to "
+                    "the normal traction as a penalty term resisting interpenetration. Requires "
                     "`penalty_stiffness` to be supplied as well.");
-  options.add_input("tangential_separation_1",
-                    "First tangential separation \\f$ \\delta_{s1} \\f$");
-  options.add_input("tangential_separation_2",
-                    "Second tangential separation \\f$ \\delta_{s2} \\f$");
+  options.add_input("tangential_separation_1", "First tangential separation");
+  options.add_input("tangential_separation_2", "Second tangential separation");
   options.add_output("traction", "Traction Vec");
-  options.add_parameter<Scalar>("normal_stiffness", "Normal stiffness K_n");
-  options.add_parameter<Scalar>("tangential_stiffness", "Tangential stiffness K_t (isotropic)");
+  options.add_parameter<Scalar>("normal_stiffness", "Normal stiffness");
+  options.add_parameter<Scalar>("tangential_stiffness", "Tangential stiffness (isotropic)");
   // Optional with default 0 — the constructor asserts this is supplied iff `normal_penetration` is.
   options.add_parameter<Scalar>(
       "penalty_stiffness",

@@ -40,10 +40,9 @@ ModeMixity::expected_options()
                   "trip on a division by zero.";
 
   options.add_input("normal_separation",
-                    "Normal separation \\f$ \\delta_n \\f$ (typically the Macaulay-positive part "
-                    "of the normal jump)");
-  options.add_input("tangential_separation", "Tangential separation magnitude \\f$ \\delta_s \\f$");
-  options.add_output("mode_mixity", "Mode-mixity ratio \\f$ \\beta \\f$");
+                    "Normal separation (typically the Macaulay-positive part of the normal jump)");
+  options.add_input("tangential_separation", "Tangential separation magnitude");
+  options.add_output("mode_mixity", "Mode-mixity ratio");
 
   return options;
 }

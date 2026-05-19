@@ -43,13 +43,12 @@ CamanhoDavilaCriticalSeparation::expected_options()
       "and \\f$ \\delta_{s0} = S/K \\f$. Compression branch: \\f$ \\delta_c = \\delta_{s0} \\f$.";
 
   options.add_input("normal_separation",
-                    "Normal separation \\f$ \\delta_n \\f$ (typically the Macaulay-positive part "
-                    "of the normal jump; used only to determine the opening / compression "
-                    "branch)");
-  options.add_output("critical_separation", "Critical separation \\f$ \\delta_c \\f$");
-  options.add_parameter<Scalar>("mode_mixity",
-                                "Mode-mixity ratio \\f$ \\beta \\f$. May be wired to an upstream "
-                                "`ModeMixity` (nonlinear-capable).");
+                    "Normal separation (typically the Macaulay-positive part of the normal jump; "
+                    "used only to determine the opening / compression branch)");
+  options.add_output("critical_separation", "Critical (damage-onset) separation");
+  options.add_parameter<Scalar>(
+      "mode_mixity",
+      "Mode-mixity ratio. May be wired to an upstream `ModeMixity` (nonlinear-capable).");
   options.add_parameter<Scalar>("penalty_stiffness", "Penalty stiffness K");
   options.add_parameter<Scalar>("normal_strength", "Tensile (normal) strength N");
   options.add_parameter<Scalar>("shear_strength", "Shear strength S");

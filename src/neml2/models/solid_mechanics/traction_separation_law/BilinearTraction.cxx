@@ -44,30 +44,25 @@ BilinearTraction::expected_options()
       "as a secondary output for diagnostics; the irreversibility cap is internal to this model "
       "and does not require an external `IrreversibleScalar`.";
 
-  options.add_input("effective_separation", "Effective separation \\f$ \\delta_m \\f$");
+  options.add_input("effective_separation", "Effective separation");
   options.add_input("normal_separation",
-                    "Normal separation \\f$ \\delta_n^\\text{sep} \\f$ (typically the "
-                    "Macaulay-positive part of the normal jump)");
+                    "Normal separation (typically the Macaulay-positive part of the normal jump)");
   options.add_input("normal_penetration",
-                    "Optional normal penetration \\f$ \\delta_n^\\text{pen} \\f$ (typically "
-                    "the Macaulay-negative part of the normal jump). When supplied, "
-                    "\\f$ K \\delta_n^\\text{pen} \\f$ is added to \\f$ T_n \\f$ as a penalty "
-                    "term resisting interpenetration.");
-  options.add_input("tangential_separation_1",
-                    "First tangential separation \\f$ \\delta_{s1} \\f$");
-  options.add_input("tangential_separation_2",
-                    "Second tangential separation \\f$ \\delta_{s2} \\f$");
+                    "Optional normal penetration (typically the Macaulay-negative part of the "
+                    "normal jump). When supplied, K times this is added to the normal traction "
+                    "as a penalty term resisting interpenetration.");
+  options.add_input("tangential_separation_1", "First tangential separation");
+  options.add_input("tangential_separation_2", "Second tangential separation");
   options.add_output("traction", "Traction Vec");
   options.add_output("damage", "Damage scalar (current step, irreversibility-capped)");
-  options.add_parameter<Scalar>("penalty_stiffness", "Penalty stiffness K");
+  options.add_parameter<Scalar>("penalty_stiffness", "Penalty stiffness");
   options.add_parameter<Scalar>("critical_separation",
-                                "Critical (damage-onset) separation \\f$ \\delta_c \\f$. May be "
-                                "wired to an upstream `CamanhoDavilaCriticalSeparation` "
-                                "(nonlinear-capable).");
+                                "Critical (damage-onset) separation. May be wired to an upstream "
+                                "`CamanhoDavilaCriticalSeparation` (nonlinear-capable).");
   options.add_parameter<Scalar>("full_separation",
-                                "Full (failure) separation \\f$ \\delta_f \\f$. May be wired to "
-                                "an upstream `BenzeggaghKenaneFullSeparation` or "
-                                "`PowerLawFullSeparation` (nonlinear-capable).");
+                                "Full (failure) separation. May be wired to an upstream "
+                                "`BenzeggaghKenaneFullSeparation` or `PowerLawFullSeparation` "
+                                "(nonlinear-capable).");
 
   return options;
 }

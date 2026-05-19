@@ -44,23 +44,20 @@ PowerLawFullSeparation::expected_options()
       "Compression: \\f$ \\delta_f = 2 G_{IIc}/S \\f$.";
 
   options.add_input("normal_separation",
-                    "Normal separation \\f$ \\delta_n \\f$ (typically the Macaulay-positive part "
-                    "of the normal jump; used only to determine the opening / compression "
-                    "branch)");
-  options.add_output("full_separation", "Full (failure) separation \\f$ \\delta_f \\f$");
-  options.add_parameter<Scalar>("mode_mixity",
-                                "Mode-mixity ratio \\f$ \\beta \\f$. May be wired to an upstream "
-                                "`ModeMixity` (nonlinear-capable).");
+                    "Normal separation (typically the Macaulay-positive part of the normal jump; "
+                    "used only to determine the opening / compression branch)");
+  options.add_output("full_separation", "Full (failure) separation");
+  options.add_parameter<Scalar>(
+      "mode_mixity",
+      "Mode-mixity ratio. May be wired to an upstream `ModeMixity` (nonlinear-capable).");
   options.add_parameter<Scalar>("critical_separation",
-                                "Critical (damage-onset) separation \\f$ \\delta_c \\f$. May be "
-                                "wired to an upstream `CamanhoDavilaCriticalSeparation` "
-                                "(nonlinear-capable).");
-  options.add_parameter<Scalar>("penalty_stiffness", "Penalty stiffness K");
-  options.add_parameter<Scalar>("mode_I_fracture_toughness",
-                                "Mode I critical energy release rate G_Ic");
+                                "Critical (damage-onset) separation. May be wired to an upstream "
+                                "`CamanhoDavilaCriticalSeparation` (nonlinear-capable).");
+  options.add_parameter<Scalar>("penalty_stiffness", "Penalty stiffness");
+  options.add_parameter<Scalar>("mode_I_fracture_toughness", "Mode I critical energy release rate");
   options.add_parameter<Scalar>("mode_II_fracture_toughness",
-                                "Mode II critical energy release rate G_IIc");
-  options.add_parameter<Scalar>("shear_strength", "Shear strength S (used in compression branch)");
+                                "Mode II critical energy release rate");
+  options.add_parameter<Scalar>("shear_strength", "Shear strength (used in compression branch)");
   options.add_parameter<Scalar>("eta", "Power-law exponent");
 
   return options;
