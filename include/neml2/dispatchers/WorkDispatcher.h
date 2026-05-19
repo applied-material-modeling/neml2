@@ -35,6 +35,7 @@
 #include <ATen/Parallel.h>
 
 #include "neml2/config.h"
+#include "neml2/dispatchers/FixedSizeWorkGenerator.h"
 #include "neml2/dispatchers/WorkGenerator.h"
 #include "neml2/dispatchers/WorkScheduler.h"
 #include "neml2/misc/assertions.h"
@@ -230,8 +231,16 @@ protected:
   /// Function to initialize the thread
   std::function<void(Device)> _thread_init;
 
-  /// Results to be reduced
+  /// Results to be reduced. Accessed concurrently by the main thread (`emplace_back` to grow
+  /// the buffer for each scheduled task) and the worker threads (`operator[]` to write the
+  /// completed result into its slot). `std::vector` is not internally synchronized, so even the
+  /// single-CPU-thread case races: the worker's `operator[]` can return a reference into the
+  /// old storage just before the main thread's `emplace_back` reallocates, leaving the worker
+  /// to write to freed memory. We protect every access with `_results_mutex` below. When the
+  /// generator advertises its `total()` (i.e. derives from `FixedSizeWorkGenerator`) we also
+  /// `reserve()` an upper bound on tasks up front, so the locked path almost never reallocates.
   std::vector<Op> _results;
+  std::mutex _results_mutex;
 
   ///@{
   /// Mutex for the thread pool to pick up task from the task queue
@@ -459,7 +468,18 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
 
   Device device = kCPU;
   std::size_t n = 0;
-  _results.clear();
+
+  // Reset `_results` and pre-reserve an upper bound on the number of tasks (one task per call
+  // to `generator.next(n)`, and each call produces at most `n` items, so `total()` is a safe
+  // ceiling). Even with the mutex below, reserving up front means `emplace_back` essentially
+  // never reallocates, so the worker threads almost never have to wait on the main thread for
+  // a results slot.
+  {
+    std::lock_guard<std::mutex> lock(_results_mutex);
+    _results.clear();
+    if (auto * const sized = dynamic_cast<FixedSizeWorkGenerator<Ip> *>(&generator))
+      _results.reserve(sized->total());
+  }
 
   // Keep asking the scheduler for an available device
   // - If the generator has no more work, we break out of the loop
@@ -471,9 +491,14 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
       throw NEMLException("Scheduler returned a batch size of " + std::to_string(n));
     // Generate work
     auto && [m, work] = generator.next(n);
-    // Reserve space for the result
-    _results.resize(_results.size() + 1);
-    auto i = _results.size() - 1;
+    // Reserve a slot for the result. The mutex protects against a worker thread writing
+    // `_results[i]` through a reference that becomes stale here if `emplace_back` reallocates.
+    std::size_t i = 0;
+    {
+      std::lock_guard<std::mutex> lock(_results_mutex);
+      _results.emplace_back();
+      i = _results.size() - 1;
+    }
     // Create the task
     auto task = [this, work = std::move(work), device = device, m = m, i = i]() mutable
     {
@@ -490,8 +515,12 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
       // Postprocess
       if (_postprocess)
         result = _postprocess(std::move(result));
-      // Collect result
-      _results[i] = std::move(result);
+      // Collect result. Lock pairs with the main-thread `emplace_back` above so reallocation
+      // and slot assignment can never overlap.
+      {
+        std::lock_guard<std::mutex> lock(_results_mutex);
+        _results[i] = std::move(result);
+      }
       // Tell the scheduler that we have completed m batches
       _scheduler.completed_work(device, m);
 
@@ -513,7 +542,11 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
     _thread_condition.notify_all();
   }
 
-  // Wait for all tasks to complete
+  // Wait for all tasks to complete. `wait_for_completion` synchronizes on the scheduler's
+  // mutex, which is released only after every worker has finished its `completed_work` call —
+  // and `completed_work` is the worker's last act after releasing `_results_mutex`. So once
+  // `wait_for_completion` returns, every `_results[i] = ...` is visible to this thread and no
+  // worker is still touching `_results`. The reduce below therefore needs no extra lock.
   _scheduler.wait_for_completion();
 
   if (_reduce)
