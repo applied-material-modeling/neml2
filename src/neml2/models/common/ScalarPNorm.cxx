@@ -29,6 +29,7 @@
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/sign.h"
+#include "neml2/tensors/functions/where.h"
 
 namespace neml2
 {
@@ -111,10 +112,26 @@ ScalarPNorm::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto eps = machine_precision(_from[0]->scalar_type());
 
-  // sum_i w_i * |x_i|^p
-  auto sum = (*_weights[0]) * neml2::pow(neml2::abs((*_from[0])()), _p);
+  // Sum_i w_i * |x_i|^p. The `where`-mask-and-safe-base pattern guards the autograd path for
+  // the `p` parameter against the `pow`-base-zero singularity: d/dp [x^p] = x^p * log(x), and
+  // PyTorch evaluates that as 0 * -inf = NaN at x=0 (rather than the analytically-correct 0,
+  // the limit of x^p log(x) as x -> 0+). We substitute a safe base of 1 in the masked-off
+  // branch and zero the term out, so the autograd graph never sees log(0). The forward value
+  // is unchanged (|0|^p = 0 either way). The mask is detached so the boolean comparison
+  // doesn't contribute to the graph. The CPU `at::pow_backward` happens to special-case
+  // base=0 silently; the CUDA kernel does not, so this surfaces as `nan` only on CUDA.
+  auto add_term = [this](std::size_t i)
+  {
+    const auto base = neml2::abs((*_from[i])());
+    const auto safe = (base > 0.0).detach();
+    const auto safe_base = neml2::where(safe, base, Scalar::ones_like(base));
+    const auto term = neml2::where(safe, neml2::pow(safe_base, _p), Scalar::zeros_like(base));
+    return (*_weights[i]) * term;
+  };
+
+  auto sum = add_term(0);
   for (std::size_t i = 1; i < _from.size(); i++)
-    sum = sum + (*_weights[i]) * neml2::pow(neml2::abs((*_from[i])()), _p);
+    sum = sum + add_term(i);
 
   // y = (sum + eps)^(1/p). The regularizer keeps y bounded below by eps^(1/p) > 0,
   // so 1/y in the Jacobian stays finite.
