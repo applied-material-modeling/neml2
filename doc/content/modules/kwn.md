@@ -104,7 +104,9 @@ with the classical-nucleation-theory expressions
   \beta^{(j)} = \frac{4 \pi \left(R^{(j)}_{\text{crit}}\right)^2 N_a^{4/3}}{\left(V_m^{(j)}\right)^{4/3}}\, \frac{1}{S^{(j)}}.
 \f]
 
-\f$\gamma^{(j)}\f$ is the precipitate surface energy, \f$V_m^{(j)}\f$ its molar volume, \f$\Delta g^{(j)}_v\f$ the volumetric driving force for nucleation of precipitate \f$(j)\f$, \f$N_0^{(j)}\f$ the nucleation site density, \f$N_a\f$ Avogadro's number, \f$k_B\f$ the Boltzmann constant, and \f$S^{(j)}\f$ the same projected diffusivity sum that appears in the SFFK growth rate. 
+\f$\gamma^{(j)}\f$ is the precipitate surface energy, \f$V_m^{(j)}\f$ its molar volume, \f$\Delta g^{(j)}_v\f$ the volumetric driving force for nucleation of precipitate \f$(j)\f$ (in J/mol — the per-mole convention used throughout `NucleationBarrierAndCriticalRadius`), \f$N_0^{(j)}\f$ the nucleation site density, \f$N_a\f$ Avogadro's number, \f$k_B\f$ the Boltzmann constant, and \f$S^{(j)}\f$ the same projected diffusivity sum that appears in the SFFK growth rate.
+
+The volumetric driving force \f$\Delta g^{(j)}_v\f$ can be supplied either as a CALPHAD-derived tabulation against composition and temperature (the pattern used by the Al-Cu example below) or assembled from the participating species' matrix and equilibrium concentrations with `IdealSolutionVolumetricDrivingForce`, which evaluates the Hu--Cocks ideal-solution form \f$\Delta g_v = RT \sum_k w_k \ln(c_k/c_k^{\text{eq}})\f$. Setting every weight to 1 recovers the "product of all components" convention used for compound precipitates.
 
 The critical radius \f$R^{(j)}_{\text{crit}}\f$ is the minimum stable size of a precipitate in the classical theory, i.e. when a stable precipitate can nucleate because the chemical driving force overcomes the surface energy requird to form a (spherical) precipitate.
 
@@ -120,6 +122,7 @@ The KWN module exposes the following objects, each implementing one of the equat
 | `CurrentConcentration`                | Mass-balance closure for \f$x^\infty_k\f$ given the precipitate populations                |
 | `ProjectedDiffusivitySum`             | Computes the multi-species sum \f$S^{(j)}\f$ shared by SFFK and nucleation                 |
 | `ChemicalGibbsFreeEnergyDifference`   | Assembles \f$\Delta G^{(j)}_{\text{chem}}\f$ from per-species potentials                   |
+| `IdealSolutionVolumetricDrivingForce` | Assembles the molar driving force \f$RT \sum_k w_k \ln(c_k/c_k^{\text{eq}})\f$ from concentrations |
 | `RateLimitedPrecipitateGrowthRate`    | Single-species, equilibrium-driven growth rate \f$\dot{R}^{(j)}\f$                         |
 | `SFFKPrecipitationGrowthRate`         | SFFK multi-component growth rate \f$\dot{R}^{(j)}\f$                                       |
 | `NucleationBarrierAndCriticalRadius`  | Computes \f$R^{(j)}_{\text{crit}}\f$ and \f$\Delta G^{*,(j)}\f$                            |
@@ -152,3 +155,5 @@ End-to-end regression tests live in `tests/regression/kwn/`:
 - `growth-nucleation-unscaled/` — same physics on a fixed-extent radius grid (useful for comparing the effect of the semi-infinite scaling).
 
 A worked Al–Cu example computing a time–temperature–precipitation diagram for the \f$\theta\f$ phase \f$\mathrm{Al}_2\mathrm{Cu}\f$ lives under `python/examples/kwn/`. The notebook `al-cu-ttp.ipynb` walks through generating the required CALPHAD data with [pycalphad](https://pycalphad.org) using the [Liang and Schmid-Fetzer database](https://www.sciencedirect.com/science/article/pii/S0364591615300304), then loads `model.i` and runs the resulting model on a temperature/time grid (using CUDA when available). See the example's `requirements.txt` for the additional Python dependencies needed to regenerate the thermodynamic data.
+
+A second worked example under `python/examples/316-precipitation/` builds a two-phase KWN model for 316H stainless steel (intragranular \f$\mathrm{Cr}_{23}\mathrm{C}_6\f$ + \f$\mathrm{Fe}_2\mathrm{Mo}\f$ Laves), following the precipitation sub-model of [Hu et al., 2020](https://doi.org/10.1016/j.msea.2019.138787). It demonstrates `IdealSolutionVolumetricDrivingForce` driving the nucleation barrier for both compound and single-element precipitates, two populations sharing a common matrix solute reservoir via `CurrentConcentration`, and the rate-limited growth-rate form with a different rate-limiting species per phase.
