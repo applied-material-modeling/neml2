@@ -71,14 +71,9 @@ NucleationBarrierAndCriticalRadius::set_value(bool out, bool dout_din, bool /*d2
   // underflow in NucleationFluxMagnitude, but the d/d(dg_total) rows below
   // still produce inf/nan and can ill-condition the implicit solve. Clamp
   // dg_total (softplus-style) if stiffness becomes a problem.
-  const auto gamma = _gamma;
-  const auto dg_total = _dg_total;
-  const auto V_m = _V_m;
-
-  const auto R_crit = 2.0 * gamma * V_m / dg_total;
-
+  const auto R_crit = 2.0 * _gamma * _V_m / _dg_total;
   const auto dg =
-      (16.0 / 3.0) * neml2::pi * pow(gamma, 3.0) * pow(V_m, 2.0) / (dg_total * dg_total);
+      (16.0 / 3.0) * neml2::pi * pow(_gamma, 3.0) * pow(_V_m, 2.0) / (_dg_total * _dg_total);
 
   if (out)
   {
@@ -89,16 +84,16 @@ NucleationBarrierAndCriticalRadius::set_value(bool out, bool dout_din, bool /*d2
   if (dout_din)
   {
     if (const auto * const gamma_param = nl_param("gamma"))
-      _dg.d(*gamma_param) = 3.0 * dg / gamma;
+      _dg.d(*gamma_param) = 3.0 * dg / _gamma;
 
     if (const auto * const dg_param = nl_param("dg_total"))
-      _dg.d(*dg_param) = -2.0 * dg / dg_total;
+      _dg.d(*dg_param) = -2.0 * dg / _dg_total;
 
     if (const auto * const gamma_param = nl_param("gamma"))
-      _R_crit.d(*gamma_param) = 2.0 * V_m / dg_total;
+      _R_crit.d(*gamma_param) = 2.0 * _V_m / _dg_total;
 
     if (const auto * const dg_param = nl_param("dg_total"))
-      _R_crit.d(*dg_param) = -R_crit / dg_total;
+      _R_crit.d(*dg_param) = -R_crit / _dg_total;
   }
 }
 } // namespace neml2

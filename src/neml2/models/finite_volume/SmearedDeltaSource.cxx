@@ -68,20 +68,12 @@ SmearedDeltaSource::SmearedDeltaSource(const OptionSet & options)
 void
 SmearedDeltaSource::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto centers = _cell_centers;
-  const auto magnitude = _magnitude();
-  const auto location = _location();
-  const auto width = _width;
-
-  const auto inv_width = 1.0 / width;
-  const auto arg = (centers - location) * inv_width;
-  const auto exp_term = exp(-0.5 * arg * arg);
-  const auto prefactor = inv_width / std::sqrt(2.0 * neml2::pi);
-  const auto gauss = prefactor * exp_term;
-  const auto source = magnitude * gauss;
+  const auto inv_width = 1.0 / _width;
+  const auto arg = (_cell_centers - _location) * inv_width;
+  const auto gauss = inv_width / std::sqrt(2.0 * neml2::pi) * exp(-0.5 * arg * arg);
 
   if (out)
-    _source = source;
+    _source = _magnitude * gauss;
 
   if (dout_din)
   {
@@ -98,7 +90,7 @@ SmearedDeltaSource::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     }
 
     {
-      const auto dsource_dloc = magnitude * gauss * arg * inv_width;
+      const auto dsource_dloc = _magnitude * gauss * arg * inv_width;
       if (_location.intmd_dim() == 0)
         _source.d(_location, 1, 1, 0) = dsource_dloc;
       else
@@ -112,8 +104,7 @@ SmearedDeltaSource::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
     if (const auto * const width_param = nl_param("width"))
     {
-      const auto arg2 = arg * arg;
-      const auto dsource_dwidth = magnitude * gauss * (arg2 - 1.0) * inv_width;
+      const auto dsource_dwidth = _magnitude * gauss * (arg * arg - 1.0) * inv_width;
       if (width_param->intmd_dim() == 0)
         _source.d(*width_param, 1, 1, 0) = dsource_dwidth;
       else
@@ -127,7 +118,7 @@ SmearedDeltaSource::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
     if (const auto * const centers_param = nl_param("cell_centers"))
     {
-      const auto dsource_dcenters = -magnitude * gauss * arg * inv_width;
+      const auto dsource_dcenters = -_magnitude() * gauss * arg * inv_width;
       if (centers_param->intmd_dim() == 0)
         _source.d(*centers_param, 1, 1, 0) = dsource_dcenters;
       else

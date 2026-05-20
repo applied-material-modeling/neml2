@@ -70,14 +70,13 @@ void
 RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto nbin = _R.intmd_size(-1);
-  const auto R = _R;
   const auto x_inf = (_x.intmd_dim() == 0 ? _x().intmd_expand(nbin) : _x());
   const auto x_eq = (_x_eq.intmd_dim() == 0 ? _x_eq.intmd_expand(nbin) : _x_eq);
   const auto dx = (_dx.intmd_dim() == 0 ? _dx.intmd_expand(nbin) : _dx);
   const auto D = (_D.intmd_dim() == 0 ? _D.intmd_expand(nbin) : _D);
 
   const auto numer = x_inf - x_eq;
-  const auto coef = D / R;
+  const auto coef = D / _R;
 
   if (out)
     _R_dot = coef * numer / dx;
@@ -88,7 +87,7 @@ RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2ou
 
     if (const auto * const R_param = nl_param("R"))
     {
-      const auto d_rate_dR = -coef * numer / (dx * R);
+      const auto d_rate_dR = -coef * numer / (dx * _R);
       const auto r_map = imap_v<Scalar>(_R.options()).intmd_expand(nbin);
       const auto diag_r = intmd_diagonalize(r_map);
       _R_dot.d(*R_param, 2, 1, 1) = d_rate_dR.intmd_unsqueeze(1) * diag_r;
@@ -108,7 +107,7 @@ RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2ou
 
     if (const auto * const x_eq_param = nl_param("x_eq"))
     {
-      const auto d_rate_dx_eq = -D / (R * dx);
+      const auto d_rate_dx_eq = -D / (_R * dx);
       if (x_eq_param->intmd_dim() == 0)
         _R_dot.d(*x_eq_param, 1, 1, 0) = d_rate_dx_eq;
       else
@@ -121,7 +120,7 @@ RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2ou
 
     if (const auto * const dx_param = nl_param("dx"))
     {
-      const auto d_rate_ddx = -D * numer / (R * dx2);
+      const auto d_rate_ddx = -D * numer / (_R * dx2);
       if (dx_param->intmd_dim() == 0)
         _R_dot.d(*dx_param, 1, 1, 0) = d_rate_ddx;
       else
@@ -134,7 +133,7 @@ RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2ou
 
     if (const auto * const D_param = nl_param("D"))
     {
-      const auto d_rate_dD = numer / (R * dx);
+      const auto d_rate_dD = numer / (_R * dx);
       if (D_param->intmd_dim() == 0)
         _R_dot.d(*D_param, 1, 1, 0) = d_rate_dD;
       else

@@ -117,9 +117,7 @@ IdealSolutionVolumetricDrivingForce::IdealSolutionVolumetricDrivingForce(const O
 void
 IdealSolutionVolumetricDrivingForce::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto T = _T();
-  const auto Rg = _R_g;
-  const auto pref = Rg * T;
+  const auto pref = _R_g * _T;
 
   // sum_log = sum_k w_k * log(c_k / c_k_eq).
   // log(x_k / x_eq_k) and the 1/x_k, 1/x_eq_k derivatives below are singular
@@ -134,12 +132,10 @@ IdealSolutionVolumetricDrivingForce::set_value(bool out, bool dout_din, bool /*d
 
   if (dout_din)
   {
-    // d(dg)/d(T) = R * sum_log
-    _dg.d(_T) = Rg * sum_log;
+    _dg.d(_T) = _R_g * sum_log;
 
     for (std::size_t i = 0; i < _xs.size(); i++)
     {
-      // d(dg)/d(c_k) = R T * w_k / c_k
       _dg.d(*_xs[i]) = pref * (*_ws[i]) / (*_xs[i])();
 
       if (const auto * const x_eq_param = nl_param("x_eq_" + std::to_string(i)))

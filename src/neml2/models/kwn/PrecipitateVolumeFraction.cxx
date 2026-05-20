@@ -61,20 +61,17 @@ PrecipitateVolumeFraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
 {
   if (out)
   {
-    auto volume = (4.0 / 3.0) * neml2::pi * pow(_R(), 3.0) * _n();
+    auto volume = (4.0 / 3.0) * neml2::pi * pow(_R, 3.0) * _n;
     _f = intmd_sum(volume, -1, /*keepdim=*/false);
   }
 
   if (dout_din)
   {
-    const auto r = _R();
-    const auto n = _n();
-
-    _f.d(_n, 1, 0, 1) = (4.0 / 3.0) * neml2::pi * pow(r, 3.0);
+    _f.d(_n, 1, 0, 1) = (4.0 / 3.0) * neml2::pi * pow(_R, 3.0);
 
     if (const auto * const radius = nl_param("radius"))
     {
-      const auto df_dr = 4.0 * neml2::pi * pow(r, 2.0) * n;
+      const auto df_dr = 4.0 * neml2::pi * pow(_R, 2.0) * _n;
       if (radius->intmd_dim() == 0)
         _f.d(*radius) = intmd_sum(df_dr, -1, /*keepdim=*/false);
       else

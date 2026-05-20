@@ -64,21 +64,16 @@ KineticFactor::KineticFactor(const OptionSet & options)
 void
 KineticFactor::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto R_crit = _R_crit();
-  const auto sum = _sum();
-  const auto V_m = _V_m;
-  const auto N_a = _N_a;
-
-  const auto coef = 4.0 * neml2::pi * pow(N_a, 4.0 / 3.0) / pow(V_m, 4.0 / 3.0);
-  const auto beta = coef * R_crit * R_crit / sum;
+  const auto coef = 4.0 * neml2::pi * pow(_N_a, 4.0 / 3.0) / pow(_V_m, 4.0 / 3.0);
+  const auto beta = coef * _R_crit * _R_crit / _sum;
 
   if (out)
     _beta = beta;
 
   if (dout_din)
   {
-    _beta.d(_R_crit) = 2.0 * beta / R_crit;
-    _beta.d(_sum) = -beta / sum;
+    _beta.d(_R_crit) = 2.0 * beta / _R_crit;
+    _beta.d(_sum) = -beta / _sum;
   }
 }
 } // namespace neml2

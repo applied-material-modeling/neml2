@@ -70,15 +70,8 @@ ZeldovichFactor::ZeldovichFactor(const OptionSet & options)
 void
 ZeldovichFactor::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto R_crit = _R_crit();
-  const auto gamma = _gamma;
-  const auto T = _T();
-  const auto V_m = _V_m;
-  const auto N_a = _N_a;
-  const auto k = _k;
-
-  const auto coef = V_m / (2.0 * neml2::pi * N_a * R_crit * R_crit);
-  const auto root = sqrt(gamma / (k * T));
+  const auto coef = _V_m / (2.0 * neml2::pi * _N_a * _R_crit * _R_crit);
+  const auto root = sqrt(_gamma / (_k * _T));
   const auto Z = coef * root;
 
   if (out)
@@ -86,12 +79,12 @@ ZeldovichFactor::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    _Z.d(_R_crit) = -2.0 * Z / R_crit;
+    _Z.d(_R_crit) = -2.0 * Z / _R_crit;
 
     if (const auto * const gamma_param = nl_param("gamma"))
-      _Z.d(*gamma_param) = 0.5 * Z / gamma;
+      _Z.d(*gamma_param) = 0.5 * Z / _gamma;
 
-    _Z.d(_T) = -0.5 * Z / T;
+    _Z.d(_T) = -0.5 * Z / _T;
   }
 }
 } // namespace neml2

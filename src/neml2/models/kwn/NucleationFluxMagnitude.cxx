@@ -70,31 +70,21 @@ NucleationFluxMagnitude::NucleationFluxMagnitude(const OptionSet & options)
 void
 NucleationFluxMagnitude::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto Z = _Z();
-  const auto beta = _beta();
-  const auto dg = _dg();
-  const auto T = _T();
-  const auto N0 = _N0;
-  const auto k = _k;
-
-  const auto arg = -dg / (k * T);
-  const auto exp_raw = exp(arg);
-
-  const auto prefactor = Z * beta * N0;
-  const auto J = prefactor * exp_raw;
+  const auto exp_raw = exp(-_dg() / (_k * _T));
+  const auto prefactor = _Z * _beta * _N0;
 
   if (out)
-    _J = J;
+    _J = prefactor * exp_raw;
 
   if (dout_din)
   {
-    _J.d(_Z) = beta * N0 * exp_raw;
-    _J.d(_beta) = Z * N0 * exp_raw;
-    _J.d(_dg) = -prefactor * exp_raw / (k * T);
-    _J.d(_T) = prefactor * exp_raw * dg / (k * T * T);
+    _J.d(_Z) = _beta * _N0 * exp_raw;
+    _J.d(_beta) = _Z * _N0 * exp_raw;
+    _J.d(_dg) = -prefactor * exp_raw / (_k * _T);
+    _J.d(_T) = prefactor * exp_raw * _dg() / (_k * _T * _T);
 
     if (const auto * const N0_param = nl_param("N0"))
-      _J.d(*N0_param) = Z * beta * exp_raw;
+      _J.d(*N0_param) = _Z * _beta * exp_raw;
   }
 }
 } // namespace neml2

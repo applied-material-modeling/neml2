@@ -68,39 +68,33 @@ void
 SFFKPrecipitationGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto nbin = _R.intmd_size(-1);
-  const auto R = _R;
-  const auto proj_sum = _proj_sum();
-  const auto dg = _dg;
-  const auto T = _T();
-  const auto Rg = _R_g;
-
-  const auto denom = R * Rg * T * proj_sum;
+  const auto denom = _R * _R_g * _T * _proj_sum;
 
   if (out)
-    _R_dot = dg / denom;
+    _R_dot = _dg / denom;
 
   if (dout_din)
   {
     const auto inv_denom = 1.0 / denom;
-    const auto rate = dg * inv_denom;
+    const auto rate = _dg * inv_denom;
 
     if (const auto * const R_param = nl_param("R"))
     {
-      const auto d_rate_dR = -rate / R;
+      const auto d_rate_dR = -rate / _R;
       const auto r_map = imap_v<Scalar>(_R.options()).intmd_expand(nbin);
       const auto diag_r = intmd_diagonalize(r_map);
       _R_dot.d(*R_param, 2, 1, 1) = d_rate_dR.intmd_unsqueeze(1) * diag_r;
     }
 
-    _R_dot.d(_proj_sum, 1, 1, 0) = -rate / proj_sum;
+    _R_dot.d(_proj_sum, 1, 1, 0) = -rate / _proj_sum;
 
     if (const auto * const dg_param = nl_param("dg"))
       _R_dot.d(*dg_param, 1, 1, 0) = inv_denom;
 
-    _R_dot.d(_T, 1, 1, 0) = -rate / T;
+    _R_dot.d(_T, 1, 1, 0) = -rate / _T;
 
     if (const auto * const Rg_param = nl_param("R_g"))
-      _R_dot.d(*Rg_param, 1, 1, 0) = -rate / Rg;
+      _R_dot.d(*Rg_param, 1, 1, 0) = -rate / _R_g;
   }
 }
 } // namespace neml2

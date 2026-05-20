@@ -58,19 +58,15 @@ SemiInfiniteCoordinateTransform::SemiInfiniteCoordinateTransform(const OptionSet
 void
 SemiInfiniteCoordinateTransform::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto x = _x();
-  const auto s = _s;
-  const auto denom = x + s;
-  const auto inv = 1.0 / denom;
-  const auto x_hat = x * inv;
+  const auto inv = 1.0 / (_x + _s);
 
   if (out)
-    _x_hat = x_hat;
+    _x_hat = _x * inv;
 
   if (dout_din)
   {
     {
-      const auto dx = s * inv * inv;
+      const auto dx = _s * inv * inv;
       if (_x.intmd_dim() == 0)
         _x_hat.d(_x) = dx;
       else
@@ -84,7 +80,7 @@ SemiInfiniteCoordinateTransform::set_value(bool out, bool dout_din, bool /*d2out
 
     if (const auto * const s_param = nl_param("s"))
     {
-      const auto ds = -x * inv * inv;
+      const auto ds = -_x() * inv * inv;
       if (s_param->intmd_dim() == 0)
         _x_hat.d(*s_param) = ds;
       else
