@@ -61,7 +61,7 @@ Pre-built wheels are available on [PyPI](https://pypi.org/project/neml2/) for Li
 pip install neml2
 ```
 
-[PyTorch](https://pytorch.org/get-started/locally/) is listed as a dependency and will be installed automatically if not already present. Wheels ship with Python stub files pre-generated, so IDE autocomplete and type hints work out of the box — no extra steps are needed.
+[PyTorch](https://pytorch.org/get-started/locally/) is listed as a dependency and will be installed automatically if not already present. Each NEML2 wheel is verified against a fixed set of torch versions — see [torch compatibility](@ref torch-compat) for the current list. Wheels ship with Python stub files pre-generated, so IDE autocomplete and type hints work out of the box — no extra steps are needed.
 
 Once installed, the package can be imported in Python scripts using
 

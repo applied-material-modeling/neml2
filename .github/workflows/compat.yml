@@ -1,0 +1,145 @@
+name: Torch compatibility
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Newer commits should cancel old runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+      - run: pip install pyyaml
+      - name: Check compatibility.yaml
+        run: python scripts/compat_matrix.py check
+      - name: Check dependencies.yaml
+        run: python scripts/dep_manager.py check
+      - name: Check rendered doc table is in sync
+        run: python scripts/compat_matrix.py render --in-place doc/content/installation/compatibility.md --check
+
+  matrix:
+    needs: guard
+    runs-on: ubuntu-latest
+    outputs:
+      wheel_matrix: ${{ steps.set.outputs.wheel_matrix }}
+      test_matrix: ${{ steps.set.outputs.test_matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+      - run: pip install pyyaml
+      - id: set
+        run: |
+          echo "wheel_matrix=$(python scripts/compat_matrix.py expand --kind wheel)" >> "$GITHUB_OUTPUT"
+          echo "test_matrix=$(python scripts/compat_matrix.py expand --kind test)" >> "$GITHUB_OUTPUT"
+
+  build-wheel:
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.matrix.outputs.wheel_matrix) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Free disk space
+        if: runner.os == 'Linux'
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+      # Install Python, CMake, system deps, and the build-time torch (same
+      # version the cibuildwheel-published wheels are compiled against).
+      - uses: ./.github/actions/neml2-ci
+        with:
+          python-version: ${{ matrix.python }}
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.0"
+      - name: Install build deps
+        run: pip install scikit-build-core ninja wheel auditwheel pybind11-stubgen build
+      - name: Build wheel
+        run: python -m build --wheel --no-isolation --outdir wheelhouse-raw
+      - name: Repair wheel (auditwheel + stubs)
+        # Same script cibuildwheel invokes, so the artifact is byte-equivalent
+        # to what we publish to PyPI (modulo the platform tag — see notes in
+        # repair_wheel.py).
+        run: python scripts/repair_wheel.py wheelhouse-raw/*.whl wheelhouse
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-py${{ matrix.python }}-${{ matrix.os }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+          retention-days: 7
+
+  test:
+    needs: [matrix, build-wheel]
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.matrix.outputs.test_matrix) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel-py${{ matrix.python }}-${{ matrix.os }}
+          path: wheelhouse
+      - name: Install torch (runtime version under test)
+        # Pinning the runtime torch BEFORE installing the neml2 wheel keeps
+        # pip's resolver from upgrading torch on us: pyproject.toml has no
+        # torch version constraint, so the pinned version sticks.
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            pip install torch==${{ matrix.torch }} --index-url https://download.pytorch.org/whl/cpu
+          else
+            pip install torch==${{ matrix.torch }}
+          fi
+      - name: Install neml2 wheel
+        run: pip install wheelhouse/*.whl
+      - name: Install test deps
+        # dependencies: pyzag.version
+        run: pip install pytest "pyzag==1.1.1"
+      - name: Confirm import + torch version under test
+        run: |
+          python - <<'EOF'
+          import torch, neml2
+          print(f"torch: {torch.__version__}")
+          print(f"neml2: {neml2.__file__}")
+          EOF
+      - name: Run pytest
+        run: pytest -v --junitxml=pytest.xml python/tests
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Compatibility row"
+            echo ""
+            echo "| field   | value |"
+            echo "| ------- | ----- |"
+            echo "| torch   | ${{ matrix.torch }} |"
+            echo "| python  | ${{ matrix.python }} |"
+            echo "| os      | ${{ matrix.os }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

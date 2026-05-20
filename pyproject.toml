@@ -46,7 +46,12 @@ readme = "README.md"
 # dependencies: python.version_min
 requires-python = ">=3.10"
 dependencies = [
-  "torch",
+  # Lower bound is a hard pin (older torch has known-incompatible ABI). The
+  # upper bound is intentionally left open: newer torch may or may not work,
+  # so we let the user opt in rather than block the install. See
+  # doc/content/installation/compatibility.md for the regression-tested set.
+  # dependencies: torch.version_min
+  "torch>=2.10.0",
   # dependencies: pyzag.version
   "pyzag==1.1.1",
   # dependencies: nmhit.version_min

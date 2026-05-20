@@ -78,8 +78,23 @@ def _value_fields(dep_data: dict) -> dict:
     return {k: v for k, v in dep_data.items() if k not in _STRUCTURAL_KEYS and isinstance(v, str)}
 
 
+def _is_annotation_line(line: str) -> bool:
+    """True if the line is any `# dependencies: ...` / HTML-comment annotation."""
+    stripped = line.strip()
+    return stripped.startswith("# dependencies:") or (
+        stripped.startswith("<!-- dependencies:") and stripped.endswith("-->")
+    )
+
+
 def _find_annotated_lines(filepath: Path, annotation_key: str) -> list[tuple[int, int]]:
-    """Return (annotation_idx, value_idx) pairs for each occurrence in the file."""
+    """Return (annotation_idx, value_idx) pairs for each occurrence in the file.
+
+    Empty lines and other dependency-annotation lines between the marker and
+    the value are skipped, so multiple annotations can stack on the same value
+    line — e.g. `# dependencies: torch.version_min` and
+    `# dependencies: torch.version_max` both pointing at
+    `"torch>=2.10.0,<=2.12.0"`.
+    """
     lines = filepath.read_text().splitlines()
     markers = {
         f"# dependencies: {annotation_key}",
@@ -89,7 +104,7 @@ def _find_annotated_lines(filepath: Path, annotation_key: str) -> list[tuple[int
     for i, line in enumerate(lines):
         if line.strip() in markers:
             j = i + 1
-            while j < len(lines) and not lines[j].strip():
+            while j < len(lines) and (not lines[j].strip() or _is_annotation_line(lines[j])):
                 j += 1
             if j < len(lines):
                 results.append((i, j))

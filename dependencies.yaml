@@ -20,6 +20,8 @@ pybind11_stubgen:
 
 torch:
   version: "2.12.0"
+  version_min: "2.10.0"
+  version_max: "2.12.0"
   files:
     - .github/actions/neml2-ci/action.yml
     - .github/workflows/cpp.yml
@@ -28,11 +30,15 @@ torch:
     - .github/workflows/docs.yml
     - .github/workflows/integration.yml
     - doc/content/installation/install.md
+    - compatibility.yaml
+    - pyproject.toml
+    - doc/content/installation/compatibility.md
 
 pyzag:
   version: "1.1.1"
   files:
     - pyproject.toml
+    - .github/workflows/compat.yml
 
 nmhit:
   version_min: "0.1.2"
