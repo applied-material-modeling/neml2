@@ -64,3 +64,6 @@ Testing
 # Agents
 .claude/settings.local.json
 !.claude/settings.json
+
+# Files we want to make the user get
+python/examples/kwn/*.tdb

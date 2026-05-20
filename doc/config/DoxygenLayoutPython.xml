@@ -79,6 +79,7 @@
       </tab>
       <tab type="user" url="../phase-field-fracture.html" title="Phase-Field Fracture"/>
       <tab type="user" url="../finite-volume.html" title="Finite Volume"/>
+      <tab type="user" url="../kwn.html" title="KWN Precipitation"/>
     </tab>
     <tab type="usergroup" title="Migration Guides">
       <tab type="user" url="../migration-200-210.html" title="Migrating from v2.0.0 to v2.1.0"/>
