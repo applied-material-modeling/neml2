@@ -4,13 +4,12 @@
 
 ## Overview
 
-PyTorch's C++ ABI is not guaranteed to be stable across minor releases, so a
-NEML2 wheel from PyPI is only verified to load and run correctly with the
-torch versions listed below. Each combination is exercised on every PR by
-[`.github/workflows/compat.yml`](https://github.com/applied-material-modeling/neml2/blob/main/.github/workflows/compat.yml),
-which installs the wheel alongside the listed `torch == <version>` and runs
-the Python test suite end-to-end. A row appearing here means CI is green for
-that combination on the current `main`.
+PyTorch's C++ ABI is not guaranteed to be stable across minor releases, so
+a NEML2 wheel from PyPI is only guaranteed to load and run correctly with
+the torch versions listed below. Every combination shown here is exercised
+by NEML2's automated tests on each change.
+
+## Supported range
 
 The current regression-tested range is
 
@@ -21,21 +20,18 @@ The current regression-tested range is
 The bounds are asymmetric on purpose:
 
 - The **lower bound** is a hard `pyproject.toml` constraint — older torch
-  has known-incompatible C++ ABI, so `pip install neml2` refuses it
+  has a known-incompatible C++ ABI, so `pip install neml2` refuses it
   outright rather than letting the install succeed and `import neml2`
   crash later.
 - The **upper bound** is advisory. A newly-released torch may or may not
-  work; rather than block users on it, `pip install neml2` accepts any
-  newer torch and the user gets to try. The upper bound is only used here
-  to document which versions have actually been regression-tested. A
-  maintainer widens it via `dep_manager.py bump torch.version_max <new>`
-  after CI validates the new release.
+  work, and rather than block users on it `pip install neml2` accepts any
+  newer torch. The upper bound documents which versions have actually been
+  verified.
 
 Combinations outside this list may still work — for example, a freshly
-released torch the maintainers haven't validated yet — but are not
-regression-tested. If you need an additional combination, please [open an
-issue](https://github.com/applied-material-modeling/neml2/issues) and we will
-add it to the matrix.
+released torch that hasn't been verified yet — but are not regression-
+tested. If you need an additional combination, please [open an
+issue](https://github.com/applied-material-modeling/neml2/issues).
 
 ## Supported combinations
 
@@ -74,27 +70,16 @@ add it to the matrix.
 | 2.12.0 | 3.14   | linux |
 <!-- END_COMPAT_MATRIX -->
 
-The matrix is generated from `compatibility.yaml` at the repository root.
+## Testing an untested combination
 
-## How the matrix evolves
+If your environment combines NEML2 with a torch version that is not in
+the table above, checking compatibility locally is a one-liner:
 
-- When a new torch release is published, a maintainer reruns
-  `python scripts/compat_matrix.py seed` to widen the seed, opens a PR, and
-  CI reports which new rows pass.
-- Rows that fail CI are dropped from `compatibility.yaml` in the same PR with
-  a one-line commit message recording the reason (e.g., "torch 2.13.0 drops
-  `c10::TypeMeta::print_typename`").
-- Wheels older than one year are dropped at seed time — torch makes no ABI
-  promises that far back and most pre-built wheels stop installing on
-  current Python/manylinux anyway.
-- If your environment combines NEML2 with a torch version not in the table,
-  testing locally is a one-liner:
+```shell
+pip install torch==<version>
+pip install neml2
+python -c "import neml2"
+```
 
-  ```shell
-  pip install torch==<version>
-  pip install neml2
-  python -c "import neml2"
-  ```
-
-  An `ImportError` mentioning unresolved torch symbols is the canonical
-  signature of an ABI mismatch.
+An `ImportError` mentioning unresolved torch symbols is the canonical
+signature of an ABI mismatch.
