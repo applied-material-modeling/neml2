@@ -121,6 +121,7 @@ jobs:
         run: pip install wheelhouse/*.whl
       - name: Install test deps
         run: |
+          pip install pyyaml
           PYZAG_VERSION=$(python -c "import yaml; print(yaml.safe_load(open('dependencies.yaml'))['pyzag']['version'])")
           pip install pytest "pyzag==$PYZAG_VERSION"
       - name: Confirm import + torch version under test
