@@ -352,23 +352,26 @@ def cmd_expand(args) -> None:
 
 
 def _render_table(combinations: list[dict]) -> str:
-    """Return a Markdown table of the matrix, with linux/macOS prettified."""
+    """Return a Markdown view of the matrix, grouped by OS then Python."""
     pretty_os = {"ubuntu-latest": "linux", "macos-latest": "macOS"}
-    rows = [
-        (r["torch"], r["python"], pretty_os.get(r["os"], r["os"])) for r in combinations
-    ]
-    if not rows:
-        return "| Torch | Python | OS |\n| --- | --- | --- |\n| _empty_ | | |\n"
-    w_t = max(len("Torch"), max(len(r[0]) for r in rows))
-    w_p = max(len("Python"), max(len(r[1]) for r in rows))
-    w_o = max(len("OS"), max(len(r[2]) for r in rows))
-    out = [
-        f"| {'Torch':<{w_t}} | {'Python':<{w_p}} | {'OS':<{w_o}} |",
-        f"| {'-' * w_t} | {'-' * w_p} | {'-' * w_o} |",
-    ]
-    for t, p, o in rows:
-        out.append(f"| {t:<{w_t}} | {p:<{w_p}} | {o:<{w_o}} |")
-    return "\n".join(out) + "\n"
+
+    grouped: dict[str, dict[str, list[str]]] = {}
+    for r in combinations:
+        os_label = pretty_os.get(r["os"], r["os"])
+        grouped.setdefault(os_label, {}).setdefault(r["python"], []).append(r["torch"])
+
+    if not grouped:
+        return "_No supported combinations yet._\n"
+
+    out: list[str] = []
+    for os_label in sorted(grouped):
+        out.append(f"### {os_label}")
+        out.append("")
+        for py in sorted(grouped[os_label], key=_ver_tuple):
+            torches = sorted(set(grouped[os_label][py]), key=_ver_tuple)
+            out.append(f"- Python {py}: torch {', '.join(torches)}")
+        out.append("")
+    return "\n".join(out).rstrip() + "\n"
 
 
 def _splice_in_place(target: Path, table: str) -> str:

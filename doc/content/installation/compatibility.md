@@ -36,38 +36,21 @@ issue](https://github.com/applied-material-modeling/neml2/issues).
 ## Supported combinations
 
 <!-- BEGIN_COMPAT_MATRIX -- regenerate with: python scripts/compat_matrix.py render --in-place FILE -->
-| Torch  | Python | OS    |
-| ------ | ------ | ----- |
-| 2.10.0 | 3.10   | macOS |
-| 2.10.0 | 3.10   | linux |
-| 2.10.0 | 3.11   | macOS |
-| 2.10.0 | 3.11   | linux |
-| 2.10.0 | 3.12   | macOS |
-| 2.10.0 | 3.12   | linux |
-| 2.10.0 | 3.13   | macOS |
-| 2.10.0 | 3.13   | linux |
-| 2.10.0 | 3.14   | macOS |
-| 2.10.0 | 3.14   | linux |
-| 2.11.0 | 3.10   | macOS |
-| 2.11.0 | 3.10   | linux |
-| 2.11.0 | 3.11   | macOS |
-| 2.11.0 | 3.11   | linux |
-| 2.11.0 | 3.12   | macOS |
-| 2.11.0 | 3.12   | linux |
-| 2.11.0 | 3.13   | macOS |
-| 2.11.0 | 3.13   | linux |
-| 2.11.0 | 3.14   | macOS |
-| 2.11.0 | 3.14   | linux |
-| 2.12.0 | 3.10   | macOS |
-| 2.12.0 | 3.10   | linux |
-| 2.12.0 | 3.11   | macOS |
-| 2.12.0 | 3.11   | linux |
-| 2.12.0 | 3.12   | macOS |
-| 2.12.0 | 3.12   | linux |
-| 2.12.0 | 3.13   | macOS |
-| 2.12.0 | 3.13   | linux |
-| 2.12.0 | 3.14   | macOS |
-| 2.12.0 | 3.14   | linux |
+### linux
+
+- Python 3.10: torch 2.10.0, 2.11.0, 2.12.0
+- Python 3.11: torch 2.10.0, 2.11.0, 2.12.0
+- Python 3.12: torch 2.10.0, 2.11.0, 2.12.0
+- Python 3.13: torch 2.10.0, 2.11.0, 2.12.0
+- Python 3.14: torch 2.10.0, 2.11.0, 2.12.0
+
+### macOS
+
+- Python 3.10: torch 2.10.0, 2.11.0, 2.12.0
+- Python 3.11: torch 2.10.0, 2.11.0, 2.12.0
+- Python 3.12: torch 2.10.0, 2.11.0, 2.12.0
+- Python 3.13: torch 2.10.0, 2.11.0, 2.12.0
+- Python 3.14: torch 2.10.0, 2.11.0, 2.12.0
 <!-- END_COMPAT_MATRIX -->
 
 ## Testing an untested combination
