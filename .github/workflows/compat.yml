@@ -120,10 +120,8 @@ jobs:
       - name: Install neml2 wheel
         run: pip install wheelhouse/*.whl
       - name: Install test deps
-        run: |
-          pip install pyyaml
-          PYZAG_VERSION=$(python -c "import yaml; print(yaml.safe_load(open('dependencies.yaml'))['pyzag']['version'])")
-          pip install pytest "pyzag==$PYZAG_VERSION"
+        # dependencies: pyzag.version
+        run: pip install pytest "pyzag==1.1.1"
       - name: Confirm import + torch version under test
         run: |
           python - <<'EOF'
