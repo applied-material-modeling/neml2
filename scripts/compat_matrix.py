@@ -257,17 +257,27 @@ def cmd_seed(args) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _ver_tuple(v: str) -> tuple:
+    try:
+        return tuple(int(p) for p in v.split(".")[:3])
+    except ValueError:
+        return (0, 0, 0)
+
+
 def cmd_check(_args) -> None:
     errors: list[str] = []
     data = load_compat()
 
+    deps_torch = load_deps()["torch"]
     build_torch = data.get("build_torch")
-    deps_torch = load_deps()["torch"]["version"]
-    if build_torch != deps_torch:
+    if build_torch != deps_torch["version"]:
         errors.append(
             f"build_torch ({build_torch!r}) != dependencies.yaml torch.version "
-            f"({deps_torch!r})"
+            f"({deps_torch['version']!r})"
         )
+
+    v_min = deps_torch.get("version_min")
+    v_max = deps_torch.get("version_max")
 
     valid_pys = set(SUPPORTED_PYTHONS.values())
     for i, row in enumerate(data["combinations"]):
@@ -281,6 +291,13 @@ def cmd_check(_args) -> None:
             )
         if row.get("os") not in SUPPORTED_OSES:
             errors.append(f"{loc}: os={row.get('os')!r} not in {SUPPORTED_OSES}")
+        # Bounds check: every row must be within the advertised range so the
+        # YAML, pyproject.toml constraint, and doc page can't drift.
+        t = row.get("torch")
+        if t is not None and v_min is not None and _ver_tuple(t) < _ver_tuple(v_min):
+            errors.append(f"{loc}: torch={t!r} < version_min={v_min!r}")
+        if t is not None and v_max is not None and _ver_tuple(t) > _ver_tuple(v_max):
+            errors.append(f"{loc}: torch={t!r} > version_max={v_max!r}")
 
     # Reject duplicate rows — they'd just cost CI minutes for no signal.
     keys = [(r.get("torch"), r.get("python"), r.get("os")) for r in data["combinations"]]
@@ -296,7 +313,8 @@ def cmd_check(_args) -> None:
             print(f"  {_c(RED, '✗')} {e}")
         sys.exit(1)
     print(
-        _c(GREEN, "OK") + f": {len(data['combinations'])} rows, build_torch={build_torch}"
+        _c(GREEN, "OK") + f": {len(data['combinations'])} rows, "
+        f"build_torch={build_torch}, range=[{v_min}, {v_max}]"
     )
 
 
