@@ -9,14 +9,14 @@ A complete KWN model in NEML2 is composed by combining the precipitation buildin
 ## Theory
 
 This section uses the following indexing conventions for the size distribution of precipitates:
-1. Subscripts indicate the particle size bin index in the finite volume distretization of the size distribution: \f$f_i\f$.
+1. Subscripts indicate the particle size bin index in the finite volume discretization of the size distribution: \f$f_i\f$.
 2. Parenthetical superscripts indicates the number of precipitates being considered: \f$f^{(j)}\f$.
 
-and the following conventions for the chemical concentration of the varioius elements contributing to reactions:
+and the following conventions for the chemical concentration of the various elements contributing to reactions:
 1. Subscripts indicates the number of species in the matrix, which must be the union of all the species contributing to all the precipitate reactions: \f$x_k\f$.
 2. The set of chemical species contributing to precipitate \f$(j)\f$ is \f$\mathcal{S}_j\f$.
 
-The model can consider multiple precipitate species competing for the same resivoir of checmical species in the matrix.  The state of the system is the precipitate number density per unit volume, \f$n_i^{(j)}\f$, in each radius bin \f$\left[R^{(j)}_{i-1/2}, R^{(j)}_{i+1/2}\right]\f$ with center \f$R^{(j)}_i\f$ for each precipitate \f$(j)\f$. 
+The model can consider multiple precipitate species competing for the same reservoir of chemical species in the matrix.  The state of the system is the precipitate number density per unit volume, \f$n_i^{(j)}\f$, in each radius bin \f$\left[R^{(j)}_{i-1/2}, R^{(j)}_{i+1/2}\right]\f$ with center \f$R^{(j)}_i\f$ for each precipitate \f$(j)\f$. 
 
 Concentrations are stored as mole fractions \f$x_k\f$. The matrix is treated as a homogeneous reservoir whose composition is determined by mass conservation against the precipitates.
 
@@ -78,9 +78,9 @@ with \f$\Delta x^{(j)}_k = x^{(j)}_k - x^{*,(j)}_k\f$ and \f$D_k\f$ the matrix d
 
 In these expressions \f$V_m^{(j)}\f$ is the molar volume of the precipitate.
 
-The chemical driving force is the sum of the chemical potential difference between the species in the matrix \f$\mu_{k}^{\text{matrix}}\f$ as a function of the current matrix composition and the species in the precipitate \f$\mu^{\text{equil},(j)}_k\f$, assuming that the precipitate is always at equilibrium concentraiton.
+The chemical driving force is the sum of the chemical potential difference between the species in the matrix \f$\mu_{k}^{\text{matrix}}\f$ as a function of the current matrix composition and the species in the precipitate \f$\mu^{\text{equil},(j)}_k\f$, assuming that the precipitate is always at equilibrium concentration.
 
-The surface eenergy driving force is just the contribution of a spherical precipitate at a given size, with \f$\gamma^{(j)}\f$ the surface energy.
+The surface energy driving force is just the contribution of a spherical precipitate at a given size, with \f$\gamma^{(j)}\f$ the surface energy.
 
 The \f$\Delta G^{(j)}_{\text{el}}\f$ term is the standard expression for a coherent, isotropic spherical inclusion in an isotropic matrix with misfit strain \f$\varepsilon_0^{(j)}\f$; \f$\mu\f$ and \f$K\f$ are the matrix shear and bulk moduli, and \f$\sigma_h\f$ the matrix hydrostatic stress.
 
@@ -108,7 +108,7 @@ with the classical-nucleation-theory expressions
 
 The volumetric driving force \f$\Delta g^{(j)}_v\f$ can be supplied either as a CALPHAD-derived tabulation against composition and temperature (the pattern used by the Al-Cu example below) or assembled from the participating species' matrix and equilibrium concentrations with `IdealSolutionVolumetricDrivingForce`, which evaluates the Hu--Cocks ideal-solution form \f$\Delta g_v = RT \sum_k w_k \ln(c_k/c_k^{\text{eq}})\f$. Setting every weight to 1 recovers the "product of all components" convention used for compound precipitates.
 
-The critical radius \f$R^{(j)}_{\text{crit}}\f$ is the minimum stable size of a precipitate in the classical theory, i.e. when a stable precipitate can nucleate because the chemical driving force overcomes the surface energy requird to form a (spherical) precipitate.
+The critical radius \f$R^{(j)}_{\text{crit}}\f$ is the minimum stable size of a precipitate in the classical theory, i.e. when a stable precipitate can nucleate because the chemical driving force overcomes the surface energy required to form a (spherical) precipitate.
 
 ***However***, for most systems \f$R_{\text{crit}}\f$ will be much smaller than the smallest cell size for a reasonably-sized finite volume discretization.  Therefore, in the examples, the Dirac delta at the critical radius is approximated discretely by `DumpInSmallestBin`, which deposits the flux magnitude into the smallest bin. 
 

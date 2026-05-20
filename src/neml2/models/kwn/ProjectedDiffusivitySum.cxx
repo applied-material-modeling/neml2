@@ -55,6 +55,11 @@ ProjectedDiffusivitySum::ProjectedDiffusivitySum(const OptionSet & options)
     _sum(declare_output_variable<Scalar>("projected_diffusivity_sum"))
 {
   const auto dx_refs = options.get<std::vector<TensorName<Scalar>>>("concentration_differences");
+
+  neml_assert(!dx_refs.empty(),
+              "ProjectedDiffusivitySum requires at least one species; got an empty "
+              "concentration_differences list.");
+
   _dxs.resize(dx_refs.size());
   for (std::size_t i = 0; i < dx_refs.size(); i++)
     _dxs[i] =

@@ -58,6 +58,10 @@ CurrentConcentration::CurrentConcentration(const OptionSet & options)
   for (const auto & v : options.get<std::vector<VariableName>>("precipitate_volume_fractions"))
     _fs.push_back(&declare_input_variable<Scalar>(v));
 
+  neml_assert(!_fs.empty(),
+              "CurrentConcentration requires at least one precipitate; got an empty "
+              "precipitate_volume_fractions list.");
+
   const auto xp_refs = options.get<std::vector<TensorName<Scalar>>>("precipitate_concentrations");
   neml_assert(xp_refs.size() == _fs.size(),
               "Number of precipitate concentrations (",

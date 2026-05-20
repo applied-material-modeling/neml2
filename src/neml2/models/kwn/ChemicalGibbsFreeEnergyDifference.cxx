@@ -58,6 +58,10 @@ ChemicalGibbsFreeEnergyDifference::ChemicalGibbsFreeEnergyDifference(const Optio
   for (const auto & v : options.get<std::vector<VariableName>>("concentration_differences"))
     _dxs.push_back(&declare_input_variable<Scalar>(v));
 
+  neml_assert(!_dxs.empty(),
+              "ChemicalGibbsFreeEnergyDifference requires at least one species; got an empty "
+              "concentration_differences list.");
+
   const auto mu_refs = options.get<std::vector<TensorName<Scalar>>>("chemical_potentials");
   const auto mu_eq_refs = options.get<std::vector<TensorName<Scalar>>>("equilibrium_potentials");
 
