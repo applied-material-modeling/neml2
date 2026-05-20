@@ -12,17 +12,24 @@ which installs the wheel alongside the listed `torch == <version>` and runs
 the Python test suite end-to-end. A row appearing here means CI is green for
 that combination on the current `main`.
 
-The current supported range is
+The current regression-tested range is
 
 <!-- dependencies: torch.version_min -->
 <!-- dependencies: torch.version_max -->
 **`torch >= 2.10.0, <= 2.12.0`**
 
-and is enforced as a `pyproject.toml` constraint, so `pip install neml2`
-refuses a torch outside this range. Older torch versions either have an
-incompatible C++ ABI or have been dropped from the seed because their
-wheels are more than a year old; newer torch versions will be added to the
-matrix once a maintainer validates them.
+The bounds are asymmetric on purpose:
+
+- The **lower bound** is a hard `pyproject.toml` constraint — older torch
+  has known-incompatible C++ ABI, so `pip install neml2` refuses it
+  outright rather than letting the install succeed and `import neml2`
+  crash later.
+- The **upper bound** is advisory. A newly-released torch may or may not
+  work; rather than block users on it, `pip install neml2` accepts any
+  newer torch and the user gets to try. The upper bound is only used here
+  to document which versions have actually been regression-tested. A
+  maintainer widens it via `dep_manager.py bump torch.version_max <new>`
+  after CI validates the new release.
 
 Combinations outside this list may still work — for example, a freshly
 released torch the maintainers haven't validated yet — but are not
