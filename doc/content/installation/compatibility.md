@@ -12,6 +12,14 @@ which installs the wheel alongside the listed `torch == <version>` and runs
 the Python test suite end-to-end. A row appearing here means CI is green for
 that combination on the current `main`.
 
+The current supported range is **`torch >= 2.10.0, <= 2.12.0`**. Older torch
+versions either have an incompatible C++ ABI or have been dropped from the
+seed because their wheels are more than a year old; newer torch versions
+will be added to the matrix once a maintainer validates them. The bounds
+are advisory rather than enforced: there is no version pin in
+`pyproject.toml`, so `pip install neml2` will not refuse a torch outside
+this range — it just won't be regression-tested.
+
 Combinations outside this list may still work — for example, a freshly
 released torch the maintainers haven't validated yet — but are not
 regression-tested. If you need an additional combination, please [open an
@@ -23,42 +31,6 @@ add it to the matrix.
 <!-- BEGIN_COMPAT_MATRIX -- regenerate with: python scripts/compat_matrix.py render --in-place FILE -->
 | Torch  | Python | OS    |
 | ------ | ------ | ----- |
-| 2.7.1  | 3.10   | macOS |
-| 2.7.1  | 3.10   | linux |
-| 2.7.1  | 3.11   | macOS |
-| 2.7.1  | 3.11   | linux |
-| 2.7.1  | 3.12   | macOS |
-| 2.7.1  | 3.12   | linux |
-| 2.7.1  | 3.13   | macOS |
-| 2.7.1  | 3.13   | linux |
-| 2.8.0  | 3.10   | macOS |
-| 2.8.0  | 3.10   | linux |
-| 2.8.0  | 3.11   | macOS |
-| 2.8.0  | 3.11   | linux |
-| 2.8.0  | 3.12   | macOS |
-| 2.8.0  | 3.12   | linux |
-| 2.8.0  | 3.13   | macOS |
-| 2.8.0  | 3.13   | linux |
-| 2.9.0  | 3.10   | macOS |
-| 2.9.0  | 3.10   | linux |
-| 2.9.0  | 3.11   | macOS |
-| 2.9.0  | 3.11   | linux |
-| 2.9.0  | 3.12   | macOS |
-| 2.9.0  | 3.12   | linux |
-| 2.9.0  | 3.13   | macOS |
-| 2.9.0  | 3.13   | linux |
-| 2.9.0  | 3.14   | macOS |
-| 2.9.0  | 3.14   | linux |
-| 2.9.1  | 3.10   | macOS |
-| 2.9.1  | 3.10   | linux |
-| 2.9.1  | 3.11   | macOS |
-| 2.9.1  | 3.11   | linux |
-| 2.9.1  | 3.12   | macOS |
-| 2.9.1  | 3.12   | linux |
-| 2.9.1  | 3.13   | macOS |
-| 2.9.1  | 3.13   | linux |
-| 2.9.1  | 3.14   | macOS |
-| 2.9.1  | 3.14   | linux |
 | 2.10.0 | 3.10   | macOS |
 | 2.10.0 | 3.10   | linux |
 | 2.10.0 | 3.11   | macOS |
