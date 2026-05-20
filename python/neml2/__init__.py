@@ -22,20 +22,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import importlib
 import typing
 from pathlib import Path
 
 # Submodules and compiled bits. Star imports from the compiled submodules
 # are intentional re-exports — see the `**/__init__.py` entry in
-# `[tool.ruff.lint.per-file-ignores]`. The relative order of these blocks
-# is not load-bearing: `pyzag/interface.py` uses
-# `from __future__ import annotations` so its `neml2.NonlinearSystem`
-# annotation is lazy and doesn't require `.es` to have been star-imported
-# first.
+# `[tool.ruff.lint.per-file-ignores]`.
 from . import crystallography, pyzag, reader
 from .core import *
 from .es import *
 from .tensors import *
+
+# `neml2.math` registers `.norm()`, `.dynamic_linspace`, and other math
+# operators onto every tensor class at import time via
+# `py::module_::import("neml2.tensors").attr(T)`, so `.tensors` MUST already
+# be loaded when `.math` runs its module init. Imported via `importlib` (not
+# `from .math import *`) so ruff's isort cannot reorder it ahead of
+# `.tensors`, and so that `neml2.math.Number` (the only public symbol) does
+# not shadow the `Number` alias defined below.
+importlib.import_module(".math", __name__)
 
 # Determine version
 version_file = Path(__file__).parent / "version"
