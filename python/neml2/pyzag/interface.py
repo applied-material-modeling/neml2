@@ -22,6 +22,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# PEP 563 / 649: keeps the `neml2.NonlinearSystem` annotation below from being
+# eagerly resolved at class-body time, which would crash if `neml2` is still
+# being imported when this module loads.
+from __future__ import annotations
+
 import math
 
 import torch

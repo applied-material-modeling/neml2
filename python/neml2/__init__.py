@@ -25,12 +25,14 @@
 import typing
 from pathlib import Path
 
-# Other submodules
+# Submodules and compiled bits. Star imports from the compiled submodules
+# are intentional re-exports — see the `**/__init__.py` entry in
+# `[tool.ruff.lint.per-file-ignores]`. The relative order of these blocks
+# is not load-bearing: `pyzag/interface.py` uses
+# `from __future__ import annotations` so its `neml2.NonlinearSystem`
+# annotation is lazy and doesn't require `.es` to have been star-imported
+# first.
 from . import crystallography, pyzag, reader
-
-# Bring core functionality and tensors into the main namespace. Star imports
-# from the compiled submodules are intentional re-exports — see the
-# `**/__init__.py` entry in `[tool.ruff.lint.per-file-ignores]`.
 from .core import *
 from .es import *
 from .tensors import *
