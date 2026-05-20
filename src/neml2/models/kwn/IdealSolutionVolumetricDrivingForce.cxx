@@ -121,7 +121,10 @@ IdealSolutionVolumetricDrivingForce::set_value(bool out, bool dout_din, bool /*d
   const auto Rg = _R_g;
   const auto pref = Rg * T;
 
-  // sum_log = sum_k w_k * log(c_k / c_k_eq)
+  // sum_log = sum_k w_k * log(c_k / c_k_eq).
+  // log(x_k / x_eq_k) and the 1/x_k, 1/x_eq_k derivatives below are singular
+  // as either concentration approaches 0 (matrix exhaustion, trace-species
+  // equilibrium). Clamp the inputs if this destabilizes the implicit solve.
   auto sum_log = Scalar::zeros_like((*_xs[0])());
   for (std::size_t i = 0; i < _xs.size(); i++)
     sum_log = sum_log + (*_ws[i]) * neml2::log((*_xs[i])() / (*_x_eqs[i]));

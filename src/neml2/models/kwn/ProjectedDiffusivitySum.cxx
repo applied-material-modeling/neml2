@@ -94,6 +94,9 @@ ProjectedDiffusivitySum::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   auto sum = Scalar::zeros_like(*_dxs[0]);
 
+  // 1/x_inf and the d/d(x_inf) ~ 1/x_inf^2 row below diverge as x_inf -> 0
+  // (matrix exhaustion). Clamp x_inf if the implicit solve becomes
+  // ill-conditioned in that limit.
   for (std::size_t i = 0; i < _dxs.size(); i++)
     sum = sum + pow(*_dxs[i], 2.0) / (*_Ds[i] * (*_x_infs[i])());
 

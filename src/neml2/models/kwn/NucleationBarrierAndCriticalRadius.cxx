@@ -66,6 +66,11 @@ NucleationBarrierAndCriticalRadius::NucleationBarrierAndCriticalRadius(const Opt
 void
 NucleationBarrierAndCriticalRadius::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
+  // Both R_crit and dg are singular as dg_total -> 0, and R_crit flips sign for
+  // dg_total < 0. The forward value is masked downstream by the exp(-dg/kT)
+  // underflow in NucleationFluxMagnitude, but the d/d(dg_total) rows below
+  // still produce inf/nan and can ill-condition the implicit solve. Clamp
+  // dg_total (softplus-style) if stiffness becomes a problem.
   const auto gamma = _gamma;
   const auto dg_total = _dg_total;
   const auto V_m = _V_m;
