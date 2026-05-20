@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [end_time]
     type = LinspaceScalar
@@ -202,10 +203,10 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = "euler_rodrigues elasticity orientation_rate resolved_shear
+    models = 'euler_rodrigues elasticity orientation_rate resolved_shear
               elastic_stretch plastic_deformation_rate plastic_spin
               slip_rule slip_strength dislocation_density_rate
-              integrate_dislocation_density integrate_elastic_strain integrate_orientation"
+              integrate_dislocation_density integrate_elastic_strain integrate_orientation'
   []
 []
 

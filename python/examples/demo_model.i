@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [T_controls]
     type = Scalar
@@ -210,11 +211,11 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = "isoharden elasticity g
+    models = 'isoharden elasticity g
               mandel_stress vonmises
               yield yield_zero normality eprate Eprate Erate Eerate
               ri_flowrate rd_flowrate flowrate integrate_ep integrate_stress effective_strain_rate
-              mixed mixed_old"
+              mixed mixed_old'
   []
 []
 

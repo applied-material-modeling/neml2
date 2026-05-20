@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [end_time]
     type = LogspaceScalar
@@ -116,8 +117,8 @@
   []
   [trial_state]
     type = ComposedModel
-    models = "trial_elastic_strain trial_cauchy_stress trial_mandel_stress
-              trial_isoharden trial_kinharden trial_normality"
+    models = 'trial_elastic_strain trial_cauchy_stress trial_mandel_stress
+              trial_isoharden trial_kinharden trial_normality'
   []
   ###############################################################################
   # The actual radial return:
@@ -209,12 +210,12 @@
   []
   [surface]
     type = ComposedModel
-    models = "trial_flow_rate
+    models = 'trial_flow_rate
               plastic_strain_rate plastic_strain elastic_strain cauchy_stress mandel_stress
               kinematic_plastic_strain_rate kinematic_plastic_strain kinharden
               equivalent_plastic_strain_rate equivalent_plastic_strain isoharden
               overstress vonmises yield
-              flow_rate consistency"
+              flow_rate consistency'
   []
 []
 
@@ -249,10 +250,10 @@
   []
   [model0]
     type = ComposedModel
-    models = "trial_state return_map trial_flow_rate
+    models = 'trial_state return_map trial_flow_rate
               plastic_strain_rate plastic_strain
               equivalent_plastic_strain_rate equivalent_plastic_strain
-              kinematic_plastic_strain_rate kinematic_plastic_strain"
+              kinematic_plastic_strain_rate kinematic_plastic_strain'
     additional_outputs = 'gamma'
   []
   [model]

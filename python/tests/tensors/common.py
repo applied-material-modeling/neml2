@@ -22,11 +22,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import pytest
-import torch
-import neml2
-from typing import NamedTuple
 from functools import reduce
+from typing import NamedTuple
+
+import torch
+
+import neml2
 
 
 class TensorShapeBase(NamedTuple):
@@ -82,42 +83,6 @@ class TensorShape(TensorShapeBase):
             torch.broadcast_shapes(s1.intmd_shape, s2.intmd_shape),
             torch.broadcast_shapes(s1.base_shape, s2.base_shape),
         )
-
-
-def _stringify_fixture(v):
-    return str(v)
-
-
-@pytest.fixture(params=[torch.float64], ids=_stringify_fixture)
-def dtype(request):
-    """dtype being tested"""
-    return request.param
-
-
-@pytest.fixture(params=["cpu", "cuda:0"], ids=_stringify_fixture)
-def device(request):
-    """
-    device being tested
-
-    CUDA is skipped if not available
-    """
-    if request.param == "cuda:0" and not torch.cuda.is_available():
-        pytest.skip("CUDA not available")
-    return torch.device(request.param)
-
-
-@pytest.fixture(params=[False], ids=["no grad"])
-def requires_grad(request):
-    """
-    requires_grad
-    """
-    return request.param
-
-
-@pytest.fixture
-def tensor_options(dtype, device, requires_grad):
-    """tensor options being tested"""
-    return {"dtype": dtype, "device": device, "requires_grad": requires_grad}
 
 
 def make_sample(tensor_shape: TensorShape, **tensor_options):

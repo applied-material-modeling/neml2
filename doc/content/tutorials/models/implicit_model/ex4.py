@@ -1,6 +1,7 @@
-import neml2
-from neml2.tensors import Scalar, SR2
 import torch
+
+import neml2
+from neml2.tensors import SR2, Scalar
 
 torch.set_default_dtype(torch.double)
 model = neml2.load_model("input2.i", "model")

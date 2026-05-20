@@ -22,42 +22,41 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import annotations
-
-import subprocess
-import sys
-from pathlib import Path
-
-import neml2
-
-from ._stub import _generate_stub
+import pytest
+import torch
 
 
-def _exec_bin(name: str) -> int:
-    path = Path(neml2.__path__[0]) / "bin" / name
-    result = subprocess.run([str(path)] + sys.argv[1:])
-    return result.returncode
+def _stringify_fixture(v):
+    return str(v)
 
 
-def diagnose() -> int:
-    return _exec_bin("neml2-diagnose")
+@pytest.fixture(params=[torch.float64], ids=_stringify_fixture)
+def dtype(request):
+    """dtype being tested"""
+    return request.param
 
 
-def inspect() -> int:
-    return _exec_bin("neml2-inspect")
+@pytest.fixture(params=["cpu", "cuda:0"], ids=_stringify_fixture)
+def device(request):
+    """
+    device being tested
+
+    CUDA is skipped if not available
+    """
+    if request.param == "cuda:0" and not torch.cuda.is_available():
+        pytest.skip("CUDA not available")
+    return torch.device(request.param)
 
 
-def run() -> int:
-    return _exec_bin("neml2-run")
+@pytest.fixture(params=[False], ids=["no grad"])
+def requires_grad(request):
+    """
+    requires_grad
+    """
+    return request.param
 
 
-def syntax() -> int:
-    return _exec_bin("neml2-syntax")
-
-
-def time() -> int:
-    return _exec_bin("neml2-time")
-
-
-def stub() -> int:
-    return _generate_stub(*sys.argv[1:])
+@pytest.fixture
+def tensor_options(dtype, device, requires_grad):
+    """tensor options being tested"""
+    return {"dtype": dtype, "device": device, "requires_grad": requires_grad}

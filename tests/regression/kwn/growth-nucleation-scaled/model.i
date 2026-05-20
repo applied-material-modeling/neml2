@@ -1,3 +1,4 @@
+# neml2
 # Units: length = microns, time = hours
 
 # Initial setup: Al with 4 wt% Cu
@@ -18,7 +19,8 @@ D = 297794
 gamma = 0.1e-12
 
 # Molar volume of AlCu2
-Vm = 21.55e12 # microns^3/mol
+Vm = 21.55e12
+# microns^3/mol
 
 # Nucleation site density, let's assume 1e16 per micron^3 (too high for realistic nucleation, but it makes the test run faster)
 N0 = 1e16
@@ -260,7 +262,6 @@ N0 = 1e16
     to = 'true_number_density'
   []
 
-
   [nucleation_barrier_and_critical_radius]
     type = NucleationBarrierAndCriticalRadius
     surface_energy = ${gamma}
@@ -308,5 +309,5 @@ N0 = 1e16
     type = ComposedModel
     models = 'model_scaled unscale volume_fraction x_Cu'
     additional_outputs = 'number_density true_number_density vf x_Cu'
-   []
+  []
 []

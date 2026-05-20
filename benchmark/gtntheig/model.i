@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [end_time]
     type = LogspaceScalar
@@ -186,11 +187,11 @@
   []
   [surface]
     type = ComposedModel
-    models = "isoharden sintering_stress elastic_strain elasticity
+    models = 'isoharden sintering_stress elastic_strain elasticity
               mandel_stress flow flow_rate
               normality
               Eprate eprate voidrate
-              integrate_Ep integrate_ep integrate_void"
+              integrate_Ep integrate_ep integrate_void'
   []
 []
 

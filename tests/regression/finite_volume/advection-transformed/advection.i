@@ -1,3 +1,4 @@
+# neml2
 D = 0.0
 v = 0.5
 l = -0.0
@@ -7,7 +8,6 @@ w = 0.05
 center = 0.25
 
 t = 1.0
-
 
 [Tensors]
   [edges]
@@ -60,7 +60,7 @@ t = 1.0
   []
 
   [unscaled_ic]
-    type = GaussianScalar 
+    type = GaussianScalar
     points = 'true_centers'
     width = ${w}
     height = ${c0}
@@ -185,5 +185,5 @@ t = 1.0
     type = ComposedModel
     models = 'model_scaled unscale'
     additional_outputs = 'concentration'
-   []
+  []
 []

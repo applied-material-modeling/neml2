@@ -1,3 +1,4 @@
+# neml2
 # Kelvin-Voigt viscoelastic response under a ramped strain. The model directly evaluates
 # sigma = E * strain + eta * strain_rate; no internal state and no implicit update are needed.
 [Tensors]

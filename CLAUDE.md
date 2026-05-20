@@ -98,7 +98,7 @@ Every concrete `NEML2Object` (model, tensor, solver, driver, …) declares stati
 ## Conventions
 
 - C++17, formatted by `clang-format` (enforced by `pre-commit` and CI). Run `pre-commit run --all-files` before pushing C++ changes.
-- Python is formatted with `black` (line length 100, also CI-enforced).
+- Python is linted and formatted with `ruff` (line length 100, also CI-enforced via the `lint` job in `.github/workflows/python.yml`).
 - Headers live under `include/neml2/...`; sources under `src/neml2/...` with the same relative path. New headers without a corresponding test file will be flagged by reviewers.
 - Notebooks under `python/examples/*.ipynb` are paired with MyST `.md` files via `jupytext --sync` (pre-commit hook); `.jupytext.toml` declares `formats = "ipynb,myst"`. Edit the `.ipynb`, never the paired `.md`.
 - Avoid editing files in `contrib/`, `build/`, or `installed/` — those are generated. `scripts/clobber.sh [dir]` removes git-ignored files (with prompt) if a build gets wedged.

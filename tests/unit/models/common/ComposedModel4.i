@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [foo]
     type = FullScalar

@@ -1,3 +1,4 @@
+# neml2
 # Zener (Standard Linear Solid) response built from primitives — equilibrium spring in parallel
 # with a Maxwell branch (spring + dashpot in series). Same load history and parameters as
 # `zener/model.i`; gold reference matches that scenario's gold within Newton-solve tolerance.

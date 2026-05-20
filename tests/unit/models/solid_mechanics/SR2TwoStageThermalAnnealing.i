@@ -1,3 +1,4 @@
+# neml2
 [Drivers]
   [unit]
     type = ModelUnitTest
@@ -32,7 +33,7 @@
 [Tensors]
   [temperature_in]
     type = Scalar
-    values = "800.0 999 1001 1100 1199 1201 1250"
+    values = '800.0 999 1001 1100 1199 1201 1250'
     batch_shape = '(7)'
   []
 

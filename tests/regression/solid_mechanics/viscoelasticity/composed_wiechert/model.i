@@ -1,3 +1,4 @@
+# neml2
 # Wiechert (generalized Maxwell, two branches) response built from primitives — equilibrium spring
 # in parallel with two independent Maxwell branches. Same load history and parameters as
 # `wiechert/model.i`. Each Maxwell branch carries its own viscous strain (independent internal

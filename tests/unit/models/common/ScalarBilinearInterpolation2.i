@@ -1,3 +1,4 @@
+# neml2
 # Batched ordinate:
 #
 # abscissa1: (     3;)
@@ -48,8 +49,8 @@
   []
   [S]
     type = Scalar
-    values = "1 2 3 4 5 6
-              2 3 4 5 6 7"
+    values = '1 2 3 4 5 6
+              2 3 4 5 6 7'
     batch_shape = '(2,3,2)'
     intermediate_dimension = 2
   []

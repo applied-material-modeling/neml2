@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [times]
     type = LinspaceScalar
@@ -29,11 +30,11 @@
 
   [initial_orientation]
     type = Rot
-    values = "-0.269981 -0.299844 -0.86408
+    values = '-0.269981 -0.299844 -0.86408
               0.209546 0.192014 0.514051
               -0.0251234 -0.0175916 -0.636644
               -0.146257 -0.0475218 -0.970804
-              -0.174458 -0.302169 -0.523373"
+              -0.174458 -0.302169 -0.523373'
     batch_shape = '(5)'
     intermediate_dimension = 1
   []
@@ -185,14 +186,14 @@
   []
   [per_crystal_update]
     type = ComposedModel
-    models = "elasticity euler_rodrigues
+    models = 'elasticity euler_rodrigues
               orientation_rate resolved_shear
               elastic_stretch
               plastic_deformation_rate plastic_spin
               sum_slip_rates slip_rule slip_strength voce_hardening
               integrate_slip_hardening
               integrate_elastic_strain
-              integrate_orientation"
+              integrate_orientation'
     additional_outputs = 'cauchy_stress'
   []
 
@@ -228,10 +229,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_model'
-    unknowns = "elastic_strain orientation slip_hardening;
-                deformation_rate target_cauchy_stress"
-    residuals = "elastic_strain_residual orientation_residual slip_hardening_residual;
-                 y_residual target_cauchy_stress_residual"
+    unknowns = 'elastic_strain orientation slip_hardening; deformation_rate target_cauchy_stress'
+    residuals = 'elastic_strain_residual orientation_residual slip_hardening_residual; y_residual target_cauchy_stress_residual'
     istructure = 'BLOCK DENSE'
   []
 []

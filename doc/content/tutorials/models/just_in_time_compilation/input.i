@@ -1,3 +1,4 @@
+# neml2
 [Models]
   [eq1]
     type = ScalarVariableRate

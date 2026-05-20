@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [times]
     type = LinspaceScalar
@@ -22,7 +23,8 @@
   [E_times]
     type = LinspaceScalar
     start = 0
-    end = 30 # we only define the abscissa up to 30, so eventually the ScalarLinearInterpolation will fall out of bound
+    end = 30
+    # we only define the abscissa up to 30, so eventually the ScalarLinearInterpolation will fall out of bound
     nstep = 100
     dim = 0
     group = 'intermediate'

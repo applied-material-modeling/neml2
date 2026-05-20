@@ -23,15 +23,17 @@
 # THE SOFTWARE.
 
 import math
-import torch
-import numpy as np
 
+import numpy as np
+import torch
 from tqdm import tqdm
 
 import neml2
 
+_CPU = torch.device("cpu")
 
-def gauss_points(deg, device=torch.device("cpu")):
+
+def gauss_points(deg, device=_CPU):
     """Wrap numpy to get Gauss points and weights
 
     Args:
@@ -44,7 +46,7 @@ def gauss_points(deg, device=torch.device("cpu")):
     return torch.tensor(pts, device=device), torch.tensor(wgts, device=device)
 
 
-def spherical_quadrature(deg, device=torch.device("cpu")):
+def spherical_quadrature(deg, device=_CPU):
     """Construct a spherical quadature rule (unit sphere)
 
     Note I'm baking in dV to the weights
@@ -79,7 +81,7 @@ def spherical_quadrature(deg, device=torch.device("cpu")):
     return pts, wts
 
 
-def rotation_quadrature(deg, device=torch.device("cpu")):
+def rotation_quadrature(deg, device=_CPU):
     """Construct a rotational quadrature rule
 
     I am again baking the dV into the weights
@@ -147,9 +149,9 @@ def split(X, i):
         X (indexable in first dimension): reference set
         i (int): index to separate
     """
-    l = X.dynamic.shape[0]
+    n = X.dynamic.shape[0]
 
-    keep = torch.arange(l, device=X.device, dtype=torch.long)
+    keep = torch.arange(n, device=X.device, dtype=torch.long)
     keep = keep[keep != i]
 
     return neml2.tensors.Rot(X.torch()[keep].clone()), neml2.tensors.Rot(X.torch()[i].clone())
@@ -194,7 +196,7 @@ class KDEODF(ODF):
                 self.texture_index() - 2.0 * sum(self.leave_out(i) for i in range(self.n)) / self.n
             )
             if verbose and isinstance(it, tqdm):
-                it.set_description("loss: %6.5e" % loss.detach().cpu())
+                it.set_description(f"loss: {loss.detach().cpu():6.5e}")
             loss.backward()
             optim.step()
 

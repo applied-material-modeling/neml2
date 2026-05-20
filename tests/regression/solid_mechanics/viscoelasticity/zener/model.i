@@ -1,3 +1,4 @@
+# neml2
 # Stress relaxation of a Zener (Standard Linear Solid) viscoelastic element under a ramped strain
 # loading. With a single Maxwell branch in parallel with an equilibrium spring, the stress
 # overshoots during loading and relaxes to the equilibrium value E_inf * strain when the strain is

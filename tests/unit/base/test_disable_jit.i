@@ -1,3 +1,4 @@
+# neml2
 [Settings]
   disable_jit = true
 []

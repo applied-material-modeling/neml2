@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [end_time]
     type = LogspaceScalar
@@ -107,10 +108,10 @@
   []
   [surface]
     type = ComposedModel
-    models = "elastic_strain elasticity
+    models = 'elastic_strain elasticity
               mandel_stress vonmises
               yield normality Eprate
-              consistency integrate_Ep"
+              consistency integrate_Ep'
   []
 []
 

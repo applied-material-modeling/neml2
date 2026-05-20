@@ -1,4 +1,5 @@
 import torch
+
 from neml2.tensors import Tensor
 
 torch.set_default_dtype(torch.double)

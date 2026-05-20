@@ -24,11 +24,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from pathlib import Path
 import argparse
+from pathlib import Path
+
 import numpy as np
-import scipy as sp
 import pandas as pd
+import scipy as sp
 from matplotlib import pyplot as plt
 
 color = {"cpu": "tab:red", "cuda": "tab:blue"}
@@ -56,8 +57,11 @@ def f(N, Ns, t0):
 
 
 def make_plot(ax, datas):
-    Nmin = None
-    Nmax = None
+    if not datas:
+        return {}
+
+    Nmin = np.inf
+    Nmax = -np.inf
     params = {}
     for device, data in datas.items():
         N = data["nbatch"]
@@ -73,8 +77,8 @@ def make_plot(ax, datas):
         )
         p, _ = sp.optimize.curve_fit(f, N, t)
         params[device] = p
-        Nmin = min(Nmin, np.min(N)) if Nmin else np.min(N)
-        Nmax = max(Nmax, np.max(N)) if Nmax else np.max(N)
+        Nmin = min(Nmin, np.min(N))
+        Nmax = max(Nmax, np.max(N))
 
     N_ = np.logspace(np.log10(Nmin), np.log10(Nmax), 100)
 
@@ -85,7 +89,7 @@ def make_plot(ax, datas):
             t_ / 1000,
             color=color[device],
             linestyle="--",
-            label="{} (fitted)".format(device),
+            label=f"{device} (fitted)",
         )
 
     ax.set_xlabel("Batch size")
@@ -98,10 +102,10 @@ def make_plot(ax, datas):
 
 
 def find_critical_batch_size(data, device1, device2):
-    Ns1 = data["{}_Ns".format(device1)]
-    t01 = data["{}_t0".format(device1)]
-    Ns2 = data["{}_Ns".format(device2)]
-    t02 = data["{}_t0".format(device2)]
+    _Ns1 = data[f"{device1}_Ns"]
+    _t01 = data[f"{device1}_t0"]
+    _Ns2 = data[f"{device2}_Ns"]
+    _t02 = data[f"{device2}_t0"]
 
 
 if __name__ == "__main__":
@@ -111,7 +115,11 @@ if __name__ == "__main__":
         "-o",
         "--output",
         default="results",
-        help="Output folder to collect the results. A CSV file <codename>_<device>.csv must be present under the output directory for each given device.",
+        help=(
+            "Output folder to collect the results. A CSV file "
+            "<codename>_<device>.csv must be present under the output "
+            "directory for each given device."
+        ),
     )
     parser.add_argument(
         "-c",
@@ -123,9 +131,9 @@ if __name__ == "__main__":
 
     outdir = Path(args.output)
     if not outdir.is_dir():
-        raise RuntimeError("output path {} is not a directory".format(args.output))
+        raise RuntimeError(f"output path {args.output} is not a directory")
     if not outdir.exists():
-        raise RuntimeError("output path {} does not exist".format(args.output))
+        raise RuntimeError(f"output path {args.output} does not exist")
 
     # Collect benchmark codenames
     codenames = []
@@ -135,32 +143,32 @@ if __name__ == "__main__":
         codenames.append(filename.stem.split("_")[0])
     codenames = list(set(codenames))
 
-    summary = {"condename": codenames}
-    summary |= {"{}_Ns".format(device): [] for device in args.devices}
-    summary |= {"{}_t0".format(device): [] for device in args.devices}
+    cols: dict[str, list] = {"condename": codenames}
+    cols |= {f"{device}_Ns": [] for device in args.devices}
+    cols |= {f"{device}_t0": [] for device in args.devices}
     for codename in codenames:
         fig, ax = plt.subplots()
         datas = {}
         for device in args.devices:
-            datas[device] = pd.read_csv(outdir / "{}_{}.csv".format(codename, device))
+            datas[device] = pd.read_csv(outdir / f"{codename}_{device}.csv")
         params = make_plot(ax, datas)
         fig.tight_layout()
-        fig.savefig(outdir / "{}.pdf".format(codename))
+        fig.savefig(outdir / f"{codename}.pdf")
         plt.close()
 
         for device, p in params.items():
-            summary["{}_Ns".format(device)].append(p[0])
-            summary["{}_t0".format(device)].append(p[1])
+            cols[f"{device}_Ns"].append(p[0])
+            cols[f"{device}_t0"].append(p[1])
 
+    summary = pd.DataFrame(cols)
     if args.compare:
         devices = args.compare
-        Ns1 = np.array(summary["{}_Ns".format(devices[0])])
-        t01 = np.array(summary["{}_t0".format(devices[0])])
-        Ns2 = np.array(summary["{}_Ns".format(devices[1])])
-        t02 = np.array(summary["{}_t0".format(devices[1])])
+        Ns1 = np.array(cols[f"{devices[0]}_Ns"])
+        t01 = np.array(cols[f"{devices[0]}_t0"])
+        Ns2 = np.array(cols[f"{devices[1]}_Ns"])
+        t02 = np.array(cols[f"{devices[1]}_t0"])
         summary["Nc"] = Ns1 * t02 / t01
         summary["r0"] = t01 / t02
         summary["rinf"] = t01 / t02 * Ns2 / Ns1
 
-    summary = pd.DataFrame(summary)
     summary.to_csv(outdir / "summary.csv", index=False)

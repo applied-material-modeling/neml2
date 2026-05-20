@@ -1,3 +1,4 @@
+# neml2
 ntime = 200
 D = 1e-6
 omega_Si = 12.0
@@ -5,8 +6,10 @@ omega_C = 5.3
 omega_SiC = 12.5
 chem_ratio = 1.0
 
-oCm1 = 0.18867924528 # 1/Omega_C
-oSiCm1 = 0.08 # 1/Omega_SiC
+oCm1 = 0.18867924528
+# 1/Omega_C
+oSiCm1 = 0.08
+# 1/Omega_SiC
 
 [Tensors]
   [times]
@@ -115,9 +118,9 @@ oSiCm1 = 0.08 # 1/Omega_SiC
   []
   [model_residual]
     type = ComposedModel
-    models = "residual_phiP residual_phiL
+    models = 'residual_phiP residual_phiL
               liquid_volume_fraction outer_radius liquid_reactivity solid_reactivity
-              reaction_rate substance_product product_rate substance_solid  solid_rate"
+              reaction_rate substance_product product_rate substance_solid  solid_rate'
   []
 []
 

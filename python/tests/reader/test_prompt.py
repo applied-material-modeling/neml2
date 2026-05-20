@@ -28,10 +28,12 @@ import pytest
 
 yaml = pytest.importorskip("yaml")
 
-from neml2.reader._parser import parse_input
-from neml2.reader._syntax import SyntaxDB
-from neml2.reader._prompt import build_prompt
-from neml2.reader import describe, explain
+# These imports follow the importorskip above so the test cleanly skips when
+# PyYAML is missing rather than failing at collection time.
+from neml2.reader import describe, explain  # noqa: E402
+from neml2.reader._parser import parse_input  # noqa: E402
+from neml2.reader._prompt import build_prompt  # noqa: E402
+from neml2.reader._syntax import SyntaxDB  # noqa: E402
 
 SYNTAX_CONTENT = textwrap.dedent(
     """\

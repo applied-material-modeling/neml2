@@ -1,3 +1,4 @@
+# neml2
 [Drivers]
   [unit]
     type = ModelUnitTest
@@ -17,19 +18,19 @@
 [Tensors]
   [A]
     type = Scalar
-    values = "1 2 4
+    values = '1 2 4
               3 5 9
               -1 -2 -4
-              10 10 10"
+              10 10 10'
     batch_shape = '(4,3)'
     intermediate_dimension = 1
   []
   [B]
     type = Scalar
-    values = "1 2
+    values = '1 2
               2 4
               -1 -2
-              0 0"
+              0 0'
     batch_shape = '(4,2)'
     intermediate_dimension = 1
   []

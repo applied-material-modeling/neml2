@@ -25,10 +25,9 @@
 # THE SOFTWARE.
 
 import sys
-from pathlib import Path
-import typing
 import xml.etree.ElementTree as ET
-from typing import Union
+from pathlib import Path
+
 from loguru import logger
 
 
@@ -47,7 +46,7 @@ def get_navindex(doxygen_layout: Path) -> ET.Element:
 
 def find_child_with_attribute(
     element: ET.Element, attribute_name: str, attribute_value: str
-) -> Union[ET.Element, None]:
+) -> ET.Element | None:
     """
     Recursively finds a child element with a specific attribute and value.
 
@@ -81,15 +80,15 @@ def get_title(line: str, navindex: ET.Element) -> tuple[str, str]:
         A tuple containing the page reference and the new line with the title.
     """
     ref = line.split(":")[1].strip()
-    child = find_child_with_attribute(navindex, "url", "@ref {}".format(ref))
+    child = find_child_with_attribute(navindex, "url", f"@ref {ref}")
     if child is None:
-        logger.error("no navindex entry found for reference {}.".format(ref))
+        logger.error(f"no navindex entry found for reference {ref}.")
         sys.exit(1)
     new_line = "# {} {{#{}}}\n".format(child.get("title"), ref)
     return new_line, ref
 
 
-def get_ref(line: str) -> typing.Union[str, None]:
+def get_ref(line: str) -> str | None:
     """
     Extracts the page reference from a line containing a markdown header with an anchor.
 
@@ -117,9 +116,9 @@ def get_subsection_list(ref: str, navindex: ET.Element) -> list[str]:
     Returns:
         A list of strings representing the new lines for the subsection list.
     """
-    child = find_child_with_attribute(navindex, "url", "@ref {}".format(ref))
+    child = find_child_with_attribute(navindex, "url", f"@ref {ref}")
     if child is None:
-        logger.error("no navindex entry found for reference {}.".format(ref))
+        logger.error(f"no navindex entry found for reference {ref}.")
         sys.exit(1)
     new_lines = []
     for subchild in child.findall("tab"):
@@ -130,7 +129,7 @@ def get_subsection_list(ref: str, navindex: ET.Element) -> list[str]:
 def find_adjacent_elements(navindex: ET.Element, element: ET.Element):
     parent = navindex.find(".//{}[@url='{}']...".format(element.tag, element.get("url")))
     if parent is None:
-        logger.error("no parent found for element {}.".format(element))
+        logger.error(f"no parent found for element {element}.")
         sys.exit(1)
     children = list(parent)
     index = children.index(element)
@@ -158,9 +157,9 @@ def get_page_navigation(ref: str, navindex: ET.Element) -> list[str]:
 
 </div>
 """
-    current = find_child_with_attribute(navindex, "url", "@ref {}".format(ref))
+    current = find_child_with_attribute(navindex, "url", f"@ref {ref}")
     if current is None:
-        logger.error("no navindex entry found for reference {}.".format(ref))
+        logger.error(f"no navindex entry found for reference {ref}.")
         sys.exit(1)
     prev, next = find_adjacent_elements(navindex, current)
     nav = nav.format(

@@ -1,3 +1,4 @@
+# neml2
 [Settings]
   parameter_name_separator = '::'
 []

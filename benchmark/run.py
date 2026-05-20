@@ -24,9 +24,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from pathlib import Path
-import subprocess
 import argparse
+import subprocess
+from pathlib import Path
+
 import numpy as np
 
 
@@ -46,7 +47,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "-s",
         "--stable-time",
-        help="If the time of a single evaluation is shorter than this stable time, repeat the evaluation until the total elapsed time reaches this stable time.",
+        help=(
+            "If the time of a single evaluation is shorter than this stable "
+            "time, repeat the evaluation until the total elapsed time reaches "
+            "this stable time."
+        ),
         default=1000,
         type=int,
     )
@@ -61,29 +66,32 @@ if __name__ == "__main__":
         "-o",
         "--output",
         default="results",
-        help="Output folder to collect the results. A CSV file <codename>_<device>.csv will be written under the output directory.",
+        help=(
+            "Output folder to collect the results. A CSV file "
+            "<codename>_<device>.csv will be written under the output directory."
+        ),
     )
     args = parser.parse_args()
 
     outdir = Path(args.output)
     outdir.mkdir(parents=True, exist_ok=True)
     if not outdir.is_dir():
-        raise RuntimeError("output path {} is not a directory".format(args.output))
+        raise RuntimeError(f"output path {args.output} is not a directory")
 
     runner = Path(args.runner)
     if not runner.exists():
-        raise RuntimeError("runner does not exist at {}".format(args.runner))
+        raise RuntimeError(f"runner does not exist at {args.runner}")
 
     benchdir = Path(args.codename)
     if not benchdir.exists() or not benchdir.is_dir():
-        raise RuntimeError("Benchmark with codename {} not found".format(args.codename))
+        raise RuntimeError(f"Benchmark with codename {args.codename} not found")
 
     device = args.device
     stable_time = args.stable_time
     max_time = args.max_time
     input = benchdir / "model.i"
 
-    outfile = outdir / "{}_{}.csv".format(args.codename, device)
+    outfile = outdir / f"{args.codename}_{device}.csv"
     nbatch = 1
     mean_time = 0
     with open(outfile, "w", buffering=1) as stream:
@@ -97,8 +105,8 @@ if __name__ == "__main__":
                 "time",
                 str(input),
                 "driver",
-                "device={}".format(device),
-                "nbatch={}".format(nbatch),
+                f"device={device}",
+                f"nbatch={nbatch}",
             ]
 
             while total_time < stable_time:
@@ -116,11 +124,7 @@ if __name__ == "__main__":
             neval = len(times)
             mean_time = np.mean(times)
             std_time = np.std(times)
-            print(
-                "nbatch: {}, neval: {}, mean: {}, std: {}".format(
-                    nbatch, neval, mean_time, std_time
-                )
-            )
-            stream.write("{},{},{},{}\n".format(nbatch, neval, mean_time, std_time))
+            print(f"nbatch: {nbatch}, neval: {neval}, mean: {mean_time}, std: {std_time}")
+            stream.write(f"{nbatch},{neval},{mean_time},{std_time}\n")
 
             nbatch *= 2

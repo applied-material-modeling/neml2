@@ -22,5 +22,54 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from .odf import *
-from .polefigure import *
+from .odf import (
+    KDEODF,
+    ODF,
+    DeLaValleePoussinKernel,
+    Kernel,
+    beta,
+    gauss_points,
+    rotation_quadrature,
+    spherical_quadrature,
+    split,
+)
+from .polefigure import (
+    IPFReduction,
+    LambertProjection,
+    StereographicProjection,
+    arbitrary_hemispherical_quadrature,
+    available_projections,
+    cart2polar,
+    inverse_pole_figure_points,
+    pole_figure_odf,
+    pole_figure_points,
+    pretty_plot_inverse_pole_figure,
+    pretty_plot_pole_figure_odf,
+    pretty_plot_pole_figure_points,
+    symmetry_operators_as_R2,
+)
+
+__all__ = [
+    "DeLaValleePoussinKernel",
+    "IPFReduction",
+    "KDEODF",
+    "Kernel",
+    "LambertProjection",
+    "ODF",
+    "StereographicProjection",
+    "arbitrary_hemispherical_quadrature",
+    "available_projections",
+    "beta",
+    "cart2polar",
+    "gauss_points",
+    "inverse_pole_figure_points",
+    "pole_figure_odf",
+    "pole_figure_points",
+    "pretty_plot_inverse_pole_figure",
+    "pretty_plot_pole_figure_odf",
+    "pretty_plot_pole_figure_points",
+    "rotation_quadrature",
+    "spherical_quadrature",
+    "split",
+    "symmetry_operators_as_R2",
+]

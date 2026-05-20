@@ -27,7 +27,6 @@ from pathlib import Path
 
 import nmhit
 import pytest
-
 from neml2.reader._parser import ModelEntry, parse_input
 
 # Path to the Chaboche regression model used as the primary fixture

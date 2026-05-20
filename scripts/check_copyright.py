@@ -24,11 +24,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from pathlib import Path
+import argparse
 import subprocess
 import sys
-import argparse
-
+from pathlib import Path
 
 extensions = {".h": "//", ".cxx": "//", ".py": "#", ".sh": "#", ".js": "//"}
 additional_files = {}
@@ -183,5 +182,6 @@ if __name__ == "__main__":
         print("All files have the correct copyright heading")
     else:
         sys.exit(
-            "The above files do NOT contain the correct copyright heading. Use the -m or --modify option to automatically correct them."
+            "The above files do NOT contain the correct copyright heading. "
+            "Use the -m or --modify option to automatically correct them."
         )

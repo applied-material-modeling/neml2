@@ -22,10 +22,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import neml2.postprocessing
 import torch
 
 import neml2
-import neml2.postprocessing
 
 
 def test_ipf_projection():

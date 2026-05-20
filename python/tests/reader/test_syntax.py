@@ -28,7 +28,9 @@ import pytest
 
 yaml = pytest.importorskip("yaml")
 
-from neml2.reader._syntax import SyntaxDB, TypeInfo, ParamInfo
+# Import deferred until after `importorskip` so the test skips cleanly when
+# PyYAML is missing rather than failing at collection time.
+from neml2.reader._syntax import ParamInfo, SyntaxDB, TypeInfo  # noqa: E402
 
 SYNTAX_CONTENT = textwrap.dedent(
     """\
@@ -36,7 +38,8 @@ SYNTAX_CONTENT = textwrap.dedent(
       section: Models
       doc: |-
         Relate elastic strain to stress for linear isotropic material.
-        \\f$ \\boldsymbol{\\sigma} = \\lambda \\text{tr}(\\boldsymbol{\\varepsilon}) \\boldsymbol{I} + 2\\mu\\boldsymbol{\\varepsilon} \\f$
+        \\f$ \\boldsymbol{\\sigma} = \\lambda \\text{tr}(\\boldsymbol{\\varepsilon}) \\boldsymbol{I}
+        + 2\\mu\\boldsymbol{\\varepsilon} \\f$
       _factory:
         type: neml2::Factory*
         ftype: NONE

@@ -24,7 +24,6 @@
 
 import dataclasses
 from pathlib import Path
-from typing import Union
 
 import nmhit
 
@@ -62,7 +61,7 @@ def _section_to_entry(section: nmhit.Section) -> ModelEntry:
     )
 
 
-def parse_input(path: Union[str, Path]) -> dict:
+def parse_input(path: str | Path) -> dict:
     """
     Parse a HIT input file into a structured dictionary.
 

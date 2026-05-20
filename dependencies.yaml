@@ -41,10 +41,16 @@ pyzag:
     - .github/workflows/compat.yml
 
 nmhit:
+  # `version` is the exact release pinned by the pre-commit hook (no `v`
+  # prefix so it substring-matches both `rev: v0.1.5` and `nmhit==0.1.5`).
+  # `version_min` is the runtime floor in pyproject.toml — bumping it is
+  # only required if neml2 starts depending on newer nmhit Python APIs.
+  version: "0.1.5"
   version_min: "0.1.2"
   files:
     - CMakeLists.txt
     - pyproject.toml
+    - .pre-commit-config.yaml
 
 # ---- Formatters / pre-commit hooks ----
 clang_format:
@@ -52,10 +58,20 @@ clang_format:
   files:
     - .pre-commit-config.yaml
 
-black:
-  version: "25.11.0"
+ruff:
+  # No `v` prefix: this is the bare semver, which substring-matches both the
+  # `rev: v0.15.13` style used by pre-commit and the `ruff==0.15.13` style
+  # used by pip in pyproject.toml.
+  version: "0.15.13"
   files:
     - .pre-commit-config.yaml
+    - pyproject.toml
+
+# ---- Type checkers ----
+pyright:
+  version: "1.1.409"
+  files:
+    - pyproject.toml
 
 jupytext:
   version: "v1.19.1"

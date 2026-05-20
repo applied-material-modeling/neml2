@@ -22,9 +22,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import torch
 import typing
 from pathlib import Path
+
+# Other submodules
+from . import crystallography, pyzag, reader
+
+# Bring core functionality and tensors into the main namespace. Star imports
+# from the compiled submodules are intentional re-exports — see the
+# `**/__init__.py` entry in `[tool.ruff.lint.per-file-ignores]`.
+from .core import *
+from .es import *
+from .tensors import *
 
 # Determine version
 version_file = Path(__file__).parent / "version"
@@ -40,18 +49,13 @@ if hash_file.exists():
 else:
     __hash__ = "unknown"
 
-Number = typing.Union[int, float, bool]
-
-# Bring core functionality and tensors into the main namespace
-from .core import *
-from .tensors import *
-from .math import *
-from .es import *
+Number = int | float | bool
 
 # pybind11-stubgen generates incorrect type annotations for Unions
-# so unfortunately we need to maintain this list
+# so unfortunately we need to maintain this list (and keep `typing.Union` —
+# the `X | Y` form trips the same stub-gen bug).
 # see issue https://github.com/sizmailov/pybind11-stubgen/issues/276
-TensorLike = typing.Union[
+TensorLike = typing.Union[  # noqa: UP007
     Vec,
     Rot,
     WR2,
@@ -71,8 +75,3 @@ TensorLike = typing.Union[
     MillerIndex,
     Tensor,
 ]
-
-# Other submodules
-from . import pyzag
-from . import crystallography
-from . import reader

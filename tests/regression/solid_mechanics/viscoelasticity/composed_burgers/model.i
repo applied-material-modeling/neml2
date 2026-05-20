@@ -1,3 +1,4 @@
+# neml2
 # Burgers response built from primitives — Maxwell branch in series with a Kelvin-Voigt block,
 # both internal-state dashpots solved together. Same load history and parameters as
 # `burgers/model.i`. The trick for any series chain: a single shared stress flows through every

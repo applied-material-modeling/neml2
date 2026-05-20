@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [times]
     type = ScalarVTestTimeSeries
@@ -112,10 +113,10 @@
   []
   [surface]
     type = ComposedModel
-    models = "elastic_strain elasticity
+    models = 'elastic_strain elasticity
               mandel_stress j2 i1
               yield normality Eprate voidrate
-              consistency integrate_Ep integrate_voidrate"
+              consistency integrate_Ep integrate_voidrate'
   []
 []
 

@@ -23,22 +23,22 @@
 # THE SOFTWARE.
 
 import math
-import typing
-
-from pyzag import nonlinear
 
 import torch
+from pyzag import nonlinear
+
 import neml2
+from neml2.es import AssembledMatrix, AssembledVector, AxisLayout, SparseMatrix
 from neml2.tensors import Tensor
-from neml2.es import AssembledVector, AssembledMatrix, AxisLayout, SparseMatrix
 
 
-def lag_order(var: str) -> typing.Tuple[str, int]:
+def lag_order(var: str) -> tuple[str, int]:
     """
     Extracts the base variable name and its lag order from a variable string.
 
     Args:
-        var (str): The variable string, which can be in the format "var" or "var~n" where n is an integer.
+        var (str): The variable string, which can be in the format "var" or
+            "var~n" where n is an integer.
 
     Returns:
         tuple: A tuple containing the base variable name and its lag order.
@@ -50,7 +50,8 @@ def lag_order(var: str) -> typing.Tuple[str, int]:
         return tokens[0], int(tokens[1])
     else:
         raise ValueError(
-            f"Variable {var} has invalid format, should be either var or var~n where n is an integer"
+            f"Variable {var} has invalid format, should be either var or var~n "
+            "where n is an integer"
         )
 
 
@@ -59,7 +60,8 @@ def change_lag_order(var: str, new_order: int) -> str:
     Change the lag order of a variable name.
 
     Args:
-        var (str): The variable string, which can be in the format "var" or "var~n" where n is an integer.
+        var (str): The variable string, which can be in the format "var" or
+            "var~n" where n is an integer.
         new_order (int): The new lag order to set.
 
     Returns:
@@ -77,23 +79,28 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         sys: the NEML2 nonlinear system to wrap
 
     Keyword Args:
-        exclude_parameters (list of str): exclude these parameters from being wrapped as a pytorch parameter
+        exclude_parameters (list of str): exclude these parameters from being
+            wrapped as a pytorch parameter
 
-    Additional args and kwargs are forwarded to NonlinearRecursiveFunction (and hence torch.nn.Module) verbatim
+    Additional args and kwargs are forwarded to NonlinearRecursiveFunction
+    (and hence torch.nn.Module) verbatim
     """
 
     def __init__(
         self,
         sys: neml2.NonlinearSystem,
         *args,
-        exclude_parameters: list[str] = [],
+        exclude_parameters: list[str] | None = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
         if not isinstance(sys, neml2.NonlinearSystem):
             raise TypeError(
-                f"sys should be a neml2.NonlinearSystem, instead got {type(sys)}. Please use neml2.load_nonlinear_system or neml2.Factory.get_nonlinear_system to load a nonlinear system from the input file."
+                f"sys should be a neml2.NonlinearSystem, instead got {type(sys)}. "
+                "Please use neml2.load_nonlinear_system or "
+                "neml2.Factory.get_nonlinear_system to load a nonlinear system "
+                "from the input file."
             )
 
         self.sys = sys
@@ -102,7 +109,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         self._setup_maps()
         self._check_model()
-        self._setup_parameters(exclude_parameters)
+        self._setup_parameters(exclude_parameters if exclude_parameters is not None else [])
 
     @property
     def lookback(self) -> int:
@@ -164,18 +171,19 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         def _change_lag_order(vars: list[str], new_order: int) -> list[str]:
             return [change_lag_order(v, new_order) for v in vars]
 
-        # Every old variable (state or force) should have a corresponding (current) variable (but not the other way around)
+        # Every old variable (state or force) should have a corresponding
+        # (current) variable (but not the other way around)
         if not set(_change_lag_order(self.snlayout.vars(), 0)) <= set(self.slayout.vars()):
             raise ValueError(
-                "Input old state variables should be a subset of input state variables. However, input state variables are {}, and input old state variables are {}".format(
-                    self.slayout.vars(), self.snlayout.vars()
-                )
+                "Input old state variables should be a subset of input state "
+                f"variables. However, input state variables are {self.slayout.vars()}, "
+                f"and input old state variables are {self.snlayout.vars()}"
             )
         if not set(_change_lag_order(self.fnlayout.vars(), 0)) <= set(self.flayout.vars()):
             raise ValueError(
-                "Input old force variables should be a subset of input force variables. However, input force variables are {}, and input old force variables are {}".format(
-                    self.flayout.vars(), self.fnlayout.vars()
-                )
+                "Input old force variables should be a subset of input force "
+                f"variables. However, input force variables are {self.flayout.vars()}, "
+                f"and input old force variables are {self.fnlayout.vars()}"
             )
 
     def _setup_parameters(self, exclude_parameters: list[str]):
@@ -187,14 +195,20 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         self.parameter_names = []
         for pname, param in self.sys.named_parameters().items():
             if "." in pname:
-                errmsg = "Parameter name {} contains a period, which is not allowed. \nMake sure Settings/parameter_name_separator='_' in the NEML2 input file."
-                raise ValueError(errmsg.format(pname))
+                raise ValueError(
+                    f"Parameter name {pname} contains a period, which is not "
+                    "allowed. \nMake sure Settings/parameter_name_separator='_' "
+                    "in the NEML2 input file."
+                )
             if pname in exclude_parameters:
                 continue
-            # We need to separately track the parameter names because of the reparameterization system
-            # What torch does when it reparamterizes models is replace the variable with a lambda method that calls the scaling function
-            # over some new, reparamterized, variable.  If we rely on using torch.named_parameters() we will get the new "unscaled" variable, rather
-            # than the scaled value we want to pass to the model.  Caching the names prevents this.
+            # We need to separately track the parameter names because of the
+            # reparameterization system. What torch does when it reparamterizes
+            # models is replace the variable with a lambda method that calls
+            # the scaling function over some new, reparamterized, variable. If
+            # we rely on using torch.named_parameters() we will get the new
+            # "unscaled" variable, rather than the scaled value we want to pass
+            # to the model. Caching the names prevents this.
             self.parameter_names.append(pname)
             param.requires_grad_(True)
             self.register_parameter(pname, torch.nn.Parameter(param.torch()))
@@ -202,7 +216,8 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
     def _update_parameter_values(self):
         """Copy over new parameter values"""
         for pname in self.parameter_names:
-            # See comment in _setup_parameters, using getattr here lets us reparamterize things with torch
+            # See comment in _setup_parameters, using getattr here lets us
+            # reparamterize things with torch
             new_value = getattr(self, pname)
             current_value = self.sys.get_parameter(pname).tensor()
             # We may need to update the batch shape
@@ -215,17 +230,20 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         """
         Setup the maps for assembly purposes
 
-        In the C++ backend, the nonlinear system distinguishes between unknowns (u) and given variables (g).
-        However, pyzag expects contiguous-in-time representation of the state and forces, where unknowns and old
-        unknowns come from the state tensor, and forces and old forces come from the forces tensor.
+        In the C++ backend, the nonlinear system distinguishes between unknowns
+        (u) and given variables (g). However, pyzag expects contiguous-in-time
+        representation of the state and forces, where unknowns and old unknowns
+        come from the state tensor, and forces and old forces come from the
+        forces tensor.
 
-        Note that the given variables include old unknowns, forces, and old forces. So we need to setup maps from
-        the pyzag representation to the nonlinear system representation for both unknowns and given variables.
+        Note that the given variables include old unknowns, forces, and old
+        forces. So we need to setup maps from the pyzag representation to the
+        nonlinear system representation for both unknowns and given variables.
         """
 
         # Helper function to extract a sublayout given a prefix
         def _extract_sublayout(
-            layout: AxisLayout, order: int, new_order: typing.Union[int, None] = None
+            layout: AxisLayout, order: int, new_order: int | None = None
         ) -> AxisLayout:
             subvars = []
             intmd_shapes = []

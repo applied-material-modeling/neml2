@@ -1,3 +1,4 @@
+# neml2
 [Models]
   [rate]
     type = SampleRateModel

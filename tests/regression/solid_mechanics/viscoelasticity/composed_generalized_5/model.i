@@ -1,3 +1,4 @@
+# neml2
 # Generalized 5-element Maxwell network: equilibrium spring in parallel with FOUR Maxwell branches,
 # each with its own relaxation time scale (Prony-series-style). No named element model exists for
 # this topology — this scenario demonstrates the composition pattern's reach beyond the named cases.

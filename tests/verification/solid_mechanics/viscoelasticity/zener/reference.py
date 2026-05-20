@@ -105,7 +105,21 @@ sig = stress(eps, eps_v)
 np.testing.assert_allclose(sig[-1], E_inf * eps0, rtol=1e-3, atol=1e-6)
 
 # CSV columns: time, then 6 strain components, then 6 stress components, all Mandel order.
-header = ["time", "exx", "eyy", "ezz", "eyz", "exz", "exy", "sxx", "syy", "szz", "syz", "sxz", "sxy"]
+header = [
+    "time",
+    "exx",
+    "eyy",
+    "ezz",
+    "eyz",
+    "exz",
+    "exy",
+    "sxx",
+    "syy",
+    "szz",
+    "syz",
+    "sxz",
+    "sxy",
+]
 data = np.column_stack([times, eps, sig])
 np.savetxt(
     "reference.csv",

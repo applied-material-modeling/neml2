@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [times]
     type = ScalarVTestTimeSeries
@@ -198,10 +199,10 @@
   []
   [surface]
     type = ComposedModel
-    models = "isoharden elasticity
+    models = 'isoharden elasticity
               mandel_stress vonmises
               yield yield_zero normality eprate Eprate Erate Eerate
-              ri_flowrate rd_flowrate g flowrate integrate_ep integrate_stress effective_strain_rate"
+              ri_flowrate rd_flowrate g flowrate integrate_ep integrate_stress effective_strain_rate'
   []
 []
 
