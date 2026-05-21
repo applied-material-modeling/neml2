@@ -46,12 +46,6 @@ DISPLAY_NAME_OVERRIDES = {
 }
 
 
-def postprocess(value, type_str):
-    if type_str == "bool":
-        value = "true" if value else "false"
-    return value
-
-
 def ftype_icon(ftype):
     return {
         "INPUT": "🇮",
@@ -256,9 +250,8 @@ def write_option_block(stream, opt: dict, log, section: str, type_name: str) -> 
         stream.write(f"- `{name}`{icon_part} — {opt['doc']}\n")
     stream.write(f"  - **Type**: {opt['type']}\n")
     stream.write("  - **Required**: {}\n".format("Yes" if opt["required"] else "No"))
-    value = postprocess(opt["value"], opt["type"])
-    if value:
-        stream.write(f"  - **Default**: {value}\n")
+    if opt["value"]:
+        stream.write(f"  - **Default**: {opt['value']}\n")
     return missing
 
 
