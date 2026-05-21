@@ -4,7 +4,7 @@
 # dependencies: cmake.version_min
 cmake_minimum_required(VERSION 3.26.1)
 # dependencies: neml2.version
-project(NEML2 VERSION 2.1.5 LANGUAGES C CXX)
+project(NEML2 VERSION 2.1.6 LANGUAGES C CXX)
 
 # ----------------------------------------------------------------------------
 # Policy
@@ -62,7 +62,7 @@ set(CMAKE_CXX_FLAGS_PROFILING "-O2 -g -fno-omit-frame-pointer -DNDEBUG" CACHE ST
 set(NEML2_PCH ON CACHE BOOL "Use precompiled headers")
 set(NEML2_TESTS ON CACHE BOOL "Build NEML2 tests")
 set(NEML2_TOOLS OFF CACHE BOOL "Build utility binaries")
-set(NEML2_WORK_DISPATCHER OFF CACHE BOOL "Enable NEML2 work dispatcher")
+set(NEML2_MPI OFF CACHE BOOL "Link the dispatcher submodule against MPI. When OFF, MPI-using objects (e.g. SimpleMPIScheduler) are still registered but throw at construction.")
 set(NEML2_JSON OFF CACHE BOOL "Enable JSON support")
 set(NEML2_CSV OFF CACHE BOOL "Enable CSV support")
 set(NEML2_CONTRIB_PREFIX ${NEML2_SOURCE_DIR}/contrib CACHE PATH "NEML2 contrib prefix for downloaded dependencies")
@@ -301,7 +301,7 @@ endif()
 # ----------------------------------------------------------------------------
 # MPI
 # ----------------------------------------------------------------------------
-if(NEML2_WORK_DISPATCHER)
+if(NEML2_MPI)
       find_package(MPI COMPONENTS CXX REQUIRED)
 endif()
 

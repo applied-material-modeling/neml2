@@ -17,7 +17,7 @@ cmake --build --preset dev -j$(nproc)    # build the `tests` and `tools` targets
 
 Always pass `-j$(nproc)` to `cmake --build`. CMake's default parallelism depends on the underlying generator — Make falls back to `-j1`, which is dramatically slower on this codebase. Explicit `-j$(nproc)` makes both Make and Ninja use all cores.
 
-Other notable presets: `release`, `cc` (exports `compile_commands.json` and symlinks it into the repo root), `coverage`, `asan`, `tsan`, `profiling`. CI also exercises a `-DNEML2_PCH=OFF` build (no precompiled headers) and a "no optional" build that disables `NEML2_JSON`, `NEML2_CSV`, and `NEML2_WORK_DISPATCHER` — keep those guarded with `#ifdef NEML2_HAS_*` where relevant.
+Other notable presets: `release`, `cc` (exports `compile_commands.json` and symlinks it into the repo root), `coverage`, `asan`, `tsan`, `profiling`. CI also exercises a `-DNEML2_PCH=OFF` build (no precompiled headers) and a "no optional" build that disables `NEML2_JSON`, `NEML2_CSV`, and `NEML2_MPI` — keep `NEML2_JSON`/`NEML2_CSV`-conditional code guarded with `#ifdef`. `NEML2_MPI` controls whether the dispatcher submodule links against MPI; the submodule itself is always built (MPI-using objects throw at construction when the flag is OFF).
 
 The build pulls dependencies via `cmake/Modules/Findtorch.cmake` (PyTorch must already be importable in Python; libTorch is found in site-packages by default) and downloads/builds `nmhit`, `Catch2`, `nlohmann_json`, `csvparser`, `argparse`, `gperftools` into `contrib/` as needed. The `nmhit` submodule is auto-initialized on first configure.
 
@@ -38,7 +38,7 @@ Tests are Catch2 binaries built into `build/<preset>/tests/`. Run individual bin
 ./build/dev/tests/unit/tensor_tests        # tensor-class unit tests
 ./build/dev/tests/regression/regression_tests
 ./build/dev/tests/verification/verification_tests
-./build/dev/tests/dispatchers/dispatcher_tests   # only when NEML2_WORK_DISPATCHER=ON
+./build/dev/tests/dispatchers/dispatcher_tests   # always built; MPI-using tests need NEML2_MPI=ON
 ```
 
 Catch2 selectors apply: `./unit_tests "[base/Factory]"` runs by tag, `./unit_tests -# "test_Foo"` runs a single test case. To exercise CUDA paths pass `--devices cuda` (CI sets `TEST_DEVICE_ARGS` accordingly on the `gpu_runner`).
@@ -83,7 +83,7 @@ The C++ library is split into co-equal submodules under `src/neml2/`, each produ
 - `models/` — the composable forward operators. `Model` is the base; `ComposedModel` glues children together via the dependency graph in `models/DependencyResolver.h`; `ImplicitUpdate` wraps a residual model in a Newton solve with optional `Predictor`. Domain libraries live in `models/{solid_mechanics,crystallography,chemical_reactions,phase_field_fracture,porous_flow,finite_volume,common}/`.
 - `solvers/` — `NonlinearSolver` (Newton, NewtonWithLineSearch, SchurComplement) and `LinearSolver` (DenseLU).
 - `equation_systems/` — `EquationSystem`, `LinearSystem`, `NonlinearSystem`, sparse/dense assembled vectors and matrices, axis layout.
-- `dispatchers/` — work generators + schedulers (`SimpleScheduler`, `StaticHybridScheduler`, `SimpleMPIScheduler` when `NEML2_WORK_DISPATCHER=ON` brings in MPI) for splitting large batches across devices/processes.
+- `dispatchers/` — work generators + schedulers (`SimpleScheduler`, `StaticHybridScheduler`, `SimpleMPIScheduler`) for splitting large batches across devices/processes. Always built. `SimpleMPIScheduler` requires `NEML2_MPI=ON`; with the flag OFF its constructor throws a clear "rebuild with -DNEML2_MPI=ON" error.
 - `drivers/` — `Driver`, `ModelDriver`, `TransientDriver` are the top-level "run a model over a load history" objects exposed in input files.
 - `user_tensors/`, `misc/` — user-facing tensor input wrappers and odds-and-ends.
 

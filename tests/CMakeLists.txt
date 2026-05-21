@@ -25,8 +25,7 @@ add_dependencies(tests regression_tests)
 add_subdirectory(verification)
 add_dependencies(tests verification_tests)
 
-# Work dispatcher tests
-if(NEML2_WORK_DISPATCHER)
-  add_subdirectory(dispatchers)
-  add_dependencies(tests dispatcher_tests)
-endif()
+# Work dispatcher tests — always built. Tests that exercise SimpleMPIScheduler
+# (currently none) will need an `if(NEML2_MPI)` guard or a runtime SKIP.
+add_subdirectory(dispatchers)
+add_dependencies(tests dispatcher_tests)

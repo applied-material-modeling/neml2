@@ -10,7 +10,7 @@ Add or revise narrative documentation in `doc/content/`. Build is via `doc/scrip
 This skill is about **what to write and where**, not the build itself. Two recurring failure modes drive its existence:
 
 1. Per-class deep dives that go stale because the auto-generated syntax pages already cover the same ground (with maintenance burden) — the editorial guidance below explains the alternative.
-2. New top-level pages that render fine in isolation but never appear in the navigation sidebar because both `DoxygenLayout.xml` and `DoxygenLayoutPython.xml` were not updated.
+2. New top-level pages that render fine in isolation but never appear in the navigation sidebar because `DoxygenLayout.xml` was not updated. (The Python sidebar is auto-derived from the C++ one by `doc/scripts/gen_layout.py`, so only the C++ layout needs to be edited.)
 
 ## Where docs live
 
@@ -23,11 +23,9 @@ doc/
 │   │   ├── phase_field_fracture.md
 │   │   └── …
 │   ├── system/                     Per-system pages (Model, Driver, Solver, Tensor, …)
-│   ├── tutorials/                  Step-by-step tutorial pages, often with paired notebooks
-│   └── DoxygenLayoutPython.xml     Wait, see below — this is in doc/config/
+│   └── tutorials/                  Step-by-step tutorial pages, often with paired notebooks
 └── config/
-    ├── DoxygenLayout.xml           Sidebar/navigation for the C++ docs
-    └── DoxygenLayoutPython.xml     Sidebar/navigation for the Python docs (mirrors DoxygenLayout.xml)
+    └── DoxygenLayout.xml           Sidebar/navigation source. The Python flavor (DoxygenLayoutPython.xml) is auto-derived at build time by doc/scripts/gen_layout.py and lives in build/doc/.
 ```
 
 The auto-generated **syntax pages** (`syntax-models.html`, `syntax-tensors.html`, etc.) are produced by `extract_syntax` from the installed `neml2` Python package's registry — they are *not* in `doc/content/` and you cannot edit them directly. They reflect every registered object's `expected_options()` doc strings; that is where per-class detail belongs, not in narrative prose.
@@ -37,8 +35,8 @@ The auto-generated **syntax pages** (`syntax-models.html`, `syntax-tensors.html`
 | You're doing | Where it goes | Layout XML edit needed? |
 |---|---|---|
 | Adding a section to an existing physics module (e.g., a new domain inside `solid_mechanics`) | New `##` section inside the existing `doc/content/modules/<submodule>.md` | No |
-| Adding a brand-new top-level physics module | New file `doc/content/modules/<submodule>.md` | **Yes — both XMLs** |
-| Adding a tutorial page | New file under `doc/content/tutorials/<topic>/<page>.md` | **Yes — both XMLs**, registered as a `<tab type="user">` under the relevant `usergroup` |
+| Adding a brand-new top-level physics module | New file `doc/content/modules/<submodule>.md` | **Yes — `DoxygenLayout.xml`** (Python flavor auto-derived) |
+| Adding a tutorial page | New file under `doc/content/tutorials/<topic>/<page>.md` | **Yes — `DoxygenLayout.xml`**, registered as a `<tab type="user">` under the relevant `usergroup` |
 | Polishing per-class documentation | Edit the C++ class's `options.doc()` and `expected_options()` strings — the syntax page rebuilds from those | No |
 
 ## Editorial pattern: high-level + canonical names + pointer to the catalog
@@ -90,12 +88,9 @@ Prefer regression-test `model.i` files for examples that involve time integratio
 
 ## Adding a brand-new top-level page
 
-If the new content gets its own file under `doc/content/modules/`, `doc/content/tutorials/`, or `doc/content/system/`, you must register it in **both** layout XMLs:
+If the new content gets its own file under `doc/content/modules/`, `doc/content/tutorials/`, or `doc/content/system/`, register it in `doc/config/DoxygenLayout.xml` using `@ref <anchor>` URLs. Find the right `<tab type="usergroup">` (e.g., `Module Documentation`, `Guides and Tutorials`) and add a `<tab type="user" url="@ref new-page" title="New Page Title"/>` entry in the appropriate spot.
 
-- `doc/config/DoxygenLayout.xml` — uses `@ref <anchor>` URLs (Doxygen-internal references).
-- `doc/config/DoxygenLayoutPython.xml` — mirrors the same structure, but uses relative `../<page>` URLs to point back into the C++ docs.
-
-Both files are entirely declarative — find the right `<tab type="usergroup">` (e.g., `Module Documentation`, `Guides and Tutorials`) and add a `<tab type="user" url="@ref new-page" title="New Page Title"/>` entry in the appropriate spot. **The two files must mirror each other**; if you add an entry to one and forget the other, the page will appear in only one of the two doc trees.
+The Python sidebar (`build/doc/DoxygenLayoutPython.xml`) is auto-derived from this file by `doc/scripts/gen_layout.py` at build time — URL forms are rewritten (`@ref X` → `../X.html`) and the C++/Python API Reference subtrees are swapped. You don't need to (and should not) hand-maintain the Python variant.
 
 A new `## section` *inside* an existing top-level page (the common case for adding a domain to `solid_mechanics.md`) does **not** require any XML edit — Doxygen builds the in-page table of contents automatically.
 

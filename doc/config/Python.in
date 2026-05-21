@@ -8,4 +8,4 @@ FILE_PATTERNS          = *.py *.pyi
 EXCLUDE_PATTERNS       = */_*.py
 EXTENSION_MAPPING      = pyi=Python
 WARN_LOGFILE           = ${build_dir}/doxygen.python.log
-LAYOUT_FILE            = ${repo_root}/doc/config/DoxygenLayoutPython.xml
+LAYOUT_FILE            = ${build_dir}/DoxygenLayoutPython.xml

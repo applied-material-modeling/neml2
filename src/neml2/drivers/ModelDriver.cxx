@@ -26,9 +26,7 @@
 #include "neml2/misc/assertions.h"
 #include "neml2/models/Model.h"
 
-#ifdef NEML2_WORK_DISPATCHER
 #include "neml2/dispatchers/valuemap_helpers.h"
-#endif
 
 namespace neml2
 {
@@ -50,10 +48,8 @@ ModelDriver::expected_options()
       "target compute device to be CPU, and device='cuda:1' sets the target compute device to be "
       "CUDA with device ID 1.");
 
-#ifdef NEML2_WORK_DISPATCHER
   options.add_optional<std::string>("scheduler", "The work scheduler to use");
   options.add<bool>("async_dispatch", true, "Whether to dispatch work asynchronously");
-#endif
 
   return options;
 }
@@ -64,14 +60,11 @@ ModelDriver::ModelDriver(const OptionSet & options)
     _postprocessor(options.defined("postprocessor")
                        ? factory()->get_model(options.get<std::string>("postprocessor"))
                        : nullptr),
-    _device(options.get<std::string>("device"))
-#ifdef NEML2_WORK_DISPATCHER
-    ,
+    _device(options.get<std::string>("device")),
     _scheduler(options.defined("scheduler")
                    ? factory()->get_scheduler(options.get<std::string>("scheduler"))
                    : nullptr),
     _async_dispatch(options.get<bool>("async_dispatch"))
-#endif
 {
 }
 
@@ -83,7 +76,6 @@ ModelDriver::setup()
   // Send to device
   _model->to(_device);
 
-#ifdef NEML2_WORK_DISPATCHER
   if (_scheduler)
   {
     auto red = [](const std::vector<ValueMap> & results) -> ValueMap
@@ -120,7 +112,6 @@ ModelDriver::setup()
         post,
         _async_dispatch ? thread_init : std::function<void(Device)>());
   }
-#endif
 }
 
 void

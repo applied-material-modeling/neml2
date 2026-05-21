@@ -26,10 +26,8 @@
 
 #include "neml2/drivers/Driver.h"
 
-#ifdef NEML2_WORK_DISPATCHER
 #include "neml2/dispatchers/WorkScheduler.h"
 #include "neml2/dispatchers/WorkDispatcher.h"
-#endif
 
 namespace neml2
 {
@@ -63,7 +61,6 @@ protected:
   /// The device on which to evaluate the model
   const Device _device;
 
-#ifdef NEML2_WORK_DISPATCHER
   /// The work scheduler to use
   std::shared_ptr<WorkScheduler> _scheduler;
   /// Work dispatcher
@@ -73,6 +70,5 @@ protected:
   const bool _async_dispatch;
   /// Cloned models for each thread
   std::unordered_map<std::thread::id, std::shared_ptr<Model>> _models;
-#endif
 };
 } // namespace neml2

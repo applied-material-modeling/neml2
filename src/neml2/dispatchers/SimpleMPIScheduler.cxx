@@ -49,6 +49,49 @@ SimpleMPIScheduler::expected_options()
   return options;
 }
 
+#ifndef NEML2_MPI
+
+// Stub bodies for non-MPI builds. The constructor throws on first use; the
+// remaining virtuals are unreachable but must be defined so the vtable links.
+
+SimpleMPIScheduler::SimpleMPIScheduler(const OptionSet & options)
+  : WorkScheduler(options)
+{
+  throw NEMLException("SimpleMPIScheduler requires NEML2 to be built with -DNEML2_MPI=ON. "
+                      "Rebuild NEML2 with MPI support to use this scheduler.");
+}
+
+void
+SimpleMPIScheduler::setup()
+{
+  throw NEMLException("SimpleMPIScheduler::setup is unreachable in a non-MPI build "
+                      "(the constructor should have thrown first).");
+}
+
+bool
+SimpleMPIScheduler::schedule_work_impl(Device &, std::size_t &) const
+{
+  return false;
+}
+
+void
+SimpleMPIScheduler::dispatched_work_impl(Device, std::size_t)
+{
+}
+
+void
+SimpleMPIScheduler::completed_work_impl(Device, std::size_t)
+{
+}
+
+bool
+SimpleMPIScheduler::all_work_completed() const
+{
+  return true;
+}
+
+#else // NEML2_MPI
+
 SimpleMPIScheduler::SimpleMPIScheduler(const OptionSet & options)
   : WorkScheduler(options),
     _available_devices(options.get<std::vector<Device>>("devices")),
@@ -160,5 +203,7 @@ SimpleMPIScheduler::all_work_completed() const
 {
   return _load == 0;
 }
+
+#endif // NEML2_MPI
 
 } // namespace neml2

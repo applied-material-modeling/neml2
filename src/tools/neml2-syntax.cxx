@@ -29,9 +29,105 @@
 
 #include <argparse/argparse.hpp>
 
+#include <sstream>
+
 #ifdef NEML2_JSON
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
+
+namespace
+{
+std::string
+ftype_str(neml2::FType f)
+{
+  switch (f)
+  {
+    case neml2::FType::INPUT:
+      return "INPUT";
+    case neml2::FType::OUTPUT:
+      return "OUTPUT";
+    case neml2::FType::PARAMETER:
+      return "PARAMETER";
+    case neml2::FType::BUFFER:
+      return "BUFFER";
+    default:
+      return "NONE";
+  }
+}
+
+// Build the JSON record for one OptionSet. When `source_path` / `class_name`
+// are empty (e.g. Settings, which isn't registered through the Registry), the
+// fields are still emitted as empty strings so the schema is uniform.
+json
+opts_to_json(const neml2::OptionSet & opts,
+             const std::string & source_path,
+             const std::string & class_name,
+             bool include_options)
+{
+  json j;
+  j["type"] = opts.type();
+  j["section"] = opts.section();
+  j["doc"] = opts.doc();
+  j["source_path"] = source_path;
+  j["class_name"] = class_name;
+  if (include_options)
+  {
+    json options = json::array();
+    for (const auto & [name, opt] : opts)
+    {
+      if (opt->suppressed())
+        continue;
+      std::ostringstream value_ss;
+      opt->print(value_ss);
+      json o;
+      o["name"] = name;
+      o["doc"] = opt->doc();
+      o["ftype"] = ftype_str(opt->ftype());
+      o["required"] = opt->required();
+      o["type"] = neml2::user_readable_type(opt->type());
+      o["value"] = value_ss.str();
+      options.push_back(std::move(o));
+    }
+    j["options"] = std::move(options);
+  }
+  return j;
+}
+
+// Collect every OptionSet known to the program along with its source_path.
+// Settings is included first; Registry-known objects follow in alphabetical
+// order of type name (the Registry uses a std::map keyed on type).
+struct Record
+{
+  const neml2::OptionSet * opts;
+  std::string source_path;
+  std::string class_name;
+};
+
+std::vector<Record>
+collect_records(std::vector<neml2::OptionSet> & storage)
+{
+  // Reserve before any push_back so pointers into `storage` remain valid.
+  storage.reserve(1 + neml2::Registry::info().size());
+  storage.push_back(neml2::Settings::expected_options());
+  std::vector<std::string> paths;
+  std::vector<std::string> class_names;
+  paths.reserve(storage.capacity());
+  class_names.reserve(storage.capacity());
+  paths.emplace_back();
+  class_names.emplace_back();
+  for (const auto & [type, info] : neml2::Registry::info())
+  {
+    storage.push_back(info.expected_options);
+    paths.push_back(info.source_path);
+    class_names.push_back(info.type_name);
+  }
+  std::vector<Record> records;
+  records.reserve(storage.size());
+  for (std::size_t i = 0; i < storage.size(); ++i)
+    records.push_back({&storage[i], paths[i], class_names[i]});
+  return records;
+}
+} // namespace
 #endif
 
 int
@@ -41,10 +137,10 @@ main(int argc, char * argv[])
   neml2::set_default_dtype(neml2::kFloat64);
 
   argparse::ArgumentParser program("neml2-syntax");
-  program.add_description("Extract object syntax from the registry. By default outputs to stdout.");
-  program.add_argument("--yaml")
-      .help("redirect output to a YAML file")
-      .default_value(std::string("syntax.yml"));
+  program.add_description("Extract object syntax from the registry as JSON. Requires NEML2_JSON.");
+  program.add_argument("--json")
+      .help("redirect JSON output to a file (use \"-\" for stdout)")
+      .default_value(std::string("syntax.json"));
   program.add_argument("--section")
       .help("only emit objects whose input-file section matches (e.g. Models, Solvers, Drivers, "
             "Tensors, Schedulers, Data, EquationSystems, Settings)")
@@ -54,11 +150,10 @@ main(int argc, char * argv[])
             "intended for drilling into a single object's full option list")
       .default_value(std::string(""));
   program.add_argument("--summary")
-      .help("emit only the type, section, and doc string for each object (omit per-option detail)")
+      .help("emit only the type, section, source_path, and doc string for each object "
+            "(omit per-option detail)")
       .flag();
-  program.add_argument("--server")
-      .help("run as a long-lived JSON server on stdin/stdout (requires NEML2_JSON)")
-      .flag();
+  program.add_argument("--server").help("run as a long-lived JSON server on stdin/stdout").flag();
 
   // Force link dynamic libraries
   neml2::force_link_runtime();
@@ -66,81 +161,29 @@ main(int argc, char * argv[])
   // Parse cliargs
   program.parse_args(argc, argv);
 
-  // Create the output stream
-  std::ofstream ofs;
-  std::ostream * out = &std::cout;
-
-  if (program.is_used("--yaml"))
-  {
-    ofs.open(program.get<std::string>("yaml"));
-    if (!ofs.is_open())
-    {
-      std::cerr << "Failed to open output file: " + program.get<std::string>("yaml") << std::endl;
-      return 1;
-    }
-    out = &ofs;
-  }
-
+#ifndef NEML2_JSON
+  (void)argc;
+  (void)argv;
+  std::cerr << "error: neml2-syntax requires the library to be built with NEML2_JSON=ON\n";
+  return 1;
+#else
   const auto section_filter = program.get<std::string>("--section");
   const auto type_filter = program.get<std::string>("--type");
   const bool summary = program.get<bool>("--summary");
   const bool server_mode = program.get<bool>("--server");
 
-  if (server_mode && (program.is_used("--yaml") || program.is_used("--section") ||
+  if (server_mode && (program.is_used("--json") || program.is_used("--section") ||
                       program.is_used("--type") || summary))
   {
-    std::cerr << "error: --server is incompatible with --yaml, --section, --type, and --summary\n";
+    std::cerr << "error: --server is incompatible with --json, --section, --type, and --summary\n";
     return 1;
   }
 
-#ifdef NEML2_JSON
+  std::vector<neml2::OptionSet> storage;
+  const auto records = collect_records(storage);
+
   if (server_mode)
   {
-    // Collect all OptionSets once; build pointer list after vector is fully populated
-    std::vector<neml2::OptionSet> all_opts_storage;
-    all_opts_storage.push_back(neml2::Settings::expected_options());
-    for (const auto & [type, info] : neml2::Registry::info())
-      all_opts_storage.push_back(info.expected_options);
-    std::vector<const neml2::OptionSet *> all_opts;
-    for (const auto & opts : all_opts_storage)
-      all_opts.push_back(&opts);
-
-    auto ftype_str = [](neml2::FType f) -> std::string
-    {
-      if (f == neml2::FType::INPUT)
-        return "INPUT";
-      if (f == neml2::FType::OUTPUT)
-        return "OUTPUT";
-      if (f == neml2::FType::PARAMETER)
-        return "PARAMETER";
-      if (f == neml2::FType::BUFFER)
-        return "BUFFER";
-      return "NONE";
-    };
-
-    auto opts_to_json = [&](const neml2::OptionSet & opts) -> json
-    {
-      json j;
-      j["type"] = opts.type();
-      j["section"] = opts.section();
-      j["doc"] = opts.doc();
-      json options = json::array();
-      for (const auto & [name, opt] : opts)
-      {
-        if (opt->suppressed())
-          continue;
-        json o;
-        o["name"] = name;
-        o["doc"] = opt->doc();
-        o["ftype"] = ftype_str(opt->ftype());
-        o["required"] = opt->required();
-        o["type"] = neml2::user_readable_type(opt->type());
-        options.push_back(std::move(o));
-      }
-      j["options"] = std::move(options);
-      return j;
-    };
-
     std::string line;
     while (std::getline(std::cin, line))
     {
@@ -165,9 +208,9 @@ main(int argc, char * argv[])
       if (method == "list_sections")
       {
         std::set<std::string> sections;
-        for (const auto * opts : all_opts)
-          if (!opts->section().empty())
-            sections.insert(opts->section());
+        for (const auto & r : records)
+          if (!r.opts->section().empty())
+            sections.insert(r.opts->section());
         result = json::array();
         for (const auto & s : sections)
           result.push_back(s);
@@ -176,28 +219,29 @@ main(int argc, char * argv[])
       {
         const std::string section = req.value("section", "");
         result = json::array();
-        for (const auto * opts : all_opts)
+        for (const auto & r : records)
         {
-          if (!section.empty() && opts->section() != section)
+          if (!section.empty() && r.opts->section() != section)
             continue;
-          if (opts->type().empty())
+          if (r.opts->type().empty())
             continue;
-          result.push_back(
-              {{"type", opts->type()}, {"section", opts->section()}, {"doc", opts->doc()}});
+          result.push_back({{"type", r.opts->type()},
+                            {"section", r.opts->section()},
+                            {"doc", r.opts->doc()},
+                            {"source_path", r.source_path},
+                            {"class_name", r.class_name}});
         }
       }
       else if (method == "get_options")
       {
         const std::string type = req.value("type", "");
         result = nullptr;
-        for (const auto * opts : all_opts)
-        {
-          if (opts->type() == type)
+        for (const auto & r : records)
+          if (r.opts->type() == type)
           {
-            result = opts_to_json(*opts);
+            result = opts_to_json(*r.opts, r.source_path, r.class_name, /*include_options=*/true);
             break;
           }
-        }
       }
       else
       {
@@ -211,41 +255,38 @@ main(int argc, char * argv[])
     }
     return 0;
   }
-#else
-  if (server_mode)
+
+  // File / stdout JSON emission
+  const auto json_path = program.get<std::string>("--json");
+  std::ofstream ofs;
+  std::ostream * out = &std::cout;
+  if (json_path != "-")
   {
-    std::cerr << "neml2-syntax --server requires NEML2_JSON=ON\n";
-    return 1;
+    ofs.open(json_path);
+    if (!ofs.is_open())
+    {
+      std::cerr << "Failed to open output file: " << json_path << std::endl;
+      return 1;
+    }
+    out = &ofs;
   }
-#endif
 
-  auto emit = [&](const neml2::OptionSet & opts)
+  json result = json::array();
+  for (const auto & r : records)
   {
-    if (!section_filter.empty() && opts.section() != section_filter)
-      return;
-    if (!type_filter.empty() && opts.type() != type_filter)
-      return;
-    if (summary)
-    {
-      *out << opts.type() << ":\n";
-      *out << "  section: " << opts.section() << '\n';
-      if (opts.doc().empty())
-        *out << "  doc:\n";
-      else
-        *out << "  doc: |-\n    " << opts.doc() << '\n';
-    }
-    else
-    {
-      *out << opts << '\n';
-    }
-  };
+    if (!section_filter.empty() && r.opts->section() != section_filter)
+      continue;
+    if (!type_filter.empty() && r.opts->type() != type_filter)
+      continue;
+    result.push_back(
+        opts_to_json(*r.opts, r.source_path, r.class_name, /*include_options=*/!summary));
+  }
 
-  emit(neml2::Settings::expected_options());
-  for (const auto & [type, info] : neml2::Registry::info())
-    emit(info.expected_options);
+  *out << result.dump(2) << '\n';
 
   if (ofs.is_open())
     ofs.close();
 
   return 0;
+#endif
 }

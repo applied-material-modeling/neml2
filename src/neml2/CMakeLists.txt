@@ -144,12 +144,14 @@ endif()
 neml2_add_submodule(driver SHARED drivers)
 target_link_libraries(driver PUBLIC model tensor base)
 
-# libneml2_dispatcher
-if(NEML2_WORK_DISPATCHER)
-  neml2_add_submodule(dispatcher SHARED dispatchers)
-  target_link_libraries(dispatcher PUBLIC tensor model MPI::MPI_CXX)
-  target_link_libraries(driver PUBLIC dispatcher)
+# libneml2_dispatcher — always built. MPI-using objects (e.g. SimpleMPIScheduler)
+# stay registered but throw at construction when NEML2_MPI=OFF.
+neml2_add_submodule(dispatcher SHARED dispatchers)
+target_link_libraries(dispatcher PUBLIC tensor model)
+if(NEML2_MPI)
+  target_link_libraries(dispatcher PUBLIC MPI::MPI_CXX)
 endif()
+target_link_libraries(driver PUBLIC dispatcher)
 
 configure_file(
   ${NEML2_SOURCE_DIR}/include/neml2/config.h.in

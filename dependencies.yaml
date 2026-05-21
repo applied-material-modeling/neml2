@@ -140,8 +140,9 @@ doxygen:
 
 # ---- Project version ----
 neml2:
-  version: "2.1.5"
+  version: "2.1.6"
   files:
     - CMakeLists.txt
     - pyproject.toml
     - doc/content/installation/integration.md
+    - doc/config/Doxyfile.in

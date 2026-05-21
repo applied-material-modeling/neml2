@@ -26,5 +26,5 @@
 
 #cmakedefine NEML2_JSON
 #cmakedefine NEML2_CSV
-#cmakedefine NEML2_WORK_DISPATCHER
+#cmakedefine NEML2_MPI
 #cmakedefine CMAKE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"

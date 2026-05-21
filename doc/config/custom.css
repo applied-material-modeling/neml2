@@ -1,4 +1,25 @@
+/* Fonts via Google Fonts.
+ *
+ *  - Body: Inter. doxygen-awesome's default --font-family is the OS system
+ *    stack, which on Linux lands on Cantarell/Roboto — both noticeably thin
+ *    at body sizes. Inter is designed for on-screen reading and renders
+ *    consistently across OSes.
+ *  - Monospace: JetBrains Mono. Same problem as the body font on Linux,
+ *    where the default mono stack falls back to Liberation Mono (thin and
+ *    bland). JetBrains Mono is screen-first and pairs naturally with Inter.
+ *
+ * The original system stacks are kept as fallbacks if the Google Fonts
+ * request fails (e.g. for an offline preview).
+ *
+ * Bumps --page-font-size from doxygen-awesome's 15.6px to 16px (the same as
+ * its mobile default) for a touch more breathing room.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
+
 html {
+  --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  --font-family-monospace: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --page-font-size: 16px;
   --page-background-color: #ffffff;
   --side-nav-background: #eeeeee;
   --card-background-color: #ffffff;

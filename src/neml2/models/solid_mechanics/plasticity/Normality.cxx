@@ -1,0 +1,107 @@
+// Copyright 2024, UChicago Argonne, LLC
+// All Rights Reserved
+// Software Name: NEML2 -- the New Engineering material Model Library, version 2
+// By: Argonne National Laboratory
+// OPEN SOURCE LICENSE (MIT)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+#include "neml2/models/solid_mechanics/plasticity/Normality.h"
+#include "neml2/misc/assertions.h"
+
+namespace neml2
+{
+register_NEML2_object(Normality);
+
+OptionSet
+Normality::expected_options()
+{
+  OptionSet options = Model::expected_options();
+  options.doc() = "Store the first derivatives of a scalar-valued function in given variables, "
+                  "i.e. \\f$ u_i = \\dfrac{f(\\boldsymbol{v})}{v_i} \\f$.";
+
+  options.add<std::string>("model", "The model which evaluates the scalar-valued function");
+  options.add<VariableName>("function", "Function to take derivative");
+  options.add<std::vector<VariableName>>("from", "Function arguments to take derivatives w.r.t.");
+  options.add<std::vector<VariableName>>("to", "Variables to store the first derivatives");
+
+  return options;
+}
+
+Normality::Normality(const OptionSet & options)
+  : Model(options),
+    _model(register_model("model")),
+    _f(options.get<VariableName>("function"))
+{
+  // Set up the conjugate pairs
+  const auto from = options.get<std::vector<VariableName>>("from");
+  const auto to = options.get<std::vector<VariableName>>("to");
+  neml_assert(from.size() == to.size(),
+              "The conjugate pairs should have a one-to-one correspondance. ",
+              from.size(),
+              " variables are being mapped to ",
+              to.size(),
+              " variables.");
+
+  // Declare output variables
+  for (size_t i = 0; i < from.size(); i++)
+    _conjugate_pairs.emplace(from[i], clone_output_variable(_model.input_variable(from[i]), to[i]));
+}
+
+void
+Normality::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
+  {
+    // Since normality maps the derivatives to the output variables, we need to evaluate the
+    // sub-model's derivatives if normality asks for output variables, and evaluate the sub-model's
+    // second derivatives if normality asks for derivatives of output variables.
+    AssemblyingNonlinearSystem assembling_nl_sys(false);
+    _model.forward_maybe_jit(false, out, dout_din);
+  }
+
+  const auto & fvar = _model.output_variable(_f);
+  for (const auto & [iname, ivar] : _model.input_variables())
+  {
+    auto itr = _conjugate_pairs.find(iname);
+    if (itr == _conjugate_pairs.end())
+      continue;
+
+    auto & ovar = *itr->second;
+
+    if (out)
+    {
+      if (!fvar.has_derivative(iname))
+      {
+        ovar.zero(fvar.options());
+        continue;
+      }
+      else
+        ovar = fvar.d(*ivar).tensor().base_reshape(ivar->base_sizes());
+    }
+
+    if (dout_din)
+      for (const auto & [jname, jvar] : _model.input_variables())
+        if (fvar.has_derivative(iname, jname))
+          ovar.d(input_variable(jname)) =
+              fvar.d2(*ivar, *jvar)
+                  .tensor()
+                  .base_reshape(utils::add_shapes(ivar->base_sizes(), jvar->base_sizes()));
+  }
+}
+} // namespace neml2
