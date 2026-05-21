@@ -16,6 +16,22 @@
  */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
 
+/* Doxygen's stock doxygen.css hardcodes a per-callout `.tt` background for
+ * every `dl.X .tt` selector (note, warning, todo, etc.) using fixed light-mode
+ * colors. doxygen-awesome's `code, span.tt` rule sets a theme-aware background
+ * via `--code-background`, but loses on specificity (0,1,1 vs 0,2,1) so the
+ * stock rules win and inline code inside any callout box has a frozen
+ * light-mode background, which is nearly invisible in dark mode.
+ *
+ * Override every variant in one shot, matching the stock specificity. */
+dl.warning .tt, dl.attention .tt, dl.important .tt,
+dl.note .tt, dl.remark .tt,
+dl.todo .tt, dl.test .tt, dl.bug .tt, dl.deprecated .tt,
+dl.invariant .tt, dl.pre .tt, dl.post .tt {
+  background-color: var(--code-background);
+  color: var(--code-foreground);
+}
+
 html {
   --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   --font-family-monospace: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
