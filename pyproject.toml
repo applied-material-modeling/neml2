@@ -29,14 +29,16 @@ wheel.install-dir = "neml2"
 NEML2_WHEEL = "ON"
 NEML2_TESTS = "OFF"
 NEML2_TOOLS = "ON"
-NEML2_WORK_DISPATCHER = "OFF"
+# NEML2_MPI defaults to OFF. The dispatcher submodule is always built; the
+# MPI-using objects (e.g. SimpleMPIScheduler) throw a clear error at
+# construction when invoked from a non-MPI wheel.
 NEML2_JSON = "ON"
 NEML2_CSV = "ON"
 
 [project]
 name = "neml2"
 # dependencies: neml2.version
-version = "2.1.5"
+version = "2.1.6"
 authors = [
   { name = "Mark Messner", email = "messner@anl.gov" },
   { name = "Gary Hu", email = "thu@anl.gov" },

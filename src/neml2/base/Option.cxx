@@ -159,10 +159,17 @@ _print_helper(std::ostream & os, const unsigned char * option)
 
 template <>
 void
+_print_helper(std::ostream & os, const bool * option)
+{
+  os << (*option ? "true" : "false");
+}
+
+template <>
+void
 _print_helper(std::ostream & os, const std::vector<bool> * option)
 {
   for (const auto p : *option)
-    os << static_cast<bool>(p) << " ";
+    os << (p ? "true" : "false") << " ";
 }
 } // namespace details
 } // namespace neml2

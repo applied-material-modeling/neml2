@@ -228,7 +228,7 @@ For a multi-model domain, add at least one regression scenario per *qualitativel
 
 ## Step 7 — Document the new domain
 
-Add a new `##` section to the appropriate `doc/content/modules/<submodule>.md` — for a domain inside an existing submodule (e.g. viscoelasticity inside `solid_mechanics`), no XML edits are needed; the in-page TOC builds itself. For a brand-new top-level physics module, both `doc/config/DoxygenLayout.xml` and `doc/config/DoxygenLayoutPython.xml` must be updated to make the page appear in the sidebar.
+Add a new `##` section to the appropriate `doc/content/modules/<submodule>.md` — for a domain inside an existing submodule (e.g. viscoelasticity inside `solid_mechanics`), no XML edits are needed; the in-page TOC builds itself. For a brand-new top-level physics module, edit `doc/config/DoxygenLayout.xml` to make the page appear in the sidebar (the Python sidebar is auto-derived from this file by `doc/scripts/gen_layout.py`).
 
 The full editorial guidance — what to write at what level of detail, the `@list-input:` directive and its `git ls-files` quirk, layout-XML registration, build verification gotchas — is in the `add-doc` skill. The short version: a domain doc should be a high-level intro + canonical names + pointer to `[Syntax Documentation](@ref syntax-models)` + one worked input-file example. Per-class detail belongs in `expected_options()` doc strings, not in the narrative — it ages out of sync with the registry otherwise.
 

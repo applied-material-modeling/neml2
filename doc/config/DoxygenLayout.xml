@@ -53,14 +53,10 @@
       <tab type="user" url="@ref tutorials-next-steps" title="Next steps"/>
     </tab>
     <tab type="usergroup" title="Syntax Documentation">
-      <tab type="user" url="@ref syntax-settings" title="[Settings]"/>
-      <tab type="user" url="@ref syntax-tensors" title="[Tensors]"/>
-      <tab type="user" url="@ref syntax-models" title="[Models]"/>
-      <tab type="user" url="@ref syntax-equationsystems" title="[EquationSystems]"/>
-      <tab type="user" url="@ref syntax-solvers" title="[Solvers]"/>
-      <tab type="user" url="@ref syntax-data" title="[Data]"/>
-      <tab type="user" url="@ref syntax-drivers" title="[Drivers]"/>
-      <tab type="user" url="@ref syntax-schedulers" title="[Schedulers]"/>
+      <!-- Auto-populated at build time by doc/scripts/gen_layout.py from
+           the syntax.json file emitted by the neml2-syntax CLI. The
+           placeholder below is the single substitution point. -->
+      <syntax-trees/>
     </tab>
     <tab type="usergroup" title="System Documentation">
       <tab type="user" url="@ref system-settings" title="Settings"/>

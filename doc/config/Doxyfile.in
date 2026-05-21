@@ -5,7 +5,8 @@
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = NEML2
-PROJECT_NUMBER         = 2.1.0
+# dependencies: neml2.version
+PROJECT_NUMBER         = 2.1.6
 OUTPUT_DIRECTORY       = ${build_dir}/build
 TOC_INCLUDE_HEADINGS   = 3
 
@@ -18,7 +19,7 @@ HIDE_SCOPE_NAMES       = YES
 SHOW_USED_FILES        = NO
 SHOW_FILES             = NO
 SHOW_NAMESPACES        = YES
-LAYOUT_FILE            = ${repo_root}/doc/config/DoxygenLayout.xml
+LAYOUT_FILE            = ${build_dir}/DoxygenLayout.xml
 
 #---------------------------------------------------------------------------
 # Configuration options related to warning and progress messages

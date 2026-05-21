@@ -103,7 +103,7 @@ jobs:
           # dependencies: torch.version
           torch-version: "2.12.0"
       - name: Configure
-        run: cmake --preset dev -GNinja -DNEML2_JSON=OFF -DNEML2_CSV=OFF -DNEML2_WORK_DISPATCHER=OFF -S .
+        run: cmake --preset dev -GNinja -DNEML2_JSON=OFF -DNEML2_CSV=OFF -DNEML2_MPI=OFF -S .
       - name: Build
         run: cmake --build --preset dev
 

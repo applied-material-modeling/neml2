@@ -36,13 +36,14 @@ namespace neml2
 /// Add a NEML2Object to the registry.  classname is the (unquoted)
 /// c++ class.  Each object/class should only be registered once.
 #define register_NEML2_object(classname)                                                           \
-  static const char dummyvar_for_registering_obj_##classname = Registry::add<classname>(#classname)
+  static const char dummyvar_for_registering_obj_##classname =                                     \
+      Registry::add<classname>(#classname, __FILE__)
 
 /// Add a NEML2Object to the registry and associate it with a given name.  classname is the
 /// (unquoted) c++ class.  Each object/class should only be registered once.
 #define register_NEML2_object_alias(classname, registryname)                                       \
   static const char dummyvar_for_registering_obj_##classname =                                     \
-      Registry::add<classname>(registryname)
+      Registry::add<classname>(registryname, __FILE__)
 
 class NEML2Object;
 
@@ -57,6 +58,10 @@ struct NEML2ObjectInfo
   OptionSet expected_options;
   /// Build method pointer
   BuildPtr build = nullptr;
+  /// Source file path, project-relative to `src/neml2/` (e.g.
+  /// "models/solid_mechanics/elasticity/LinearIsotropicElasticity.cxx").
+  /// Captured at registration time from `__FILE__` and normalized by Registry::add_inner.
+  std::string source_path;
 };
 
 /**
@@ -74,9 +79,10 @@ public:
 
   /// Add information on a NEML2Object to the registry.
   template <typename T>
-  static char add(const std::string & type)
+  static char add(const std::string & type, const char * source_file)
   {
-    add_inner(type, utils::demangle(typeid(T).name()), T::expected_options(), &build<T>);
+    add_inner(
+        type, utils::demangle(typeid(T).name()), T::expected_options(), &build<T>, source_file);
     return 0;
   }
 
@@ -92,7 +98,8 @@ public:
 private:
   Registry() = default;
 
-  static void add_inner(const std::string &, const std::string &, OptionSet, BuildPtr);
+  static void
+  add_inner(const std::string &, const std::string &, OptionSet, BuildPtr, const char *);
 
   template <typename T>
   static std::shared_ptr<NEML2Object> build(const OptionSet & options)

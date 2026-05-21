@@ -5,7 +5,7 @@
 ## Device
 
 NEML2 inherits the definition of *device* from PyTorch. It is an abstraction representing the physical device where data is stored and models executed. NEML2 is primarily concerned with two types of devices: CPU and CUDA.
-- **CPU** stands for Central Processing Unit, and it tranditionally handles a wide range of scientific computing tasks.
+- **CPU** stands for Central Processing Unit, and it traditionally handles a wide range of scientific computing tasks.
 - **CUDA** functions as a programming platform that allows a GPU (Graphics Processing Unit) to act as a coprocessor to the CPU to handle specific computing tasks with massive parallelization.
 
 NEML2 offers several high-level mechanisms for users to strategically interact with CPU and CUDA.
@@ -28,7 +28,7 @@ Two predefined device types are supported:
 - `neml2::kCUDA` which is equivalent to the string "cuda" (without device ID specification)
 
 \remark
-In general, the string representation is more flexible and is universally accepted in the input file whenever a device specification is required. Parsing the string, however, inposes a small runtime overhead, and therefore it should be replaced with the corresponding device type (if applicable) in performance-critical regions of your code.
+In general, the string representation is more flexible and is universally accepted in the input file whenever a device specification is required. Parsing the string, however, imposes a small runtime overhead, and therefore it should be replaced with the corresponding device type (if applicable) in performance-critical regions of your code.
 
 ## Evaluating the model on a different device
 
@@ -45,7 +45,7 @@ NEML2 uses CPU as the default device. The code below demonstrates how to evaluat
 - <b class="tab-title">C++</b>
   @list:cpp:evaluation_device/ex1.cxx
 - <b class="tab-title">Python</b>
-  @list:cpp:evaluation_device/ex2.py
+  @list:python:evaluation_device/ex2.py
 
 </div>
 

@@ -30,6 +30,7 @@ import sys
 import threading
 from pathlib import Path
 
+from gen_layout import generate_layouts
 from preprocess import preprocess
 from syntax_to_md import syntax_to_md
 from utils import merge_files, quiet_run_and_log, render_file
@@ -114,17 +115,19 @@ def sync_tutorial_outputs(tutorial_build_dir: Path, build_dir: Path):
                 logger.trace("copied: {}", dest_path.relative_to(build_dir))
 
 
-def extract_syntax(build_dir: Path):
+def extract_syntax(build_dir: Path) -> Path:
     # Regenerate syntax reference markdown from neml2-syntax output.
+    # Returns the path to the JSON file so downstream steps (e.g. layout
+    # generation) can reuse it without re-invoking the CLI.
     logger.info("")
     logger.info("extracting syntax...")
-    syntax_yml = build_dir / "syntax.yml"
-    success = quiet_run_and_log(["neml2-syntax", "--yaml", str(syntax_yml)])
-    if not success or not syntax_yml.exists():
-        logger.error("expected syntax file {} not found", syntax_yml)
+    syntax_json = build_dir / "syntax.json"
+    success = quiet_run_and_log(["neml2-syntax", "--json", str(syntax_json)])
+    if not success or not syntax_json.exists():
+        logger.error("expected syntax file {} not found", syntax_json)
         exit(1)
 
-    missing = syntax_to_md(syntax_yml, build_dir / "content" / "syntax", build_dir / "syntax.err")
+    missing = syntax_to_md(syntax_json, build_dir / "content" / "syntax", build_dir / "syntax.err")
     if missing > 0:
         with open(build_dir / "syntax.err") as log:
             content = log.read().strip()
@@ -132,6 +135,19 @@ def extract_syntax(build_dir: Path):
                 logger.warning("syntax extraction reported the following issues:")
                 for line in content.splitlines():
                     logger.warning(line)
+    return syntax_json
+
+
+def generate_layout_files(source_layout: Path, syntax_json: Path, build_dir: Path) -> Path:
+    # Expand the source DoxygenLayout.xml into the C++ and Python flavors
+    # consumed by Doxygen. Returns the generated C++ layout path so
+    # preprocess.py can parse the populated navindex.
+    logger.info("")
+    logger.info("generating doxygen layouts...")
+    cpp_layout, py_layout = generate_layouts(source_layout, syntax_json, build_dir)
+    logger.trace("  c++:    {}", cpp_layout)
+    logger.trace("  python: {}", py_layout)
+    return cpp_layout
 
 
 def preprocess_markdowns(doxygen_layout: Path, markdowns: list[Path], build_content_dir: Path):
@@ -300,7 +316,10 @@ if __name__ == "__main__":
     cfg_dir = doc_dir / "config"
     build_dir = Path(args.build_dir).resolve()
     tutorial_build_dir = Path(args.tutorial_build_dir).resolve()
-    doxygenlayout = cfg_dir / "DoxygenLayout.xml"
+    source_doxygenlayout = cfg_dir / "DoxygenLayout.xml"
+    # The build-time layout (populated with the syntax sub-tree) is what
+    # both preprocess.py and Doxygen consume.
+    generated_doxygenlayout = build_dir / "DoxygenLayout.xml"
     logger.info("")
     logger.info("directories:")
     logger.info("      root: {}", root_dir)
@@ -313,8 +332,8 @@ if __name__ == "__main__":
         logger.error("tutorial build directory not found: {}", tutorial_build_dir)
         logger.error("please build the tutorials before generating the docs by running examples.py")
         exit(1)
-    if not doxygenlayout.exists():
-        logger.error("DoxygenLayout.xml not found: {}", doxygenlayout)
+    if not source_doxygenlayout.exists():
+        logger.error("DoxygenLayout.xml not found: {}", source_doxygenlayout)
         exit(1)
 
     # Prepare build directory.
@@ -335,11 +354,12 @@ if __name__ == "__main__":
     logger.info("syncing tutorial output...")
     sync_tutorial_outputs(tutorial_build_dir, build_dir)
 
-    # Generate syntax pages.
-    extract_syntax(build_dir)
+    # Generate syntax pages + expand the layout templates.
+    syntax_json = extract_syntax(build_dir)
+    generate_layout_files(source_doxygenlayout, syntax_json, build_dir)
 
     # Preprocess updated markdown sources.
-    preprocess_markdowns(doxygenlayout, updated_markdowns, build_dir / "content")
+    preprocess_markdowns(generated_doxygenlayout, updated_markdowns, build_dir / "content")
 
     # Generate C++ and Python documentation.
     success = generate_cpp_docs(cfg_dir, root_dir, build_dir, neml2.__path__[0], args.doxygen)
@@ -395,7 +415,7 @@ if __name__ == "__main__":
             for path in updated_files:
                 logger.trace("  {}", path.as_posix())
 
-            preprocess_markdowns(doxygenlayout, updated_markdowns, build_dir / "content")
+            preprocess_markdowns(generated_doxygenlayout, updated_markdowns, build_dir / "content")
 
             ok_cpp = generate_cpp_docs(
                 cfg_dir, root_dir, build_dir, neml2.__path__[0], args.doxygen

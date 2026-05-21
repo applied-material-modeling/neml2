@@ -52,6 +52,9 @@ void _print_helper(std::ostream & os, const std::vector<std::vector<P>> *);
 /// The evil vector of bool :/
 template <>
 void _print_helper(std::ostream & os, const std::vector<bool> *);
+/// Specialization so that bools render as "true"/"false" instead of "1"/"0"
+template <>
+void _print_helper(std::ostream & os, const bool *);
 /// Specialization so that we don't print out unprintable characters
 template <>
 void _print_helper(std::ostream & os, const char *);

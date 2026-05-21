@@ -14,7 +14,7 @@ The configuration of NEML2 can be customized via a variety of high-level configu
 | NEML2_PCH             | <u>ON</u>, OFF          | Use precompiled headers to accelerate compilation |
 | NEML2_TESTS           | <u>ON</u>, OFF          | Master knob for including/excluding all tests     |
 | NEML2_TOOLS           | ON, <u>OFF</u>          | Create targets for utility binaries               |
-| NEML2_WORK_DISPATCHER | ON, <u>OFF</u>          | Enable work dispatcher                            |
+| NEML2_MPI             | ON, <u>OFF</u>          | Link the dispatcher submodule against MPI         |
 | NEML2_JSON            | ON, <u>OFF</u>          | Enable JSON support                               |
 | NEML2_CSV             | ON, <u>OFF</u>          | Enable CSV support                                |
 
@@ -42,7 +42,7 @@ The configure presets and their corresponding configure options are summarized b
 | NEML2_PCH                     | OFF   | ON    | ON       | ON              | ON               | ON      | ON        |
 | NEML2_TESTS                   | ON    | ON    | ON       | ON              | ON               | ON      | OFF       |
 | NEML2_TOOLS                   | ON    | ON    | OFF      | ON              | ON               | ON      | ON        |
-| NEML2_WORK_DISPATCHER         | ON    | ON    | ON       | ON              | ON               | ON      | ON        |
+| NEML2_MPI                     | ON    | ON    | ON       | ON              | ON               | ON      | ON        |
 | NEML2_JSON                    | ON    | ON    | ON       | ON              | ON               | ON      | ON        |
 | NEML2_CSV                     | ON    | ON    | ON       | ON              | ON               | ON      | ON        |
 
@@ -55,9 +55,9 @@ While the default presets should cover most of the development stages, it is som
 
 For example, the following command
 ```
-cmake --preset release -DNEML2_WORK_DISPATCHER=OFF -S .
+cmake --preset release -DNEML2_MPI=OFF -S .
 ```
-would use the configure preset "release" while disabling the work dispatcher, and the same could be achieved via environment variables or user presets.
+would use the configure preset "release" while disabling MPI support (the dispatcher submodule is still built; only the MPI-linked code is excluded). The same could be achieved via environment variables or user presets.
 
 ## Build presets
 

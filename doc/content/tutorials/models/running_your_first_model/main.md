@@ -32,7 +32,7 @@ There are three common ways of interacting with NEML2 input files:
 - Calling the appropriate APIs in a Python script
 - Using the NEML2 command-line tools
 
-These methods are discussed in the [getting started guide](#tutorials-getting-started). In this set of tutorials, the C++ example code and the Python script example code are shown side-by-side with tabs, and in most cases the C++ APIs and the Python APIs have a nice one-to-one correspondance.
+These methods are discussed in the [getting started guide](#tutorials-getting-started). In this set of tutorials, the C++ example code and the Python script example code are shown side-by-side with tabs, and in most cases the C++ APIs and the Python APIs have a nice one-to-one correspondence.
 
 
 ## Loading a model from the input file

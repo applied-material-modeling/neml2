@@ -31,9 +31,7 @@
 #include "neml2/models/Model.h"
 #include "neml2/base/Settings.h"
 
-#ifdef NEML2_WORK_DISPATCHER
 #include "neml2/dispatchers/ValueMapLoader.h"
-#endif
 
 namespace fs = std::filesystem;
 
@@ -283,14 +281,12 @@ TransientDriver::apply_ic()
 void
 TransientDriver::solve_step()
 {
-#ifdef NEML2_WORK_DISPATCHER
   if (_dispatcher)
   {
     ValueMapLoader loader(_result_in[_step_count], 0);
     _result_out[_step_count] = _dispatcher->run(loader);
     return;
   }
-#endif
 
   _result_out[_step_count] = _model->value(_result_in[_step_count]);
 }

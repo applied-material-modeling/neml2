@@ -13,7 +13,7 @@
         "NEML2_TESTS": "ON",
         "NEML2_TOOLS": "ON",
         "NEML2_WHEEL": "OFF",
-        "NEML2_WORK_DISPATCHER": "ON",
+        "NEML2_MPI": "ON",
         "NEML2_JSON": "ON",
         "NEML2_CSV": "ON"
       }

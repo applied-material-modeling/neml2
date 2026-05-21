@@ -24,7 +24,11 @@
 
 #pragma once
 
+#include "neml2/config.h"
+
+#ifdef NEML2_MPI
 #include <mpi.h>
+#endif
 
 #include "neml2/dispatchers/WorkScheduler.h"
 #include "neml2/base/Registry.h"
@@ -44,6 +48,10 @@ namespace neml2
  * The number of devices in the list must be greater than or equal to local communicator size.
  *
  * The list must not include the cpu.
+ *
+ * \note This scheduler is always registered with the NEML2 Registry so that the syntax
+ * catalog reflects its existence. When the library is built without `NEML2_MPI=ON` the
+ * constructor throws immediately, instructing the user to rebuild with MPI support.
  */
 class SimpleMPIScheduler : public WorkScheduler
 {
@@ -63,9 +71,11 @@ public:
 
   std::vector<Device> devices() const override { return {_available_devices[_device_index]}; }
 
+#ifdef NEML2_MPI
   virtual MPI_Comm & comm() { return _comm; }
 
   virtual void set_comm(MPI_Comm comm) { _comm = comm; }
+#endif
 
 protected:
   bool schedule_work_impl(Device &, std::size_t &) const override;
@@ -74,8 +84,10 @@ protected:
   bool all_work_completed() const override;
 
 private:
+#ifdef NEML2_MPI
   /// Figure out which device to use
   void determine_my_device();
+#endif
 
   /// The devices to dispatch to
   std::vector<Device> _available_devices;
@@ -86,8 +98,10 @@ private:
   /// The capacity of the device
   std::vector<std::size_t> _capacities;
 
+#ifdef NEML2_MPI
   /// Global communicator to use to split
   MPI_Comm _comm;
+#endif
 
   /// This rank's device
   std::size_t _device_index = 0;
@@ -96,6 +110,7 @@ private:
   std::size_t _load = 0;
 };
 
+#ifdef NEML2_MPI
 #define neml2_call_mpi(call)                                                                       \
   do                                                                                               \
   {                                                                                                \
@@ -108,5 +123,6 @@ private:
       throw NEMLException(std::string("MPI error: ") + err_string);                                \
     }                                                                                              \
   } while (0)
+#endif
 
 } // namespace neml2

@@ -37,7 +37,7 @@ After searching among existing models provided by NEML2, we are able to translat
 
 @list:input:implicit_model/input1.i
 
-Note the one-to-one correspondance between the models and the equations.
+Note the one-to-one correspondence between the models and the equations.
 
 The structure of the system of equations can be summarized using the code below.
 
@@ -85,7 +85,7 @@ The [ImplicitUpdate](#implicitupdate) model can then be invoked in the same way 
   Output:
   @list-output:ex3
 - <b class="tab-title">Python</b>
-  @list:cpp:implicit_model/ex4.py
+  @list:python:implicit_model/ex4.py
 
   Output:
   @list-output:ex4

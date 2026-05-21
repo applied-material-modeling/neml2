@@ -82,11 +82,35 @@ Registry::info(const std::string & name)
   return &it->second;
 }
 
+namespace
+{
+// Strip everything up to and including "src/neml2/" so the stored path is
+// project-relative (e.g. "models/solid_mechanics/elasticity/Foo.cxx"). If the
+// marker is absent (e.g. an out-of-tree registration), fall back to the
+// basename. Empty input yields an empty result.
+std::string
+normalize_source_path(const char * raw)
+{
+  if (raw == nullptr)
+    return {};
+  std::string path(raw);
+  if (path.empty())
+    return path;
+  static const std::string marker = "src/neml2/";
+  const auto pos = path.rfind(marker);
+  if (pos != std::string::npos)
+    return path.substr(pos + marker.size());
+  const auto slash = path.find_last_of("/\\");
+  return slash == std::string::npos ? path : path.substr(slash + 1);
+}
+} // namespace
+
 void
 Registry::add_inner(const std::string & type,
                     const std::string & ctype,
                     OptionSet options,
-                    BuildPtr build_ptr)
+                    BuildPtr build_ptr,
+                    const char * source_file)
 {
   options.type() = type;
   auto & reg = get();
@@ -94,6 +118,6 @@ Registry::add_inner(const std::string & type,
               "Duplicate registration found. Object of type ",
               type,
               " is being registered multiple times.");
-  reg._info[type] = NEML2ObjectInfo{ctype, options, build_ptr};
+  reg._info[type] = NEML2ObjectInfo{ctype, options, build_ptr, normalize_source_path(source_file)};
 }
 } // namespace neml2

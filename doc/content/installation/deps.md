@@ -77,6 +77,6 @@ The following table summarizes the configure options that determine when a depen
 | Catch2     | NEML2_TESTS                                 |
 | argparse   | NEML2_TOOLS                                 |
 | Gperftools | NEML2_TOOLS & CMAKE_BUILD_TYPE == Profiling |
-| MPI        | NEML2_WORK_DISPATCHER                       |
+| MPI        | NEML2_MPI                                   |
 | json       | NEML2_JSON                                  |
 | CSV Parser | NEML2_CSV                                   |
