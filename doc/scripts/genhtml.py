@@ -126,7 +126,7 @@ def extract_syntax(build_dir: Path):
 
     missing = syntax_to_md(syntax_yml, build_dir / "content" / "syntax", build_dir / "syntax.err")
     if missing > 0:
-        with open(build_dir / "syntax.err", "r") as log:
+        with open(build_dir / "syntax.err") as log:
             content = log.read().strip()
             if content:
                 logger.warning("syntax extraction reported the following issues:")
@@ -147,7 +147,7 @@ def preprocess_markdowns(doxygen_layout: Path, markdowns: list[Path], build_cont
 
 def emit_doxygen_warnings(log_path: Path):
     if log_path.exists() and log_path.stat().st_size > 0:
-        with open(log_path, "r") as f:
+        with open(log_path) as f:
             for line in f:
                 logger.warning(line.strip())
 
@@ -224,7 +224,10 @@ if __name__ == "__main__":
         "-L",
         type=str,
         default="INFO",
-        help="Set the logging level. Ranking by severity, options are TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, and CRITICAL",
+        help=(
+            "Set the logging level. Ranking by severity, options are TRACE, "
+            "DEBUG, INFO, SUCCESS, WARNING, ERROR, and CRITICAL"
+        ),
     )
     parser.add_argument("--build-dir", "-B", type=str, default="build/doc", help="Build directory")
     parser.add_argument(
@@ -349,8 +352,10 @@ if __name__ == "__main__":
         exit(1)
 
     # Manually copy logos into the build directory.
-    # This is necessary because logos are referenced with unsupported html tags (e.g., <picture>) in order to support light/dark mode switch.
-    # We need to preserve the relative path in the build directory so that both Doxygen and GitHub markdown could render them.
+    # This is necessary because logos are referenced with unsupported html tags
+    # (e.g., <picture>) in order to support light/dark mode switch.
+    # We need to preserve the relative path in the build directory so that both
+    # Doxygen and GitHub markdown could render them.
     logger.info("")
     logger.info("copying logos...")
     logo_light = doc_dir / "asset" / "logo_light.png"

@@ -25,16 +25,17 @@
 # THE SOFTWARE.
 
 import re
-import subprocess
-from loguru import logger
 import shutil
-from string import Template
+import subprocess
 from pathlib import Path
+from string import Template
+
+from loguru import logger
 
 
 def pad_leading_space(line: list[str], space: int) -> list[str]:
     """Pads the leading space of a line by the given amount."""
-    return [" " * space + l for l in line]
+    return [" " * space + s for s in line]
 
 
 def quiet_run_and_log(command: list[str], **kwargs) -> bool:
@@ -65,7 +66,7 @@ def quiet_run_and_log(command: list[str], **kwargs) -> bool:
 def merge_files(files: list[Path], dest: Path):
     with open(dest, "w") as out:
         for file in files:
-            with open(file, "r") as f:
+            with open(file) as f:
                 out.write(f.read())
                 out.write("\n")
 

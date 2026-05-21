@@ -1,3 +1,4 @@
+# neml2
 [Drivers]
   [unit]
     type = ModelUnitTest
@@ -14,7 +15,7 @@
 [Tensors]
   [S]
     type = SR2
-    values = "1 2 3 4 5 6
+    values = '1 2 3 4 5 6
               2 3 4 4 5 6
               3 4 5 4 5 6
               4 5 6 4 5 6
@@ -25,16 +26,16 @@
               -3 -4 -5 -4 -5 -6
               -4 -5 -6 -4 -5 -6
               -5 -6 -7 -4 -5 -6
-              -6 -7 -8 -4 -5 -6"
+              -6 -7 -8 -4 -5 -6'
     batch_shape = '(4,3)'
     intermediate_dimension = 2
   []
   [S_mean]
     type = SR2
-    values = "2 3 4 4 5 6
+    values = '2 3 4 4 5 6
               5 6 7 4 5 6
               -2 -3 -4 -4 -5 -6
-              -5 -6 -7 -4 -5 -6"
+              -5 -6 -7 -4 -5 -6'
     batch_shape = '(4)'
   []
 []

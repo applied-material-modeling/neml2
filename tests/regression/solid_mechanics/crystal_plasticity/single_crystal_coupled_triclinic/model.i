@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [end_time]
     type = LinspaceScalar
@@ -103,12 +104,12 @@
 
   [C]
     type = SSR4
-    values = "134615.3846153846 57692.30769230767 57692.30769230767 10000.0 5000.0 15000.0
+    values = '134615.3846153846 57692.30769230767 57692.30769230767 10000.0 5000.0 15000.0
              57692.30769230767 134615.3846153846 57692.30769230767 4000.0 20000.0 2000.0
              57692.30769230767 57692.30769230767 134615.3846153846 8000.0 1000.0 25000.0
              10000.0 4000.0 8000.0 76923.07692307692 2000.0 1000.0
              5000.0 20000.0 1000.0 2000.0 76923.07692307692 1500.0
-             15000.0 2000.0 25000.0 1000.0 1500.0 76923.07692307692"
+             15000.0 2000.0 25000.0 1000.0 1500.0 76923.07692307692'
   []
 []
 
@@ -200,10 +201,10 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = "euler_rodrigues elasticity orientation_rate resolved_shear
+    models = 'euler_rodrigues elasticity orientation_rate resolved_shear
               elastic_stretch plastic_deformation_rate plastic_spin
               sum_slip_rates slip_rule slip_strength voce_hardening
-              integrate_slip_hardening integrate_elastic_strain integrate_orientation"
+              integrate_slip_hardening integrate_elastic_strain integrate_orientation'
   []
 []
 

@@ -22,7 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from typing import Optional
 
 from ._parser import ModelEntry
 from ._syntax import SyntaxDB
@@ -42,7 +41,8 @@ The response should contain:\
 3. A description of any parameters set in the input and their physical significance. \
 4. Any assumptions, limitations, or special features of the model that are evident from the input.\
 The explanation should be concise but informative, aiming for clarity and insight rather than an \
-exhaustive line-by-line commentary. Use analogies or examples where helpful to illustrate complex concepts.\
+exhaustive line-by-line commentary. Use analogies or examples where helpful to illustrate complex \
+concepts.\
 """
 
 
@@ -89,9 +89,9 @@ def _format_entry(entry: ModelEntry, db: SyntaxDB, include_params: bool, indent:
 def build_prompt(
     parsed: dict,
     db: SyntaxDB,
-    sections: Optional[list] = None,
+    sections: list | None = None,
     include_params: bool = True,
-    system_context: Optional[str] = None,
+    system_context: str | None = None,
 ) -> tuple:
     """
     Build a ``(system_prompt, user_prompt)`` pair from a parsed input file.

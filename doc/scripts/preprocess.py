@@ -26,12 +26,11 @@
 
 import sys
 from pathlib import Path
-from loguru import logger
 
 import layout
 import listing
-
-from utils import *
+from loguru import logger
+from utils import pad_leading_space
 
 
 def preprocess(doxygen_layout: Path, mds: list[Path], content_dir: Path):
@@ -45,7 +44,7 @@ def preprocess(doxygen_layout: Path, mds: list[Path], content_dir: Path):
     for md in mds:
         logger.trace("preprocessing {}", md.relative_to(content_dir))
         new_lines = []
-        with open(md, "r") as f:
+        with open(md) as f:
             lines = f.readlines()
 
             # Get the page reference
@@ -58,7 +57,6 @@ def preprocess(doxygen_layout: Path, mds: list[Path], content_dir: Path):
 
             # Process directives
             for line in lines[1:]:
-
                 # Subsection list
                 if line.strip() == "@insert-subsection-list" and ref is not None:
                     content = layout.get_subsection_list(ref, navindex)

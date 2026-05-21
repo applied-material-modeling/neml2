@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [times]
     type = ScalarVTestTimeSeries
@@ -80,7 +81,8 @@
   []
   [flow_rate]
     type = PerzynaPlasticFlowRate
-    reference_stress = 155.22903539478642 # 200 * (2/3)^(5/8)
+    reference_stress = 155.22903539478642
+    # 200 * (2/3)^(5/8)
     exponent = 4
   []
   [eprate]
@@ -90,16 +92,20 @@
     type = ChabochePlasticHardening
     back_stress = 'X1'
     C = 5000
-    g = 8.246615467370033 # 10.1 * sqrt(2/3)
-    A = 1.224744871391589e-06 # 1.0e-6 * sqrt(3/2)
+    g = 8.246615467370033
+    # 10.1 * sqrt(2/3)
+    A = 1.224744871391589e-06
+    # 1.0e-6 * sqrt(3/2)
     a = 1.2
   []
   [X2rate]
     type = ChabochePlasticHardening
     back_stress = 'X2'
     C = 1000
-    g = 4.245782220824175 # 5.2 * sqrt(2/3)
-    A = 1.224744871391589e-10 # 1.0e-10 * sqrt(3/2)
+    g = 4.245782220824175
+    # 5.2 * sqrt(2/3)
+    A = 1.224744871391589e-10
+    # 1.0e-10 * sqrt(3/2)
     a = 3.2
   []
   [Eprate]

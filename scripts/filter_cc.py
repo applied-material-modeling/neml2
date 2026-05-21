@@ -24,25 +24,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from pathlib import Path
-import sys
-import json
-import subprocess
 import argparse
 import concurrent.futures
 import itertools
+import json
 import multiprocessing
+import subprocess
+import sys
+from pathlib import Path
 
 
 def batch(alist, n=1):
-    l = len(alist)
-    for ndx in range(0, l, n):
-        yield alist[ndx : min(ndx + n, l)]
+    total = len(alist)
+    for ndx in range(0, total, n):
+        yield alist[ndx : min(ndx + n, total)]
 
 
 def filter_compile_commands(compile_commands, srcs, headers, include_dirs, exclude_dirs):
-    included = lambda f: any(f.startswith(d) for d in include_dirs)
-    excluded = lambda f: any(f.startswith(d) for d in exclude_dirs)
+    def included(f):
+        return any(f.startswith(d) for d in include_dirs)
+
+    def excluded(f):
+        return any(f.startswith(d) for d in exclude_dirs)
+
     filtered = []
     for cmd in compile_commands:
         if not included(cmd["file"]) or excluded(cmd["file"]):
@@ -98,21 +102,29 @@ if __name__ == "__main__":
         "--include-dirs",
         type=str,
         default="src/neml2",
-        help="A comma-separated list of directories. Only include compile commands for files in these directories. Specify these directories relative to the root of the repository.",
+        help=(
+            "A comma-separated list of directories. Only include compile "
+            "commands for files in these directories. Specify these "
+            "directories relative to the root of the repository."
+        ),
     )
     parser.add_argument(
         "-e",
         "--exclude-dirs",
         type=str,
         default="",
-        help="A comma-separated list of directories. Exclude compile commands for files in these directories. Specify these directories relative to the root of the repository.",
+        help=(
+            "A comma-separated list of directories. Exclude compile commands "
+            "for files in these directories. Specify these directories "
+            "relative to the root of the repository."
+        ),
     )
 
     # parse cliargs
     args = parser.parse_args()
     original = Path(args.compile_commands)
     if not original.exists():
-        print("Error: {} does not exist.".format(original))
+        print(f"Error: {original} does not exist.")
         sys.exit(1)
     output = Path(args.output)
     sha1 = args.diff[0]
@@ -149,6 +161,6 @@ if __name__ == "__main__":
     filtered = list(itertools.chain.from_iterable([f.result() for f in futures]))
 
     # write filtered compile_commands.json
-    print("\nFiltered files {:d}/{:d}".format(len(filtered), len(compile_commands)))
+    print(f"\nFiltered files {len(filtered):d}/{len(compile_commands):d}")
     with open(output, "w") as f:
         json.dump(filtered, f, indent=2)

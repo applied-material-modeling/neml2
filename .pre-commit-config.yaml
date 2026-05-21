@@ -6,12 +6,17 @@ repos:
     -   id: clang-format
         files: \.(cxx|h)$
         pass_filenames: true
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    # dependencies: black.version
-    rev: 25.11.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # dependencies: ruff.version
+    rev: v0.15.13
     hooks:
-      - id: black
-        files: ^python/(neml2|tests)/.*\.py$
+      - id: ruff
+        args: [--fix]
+        files: \.py$
+        exclude: ^(contrib|build|installed|python/examples)/
+      - id: ruff-format
+        files: \.py$
+        exclude: ^(contrib|build|installed|python/examples)/
   - repo: https://github.com/mwouts/jupytext
     # dependencies: jupytext.version
     rev: v1.19.1
@@ -20,6 +25,11 @@ repos:
         args: [--sync]
         files: ^python/examples/.*\.ipynb$
         pass_filenames: true
+  - repo: https://github.com/applied-material-modeling/neml2-hit
+    # dependencies: nmhit.version
+    rev: v0.1.5
+    hooks:
+      - id: nmhit-format
   - repo: local
     hooks:
       - id: check-copyright

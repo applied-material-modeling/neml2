@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [end_time]
     type = LogspaceScalar
@@ -178,9 +179,9 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = "isoharden kinharden mandel_stress overstress vonmises yield normality
+    models = 'isoharden kinharden mandel_stress overstress vonmises yield normality
               flow_rate eprate Eprate X1rate X2rate X3rate X4rate Erate Eerate elasticity
-              integrate_stress integrate_ep integrate_X1 integrate_X2 integrate_X3 integrate_X4"
+              integrate_stress integrate_ep integrate_X1 integrate_X2 integrate_X3 integrate_X4'
   []
 []
 

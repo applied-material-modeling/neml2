@@ -1,3 +1,4 @@
+# neml2
 # Stress relaxation of a Wiechert (generalized Maxwell) element with two branches under a ramped
 # strain. Each Maxwell branch contributes its own relaxation time scale, and the equilibrium spring
 # carries the long-time stress.

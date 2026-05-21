@@ -23,11 +23,9 @@
 # THE SOFTWARE.
 
 import dataclasses
-import os
 import re
 import warnings
 from pathlib import Path
-from typing import Optional, Union
 
 _LATEX_RE = re.compile(r"\\f\$(.*?)\\f\$", re.DOTALL)
 
@@ -47,7 +45,7 @@ class ParamInfo:
     ftype: str
     """Field type: 'NONE', 'INPUT', 'OUTPUT', or 'PARAMETER'."""
     doc: str
-    default: Optional[str]
+    default: str | None
 
 
 @dataclasses.dataclass
@@ -74,10 +72,10 @@ class SyntaxDB:
         syntax_path: Explicit path to ``syntax.yml``.
     """
 
-    def __init__(self, syntax_path: Union[str, Path]):
+    def __init__(self, syntax_path: str | Path):
         self._path: Path = Path(syntax_path)
-        self._by_qualified: Optional[dict] = None
-        self._by_short: Optional[dict] = None
+        self._by_qualified: dict | None = None
+        self._by_short: dict | None = None
         self._loaded = False
 
     @property
@@ -112,7 +110,7 @@ class SyntaxDB:
             self._by_short = {}
             return
 
-        with open(self._path, "r") as f:
+        with open(self._path) as f:
             raw = yaml.safe_load(f)
 
         if not isinstance(raw, dict):
@@ -175,7 +173,7 @@ class SyntaxDB:
             if short not in self._by_short:
                 self._by_short[short] = info
 
-    def lookup(self, type_name: str) -> Optional[TypeInfo]:
+    def lookup(self, type_name: str) -> TypeInfo | None:
         """
         Look up a type by its short name or fully-qualified name.
 

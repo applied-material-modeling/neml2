@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [a]
     type = Scalar
@@ -112,11 +113,11 @@
   # The implicit model that we solve for
   [implicit_rate]
     type = ComposedModel
-    models = "euler_rodrigues slip_strength voce_hardening
+    models = 'euler_rodrigues slip_strength voce_hardening
               mult_decomp gl_strain svk
               resolved_shear slip_rule sum_slip_rates
               plastic_velgrad plastic_defgrad_rate
-              integrate_slip_hardening integrate_plastic_defgrad"
+              integrate_slip_hardening integrate_plastic_defgrad'
   []
 []
 

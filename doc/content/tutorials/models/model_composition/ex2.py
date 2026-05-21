@@ -1,6 +1,7 @@
+import torch
+
 import neml2
 from neml2.tensors import SR2
-import torch
 
 torch.set_default_dtype(torch.double)
 factory = neml2.load_input("input.i")

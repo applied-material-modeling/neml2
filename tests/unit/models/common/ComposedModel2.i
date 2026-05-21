@@ -1,15 +1,16 @@
+# neml2
 [Drivers]
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = "foo foo_rate foo~1
+    input_Scalar_names = 'foo foo_rate foo~1
                           bar bar_rate bar~1
                           baz baz_rate baz~1
-                          t t~1"
-    input_Scalar_values = "2 5 0
+                          t t~1'
+    input_Scalar_values = '2 5 0
                            -1 -3 0
                            3 8 1
-                           1.3 1.1"
+                           1.3 1.1'
     output_Scalar_names = 'foo_bar_baz_residual'
     output_Scalar_values = '1.0'
   []

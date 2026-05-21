@@ -1,3 +1,4 @@
+# neml2
 [Models]
   [mandel_stress]
     type = IsotropicMandelStress

@@ -1,5 +1,6 @@
 import torch
-from neml2.tensors import Scalar, SR2, SSR4
+
+from neml2.tensors import SR2, SSR4, Scalar
 
 # Number of samples
 ns = 2

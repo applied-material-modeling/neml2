@@ -168,6 +168,21 @@ The C++ source code is formatted using `clang-format`. A `.clang-format` file is
 1. Point the plugin/extension to use the `.clang-format` file located at NEML2's repository root.
 2. Associate file extensions `.h` and `.cxx` with C++.
 
-The Python scripts must be formatted using `black`. Formatting requirements are specified under the `[black]` section in `pyproject.toml`. All pull requests will be run through `clang-format` and `black` to ensure formatting consistency.
+Python sources are both linted and formatted by [`ruff`](https://docs.astral.sh/ruff/). Configuration lives under the `[tool.ruff]` section in `pyproject.toml`: the enabled rule families are `E`, `F`, `W`, `I` (import sorting), `B` (bugbear), and `UP` (pyupgrade), and `ruff format` is used as a black-compatible formatter. All pull requests are gated through `clang-format` (C++) and both `ruff` + `ruff-format` (Python) by the `lint` job in `.github/workflows/python.yml`.
 
-The "cc" preset (or the `CMAKE_EXPORT_COMPILE_COMMANDS` configure option) can be used to generate the compilation database `compile_commands.json`. A symbolic link to `compile_commands.json` will be created at the project root. The compilation database is needed by many static analysis tools. Visual Studio Code users are encouraged to use the [clangd](https://github.com/clangd/vscode-clangd) extension. For C++ linting, a `.clang-tidy` file is provided at the repository root to specify expected checks. Python linting is not currently enforced.
+To run the Python checks locally:
+```shell
+pre-commit run ruff ruff-format --all-files     # via the configured hook
+ruff check .                                    # or directly
+ruff format .
+```
+
+Python type checking is performed by [`pyright`](https://microsoft.github.io/pyright/) (the same engine that drives Pylance). Configuration lives under the `[tool.pyright]` section in `pyproject.toml`. The default scope excludes the `python/` package itself so contributors can run pyright without first building a wheel; the CI `typecheck` job in `.github/workflows/python.yml` installs the wheel and runs `neml2-stub` before invoking pyright so that `import neml2` resolves via the generated stub files.
+
+To run pyright locally:
+```shell
+pyright                                # default scope (scripts, tutorials, tests, benchmarks)
+pyright python                         # also typecheck the package (requires `pip install ".[dev]"` first)
+```
+
+The "cc" preset (or the `CMAKE_EXPORT_COMPILE_COMMANDS` configure option) can be used to generate the compilation database `compile_commands.json`. A symbolic link to `compile_commands.json` will be created at the project root. The compilation database is needed by many static analysis tools. Visual Studio Code users are encouraged to use the [clangd](https://github.com/clangd/vscode-clangd) extension. For C++ linting, a `.clang-tidy` file is provided at the repository root to specify expected checks.

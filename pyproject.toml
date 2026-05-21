@@ -67,6 +67,12 @@ dev = [
   # doc
   # dependencies: pybind11_stubgen.version_min
   "pybind11-stubgen>=2.5.5",
+  # lint + format
+  # dependencies: ruff.version
+  "ruff==0.15.13",
+  # typecheck
+  # dependencies: pyright.version
+  "pyright==1.1.409",
   "PyYAML",
   "matplotlib",
   "numpy",
@@ -93,8 +99,57 @@ neml2-stub = "neml2._cli:stub"
 [tool.uv]
 no-build-isolation-package = ["neml2"]
 
-[tool.black]
+[tool.ruff]
 line-length = 100
+# Tracks `requires-python` above; format is ruff's "pyXY" rather than "X.Y", so
+# scripts/dep_manager.py cannot tie this automatically — bump by hand when the
+# minimum Python bumps.
+target-version = "py310"
+extend-exclude = ["contrib", "build", "installed", "python/examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Re-export shims: __init__.py files routinely import names for the sole
+# purpose of exposing them on the package surface, and `from .x import *`
+# is the only practical pattern when the source is a compiled pybind11
+# submodule with ~100 public names.
+"**/__init__.py" = ["F401", "F403", "F405"]
+# Pedagogical scripts; short ambiguous names and the occasional unused loop
+# index are part of how the tutorials read.
+"doc/content/tutorials/**/*.py" = ["E741", "B007"]
+
+[tool.pyright]
+# Default scope is everything outside the package itself, so contributors can
+# run pyright without first building a neml2 wheel. The CI `typecheck` job
+# additionally targets `python/` after installing the wheel + generating
+# stubs (see .github/workflows/python.yml).
+include = [
+  "scripts",
+  "doc/scripts",
+  "benchmark",
+  "tests",
+  "doc/content/tutorials",
+]
+exclude = [
+  # pyright's built-in defaults (specifying `exclude` replaces them, so they
+  # must be repeated here to keep .git/, __pycache__/, dotfiles, etc. ignored)
+  "**/node_modules",
+  "**/__pycache__",
+  "**/.*",
+  # project-specific
+  "contrib",
+  "build",
+  "installed",
+  "python/examples",
+]
+# dependencies: python.version_min
+pythonVersion = "3.10"
+# torch's own stubs don't re-export common symbols (`tensor`, `device`,
+# `float64`, ...) via __all__, so `from torch import X` floods this rule
+# with false positives. Qualified `torch.X` access still works as expected.
+reportPrivateImportUsage = "none"
 
 [tool.cibuildwheel]
 build = "cp310-* cp311-* cp312-* cp313-* cp314-*"

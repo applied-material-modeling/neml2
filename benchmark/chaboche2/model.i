@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [end_time]
     type = LogspaceScalar

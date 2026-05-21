@@ -24,14 +24,16 @@
 
 """Test adjoint correctness"""
 
-import pytest
+import math
 from pathlib import Path
+
+import pytest
 import torch
-import neml2
-from neml2.tensors import Scalar, SR2, Tensor
 from neml2.es import SparseVector
 from pyzag import nonlinear
-import math
+
+import neml2
+from neml2.tensors import SR2, Scalar, Tensor
 
 
 class DerivativeCheck:

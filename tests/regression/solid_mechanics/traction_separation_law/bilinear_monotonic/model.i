@@ -1,3 +1,4 @@
+# neml2
 # Bilinear mixed-mode TSL with BK propagation criterion under a monotonic
 # mixed-mode opening ramp. The jump is taken from below delta_init through
 # the softening regime up to past delta_final, exercising the elastic,

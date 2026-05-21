@@ -24,15 +24,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import sys
 import argparse
-import os
-from pathlib import Path
-import shutil
-from utils import quiet_run_and_log, fix_math_for_doxygen
-import subprocess
 import concurrent.futures
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
 import nbformat
+from utils import fix_math_for_doxygen, quiet_run_and_log
 
 try:
     from loguru import logger
@@ -59,7 +60,7 @@ logger.success("  hash:    {}", neml2.__hash__)
 
 logger.info("")
 logger.info("checking if the imported neml2 package is editable...")
-if not "site-packages" in neml2.__path__[0]:
+if "site-packages" not in neml2.__path__[0]:
     logger.error("the imported neml2 package appears to be an editable installation.")
     logger.error("please install neml2 in non-editable mode before building the docs.")
     exit(1)
@@ -67,25 +68,25 @@ if not "site-packages" in neml2.__path__[0]:
 
 def run_example(path: Path, cmd_gen) -> tuple[bool, str]:
     msg = "\n"
-    msg += "changing directory to: {}\n".format(path.parent)
-    msg += "running example: {}\n".format(path.name)
+    msg += f"changing directory to: {path.parent}\n"
+    msg += f"running example: {path.name}\n"
     cmd = cmd_gen(path)
     result = subprocess.run(cmd, cwd=path.parent, capture_output=True, text=True)
     if result.returncode == 0:
         # write stdout to log file
         log_file = path.with_suffix(".out")
-        msg += "writing output to: {}\n".format(log_file)
+        msg += f"writing output to: {log_file}\n"
         with open(log_file, "w") as f:
             f.write(result.stdout)
     else:
-        msg += "error running example: {}\n".format(path.relative_to(build_dir))
+        msg += f"error running example: {path.relative_to(build_dir)}\n"
         msg += "command failed with return code {}: {}\n".format(result.returncode, " ".join(cmd))
         msg += "stdout:\n"
         for line in result.stdout.splitlines():
-            msg += "  {}\n".format(line)
+            msg += f"  {line}\n"
         msg += "stderr:\n"
         for line in result.stderr.splitlines():
-            msg += "  {}\n".format(line)
+            msg += f"  {line}\n"
         return False, msg
     return True, msg
 
@@ -109,7 +110,8 @@ def run_examples_in_pool(examples: list[Path], cmd_gen, max_workers: int) -> tup
 def check_nb_execution(nb_path: Path) -> list[int]:
     """
     Get the number of unexecuted code cells in a jupyter notebook.
-    This is used to check if a notebook has been executed before converting it to markdown for doxygen.
+    This is used to check if a notebook has been executed before converting it
+    to markdown for doxygen.
     """
     nb = nbformat.read(nb_path, as_version=4)
     unexecuted = []
@@ -139,7 +141,10 @@ if __name__ == "__main__":
         "-L",
         type=str,
         default="INFO",
-        help="Set the logging level. Ranking by severity, options are TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, and CRITICAL",
+        help=(
+            "Set the logging level. Ranking by severity, options are TRACE, "
+            "DEBUG, INFO, SUCCESS, WARNING, ERROR, and CRITICAL"
+        ),
     )
     parser.add_argument(
         "--build-dir", "-B", type=str, default="build/tutorials", help="Build directory"
@@ -178,7 +183,9 @@ if __name__ == "__main__":
         "-j",
         type=int,
         default=0,
-        help="Maximum number of examples to run in parallel. Default is min(8, number of CPU cores)",
+        help=(
+            "Maximum number of examples to run in parallel. Default is min(8, number of CPU cores)"
+        ),
     )
 
     args = parser.parse_args()
@@ -243,7 +250,7 @@ if __name__ == "__main__":
         logger.info("configuring c++ tutorials...")
         command = [
             args.cmake_path,
-            "-Dneml2_ROOT={}".format(neml2.__path__[0]),
+            f"-Dneml2_ROOT={neml2.__path__[0]}",
             "-S",
             str(tutorial_dir),
             "-B",

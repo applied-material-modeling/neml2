@@ -1,3 +1,4 @@
+# neml2
 [Models]
   [Erate]
     type = SR2VariableRate

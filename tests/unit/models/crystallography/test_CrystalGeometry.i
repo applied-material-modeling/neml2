@@ -1,3 +1,4 @@
+# neml2
 [Data]
   [scgeom]
     type = CrystalGeometry
@@ -21,9 +22,9 @@
     type = Vec
     batch_shape = '(3)'
     intermediate_dimension = 1
-    values = "1.2 0.0 0.0
+    values = '1.2 0.0 0.0
               0.0 1.2 0.0
-              0.0 0.0 1.2"
+              0.0 0.0 1.2'
   []
   [class_432]
     type = SymmetryFromOrbifold

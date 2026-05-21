@@ -8,8 +8,8 @@ O = dict(res.output.named_buffers())
 
 # Strain and stress
 nstep = 20
-strain = [I["{}.strain".format(i)][0].item() for i in range(nstep)]
-stress = [0] + [O["{}.stress".format(i)][0].item() for i in range(1, nstep)]
+strain = [I[f"{i}.strain"][0].item() for i in range(nstep)]
+stress = [0] + [O[f"{i}.stress"][0].item() for i in range(1, nstep)]
 
 # Plot
 plt.plot(strain, stress, "ko-")

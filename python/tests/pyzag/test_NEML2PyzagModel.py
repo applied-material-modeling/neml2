@@ -23,12 +23,13 @@
 # THE SOFTWARE.
 
 
-import pytest
 from pathlib import Path
 
+import pytest
 import torch
+from pyzag import chunktime, nonlinear
+
 import neml2
-from pyzag import nonlinear, chunktime
 
 
 def test_definition():
@@ -71,11 +72,11 @@ def test_change_parameter_shape():
 @pytest.mark.parametrize("input", ["elastic_model", "viscoplastic_model", "km_mixed_model"])
 def test_compare(input):
     pwd = Path(__file__).parent
-    nmodel = neml2.load_nonlinear_system(pwd / "models" / "{}.i".format(input), "eq_sys")
+    nmodel = neml2.load_nonlinear_system(pwd / "models" / f"{input}.i", "eq_sys")
     pmodel = neml2.pyzag.NEML2PyzagModel(nmodel)
 
     # Reference to compare against
-    ref = torch.jit.load(pwd / "gold" / "{}.pt".format(input))
+    ref = torch.jit.load(pwd / "gold" / f"{input}.pt")
     input = dict(ref.input.named_buffers())
     output = dict(ref.output.named_buffers())
     forces = torch.cat([input[v] for v in pmodel.fvars], -1)

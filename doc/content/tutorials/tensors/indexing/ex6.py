@@ -1,5 +1,6 @@
-from neml2.tensors import Scalar
 import torch
+
+from neml2.tensors import Scalar
 
 torch.set_default_dtype(torch.double)
 

@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [times]
     type = ScalarVTestTimeSeries
@@ -132,10 +133,10 @@
 
   [implicit_rate]
     type = ComposedModel
-    models = "euler_rodrigues elasticity orientation_rate
+    models = 'euler_rodrigues elasticity orientation_rate
               resolved_shear elastic_stretch plastic_deformation_rate
               plastic_spin sum_slip_rates slip_rule slip_strength voce_hardening
-              integrate_slip_hardening integrate_elastic_strain integrate_orientation"
+              integrate_slip_hardening integrate_elastic_strain integrate_orientation'
   []
 []
 

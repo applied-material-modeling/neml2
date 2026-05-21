@@ -1,3 +1,4 @@
+# neml2
 # Verification of CamanhoDavilaTraction (and the shared BilinearMixedModeTraction
 # base class) under pure-shear loading with delta_n = 0 throughout. This is the only
 # scenario that exercises the compression-branch `delta_final_default = 2 * GIIc / S`

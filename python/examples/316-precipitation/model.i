@@ -1,3 +1,4 @@
+# neml2
 # Two-phase KWN precipitation model for 316H stainless steel,
 # following the precipitation sub-model of
 #   Hu et al., "Effect of microstructure evolution on the creep properties of
@@ -24,28 +25,34 @@
 
 # Initial matrix mass fractions (paper Section 4.1.1: deduct initial 0.8 vol% Cr23C6)
 x0_Cr = 0.1625
-x0_C  = 0.000375
+x0_C = 0.000375
 x0_Mo = 0.0233
 
 # Diffusivity pre-exponentials in µm²/hr (= m²/s × 1e12 × 3600)
 # Paper Table 2: D_Cr = 1.5e-4 exp(-240 kJ/mol / RT) m²/s
 #                D_Mo = 7.4e-4 exp(-283 kJ/mol / RT) m²/s
 D0_Cr = 5.4e11
-Q_Cr  = 240000
+Q_Cr = 240000
 D0_Mo = 2.664e12
-Q_Mo  = 283000
+Q_Mo = 283000
 
 # Surface energies in J/µm² (= J/m² × 1e-12)
-gamma_C = 3e-13    # 0.3 J/m² for carbide
-gamma_L = 2.5e-13  # 0.25 J/m² for Laves
+gamma_C = 3e-13
+# 0.3 J/m² for carbide
+gamma_L = 2.5e-13
+# 0.25 J/m² for Laves
 
 # Molar volumes in µm³/mol (= m³/mol × 1e18)
-Vm_C = 6.0e12   # 6e-6 m³/mol for carbide
-Vm_L = 2.0e13   # 2e-5 m³/mol for Laves
+Vm_C = 6.0e12
+# 6e-6 m³/mol for carbide
+Vm_L = 2.0e13
+# 2e-5 m³/mol for Laves
 
 # Nucleation site densities in /µm³ (= /m³ × 1e-18)
-N0_C = 1.0e-3   # 1e15 /m³ for carbide
-N0_L = 5.0e-4   # 5e14 /m³ for Laves
+N0_C = 1.0e-3
+# 1e15 /m³ for carbide
+N0_L = 5.0e-4
+# 5e14 /m³ for Laves
 
 # Universal constants
 R_g = 8.314

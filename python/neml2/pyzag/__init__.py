@@ -22,4 +22,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from .interface import *
+from .interface import NEML2PyzagModel, change_lag_order, lag_order
+
+__all__ = [
+    "NEML2PyzagModel",
+    "change_lag_order",
+    "lag_order",
+]

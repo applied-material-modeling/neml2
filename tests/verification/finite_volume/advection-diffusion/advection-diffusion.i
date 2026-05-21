@@ -1,3 +1,4 @@
+# neml2
 D = 0.01
 v = 0.5
 l = -0.0
@@ -41,7 +42,7 @@ final_center = 0.75
     points = 'edges'
   []
   [ic]
-    type = GaussianScalar 
+    type = GaussianScalar
     points = 'centers'
     width = ${w}
     height = ${c0}
@@ -55,9 +56,9 @@ final_center = 0.75
   []
 
   [result]
-    type = GaussianScalar 
+    type = GaussianScalar
     points = 'centers'
-    width = ${final_width} 
+    width = ${final_width}
     height = ${h_final}
     center = ${final_center}
   []
@@ -78,7 +79,8 @@ final_center = 0.75
     Scalar_names = 'output.concentration'
     Scalar_values = 'result'
     atol = 1e-2
-    rtol = 1e-2 # The time integration also adds diffusion...
+    rtol = 1e-2
+    # The time integration also adds diffusion...
     time_steps = '499'
   []
 []
@@ -117,21 +119,21 @@ final_center = 0.75
     edge_values = 'v_edge'
   []
   [diffusive_flux]
-      type = FiniteVolumeGradient
-      u = 'concentration'
-      prefactor = 'D'
-      dx = 'dx_centers'
+    type = FiniteVolumeGradient
+    u = 'concentration'
+    prefactor = 'D'
+    dx = 'dx_centers'
   []
   [advective_flux]
-      type = FiniteVolumeUpwindedAdvectiveFlux
-      u = 'concentration'
-      v_edge = 'v_edge'
+    type = FiniteVolumeUpwindedAdvectiveFlux
+    u = 'concentration'
+    v_edge = 'v_edge'
   []
   [reaction]
-      type = ScalarLinearCombination
-      from = 'concentration'
-      to = 'R'
-      weights = '${l}'
+    type = ScalarLinearCombination
+    from = 'concentration'
+    to = 'R'
+    weights = '${l}'
   []
   [total_flux]
     type = ScalarLinearCombination

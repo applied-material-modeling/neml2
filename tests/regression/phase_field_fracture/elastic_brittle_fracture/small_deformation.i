@@ -1,3 +1,4 @@
+# neml2
 ## Applying KKT conditions with the help of Fisher-Burmeister complementary condition
 
 [Drivers]
@@ -51,7 +52,8 @@
   []
   [GcbylbyCo]
     type = Scalar
-    values = 0.0152 # Gc/l/Co with Gc = 95 N/m, l = 3.125 mm, Co = 2
+    values = 0.0152
+    # Gc/l/Co with Gc = 95 N/m, l = 3.125 mm, Co = 2
   []
 []
 

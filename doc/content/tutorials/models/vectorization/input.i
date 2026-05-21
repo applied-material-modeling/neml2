@@ -1,3 +1,4 @@
+# neml2
 [Models]
   [my_model]
     type = LinearIsotropicElasticity

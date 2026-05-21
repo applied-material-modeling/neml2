@@ -24,8 +24,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 if __name__ == "__main__":
     root = Path(sys.argv[1])

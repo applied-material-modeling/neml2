@@ -38,12 +38,11 @@ Quick start::
 """
 
 from pathlib import Path
-from typing import Optional, Union
 
-from ._parser import ModelEntry, parse_input
-from ._syntax import SyntaxDB
-from ._prompt import build_prompt
 from ._llm import LLMClient
+from ._parser import ModelEntry, parse_input
+from ._prompt import build_prompt
+from ._syntax import SyntaxDB
 
 
 def _resolve_db(syntax_db) -> SyntaxDB:
@@ -53,8 +52,8 @@ def _resolve_db(syntax_db) -> SyntaxDB:
 
 
 def describe(
-    input_file: Union[str, Path],
-    syntax_db: Union[Path, SyntaxDB],
+    input_file: str | Path,
+    syntax_db: Path | SyntaxDB,
     include_params: bool = True,
 ) -> tuple:
     """
@@ -83,11 +82,11 @@ def describe(
 
 
 def explain(
-    input_file: Union[str, Path],
-    syntax_db: Union[Path, SyntaxDB],
+    input_file: str | Path,
+    syntax_db: Path | SyntaxDB,
     client: LLMClient,
     include_params: bool = True,
-    system_context: Optional[str] = None,
+    system_context: str | None = None,
 ) -> str:
     """
     Parse a NEML2 input file and return an LLM-generated natural-language

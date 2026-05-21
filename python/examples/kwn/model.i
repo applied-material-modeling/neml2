@@ -1,3 +1,4 @@
+# neml2
 # Units: length = microns, time = hours
 
 # Initial setup: Al with 4 wt% Cu
@@ -6,7 +7,8 @@ x0_Cu = 0.01738
 
 # Diffusivity ~ 0.150 exp[-30200/(RT)] cm^2/s which gives 5.4e4 exp[-30200/(RT)] mm^2/hour
 D0 = 5.4e4
-Q = 30200 # J/mol
+Q = 30200
+# J/mol
 
 # The interpolated chemical potentials are given in J/mol
 
@@ -14,7 +16,8 @@ Q = 30200 # J/mol
 gamma = 0.1e-6
 
 # Molar volume of AlCu2
-Vm = 21.55e3 # mm^3/mol
+Vm = 21.55e3
+# mm^3/mol
 
 # Nucleation site density, let's assume 1e24 per mm^3 
 N0 = 1e24
@@ -287,5 +290,5 @@ N0 = 1e24
     type = ComposedModel
     models = 'model_scaled volume_fraction x_Cu'
     additional_outputs = 'number_density vf x_Cu'
-   []
+  []
 []

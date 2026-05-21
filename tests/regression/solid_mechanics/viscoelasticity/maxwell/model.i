@@ -1,3 +1,4 @@
+# neml2
 # Maxwell stress relaxation: a single Maxwell element (spring + dashpot in series) under a ramped
 # strain. The Maxwell dashpot rate equation is composed with linear isotropic elasticity by
 # decomposing the total strain into elastic and viscous parts and applying the elasticity to the

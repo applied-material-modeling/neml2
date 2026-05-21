@@ -1,3 +1,4 @@
+# neml2
 [Drivers]
   [unit]
     type = ModelUnitTest
@@ -36,7 +37,7 @@
   []
   [p_correct]
     type = Scalar
-    values = "8.51589828 9.31426374 9.93521466 10.43197539 10.83841599"
+    values = '8.51589828 9.31426374 9.93521466 10.43197539 10.83841599'
     batch_shape = '(5)'
   []
 []

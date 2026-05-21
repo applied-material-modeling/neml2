@@ -1,3 +1,4 @@
+# neml2
 [Tensors]
   [a]
     type = Tensor
@@ -26,10 +27,10 @@
   []
   [e]
     type = SFR3
-    values = "1 2 3 4 5 6 7 8 9
+    values = '1 2 3 4 5 6 7 8 9
               1 2 3 4 5 6 7 8 9
               -1 -2 -3 -4 -5 -6 -7 -8 -9
-              -1 -2 -3 -4 -5 -6 -7 -8 -9"
+              -1 -2 -3 -4 -5 -6 -7 -8 -9'
     batch_shape = '(2,1,1)'
     intermediate_dimension = 1
   []

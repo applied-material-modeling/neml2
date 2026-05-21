@@ -22,21 +22,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from functools import reduce
 from math import sqrt
 
-from functools import reduce
-
+import matplotlib.pyplot as plt
+import scipy.spatial as ss
 import torch
+from matplotlib.ticker import NullLocator
+
+from neml2 import crystallography, tensors
 
 torch.set_default_dtype(torch.float64)
 
-import matplotlib.pyplot as plt
-from matplotlib.ticker import NullLocator
-
-import scipy.spatial as ss
-
-from neml2 import crystallography
-from neml2 import tensors
+_CPU = torch.device("cpu")
 
 
 def arbitrary_hemispherical_quadrature(points, rtol=1e-5, atol=1e-8):
@@ -149,7 +147,7 @@ available_projections = {
 }
 
 
-def symmetry_operators_as_R2(orbifold, device=torch.device("cpu"), include_inversion=False):
+def symmetry_operators_as_R2(orbifold, device=_CPU, include_inversion=False):
     """Return the symmetry operators for a given symmetry group as a batch of rank two tensors
 
     Args:
@@ -157,7 +155,8 @@ def symmetry_operators_as_R2(orbifold, device=torch.device("cpu"), include_inver
 
     Keyword Args:
         device (torch.device): which device to place the tensors
-        include_inversion (bool): whether to include inversion in the symmetry operators, default False
+        include_inversion (bool): whether to include inversion in the symmetry
+            operators, default False
     """
     candidates = crystallography.symmetry(orbifold, device=device).torch()
     if include_inversion:
@@ -183,15 +182,19 @@ def pole_figure_odf(
         pole (torch.tensor or neml2.tensors.Vec): pole to project
 
     Keyword Args:
-        projection (str): which polar projection to use, options are "stereographic" and "lambert"
-        crystal_symmetry (str): string giving the orbifold notation for the crystal symmetry to apply to the base orientations, default "1"
+        projection (str): which polar projection to use, options are
+            "stereographic" and "lambert"
+        crystal_symmetry (str): string giving the orbifold notation for the
+            crystal symmetry to apply to the base orientations, default "1"
         nradial (int): number of radial points to use
         ntheta (int): number of angular points to use
         nquad (int): number of points to integrate the pole figure
         nchunk (int): subbatch size to use in evaluating odf
-        offset_fraction (float): fraction of the radial range to offset the pole figure to avoid singularities
+        offset_fraction (float): fraction of the radial range to offset the
+            pole figure to avoid singularities
     Returns:
-        (values, mesh): tuple of the projected values and the (theta, R) mesh points used to make a contour plot
+        (values, mesh): tuple of the projected values and the (theta, R) mesh
+            points used to make a contour plot
     """
     # Do some setup
     if not isinstance(pole, tensors.Vec):
@@ -283,14 +286,17 @@ def pretty_plot_pole_figure_odf(
         pole (torch.tensor or neml2.tensors.Vec): pole to project
 
     Keyword Args:
-        projection (str): which polar projection to use, options are "stereographic" and "lambert"
-        crystal_symmetry (str): string giving the orbifold notation for the crystal symmetry to apply to the base orientations, default "1"
+        projection (str): which polar projection to use, options are
+            "stereographic" and "lambert"
+        crystal_symmetry (str): string giving the orbifold notation for the
+            crystal symmetry to apply to the base orientations, default "1"
         nradial (int): number of radial points to use
         ntheta (int): number of angular points to use
         nquad (int): number of points to integrate the pole figure
         nchunk (int): subbatch size to use in evaluating odf
         limits ((float,float)): (vmin, vmax) to pass to contourf
-        ncontour (int): number of contours to use, only used if limits is provided
+        ncontour (int): number of contours to use, only used if limits is
+            provided
     """
     vals, mesh = pole_figure_odf(
         odf, pole, projection, crystal_symmetry, nradial, ntheta, nquad, nchunk
@@ -331,17 +337,23 @@ def pole_figure_points(
     """Project crystal orientations to points on a pole figure
 
     Args:
-        orientations (torch.tensor or neml2.tensors.Rot): tensor of orientations as *modified* Rodrigues
-            parameters in the *active* convention with arbitrary batch shape.
-        pole (torch.tensor or neml2.tensors.Vec): pole to project, must broadcast with orientations
+        orientations (torch.tensor or neml2.tensors.Rot): tensor of orientations
+            as *modified* Rodrigues parameters in the *active* convention with
+            arbitrary batch shape.
+        pole (torch.tensor or neml2.tensors.Vec): pole to project, must
+            broadcast with orientations
 
     Keyword Args:
-        projection (str): which polar projection to use, options are "stereographic" and "lambert"
-        crystal_symmetry (str): string giving the orbifold notation for the crystal symmetry to apply to the base orientations, default "1"
-        sample_symmetry (str): string giving the orbifold notation for the sample symmetry to apply to the projected points, default "1"
+        projection (str): which polar projection to use, options are
+            "stereographic" and "lambert"
+        crystal_symmetry (str): string giving the orbifold notation for the
+            crystal symmetry to apply to the base orientations, default "1"
+        sample_symmetry (str): string giving the orbifold notation for the
+            sample symmetry to apply to the projected points, default "1"
 
     Returns:
-        torch.tensor: tensor with same batch shape as orientations but with end dimension (2,) giving each point
+        torch.tensor: tensor with same batch shape as orientations but with end
+            dimension (2,) giving each point
     """
     # Do some setup
     if not isinstance(pole, tensors.Vec):
@@ -362,7 +374,8 @@ def pole_figure_points(
     )
     sample_poles = sample_symmetry_operators * sample_poles.dynamic.unsqueeze(-1)
 
-    # For my reference, at this point we have a tensor of (arbitrary_batch_shape,) + (crystal_symmetry,) + (sample_symmetry,) + (3,)
+    # For my reference, at this point we have a tensor of shape
+    # (arbitrary_batch_shape,) + (crystal_symmetry,) + (sample_symmetry,) + (3,)
     sample_poles = sample_poles.torch()
 
     # Eliminate poles on the lower hemisphere
@@ -393,14 +406,19 @@ def pretty_plot_pole_figure_points(
     """Project and then make a pretty plot for a pole figure given points as input
 
     Args:
-        orientations (torch.tensor or neml2.tensors.Rot): tensor of orientations as *modified* Rodrigues
-            parameters in the *active* convention with arbitrary batch shape.
-        pole (torch.tensor or neml2.tensors.Vec): pole to project, must broadcast with orientations
+        orientations (torch.tensor or neml2.tensors.Rot): tensor of orientations
+            as *modified* Rodrigues parameters in the *active* convention with
+            arbitrary batch shape.
+        pole (torch.tensor or neml2.tensors.Vec): pole to project, must
+            broadcast with orientations
 
     Keyword Args:
-        projection (str): which polar projection to use, options are "stereographic" and "lambert"
-        crystal_symmetry (str): string giving the orbifold notation for the crystal symmetry to apply to the base orientations, default "1"
-        sample_symmetry (str): string giving the orbifold notation for the sample symmetry to apply to the projected points, default "1"
+        projection (str): which polar projection to use, options are
+            "stereographic" and "lambert"
+        crystal_symmetry (str): string giving the orbifold notation for the
+            crystal symmetry to apply to the base orientations, default "1"
+        sample_symmetry (str): string giving the orbifold notation for the
+            sample symmetry to apply to the projected points, default "1"
         point_size (float): size of matplotlib points to plot
     """
     points = pole_figure_points(orientations, pole, projection, crystal_symmetry, sample_symmetry)
@@ -430,12 +448,13 @@ class IPFReduction:
         v2 (torch.tensor or tensors.Vec): third limit
     """
 
-    def __init__(
-        self,
-        v0=tensors.Vec(torch.tensor([0, 0, 1.0])),
-        v1=tensors.Vec(torch.tensor([1.0, 0, 1.0])),
-        v2=tensors.Vec(torch.tensor([1.0, 1, 1])),
-    ):
+    def __init__(self, v0=None, v1=None, v2=None):
+        if v0 is None:
+            v0 = tensors.Vec(torch.tensor([0, 0, 1.0]))
+        if v1 is None:
+            v1 = tensors.Vec(torch.tensor([1.0, 0, 1.0]))
+        if v2 is None:
+            v2 = tensors.Vec(torch.tensor([1.0, 1, 1]))
         # Do some setup
         if not isinstance(v0, tensors.Vec):
             v0 = tensors.Vec(v0)
@@ -483,21 +502,26 @@ def inverse_pole_figure_points(
     projection="stereographic",
     crystal_symmetry="1",
     sample_symmetry="1",
-    reduction=IPFReduction(),
+    reduction=None,
 ):
     """Project points onto an inverse pole figure
 
     Args:
-        orientations (torch.tensor or neml2.tensors.Rot): tensor of orientation as *modified* Rodrigues
-            parameters in the *active* convention with arbitrary batch shape
-        direction (torch.tensor or neml2.tensors.Vec): pole to project, must broadcast with orientations
+        orientations (torch.tensor or neml2.tensors.Rot): tensor of orientation
+            as *modified* Rodrigues parameters in the *active* convention with
+            arbitrary batch shape
+        direction (torch.tensor or neml2.tensors.Vec): pole to project, must
+            broadcast with orientations
 
     Keyword Args:
         projection (str): which projection to use
         crystal_symmetry (str): crystal symmetry to apply
         sample_symmetry (str): sample symmetry to appy
-        reduction (IPFReduction): function to reduce the poles to a fundamental region
+        reduction (IPFReduction): function to reduce the poles to a fundamental
+            region
     """
+    if reduction is None:
+        reduction = IPFReduction()
     # Do some setup
     if not isinstance(direction, tensors.Vec):
         direction = tensors.Vec(direction)
@@ -531,18 +555,20 @@ def pretty_plot_inverse_pole_figure(
     projection="stereographic",
     crystal_symmetry="1",
     sample_symmetry="1",
-    reduction=IPFReduction(),
+    reduction=None,
     point_size=10.0,
-    axis_labels=["100", "110", "111"],
+    axis_labels=None,
     nline=100,
     lw=2.0,
 ):
     """Project and then make a pretty plot for an inverse pole figure
 
     Args:
-        orientations (torch.tensor or neml2.tensors.Rot): tensor of orientation as *modified* Rodrigues
-            parameters in the *active* convention with arbitrary batch shape
-        direction (torch.tensor or neml2.tensors.Vec): pole to project, must broadcast with orientations
+        orientations (torch.tensor or neml2.tensors.Rot): tensor of orientation
+            as *modified* Rodrigues parameters in the *active* convention with
+            arbitrary batch shape
+        direction (torch.tensor or neml2.tensors.Vec): pole to project, must
+            broadcast with orientations
 
     Keyword Args:
         projection (str): which projection to use
@@ -554,6 +580,8 @@ def pretty_plot_inverse_pole_figure(
         nline (int): resolution for drawing lines
         lw (float): line width for lines
     """
+    if axis_labels is None:
+        axis_labels = ["100", "110", "111"]
     points = inverse_pole_figure_points(
         orientations,
         direction,

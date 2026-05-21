@@ -22,10 +22,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import pytest
 
-# fixtures
-from common import *
+import torch
+from common import TensorShape, assert_tensor_shape
+
 import neml2
 
 

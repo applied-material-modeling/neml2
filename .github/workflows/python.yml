@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  black:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,13 +23,42 @@ jobs:
         with:
           # dependencies: python.version_min
           python-version: "3.10"
-      - name: Run black style check
+      - name: Run ruff lint
         uses: pre-commit/action@v3.0.1
         with:
-          extra_args: black --all-files
+          extra_args: ruff --all-files
+      - name: Run ruff format check
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: ruff-format --all-files
+      - name: Run nmhit-format check
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: nmhit-format --all-files
+
+  typecheck:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/neml2-ci
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.0"
+          cpu-torch: true
+      - name: Install
+        run: pip install ".[dev]" -v
+      - name: Generate Python stubs
+        run: neml2-stub
+      - name: Run pyright
+        run: pyright
 
   test:
-    needs: black
+    needs: lint
     strategy:
       fail-fast: false
       matrix:
@@ -61,7 +90,7 @@ jobs:
           comment_mode: off
 
   wheels:
-    needs: black
+    needs: lint
     strategy:
       fail-fast: false
       matrix:

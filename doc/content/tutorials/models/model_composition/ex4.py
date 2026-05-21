@@ -1,5 +1,4 @@
 import neml2
-from neml2.tensors import SR2
 
 factory = neml2.load_input("input_composed.i")
 eq1 = factory.get_model("eq1")

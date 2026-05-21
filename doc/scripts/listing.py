@@ -24,10 +24,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import re
 import sys
 from pathlib import Path
-import re
-from typing import Union
+
 from loguru import logger
 
 
@@ -46,7 +46,7 @@ def git_fuzzy_find_file(filename: str) -> Path:
     try:
         root = Path(__file__).parent.parent.parent  # repo root
         result = subprocess.run(
-            ["git", "ls-files", "*{}".format(filename)],
+            ["git", "ls-files", f"*{filename}"],
             capture_output=True,
             text=True,
             check=True,
@@ -68,7 +68,7 @@ def git_fuzzy_find_file(filename: str) -> Path:
 SECTION_OPEN_RE = re.compile(r"\[(.+?)\]")  # matches [Name], captures Name
 
 
-def parse_input(input: Path) -> dict[str, list[tuple[int, Union[int, None], dict]]]:
+def parse_input(input: Path) -> dict[str, list[tuple[int, int | None, dict]]]:
     """
     Parses a HIT input file to extract its section structure.
     Args:
@@ -78,7 +78,7 @@ def parse_input(input: Path) -> dict[str, list[tuple[int, Union[int, None], dict
         and values are lists of tuples (start_line, end_line, children_dict) for each occurrence.
     """
 
-    with open(input, "r") as f:
+    with open(input) as f:
         lines = f.readlines()
 
     # Internal representation for each node:
@@ -177,7 +177,7 @@ def build_nested_dict(paths, sep="/"):
     return root
 
 
-def list_hit_input(ifile: str, spec: Union[str, None] = None) -> list[str]:
+def list_hit_input(ifile: str, spec: str | None = None) -> list[str]:
     """
     Lists the contents of a HIT input file or a specific section.
 
@@ -189,7 +189,7 @@ def list_hit_input(ifile: str, spec: Union[str, None] = None) -> list[str]:
     """
     input_path = git_fuzzy_find_file(ifile)
     structure = parse_input(input_path)
-    with open(input_path, "r") as f:
+    with open(input_path) as f:
         lines = f.readlines()
 
     if spec is None:
@@ -206,7 +206,7 @@ def list_hit_input(ifile: str, spec: Union[str, None] = None) -> list[str]:
     return content.splitlines(keepends=True)
 
 
-def list_text(file: str, language: str, label: Union[str, None]) -> list[str]:
+def list_text(file: str, language: str, label: str | None) -> list[str]:
     """
     Lists the contents of a text file or a specific labeled section.
 
@@ -218,7 +218,7 @@ def list_text(file: str, language: str, label: Union[str, None]) -> list[str]:
         A string representing the contents of the specified labeled section.
     """
     path = git_fuzzy_find_file(file)
-    with open(path, "r") as f:
+    with open(path) as f:
         lines = f.readlines()
 
     if label is not None:
@@ -257,7 +257,7 @@ def list_output(dir: Path, ex: str) -> list[str]:
         A string representing the contents of the specified labeled section.
     """
     path = dir / f"{ex}.out"
-    with open(path, "r") as f:
+    with open(path) as f:
         lines = f.readlines()
     content = "".join(lines)
     content = f"```\n{content}```\n"

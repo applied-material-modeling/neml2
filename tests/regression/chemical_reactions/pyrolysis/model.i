@@ -1,16 +1,24 @@
+# neml2
 nbatch = '(1)'
 nstep = 100
 
 # reaction mechanism
-Y = 0.5835777126099713 # yield
-n = 1.0 # reaction order
-k0 = 0.04210147513030456 # reaction rate coefficient
-Q = 21191.61425138572 # J/mol
-R = 8.31446261815324 # J/K/mol
+Y = 0.5835777126099713
+# yield
+n = 1.0
+# reaction order
+k0 = 0.04210147513030456
+# reaction rate coefficient
+Q = 21191.61425138572
+# J/mol
+R = 8.31446261815324
+# J/K/mol
 
 # initial mass fraction
-wc0 = 0 # char (residue)
-wb0 = 1 # binder (precursor)
+wc0 = 0
+# char (residue)
+wb0 = 1
+# binder (precursor)
 
 # control volume
 mu = 0.2
@@ -154,9 +162,9 @@ zeta = 0.05
   []
   [model]
     type = ComposedModel
-    models = "solve_reaction reaction_rate
+    models = 'solve_reaction reaction_rate
               binder_rate char_rate gas_rate open_pore_rate
-              binder char gas open_pore"
+              binder char gas open_pore'
     additional_outputs = 'alpha'
   []
 []

@@ -157,9 +157,7 @@ def _parse_wheel(filename: str) -> tuple[str, str, str] | None:
 
 def _fetch_pypi_torch_files() -> list[dict]:
     """Return the `files` list from PyPI's simple-JSON endpoint for torch."""
-    req = urllib.request.Request(
-        PYPI_TORCH_SIMPLE, headers={"Accept": PYPI_SIMPLE_ACCEPT}
-    )
+    req = urllib.request.Request(PYPI_TORCH_SIMPLE, headers={"Accept": PYPI_SIMPLE_ACCEPT})
     with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.load(resp)
     return data.get("files", [])
@@ -195,9 +193,7 @@ def _write_compat(build_torch: str, combinations: list[dict]) -> None:
     ]
     for row in combinations:
         lines.append(
-            f'  - {{ torch: "{row["torch"]}", '
-            f'python: "{row["python"]}", '
-            f'os: {row["os"]} }}'
+            f'  - {{ torch: "{row["torch"]}", python: "{row["python"]}", os: {row["os"]} }}'
         )
     COMPAT_FILE.write_text("\n".join(lines) + "\n")
 
@@ -286,9 +282,7 @@ def cmd_check(_args) -> None:
             if key not in row:
                 errors.append(f"{loc}: missing '{key}'")
         if row.get("python") not in valid_pys:
-            errors.append(
-                f"{loc}: python={row.get('python')!r} not in {sorted(valid_pys)}"
-            )
+            errors.append(f"{loc}: python={row.get('python')!r} not in {sorted(valid_pys)}")
         if row.get("os") not in SUPPORTED_OSES:
             errors.append(f"{loc}: os={row.get('os')!r} not in {SUPPORTED_OSES}")
         # Bounds check: every row must be within the advertised range so the
@@ -351,13 +345,14 @@ def cmd_expand(args) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _render_table(combinations: list[dict]) -> str:
+def _render_table(combinations: list[dict[str, str]]) -> str:
     """Return a Markdown view of the matrix, grouped by OS then Python."""
     pretty_os = {"ubuntu-latest": "linux", "macos-latest": "macOS"}
 
     grouped: dict[str, dict[str, list[str]]] = {}
     for r in combinations:
-        os_label = pretty_os.get(r["os"], r["os"])
+        os_raw = r["os"]
+        os_label = pretty_os.get(os_raw, os_raw)
         grouped.setdefault(os_label, {}).setdefault(r["python"], []).append(r["torch"])
 
     if not grouped:
@@ -406,8 +401,7 @@ def cmd_render(args) -> None:
     if args.check:
         if target.read_text() != new_text:
             print(
-                _c(RED, "FAIL")
-                + f": {target} is out of sync; run "
+                _c(RED, "FAIL") + f": {target} is out of sync; run "
                 f"`python scripts/compat_matrix.py render --in-place {target}`",
                 file=sys.stderr,
             )

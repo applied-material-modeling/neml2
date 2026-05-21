@@ -34,7 +34,6 @@ Post-build wheel repair invoked by cibuildwheel's repair-wheel-command:
 Usage: python repair_wheel.py {wheel} {dest_dir}
 """
 
-import os
 import shutil
 import subprocess
 import sys
@@ -49,10 +48,7 @@ def _torch_excludes() -> list[str]:
 
         lib_dir = Path(torch.__file__).parent / "lib"
         return [
-            flag
-            for f in lib_dir.iterdir()
-            if ".so" in f.name
-            for flag in ("--exclude", f.name)
+            flag for f in lib_dir.iterdir() if ".so" in f.name for flag in ("--exclude", f.name)
         ]
     except ImportError:
         return []
@@ -64,8 +60,9 @@ def _generate_stubs(wheel: Path) -> list[Path]:
         [sys.executable, "-m", "pip", "install", str(wheel)],
         check=True,
     )
-    import neml2
     from neml2._stub import _generate_stub
+
+    import neml2
 
     _generate_stub()
     return list(Path(neml2.__path__[0]).glob("*.pyi"))

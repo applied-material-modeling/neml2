@@ -23,9 +23,15 @@
 # THE SOFTWARE.
 
 import pytest
+import torch
+from common import (
+    TensorShape,
+    assert_binary_op,
+    assert_tensor_shape,
+    assert_unary_op,
+    make_sample,
+)
 
-# fixtures
-from common import *
 import neml2
 
 
