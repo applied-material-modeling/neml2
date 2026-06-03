@@ -41,7 +41,13 @@ from typing import TypeVar
 
 import torch
 
-from neml2.types._base import TensorWrapper, align_scalar_base, align_sub_batch
+from neml2.types._base import (
+    DynamicBatchView,
+    SubBatchView,
+    TensorWrapper,
+    align_scalar_base,
+    align_sub_batch,
+)
 from neml2.types.miller_index import MillerIndex
 from neml2.types.r2 import R2
 from neml2.types.rot import Rot
@@ -117,60 +123,89 @@ def _normalize_dims(dims: int | list[int] | tuple[int, ...], start: int, end: in
     return sorted((_normalize_dim(d, start, end) for d in dims), reverse=True)
 
 
-def dynamic_sum(
-    a: TensorWrapper, dims: int | list[int] | tuple[int, ...] = 0, keepdim: bool = False
-) -> TensorWrapper:
-    """Sum over dynamic-batch axes, preserving tensor type and sub-batch rank."""
-    end = len(a.dynamic_batch_shape)
-    dn = _normalize_dims(dims, 0, end)
-    data = torch.sum(a.data, dim=dn, keepdim=keepdim)
-    return type(a)(data, sub_batch_ndim=a.sub_batch_ndim)
+# ---- region-reduction free functions ----
+#
+# Each takes a region view (``t.dynamic_batch`` or ``t.sub_batch``) and
+# reduces over axes in that region. Dispatch is via isinstance; the view
+# carries everything needed to translate the region-relative ``dim`` to
+# an absolute axis and to compute the right ``sub_batch_ndim`` on the
+# result. The view's generic wrapper-type parameter ``_WT`` is threaded
+# through so ``sum(t.sub_batch, ...)`` returns ``type(t)`` precisely —
+# no ``cast`` needed at call sites.
+#
+# ``t.batch`` is rejected because it would silently straddle the
+# dynamic/sub-batch split; ``t.base`` is rejected because reducing base
+# axes would change the wrapper type.
 
 
-def sub_batch_sum(
-    a: TensorWrapper, dims: int | list[int] | tuple[int, ...] = 0, keepdim: bool = False
-) -> TensorWrapper:
-    """Sum over intermediate/sub-batch axes, preserving tensor type."""
-    start = len(a.dynamic_batch_shape)
-    end = start + a.sub_batch_ndim
+def _reduce_view_bounds(
+    view: DynamicBatchView[_TW] | SubBatchView[_TW], op_name: str
+) -> tuple[_TW, int, int]:
+    """Validate ``view`` and return ``(wrapper, region_start, region_end)`` on success."""
+    if isinstance(view, DynamicBatchView):
+        w = view._w
+        return w, 0, len(w.dynamic_batch_shape)
+    if isinstance(view, SubBatchView):
+        w = view._w
+        start = len(w.dynamic_batch_shape)
+        return w, start, start + w.sub_batch_ndim
+    raise TypeError(
+        f"{op_name} expects t.dynamic_batch or t.sub_batch view; got {type(view).__name__}. "
+        "(base reductions change wrapper type; batch reductions would straddle the "
+        "dynamic/sub-batch split.)"
+    )
+
+
+def sum(  # noqa: A001 — intentionally shadows builtin, callers import explicitly
+    view: DynamicBatchView[_TW] | SubBatchView[_TW],
+    dims: int | list[int] | tuple[int, ...] = 0,
+    keepdim: bool = False,
+) -> _TW:
+    """Sum over axes of a region view.
+
+    ``view`` must be ``t.dynamic_batch`` or ``t.sub_batch``. When
+    summing over a sub-batch axis with ``keepdim=False``, the result's
+    ``sub_batch_ndim`` drops by the number of reduced axes. Returns
+    the same wrapper type as the view's underlying wrapper.
+    """
+    w, start, end = _reduce_view_bounds(view, "sum")
     dn = _normalize_dims(dims, start, end)
-    data = torch.sum(a.data, dim=dn, keepdim=keepdim)
-    return type(a)(data, sub_batch_ndim=a.sub_batch_ndim if keepdim else a.sub_batch_ndim - len(dn))
+    data = torch.sum(w.data, dim=dn, keepdim=keepdim)
+    new_sb = w.sub_batch_ndim
+    if isinstance(view, SubBatchView) and not keepdim:
+        new_sb -= len(dn)
+    return w._rewrap(data, sub_batch_ndim=new_sb)
 
 
-def dynamic_mean(a: TensorWrapper, dim: int = 0) -> TensorWrapper:
-    """Mean over one dynamic-batch axis."""
-    end = len(a.dynamic_batch_shape)
-    d = _normalize_dim(dim, 0, end)
-    return type(a)(torch.mean(a.data, dim=d), sub_batch_ndim=a.sub_batch_ndim)
+def mean(view: DynamicBatchView[_TW] | SubBatchView[_TW], dim: int = 0) -> _TW:
+    """Mean over one axis of a region view.
 
-
-def sub_batch_mean(a: TensorWrapper, dim: int = 0) -> TensorWrapper:
-    """Mean over one intermediate/sub-batch axis."""
-    start = len(a.dynamic_batch_shape)
-    end = start + a.sub_batch_ndim
+    ``view`` must be ``t.dynamic_batch`` or ``t.sub_batch``. Always
+    collapses the axis (no ``keepdim``); reducing a sub-batch axis drops
+    ``sub_batch_ndim`` by 1. Returns the same wrapper type as the view's
+    underlying wrapper.
+    """
+    w, start, end = _reduce_view_bounds(view, "mean")
     d = _normalize_dim(dim, start, end)
-    return type(a)(torch.mean(a.data, dim=d), sub_batch_ndim=a.sub_batch_ndim - 1)
+    new_sb = w.sub_batch_ndim - (1 if isinstance(view, SubBatchView) else 0)
+    return w._rewrap(torch.mean(w.data, dim=d), sub_batch_ndim=new_sb)
 
 
-def intmd_diff(a: TensorWrapper, n: int = 1, dim: int = 0) -> TensorWrapper:
-    """``n``-th order finite difference along an intermediate (sub-batch) axis.
+def diff(view: DynamicBatchView[_TW] | SubBatchView[_TW], n: int = 1, dim: int = 0) -> _TW:
+    """``n``-th order finite difference along an axis of a region view.
 
-    Matches ``neml2::intmd_diff`` in ``src/neml2/tensors/functions/diff.cxx``:
-    differentiate ``a`` ``n`` times along the chosen sub-batch axis. The
-    selected axis length shrinks by ``n``; the wrapper type and
-    ``sub_batch_ndim`` are preserved (``at::diff`` does not collapse the axis,
-    so this is *not* a reduction). ``dim`` is interpreted in the sub-batch
-    coordinate space (``0`` is the leading sub-batch axis, ``-1`` the
-    trailing), matching the C++ ``utils::normalize_dim(dim, dynamic_dim,
-    batch_dim)`` convention.
+    The selected axis length shrinks by ``n``; the wrapper type and
+    ``sub_batch_ndim`` are preserved (``torch.diff`` does not collapse
+    the axis, so this is *not* a reduction). ``view`` must be
+    ``t.dynamic_batch`` or ``t.sub_batch``.
+
+    Matches ``neml2::intmd_diff`` in ``src/neml2/tensors/functions/diff.cxx``.
     """
     if n < 0:
-        raise ValueError(f"intmd_diff order n must be non-negative, got {n}")
-    start = len(a.dynamic_batch_shape)
-    end = start + a.sub_batch_ndim
+        raise ValueError(f"diff order n must be non-negative, got {n}")
+    w, start, end = _reduce_view_bounds(view, "diff")
     d = _normalize_dim(dim, start, end)
-    return type(a)(torch.diff(a.data, n=n, dim=d), sub_batch_ndim=a.sub_batch_ndim)
+    return w._rewrap(torch.diff(w.data, n=n, dim=d), sub_batch_ndim=w.sub_batch_ndim)
 
 
 def sub_batch_zeros_like(
@@ -1442,10 +1477,9 @@ __all__ = [
     "deuler_rodrigues",
     "dev",
     "dexp_map",
+    "diff",
     "drotate",
     "drotate_self",
-    "dynamic_mean",
-    "dynamic_sum",
     "euler_rodrigues",
     "exp",
     "exp_map",
@@ -1463,7 +1497,9 @@ __all__ = [
     "log",
     "log10",
     "lt",
+    "macaulay",
     "mandel_pack_sym3",
+    "mean",
     "norm",
     "outer",
     "pow",
@@ -1478,9 +1514,8 @@ __all__ = [
     "sign",
     "sinh",
     "sqrt",
-    "sub_batch_mean",
-    "sub_batch_sum",
     "sub_batch_zeros_like",
+    "sum",
     "sym",
     "tanh",
     "to_cartesian",

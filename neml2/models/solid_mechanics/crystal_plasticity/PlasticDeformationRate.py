@@ -32,7 +32,7 @@ from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
-from ....types import R2, SR2, Scalar, jvp_rotate_sym, rotate_sym, sub_batch_sum
+from ....types import R2, SR2, Scalar, jvp_rotate_sym, rotate_sym, sum
 
 if TYPE_CHECKING:
     from ....data import CrystalGeometry
@@ -74,7 +74,7 @@ class PlasticDeformationRate(Model):
     ):
         M = self._cg.M  # SR2 sub_batch_ndim=1, shape (nslip, 6)
         weighted = M * g
-        dp_cry = cast(SR2, sub_batch_sum(weighted, -1))
+        dp_cry = cast(SR2, sum(weighted.sub_batch, -1))
         # Rotate to lab frame: dp_lab = sym(R · dp_cry_full · R^T)
         dp = rotate_sym(dp_cry, R)
         if v is None:
@@ -88,7 +88,7 @@ class PlasticDeformationRate(Model):
             return jvp_rotate_sym(dp_cry, R, V)
 
         def g_action(V: Scalar) -> SR2:
-            return rotate_sym(cast(SR2, sub_batch_sum(M * V, -1)), R)
+            return rotate_sym(cast(SR2, sum((M * V).sub_batch, -1)), R)
 
         return dp, self.apply_chain_rule(
             v,

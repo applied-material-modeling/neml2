@@ -33,7 +33,7 @@ from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
-from ...types import Scalar, pow, sub_batch_sum
+from ...types import Scalar, pow, sum
 
 
 @register_native("PrecipitateVolumeFraction")
@@ -93,7 +93,7 @@ class PrecipitateVolumeFraction(Model):
         # along the trailing sub-batch axis to a sub_batch_ndim=0 scalar.
         coef_n = (4.0 / 3.0) * math.pi * cast(Scalar, pow(R, 3.0))
         volume = coef_n * n
-        f = cast(Scalar, sub_batch_sum(volume, -1))
+        f = cast(Scalar, sum(volume.sub_batch, -1))
 
         if v is None:
             return f
@@ -108,7 +108,7 @@ class PrecipitateVolumeFraction(Model):
         actions: dict[str, ChainRuleAction] = {}
 
         def n_action(V: Scalar) -> Scalar:
-            return cast(Scalar, sub_batch_sum(coef_n * V, -1))
+            return cast(Scalar, sum((coef_n * V).sub_batch, -1))
 
         actions["number_density"] = n_action
 
@@ -117,7 +117,7 @@ class PrecipitateVolumeFraction(Model):
             coef_R = 4.0 * math.pi * cast(Scalar, pow(R, 2.0)) * n
 
             def R_action(V: Scalar) -> Scalar:
-                return cast(Scalar, sub_batch_sum(coef_R * V, -1))
+                return cast(Scalar, sum((coef_R * V).sub_batch, -1))
 
             actions[R_nlp.input_name] = R_action
 

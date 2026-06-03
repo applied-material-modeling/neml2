@@ -34,7 +34,7 @@ from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
     SR2,
-    sub_batch_sum,
+    sum,
 )
 
 
@@ -59,12 +59,12 @@ class SR2IntermediateSum(Model):
         x: SR2,
         v: ChainRuleDict | None = None,
     ):
-        out = cast(SR2, sub_batch_sum(x.sub_batch.retag(1), -1))
+        out = cast(SR2, sum(x.sub_batch.retag(1).sub_batch, -1))
         if v is None:
             return out
 
         def action(V: SR2) -> SR2:
-            return cast(SR2, sub_batch_sum(V, -1))
+            return cast(SR2, sum(V.sub_batch, -1))
 
         return out, self.apply_chain_rule(v, "to", {"from": action}, output=out)
 

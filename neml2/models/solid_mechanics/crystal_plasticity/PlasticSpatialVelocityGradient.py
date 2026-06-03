@@ -32,7 +32,7 @@ from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
-from ....types import R2, Scalar, jvp_rotate_r2, rotate_r2, sub_batch_sum
+from ....types import R2, Scalar, jvp_rotate_r2, rotate_r2, sum
 
 if TYPE_CHECKING:
     from ....data import CrystalGeometry
@@ -77,7 +77,7 @@ class PlasticSpatialVelocityGradient(Model):
     ):
         A = self._cg.A  # R2 sub_batch_ndim=1, the full d_i (x) n_i Schmid tensor
         weighted = A * g
-        lp_cry = cast(R2, sub_batch_sum(weighted, -1))
+        lp_cry = cast(R2, sum(weighted.sub_batch, -1))
         # Rotate to lab frame: l^p = R · lp_cry · R^T (no sym/skew projection).
         lp = rotate_r2(lp_cry, R)
         if v is None:
@@ -92,7 +92,7 @@ class PlasticSpatialVelocityGradient(Model):
             return jvp_rotate_r2(lp_cry, R, V)
 
         def g_action(V: Scalar) -> R2:
-            return rotate_r2(cast(R2, sub_batch_sum(A * V, -1)), R)
+            return rotate_r2(cast(R2, sum((A * V).sub_batch, -1)), R)
 
         return lp, self.apply_chain_rule(
             v,

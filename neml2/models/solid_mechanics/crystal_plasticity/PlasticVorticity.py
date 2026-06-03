@@ -32,7 +32,7 @@ from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
-from ....types import R2, WR2, Scalar, jvp_rotate_skew, rotate_skew, sub_batch_sum
+from ....types import R2, WR2, Scalar, jvp_rotate_skew, rotate_skew, sum
 
 if TYPE_CHECKING:
     from ....data import CrystalGeometry
@@ -74,7 +74,7 @@ class PlasticVorticity(Model):
     ):
         W = self._cg.W  # WR2 sub_batch_ndim=1
         weighted = W * g
-        wp_cry = cast(WR2, sub_batch_sum(weighted, -1))
+        wp_cry = cast(WR2, sum(weighted.sub_batch, -1))
         wp = rotate_skew(wp_cry, R)
         if v is None:
             return wp
@@ -86,7 +86,7 @@ class PlasticVorticity(Model):
             return jvp_rotate_skew(wp_cry, R, V)
 
         def g_action(V: Scalar) -> WR2:
-            return rotate_skew(cast(WR2, sub_batch_sum(W * V, -1)), R)
+            return rotate_skew(cast(WR2, sum((W * V).sub_batch, -1)), R)
 
         return wp, self.apply_chain_rule(
             v,
