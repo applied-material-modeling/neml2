@@ -1,74 +1,90 @@
-# Build Customization {#build-customization}
+(build-customization)=
+# Building from source
 
-[TOC]
+:::{note}
+End users should not need this page. The published PyPI wheels are
+expected to cover the vast majority of use cases — see [Basic installation](install.md).
+Build from source if you are contributing to NEML2 itself, debugging a
+build flavor the wheels don't ship, or experimenting with a custom
+LibTorch.
+:::
 
-\note
-Refer to the [cmake manual](https://cmake.org/cmake/help/latest/manual/cmake.1.html) for more CMake command line options. For more fine-grained control over the configure, build, and install commands, please refer to the [CMake User Interaction Guide](https://cmake.org/cmake/help/latest/guide/user-interaction/index.html).
+## Quick start
 
-## Configure options
-
-The configuration of NEML2 can be customized via a variety of high-level configure options. Commonly used configuration options are summarized below. Default options are <u>underlined</u>.
-
-| Option                | Values (<u>default</u>) | Description                                       |
-| :-------------------- | :---------------------- | :------------------------------------------------ |
-| NEML2_PCH             | <u>ON</u>, OFF          | Use precompiled headers to accelerate compilation |
-| NEML2_TESTS           | <u>ON</u>, OFF          | Master knob for including/excluding all tests     |
-| NEML2_TOOLS           | ON, <u>OFF</u>          | Create targets for utility binaries               |
-| NEML2_MPI             | ON, <u>OFF</u>          | Link the dispatcher submodule against MPI         |
-| NEML2_JSON            | ON, <u>OFF</u>          | Enable JSON support                               |
-| NEML2_CSV             | ON, <u>OFF</u>          | Enable CSV support                                |
-
-Additional configuration options can be passed via command line using the `-DOPTION` or `-DOPTION=ON` format (see e.g., [cmake manual](https://cmake.org/cmake/help/latest/manual/cmake.1.html)).
-
-## Configure presets
-
-Since many configure options are available for customizing the build, it is sometimes challenging to keep track of them during the development workflow. CMake introduces the concept of [preset](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) to help manage common configurations.
-
-NEML2 predefines configure presets serving different development purposes:
-- cc: Export compile commands for static analysis and language servers.
-- dev: This preset is best suited for developing the C++ backend and utility binaries. Compiler optimization is turned off, and debug symbols are enabled.
-- coverage: Unit tests are built with coverage flags enabled. `gcov` or similar tools can be used to record code coverage data.
-- tsan: Build with thread sanitizer flags to detect races in tests and tools.
-- asan: Build with address sanitizer flags to detect memory errors in tests and tools.
-- release: Production build for the C++ backend and utility binaries.
-- profiling: Build utility binaries and additionally link against gperftools' CPU profiler.
-
-The configure presets and their corresponding configure options are summarized below.
-
-| preset                        | cc    | dev   | coverage | tsan            | asan             | release | profiling |
-| :---------------------------- | :---- | :---- | :------- | :-------------- | :--------------- | :------ | :-------- |
-| CMAKE_BUILD_TYPE              | Debug | Debug | Coverage | ThreadSanitizer | AddressSanitizer | Release | Profiling |
-| CMAKE_EXPORT_COMPILE_COMMANDS | ON    | OFF   | OFF      | OFF             | OFF              | OFF     | OFF       |
-| NEML2_PCH                     | OFF   | ON    | ON       | ON              | ON               | ON      | ON        |
-| NEML2_TESTS                   | ON    | ON    | ON       | ON              | ON               | ON      | OFF       |
-| NEML2_TOOLS                   | ON    | ON    | OFF      | ON              | ON               | ON      | ON        |
-| NEML2_MPI                     | ON    | ON    | ON       | ON              | ON               | ON      | ON        |
-| NEML2_JSON                    | ON    | ON    | ON       | ON              | ON               | ON      | ON        |
-| NEML2_CSV                     | ON    | ON    | ON       | ON              | ON               | ON      | ON        |
-
-To select a specific configure preset, use the `--preset` option on the command line.
-
-While the default presets should cover most of the development stages, it is sometimes necessary to override certain options. In general, there are three ways of overriding the preset:
-- Command line options
-- Environment variables
-- [CMakeUserPresets.json](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html)
-
-For example, the following command
+```shell
+git clone -b main https://github.com/applied-material-modeling/neml2.git
+cd neml2
+pip install -e ".[dev]" -v
 ```
-cmake --preset release -DNEML2_MPI=OFF -S .
+
+This drives [scikit-build-core](https://scikit-build-core.readthedocs.io/)
+through the `NEML2_WHEEL` CMake path and lays down an editable Python
+install plus everything the dev workflow needs (pytest, pre-commit,
+sphinx, …).
+
+## CMake presets
+
+For pure C++ development (the wheel build is invoked separately by
+`pip`), `CMakePresets.json` defines two presets, used at different
+stages and *not* interchangeable:
+
+`dev` — the day-to-day build preset
+: Debug build of the C++ library and pybind extensions. This is the
+  only preset with an accompanying *build* preset of the same name, so
+  it's the one to use for actually compiling sources:
+
+  ```shell
+  cmake --preset dev -S .
+  cmake --build --preset dev
+  ```
+
+`cc` — a configure-only preset for tooling
+: Configures with `CMAKE_EXPORT_COMPILE_COMMANDS=ON` and
+  `NEML2_WHEEL=ON` so that the resulting `compile_commands.json`
+  covers both `libneml2_aoti` sources and the pybind extension `.cxx`
+  files. A `compile_commands.json` symlink is dropped into the repo
+  root for clangd / clang-tidy / other static-analysis tools to pick
+  up. There is no matching build preset — `cc` is not meant for
+  compiling, just for indexing:
+
+  ```shell
+  cmake --preset cc -S .
+  # No `cmake --build --preset cc` — use `dev` (or a plain
+  # `cmake --build build/cc -j$(nproc)`) if you want to actually
+  # compile from this build dir.
+  ```
+
+## Notable configure options
+
+The presets are tuned for routine work; override them when you need to:
+
+| Option         | Default      | Purpose                                                  |
+| :------------- | :----------- | :------------------------------------------------------- |
+| `NEML2_TOOLS`  | `ON`         | Build the CLI binaries (`neml2-run`, `neml2-inspect`, …). |
+| `NEML2_MPI`    | `OFF`        | Link the dispatcher submodule against MPI. With it OFF the submodule is still built but the MPI-using classes throw at construction. |
+| `NEML2_WHEEL`  | `OFF`        | Build the Python wheel. Set automatically by `pip install`. |
+
+Override on the configure line:
+
+```shell
+cmake --preset dev -DNEML2_MPI=ON -S .
 ```
-would use the configure preset "release" while disabling MPI support (the dispatcher submodule is still built; only the MPI-linked code is excluded). The same could be achieved via environment variables or user presets.
 
-## Build presets
+## Custom LibTorch
 
-Once the project is configured (e.g., using configure presets), one or more build targets will be generated. Different configure options would generate different sets of build targets. The `--target` command line option can be used to specify the target to build. Similar to configure presets, build presets are used to pre-define "groups" of build targets.
+If you want to build NEML2 against a libtorch other than the one shipped
+by the active Python environment's `torch` package, set `torch_ROOT`
+before configuring:
 
-NEML2 offers a number of build presets:
-- dev: Tests and utility binaries for development
-- tsan: Tests and utility binaries built with ThreadSanitizer
-- asan: Tests and utility binaries built with AddressSanitizer
-- coverage: C++ backend compiled with coverage flags
-- release: Tests and utility binaries for release
-- profiling: utility binaries with debug symbols linked against profiler
+```shell
+cmake --preset dev -Dtorch_ROOT=/path/to/libtorch -S .
+```
 
-To use a build preset, use the `--preset` option on the command line, i.e.
+`TORCH_ROOT` (all-caps), `torch_ROOT` / `TORCH_ROOT` / `torch_DIR` /
+`TORCH_DIR` env vars, and the active Python's `torch` site-packages are
+also consulted in that order. See `cmake/Modules/Findtorch.cmake` for
+the full discovery procedure.
+
+## Running the test suite
+
+See [](contributing-tests) in the contributing guide.

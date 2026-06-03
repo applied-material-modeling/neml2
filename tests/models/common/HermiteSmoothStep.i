@@ -1,0 +1,34 @@
+# Translated from tests/unit/models/common/HermiteSmoothStep.i.
+[Tensors]
+  [foo]
+    type = Python
+    expr = "Scalar(torch.tensor([-0.5, 0.01, 0.02, 0.5, 0.95, 1.01, 2.0], dtype=torch.float64))"
+  []
+  [bar]
+    type = Python
+    expr = "Scalar(torch.tensor([0.0, 0.104, 0.352, 1.0, 1.0, 1.0, 1.0], dtype=torch.float64))"
+  []
+[]
+
+[Drivers]
+  [unit]
+    type = ModelUnitTest
+    model = 'model'
+    input_Scalar_names = 'foo'
+    input_Scalar_values = 'foo'
+    output_Scalar_names = 'bar'
+    output_Scalar_values = 'bar'
+    derivative_rel_tol = 0
+    derivative_abs_tol = 1e-3
+  []
+[]
+
+[Models]
+  [model]
+    type = HermiteSmoothStep
+    argument = 'foo'
+    value = 'bar'
+    lower_bound = '0'
+    upper_bound = '0.05'
+  []
+[]

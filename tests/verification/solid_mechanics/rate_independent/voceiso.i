@@ -1,18 +1,23 @@
 # neml2
+# Native port of tests/verification/solid_mechanics/rate_independent/voceiso.i.
+# Rate-independent J2 plasticity with Voce isotropic hardening solved by an
+# FB-complementarity return map. Reference time / strain / stress trajectories
+# come from voceiso.csv (converted from the original .vtest by
+# scripts/vtest_to_csv.py).
 [Tensors]
   [times]
-    type = ScalarVTestTimeSeries
-    vtest = 'voceiso.vtest'
+    type = CSVScalar
+    csv_file = 'voceiso.csv'
     variable = 'time'
   []
   [strains]
-    type = SR2VTestTimeSeries
-    vtest = 'voceiso.vtest'
+    type = CSVSR2
+    csv_file = 'voceiso.csv'
     variable = 'strain'
   []
   [stresses]
-    type = SR2VTestTimeSeries
-    vtest = 'voceiso.vtest'
+    type = CSVSR2
+    csv_file = 'voceiso.csv'
     variable = 'stress'
   []
 []
@@ -27,7 +32,7 @@
     save_as = 'result.pt'
   []
   [verification]
-    type = VTestVerification
+    type = Verification
     driver = 'driver'
     SR2_names = 'output.stress'
     SR2_values = 'stresses'

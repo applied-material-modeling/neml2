@@ -13,25 +13,26 @@ repos:
       - id: ruff
         args: [--fix]
         files: \.py$
-        exclude: ^(contrib|build|installed|python/examples)/
+        exclude: ^(contrib|build|installed|notebooks)/
       - id: ruff-format
         files: \.py$
-        exclude: ^(contrib|build|installed|python/examples)/
+        exclude: ^(contrib|build|installed|notebooks)/
   - repo: https://github.com/mwouts/jupytext
     # dependencies: jupytext.version
     rev: v1.19.1
     hooks:
       - id: jupytext
         args: [--sync]
-        files: ^python/examples/.*\.ipynb$
+        files: ^notebooks/.*\.ipynb$
         pass_filenames: true
-  - repo: https://github.com/applied-material-modeling/neml2-hit
-    # dependencies: nmhit.version
-    rev: v0.1.5
-    hooks:
-      - id: nmhit-format
   - repo: local
     hooks:
+      - id: nmhit-format
+        name: nmhit-format
+        entry: nmhit-format
+        language: system
+        files: \.i$
+        types: [text]
       - id: check-copyright
         name: check copyright headers
         entry: scripts/check_copyright.py --modify

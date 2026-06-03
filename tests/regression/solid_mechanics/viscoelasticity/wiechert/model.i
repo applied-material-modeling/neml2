@@ -4,41 +4,18 @@
 # carries the long-time stress.
 [Tensors]
   [end_time]
-    type = LogspaceScalar
-    start = -1
-    end = 3
-    nstep = 10
+    type = Python
+    expr = 'Scalar(torch.logspace(-1, 3, 10, dtype=torch.float64))'
   []
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
-  []
-  [exx]
-    type = FullScalar
-    batch_shape = '(10)'
-    value = 0.01
-  []
-  [eyy]
-    type = FullScalar
-    batch_shape = '(10)'
-    value = -0.005
-  []
-  [ezz]
-    type = FullScalar
-    batch_shape = '(10)'
-    value = -0.005
-  []
-  [max_strain]
-    type = FillSR2
-    values = 'exx eyy ezz'
+    type = Python
+    expr = 'Scalar(torch.stack([torch.linspace(0, t.item(), 100, dtype=torch.float64) for t in end_time.data], dim=-1))'
   []
   [strains]
-    type = LinspaceSR2
-    start = 0
-    end = max_strain
-    nstep = 100
+    # Mandel-fill (10, 6) max_strain = (exx, eyy, ezz, 0, 0, 0) = (0.01, -0.005, -0.005, 0, 0, 0),
+    # then linspace ramp from 0 to max across 100 timesteps -> shape (100, 10, 6).
+    type = Python
+    expr = 'SR2(torch.tensor([0.01, -0.005, -0.005, 0.0, 0.0, 0.0], dtype=torch.float64).reshape(1, 1, 6).expand(100, 10, 6) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).reshape(100, 1, 1))'
   []
 []
 

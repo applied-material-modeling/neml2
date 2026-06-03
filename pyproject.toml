@@ -13,32 +13,27 @@ sdist.exclude = [
   ".github",
   ".clang-format",
   ".clang-tidy",
-  ".codechecker",
   ".gitattributes",
   ".gitignore",
   ".gitmodules",
   ".jupytext.toml",
   ".pre-commit-config.yaml",
   "scripts",
+  "notebooks",
+  "tests",
 ]
 build-dir = "build/{wheel_tag}"
-build.targets = ["pyneml2", "tools"]
+build.targets = ["aoti", "pyneml2"]
 wheel.install-dir = "neml2"
+wheel.packages = ["neml2"]
 
 [tool.scikit-build.cmake.define]
 NEML2_WHEEL = "ON"
-NEML2_TESTS = "OFF"
-NEML2_TOOLS = "ON"
-# NEML2_MPI defaults to OFF. The dispatcher submodule is always built; the
-# MPI-using objects (e.g. SimpleMPIScheduler) throw a clear error at
-# construction when invoked from a non-MPI wheel.
-NEML2_JSON = "ON"
-NEML2_CSV = "ON"
 
 [project]
 name = "neml2"
 # dependencies: neml2.version
-version = "2.1.6"
+version = "3.0.0"
 authors = [
   { name = "Mark Messner", email = "messner@anl.gov" },
   { name = "Gary Hu", email = "thu@anl.gov" },
@@ -57,7 +52,7 @@ dependencies = [
   # dependencies: pyzag.version
   "pyzag==1.1.1",
   # dependencies: nmhit.version_min
-  "nmhit>=0.1.2",
+  "nmhit>=0.2.2",
 ]
 
 [project.optional-dependencies]
@@ -66,9 +61,6 @@ dev = [
   "pytest",
   "pytest-xdist",
   "nbmake",
-  # doc
-  # dependencies: pybind11_stubgen.version_min
-  "pybind11-stubgen>=2.5.5",
   # lint + format
   # dependencies: ruff.version
   "ruff==0.15.13",
@@ -83,23 +75,23 @@ dev = [
   "loguru",
   "pyro-ppl",
   "tqdm",
-  "nbconvert",
-  "nbformat",
-  "livereload",
+  # docs
+  "sphinx",
+  "shibuya",
+  "myst-parser[linkify]",
+  "myst-nb",
+  "sphinx-autobuild",
+  "sphinx-copybutton",
+  "sphinxcontrib-programoutput",
   # git
   "pre-commit",
 ]
 
 [project.scripts]
-neml2-diagnose = "neml2._cli:diagnose"
-neml2-inspect = "neml2._cli:inspect"
-neml2-run = "neml2._cli:run"
-neml2-syntax = "neml2._cli:syntax"
-neml2-time = "neml2._cli:time"
-neml2-stub = "neml2._cli:stub"
-
-[tool.uv]
-no-build-isolation-package = ["neml2"]
+neml2-compile = "neml2.cli.aoti_compile:main"
+neml2-inspect = "neml2.cli.inspect:main"
+neml2-run = "neml2.cli.run:main"
+neml2-syntax = "neml2.cli.syntax:main"
 
 [tool.ruff]
 line-length = 100
@@ -107,10 +99,16 @@ line-length = 100
 # scripts/dep_manager.py cannot tie this automatically — bump by hand when the
 # minimum Python bumps.
 target-version = "py310"
-extend-exclude = ["contrib", "build", "installed", "python/examples"]
+extend-exclude = ["contrib", "build", "installed", "notebooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
+# E741 ("ambiguous variable name") is a poor fit for mathematical software,
+# where single-character symbols like `I` (identity), `N` (flow direction),
+# `K`/`G` (moduli) are domain-standard notation and far clearer than
+# `ident_matrix`/`flow_dir`/etc. Disable globally; bring it back per-file
+# if a non-math module accumulates genuinely ambiguous one-letter names.
+ignore = ["E741"]
 
 [tool.ruff.lint.per-file-ignores]
 # Re-export shims: __init__.py files routinely import names for the sole
@@ -120,19 +118,18 @@ select = ["E", "F", "W", "I", "B", "UP"]
 "**/__init__.py" = ["F401", "F403", "F405"]
 # Pedagogical scripts; short ambiguous names and the occasional unused loop
 # index are part of how the tutorials read.
-"doc/content/tutorials/**/*.py" = ["E741", "B007"]
+"doc/content/tutorials/**/*.py" = ["B007"]
 
 [tool.pyright]
 # Default scope is everything outside the package itself, so contributors can
 # run pyright without first building a neml2 wheel. The CI `typecheck` job
-# additionally targets `python/` after installing the wheel + generating
-# stubs (see .github/workflows/python.yml).
+# additionally targets the installed wheel separately
+# (see .github/workflows/python.yml). doc/content/tutorials/ and the
+# benchmark/ inputs are intentionally excluded -- they target the retired
+# legacy C++ surface and will be rewritten as a follow-up.
 include = [
   "scripts",
-  "doc/scripts",
-  "benchmark",
-  "tests",
-  "doc/content/tutorials",
+  "doc",
 ]
 exclude = [
   # pyright's built-in defaults (specifying `exclude` replaces them, so they
@@ -144,7 +141,7 @@ exclude = [
   "contrib",
   "build",
   "installed",
-  "python/examples",
+  "notebooks",
 ]
 # dependencies: python.version_min
 pythonVersion = "3.10"
@@ -162,12 +159,11 @@ build-verbosity = 1
 build-frontend = { name = "build", args = ["--no-isolation"] }
 
 before-all = ""
-# dependencies: pybind11_stubgen.version_min
-before-build = "python -m pip install scikit-build-core ninja torch pybind11-stubgen>=2.5.5 wheel"
+before-build = "python -m pip install scikit-build-core ninja torch wheel"
 
 # dependencies: pyzag.version
 test-requires = "pytest torch pyzag==1.1.1"
-test-command = "pytest -v {project}/python/tests"
+test-command = "pytest -v {project}/tests"
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = "python {project}/scripts/repair_wheel.py {wheel} {dest_dir}"

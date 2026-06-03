@@ -5,24 +5,12 @@
 # softening, and fully-degraded branches in one trajectory.
 [Tensors]
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = 1
-    nstep = 40
-  []
-  [zero_jump]
-    type = Vec
-    values = '0.0 0.0 0.0'
-  []
-  [max_jump]
-    type = Vec
-    values = '0.05 0.04 0.03'
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 1.0, 40, dtype=torch.float64))'
   []
   [jumps]
-    type = LinspaceVec
-    start = zero_jump
-    end = max_jump
-    nstep = 40
+    type = Python
+    expr = 'Vec(torch.linspace(0.0, 1.0, 40, dtype=torch.float64).reshape(40, 1) * torch.tensor([0.05, 0.04, 0.03], dtype=torch.float64))'
   []
 []
 

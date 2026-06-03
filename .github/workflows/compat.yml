@@ -128,7 +128,7 @@ jobs:
           print(f"neml2: {neml2.__file__}")
           EOF
       - name: Run pytest
-        run: pytest -v --junitxml=pytest.xml python/tests
+        run: pytest -v --junitxml=pytest.xml tests
       - name: Job summary
         if: always()
         run: |

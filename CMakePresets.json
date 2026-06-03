@@ -2,88 +2,27 @@
   "version": 6,
   "configurePresets": [
     {
-      "name": "default",
-      "hidden": true,
+      "name": "dev",
+      "displayName": "Development",
+      "description": "Debug build of libneml2_aoti",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "installDir": "${sourceDir}/installed/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "OFF",
-        "NEML2_PCH": "ON",
-        "NEML2_TESTS": "ON",
-        "NEML2_TOOLS": "ON",
-        "NEML2_WHEEL": "OFF",
-        "NEML2_MPI": "ON",
-        "NEML2_JSON": "ON",
-        "NEML2_CSV": "ON"
+        "NEML2_WHEEL": "OFF"
       }
     },
     {
       "name": "cc",
       "displayName": "Compile commands",
-      "description": "Export compile commands of the C++ backend",
-      "inherits": "default",
+      "description": "Export compile commands of the C++ backend (drives clangd / LSP). Builds the wheel-side pybind extensions too so the index covers _aoti.cxx as well.",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/installed/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "NEML2_WHEEL": "ON",
-        "NEML2_PCH": "OFF"
-      }
-    },
-    {
-      "name": "dev",
-      "displayName": "Development",
-      "description": "C++ backend",
-      "inherits": "default",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "tsan",
-      "displayName": "ThreadSanitizer",
-      "description": "Clang ThreadSanitizer",
-      "inherits": "default",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "ThreadSanitizer"
-      }
-    },
-    {
-      "name": "asan",
-      "displayName": "AddressSanitizer",
-      "description": "Clang AddressSanitizer",
-      "inherits": "default",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "AddressSanitizer"
-      }
-    },
-    {
-      "name": "profiling",
-      "displayName": "Profiling",
-      "description": "Runner for profiling",
-      "inherits": "default",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Profiling",
-        "NEML2_TESTS": "OFF"
-      }
-    },
-    {
-      "name": "coverage",
-      "displayName": "Coverage",
-      "description": "Generate coverage report from unit tests",
-      "inherits": "default",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Coverage",
-        "NEML2_TOOLS": "OFF"
-      }
-    },
-    {
-      "name": "release",
-      "displayName": "Release",
-      "description": "Production build for the C++ backend",
-      "inherits": "default",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "NEML2_WHEEL": "ON"
       }
     }
   ],
@@ -91,74 +30,11 @@
     {
       "name": "dev",
       "displayName": "C++ Backend",
-      "description": "C++ backend with tests",
+      "description": "Debug build of libneml2_aoti",
       "configurePreset": "dev",
       "targets": [
-        "tests",
-        "tools"
+        "aoti"
       ]
-    },
-    {
-      "name": "tsan",
-      "displayName": "ThreadSanitizer",
-      "description": "Runner compiled and linked against ThreadSanitizer",
-      "configurePreset": "tsan",
-      "targets": [
-        "tests",
-        "tools"
-      ]
-    },
-    {
-      "name": "asan",
-      "displayName": "AddressSanitizer",
-      "description": "Runner compiled and linked against AddressSanitizer",
-      "configurePreset": "asan",
-      "targets": [
-        "tests",
-        "tools"
-      ]
-    },
-    {
-      "name": "coverage",
-      "displayName": "Coverage",
-      "description": "C++ backend compiled with coverage flags",
-      "configurePreset": "coverage",
-      "targets": [
-        "unit_tests"
-      ]
-    },
-    {
-      "name": "profiling",
-      "displayName": "Runner",
-      "description": "Runner for profiling",
-      "configurePreset": "profiling",
-      "targets": [
-        "tools"
-      ]
-    },
-    {
-      "name": "release",
-      "displayName": "Release",
-      "description": "C++ backend and the runner executable for release",
-      "configurePreset": "release",
-      "targets": [
-        "tests",
-        "tools"
-      ]
-    }
-  ],
-  "testPresets": [
-    {
-      "name": "benchmark",
-      "displayName": "Benchmark tests",
-      "description": "Run benchmark tests using the Runner (note that this only checks if the tests run without error)",
-      "configurePreset": "release"
-    },
-    {
-      "name": "tsan",
-      "displayName": "Benchmark tests with ThreadSanitizer",
-      "description": "Run benchmark tests using the Runner with Clang ThreadSanitizer",
-      "configurePreset": "tsan"
     }
   ]
 }

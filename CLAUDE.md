@@ -4,101 +4,110 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-NEML2 is a C++17 material modeling library that vectorizes constitutive model evaluation on CPU/GPU using LibTorch as the tensor backend. Models are composed from small reusable pieces, the framework auto-resolves dependencies between them, and most users interact via HIT input files (the same format used by MOOSE) plus either the C++ API, the Python bindings, or the `neml2-run` CLI.
+NEML2 is a Python-native material modeling library that vectorizes constitutive model evaluation on CPU/GPU using PyTorch as the tensor backend. Models are plain `torch.nn.Module` subclasses composed from small reusable pieces, the framework auto-resolves dependencies between them, and most users interact via HIT input files (the same format used by MOOSE) plus either the Python API or the `neml2-run` / `neml2-compile` CLIs.
 
-## Build & develop (C++)
+The legacy C++ tower from v2.x was retired in the v3 migration. The only C++ that remains is `neml2/csrc/aoti/`, a thin runtime that loads the AOT-Inductor `.pt2` packages produced by `neml2-compile`; the runtime is built once into `neml2/lib/libneml2_aoti.so` as part of the wheel and is invisible to most contributors. See [](doc/content/migration/212_300.md) for the v2 → v3 rewrite summary.
 
-CMake presets in `CMakePresets.json` are the canonical entry point. Use `--preset` rather than passing raw flags so the build/install dirs (`build/<preset>`, `installed/<preset>`) stay consistent.
-
-```bash
-cmake --preset dev                       # configure (Debug + tests + tools + dispatcher + JSON + CSV)
-cmake --build --preset dev -j$(nproc)    # build the `tests` and `tools` targets in parallel
-```
-
-Always pass `-j$(nproc)` to `cmake --build`. CMake's default parallelism depends on the underlying generator — Make falls back to `-j1`, which is dramatically slower on this codebase. Explicit `-j$(nproc)` makes both Make and Ninja use all cores.
-
-Other notable presets: `release`, `cc` (exports `compile_commands.json` and symlinks it into the repo root), `coverage`, `asan`, `tsan`, `profiling`. CI also exercises a `-DNEML2_PCH=OFF` build (no precompiled headers) and a "no optional" build that disables `NEML2_JSON`, `NEML2_CSV`, and `NEML2_MPI` — keep `NEML2_JSON`/`NEML2_CSV`-conditional code guarded with `#ifdef`. `NEML2_MPI` controls whether the dispatcher submodule links against MPI; the submodule itself is always built (MPI-using objects throw at construction when the flag is OFF).
-
-The build pulls dependencies via `cmake/Modules/Findtorch.cmake` (PyTorch must already be importable in Python; libTorch is found in site-packages by default) and downloads/builds `nmhit`, `Catch2`, `nlohmann_json`, `csvparser`, `argparse`, `gperftools` into `contrib/` as needed. The `nmhit` submodule is auto-initialized on first configure.
-
-### Python package
+## Build & develop
 
 ```bash
-pip install ".[dev]" -v       # editable + dev extras (pytest, pre-commit, …)
+pip install -e ".[dev]" -v       # editable + dev extras (pytest, pre-commit, sphinx, ...)
 ```
 
-This drives a `scikit-build-core` build of the `pyneml2` extension under `build/<wheel_tag>/`. The Python package version, libTorch version, and other pinned deps are tracked in `dependencies.yaml` — use `python scripts/dep_manager.py {check|list|bump DEP.FIELD VALUE}` rather than editing version strings by hand. Files reference their dep with a `# dependencies: NAME.FIELD` annotation immediately above the version literal.
+This drives a `scikit-build-core` build of the small AOTI C++ runtime under `build/<wheel_tag>/`, then installs the Python package in editable mode. Python source edits take effect immediately; touching anything under `neml2/csrc/` or `CMakeLists.txt` requires a re-`pip install` to rebuild the runtime.
+
+Package versions and pinned deps live in `dependencies.yaml` — use `python scripts/dep_manager.py {check|list|bump DEP.FIELD VALUE}` rather than editing version strings by hand. Files reference their dep with a `# dependencies: NAME.FIELD` annotation immediately above the version literal. The torch compatibility matrix (`compatibility.yaml`) is a separate registry checked against the same `dependencies.yaml` torch entry — keep them in sync via `python scripts/compat_matrix.py {seed|check|render}`.
+
+### C++ AOTI runtime (rarely needed)
+
+```bash
+cmake --preset dev               # configure (Debug)
+cmake --build --preset dev       # build libneml2_aoti
+cmake --preset cc                # configure-only; exports compile_commands.json for clangd
+```
+
+Only two presets exist: `dev` (build) and `cc` (compile-commands-only, no `cmake --build`). The wheel build that `pip install` drives uses `cmake.build-type = "Release"` internally — there is no developer-facing `release` preset.
 
 ## Tests
 
-Tests are Catch2 binaries built into `build/<preset>/tests/`. Run individual binaries directly to keep iteration fast:
+All tests are pytest. Test layout under `tests/` is organised by subsystem:
 
 ```bash
-./build/dev/tests/unit/unit_tests          # most unit tests (base/, models/, solvers/, …)
-./build/dev/tests/unit/tensor_tests        # tensor-class unit tests
-./build/dev/tests/regression/regression_tests
-./build/dev/tests/verification/verification_tests
-./build/dev/tests/dispatchers/dispatcher_tests   # always built; MPI-using tests need NEML2_MPI=ON
+pytest tests/                                  # everything
+pytest tests/test_model.py                     # one file
+pytest tests/test_model.py::test_forward       # one function
+pytest tests/regression/                       # the parametrized regression sweep
+pytest tests/verification/                     # the parametrized verification sweep
+pytest --run-aoti-compile tests/aoti/          # opt in to the slow AOTI compile tests
 ```
 
-Catch2 selectors apply: `./unit_tests "[base/Factory]"` runs by tag, `./unit_tests -# "test_Foo"` runs a single test case. To exercise CUDA paths pass `--devices cuda` (CI sets `TEST_DEVICE_ARGS` accordingly on the `gpu_runner`).
-
-For spot-checks after a code change, run individual scenarios — not the full suite. `regression_tests` and `verification_tests` each have one `TEST_CASE` per submodule and discover scenarios as Catch2 sections, so target a single scenario via `-c` (the `add-regression` and `add-verification` skills document the exact pattern):
+`tests/regression/test_regression.py` and `tests/verification/test_verification.py` discover scenarios by walking their respective directories for `.i` files and emit one parametrize id per scenario (the input file's relative path). For spot-checks after a code change, target a single scenario via `-k` or the full parametrize id:
 
 ```bash
-./build/dev/tests/regression/regression_tests "solid mechanics" -c "viscoelasticity/maxwell/model.i"
-./build/dev/tests/verification/verification_tests "solid mechanics" -c "viscoelasticity/zener/zener.i"
+pytest tests/regression/test_regression.py -k maxwell
+pytest 'tests/regression/test_regression.py::test_regression[solid_mechanics/viscoelasticity/maxwell/model.i]'
 ```
 
-Reserve unfiltered `regression_tests` / `verification_tests` runs for final confirmation.
+Reserve unfiltered `tests/regression/` / `tests/verification/` runs for final confirmation.
 
-Python tests:
-
-```bash
-pytest -v python/tests
-pytest -v python/tests/test_Model.py::test_forward  # single test
-```
-
-Test layout under `tests/unit/` mirrors `include/neml2/`. When adding a `Model` subclass, use the `/add-model` skill; for any other header, use `/add-test`. Both encode the `tests/unit/README.md` conventions (one `TEST_CASE` per file, tag = directory).
+When adding a `Model` subclass, use the `/add-model` skill; for a regression or verification scenario use `/add-regression` or `/add-verification`. The skills encode the test conventions so you don't have to rediscover them.
 
 ## Documentation
 
-The doc build pipeline (`neml2-stub` → `doc/scripts/examples.py` → `doc/scripts/genhtml.py`) requires a non-editable `neml2` install. Use the `/build-docs` skill, or see `doc/content/tutorials/contributing.md` for the full workflow.
+Sphinx with the shibuya theme and MyST-NB. Build with:
+
+```bash
+sphinx-build -W --keep-going -b html doc doc/_build/html
+```
+
+The `/build-docs` skill walks through the full pipeline (including notebook execution caching and the auto-generated HIT-syntax catalog). The `neml2` package must be importable for autodoc / `neml2-syntax` to introspect the registered objects — an editable `pip install -e ".[dev]"` is enough.
 
 ## CLI tools
 
-When `NEML2_TOOLS=ON` (default in most presets), `src/tools/` builds executables: `neml2-run`, `neml2-inspect`, `neml2-diagnose`, `neml2-syntax`, `neml2-time`. The Python package re-exposes the same entry points as `neml2-run`, `neml2-inspect`, etc., wired through `python/neml2/_cli.py`.
+The installed wheel exposes four console scripts (defined in `pyproject.toml` under `[project.scripts]`):
 
-When designing or debugging, reach for these inspection tools before reading source or spawning Explore agents — they're faster and answer most "is there already an X?" / "is my wiring right?" questions outright:
-- `neml2-syntax --section Models --summary` browses the registered-object catalog with one-line docstrings (use `--type <Name>` to drill into one). Run this when planning *any* new Model or wondering whether a primitive already does what you want.
-- `neml2-inspect <file.i>` shows the resolved input/output graph of a wired-up input file. Use this *before* `neml2-run` when composing models — wiring bugs surface here as obvious mismatches instead of cryptic shape errors deep in Newton.
-- `neml2-diagnose <file.i>` runs each model's `diagnose()` to catch misconfigurations the parser can't see statically.
+- `neml2-run <input.i>` — drive a model through a load history.
+- `neml2-inspect <input.i>` — print the resolved input/output graph of a wired-up input file. Use this *before* `neml2-run` when composing models; wiring bugs surface as obvious mismatches instead of cryptic shape errors deep in Newton.
+- `neml2-syntax --section Models --summary` — browse the registered-object catalog with one-line docstrings (`--type <Name>` to drill into one). Run this when planning *any* new Model or wondering whether a primitive already does what you want.
+- `neml2-compile <input.i> --model <name>` — export a model to an AOT-Inductor `.pt2` package + drop-in HIT stub. See [](doc/content/model_compilation/) for the artifact format and pipeline reference.
+
+`neml2-diagnose` and `neml2-time` from v2 are gone.
 
 ## Architecture
 
-The C++ library is split into co-equal submodules under `src/neml2/`, each producing a separate `libneml2_<name>` shared library and a public header tree under `include/neml2/<name>/`. The umbrella `libneml2` (target `neml2`) just `PUBLIC`-links them all.
+The Python package layout under `neml2/`:
 
-- `base/` — input parsing (HIT via `nmhit`), `Factory`, `Registry`, `OptionSet`, `NEML2Object` base, settings, diagnostics, tracing.
-- `tensors/` — domain tensor classes (`Scalar`, `Vec`, `R2`, `SR2`, `Rot`, `Quaternion`, fourth-order `R4`/`SSR4`/`WSR4`/…) wrapping `torch::Tensor` with batched semantics + JIT helpers (`tensors/jit.cxx`, `tensors/functions/`).
-- `models/` — the composable forward operators. `Model` is the base; `ComposedModel` glues children together via the dependency graph in `models/DependencyResolver.h`; `ImplicitUpdate` wraps a residual model in a Newton solve with optional `Predictor`. Domain libraries live in `models/{solid_mechanics,crystallography,chemical_reactions,phase_field_fracture,porous_flow,finite_volume,common}/`.
-- `solvers/` — `NonlinearSolver` (Newton, NewtonWithLineSearch, SchurComplement) and `LinearSolver` (DenseLU).
-- `equation_systems/` — `EquationSystem`, `LinearSystem`, `NonlinearSystem`, sparse/dense assembled vectors and matrices, axis layout.
-- `dispatchers/` — work generators + schedulers (`SimpleScheduler`, `StaticHybridScheduler`, `SimpleMPIScheduler`) for splitting large batches across devices/processes. Always built. `SimpleMPIScheduler` requires `NEML2_MPI=ON`; with the flag OFF its constructor throws a clear "rebuild with -DNEML2_MPI=ON" error.
-- `drivers/` — `Driver`, `ModelDriver`, `TransientDriver` are the top-level "run a model over a load history" objects exposed in input files.
-- `user_tensors/`, `misc/` — user-facing tensor input wrappers and odds-and-ends.
+- `model.py` — `Model` base class (a `torch.nn.Module`). All user-authored constitutive leaves inherit from this.
+- `factory.py` — HIT input parsing via `nmhit`, `load_input` / `load_model` / `load_nonlinear_system` entry points, `[Tensors]` namespace for inline Python expressions.
+- `schema.py` — declarative HIT syntax: `input`, `output`, `parameter`, `option` field helpers + `HitSchema` container that drives both parsing and the auto-generated docs.
+- `chain_rule.py` — type aliases for the first / second-order chain-rule sensitivity dicts threaded through `Model.forward(..., v=, v2=, vh=)`.
+- `resolver.py` — `DependencyResolver` builds the `ComposedModel` dependency graph from individual leaves' declared inputs and outputs.
+- `models/` — the composable forward operators. `ComposedModel` glues children together via the dependency graph; `ImplicitUpdate` wraps a residual model in a Newton solve with optional `Predictor`. Domain libraries live in `models/{solid_mechanics,chemical_reactions,phase_field_fracture,porous_flow,finite_volume,common,kwn}/`; crystal plasticity is a subdirectory of `solid_mechanics/`.
+- `types/` — typed tensor wrappers (`Scalar`, `Vec`, `R2`, `SR2`, `Rot`, `Quaternion`, `MillerIndex`, fourth-order `SSR4` / `WSR4` / ...). Each is a dataclass registered with `torch.utils._pytree.register_dataclass` so it round-trips through `torch.export`. `.data` exposes the underlying `torch.Tensor`.
+- `solvers.py` — `NonlinearSolver` (Newton, NewtonWithLineSearch, SchurComplement) and `LinearSolver` (DenseLU).
+- `equation_systems.py` — `EquationSystem`, `LinearSystem`, `NonlinearSystem`, sparse/dense assembled vectors and matrices, axis layout. Dense/Block variants (`DenseRHS`, `DenseNewtonStep`, `DenseIFT`, `BlockRHS`, ...) back both the eager Newton loop and the AOTI implicit-segment lowering.
+- `drivers/` — `TransientDriver`, `ModelUnitTest`, `TransientRegression`, `Verification` — the top-level "run a model over a load history" objects exposed in input files.
+- `data/` — `CubicCrystal`, `CrystalGeometry` and related crystallography data classes.
+- `user_tensors/` — registered `[Tensors]` block types other than `Python` (currently the `CSV<Type>` family).
+- `export.py` — adapter around `torch.export` + `torch._inductor.aoti_compile_and_package`; the single entry point through which every AOTI lowering passes.
+- `cli/aoti_compile.py`, `cli/aoti_export.py` — the `neml2-compile` orchestration and the per-segment export path; see [](doc/content/model_compilation/pipeline.md).
+- `aoti/` — Python-side `AOTIModel` shim that loads a `_meta.json` + per-segment `.pt2` files and exposes `forward` / `jvp` / `jacobian`. Backed by the pybind module `aoti/_aoti.cxx` (which links `libneml2_aoti.so`).
+- `pyzag/` — `NEML2PyzagModel` adapter that exposes a NEML2 `Model` as a `torch.nn.Module` consumable by the pyzag training library.
+- `cli/` — backing modules for the four console scripts above.
+- `csrc/aoti/` — C++ runtime: `neml2::aoti::Model` wraps `torch::inductor::AOTIModelPackageLoader`. Built into `neml2/lib/libneml2_aoti.so` and surfaced through the pybind binding.
 
 ### Factory / Registry pattern
 
-Every concrete `NEML2Object` (model, tensor, solver, driver, …) declares static `expected_options()` and self-registers via `register_NEML2_object*` macros. Input files then instantiate them by type name. Because each submodule is its own shared library, the umbrella header `include/neml2/neml2.h` declares `_neml2_force_link_*` C symbols and a `force_link_runtime()` helper that the executable / Python module must call to keep the linker from dropping the registration translation units. New submodules must add a `link_anchor.cxx` exposing such a symbol.
+Every concrete native object (model, driver, tensor, solver, ...) self-registers via the `@register_native("TypeName")` decorator from `neml2.factory`. HIT input files then instantiate them by type name. `Model` subclasses declare their input/output/parameter surface via a class-level `hit = HitSchema(...)` and a `from_hit` constructor; the `@register_native` decorator + `HitSchema` together feed both the live factory and the auto-generated `neml2-syntax` catalog.
 
-### Python bindings
-
-`python/src/` contains the pybind11 module (`pyneml2`) with one `.cxx` per surface area (`core.cxx`, `tensors.cxx`, `crystallography.cxx`, `es.cxx`, `math.cxx`). The Python package in `python/neml2/` re-exports these (`from .core import *`, etc.) and adds pure-Python helpers: `pyzag/` (PyTorch-module interface to NEML2 models for training/AD), `reader/` (HIT-file reading, syntax helpers), `postprocessing/` (ODF, pole figures). `_cli.py` provides the console scripts.
+When adding a new submodule under `neml2/models/<domain>/`, append the import to the parent `__init__.py` so `import neml2` triggers registration — there is no lazy-loading machinery and unimported modules' types are invisible to the factory.
 
 ## Conventions
 
-- C++17, formatted by `clang-format` (enforced by `pre-commit` and CI). Run `pre-commit run --all-files` before pushing C++ changes.
-- Python is linted and formatted with `ruff` (line length 100, also CI-enforced via the `lint` job in `.github/workflows/python.yml`).
-- Headers live under `include/neml2/...`; sources under `src/neml2/...` with the same relative path. New headers without a corresponding test file will be flagged by reviewers.
-- Notebooks under `python/examples/*.ipynb` are paired with MyST `.md` files via `jupytext --sync` (pre-commit hook); `.jupytext.toml` declares `formats = "ipynb,myst"`. Edit the `.ipynb`, never the paired `.md`.
-- Avoid editing files in `contrib/`, `build/`, or `installed/` — those are generated. `scripts/clobber.sh [dir]` removes git-ignored files (with prompt) if a build gets wedged.
+- Python source: linted and formatted with `ruff` (line length 100), CI-enforced via the `lint` job in `.github/workflows/python.yml`. Run `pre-commit run --all-files` before pushing.
+- Type-checked with `pyright` against the installed package (CI: the `typecheck` job).
+- Math in docstrings uses MyST dollarmath (`$x$` inline, `$$...$$` display); MyST `dollarmath` and `amsmath` extensions are enabled in `doc/conf.py`. Code references stay in `` `backticks` ``; the difference matters for rendering in the syntax catalog.
+- HIT inputs use the `nmhit` Python parser (also a pre-commit `nmhit-format` hook). The format itself is unchanged from v2.
+- Notebooks under `doc/content/tutorials/**.ipynb` are paired with `.md` mirrors via `jupytext --sync` (pre-commit hook); `.jupytext.toml` declares the format pairing. Edit the `.ipynb`, never the paired `.md`.
+- Copyright headers are checked by a pre-commit hook (`python scripts/check_copyright.py`); the script auto-fixes missing headers.
+- Avoid editing files in `build/`, `installed/`, or `doc/_build/`, `doc/generated/` — those are generated. `scripts/clobber.sh [dir]` removes git-ignored files if a build gets wedged.

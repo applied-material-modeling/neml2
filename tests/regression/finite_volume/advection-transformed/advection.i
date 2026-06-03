@@ -1,4 +1,9 @@
 # neml2
+# 1D linear advection of a Gaussian pulse on a semi-infinite scaled grid.
+# 100 cells (101 edges) with a coordinate transform x_hat = s x / (1 - x) so
+# the [0, 1) parameter axis maps to [0, infty) physical space. Concentration
+# is integrated by backward Euler with upwinded fluxes and zero-flux Dirichlet
+# BCs at both ends, then unscaled at the end of each step.
 D = 0.0
 v = 0.5
 l = -0.0
@@ -11,73 +16,59 @@ t = 1.0
 
 [Tensors]
   [edges]
-    type = LinspaceScalar
-    start = 0.0
-    end = 1.0
-    nstep = 101
-    dim = 0
-    group = 'intermediate'
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 1.0, 101, dtype=torch.float64), sub_batch_ndim=1)'
   []
   [centers]
-    type = CenterScalar
-    points = 'edges'
+    type = Python
+    expr = 'Scalar(0.5 * (edges.data[..., :-1] + edges.data[..., 1:]), sub_batch_ndim=1)'
   []
   [dx_centers]
-    type = DifferenceScalar
-    points = 'centers'
+    type = Python
+    expr = 'Scalar(centers.data[..., 1:] - centers.data[..., :-1], sub_batch_ndim=1)'
   []
   [dx]
-    type = DifferenceScalar
-    points = 'edges'
+    type = Python
+    expr = 'Scalar(edges.data[..., 1:] - edges.data[..., :-1], sub_batch_ndim=1)'
   []
 
   [scale_factor]
-    type = Scalar
-    values = 0.1
+    type = Python
+    expr = 'Scalar(torch.tensor(0.1, dtype=torch.float64))'
   []
 
   [true_centers]
-    type = SemiInfiniteScalingScalar
-    x = 'centers'
-    s = 'scale_factor'
+    type = Python
+    expr = 'Scalar(scale_factor.data * centers.data / (1.0 - centers.data), sub_batch_ndim=1)'
   []
 
   [center_jacobian]
-    type = SemiInfiniteScalingJacobianScalar
-    x = 'centers'
-    s = 'scale_factor'
+    type = Python
+    expr = 'Scalar(scale_factor.data / (1.0 - centers.data) ** 2, sub_batch_ndim=1)'
   []
   [center_inverse_jacobian]
-    type = SemiInfiniteScalingJacobianScalar
-    x = 'centers'
-    s = 'scale_factor'
-    inverse = true
+    type = Python
+    expr = 'Scalar((1.0 - centers.data) ** 2 / scale_factor.data, sub_batch_ndim=1)'
   []
 
   [cell_velocity]
-    type = Scalar
-    values = ${v}
+    type = Python
+    expr = 'Scalar(torch.tensor(0.5, dtype=torch.float64))'
   []
 
   [unscaled_ic]
-    type = GaussianScalar
-    points = 'true_centers'
-    width = ${w}
-    height = ${c0}
-    center = ${center}
+    type = Python
+    expr = 'Scalar(1.0 * torch.exp(-0.5 * ((true_centers.data - 0.25) / 0.05) ** 2), sub_batch_ndim=1)'
   []
 
   [ic]
-    type = ProductUserTensorScalar
-    a = 'unscaled_ic'
-    b = 'center_jacobian'
+    type = Python
+    expr = 'Scalar(unscaled_ic.data * center_jacobian.data, sub_batch_ndim=1)'
   []
 
   [time]
-    type = LinspaceScalar
-    start = 0.0
-    end = ${t}
-    nstep = 500
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 1.0, 500, dtype=torch.float64))'
   []
 []
 

@@ -1,33 +1,32 @@
 # neml2
+# Native port of tests/verification/solid_mechanics/mixed_control/mixed_control.i.
+# Chaboche + Voce + Perzyna under mixed strain/stress control.
+# Component 3 (Mandel slot for yz / shear yz) is stress-controlled; all other
+# components are strain-controlled. Reference time / strain / stress
+# trajectories come from mixed_control.csv (converted from the original
+# .vtest by scripts/vtest_to_csv.py).
 [Tensors]
   [times]
-    type = ScalarVTestTimeSeries
-    vtest = 'mixed_control.vtest'
+    type = CSVScalar
+    csv_file = 'mixed_control.csv'
     variable = 'time'
   []
   [strains]
-    type = SR2VTestTimeSeries
-    vtest = 'mixed_control.vtest'
+    type = CSVSR2
+    csv_file = 'mixed_control.csv'
     variable = 'strain'
   []
   [stresses]
-    type = SR2VTestTimeSeries
-    vtest = 'mixed_control.vtest'
+    type = CSVSR2
+    csv_file = 'mixed_control.csv'
     variable = 'stress'
   []
-  [one_control]
-    type = FullScalar
-    batch_shape = '(100,1)'
-    value = 1.0
-  []
-  [zero_control]
-    type = FullScalar
-    batch_shape = '(100,1)'
-    value = 0.0
-  []
+  # Per-step (100,) FillSR2(one, one, one, zero, one, one). SR2.fill 6-arg
+  # scales slot 3 (zero) by sqrt(2) (stays zero) and slots 4/5 (one) by
+  # sqrt(2). Slot 3 is the only stress-controlled component.
   [control]
-    type = FillSR2
-    values = 'one_control one_control one_control zero_control one_control one_control'
+    type = Python
+    expr = 'SR2(torch.tensor([1.0, 1.0, 1.0, 0.0, 2.0 ** 0.5, 2.0 ** 0.5], dtype=torch.float64).reshape(1, 6).expand(100, 6).contiguous())'
   []
 []
 
@@ -41,7 +40,7 @@
     save_as = 'result.pt'
   []
   [verification]
-    type = VTestVerification
+    type = Verification
     driver = 'driver'
     SR2_names = 'output.stress output.E'
     SR2_values = 'stresses strains'

@@ -1,133 +1,202 @@
-@insert-title:tutorials-models-model-composition
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+mystnb:
+  execution_mode: cache
+---
 
-[TOC]
+(tutorials-models-composition)=
+# Model composition
 
-## Problem description
+## Why compose?
 
-We have been working with the linear, isotropic elasticity model in the previous tutorials. We started with that example because it is arguably the simplest possible material model in the context of solid mechanics. It is simple not just because of the simplicity in the description of the material behavior, but also due to the fact that its mathematical formulation only involves one linear equation.
+Almost any non-trivial constitutive theory is a chain of small maps.
+A Perzyna-type viscoplastic model, for instance, threads together
 
-Much more complicated, nonlinear models can be created using NEML2.
+$$
+\begin{align*}
+  \boldsymbol{\varepsilon}^e &= \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^p, \\
+  \boldsymbol{\sigma} &= 3K\operatorname{vol}\boldsymbol{\varepsilon}^e + 2G\operatorname{dev}\boldsymbol{\varepsilon}^e, \\
+  \bar{\sigma} &= J_2(\boldsymbol{\sigma}), \\
+  f &= \bar{\sigma} - \sigma_y, \\
+  \boldsymbol{N} &= \partial f/\partial\boldsymbol{\sigma}, \\
+  \dot{\gamma} &= \left(\langle f\rangle / \eta\right)^n, \\
+  \dot{\boldsymbol{\varepsilon}}^p &= \dot{\gamma}\,\boldsymbol{N}.
+\end{align*}
+$$
 
-Using a Perzyna-type viscoplasticity model as an example, it can be formulated as
-\f{align*}
-  \boldsymbol{\varepsilon}^e & = \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^p, \\
-  \boldsymbol{\sigma} & = 3K\operatorname{vol}\boldsymbol{\varepsilon}^e + 2G\operatorname{dev}\boldsymbol{\varepsilon}^e, \\
-  \bar{\sigma} & = J_2(\boldsymbol{\sigma}), \\
-  f^p & = \bar{\sigma} - \sigma_y, \\
-  \boldsymbol{N} & = \pdv{f^p}{\boldsymbol{\sigma}}, \\
-  \dot{\gamma} & = \left( \dfrac{\left< f^p \right>}{\eta} \right)^n, \\
-  \dot{\boldsymbol{\varepsilon}}^p & = \dot{\gamma} \boldsymbol{N}.
-\f}
-The above formulation makes a series of *constitutive choices*:
-- The strain is small and can be additively decomposed into elastic and plastic strains.
-- The elastic response is linear and isotropic.
-- The plastic flow is isochoric.
-- There is no isotropic hardening associated with plasticity.
-- There is no kinematic hardening associated with plasticity.
-- There is no back stress associated with plasticity.
-- The plastic flow is associative.
-- The plastic rate-sensitivity follows a power-law relation.
+Every one of those constitutive choices — small vs. finite strain,
+linear vs. nonlinear elasticity, presence or absence of hardening, the
+shape of the rate sensitivity — has multiple variants in the catalog.
+If NEML2 shipped a monolithic class for every combination the source
+tree would be astronomically large. Instead, each box on the right-hand
+side is its own `Model` and `ComposedModel` glues a chosen set
+together.
 
-Any change in one of the constitutive choices will result in a new material model. Suppose there are a total of \f$ N \f$ constitutive choices, each having \f$ k \f$ variants, the total number of possible material models would be \f$ k^N \f$.
+The same decomposition also buys you modularity: every box is a
+self-contained `Model` that can be tested, calibrated, and swapped
+independently. The usual cost of that modularity — Python-side
+dispatch overhead on every step through every sub-model — is removed
+once the composed graph is exported through NEML2's compilation
+pipeline (see [](tutorials-models-compiled)), so you don't have to
+pick between a tidy theory-aligned decomposition and a fast hot loop.
 
-In other words, the number of possible material models grows *exponentially* with the number of constitutive choices, and implementing all combinations is practically infeasible.
+## A worked example
 
-To address such challenge, NEML2 introduces a *model composition* mechanism which allows multiple models to be "stitched" together in a flexible, modular manner.
+To keep the wiring visible we'll use three small models from the
+catalog instead of the full plasticity stack:
 
-This tutorial demonstrates model composition using a much simplified model (without loss of generality). The model can be written as
-\f{align}
-  \bar{a} & = I_1(\boldsymbol{a}), \label{1} \\
-  \bar{b} & = J_2(\boldsymbol{b}), \label{2} \\
-  \dot{b} & = \bar{b} \boldsymbol{a} + \bar{a} \boldsymbol{b}, \label{3}
-\f}
-where \f$ \boldsymbol{a} \f$ and \f$ \boldsymbol{b} \f$ are symmetric second order tensors.
+$$
+\begin{align}
+  \bar{a} &= I_1(\boldsymbol{a}), \\
+  \bar{b} &= J_2(\boldsymbol{b}), \\
+  \dot{\boldsymbol{b}} &= \bar{b}\,\boldsymbol{a} + \bar{a}\,\boldsymbol{b}.
+\end{align}
+$$
 
-## Writing the input file
+The first two equations are scalar invariants of symmetric tensors —
+[](models-SR2Invariant) does both with an `invariant_type` switch.
+The third is a linear combination of two `SR2` tensors with scalar
+weights — [](models-SR2LinearCombination).
 
-Let us first search for available models describing this set of equations:
-- \f$ \eqref{1} \& \eqref{2} \f$ correspond to [SR2Invariant](#sr2invariant);
-- \f$ \eqref{3} \f$ corresponds to [LinearCombination](#sr2linearcombination).
+```{literalinclude} input.i
+:language: ini
+:caption: input.i
+```
 
-The input file then looks like
-@list-input:models/model_composition/input.i
+The trick is in `eq3`'s `weights = 'b_bar a_bar'`. `b_bar` and `a_bar`
+are not literals and not `[Tensors]` entries — they are the *output
+variable names* of `eq2` and `eq1`. When `ComposedModel` walks its
+children it sees that `eq3` consumes two scalars that `eq1` and `eq2`
+produce, and wires them up.
 
-## Evaluating the models: The hard way
+## Inspecting the wiring
 
-Now that all three models are defined in the input file, we can load and evaluate them in sequence, with a bit of effort:
+Before evaluating anything, ask `neml2-inspect` to print the resolved
+input/output graph of the composed model:
 
-<div class="tabbed">
+```{code-cell} ipython3
+import subprocess
+print(subprocess.run(
+    ["neml2-inspect", "input.i", "eq"],
+    capture_output=True, text=True, check=True,
+).stdout)
+```
 
-- <b class="tab-title">C++</b>
-  @list:cpp:models/model_composition/ex1.cxx
+Three things to notice:
 
-  Output:
-  @list-output:ex1
-- <b class="tab-title">Python</b>
-  @list:python:models/model_composition/ex2.py
+1. **Inputs collapsed to `a` and `b`.** The dependency resolver
+   identified the two unbound input variables and surfaced them as the
+   composed model's inputs. The intermediate scalars `a_bar` and
+   `b_bar` are no longer free inputs — they're produced internally.
+2. **Outputs collapsed to `b_rate`.** Same idea, in reverse: `a_bar`
+   and `b_bar` are consumed downstream, so they don't appear as
+   outputs of the composed model. (If you need them, list them under
+   `additional_outputs` on the `ComposedModel`.)
+3. **Parameters collapsed to `eq3.offset`.** `eq3.weight_0` and
+   `eq3.weight_1` are gone — they've been replaced by the producer
+   links from `eq2` and `eq1`. Only the literal `offset = 0` survives
+   as a free parameter.
 
-  Output:
-  @list-output:ex2
+Running `neml2-inspect` whenever you wire a new composed model is the
+fastest way to catch typos in variable names. A name mismatch shows up
+here as either an extra dangling input ("why is `a_bar` still listed
+as an input?") or a missing output, and it's much easier to read than
+a shape mismatch deep inside `__call__`.
 
-</div>
+## Loading and evaluating the composed model
 
-## Evaluating the models: The easy way
+From Python the composed model behaves like any other `Model` — load
+it with `neml2.load_model` and call it on its inputs:
 
-We were able to successfully calculate \f$ \dot{\boldsymbol{b}} \f$ by
-1. calculating \f$ \bar{a} \f$ by evaluating \f$ \eqref{1} \f$,
-2. calculating \f$ \bar{b} \f$ by evaluating \f$ \eqref{2} \f$,
-3. setting the two coefficients of  \f$ \eqref{3} \f$ to be \f$ \bar{b} \f$ and \f$ \bar{a} \f$ respectively,
-4. calculating \f$ \dot{\boldsymbol{b}} \f$ by evaluating \f$ \eqref{3} \f$.
+```{code-cell} ipython3
+import torch
+import neml2
+from neml2.types import SR2
 
-However, that is not ideal because we had to
-- Manually evaluate the equations and figure out the evaluation order, and
-- Manually set the parameters in \f$ \eqref{3} \f$ as outputs from \f$ \eqref{1}\&\eqref{2} \f$.
+torch.set_default_dtype(torch.float64)
+eq = neml2.load_model("input.i", "eq")
+eq
+```
 
-This manual setup is not scalable when the number of equations, variables, and parameters increase.
+The `input_spec` / `output_spec` properties echo what `neml2-inspect`
+showed:
 
-Using NEML2's model composition capability can address these issues without sacrificing modularity. [ComposedModel](#composedmodel) allows us to compose a new model from the three existing models:
-@list-input:models/model_composition/input_composed.i
+```{code-cell} ipython3
+list(eq.input_spec.keys()), list(eq.output_spec.keys())
+```
 
-\note
-The names of the other two models are used to specify the weights in \f$ \eqref{3} \f$, i.e. `weights = 'eq2 eq1'`. This syntax is different from what was covered in the [previous tutorial](#tutorials-models-model-parameters) on model parameters and will be explained in more details in the [next tutorial](#tutorials-models-model-parameters-revisited).
+To evaluate, pass the inputs as an `{name: SR2}` dict to
+`call_by_name`:
 
-Let us first inspect the composed model and compare it against the three sub-models:
+```{code-cell} ipython3
+a = SR2(torch.tensor([0.1, 0.05, -0.03, 0.02, 0.06, 0.03]))
+b = SR2(torch.tensor([100.0, 20.0, 10.0, 5.0, -30.0, -20.0]))
+eq.call_by_name({"a": a, "b": b})
+```
 
-<div class="tabbed">
+The composed model evaluated `eq1`, then `eq2`, then `eq3` (the only
+order that respects the producer/consumer dependencies), threaded the
+intermediate scalars through `eq3`'s weight slots, and returned
+`b_rate`.
 
-- <b class="tab-title">C++</b>
-  @list:cpp:models/model_composition/ex3.cxx
+## The same thing without `ComposedModel`
 
-  Output:
-  @list-output:ex3
-- <b class="tab-title">Python</b>
-  @list:python:models/model_composition/ex4.py
+To see what `ComposedModel` is buying you, here is the same
+calculation done by hand against three standalone sub-models. The
+input file is the same three `[Models]` entries with `weights = '1 1'`
+on `eq3` so that `weight_0` and `weight_1` stay as free parameters:
 
-  Output:
-  @list-output:ex4
+```{literalinclude} input_manual.i
+:language: ini
+:caption: input_manual.i
+```
 
-</div>
+```{code-cell} ipython3
+import torch.nn as nn
 
-Note that the composed model "eq" automatically:
-- Identified the input variables \f$ \boldsymbol{a} \f$ and \f$ \boldsymbol{b} \f$,
-- Identified the output variable \f$ \dot{\boldsymbol{b}} \f$,
-- Registered the parameters of \f$ \eqref{3} \f$ as input variables, and
-- Sorted out the evaluation order.
+eq1 = neml2.load_model("input_manual.i", "eq1")
+eq2 = neml2.load_model("input_manual.i", "eq2")
+eq3 = neml2.load_model("input_manual.i", "eq3")
 
-The composed model can be evaluated in the same way as regular models:
+# 1. Evaluate the two invariants.
+a_bar = eq1(a)
+b_bar = eq2(b)
 
-<div class="tabbed">
+# 2. Manually wire the weights of eq3 to those intermediate values.
+eq3.weight_0 = nn.Parameter(b_bar.data)
+eq3.weight_1 = nn.Parameter(a_bar.data)
 
-- <b class="tab-title">C++</b>
-  @list:cpp:models/model_composition/ex5.cxx
+# 3. Evaluate eq3 to get b_rate.
+eq3(a, b)
+```
 
-  Output:
-  @list-output:ex5
-- <b class="tab-title">Python</b>
-  @list:python:models/model_composition/ex6.py
+The result agrees with the composed version, but the caller had to:
 
-  Output:
-  @list-output:ex6
+- decide which model to evaluate first,
+- remember which weight slot maps to which invariant, and
+- physically copy the intermediate values into `eq3`'s parameters.
 
-</div>
+Three models is manageable. Three dozen — with shape-checked tensors
+and parameter sharing — is not. `ComposedModel` does this bookkeeping
+once at load time, then disappears.
 
-@insert-page-navigation
+:::{note}
+The producer/consumer wiring works because `eq3`'s `weights` option
+accepts a list of *names* that can resolve to either parameters, the
+outputs of sibling models, or `[Tensors]` entries. The general story
+about parameters-as-cross-references is the subject of
+[](tutorials-models-parameters-revisited).
+:::
+
+## Where to go next
+
+- The flexible name-binding used for `eq3`'s `weights` is generalized
+  in [](tutorials-models-parameters-revisited).

@@ -1,12 +1,11 @@
-# neml2
 [Tensors]
   [g]
-    type = Vec
-    values = '0 -9.81 0'
+    type = Python
+    expr = 'Vec(torch.tensor([0.0, -9.81, 0.0], dtype=torch.float64))'
   []
   [mu]
-    type = Scalar
-    values = 0.001
+    type = Python
+    expr = 'Scalar(torch.tensor(0.001, dtype=torch.float64))'
   []
 []
 

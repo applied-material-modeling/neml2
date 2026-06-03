@@ -1,112 +1,68 @@
 # neml2
+# Per-slip dislocation hardening crystal plasticity scenario, native port of
+# tests/regression/solid_mechanics/crystal_plasticity/per_slip_hardening/model.i.
+# Dynamic batch axis = (20,) (varying end-time / orientation); the per-slip
+# axis (12 slip systems for the cubic crystal) is the sub-batch axis,
+# attached only to the dislocation-density unknown via sub_batch_ndim=1.
 [Tensors]
+  # end_time = LinspaceScalar(1, 10, 20) -> shape (20,)
   [end_time]
-    type = LinspaceScalar
-    start = 1
-    end = 10
-    nstep = 20
+    type = Python
+    expr = 'Scalar(torch.linspace(1.0, 10.0, 20, dtype=torch.float64))'
   []
+  # times = LinspaceScalar(0, end_time, 100) -> shape (100, 20)
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
+    type = Python
+    expr = 'Scalar(end_time.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))'
   []
-  [dxx]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.1
-  []
-  [dyy]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.05
-  []
-  [dzz]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.05
-  []
+  # deformation_rate single = FillSR2(0.1, -0.05, -0.05) batched (20,)
   [deformation_rate_single]
-    type = FillSR2
-    values = 'dxx dyy dzz'
+    type = Python
+    expr = 'SR2(torch.tensor([0.1, -0.05, -0.05, 0.0, 0.0, 0.0], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
   []
+  # deformation_rate = LinspaceSR2(d_single, d_single, 100) -> shape (100, 20, 6)
   [deformation_rate]
-    type = LinspaceSR2
-    start = deformation_rate_single
-    end = deformation_rate_single
-    nstep = 100
+    type = Python
+    expr = 'SR2(deformation_rate_single.data.unsqueeze(0).expand(100, 20, 6).contiguous())'
   []
-
-  [w1]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.1
-  []
-  [w2]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.05
-  []
-  [w3]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.05
-  []
+  # vorticity single = FillWR2(0.1, -0.05, -0.05) batched (20,)
   [vorticity_single]
-    type = FillWR2
-    values = 'w1 w2 w3'
+    type = Python
+    expr = 'WR2(torch.tensor([0.1, -0.05, -0.05], dtype=torch.float64).unsqueeze(0).expand(20, 3).contiguous())'
   []
+  # vorticity = LinspaceWR2(w_single, w_single, 100) -> shape (100, 20, 3)
   [vorticity]
-    type = LinspaceWR2
-    start = vorticity_single
-    end = vorticity_single
-    nstep = 100
+    type = Python
+    expr = 'WR2(vorticity_single.data.unsqueeze(0).expand(100, 20, 3).contiguous())'
   []
 
+  # Crystal geometry inputs: lattice parameter + slip direction + slip plane
   [a]
-    type = Scalar
-    values = '1.0'
+    type = Python
+    expr = 'Scalar(torch.tensor(1.0, dtype=torch.float64))'
   []
   [sdirs]
-    type = MillerIndex
-    values = '1 1 0'
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1, 1, 0], dtype=torch.int64))'
   []
   [splanes]
-    type = MillerIndex
-    values = '1 1 1'
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1, 1, 1], dtype=torch.int64))'
   []
 
-  [R1]
-    type = LinspaceScalar
-    start = 0
-    end = 0.75
-    nstep = 20
-  []
-  [R2]
-    type = LinspaceScalar
-    start = 0
-    end = -0.25
-    nstep = 20
-  []
-  [R3]
-    type = LinspaceScalar
-    start = -0.1
-    end = 0.1
-    nstep = 20
-  []
-
+  # Initial orientation = FillRot(R1, R2, R3, method='standard'):
+  # convert standard Rodrigues r_std to modified-Rodrigues parameters via
+  # r = r_std / (sqrt(|r_std|^2 + 1) + 1). Shape (20, 3).
   [initial_orientation]
-    type = FillRot
-    values = 'R1 R2 R3'
-    method = 'standard'
+    type = Python
+    expr = 'Rot((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
   []
-
+  # Initial dislocation density: FullScalar(value=10, batch_shape=(20,12),
+  # intermediate_dimension=1) -> shape (20, 12), sub_batch_ndim=1 marks the
+  # trailing 12 as the per-slip-system sub-batch axis.
   [initial_dislocation_density]
-    type = FullScalar
-    batch_shape = '(20,12)'
-    value = 1.0e1
-    intermediate_dimension = 1
+    type = Python
+    expr = 'Scalar(torch.full((20, 12), 1.0e1, dtype=torch.float64), sub_batch_ndim=1)'
   []
 []
 

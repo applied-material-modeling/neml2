@@ -1,23 +1,27 @@
 # neml2
+# Native port of tests/verification/solid_mechanics/gurson/gurson.i.
+# Gurson-Tvergaard-Needleman porous-plasticity return map (FB-complementarity).
+# Reference time / strain / stress trajectories come from gurson.csv
+# (converted from the original .vtest by scripts/vtest_to_csv.py).
 [Tensors]
   [times]
-    type = ScalarVTestTimeSeries
-    vtest = 'gurson.vtest'
+    type = CSVScalar
+    csv_file = 'gurson.csv'
     variable = 'time'
   []
   [strains]
-    type = SR2VTestTimeSeries
-    vtest = 'gurson.vtest'
+    type = CSVSR2
+    csv_file = 'gurson.csv'
     variable = 'strain'
   []
   [stresses]
-    type = SR2VTestTimeSeries
-    vtest = 'gurson.vtest'
+    type = CSVSR2
+    csv_file = 'gurson.csv'
     variable = 'stress'
   []
   [f0]
-    type = Scalar
-    values = '0.002'
+    type = Python
+    expr = 'Scalar(torch.tensor(0.002, dtype=torch.float64))'
   []
 []
 
@@ -33,7 +37,7 @@
     save_as = 'result.pt'
   []
   [verification]
-    type = VTestVerification
+    type = Verification
     driver = 'driver'
     SR2_names = 'output.stress'
     SR2_values = 'stresses'
@@ -63,13 +67,13 @@
     type = SR2Invariant
     invariant_type = 'VONMISES'
     tensor = 'mandel_stress'
-    invariant = 'se'
+    invariant = 'flow_invariant'
   []
   [i1]
     type = SR2Invariant
     invariant_type = 'I1'
     tensor = 'mandel_stress'
-    invariant = 'sp'
+    invariant = 'poro_invariant'
   []
   [yield]
     type = GTNYieldFunction
@@ -77,8 +81,6 @@
     q1 = 1.25
     q2 = 1.0
     q3 = 1.57
-    flow_invariant = 'se'
-    poro_invariant = 'sp'
   []
   [flow]
     type = ComposedModel

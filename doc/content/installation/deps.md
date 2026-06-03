@@ -1,82 +1,57 @@
-# Dependency management {#dependency-management}
+(dependency-management)=
+# Dependencies
 
-[TOC]
+## Runtime
 
-## Dependency search
+A PyPI wheel install pulls in three Python packages:
 
-In most cases, there is no need to manually obtain the dependent libraries/packages. The build system will automatically search for the required packages at usual locations. If the package is already installed on the system, it will be used to build NEML2. Otherwise, a compatible version of the package will be downloaded and installed under the NEML2 build directory.
+<!-- dependencies: torch.version -->
+- [PyTorch](https://pytorch.org/get-started/locally/) ~= 2.12.0 — the
+  tensor / autograd backend.
+<!-- dependencies: pyzag.version -->
+- [pyzag](https://github.com/applied-material-modeling/pyzag) — adapter
+  that lets NEML2 models participate in PyTorch training loops.
+<!-- dependencies: nmhit.version_min -->
+- [nmhit](https://github.com/applied-material-modeling/neml2-hit) — HIT
+  input-file parser.
 
-In case the package of interest has been installed at a non-conventional location, and CMake's default searching mechanism fails to find it, some special configure options can be used to help locate it. For a package named `<PackageName>`, the following variables are tried in sequence:
-- `<PackageName>_ROOT` CMake variable
-- `<PACKAGENAME>_ROOT` CMake variable
-- `<PackageName>_ROOT` environment variable
-- `<PACKAGENAME>_ROOT` environment variable
+Pip handles all three automatically. Every other library NEML2 needs at
+runtime is bundled inside the wheel:
 
-Please refer to the [CMake documentation](https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-search-procedure) for additional hints that can be used to facilitate the package search procedure.
+- [nlohmann/json](https://github.com/nlohmann/json) — JSON support
+  (header-only; bundled under `<wheel>/include/nlohmann/`).
+- libtorch — bundled via the `torch` Python package's own `lib/`
+  directory; NEML2's `libneml2_aoti.so` is built with an
+  `$ORIGIN/../../torch/lib` rpath that finds it automatically.
 
-## List of dependencies
+ABI compatibility between the bundled libraries and your installed
+torch is verified for the version range listed in [](torch-compat).
 
-C++ backend:
+## Source-build dependencies
 
-- [PyTorch](https://pytorch.org/get-started/locally/).
-- [neml2-hit](https://github.com/applied-material-modeling/neml2-hit) as the lexing and parsing backend for HIT.
-- Testing:
-  - [Catch2](https://github.com/catchorg/Catch2) for unit and regression testing.
+Building NEML2 from source (rare; see [](build-customization)) adds:
 
-Utility binaries:
+- A C++17 compiler.
+<!-- dependencies: cmake.version_min -->
+- [CMake](https://cmake.org/download/) >= 3.26.1
+<!-- dependencies: python.version_min -->
+- [Python](https://www.python.org/downloads/) >= 3.10
+- [PyTorch](https://pytorch.org/get-started/locally/) importable in the
+  same Python environment used to drive the build (CMake discovers
+  libtorch via the installed `torch` package by default).
+- Optionally, [MPI](https://www.mpi-forum.org/) when configuring with
+  `-DNEML2_MPI=ON` to enable distributed dispatching.
 
-- [argparse](https://github.com/p-ranav/argparse) for command-line argument parsing.
-- Profiling:
-  - [Gperftools](https://github.com/gperftools/gperftools) for profiling purposes.
+Everything else (nlohmann_json, etc.) is vendored as a git submodule
+under `contrib/` and pulled in automatically.
 
-Python package:
+## GPU acceleration
 
-- [Python development libraries](https://docs.python.org/3/extending/extending.html) for python bindings.
-- [pybind11-stubgen](https://github.com/sizmailov/pybind11-stubgen) for extracting stubs from Python bindings.
-- [pyzag](https://github.com/applied-material-modeling/pyzag) for training material models.
-- Testing:
-  - [pytest](https://docs.pytest.org/en/stable/index.html) for testing Python bindings.
-
-Documentation:
-
-- [Doxygen](https://github.com/doxygen/doxygen) for building the documentation.
-- [Doxygen Awesome](https://github.com/jothepro/doxygen-awesome-css) the documentation theme.
-- [graphviz](https://github.com/xflr6/graphviz) for DOT inheritance graph.
-- [PyYAML](https://pyyaml.org/) for extracting syntax documentation.
-
-Work dispatcher:
-
-- [MPI](https://www.mpi-forum.org/) for distributed scheduling.
-
-JSON support:
-
-- [json](https://github.com/nlohmann/json) for outputting event traces.
-
-CSV parser:
-
-- [CSV Parser](https://github.com/vincentlaucsb/csv-parser) for reading CSV files
-
-In addition to standard system library locations, the CMake configure script also searches for an installed torch Python package. Recent PyTorch releases within a few minor versions are likely to be compatible.
-
-\warning
-If no PyTorch is found after searching, a CPU-only libtorch binary is downloaded from the official website. Such libtorch is not able to use the CUDA co-processor, even if there is one. If using CUDA is desired, please install the torch Python package or a CUDA-enabled libtorch before configuring NEML2.
-
-\note
-We strive to keep up with the rapid development of PyTorch. The NEML2 PyTorch dependency is updated on a quarterly basis. If there is a particular version of PyTorch you'd like to use which is found to be incompatible with NEML2, please feel free to [create an issue](https://github.com/applied-material-modeling/neml2/issues).
-
-## Skipping dependencies
-
-In some cases, certain dependencies cannot be obtained or are incompatible with the build system, and it becomes desirable to keep using NEML2 with some capabilities disabled.
-
-The following table summarizes the configure options that determine when a dependency is required, and hence how a dependency can be skipped.
-
-| Dependency | Dependent configure option(s)               |
-| :--------- | :------------------------------------------ |
-| Torch      |                                             |
-| neml2-hit  |                                             |
-| Catch2     | NEML2_TESTS                                 |
-| argparse   | NEML2_TOOLS                                 |
-| Gperftools | NEML2_TOOLS & CMAKE_BUILD_TYPE == Profiling |
-| MPI        | NEML2_MPI                                   |
-| json       | NEML2_JSON                                  |
-| CSV Parser | NEML2_CSV                                   |
+Accelerator support comes from torch, not from NEML2 directly. The torch
+that `pip install neml2` pulls in by default is whatever your platform's
+default PyPI index ships — already CUDA-enabled on Linux. If you need a
+different variant (specific CUDA runtime, ROCm, CPU-only, nightly, …),
+install that torch first using the selector at
+[pytorch.org/get-started](https://pytorch.org/get-started/locally/),
+then run `pip install neml2`. NEML2 transparently runs models on
+whichever device the input tensors live on.

@@ -1,0 +1,108 @@
+# Copyright 2024, UChicago Argonne, LLC
+# All Rights Reserved
+# Software Name: NEML2 -- the New Engineering material Model Library, version 2
+# By: Argonne National Laboratory
+# OPEN SOURCE LICENSE (MIT)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+"""Python-native mirror of the C++ ``ExponentialLawPermeability`` model."""
+
+from __future__ import annotations
+
+from ...chain_rule import ChainRuleAction, ChainRuleDict
+from ...factory import register_native
+from ...model import Model
+from ...schema import HitSchema, input, output, parameter
+from ...types import Scalar, exp
+
+
+@register_native("ExponentialLawPermeability")
+class ExponentialLawPermeability(Model):
+    r"""Define the relationship between non-dimensionalized porosity and permeability.
+
+    The exponential porosity-permeability relation takes the form of
+    $K_0 \exp \left[ a(\varphi_o-\varphi) \right]$ where $a$ is the
+    scaling parameter; $\varphi_0$ and $K_0$ are the reference
+    porosity and permeability respectively.
+    """
+
+    hit = HitSchema(
+        input("porosity", Scalar, "The porosity"),
+        output("permeability", Scalar, "The porosity-dependent permeability"),
+        parameter(
+            "reference_permeability",
+            Scalar,
+            "The reference permeability",
+            attr="K0",
+        ),
+        parameter(
+            "reference_porosity",
+            Scalar,
+            "The reference porosity",
+            attr="phi0",
+        ),
+        parameter(
+            "scale",
+            Scalar,
+            "Scaling constant in the exponential law",
+            attr="a",
+        ),
+    )
+
+    # ``from_hit`` auto-declares the three parameters; annotate so pyright sees
+    # the typed wrappers that ``Model.__getattr__`` returns rather than
+    # ``nn.Module``'s generic ``Module`` hint.
+    K0: Scalar
+    phi0: Scalar
+    a: Scalar
+
+    def forward(  # type: ignore[override]
+        self,
+        porosity: Scalar,
+        *nl_params: Scalar,
+        v: ChainRuleDict | None = None,
+    ) -> Scalar | tuple[Scalar, ChainRuleDict]:
+        phi = porosity
+        K0 = self.K0
+        phi0 = self.phi0
+        a = self.a
+
+        # K = K0 * exp(-a * (phi - phi0)) -- typed Scalar algebra end to end.
+        arg = -a * (phi - phi0)
+        K = K0 * exp(arg)
+
+        if v is None:
+            return K
+
+        # Differential pushforward: dK/dphi = -a * K0 * exp(-a*(phi-phi0)) = -a * K.
+        dK_dphi = -a * K
+        actions: dict[str, ChainRuleAction] = {
+            "porosity": lambda V, c=dK_dphi: c * V,
+        }
+
+        return K, self.apply_chain_rule(
+            v,
+            "permeability",
+            actions,
+            output=K,
+        )
+
+
+__all__ = ["ExponentialLawPermeability"]

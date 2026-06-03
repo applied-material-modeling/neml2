@@ -1,61 +1,27 @@
 # neml2
 [Tensors]
   [end_time]
-    type = LogspaceScalar
-    start = -1
-    end = 5
-    nstep = 20
+    type = Python
+    expr = 'Scalar(torch.logspace(-1.0, 5.0, 20, dtype=torch.float64))'
   []
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
-  []
-  [exx]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.1
-  []
-  [eyy]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.03
-  []
-  [ezz]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.01
-  []
-  [eyz]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.01
-  []
-  [exz]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.02
-  []
-  [exy]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.015
+    type = Python
+    expr = 'Scalar(end_time.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))'
   []
   [max_strain]
-    type = FillSR2
-    values = 'exx eyy ezz eyz exz exy'
+    type = Python
+    # Mandel storage: shear components carry a sqrt(2) factor. C++ FillSR2 with
+    # (exx, eyy, ezz, eyz, exz, exy) = (0.1, -0.03, -0.01, -0.01, 0.02, 0.015)
+    # serializes as [0.1, -0.03, -0.01, sqrt(2)*-0.01, sqrt(2)*0.02, sqrt(2)*0.015].
+    expr = 'SR2(torch.tensor([0.1, -0.03, -0.01, -0.01 * 2**0.5, 0.02 * 2**0.5, 0.015 * 2**0.5], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
   []
   [strains]
-    type = LinspaceSR2
-    start = 0
-    end = max_strain
-    nstep = 100
+    type = Python
+    expr = 'SR2(max_strain.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).reshape(100, 1, 1))'
   []
   [f0]
-    type = FullScalar
-    value = '0.01'
-    batch_shape = '(20)'
+    type = Python
+    expr = 'Scalar(torch.full((20,), 0.01, dtype=torch.float64))'
   []
 []
 

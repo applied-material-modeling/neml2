@@ -1,8 +1,3 @@
-[submodule "contrib/doxygen-awesome-css"]
-	path = contrib/doxygen-awesome-css
-	url = https://github.com/jothepro/doxygen-awesome-css.git
-  tag = v2.4.1
-  update = none
-[submodule "contrib/nmhit-src"]
-	path = contrib/nmhit-src
-	url = https://github.com/applied-material-modeling/neml2-hit.git
+[submodule "contrib/nlohmann_json-src"]
+	path = contrib/nlohmann_json-src
+	url = https://github.com/nlohmann/json.git

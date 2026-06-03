@@ -3,24 +3,12 @@
 # Traction grows, peaks near the characteristic length, then decays exponentially to zero.
 [Tensors]
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = 1
-    nstep = 40
-  []
-  [zero_jump]
-    type = Vec
-    values = '0.0 0.0 0.0'
-  []
-  [max_jump]
-    type = Vec
-    values = '3.0 1.5 0.0'
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 1.0, 40, dtype=torch.float64))'
   []
   [jumps]
-    type = LinspaceVec
-    start = zero_jump
-    end = max_jump
-    nstep = 40
+    type = Python
+    expr = 'Vec(torch.linspace(0.0, 1.0, 40, dtype=torch.float64).unsqueeze(-1) * torch.tensor([3.0, 1.5, 0.0], dtype=torch.float64))'
   []
 []
 

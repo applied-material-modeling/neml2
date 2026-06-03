@@ -1,106 +1,119 @@
-@insert-title:tutorials-models-running-your-first-model
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+mystnb:
+  execution_mode: cache
+---
 
-[TOC]
+(tutorials-models-running-your-first-model)=
+# Running your first model
 
-## Problem description
+This tutorial walks through the end-to-end "hello world" of NEML2:
+write an input file, load it from Python, evaluate the model on an
+input, read the output. The model is intentionally trivial — linear
+isotropic elasticity — so the focus stays on the workflow.
 
-Let us start with the simplest example for solid mechanics. Consider a solid material whose elastic behavior (mapping from strain \f$ \boldsymbol{\varepsilon} \f$ to stress \f$ \boldsymbol{\sigma} \f$, or vice versa) can be described as
-\f[
-  \boldsymbol{\sigma} = 3 K \operatorname{vol} \boldsymbol{\varepsilon} + 2 G \operatorname{dev} \boldsymbol{\varepsilon},
-\f]
-where \f$ K \f$ is the bulk modulus, and \f$ G \f$ is the shear modulus.
+## The physics
 
-## Searching for available models
+Linear isotropic elasticity maps a symmetric strain tensor
+$\boldsymbol{\varepsilon}$ to a symmetric stress tensor
+$\boldsymbol{\sigma}$ via
 
-All available material models are listed in the [syntax documentation](@ref syntax-models). The documentation of each model provides a brief description, followed by a list of input file options. Each option has a short description right next to it, and can be expanded to show additional details.
+$$
+  \boldsymbol{\sigma}
+  = 3K\,\operatorname{vol}\boldsymbol{\varepsilon}
+  + 2G\,\operatorname{dev}\boldsymbol{\varepsilon},
+$$
 
-There is an existing model that solves this exact problem: [LinearIsotropicElasticity](#linearisotropicelasticity). The syntax documentation lists the input file options associated with this model.
+where $K$ is the bulk modulus and $G$ is the shear modulus. The model
+takes the moduli as parameters in any one of several equivalent
+parameterizations — here we feed it Young's modulus $E$ and Poisson's
+ratio $\nu$ and let it derive $K$ and $G$ internally.
 
-## Writing the input file
+More abstractly, every NEML2 model is a map
 
-As explained in the syntax documentation for [LinearIsotropicElasticity](#linearisotropicelasticity), the option "strain" is used to specify the name of the variable for the elastic strain, and the option "stress" is used to specify the name of the variable for the stress. The options "coefficients" and "coefficient_types" are used to specify the values of the parameters, in this case \f$ K \f$ and \f$ G \f$.
+$$
+  y = f(x;\, p, b),
+$$
 
-Using these information, the input file for constructing this model can be composed as:
+where $x$ are the input variables, $y$ the output variables, $p$ the
+parameters, and $b$ the buffers. Calling the model evaluates $f$ at
+some $x$ with whatever $p, b$ were set up at load time.
 
-@list-input:running_your_first_model/input.i:Models/my_model
+## The input file
 
+```{literalinclude} input.i
+:language: ini
+:caption: input.i
+```
 
-## Choosing the frontend
+Two things are happening here:
 
-There are three common ways of interacting with NEML2 input files:
-- Calling the appropriate APIs in a C++ program
-- Calling the appropriate APIs in a Python script
-- Using the NEML2 command-line tools
+1. The `type = LinearIsotropicElasticity` line selects a model class
+   from the registry. Browse [](models-LinearIsotropicElasticity) for
+   the full option list.
+2. `coefficients` + `coefficient_types` define the elastic moduli. The
+   pair `'YOUNGS_MODULUS POISSONS_RATIO'` tells the model to interpret
+   the two numbers as Young's modulus and Poisson's ratio (other
+   choices include `BULK_MODULUS`, `SHEAR_MODULUS`, `LAME_LAMBDA`,
+   `P_WAVE_MODULUS`).
 
-These methods are discussed in the [getting started guide](#tutorials-getting-started). In this set of tutorials, the C++ example code and the Python script example code are shown side-by-side with tabs, and in most cases the C++ APIs and the Python APIs have a nice one-to-one correspondence.
+## Loading the model
 
+`neml2.load_model(path, name)` parses the input file and returns the
+named model as a Python object — a `Model` subclass (which is itself a
+`torch.nn.Module`):
 
-## Loading a model from the input file
-
-The following code parses the given input file named "input.i" and retrieves a Model named "my_model". Once retrieved, we can print out a summary of the model by streaming it to the console:
-
-<div class="tabbed">
-
-- <b class="tab-title">C++</b>
-  @list:cpp:running_your_first_model/ex1.cxx
-
-  Output:
-  @list-output:ex1
-
-- <b class="tab-title">Python</b>
-  @list:python:running_your_first_model/ex2.py
-
-  Output:
-  @list-output:ex2
-
-</div>
-
-The summary includes information about the model's name, input variables, output variables, parameters, and buffers (if any). Note that the variables and parameters are additionally marked with tensor types surrounded by square brackets, i.e., `[SR2]` and `[Scalar]`. These are NEML2's primitive tensor types which will be extensively discussed in another set of tutorials (@ref tutorials-tensors).
-
-## Model structure and forward operators
-
-Before going over model evaluation, let us zoom out from this particular example and briefly discuss the structure of NEML2 models.
-
-All NEML2 models, including this simple elasticity model under consideration, take the following general form
-\f[
-  y = f(x; p, b),
-\f]
-where \f$ x \f$ and \f$ y \f$ are respectively sets of input and output variables, \f$ p \f$ is the set of parameters, and \f$ b \f$ is the set of buffers. The utilities of parameters and buffers will be discussed in another [tutorial](#tutorials-models-model-parameters). The forward operator \f$ f \f$ is responsible for mapping from input variables \f$ x \f$ to \f$ y \f$. NEML2 provides three forward operators for all models:
-- neml2::Model::value calculates the output variables, i.e., \f$ y = f(x; p, b) \f$.
-- neml2::Model::dvalue calculates the derivatives of the output variables with respect to the input variables, i.e., \f$ \pdv{y}{x} = \pdv{f(x; p, b)}{x} \f$.
-- neml2::Model::value_and_dvalue calculates both the output variables and their derivatives.
-
-All three forward operators take a map/dictionary of variable values as input and return the requested output variables and/or their derivatives.
-
-In addition to these standard forward operators, some models in NEML2 also support calculating second derivatives. Three additional forward operators are provided to request second derivatives:
-- neml2::Model::d2value
-- neml2::Model::dvalue_and_d2value
-- neml2::Model::value_and_dvalue_and_d2value
+```{code-cell} ipython3
+import neml2
+model = neml2.load_model("input.i", "elasticity")
+model
+```
 
 ## Evaluating the model
 
-Model evaluation consists of two simple steps:
-1. Specify the input variable values
-2. Call the appropriate forward operator
+A model is invoked like any callable. The input here is a symmetric
+second-order tensor (`SR2`) representing the elastic strain. NEML2's
+`SR2` wraps a `torch.Tensor` of base shape `(6,)`, storing the six
+independent components in Mandel notation:
 
-In this example, the elasticity model can be evaluated using the following code:
+```{code-cell} ipython3
+import torch
+from neml2.types import SR2
 
-\note
-Note that `set_default_dtype(kFloat64)` is used to change the default precision to double precision.
+# Uniaxial tension along the x-axis: epsilon_xx = 1%
+strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+strain
+```
 
-<div class="tabbed">
+Now evaluate:
 
-- <b class="tab-title">C++</b>
-  @list:cpp:running_your_first_model/ex3.cxx
+```{code-cell} ipython3
+stress = model(strain)
+stress
+```
 
-  Output:
-  @list-output:ex3
-- <b class="tab-title">Python</b>
-  @list:python:running_your_first_model/ex4.py
+The output is the symmetric Cauchy stress. The leading three slots are
+the diagonal components; the trailing three are the off-diagonal
+components in Mandel packing. For uniaxial strain with the moduli
+above, the result matches the closed-form `K + 4G/3` along the loaded
+axis and `K - 2G/3` along the lateral axes.
 
-  Output:
-  @list-output:ex4
+## Where to go next
 
-</div>
-
-@insert-page-navigation
+- The next tutorial, [](tutorials-models-parameters), walks through
+  how to read and mutate the moduli we hard-coded in the input file.
+- The model takes a single scalar-shaped input here, but the same call
+  works just as well on batched inputs — see
+  [](tutorials-models-vectorization).
+- Real material models compose multiple ingredients (elasticity,
+  hardening, flow rule, …). The mechanism for binding them together is
+  the subject of [](tutorials-models-cross-referencing) and
+  [](tutorials-models-composition).

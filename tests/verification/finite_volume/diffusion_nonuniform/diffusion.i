@@ -1,4 +1,8 @@
 # neml2
+# Native port of tests/verification/finite_volume/diffusion_nonuniform/diffusion.i.
+# Pure diffusion of a Gaussian pulse on a non-uniform (logarithmically spaced)
+# cell-edge grid; the final profile is compared against the analytical
+# diffused Gaussian.
 D = 0.01
 v = 0.0
 l = -0.0
@@ -8,8 +12,6 @@ w = 0.05
 center = 0.625
 
 t = 1.0
-
-# D_eff = D + |v| * \delta x / 2
 
 # Final height = c0 * w / sqrt(2 * D_eff * t + w^2) * exp(-l*t)
 h_final = 0.3333333333
@@ -21,46 +23,46 @@ final_width = 0.15
 final_center = 0.625
 
 [Tensors]
+  # Non-uniform grid: LogspaceScalar(start=-2, end=0.096910013, nstep=201)
+  # → torch.logspace (base 10) yielding edges in [1e-2, 10^0.096910013 ≈ 1.25].
   [edges]
-    type = LogspaceScalar
-    start = -2
-    end = 0.096910013
-    nstep = 201
-    dim = 0
-    group = 'intermediate'
+    type = Python
+    expr = 'Scalar(torch.logspace(-2, 0.096910013, 201, dtype=torch.float64), sub_batch_ndim=1)'
   []
   [centers]
-    type = CenterScalar
-    points = 'edges'
+    type = Python
+    expr = 'Scalar(0.5 * (edges.data[..., 1:] + edges.data[..., :-1]), sub_batch_ndim=1)'
   []
   [dx_centers]
-    type = DifferenceScalar
-    points = 'centers'
+    type = Python
+    expr = 'Scalar(centers.data[..., 1:] - centers.data[..., :-1], sub_batch_ndim=1)'
   []
   [dx]
-    type = DifferenceScalar
-    points = 'edges'
+    type = Python
+    expr = 'Scalar(edges.data[..., 1:] - edges.data[..., :-1], sub_batch_ndim=1)'
+  []
+  # Broadcast the literal D / v to size-N cell-centered Scalars (the native
+  # LinearlyInterpolateToCellEdges does not auto-broadcast a 0-dim Scalar).
+  [D_const]
+    type = Python
+    expr = 'Scalar(torch.full_like(centers.data, ${D}), sub_batch_ndim=1)'
+  []
+  [v_const]
+    type = Python
+    expr = 'Scalar(torch.full_like(centers.data, ${v}), sub_batch_ndim=1)'
   []
   [ic]
-    type = GaussianScalar
-    points = 'centers'
-    width = ${w}
-    height = ${c0}
-    center = ${center}
+    type = Python
+    expr = 'Scalar(${c0} * torch.exp(-0.5 * ((centers.data - ${center}) / ${w}) ** 2), sub_batch_ndim=1)'
   []
   [time]
-    type = LinspaceScalar
-    start = 0.0
-    end = ${t}
-    nstep = 500
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, ${t}, 500, dtype=torch.float64))'
   []
 
   [result]
-    type = GaussianScalar
-    points = 'centers'
-    width = ${final_width}
-    height = ${h_final}
-    center = ${final_center}
+    type = Python
+    expr = 'Scalar(${h_final} * torch.exp(-0.5 * ((centers.data - ${final_center}) / ${final_width}) ** 2), sub_batch_ndim=1)'
   []
 []
 
@@ -74,7 +76,7 @@ final_center = 0.625
     save_as = 'result.pt'
   []
   [verification]
-    type = VTestVerification
+    type = Verification
     driver = 'driver'
     Scalar_names = 'output.concentration'
     Scalar_values = 'result'
@@ -105,14 +107,14 @@ final_center = 0.625
 [Models]
   [diffusivity]
     type = LinearlyInterpolateToCellEdges
-    cell_values = ${D}
+    cell_values = 'D_const'
     cell_centers = 'centers'
     cell_edges = 'edges'
     edge_values = 'D'
   []
   [advection_velocity]
     type = LinearlyInterpolateToCellEdges
-    cell_values = ${v}
+    cell_values = 'v_const'
     cell_centers = 'centers'
     cell_edges = 'edges'
     edge_values = 'v_edge'

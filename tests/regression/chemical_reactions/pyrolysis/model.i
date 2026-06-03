@@ -26,25 +26,20 @@ zeta = 0.05
 
 [Tensors]
   [yield]
-    type = Scalar
-    values = '${Y}'
+    type = Python
+    expr = 'Scalar(torch.tensor(${Y}, dtype=torch.float64))'
   []
   [endtime]
-    type = Scalar
-    values = '2700'
-    batch_shape = '${nbatch}'
+    type = Python
+    expr = 'Scalar(torch.tensor([2700.0], dtype=torch.float64))'
   []
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = endtime
-    nstep = '${nstep}'
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 2700.0, ${nstep}, dtype=torch.float64).reshape(${nstep}, 1))'
   []
   [T]
-    type = LinspaceScalar
-    start = '300'
-    end = '1500'
-    nstep = '${nstep}'
+    type = Python
+    expr = 'Scalar(torch.linspace(300.0, 1500.0, ${nstep}, dtype=torch.float64))'
   []
 []
 

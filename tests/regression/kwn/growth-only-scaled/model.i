@@ -15,91 +15,72 @@ D = 297794
 
 [Tensors]
   [edges]
-    type = LinspaceScalar
-    start = 0.0
-    end = 1.0
-    nstep = 101
-    dim = 0
-    group = 'intermediate'
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 1.0, 101, dtype=torch.float64), sub_batch_ndim=1)'
   []
   [centers]
-    type = CenterScalar
-    points = 'edges'
+    type = Python
+    expr = 'Scalar(0.5 * (edges.data[..., :-1] + edges.data[..., 1:]), sub_batch_ndim=1)'
   []
   [dx_centers]
-    type = DifferenceScalar
-    points = 'centers'
+    type = Python
+    expr = 'Scalar(centers.data[..., 1:] - centers.data[..., :-1], sub_batch_ndim=1)'
   []
   [dx]
-    type = DifferenceScalar
-    points = 'edges'
+    type = Python
+    expr = 'Scalar(edges.data[..., 1:] - edges.data[..., :-1], sub_batch_ndim=1)'
   []
 
   [scale_factor]
-    type = Scalar
-    values = 5.0
+    type = Python
+    expr = 'Scalar(torch.tensor(5.0, dtype=torch.float64))'
   []
 
   [true_centers]
-    type = SemiInfiniteScalingScalar
-    x = 'centers'
-    s = 'scale_factor'
+    type = Python
+    expr = 'Scalar(scale_factor.data * centers.data / (1.0 - centers.data), sub_batch_ndim=1)'
   []
 
   [center_jacobian]
-    type = SemiInfiniteScalingJacobianScalar
-    x = 'centers'
-    s = 'scale_factor'
+    type = Python
+    expr = 'Scalar(scale_factor.data / (1.0 - centers.data) ** 2, sub_batch_ndim=1)'
   []
   [center_inverse_jacobian]
-    type = SemiInfiniteScalingJacobianScalar
-    x = 'centers'
-    s = 'scale_factor'
-    inverse = true
+    type = Python
+    expr = 'Scalar((1.0 - centers.data) ** 2 / scale_factor.data, sub_batch_ndim=1)'
   []
 
   [unscaled_ic]
-    type = LinspaceScalar
-    start = 1e-12
-    end = 1e-12
-    nstep = 100
-    dim = 0
-    group = 'intermediate'
+    type = Python
+    expr = 'Scalar(1e-12 * torch.ones(100, dtype=torch.float64), sub_batch_ndim=1)'
   []
 
   [ic]
-    type = ProductUserTensorScalar
-    a = 'unscaled_ic'
-    b = 'center_jacobian'
+    type = Python
+    expr = 'Scalar(unscaled_ic.data * center_jacobian.data, sub_batch_ndim=1)'
   []
 
   [time]
-    type = LinspaceScalar
-    start = 0.0
-    end = 100.0
-    nstep = 500
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 100.0, 500, dtype=torch.float64))'
   []
 
   [x0_Cu]
-    type = Scalar
-    values = ${x0_Cu}
+    type = Python
+    expr = 'Scalar(torch.tensor(${x0_Cu}, dtype=torch.float64))'
   []
   [xp_Cu]
-    type = Scalar
-    values = ${xp_Cu}
+    type = Python
+    expr = 'Scalar(torch.tensor(${xp_Cu}, dtype=torch.float64))'
   []
 
   [X_Cu_vary]
-    type = Scalar
-    batch_shape = '(20)'
-    values = '1e-10 0.005 0.01 0.015 0.02 0.025 0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.075 0.08 0.085 0.09 0.095'
-    intermediate_dimension = 1
+    type = Python
+    expr = 'Scalar(torch.tensor([1e-10, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08, 0.085, 0.09, 0.095], dtype=torch.float64), sub_batch_ndim=1)'
   []
   [chem_diff]
-    type = Scalar
-    batch_shape = '(20)'
-    values = '-8296.144765949808 4829.582140453559 4829.582140453546 4829.582140453556 4829.582140453537 4829.582140453549 4829.5821404535445 4829.5821404535445 4829.582140453554 4829.582140453549 4829.582140453542 4829.582140453542 4829.582140453532 4829.582140453542 4829.582140453554 4829.5821404535445 4829.582140453552 4829.582140453537 4829.5821404535445 4829.582140453542'
-    intermediate_dimension = 1
+    type = Python
+    expr = 'Scalar(torch.tensor([-8296.144765949808, 4829.582140453559, 4829.582140453546, 4829.582140453556, 4829.582140453537, 4829.582140453549, 4829.5821404535445, 4829.5821404535445, 4829.582140453554, 4829.582140453549, 4829.582140453542, 4829.582140453542, 4829.582140453532, 4829.582140453542, 4829.582140453554, 4829.5821404535445, 4829.582140453552, 4829.582140453537, 4829.5821404535445, 4829.582140453542], dtype=torch.float64), sub_batch_ndim=1)'
   []
 []
 
@@ -224,8 +205,6 @@ D = 297794
   []
   [implicit_rate]
     type = ComposedModel
-    automatic_nonlinear_parameter = true
-    jit = false
     models = 'input_temperature growth_rate scaled_cell_velocity advection_velocity advective_flux left_bc right_bc flux_divergence integrate_u unscale volume_fraction x_Cu diffusivity_sum'
   []
   [predictor]

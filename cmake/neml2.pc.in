@@ -4,6 +4,6 @@ libdir=@NEML2_PKGCONFIG_LIBDIR@
 includedir=${prefix}/include
 
 Name: neml2
-Description: NEML2 - New Engineering material Model Library
+Description: NEML2 - New Engineering material Model Library (libneml2_aoti + dependency flags)
 Version: @PROJECT_VERSION@
 Requires: neml2-core$<IF:$<CONFIG:Release>,,_$<CONFIG>> @NEML2_PKGCONFIG_REQUIRES@

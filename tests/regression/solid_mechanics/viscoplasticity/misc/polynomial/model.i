@@ -1,115 +1,73 @@
 # neml2
 [Tensors]
+  # end_time: LogspaceScalar(-3, -3, 20) -> shape (20,), all 1e-3
   [end_time]
-    type = LogspaceScalar
-    start = -3
-    end = -3
-    nstep = 20
+    type = Python
+    expr = 'Scalar(torch.logspace(-3.0, -3.0, 20, dtype=torch.float64))'
   []
+  # times: LinspaceScalar(0, end_time, 100) -> shape (100, 20)
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
+    type = Python
+    expr = 'Scalar(end_time.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))'
   []
   [start_temperature]
-    type = LinspaceScalar
-    start = 100
-    end = 1000
-    nstep = 20
+    type = Python
+    expr = 'Scalar(torch.linspace(100.0, 1000.0, 20, dtype=torch.float64))'
   []
   [end_temperature]
-    type = LinspaceScalar
-    start = 200
-    end = 1500
-    nstep = 20
+    type = Python
+    expr = 'Scalar(torch.linspace(200.0, 1500.0, 20, dtype=torch.float64))'
   []
+  # temperatures: LinspaceScalar(start, end, 100) -> shape (100, 20)
   [temperatures]
-    type = LinspaceScalar
-    start = start_temperature
-    end = end_temperature
-    nstep = 100
+    type = Python
+    expr = 'Scalar(start_temperature.data.unsqueeze(0) + (end_temperature.data - start_temperature.data).unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))'
   []
-  [exx]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.1
-  []
-  [eyy]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.05
-  []
-  [ezz]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.05
-  []
+  # max_strain: SR2 with components (exx=0.1, eyy=-0.05, ezz=-0.05, 0, 0, 0) batched (20,)
   [max_strain]
-    type = FillSR2
-    values = 'exx eyy ezz'
+    type = Python
+    expr = 'SR2(torch.tensor([0.1, -0.05, -0.05, 0.0, 0.0, 0.0], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
   []
+  # strains: LinspaceSR2(0, max_strain, 100) -> shape (100, 20, 6)
   [strains]
-    type = LinspaceSR2
-    start = 0
-    end = max_strain
-    nstep = 100
+    type = Python
+    expr = 'SR2(max_strain.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).reshape(100, 1, 1))'
   []
   [s1_0]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0
+    type = Python
+    expr = 'Scalar(torch.zeros(20, dtype=torch.float64))'
   []
   [s2_0]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0
+    type = Python
+    expr = 'Scalar(torch.zeros(20, dtype=torch.float64))'
   []
   [A0]
-    type = Tensor
-    values = '1e-6 1e-6 1e-6 1e-6 1e-6 1e-6 1e-6 1e-6 1e-6
-              1e-6 1e-6 1e-6 1e-6 1e-6 1e-6 1e-6 1e-6 1e-6'
-    base_shape = '(2,3,3)'
+    type = Python
+    expr = 'torch.full((2, 3, 3), 1e-6, dtype=torch.float64)'
   []
   [A1]
-    type = Tensor
-    values = '1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6
-              1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6
-              1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6
-              1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6
-              1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6
-              1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6'
-    base_shape = '(2,3,3,4)'
+    type = Python
+    expr = 'torch.tensor([1e-6, 2e-6, 3e-6, 4e-6], dtype=torch.float64).reshape(1, 1, 1, 4).expand(2, 3, 3, 4).contiguous()'
   []
   [A2]
-    type = Tensor
-    values = '1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6
-              1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6
-              1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6
-              1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6
-              1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6
-              1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6 1e-6 2e-6 3e-6 4e-6'
-    base_shape = '(2,3,3,4)'
+    type = Python
+    expr = 'torch.tensor([1e-6, 2e-6, 3e-6, 4e-6], dtype=torch.float64).reshape(1, 1, 1, 4).expand(2, 3, 3, 4).contiguous()'
   []
   [s_lb]
-    type = Tensor
-    values = '0 50'
-    base_shape = (2)
+    type = Python
+    expr = 'torch.tensor([0.0, 50.0], dtype=torch.float64)'
   []
   [s_ub]
-    type = Tensor
-    values = '50 100'
-    base_shape = (2)
+    type = Python
+    expr = 'torch.tensor([50.0, 100.0], dtype=torch.float64)'
   []
   [T_lb]
-    type = Tensor
-    values = '0 300 600'
-    base_shape = (3)
+    type = Python
+    expr = 'torch.tensor([0.0, 300.0, 600.0], dtype=torch.float64)'
   []
   [T_ub]
-    type = Tensor
-    values = '300 600 1000'
-    base_shape = (3)
+    type = Python
+    expr = 'torch.tensor([300.0, 600.0, 1000.0], dtype=torch.float64)'
   []
 []
 
@@ -210,7 +168,6 @@
   []
   [rom]
     type = TabulatedPolynomialModel
-    jit = false
     von_mises_stress = 'vonmises_stress'
     temperature = 'temperature'
     internal_state_1 = 's1'

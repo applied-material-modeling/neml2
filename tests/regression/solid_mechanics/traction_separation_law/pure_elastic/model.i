@@ -4,24 +4,12 @@
 # T = diag(K_n, K_t, K_t) * delta. No internal state.
 [Tensors]
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = 1
-    nstep = 30
-  []
-  [zero_jump]
-    type = Vec
-    values = '0.0 0.0 0.0'
-  []
-  [max_jump]
-    type = Vec
-    values = '0.05 0.02 -0.01'
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 1.0, 30, dtype=torch.float64))'
   []
   [jumps]
-    type = LinspaceVec
-    start = zero_jump
-    end = max_jump
-    nstep = 30
+    type = Python
+    expr = 'Vec(torch.linspace(0.0, 1.0, 30, dtype=torch.float64).reshape(30, 1) * torch.tensor([0.05, 0.02, -0.01], dtype=torch.float64))'
   []
 []
 

@@ -1,70 +1,54 @@
 # neml2
+# Native port of tests/regression/solid_mechanics/viscoplasticity/free_sintering/model.i.
+# Free sintering at zero applied strain with thermal eigenstrain + Olevsky-Skorohod
+# sintering stress driving GTN poroplasticity. Batch (100, 10): 100 time steps,
+# 10 surface-tension values (gamma in [0, 150]).
 [Tensors]
+  # end_time = LogspaceScalar(3, 3, 10) -> 10 copies of 10^3 = 1000.
   [end_time]
-    type = LogspaceScalar
-    start = 3
-    end = 3
-    nstep = 10
+    type = Python
+    expr = 'Scalar(torch.logspace(3.0, 3.0, 10, dtype=torch.float64))'
   []
+  # times = LinspaceScalar(0, end_time, 100) -> shape (100, 10).
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
+    type = Python
+    expr = 'Scalar(end_time.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))'
   []
+  # start_temperature = LinspaceScalar(300, 300, 10) -> 10 copies of 300.
   [start_temperature]
-    type = LinspaceScalar
-    start = 300
-    end = 300
-    nstep = 10
+    type = Python
+    expr = 'Scalar(torch.linspace(300.0, 300.0, 10, dtype=torch.float64))'
   []
+  # end_temperature = LinspaceScalar(1800, 1800, 10) -> 10 copies of 1800.
   [end_temperature]
-    type = LinspaceScalar
-    start = 1800
-    end = 1800
-    nstep = 10
+    type = Python
+    expr = 'Scalar(torch.linspace(1800.0, 1800.0, 10, dtype=torch.float64))'
   []
+  # temperatures = LinspaceScalar(start_temperature, end_temperature, 100) -> (100, 10).
   [temperatures]
-    type = LinspaceScalar
-    start = start_temperature
-    end = end_temperature
-    nstep = 100
+    type = Python
+    expr = 'Scalar(start_temperature.data.unsqueeze(0) + (end_temperature.data - start_temperature.data).unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))'
   []
-  [exx]
-    type = FullScalar
-    batch_shape = '(10)'
-    value = 0
-  []
-  [eyy]
-    type = FullScalar
-    batch_shape = '(10)'
-    value = 0
-  []
-  [ezz]
-    type = FullScalar
-    batch_shape = '(10)'
-    value = 0
-  []
+  # max_strain = FillSR2(exx=0, eyy=0, ezz=0) batched (10,) -> all zeros.
+  # Diagonal 3-arg fill places exx/eyy/ezz on slots 0/1/2 with no Mandel scaling.
   [max_strain]
-    type = FillSR2
-    values = 'exx eyy ezz'
+    type = Python
+    expr = 'SR2(torch.zeros((10, 6), dtype=torch.float64))'
   []
+  # strains = LinspaceSR2(0, max_strain, 100) -> (100, 10, 6), all zeros.
   [strains]
-    type = LinspaceSR2
-    start = 0
-    end = max_strain
-    nstep = 100
+    type = Python
+    expr = 'SR2(torch.zeros((100, 10, 6), dtype=torch.float64))'
   []
+  # f0 = FullScalar(0.36, (10,))
   [f0]
-    type = FullScalar
-    value = '0.36'
-    batch_shape = '(10)'
+    type = Python
+    expr = 'Scalar(torch.full((10,), 0.36, dtype=torch.float64))'
   []
+  # gamma = LinspaceScalar(0, 150, 10) -> shape (10,)
   [gamma]
-    type = LinspaceScalar
-    start = 0
-    end = 150
-    nstep = 10
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 150.0, 10, dtype=torch.float64))'
   []
 []
 

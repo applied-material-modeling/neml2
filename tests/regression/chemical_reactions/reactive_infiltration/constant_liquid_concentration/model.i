@@ -13,15 +13,12 @@ oSiCm1 = 0.08
 
 [Tensors]
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = 1e4
-    nstep = ${ntime}
+    type = Python
+    expr = 'Scalar(torch.linspace(0, 1e4, 200, dtype=torch.float64))'
   []
   [alpha]
-    type = FullScalar
-    batch_shape = '(200)'
-    value = 0.01
+    type = Python
+    expr = 'Scalar(torch.full((200,), 0.01, dtype=torch.float64))'
   []
 []
 
