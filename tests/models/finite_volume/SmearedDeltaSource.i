@@ -15,11 +15,11 @@
 [Tensors]
   [mag]
     type = Python
-    expr = 'Scalar(torch.tensor(2.0))'
+    expr = 'Scalar(2.0)'
   []
   [loc]
     type = Python
-    expr = 'Scalar(torch.tensor(0.2))'
+    expr = 'Scalar(0.2)'
   []
   [centers]
     type = Python

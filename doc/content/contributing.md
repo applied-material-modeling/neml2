@@ -174,7 +174,7 @@ The doc pipeline is `sphinx-build` driven by `doc/conf.py`:
 
 ```shell
 pip install -e ".[dev]" -v   # sphinx + extensions land here
-sphinx-build -b html doc doc/_build/html
+sphinx-build -j auto -b html doc doc/_build/html
 xdg-open doc/_build/html/index.html      # macOS: `open ...`
 ```
 

@@ -23,7 +23,7 @@
 [Tensors]
   [beta_val]
     type = Python
-    expr = 'Scalar(torch.tensor(0.5))'
+    expr = 'Scalar(0.5)'
   []
 []
 

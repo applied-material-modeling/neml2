@@ -85,9 +85,9 @@ class ResolvedShear(Model):
         # ``M.data``'s nslip is at axis -2; ``stress.data.unsqueeze(-2)`` puts
         # a singleton at axis -2 so the multiply broadcasts (1 vs nslip → nslip).
         M = self._cg.M  # SR2 sub_batch=1
-        R_sb = R.sub_batch_unsqueeze(-1)
+        R_sb = R.sub_batch.unsqueeze(-1)
         M_rot = rotate_sym(M, R_sb)  # SR2 (..., nslip, 6)
-        stress_sb = stress.sub_batch_unsqueeze(-1)
+        stress_sb = stress.sub_batch.unsqueeze(-1)
         rss = inner(M_rot, stress_sb)
         if v is None:
             return rss
@@ -97,10 +97,10 @@ class ResolvedShear(Model):
         #   R:      dτ = d(sym(R M Rᵀ)) : σ via the jvp_rotate_sym primitive
         #           (product rule in 3×3, no leaf-level Jacobian).
         def stress_action(V: SR2) -> Scalar:
-            return inner(M_rot, V.sub_batch_unsqueeze(-1))
+            return inner(M_rot, V.sub_batch.unsqueeze(-1))
 
         def R_action(V: R2) -> Scalar:
-            return inner(jvp_rotate_sym(M, R_sb, V.sub_batch_unsqueeze(-1)), stress_sb)
+            return inner(jvp_rotate_sym(M, R_sb, V.sub_batch.unsqueeze(-1)), stress_sb)
 
         return rss, self.apply_chain_rule(
             v,

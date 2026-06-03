@@ -17,12 +17,12 @@
   # start_temperature = LinspaceScalar(300, 300, 10) -> 10 copies of 300.
   [start_temperature]
     type = Python
-    expr = 'Scalar(torch.linspace(300.0, 300.0, 10, dtype=torch.float64))'
+    expr = 'Scalar.linspace(300.0, 300.0, 10)'
   []
   # end_temperature = LinspaceScalar(1800, 1800, 10) -> 10 copies of 1800.
   [end_temperature]
     type = Python
-    expr = 'Scalar(torch.linspace(1800.0, 1800.0, 10, dtype=torch.float64))'
+    expr = 'Scalar.linspace(1800.0, 1800.0, 10)'
   []
   # temperatures = LinspaceScalar(start_temperature, end_temperature, 100) -> (100, 10).
   [temperatures]
@@ -43,12 +43,12 @@
   # f0 = FullScalar(0.36, (10,))
   [f0]
     type = Python
-    expr = 'Scalar(torch.full((10,), 0.36, dtype=torch.float64))'
+    expr = 'Scalar.full(10, fill_value=0.36)'
   []
   # gamma = LinspaceScalar(0, 150, 10) -> shape (10,)
   [gamma]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 150.0, 10, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, 150.0, 10)'
   []
 []
 

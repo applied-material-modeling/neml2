@@ -30,8 +30,11 @@ flattens cleanly at the export boundary while the authoring surface stays
 strongly typed inside `nn.Module.forward()`.
 
 Operator overloads (``+``, ``-``, ``*``, ``@``, ``-x``, ``abs(x)``, ``x ** n``)
-live on the wrapper classes along with constructors and pure shape/dim
-traits ($T$, ``with_sub_batch``); everything else (invariants,
+live on the wrapper classes along with constructors. Shape-manipulation
+ops are exposed through region-view properties (``t.batch``,
+``t.dynamic_batch``, ``t.sub_batch``, ``t.base``) so the intent is
+unambiguous — e.g. ``t.sub_batch.unsqueeze(-1)`` or
+``t.base.transpose(-2, -1)``. Everything else (invariants,
 decompositions, transcendentals, math-bearing type conversions like
 ``euler_rodrigues(Rot) -> R2``) lives in :mod:`neml2.types.functions`
 as free functions, matching how the C++ side exposes them.

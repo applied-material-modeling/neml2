@@ -7,19 +7,19 @@
 [Tensors]
   [alpha_x]
     type = Python
-    expr = 'Scalar(torch.tensor([300., 400., 500.], dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar([300., 400., 500.]).sub_batch.retag(1)'
   []
   [alpha_y]
     type = Python
-    expr = 'Scalar(torch.tensor([1e-5, 1.5e-5, 1.8e-5], dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar([1e-5, 1.5e-5, 1.8e-5]).sub_batch.retag(1)'
   []
   [E_x]
     type = Python
-    expr = 'Scalar(torch.tensor([300., 350., 400., 450.], dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar([300., 350., 400., 450.]).sub_batch.retag(1)'
   []
   [E_y]
     type = Python
-    expr = 'Scalar(torch.tensor([2.0e5, 1.9e5, 1.8e5, 1.7e5], dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar([2.0e5, 1.9e5, 1.8e5, 1.7e5]).sub_batch.retag(1)'
   []
 []
 

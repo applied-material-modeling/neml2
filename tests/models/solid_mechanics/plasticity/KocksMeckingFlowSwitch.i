@@ -23,10 +23,10 @@
 [Tensors]
   [g]
     type = Python
-    expr = 'Scalar(torch.linspace(0.1, 0.9, 5))'
+    expr = 'Scalar.linspace(0.1, 0.9, 5)'
   []
   [fr_correct]
     type = Python
-    expr = 'Scalar(torch.tensor([0.53927387, 0.5753837, 0.625, 0.6746163, 0.71072613]))'
+    expr = 'Scalar([0.53927387, 0.5753837, 0.625, 0.6746163, 0.71072613])'
   []
 []

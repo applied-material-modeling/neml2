@@ -123,7 +123,7 @@ Operationally:
 
 - Default `sub_batch_ndim = 0`. Models that don't need the distinction
   ignore it; everything sits in the dynamic region.
-- Promote axes to sub-batch with `.with_sub_batch(n)` (`n` = number of
+- Promote axes to sub-batch with `.sub_batch.retag(n)` (`n` = number of
   trailing batch axes to mark). The most common case is `n = 1`
   marking a lookup-table or per-cell axis.
 - Sub-batch dims do NOT participate in dynamic-batch broadcasting.
@@ -139,7 +139,7 @@ import torch
 
 T_controls = Scalar(
     torch.linspace(300.0, 1200.0, 20, dtype=torch.float64)
-).with_sub_batch(1)
+).sub_batch.retag(1)
 ```
 
 This marks the trailing length-20 axis as the sub-batch (interpolation
@@ -147,13 +147,13 @@ control points), so any model consuming `T_controls` accumulates its
 chain-rule contribution across that axis without conflating it with
 the dynamic per-state batch.
 
-`.with_sub_batch(n)` is also accepted inside a `[Tensors]` HIT block:
+`.sub_batch.retag(n)` is also accepted inside a `[Tensors]` HIT block:
 
 ```ini
 [Tensors]
   [T_controls]
     type = Python
-    expr = 'Scalar(torch.linspace(300.0, 1200.0, 20, dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar(torch.linspace(300.0, 1200.0, 20, dtype=torch.float64)).sub_batch.retag(1)'
   []
 []
 ```

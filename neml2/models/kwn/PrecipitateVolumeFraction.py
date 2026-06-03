@@ -86,7 +86,7 @@ class PrecipitateVolumeFraction(Model):
         # sub-batch sum line up. A true scalar radius (no per-bin axis) has
         # data shape ``()`` and falls through unchanged — broadcast handles it.
         if n.sub_batch_ndim > R.sub_batch_ndim and R.data.ndim >= n.sub_batch_ndim:
-            R = R.with_sub_batch(n.sub_batch_ndim)
+            R = R.sub_batch.retag(n.sub_batch_ndim)
 
         # Forward: f = sum_i (4/3) π R_i^3 n_i. Typed Scalar algebra; both R
         # and n carry sub_batch_ndim>=1 over the size-bin axis, then we reduce

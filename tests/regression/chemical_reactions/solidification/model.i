@@ -13,7 +13,7 @@ Tf = 1700
   []
   [T]
     type = Python
-    expr = 'Scalar(torch.linspace(1800.0, 1400.0, 100, dtype=torch.float64))'
+    expr = 'Scalar.linspace(1800.0, 1400.0, 100)'
   []
 []
 

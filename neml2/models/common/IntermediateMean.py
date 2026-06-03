@@ -59,14 +59,14 @@ class SR2IntermediateMean(Model):
         x: SR2,
         v: ChainRuleDict | None = None,
     ):
-        out = cast(SR2, sub_batch_mean(x.with_sub_batch(1), -1))
+        out = cast(SR2, sub_batch_mean(x.sub_batch.retag(1), -1))
         if v is None:
             return out
 
         def action(V: SR2) -> SR2:
             # Mirror forward: retag the incoming tangent with sub_batch_ndim=1
             # so it carries the same intermediate axis the reduction collapses.
-            return cast(SR2, sub_batch_mean(V.with_sub_batch(1), -1))
+            return cast(SR2, sub_batch_mean(V.sub_batch.retag(1), -1))
 
         return out, self.apply_chain_rule(v, "to", {"from": action}, output=out)
 

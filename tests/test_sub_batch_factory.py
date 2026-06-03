@@ -25,7 +25,7 @@
 """Factory HIT integration — sub-batch tagging via method chaining in ``expr``.
 
 Sub-batch metadata lives entirely in the wrapper, so the HIT ``expr`` string
-is the single source of truth: users chain ``.with_sub_batch(N)`` (and other
+is the single source of truth: users chain ``.sub_batch.retag(N)`` (and other
 sub-batch ops) on the result. No parallel HIT option is needed.
 """
 
@@ -64,17 +64,17 @@ def test_python_tensor_without_chain_has_no_sub_batch(tmp_path):
     assert t.shape == torch.Size([5])
 
 
-# ---------- with_sub_batch via expr chain ----------
+# ---------- sub_batch.retag via expr chain ----------
 
 
-def test_with_sub_batch_in_expr_promotes_trailing_axis(tmp_path):
+def test_sub_batch_retag_in_expr_promotes_trailing_axis(tmp_path):
     inp = _write_hit(
         tmp_path,
         """
 [Tensors]
   [bins]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 5, dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar(torch.linspace(0.0, 1.0, 5, dtype=torch.float64)).sub_batch.retag(1)'
   []
 []
 """,
@@ -86,14 +86,14 @@ def test_with_sub_batch_in_expr_promotes_trailing_axis(tmp_path):
     assert t.dynamic_batch_shape == torch.Size([])
 
 
-def test_with_sub_batch_two_dims_in_expr(tmp_path):
+def test_sub_batch_retag_two_dims_in_expr(tmp_path):
     inp = _write_hit(
         tmp_path,
         """
 [Tensors]
   [field]
     type = Python
-    expr = 'Scalar(torch.zeros(3, 4, dtype=torch.float64)).with_sub_batch(2)'
+    expr = 'Scalar(torch.zeros(3, 4, dtype=torch.float64)).sub_batch.retag(2)'
   []
 []
 """,
@@ -104,14 +104,14 @@ def test_with_sub_batch_two_dims_in_expr(tmp_path):
     assert t.sub_batch_shape == torch.Size([3, 4])
 
 
-def test_with_sub_batch_in_expr_on_sr2(tmp_path):
+def test_sub_batch_retag_in_expr_on_sr2(tmp_path):
     inp = _write_hit(
         tmp_path,
         """
 [Tensors]
   [stresses]
     type = Python
-    expr = 'SR2(torch.zeros(7, 6, dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'SR2(torch.zeros(7, 6, dtype=torch.float64)).sub_batch.retag(1)'
   []
 []
 """,
@@ -126,7 +126,7 @@ def test_with_sub_batch_in_expr_on_sr2(tmp_path):
 # ---------- chained sub-batch ops in expr ----------
 
 
-def test_with_sub_batch_then_expand_in_expr(tmp_path):
+def test_sub_batch_retag_then_expand_at_in_expr(tmp_path):
     """The whole sub-batch op surface is reachable from inside ``expr``."""
     inp = _write_hit(
         tmp_path,
@@ -136,7 +136,7 @@ def test_with_sub_batch_then_expand_in_expr(tmp_path):
     type = Python
     expr = '''
       bins = Scalar(torch.tensor([1.0, 2.0, 3.0], dtype=torch.float64))
-      result = bins.with_sub_batch(1).sub_batch_expand(4)
+      result = bins.sub_batch.retag(1).sub_batch.expand_at(4)
     '''
   []
 []
@@ -145,7 +145,7 @@ def test_with_sub_batch_then_expand_in_expr(tmp_path):
     t = inp.get_tensor("tiled")
     assert isinstance(t, Scalar)
     assert t.sub_batch_ndim == 2
-    # ``sub_batch_expand`` inserts at sub-batch position 0 (the leading slot),
+    # ``sub_batch.expand_at`` inserts at sub-batch position 0 (the leading slot),
     # so the new size-4 axis precedes the original size-3 axis.
     assert t.sub_batch_shape == torch.Size([4, 3])
     # Every row of the new leading axis carries the same (1, 2, 3) values.
@@ -153,7 +153,7 @@ def test_with_sub_batch_then_expand_in_expr(tmp_path):
         assert torch.equal(t.data[k], torch.tensor([1.0, 2.0, 3.0], dtype=torch.float64))
 
 
-def test_with_sub_batch_then_diagonalize_in_expr(tmp_path):
+def test_sub_batch_retag_then_diagonalize_in_expr(tmp_path):
     """Chained diagonalize materialises an (L, L) per-site block."""
     inp = _write_hit(
         tmp_path,
@@ -163,7 +163,7 @@ def test_with_sub_batch_then_diagonalize_in_expr(tmp_path):
     type = Python
     expr = '''
       vals = Scalar(torch.tensor([2.0, 3.0, 5.0], dtype=torch.float64))
-      result = vals.with_sub_batch(1).sub_batch_diagonalize()
+      result = vals.sub_batch.retag(1).sub_batch.diagonalize()
     '''
   []
 []
@@ -175,7 +175,7 @@ def test_with_sub_batch_then_diagonalize_in_expr(tmp_path):
     assert torch.equal(t.data, torch.diag(torch.tensor([2.0, 3.0, 5.0], dtype=torch.float64)))
 
 
-def test_with_sub_batch_chain_in_multiline_expr(tmp_path):
+def test_sub_batch_chain_in_multiline_expr(tmp_path):
     """Multi-line ``'''...'''`` expr (nmhit 0.2.0+) hosts wrapped chains too.
 
     Python method chains need explicit parens to span lines; the chained
@@ -191,8 +191,8 @@ def test_with_sub_batch_chain_in_multiline_expr(tmp_path):
     expr = '''
       bins = Scalar(torch.tensor([1.0, 2.0, 3.0], dtype=torch.float64))
       result = (bins
-                  .with_sub_batch(1)
-                  .sub_batch_expand(4))
+                  .sub_batch.retag(1)
+                  .sub_batch.expand_at(4))
     '''
   []
 []
@@ -230,7 +230,7 @@ def test_intermediate_tensor_resolves_through_declare_typed_parameter(tmp_path):
 [Tensors]
   [per_bin_k]
     type = Python
-    expr = 'Scalar(torch.tensor([1.0, 2.0, 3.0], dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar(torch.tensor([1.0, 2.0, 3.0], dtype=torch.float64)).sub_batch.retag(1)'
   []
 []
 """,

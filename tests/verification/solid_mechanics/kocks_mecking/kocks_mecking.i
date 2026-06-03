@@ -10,7 +10,7 @@
 # mu_values as ``Scalar(values, batch_shape=(3), intermediate_dimension=1)``,
 # meaning the trailing 3-element axis is the interpolation-table axis (not a
 # dynamic batch axis). The native equivalent is
-# ``Scalar(torch.tensor([...])).with_sub_batch(1)`` — marking the trailing
+# ``Scalar(torch.tensor([...])).sub_batch.retag(1)`` — marking the trailing
 # dim as a sub-batch axis.
 [Tensors]
   [times]
@@ -36,15 +36,15 @@
 
   [T_controls]
     type = Python
-    expr = 'Scalar(torch.tensor([750.0, 850.0, 950.0], dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar([750.0, 850.0, 950.0]).sub_batch.retag(1)'
   []
   [E_values]
     type = Python
-    expr = 'Scalar(torch.tensor([200000.0, 175000.0, 150000.0], dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar([200000.0, 175000.0, 150000.0]).sub_batch.retag(1)'
   []
   [mu_values]
     type = Python
-    expr = 'Scalar(torch.tensor([76923.07692308, 67307.69230769, 57692.30769231], dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar([76923.07692308, 67307.69230769, 57692.30769231]).sub_batch.retag(1)'
   []
 []
 

@@ -256,10 +256,10 @@ class _NativeInputFile:
             self._evaluating.discard(name)
 
         # Sub-batch tagging happens inside ``expr`` via method chaining on the
-        # returned wrapper — ``Scalar(torch.linspace(0, 1, 5)).with_sub_batch(1)``.
+        # returned wrapper — ``Scalar.linspace(0, 1, 5).sub_batch.retag(1)``.
         # That keeps a single source of truth for the tensor pipeline (and lets
-        # users compose ``.sub_batch_expand``, ``.sub_batch_diagonalize`` etc.
-        # without a parallel HIT option for each).
+        # users compose ``.sub_batch.expand_at(...)``, ``.sub_batch.diagonalize()``
+        # etc. without a parallel HIT option for each).
 
         self._cache[key] = result
         return result

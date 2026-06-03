@@ -15,7 +15,7 @@
 [Tensors]
   [mag]
     type = Python
-    expr = 'Scalar(torch.tensor(2.5))'
+    expr = 'Scalar(2.5)'
   []
   [centers]
     type = Python

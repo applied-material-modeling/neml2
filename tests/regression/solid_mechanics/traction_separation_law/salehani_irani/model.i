@@ -4,7 +4,7 @@
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 40, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, 1.0, 40)'
   []
   [jumps]
     type = Python

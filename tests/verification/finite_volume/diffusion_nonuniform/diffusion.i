@@ -57,7 +57,7 @@ final_center = 0.625
   []
   [time]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, ${t}, 500, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, ${t}, 500)'
   []
 
   [result]

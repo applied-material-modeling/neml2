@@ -5,7 +5,7 @@
   []
   [mu]
     type = Python
-    expr = 'Scalar(torch.tensor(0.001, dtype=torch.float64))'
+    expr = 'Scalar(0.001)'
   []
   [v_in]
     type = Python

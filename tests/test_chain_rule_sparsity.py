@@ -510,7 +510,7 @@ def test_diamond_one_dense_path_jvp_matches_autograd():
                 return V
 
             def mid2_action(V):
-                return V.sub_batch_expand(self._L, -1)
+                return V.sub_batch.expand_at(self._L, -1)
 
             actions = {"mid1": mid1_action, "mid2": mid2_action}
             return y, self.apply_chain_rule(v, "y", actions, output=y)

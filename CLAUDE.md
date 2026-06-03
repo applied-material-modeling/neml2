@@ -57,7 +57,7 @@ When adding a `Model` subclass, use the `/add-model` skill; for a regression or 
 Sphinx with the shibuya theme and MyST-NB. Build with:
 
 ```bash
-sphinx-build -W --keep-going -b html doc doc/_build/html
+sphinx-build -j auto -W --keep-going -b html doc doc/_build/html
 ```
 
 The `/build-docs` skill walks through the full pipeline (including notebook execution caching and the auto-generated HIT-syntax catalog). The `neml2` package must be importable for autodoc / `neml2-syntax` to introspect the registered objects — an editable `pip install -e ".[dev]"` is enough.

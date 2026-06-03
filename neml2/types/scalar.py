@@ -83,6 +83,77 @@ class Scalar(TensorWrapper):
         """Construct a Scalar inheriting dtype/device from an existing wrapper."""
         return cls(x, dtype=like.dtype, device=like.device)
 
+    # ---- torch-analogue factories ----
+    #
+    # All factories mirror the torch creation API (``zeros``, ``ones``, ``full``,
+    # ``linspace``, ``arange``) but accept the dynamic batch shape as ``*shape``
+    # positional arguments and default to ``float64``. Sub-batch tagging is
+    # composed post-hoc via the fluent ``Scalar.linspace(...).sub_batch.retag(n)``.
+    #
+    # ``Scalar.full`` takes ``*shape`` first then ``fill_value`` as a keyword,
+    # mirroring the existing ``Vec.zeros(*batch, ...)`` signature on the other
+    # wrappers — not torch's ``(shape, value)`` order.
+
+    @classmethod
+    def zeros(
+        cls,
+        *shape: int,
+        dtype: torch.dtype | None = None,
+        device: torch.device | str | None = None,
+    ) -> Scalar:
+        """Scalar of shape ``shape`` filled with zeros."""
+        return cls(torch.zeros(*shape, dtype=dtype or torch.float64, device=device))
+
+    @classmethod
+    def ones(
+        cls,
+        *shape: int,
+        dtype: torch.dtype | None = None,
+        device: torch.device | str | None = None,
+    ) -> Scalar:
+        """Scalar of shape ``shape`` filled with ones."""
+        return cls(torch.ones(*shape, dtype=dtype or torch.float64, device=device))
+
+    @classmethod
+    def full(
+        cls,
+        *shape: int,
+        fill_value: float,
+        dtype: torch.dtype | None = None,
+        device: torch.device | str | None = None,
+    ) -> Scalar:
+        """Scalar of shape ``shape`` filled with ``fill_value``."""
+        return cls(torch.full(shape, fill_value, dtype=dtype or torch.float64, device=device))
+
+    @classmethod
+    def linspace(
+        cls,
+        start: float,
+        end: float,
+        steps: int,
+        *,
+        dtype: torch.dtype | None = None,
+        device: torch.device | str | None = None,
+    ) -> Scalar:
+        """``steps`` values uniformly spaced from ``start`` to ``end`` inclusive."""
+        return cls(torch.linspace(start, end, steps, dtype=dtype or torch.float64, device=device))
+
+    @classmethod
+    def arange(
+        cls,
+        start: float,
+        end: float | None = None,
+        step: float = 1,
+        *,
+        dtype: torch.dtype | None = None,
+        device: torch.device | str | None = None,
+    ) -> Scalar:
+        """Like ``torch.arange``: ``arange(N)`` -> ``[0, …, N-1]``, ``arange(a, b, s)``
+        -> ``[a, a+s, …]`` up to (excluding) ``b``."""
+        if end is None:
+            return cls(torch.arange(start, dtype=dtype or torch.float64, device=device))
+        return cls(torch.arange(start, end, step, dtype=dtype or torch.float64, device=device))
+
     # ---- arithmetic with Scalar / float / int ----
     #
     # Every binary op routes through :func:`align_sub_batch` so a global

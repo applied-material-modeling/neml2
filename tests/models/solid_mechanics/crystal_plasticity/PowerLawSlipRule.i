@@ -1,5 +1,5 @@
 # Translated from tests/unit/models/.../PowerLawSlipRule.i. LinspaceScalar with
-# group='intermediate' -> Scalar(torch.linspace(...)).with_sub_batch(1); the
+# group='intermediate' -> Scalar(torch.linspace(...)).sub_batch.retag(1); the
 # expected rates are a 12-entry per-slip Scalar (intermediate_dimension=1).
 [Drivers]
   [unit]
@@ -18,11 +18,11 @@
 [Tensors]
   [tau]
     type = Python
-    expr = 'Scalar(torch.linspace(-100, 200, 12)).with_sub_batch(1)'
+    expr = 'Scalar.linspace(-100, 200, 12).sub_batch.retag(1)'
   []
   [tau_bar]
     type = Python
-    expr = 'Scalar(torch.linspace(50, 250, 12)).with_sub_batch(1)'
+    expr = 'Scalar.linspace(50, 250, 12).sub_batch.retag(1)'
   []
   [rates]
     type = Python

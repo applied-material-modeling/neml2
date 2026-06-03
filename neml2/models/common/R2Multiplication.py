@@ -101,11 +101,11 @@ class R2Multiplication(Model):
         # nonsingular 3x3, so the order chosen here just matches the C++ code.
         Aop = inv(A) if self._invA else A
         if self._transA:
-            Aop = Aop.T
+            Aop = Aop.base.transpose(-2, -1)
 
         Bop = inv(B) if self._invB else B
         if self._transB:
-            Bop = Bop.T
+            Bop = Bop.base.transpose(-2, -1)
 
         C = Aop @ Bop
         if v is None:
@@ -122,13 +122,13 @@ class R2Multiplication(Model):
         # on the outer matmul. Each input contributes independently.
 
         def A_action(V: R2) -> R2:
-            dAop = V.T if self._transA else V
+            dAop = V.base.transpose(-2, -1) if self._transA else V
             if self._invA:
                 dAop = -(Aop @ dAop @ Aop)
             return dAop @ Bop
 
         def B_action(V: R2) -> R2:
-            dBop = V.T if self._transB else V
+            dBop = V.base.transpose(-2, -1) if self._transB else V
             if self._invB:
                 dBop = -(Bop @ dBop @ Bop)
             return Aop @ dBop

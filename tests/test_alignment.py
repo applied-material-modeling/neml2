@@ -395,8 +395,8 @@ def test_sr2_subtraction_matches_hand_aligned():
     g = _make(SR2, B, (), 0)
     p = _make(SR2, B, (N,), 1)
     aligned = g - p
-    # Hand reference: pre-pad g via sub_batch_unsqueeze before raw subtract.
-    g_padded = g.sub_batch_unsqueeze(0, 1)
+    # Hand reference: pre-pad g via sub_batch.unsqueeze before raw subtract.
+    g_padded = g.sub_batch.unsqueeze(0, 1)
     reference = g_padded.data - p.data
     assert torch.equal(aligned.data, reference)
 
@@ -406,6 +406,6 @@ def test_r2_matmul_matches_hand_aligned():
     g = _make(R2, B, (), 0)
     p = _make(R2, B, (N,), 1)
     aligned = g @ p
-    g_padded = g.sub_batch_unsqueeze(0, 1)
+    g_padded = g.sub_batch.unsqueeze(0, 1)
     reference = g_padded.data @ p.data
     assert torch.equal(aligned.data, reference)

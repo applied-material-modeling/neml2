@@ -11,7 +11,7 @@
   # LinspaceScalar(0, 1.0, 21) -> shape (21,)
   [times]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 21, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, 1.0, 21)'
   []
 
   # Constant stress σ = (100, -50, -50, 20, -10, 5) (physical); Mandel scaling applied

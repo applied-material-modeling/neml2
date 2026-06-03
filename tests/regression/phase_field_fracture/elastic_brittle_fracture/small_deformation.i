@@ -20,7 +20,7 @@
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 3.0, 1000, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, 3.0, 1000)'
   []
   [strains]
     # LinspaceSR2 0 -> (0.016, -0.008, -0.008, 0, 0, 0) across 1000 steps -> (1000, 6).
@@ -29,11 +29,11 @@
   []
   [p]
     type = Python
-    expr = 'Scalar(torch.tensor(2.0, dtype=torch.float64))'
+    expr = 'Scalar(2.0)'
   []
   [GcbylbyCo]
     type = Python
-    expr = 'Scalar(torch.tensor(0.0152, dtype=torch.float64))'
+    expr = 'Scalar(0.0152)'
   []
 []
 

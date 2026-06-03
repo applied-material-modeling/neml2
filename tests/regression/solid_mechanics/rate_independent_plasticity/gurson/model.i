@@ -21,7 +21,7 @@
   []
   [f0]
     type = Python
-    expr = 'Scalar(torch.full((20,), 0.01, dtype=torch.float64))'
+    expr = 'Scalar.full(20, fill_value=0.01)'
   []
 []
 

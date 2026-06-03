@@ -110,9 +110,9 @@ def _make_bilinear(type_name: str, ordinate_cls: type[TensorWrapper]) -> type[Mo
             Y = self._get_param("ordinate", nl_params, ordinate_cls)
             # The ordinate as registered carries ``sub_batch_ndim=0``; re-tag
             # to the (N1, N2) sub-batch layout the primitive expects.
-            Y_sb = Y.with_sub_batch(2)
-            X1_sb = X1.with_sub_batch(1)
-            X2_sb = X2.with_sub_batch(1)
+            Y_sb = Y.sub_batch.retag(2)
+            X1_sb = X1.sub_batch.retag(1)
+            X2_sb = X2.sub_batch.retag(1)
             out = cast(TensorWrapper, bilinear_interpolation(x1, x2, X1_sb, X2_sb, Y_sb))
             if v is None:
                 return out

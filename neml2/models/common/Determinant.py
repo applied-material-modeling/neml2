@@ -77,7 +77,7 @@ class R2Determinant(_Determinant):
         # ∂det(F)/∂F = det(F) · F⁻ᵀ. The directional pushforward is the
         # Frobenius contraction of that cofactor tensor with ``dF`` — purely
         # typed wrapper algebra, no Jacobian assembled.
-        cof = inv(F).T * J  # R2 cofactor-transpose, scaled by J
+        cof = inv(F).base.transpose(-2, -1) * J  # R2 cofactor-transpose, scaled by J
 
         def F_action(V: R2) -> Scalar:
             return inner(cof, V)

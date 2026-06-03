@@ -106,3 +106,62 @@ def test_scalar_times_sr2_dispatches_via_rmul():
     result = s * a
     assert isinstance(result, SR2)
     assert torch.equal(result.data, a.data * 2.0)
+
+
+# ---------- torch-analogue factories ----------
+
+
+def test_scalar_zeros_factory():
+    s = Scalar.zeros(3, 4)
+    assert s.data.shape == torch.Size([3, 4])
+    assert s.dtype == torch.float64
+    assert torch.all(s.data == 0)
+
+
+def test_scalar_ones_factory():
+    s = Scalar.ones(5)
+    assert s.data.shape == torch.Size([5])
+    assert s.dtype == torch.float64
+    assert torch.all(s.data == 1)
+
+
+def test_scalar_full_factory():
+    s = Scalar.full(3, 2, fill_value=7.5)
+    assert s.data.shape == torch.Size([3, 2])
+    assert s.dtype == torch.float64
+    assert torch.all(s.data == 7.5)
+
+
+def test_scalar_linspace_factory():
+    s = Scalar.linspace(0.0, 1.0, 5)
+    assert s.data.shape == torch.Size([5])
+    assert s.dtype == torch.float64
+    assert torch.allclose(s.data, torch.tensor([0.0, 0.25, 0.5, 0.75, 1.0], dtype=torch.float64))
+
+
+def test_scalar_arange_factory():
+    # single-arg form
+    s = Scalar.arange(4)
+    assert s.data.shape == torch.Size([4])
+    assert s.data.tolist() == [0.0, 1.0, 2.0, 3.0]
+    # three-arg form
+    t = Scalar.arange(1.0, 5.0, 2.0)
+    assert t.data.tolist() == [1.0, 3.0]
+
+
+def test_scalar_factories_accept_dtype_and_device_overrides():
+    s = Scalar.zeros(3, dtype=torch.float32)
+    assert s.dtype == torch.float32
+    f = Scalar.full(2, fill_value=1.0, dtype=torch.int64)
+    assert f.dtype == torch.int64
+    # device override is keyword-only and accepted
+    z = Scalar.linspace(0.0, 1.0, 4, device="cpu")
+    assert z.device.type == "cpu"
+
+
+def test_scalar_factories_compose_with_sub_batch_retag():
+    """The expected idiom in input-file expressions."""
+    s = Scalar.linspace(0.0, 1.0, 5).sub_batch.retag(1)
+    assert s.sub_batch_ndim == 1
+    assert s.sub_batch_shape == torch.Size([5])
+    assert s.dynamic_batch_shape == torch.Size([])

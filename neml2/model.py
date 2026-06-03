@@ -939,4 +939,4 @@ def _retag_to_output(contribution: TensorWrapper, output: TensorWrapper) -> Tens
     """
     if contribution.sub_batch_ndim <= output.sub_batch_ndim:
         return contribution
-    return contribution.with_sub_batch(output.sub_batch_ndim)
+    return contribution.sub_batch.retag(output.sub_batch_ndim)

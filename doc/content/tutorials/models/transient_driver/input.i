@@ -7,11 +7,11 @@
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 50, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, 1.0, 50)'
   []
   [max_strain]
     type = Python
-    expr = 'SR2(torch.tensor([0.05, -0.025, -0.025, 0.0, 0.0, 0.0], dtype=torch.float64))'
+    expr = 'SR2.fill(0.05, -0.025, -0.025, 0.0, 0.0, 0.0)'
   []
   [strains]
     type = Python

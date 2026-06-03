@@ -339,7 +339,7 @@ def test_rotate_ssr4_invariance():
     T_rot = rotate_ssr4(T, R)
     sigma_a = SR2(torch.einsum("ij,j->i", T_rot.data, eps.data))
     # Path B: rotate strain into crystal frame, multiply, rotate stress back.
-    eps_cry = rotate_sym(eps, R.T)
+    eps_cry = rotate_sym(eps, R.base.transpose(-2, -1))
     sigma_cry = SR2(torch.einsum("ij,j->i", T_data, eps_cry.data))
     sigma_b = rotate_sym(sigma_cry, R)
     assert torch.allclose(sigma_a.data, sigma_b.data, atol=1e-8)

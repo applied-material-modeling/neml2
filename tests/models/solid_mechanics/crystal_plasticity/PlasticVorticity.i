@@ -5,7 +5,7 @@
 # can mirror that composition directly here.
 #
 # Slip rates are a 12-entry per-slip Scalar: LinspaceScalar(-0.1, 0.2, 12) with
-# group='intermediate' -> Scalar(torch.linspace(...)).with_sub_batch(1).
+# group='intermediate' -> Scalar(torch.linspace(...)).sub_batch.retag(1).
 #
 # Expected output wp comes verbatim from the C++ fixture's FillWR2 3-value form
 # (axial-vector packing, no Mandel scaling).
@@ -33,7 +33,7 @@
   []
   [gamma]
     type = Python
-    expr = 'Scalar(torch.linspace(-0.1, 0.2, 12)).with_sub_batch(1)'
+    expr = 'Scalar.linspace(-0.1, 0.2, 12).sub_batch.retag(1)'
   []
   [wp]
     type = Python

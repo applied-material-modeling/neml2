@@ -59,7 +59,7 @@ class SR2IntermediateSum(Model):
         x: SR2,
         v: ChainRuleDict | None = None,
     ):
-        out = cast(SR2, sub_batch_sum(x.with_sub_batch(1), -1))
+        out = cast(SR2, sub_batch_sum(x.sub_batch.retag(1), -1))
         if v is None:
             return out
 

@@ -16,7 +16,7 @@ D = 297794
 [Tensors]
   [edges]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 101, dtype=torch.float64), sub_batch_ndim=1)'
+    expr = 'Scalar.linspace(0.0, 1.0, 101).sub_batch.retag(1)'
   []
   [centers]
     type = Python
@@ -33,7 +33,7 @@ D = 297794
 
   [scale_factor]
     type = Python
-    expr = 'Scalar(torch.tensor(5.0, dtype=torch.float64))'
+    expr = 'Scalar(5.0)'
   []
 
   [true_centers]
@@ -62,7 +62,7 @@ D = 297794
 
   [time]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 100.0, 500, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, 100.0, 500)'
   []
 
   [x0_Cu]

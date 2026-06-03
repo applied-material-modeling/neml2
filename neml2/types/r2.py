@@ -67,13 +67,6 @@ class R2(TensorWrapper):
     ) -> R2:
         return cls(torch.zeros(*batch, 3, 3, dtype=dtype, device=device))
 
-    # ---- shape/dim traits ----
-
-    @property
-    def T(self) -> R2:
-        """Transpose the two base axes; pure axis permutation, no math."""
-        return R2(self.data.transpose(-2, -1), sub_batch_ndim=self.sub_batch_ndim)
-
     # ---- operator overloads ----
     #
     # Every binary op routes through :func:`align_sub_batch` so global and
