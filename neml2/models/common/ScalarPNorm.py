@@ -27,7 +27,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import cast
 
 import torch
 
@@ -107,7 +106,7 @@ class ScalarPNorm(Model):
         # ``pow(|x|, p)`` is safe at x=0 for p >= 1 (gives 0, matching the
         # analytical limit).
         eps = torch.finfo(inputs[0].dtype).eps
-        terms = [w * cast(Scalar, pow(abs(x), p)) for w, x in zip(weights, inputs, strict=True)]
+        terms = [w * pow(abs(x), p) for w, x in zip(weights, inputs, strict=True)]
         s = terms[0]
         for t in terms[1:]:
             s = s + t
@@ -115,7 +114,7 @@ class ScalarPNorm(Model):
         # y = (sum + eps)^(1/p). The regularizer keeps y bounded below by
         # eps^(1/p) > 0, so 1/y in the Jacobian stays finite.
         inv_p = 1.0 / p
-        y = cast(Scalar, pow(s + eps, inv_p))
+        y = pow(s + eps, inv_p)
 
         if v is None:
             return y
@@ -125,7 +124,7 @@ class ScalarPNorm(Model):
         # so action_i(V) = (w_i * sign(x_i) * |x_i|^(p-1) * y^(1-p)) * V.
         # For p=2 with unit weights this collapses to x_i / y * V.
         # Precompute the y^(1-p) factor (shared across all inputs).
-        y_pow = cast(Scalar, pow(y, 1.0 - p))
+        y_pow = pow(y, 1.0 - p)
         p_minus_one = p - 1.0
 
         def _make_action(coef: Scalar) -> Callable[[Scalar], Scalar]:
@@ -136,13 +135,7 @@ class ScalarPNorm(Model):
 
         actions: dict[str, Callable[[Scalar], Scalar]] = {}
         for fv, w, xi in zip(self._from_vars, weights, inputs, strict=True):
-            xi_factor = cast(
-                Scalar,
-                w
-                * cast(Scalar, sign(xi))
-                * cast(Scalar, pow(cast(Scalar, abs(xi)), p_minus_one))
-                * y_pow,
-            )
+            xi_factor = w * sign(xi) * pow(abs(xi), p_minus_one) * y_pow
             actions[fv] = _make_action(xi_factor)
 
         return y, self.apply_chain_rule(v, self._to, actions, output=y)

@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -86,13 +84,13 @@ class PowerLawPermeability(Model):
 
         # ``K = K0 * (phi / phi0) ** p`` — typed Scalar algebra end to end.
         ratio = phi / phi0
-        K = K0 * cast(Scalar, pow(ratio, p))
+        K = K0 * pow(ratio, p)
 
         if v is None:
             return K
 
         # Differential pushforward: dK/dphi = K0 * p * (phi/phi0)^(p-1) / phi0.
-        dK_dphi = K0 * p * cast(Scalar, pow(ratio, p - 1.0)) / phi0
+        dK_dphi = K0 * p * pow(ratio, p - 1.0) / phi0
         actions: dict[str, ChainRuleAction] = {
             "porosity": lambda V, c=dK_dphi: c * V,
         }

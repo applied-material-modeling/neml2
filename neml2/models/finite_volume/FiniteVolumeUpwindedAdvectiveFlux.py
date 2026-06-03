@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ...chain_rule import ChainRuleDict
@@ -56,15 +54,15 @@ class FiniteVolumeUpwindedAdvectiveFlux(Model):
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
         u_wrap, v_wrap = inputs
-        u = cast(Scalar, u_wrap).data  # (*B, N)
-        ve = cast(Scalar, v_wrap).data  # (*B, M)
+        u = u_wrap.data  # (*B, N)
+        ve = v_wrap.data  # (*B, M)
         v_abs = ve.abs()
         v_plus = 0.5 * (ve + v_abs)
         v_minus = 0.5 * (ve - v_abs)
         u_left = u[..., :-1]
         u_right = u[..., 1:]
         flux = v_plus * u_left + v_minus * u_right
-        sb = max(cast(Scalar, u_wrap).sub_batch_ndim, cast(Scalar, v_wrap).sub_batch_ndim)
+        sb = max(u_wrap.sub_batch_ndim, v_wrap.sub_batch_ndim)
         out = Scalar(flux, sub_batch_ndim=sb)
         if v is None:
             return out

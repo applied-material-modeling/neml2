@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -100,8 +98,8 @@ class MixedControlSetup(Model):
         v: ChainRuleDict | None = None,
     ):
         above = gt(control, self._threshold)
-        y = cast(SR2, where(above, x_above, x_below))
-        z = cast(SR2, where(above, x_below, x_above))
+        y = where(above, x_above, x_below)
+        z = where(above, x_below, x_above)
         if v is None:
             return y, z
 

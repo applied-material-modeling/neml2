@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ....chain_rule import ChainRuleAction, ChainRuleDict
 from ....factory import register_native
 from ....model import Model
@@ -139,17 +137,13 @@ class BilinearTraction(Model):
         def _resolved(canon: str) -> str:
             return renames.get(canon, canon)
 
-        delta_m = cast(Scalar, bound[_resolved("effective_separation")])
-        dn_sep = cast(Scalar, bound[_resolved("normal_separation")])
-        ds1 = cast(Scalar, bound[_resolved("tangential_separation_1")])
-        ds2 = cast(Scalar, bound[_resolved("tangential_separation_2")])
-        d_old = cast(Scalar, bound[self._d_old_name])
+        delta_m = bound[_resolved("effective_separation")]
+        dn_sep = bound[_resolved("normal_separation")]
+        ds1 = bound[_resolved("tangential_separation_1")]
+        ds2 = bound[_resolved("tangential_separation_2")]
+        d_old = bound[self._d_old_name]
         dn_pen_name = self._dn_pen_name
-        dn_pen = (
-            cast(Scalar, bound[dn_pen_name])
-            if dn_pen_name is not None and dn_pen_name in bound
-            else None
-        )
+        dn_pen = bound[dn_pen_name] if dn_pen_name is not None and dn_pen_name in bound else None
 
         # Nonlinear-capable parameters: read via ``_get_param`` so the same
         # code path works whether ``delta_c`` / ``delta_f`` are static
@@ -168,24 +162,21 @@ class BilinearTraction(Model):
         df_minus_di = delta_f - delta_c
         # ``safe_df_minus_di`` prevents 0/0 at the degenerate ``delta_c ==
         # delta_f`` edge before the ``where`` mask zeros the contribution.
-        df_minus_di_pos = cast(Scalar, gt(df_minus_di, 0.0))
-        safe_df_minus_di = cast(Scalar, where(df_minus_di_pos, df_minus_di, one))
+        df_minus_di_pos = gt(df_minus_di, 0.0)
+        safe_df_minus_di = where(df_minus_di_pos, df_minus_di, one)
         bilinear_d = delta_f * (delta_m - delta_c) / (delta_m * safe_df_minus_di)
-        dm_lt_init = cast(Scalar, lt(delta_m, delta_c))
-        dm_lt_final = cast(Scalar, lt(delta_m, delta_f))
+        dm_lt_init = lt(delta_m, delta_c)
+        dm_lt_final = lt(delta_m, delta_f)
         # Interior: delta_c < delta_m < delta_f.
         dm_gt_init_data = (delta_m.data > delta_c.data).detach()
         dm_lt_final_data = (delta_m.data < delta_f.data).detach()
         interior_data = (dm_gt_init_data & dm_lt_final_data).detach()
         interior = Scalar(interior_data, sub_batch_ndim=delta_m.sub_batch_ndim)
-        d_trial = cast(
-            Scalar,
-            where(dm_lt_init, zero, where(dm_lt_final, bilinear_d, one)),
-        )
+        d_trial = where(dm_lt_init, zero, where(dm_lt_final, bilinear_d, one))
 
         # -------- Irreversibility cap: damage = max(d_trial, d_old).
-        advance = cast(Scalar, gt(d_trial, d_old))
-        d = cast(Scalar, where(advance, d_trial, d_old))
+        advance = gt(d_trial, d_old)
+        d = where(advance, d_trial, d_old)
 
         # -------- Assemble traction.
         active_scale = K * (1.0 - d)
@@ -214,10 +205,10 @@ class BilinearTraction(Model):
         inv_diff_sq = inv_diff * inv_diff
 
         dt_ddm_int = delta_f * delta_c * inv_dm * inv_dm * inv_diff
-        dt_ddm = cast(Scalar, where(interior, dt_ddm_int, zero))
+        dt_ddm = where(interior, dt_ddm_int, zero)
         # After max(d_t, d_old): partial collapses to 0 on the frozen branch.
-        dd_ddm = cast(Scalar, where(advance, dt_ddm, zero))
-        dd_dd_old = cast(Scalar, where(advance, zero, one))
+        dd_ddm = where(advance, dt_ddm, zero)
+        dd_dd_old = where(advance, zero, one)
 
         # ``-K`` prefactor of d(T)/d(damage); the per-component Vec coefficient
         # is ``(-K * dn_sep, -K * ds1, -K * ds2)`` (zero in the penetration
@@ -230,8 +221,8 @@ class BilinearTraction(Model):
         # ----- Actions for the damage output. Inputs not listed (dn_sep,
         # dn_pen, ds1, ds2) push forward to structural zero.
         damage_actions: dict[str, ChainRuleAction] = {
-            "effective_separation": lambda V, c=dd_ddm: c * cast(Scalar, V),
-            self._d_old_name: lambda V, c=dd_dd_old: c * cast(Scalar, V),
+            "effective_separation": lambda V, c=dd_ddm: c * V,
+            self._d_old_name: lambda V, c=dd_dd_old: c * V,
         }
 
         # ----- Actions for the traction output. Each direct-jump partial is a
@@ -241,7 +232,7 @@ class BilinearTraction(Model):
         def _traction_via_damage(dd_dscalar: Scalar):
             # d(T)/d(scalar via damage) = (-K * jumps) * dd/d(scalar)
             def action(V: Scalar) -> Vec:
-                Vs = cast(Scalar, V)
+                Vs = V
                 return vec_from_scalars(
                     dT_dd_n * dd_dscalar * Vs,
                     dT_dd_s1 * dd_dscalar * Vs,
@@ -251,19 +242,19 @@ class BilinearTraction(Model):
             return action
 
         def _dn_sep_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             return vec_from_scalars(active_scale * Vs, zero * Vs, zero * Vs)
 
         def _ds1_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             return vec_from_scalars(zero * Vs, active_scale * Vs, zero * Vs)
 
         def _ds2_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             return vec_from_scalars(zero * Vs, zero * Vs, active_scale * Vs)
 
         def _dn_pen_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             return vec_from_scalars(K * Vs, zero * Vs, zero * Vs)
 
         traction_actions: dict[str, ChainRuleAction] = {
@@ -284,17 +275,17 @@ class BilinearTraction(Model):
         delta_c_nlp = self._nl_params.get("delta_c")
         if delta_c_nlp is not None:
             dt_dinit_int = delta_f * (delta_m - delta_f) * inv_dm * inv_diff_sq
-            dt_dinit = cast(Scalar, where(interior, dt_dinit_int, zero))
-            dd_dinit = cast(Scalar, where(advance, dt_dinit, zero))
-            damage_actions[delta_c_nlp.input_name] = lambda V, c=dd_dinit: c * cast(Scalar, V)
+            dt_dinit = where(interior, dt_dinit_int, zero)
+            dd_dinit = where(advance, dt_dinit, zero)
+            damage_actions[delta_c_nlp.input_name] = lambda V, c=dd_dinit: c * V
             traction_actions[delta_c_nlp.input_name] = _traction_via_damage(dd_dinit)
 
         delta_f_nlp = self._nl_params.get("delta_f")
         if delta_f_nlp is not None:
             dt_dfinal_int = -delta_c * (delta_m - delta_c) * inv_dm * inv_diff_sq
-            dt_dfinal = cast(Scalar, where(interior, dt_dfinal_int, zero))
-            dd_dfinal = cast(Scalar, where(advance, dt_dfinal, zero))
-            damage_actions[delta_f_nlp.input_name] = lambda V, c=dd_dfinal: c * cast(Scalar, V)
+            dt_dfinal = where(interior, dt_dfinal_int, zero)
+            dd_dfinal = where(advance, dt_dfinal, zero)
+            damage_actions[delta_f_nlp.input_name] = lambda V, c=dd_dfinal: c * V
             traction_actions[delta_f_nlp.input_name] = _traction_via_damage(dd_dfinal)
 
         v_T = self.apply_chain_rule(v, "traction", traction_actions, output=T)

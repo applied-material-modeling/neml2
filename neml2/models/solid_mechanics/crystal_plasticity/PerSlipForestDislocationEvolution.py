@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
@@ -71,7 +69,7 @@ class PerSlipForestDislocationEvolution(Model):
         k2 = self._get_param("k2", nl_params, Scalar)
 
         sqrt_rho = sqrt(rho)
-        abs_gamma = cast(Scalar, abs(gamma_dot))
+        abs_gamma = abs(gamma_dot)
         hardening = k1 * sqrt_rho - k2 * rho
         rho_dot = hardening * abs_gamma
 
@@ -86,7 +84,7 @@ class PerSlipForestDislocationEvolution(Model):
         #   d rho_dot / d k1        = sqrt(rho) * |gamma_dot|
         #   d rho_dot / d k2        = -rho * |gamma_dot|
         d_drho = (0.5 * k1 / sqrt_rho - k2) * abs_gamma
-        d_dgamma = hardening * cast(Scalar, sign(gamma_dot))
+        d_dgamma = hardening * sign(gamma_dot)
 
         actions = {
             "dislocation_density": lambda V, c=d_drho: c * V,

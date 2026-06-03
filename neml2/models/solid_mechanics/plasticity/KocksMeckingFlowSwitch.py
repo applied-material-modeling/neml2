@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
@@ -100,10 +98,10 @@ class KocksMeckingFlowSwitch(Model):
         g0 = self._get_param("g0", nl_params, Scalar)
         sharp = self.sharp
 
-        arg = cast(Scalar, sharp * (g - g0))
-        sig = cast(Scalar, (tanh(arg) + 1.0) / 2.0)
-        one_minus_sig = cast(Scalar, 1.0 - sig)
-        gamma_dot = cast(Scalar, sig * rd + one_minus_sig * ri)
+        arg = sharp * (g - g0)
+        sig = (tanh(arg) + 1.0) / 2.0
+        one_minus_sig = 1.0 - sig
+        gamma_dot = sig * rd + one_minus_sig * ri
 
         if v is None:
             return gamma_dot
@@ -114,8 +112,8 @@ class KocksMeckingFlowSwitch(Model):
         # d gamma_dot / d ri_flow = 1 - sig
         # d gamma_dot / d g       = 0.5 * sharp * sech^2(sharp*(g-g0)) * (rd - ri)
         # d gamma_dot / d g0      = -(d gamma_dot / d g)
-        sech2 = cast(Scalar, wpow(cosh(arg), -2.0))
-        d_dg = cast(Scalar, 0.5 * sharp * sech2 * (rd - ri))
+        sech2 = wpow(cosh(arg), -2.0)
+        d_dg = 0.5 * sharp * sech2 * (rd - ri)
 
         actions = {
             "activation_energy": lambda V, c=d_dg: c * V,

@@ -26,7 +26,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
@@ -94,11 +94,11 @@ class CrystalPlasticityStrainPredictor(Model):
         v: ChainRuleDict | None = None,
     ):
         dt = t - t_n
-        scale = cast(Scalar, self.scale)
-        threshold = cast(Scalar, self.threshold)
+        scale = self.scale
+        threshold = self.threshold
         Ee_pred = Ee_n + scale * D * dt
         use_pred = lt(norm(Ee_n), threshold)
-        result = cast(SR2, where(use_pred, Ee_pred, Ee_n))
+        result = where(use_pred, Ee_pred, Ee_n)
         if v is None:
             return result
 

@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -70,12 +68,12 @@ class PowerDegradationFunction(Model):
         eta = self._eta
         one_minus_d = 1.0 - phase
         # g = (1 - d)**p * (1 - eta) + eta
-        g = cast(Scalar, type_pow(one_minus_d, p)) * (1.0 - eta) + eta
+        g = type_pow(one_minus_d, p) * (1.0 - eta) + eta
         if v is None:
             return g
 
         # First-order: dg/dd = -p * (1 - d)**(p - 1) * (1 - eta).
-        dgdd = -p * cast(Scalar, type_pow(one_minus_d, p - 1.0)) * (1.0 - eta)
+        dgdd = -p * type_pow(one_minus_d, p - 1.0) * (1.0 - eta)
 
         def phase_action(V: Scalar) -> Scalar:
             return dgdd * V
@@ -83,7 +81,7 @@ class PowerDegradationFunction(Model):
         actions_1 = {"phase": phase_action}
 
         # Second-order Hessian: d^2g / dd^2 = p (p - 1) (1 - d)^(p - 2) (1 - eta).
-        d2gdd2 = p * (p - 1.0) * cast(Scalar, type_pow(one_minus_d, p - 2.0)) * (1.0 - eta)
+        d2gdd2 = p * (p - 1.0) * type_pow(one_minus_d, p - 2.0) * (1.0 - eta)
 
         def phase_phase_action(Va: Scalar, Vb: Scalar) -> Scalar:
             return d2gdd2 * Va * Vb

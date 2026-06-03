@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -67,7 +65,7 @@ class DumpInSmallestBin(Model):
     cell_centers: Scalar
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
-        mag = cast(Scalar, inputs[0])
+        mag = inputs[0]
         # cell_centers carries an N-cell axis. The HIT-stored parameter loses
         # its declared sub_batch_ndim metadata (the tensor is stored as a bare
         # nn.Parameter and re-wrapped with sub_batch_ndim=0 on access), so

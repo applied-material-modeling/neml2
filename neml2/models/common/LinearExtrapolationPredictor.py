@@ -170,7 +170,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         # gt + where both broadcast a Scalar condition against any wrapper type.
         dt_nm1 = t_n - t_nm1  # Scalar
         eps = torch.finfo(t_val.dtype).eps
-        cond = cast(Scalar, gt(wrap_abs(dt_nm1), eps))
+        cond = gt(wrap_abs(dt_nm1), eps)
 
         # ratio = (t - t_n) / (t_n - t_nm1); Scalar / Scalar handles alignment.
         # We avoid dividing by a possibly-zero dt_nm1 in the chain-rule branch
@@ -180,7 +180,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         # never produces NaN/Inf in the active branch's value (and the inactive
         # branch is then masked out by ``where``).
         one = Scalar.from_value(1.0, like=t_val)
-        safe_dt_nm1 = cast(Scalar, where(cond, dt_nm1, one))
+        safe_dt_nm1 = where(cond, dt_nm1, one)
         ratio = (t_val - t_n) / safe_dt_nm1  # Scalar
 
         outs: list[TensorWrapper] = []

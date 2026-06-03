@@ -26,7 +26,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
@@ -77,7 +77,7 @@ class PlasticSpatialVelocityGradient(Model):
     ):
         A = self._cg.A  # R2 sub_batch_ndim=1, the full d_i (x) n_i Schmid tensor
         weighted = A * g
-        lp_cry = cast(R2, sum(weighted.sub_batch, -1))
+        lp_cry = sum(weighted.sub_batch, -1)
         # Rotate to lab frame: l^p = R · lp_cry · R^T (no sym/skew projection).
         lp = rotate(lp_cry, R)
         if v is None:
@@ -92,7 +92,7 @@ class PlasticSpatialVelocityGradient(Model):
             return jvp_rotate(lp_cry, R, V)
 
         def g_action(V: Scalar) -> R2:
-            return rotate(cast(R2, sum((A * V).sub_batch, -1)), R)
+            return rotate(sum((A * V).sub_batch, -1), R)
 
         return lp, self.apply_chain_rule(
             v,

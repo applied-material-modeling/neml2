@@ -32,8 +32,6 @@ registered variant only differs in the ``hit`` schema's wrapper type.
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -83,8 +81,8 @@ class _TwoStageThermalAnnealing(Model):
         # ``where`` branches rather than introducing a ``ge`` primitive.
         one = Scalar.from_value(1.0, like=temperature)
         zero = Scalar.from_value(0.0, like=temperature)
-        base_region = cast(Scalar, where(lt(temperature, T1), one, zero))
-        recover_region = cast(Scalar, where(lt(temperature, T2), zero, one))
+        base_region = where(lt(temperature, T1), one, zero)
+        recover_region = where(lt(temperature, T2), zero, one)
 
         # Forward: modified_rate = base_region * base_rate - recover_region * base / tau.
         # ``Scalar * T`` and ``T / Scalar`` broadcast cleanly for both T = Scalar

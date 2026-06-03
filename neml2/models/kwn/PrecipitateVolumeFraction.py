@@ -27,7 +27,6 @@
 from __future__ import annotations
 
 import math
-from typing import cast
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
@@ -91,9 +90,9 @@ class PrecipitateVolumeFraction(Model):
         # Forward: f = sum_i (4/3) π R_i^3 n_i. Typed Scalar algebra; both R
         # and n carry sub_batch_ndim>=1 over the size-bin axis, then we reduce
         # along the trailing sub-batch axis to a sub_batch_ndim=0 scalar.
-        coef_n = (4.0 / 3.0) * math.pi * cast(Scalar, pow(R, 3.0))
+        coef_n = (4.0 / 3.0) * math.pi * pow(R, 3.0)
         volume = coef_n * n
-        f = cast(Scalar, sum(volume.sub_batch, -1))
+        f = sum(volume.sub_batch, -1)
 
         if v is None:
             return f
@@ -108,16 +107,16 @@ class PrecipitateVolumeFraction(Model):
         actions: dict[str, ChainRuleAction] = {}
 
         def n_action(V: Scalar) -> Scalar:
-            return cast(Scalar, sum((coef_n * V).sub_batch, -1))
+            return sum((coef_n * V).sub_batch, -1)
 
         actions["number_density"] = n_action
 
         R_nlp = self._nl_params.get("R")
         if R_nlp is not None:
-            coef_R = 4.0 * math.pi * cast(Scalar, pow(R, 2.0)) * n
+            coef_R = 4.0 * math.pi * pow(R, 2.0) * n
 
             def R_action(V: Scalar) -> Scalar:
-                return cast(Scalar, sum((coef_R * V).sub_batch, -1))
+                return sum((coef_R * V).sub_batch, -1)
 
             actions[R_nlp.input_name] = R_action
 

@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ...chain_rule import ChainRuleDict
@@ -96,8 +94,8 @@ class FiniteVolumeAppendBoundaryCondition(Model):
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
         (u_wrap,) = inputs
-        u = cast(Scalar, u_wrap).data  # (*B, N)
-        bc = cast(Scalar, self.bc_value).data  # scalar, broadcasts
+        u = u_wrap.data  # (*B, N)
+        bc = self.bc_value.data  # scalar, broadcasts
         # Expand bc to match input's shape minus the trailing sub-batch axis,
         # with a length-1 sub-batch axis for the concat.
         bc_exp = bc.expand(*u.shape[:-1], 1) if bc.ndim < u.ndim else bc
@@ -105,7 +103,7 @@ class FiniteVolumeAppendBoundaryCondition(Model):
             y = torch.cat([bc_exp, u], dim=-1)
         else:
             y = torch.cat([u, bc_exp], dim=-1)
-        out = Scalar(y, sub_batch_ndim=cast(Scalar, u_wrap).sub_batch_ndim)
+        out = Scalar(y, sub_batch_ndim=u_wrap.sub_batch_ndim)
         if v is None:
             return out
 

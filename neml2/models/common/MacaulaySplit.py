@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -53,7 +51,7 @@ class MacaulaySplit(Model):
         v: ChainRuleDict | None = None,
     ):
         # Forward: <x>_+ = macaulay(x); <x>_- = x - <x>_+.
-        x_pos = cast(Scalar, macaulay(x))
+        x_pos = macaulay(x)
         pos = x_pos
         neg = x - x_pos
         if v is None:
@@ -62,7 +60,7 @@ class MacaulaySplit(Model):
         # Differential pushforward: d<x>_+/dx = H(x); d<x>_-/dx = 1 - H(x).
         # H is element-wise so the action is just the per-element weight times
         # the incoming Scalar tangent V.
-        H = cast(Scalar, heaviside(x))
+        H = heaviside(x)
         one_minus_H = 1.0 - H
 
         def pos_action(V: Scalar, c: Scalar = H) -> Scalar:

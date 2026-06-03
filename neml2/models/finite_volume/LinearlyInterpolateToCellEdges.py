@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ...chain_rule import ChainRuleDict
@@ -80,8 +78,8 @@ class LinearlyInterpolateToCellEdges(Model):
 
     def _weights(self) -> tuple[torch.Tensor, torch.Tensor]:
         """Precompute ``w_left`` and ``w_right`` from the static positions."""
-        x = cast(Scalar, self.cell_centers).data  # (*, N)
-        xe = cast(Scalar, self.cell_edges).data  # (*, N+1)
+        x = self.cell_centers.data  # (*, N)
+        xe = self.cell_edges.data  # (*, N+1)
         x_left = x[..., :-1]
         x_right = x[..., 1:]
         xe_vec = xe[..., 1:-1]  # interior edges, size N-1

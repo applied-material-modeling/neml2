@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
@@ -75,7 +73,7 @@ class FixOrientation(Model):
         # which falls back inside the unit ball whenever ‖r‖ > 1.
         shadow = -r / ns
         cond = lt(ns, self._threshold)
-        out = cast(Rot, where(cond, r, shadow))
+        out = where(cond, r, shadow)
         if v is None:
             return out
 
@@ -89,7 +87,7 @@ class FixOrientation(Model):
         def r_action(V: Rot) -> Rot:
             vdotr = inner(r, V)
             d_shadow_v = (vdotr * r) * (2.0 / ns_sq) - V / ns
-            return cast(Rot, where(cond, V, d_shadow_v))
+            return where(cond, V, d_shadow_v)
 
         return out, self.apply_chain_rule(
             v,

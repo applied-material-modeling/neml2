@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ...chain_rule import ChainRuleDict
@@ -80,14 +78,14 @@ class SymmetricHermiteInterpolation(Model):
         # Rescale the input onto the unit interval and clamp away from the
         # endpoints so the derivative is well-defined at the boundaries
         # (matches the C++ ``clamp((_x - _x0) / (_x1 - _x0), eps, 1 - eps)``).
-        c = cast(Scalar, clamp((argument - x0) / dx, eps, 1.0 - eps))
+        c = clamp((argument - x0) / dx, eps, 1.0 - eps)
 
         # Forward: piecewise cubic Hermite, symmetric around c = 0.5.
         omc = 1.0 - c
         f_xl = 24.0 * c * c - 32.0 * c * c * c
         f_xh = 24.0 * omc * omc - 32.0 * omc * omc * omc
-        mask = cast(Scalar, lt(c, 0.5))
-        y = cast(Scalar, where(mask, scale * f_xl, scale * f_xh))
+        mask = lt(c, 0.5)
+        y = where(mask, scale * f_xl, scale * f_xh)
         if v is None:
             return y
 
@@ -98,7 +96,7 @@ class SymmetricHermiteInterpolation(Model):
         # (``f'(0) = f'(1) = 0`` for both branches).
         df_xl = 48.0 * c - 96.0 * c * c
         df_xh = -48.0 * omc + 96.0 * omc * omc
-        dy_dx = scale * scale * cast(Scalar, where(mask, df_xl, df_xh))
+        dy_dx = scale * scale * where(mask, df_xl, df_xh)
 
         return y, self.apply_chain_rule(
             v,

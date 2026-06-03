@@ -240,55 +240,55 @@ def sub_batch_zeros_like(
     return type(template)(data, sub_batch_ndim=sub_batch_ndim)
 
 
-def abs(a: TensorWrapper) -> TensorWrapper:  # noqa: A001 - mirrors neml2::abs
+def abs(a: _TW) -> _TW:  # noqa: A001 - mirrors neml2::abs
     """Element-wise absolute value."""
-    return type(a)(torch.abs(a.data), sub_batch_ndim=a.sub_batch_ndim)
+    return a._rewrap(torch.abs(a.data), sub_batch_ndim=a.sub_batch_ndim)
 
 
-def sign(a: TensorWrapper) -> TensorWrapper:
+def sign(a: _TW) -> _TW:
     """Element-wise sign."""
-    return type(a)(torch.sign(a.data), sub_batch_ndim=a.sub_batch_ndim)
+    return a._rewrap(torch.sign(a.data), sub_batch_ndim=a.sub_batch_ndim)
 
 
-def heaviside(a: TensorWrapper) -> TensorWrapper:
+def heaviside(a: _TW) -> _TW:
     """Element-wise Heaviside step function $H(a) = (sign(a) + 1) / 2$.
 
     Matches ``neml2::heaviside`` in
     ``src/neml2/tensors/functions/heaviside.cxx`` (which uses the same
     ``(sign(a) + 1) / 2`` form), preserving wrapper type and ``sub_batch_ndim``.
     """
-    return type(a)((torch.sign(a.data) + 1.0) / 2.0, sub_batch_ndim=a.sub_batch_ndim)
+    return a._rewrap((torch.sign(a.data) + 1.0) / 2.0, sub_batch_ndim=a.sub_batch_ndim)
 
 
-def macaulay(a: TensorWrapper) -> TensorWrapper:
+def macaulay(a: _TW) -> _TW:
     """Element-wise Macaulay bracket $<a>_+ = a * H(a) = a * (sign(a) + 1) / 2$.
 
     Matches ``neml2::macaulay`` in
     ``src/neml2/tensors/functions/macaulay.cxx``; preserves wrapper type and
     ``sub_batch_ndim``.
     """
-    return type(a)(a.data * (torch.sign(a.data) + 1.0) / 2.0, sub_batch_ndim=a.sub_batch_ndim)
+    return a._rewrap(a.data * (torch.sign(a.data) + 1.0) / 2.0, sub_batch_ndim=a.sub_batch_ndim)
 
 
 def clamp(
-    a: TensorWrapper,
+    a: _TW,
     lo: float | int | None = None,
     hi: float | int | None = None,
-) -> TensorWrapper:
+) -> _TW:
     """Element-wise clamp, matching ``neml2::clamp``.
 
     Either bound may be ``None`` to leave that side unbounded. Bounds are
     plain scalars (the C++ ``clamp`` overload used by leaves takes scalar
     endpoints); preserves wrapper type and ``sub_batch_ndim``.
     """
-    return type(a)(torch.clamp(a.data, min=lo, max=hi), sub_batch_ndim=a.sub_batch_ndim)
+    return a._rewrap(torch.clamp(a.data, min=lo, max=hi), sub_batch_ndim=a.sub_batch_ndim)
 
 
 def _as_scalar(value: float | int, like: TensorWrapper) -> Scalar:
     return Scalar(torch.as_tensor(value, dtype=like.dtype, device=like.device))
 
 
-def _logical_binary(a: TensorWrapper, b: TensorWrapper | float | int, op) -> TensorWrapper:
+def _logical_binary(a: _TW, b: TensorWrapper | float | int, op) -> _TW:
     if isinstance(b, (float, int)):
         b = _as_scalar(b, a)
     if type(a) is not type(b) and not isinstance(b, Scalar):
@@ -301,18 +301,18 @@ def _logical_binary(a: TensorWrapper, b: TensorWrapper | float | int, op) -> Ten
     if isinstance(bb, Scalar) and not isinstance(aa, Scalar):
         for _ in range(a.BASE_NDIM):
             b_data = b_data.unsqueeze(-1)
-    return type(a)(op(aa.data, b_data), sub_batch_ndim=sb)
+    return a._rewrap(op(aa.data, b_data), sub_batch_ndim=sb)
 
 
-def gt(a: TensorWrapper, b: TensorWrapper | float | int) -> TensorWrapper:
+def gt(a: _TW, b: TensorWrapper | float | int) -> _TW:
     return _logical_binary(a, b, torch.gt)
 
 
-def lt(a: TensorWrapper, b: TensorWrapper | float | int) -> TensorWrapper:
+def lt(a: _TW, b: TensorWrapper | float | int) -> _TW:
     return _logical_binary(a, b, torch.lt)
 
 
-def where(c: TensorWrapper, a: TensorWrapper, b: TensorWrapper) -> TensorWrapper:
+def where(c: TensorWrapper, a: _TW, b: _TW) -> _TW:
     """Element-wise select, matching ``neml2::where``."""
     if type(a) is not type(b):
         raise TypeError(
@@ -324,7 +324,7 @@ def where(c: TensorWrapper, a: TensorWrapper, b: TensorWrapper) -> TensorWrapper
     if isinstance(cc, Scalar) and not isinstance(aa, Scalar):
         for _ in range(a.BASE_NDIM):
             c_data = c_data.unsqueeze(-1)
-    return type(a)(torch.where(c_data, aa.data, bb.data), sub_batch_ndim=sb)
+    return a._rewrap(torch.where(c_data, aa.data, bb.data), sub_batch_ndim=sb)
 
 
 def linear_interpolation(argument: Scalar, abscissa: Scalar, ordinate: Scalar) -> Scalar:
@@ -549,15 +549,15 @@ def log10(s: Scalar) -> Scalar:
     return Scalar(torch.log10(s.data), sub_batch_ndim=s.sub_batch_ndim)
 
 
-def pow(a: TensorWrapper, n: float | int | Scalar) -> TensorWrapper:  # noqa: A001
+def pow(a: _TW, n: float | int | Scalar) -> _TW:  # noqa: A001
     """Element-wise power."""
     if isinstance(n, Scalar):
         [aa, nn], sb = align_sub_batch(a, n)
         n_data = nn.data
         for _ in range(a.BASE_NDIM):
             n_data = n_data.unsqueeze(-1)
-        return type(a)(torch.pow(aa.data, n_data), sub_batch_ndim=sb)
-    return type(a)(torch.pow(a.data, n), sub_batch_ndim=a.sub_batch_ndim)
+        return a._rewrap(torch.pow(aa.data, n_data), sub_batch_ndim=sb)
+    return a._rewrap(torch.pow(a.data, n), sub_batch_ndim=a.sub_batch_ndim)
 
 
 # ---- Cross-type products on SR2 ----

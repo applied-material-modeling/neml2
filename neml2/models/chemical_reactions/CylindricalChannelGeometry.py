@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ...chain_rule import ChainRuleDict
@@ -73,7 +71,7 @@ class CylindricalChannelGeometry(Model):
 
         eps = torch.finfo(phi_s.dtype).eps
         cap = 1.0 - phi_s - phi_p
-        cap_clamped = cast(Scalar, clamp(cap, eps, 1.0 - eps))
+        cap_clamped = clamp(cap, eps, 1.0 - eps)
         ri = sqrt(cap_clamped)
         ro = sqrt(1.0 - phi_s)
         if v is None:
@@ -86,7 +84,7 @@ class CylindricalChannelGeometry(Model):
         # the C++ source only guards the lower tail and we mirror that exactly:
         # use ``gt(cap, eps)`` as the in-active-region mask.
         zero = Scalar.from_value(0.0, like=ri)
-        dri_dphi = cast(Scalar, where(gt(cap, eps), -0.5 / ri, zero))
+        dri_dphi = where(gt(cap, eps), -0.5 / ri, zero)
         dro_dphi_s = -0.5 / ro
 
         v_ri = self.apply_chain_rule(

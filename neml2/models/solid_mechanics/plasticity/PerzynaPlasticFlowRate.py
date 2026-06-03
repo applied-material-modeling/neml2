@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
@@ -83,9 +81,9 @@ class PerzynaPlasticFlowRate(Model):
         eta = self._get_param("eta", nl_params, Scalar)
         n = self._get_param("n", nl_params, Scalar)
 
-        Hf = cast(Scalar, heaviside(f))
-        f_abs = cast(Scalar, abs(f))
-        gamma_dot_m = cast(Scalar, wpow(f_abs / eta, n))
+        Hf = heaviside(f)
+        f_abs = abs(f)
+        gamma_dot_m = wpow(f_abs / eta, n)
         gamma_dot = gamma_dot_m * Hf
 
         if v is None:

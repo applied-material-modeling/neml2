@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -59,14 +57,14 @@ class SR2IntermediateMean(Model):
         x: SR2,
         v: ChainRuleDict | None = None,
     ):
-        out = cast(SR2, mean(x.sub_batch.retag(1).sub_batch, -1))
+        out = mean(x.sub_batch.retag(1).sub_batch, -1)
         if v is None:
             return out
 
         def action(V: SR2) -> SR2:
             # Mirror forward: retag the incoming tangent with sub_batch_ndim=1
             # so it carries the same intermediate axis the reduction collapses.
-            return cast(SR2, mean(V.sub_batch.retag(1).sub_batch, -1))
+            return mean(V.sub_batch.retag(1).sub_batch, -1)
 
         return out, self.apply_chain_rule(v, "to", {"from": action}, output=out)
 

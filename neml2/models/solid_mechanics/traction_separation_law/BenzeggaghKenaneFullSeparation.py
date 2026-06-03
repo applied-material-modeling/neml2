@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
@@ -127,7 +125,7 @@ class BenzeggaghKenaneFullSeparation(Model):
         one_plus_beta_sq = 1.0 + beta_sq
         beta_sq_ratio = beta_sq / one_plus_beta_sq
         pow_base = beta_sq_ratio + eps
-        term = GIc + (GIIc - GIc) * cast(Scalar, pow(pow_base, eta))
+        term = GIc + (GIIc - GIc) * pow(pow_base, eta)
         delta_final_open = 2.0 / (K * delta_c) * term
         # Compression branch (delta_n <= 0): pure-shear closed form.
         delta_final_default = 2.0 * GIIc / S
@@ -135,8 +133,8 @@ class BenzeggaghKenaneFullSeparation(Model):
         # Branch select. The mask is treated as constant w.r.t. ``dn``
         # (matches C++ ``.detach()``): ``normal_separation`` carries no
         # action and pushes forward to structural zero.
-        pos_mask = cast(Scalar, gt(dn, 0.0))
-        delta_f = cast(Scalar, where(pos_mask, delta_final_open, delta_final_default))
+        pos_mask = gt(dn, 0.0)
+        delta_f = where(pos_mask, delta_final_open, delta_final_default)
 
         if v is None:
             return delta_f
@@ -157,8 +155,8 @@ class BenzeggaghKenaneFullSeparation(Model):
             # Compression branch is independent of delta_c.
             zero = Scalar.from_value(0.0, like=delta_f)
             ddf_dinit_open = -delta_final_open / delta_c
-            ddf_dinit = cast(Scalar, where(pos_mask, ddf_dinit_open, zero))
-            actions[delta_c_nlp.input_name] = lambda V, c=ddf_dinit: c * cast(Scalar, V)
+            ddf_dinit = where(pos_mask, ddf_dinit_open, zero)
+            actions[delta_c_nlp.input_name] = lambda V, c=ddf_dinit: c * V
 
         beta_nlp = self._nl_params.get("beta")
         if beta_nlp is not None:
@@ -171,11 +169,11 @@ class BenzeggaghKenaneFullSeparation(Model):
                 (2.0 / (K * delta_c))
                 * (GIIc - GIc)
                 * eta
-                * cast(Scalar, pow(pow_base, eta - 1.0))
+                * pow(pow_base, eta - 1.0)
                 * dbeta_sq_ratio_dbeta
             )
-            ddf_dbeta = cast(Scalar, where(pos_mask, ddf_dbeta_open, zero))
-            actions[beta_nlp.input_name] = lambda V, c=ddf_dbeta: c * cast(Scalar, V)
+            ddf_dbeta = where(pos_mask, ddf_dbeta_open, zero)
+            actions[beta_nlp.input_name] = lambda V, c=ddf_dbeta: c * V
 
         return delta_f, self.apply_chain_rule(v, "full_separation", actions, output=delta_f)
 

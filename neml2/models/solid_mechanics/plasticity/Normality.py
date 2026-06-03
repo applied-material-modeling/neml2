@@ -31,7 +31,6 @@ chain-rule infrastructure to compute ∂(inner.f)/∂(inner.from[i]) at runtime.
 from __future__ import annotations
 
 from math import prod
-from typing import cast
 
 import torch
 
@@ -198,7 +197,7 @@ class Normality(Model):
             raise AttributeError("_inner accessed before Normality.__init__ wired the slot")
         inner = self._modules[attr]
         assert inner is not None
-        return cast(Model, inner)
+        return inner
 
     def forward(  # type: ignore[override]
         self,

@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -81,7 +79,7 @@ class RationalDegradationFunction(Model):
         d = phase
         one_minus_d = 1.0 - d
         # f = (1 - d)^p ; Q = b1 d (1 + b2 d + b2 b3 d^2)
-        f = cast(Scalar, type_pow(one_minus_d, p))
+        f = type_pow(one_minus_d, p)
         Q = b1 * d * (1.0 + b2 * d + b2 * b3 * d * d)
         D = f + Q
         # g = (f / D) (1 - eta) + eta
@@ -95,7 +93,7 @@ class RationalDegradationFunction(Model):
         # Since D = f + Q, D' = f' + Q', so the numerator collapses to
         #   f' D - f D' = f' (f + Q) - f (f' + Q') = f' Q - f Q'.
         # With f' = -p (1-d)^(p-1) and Q' = b1 (1 + 2 b2 d + 3 b2 b3 d^2).
-        f_prime = -p * cast(Scalar, type_pow(one_minus_d, p - 1.0))
+        f_prime = -p * type_pow(one_minus_d, p - 1.0)
         Q_prime = b1 * (1.0 + 2.0 * b2 * d + 3.0 * b2 * b3 * d * d)
         dgdd = (f_prime * Q - f * Q_prime) / (D * D) * (1.0 - eta)
 

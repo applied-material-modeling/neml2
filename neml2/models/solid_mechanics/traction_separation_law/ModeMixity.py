@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ....chain_rule import ChainRuleAction, ChainRuleDict
 from ....factory import register_native
 from ....model import Model
@@ -62,16 +60,16 @@ class ModeMixity(Model):
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Detached opening-branch mask (matches C++ ``(_dn() > 0.0).detach()``):
         # the masked compression branch must not contribute through ``dn``.
-        pos_mask = cast(Scalar, gt(dn, 0.0))
+        pos_mask = gt(dn, 0.0)
         one = Scalar.from_value(1.0, like=dn)
         zero = Scalar.from_value(0.0, like=dn)
         # Safe denominator: replace dn with 1 on the masked-off branch so the
         # opening-branch division stays finite when dn <= 0.
-        safe_dn = cast(Scalar, where(pos_mask, dn, one))
+        safe_dn = where(pos_mask, dn, one)
         inv_dn = 1.0 / safe_dn
 
         beta_open = ds * inv_dn
-        beta = cast(Scalar, where(pos_mask, beta_open, zero))
+        beta = where(pos_mask, beta_open, zero)
 
         if v is None:
             return beta
@@ -84,12 +82,12 @@ class ModeMixity(Model):
         # In the compression branch beta is identically zero, so both partials
         # are zero. The branch mask itself is detached, so its variation does
         # not contribute.
-        dbeta_dds = cast(Scalar, where(pos_mask, inv_dn, zero))
-        dbeta_ddn = cast(Scalar, where(pos_mask, -ds * inv_dn * inv_dn, zero))
+        dbeta_dds = where(pos_mask, inv_dn, zero)
+        dbeta_ddn = where(pos_mask, -ds * inv_dn * inv_dn, zero)
 
         actions: dict[str, ChainRuleAction] = {
-            "tangential_separation": lambda V, c=dbeta_dds: c * cast(Scalar, V),
-            "normal_separation": lambda V, c=dbeta_ddn: c * cast(Scalar, V),
+            "tangential_separation": lambda V, c=dbeta_dds: c * V,
+            "normal_separation": lambda V, c=dbeta_ddn: c * V,
         }
         return beta, self.apply_chain_rule(v, "mode_mixity", actions, output=beta)
 

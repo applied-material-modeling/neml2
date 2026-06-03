@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -63,8 +61,8 @@ class IrreversibleScalar(Model):
     ):
         # Forward: y = where(x > x_old, x, x_old) = max(x_old, x). The mask is
         # a bool tensor (no grad), matching the C++ ``advance_mask.detach()``.
-        advance = cast(Scalar, gt(x, x_old))
-        y = cast(Scalar, where(advance, x, x_old))
+        advance = gt(x, x_old)
+        y = where(advance, x, x_old)
         if v is None:
             return y
 
@@ -75,10 +73,10 @@ class IrreversibleScalar(Model):
         zero = Scalar.from_value(0.0, like=x)
 
         def x_action(V: Scalar, mask: Scalar = advance, z: Scalar = zero) -> Scalar:
-            return cast(Scalar, where(mask, V, z))
+            return where(mask, V, z)
 
         def x_old_action(V: Scalar, mask: Scalar = advance, z: Scalar = zero) -> Scalar:
-            return cast(Scalar, where(mask, z, V))
+            return where(mask, z, V)
 
         return y, self.apply_chain_rule(
             v,

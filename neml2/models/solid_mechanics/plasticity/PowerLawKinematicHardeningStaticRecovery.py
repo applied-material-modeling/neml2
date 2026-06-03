@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
@@ -81,7 +79,7 @@ class PowerLawKinematicHardeningStaticRecovery(Model):
         # X_dot = -(s/tau)^(n-1) * X / tau
         nm1 = n - 1.0
         s_over_tau = s / tau
-        X_dot = -cast(Scalar, pow(s_over_tau, nm1)) * X / tau
+        X_dot = -pow(s_over_tau, nm1) * X / tau
 
         if v is None:
             return X_dot
@@ -92,7 +90,7 @@ class PowerLawKinematicHardeningStaticRecovery(Model):
         # closed-form contraction
         #   action_X(V) = -s^(n-3) * ((n-1) * inner(X, V) * X + s^2 * V) / tau^n
         # using outer(X) : V == X * inner(X, V) (typed inner returns Scalar).
-        coef_pre = -cast(Scalar, pow(s, n - 3.0)) / cast(Scalar, pow(tau, n))
+        coef_pre = -pow(s, n - 3.0) / pow(tau, n)
 
         def x_action(V: SR2) -> SR2:
             return coef_pre * (nm1 * inner(X, V) * X + s * s * V)
@@ -102,12 +100,12 @@ class PowerLawKinematicHardeningStaticRecovery(Model):
 
         if "tau" in self._nl_params:
             # d X_dot / d tau = n * (s/tau)^(n-1) * X / tau^2
-            coef_tau = n * cast(Scalar, pow(s_over_tau, nm1)) * X / (tau * tau)
+            coef_tau = n * pow(s_over_tau, nm1) * X / (tau * tau)
             actions[self._nl_params["tau"].input_name] = lambda V, c=coef_tau: c * V
 
         if "n" in self._nl_params:
             # d X_dot / d n = -X / s * (s/tau)^n * log(s/tau)
-            coef_n = -X / s * cast(Scalar, pow(s_over_tau, n)) * log(s_over_tau)
+            coef_n = -X / s * pow(s_over_tau, n) * log(s_over_tau)
             actions[self._nl_params["n"].input_name] = lambda V, c=coef_n: c * V
 
         return X_dot, self.apply_chain_rule(v, self._X_rate, actions, output=X_dot)

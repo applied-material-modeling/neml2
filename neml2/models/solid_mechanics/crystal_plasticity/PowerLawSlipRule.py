@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
@@ -69,21 +67,17 @@ class PowerLawSlipRule(Model):
         gamma0 = self._get_param("gamma0", nl_params, Scalar)
         nv = self._get_param("n", nl_params, Scalar)
         ratio = rss / tau
-        abs_ratio = cast(Scalar, tensor_abs(ratio))
-        g = gamma0 * cast(Scalar, tensor_pow(abs_ratio, nv - 1.0)) * ratio
+        abs_ratio = tensor_abs(ratio)
+        g = gamma0 * tensor_pow(abs_ratio, nv - 1.0) * ratio
         if v is None:
             return g
 
         # Per-slip closed-form derivatives, as typed Scalar coefficients:
         #   ∂γ̇/∂τ = n γ0 |τ/τ̂|^(n−1) / τ̂
         #   ∂γ̇/∂τ̂ = -n γ0 τ |τ|^(n−1) / τ̂^(n+1)
-        dg_drss = nv * gamma0 * cast(Scalar, tensor_pow(abs_ratio, nv - 1.0)) / tau
+        dg_drss = nv * gamma0 * tensor_pow(abs_ratio, nv - 1.0) / tau
         dg_dtau = -(
-            nv
-            * gamma0
-            * rss
-            * cast(Scalar, tensor_pow(cast(Scalar, tensor_abs(rss)), nv - 1.0))
-            / cast(Scalar, tensor_pow(tau, nv + 1.0))
+            nv * gamma0 * rss * tensor_pow(tensor_abs(rss), nv - 1.0) / tensor_pow(tau, nv + 1.0)
         )
 
         def rss_action(V: Scalar, c: Scalar = dg_drss) -> Scalar:

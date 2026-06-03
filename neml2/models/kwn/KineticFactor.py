@@ -27,7 +27,6 @@
 from __future__ import annotations
 
 import math
-from typing import cast
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
@@ -91,9 +90,7 @@ class KineticFactor(Model):
         # declared generic over ``TensorWrapper``; narrow the result back to
         # ``Scalar`` so pyright sees Scalar algebra in the products that
         # follow.
-        coef = (
-            (4.0 * math.pi) * cast(Scalar, pow(N_a, 4.0 / 3.0)) / cast(Scalar, pow(V_m, 4.0 / 3.0))
-        )
+        coef = (4.0 * math.pi) * pow(N_a, 4.0 / 3.0) / pow(V_m, 4.0 / 3.0)
         beta = coef * R * R / s
 
         if v is None:

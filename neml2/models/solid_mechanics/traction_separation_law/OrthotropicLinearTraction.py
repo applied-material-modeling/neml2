@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ....chain_rule import ChainRuleAction, ChainRuleDict
 from ....factory import register_native
 from ....model import Model
@@ -118,15 +116,11 @@ class OrthotropicLinearTraction(Model):
         def _resolved(canon: str) -> str:
             return renames.get(canon, canon)
 
-        dn_sep = cast(Scalar, bound[_resolved("normal_separation")])
-        ds1 = cast(Scalar, bound[_resolved("tangential_separation_1")])
-        ds2 = cast(Scalar, bound[_resolved("tangential_separation_2")])
+        dn_sep = bound[_resolved("normal_separation")]
+        ds1 = bound[_resolved("tangential_separation_1")]
+        ds2 = bound[_resolved("tangential_separation_2")]
         dn_pen_name = self._dn_pen_name
-        dn_pen = (
-            cast(Scalar, bound[dn_pen_name])
-            if dn_pen_name is not None and dn_pen_name in bound
-            else None
-        )
+        dn_pen = bound[dn_pen_name] if dn_pen_name is not None and dn_pen_name in bound else None
 
         Kn = self._get_param("Kn", nl_params, Scalar)
         Kt = self._get_param("Kt", nl_params, Scalar)
@@ -150,19 +144,19 @@ class OrthotropicLinearTraction(Model):
         zero = Scalar.from_value(0.0, like=dn_sep)
 
         def _dn_sep_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             return vec_from_scalars(Kn * Vs, zero * Vs, zero * Vs)
 
         def _ds1_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             return vec_from_scalars(zero * Vs, Kt * Vs, zero * Vs)
 
         def _ds2_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             return vec_from_scalars(zero * Vs, zero * Vs, Kt * Vs)
 
         def _dn_pen_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             return vec_from_scalars(Kpen * Vs, zero * Vs, zero * Vs)
 
         traction_actions: dict[str, ChainRuleAction] = {

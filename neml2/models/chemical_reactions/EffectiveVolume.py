@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -117,11 +115,9 @@ class EffectiveVolume(Model):
             )
         bound = dict(zip(names, inputs, strict=True))
 
-        ws = [cast(Scalar, bound[n]) for n in self._w_names]
+        ws = [bound[n] for n in self._w_names]
         phio_name = self._phio_name
-        phio = (
-            cast(Scalar, bound[phio_name]) if phio_name is not None and phio_name in bound else None
-        )
+        phio = bound[phio_name] if phio_name is not None and phio_name in bound else None
 
         M = self._get_param("M", nl_params, Scalar)
         rhos = self._get_param_list("_rho_names", nl_params, Scalar)
@@ -148,10 +144,10 @@ class EffectiveVolume(Model):
         actions: dict[str, ChainRuleAction] = {}
         for w_name, rho in zip(self._w_names, rhos, strict=True):
             c_i = coef / rho
-            actions[w_name] = lambda V_, c=c_i: c * cast(Scalar, V_)
+            actions[w_name] = lambda V_, c=c_i: c * V_
         if phio is not None and phio_name is not None and phio_name in bound:
             c_phio = coef * sum_term / (1.0 - phio)
-            actions[phio_name] = lambda V_, c=c_phio: c * cast(Scalar, V_)
+            actions[phio_name] = lambda V_, c=c_phio: c * V_
 
         return V, self.apply_chain_rule(v, "composite_volume", actions, output=V)
 

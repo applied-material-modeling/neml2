@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -60,7 +58,7 @@ class SemiInfiniteCoordinateTransform(Model):
     s: Scalar
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
-        x = cast(Scalar, inputs[0])
+        x = inputs[0]
         s = self._get_param("s", nl_params=(), type_cls=Scalar)
 
         inv = 1.0 / (x + s)

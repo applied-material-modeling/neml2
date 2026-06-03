@@ -26,7 +26,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
@@ -74,7 +74,7 @@ class PlasticVorticity(Model):
     ):
         W = self._cg.W  # WR2 sub_batch_ndim=1
         weighted = W * g
-        wp_cry = cast(WR2, sum(weighted.sub_batch, -1))
+        wp_cry = sum(weighted.sub_batch, -1)
         wp = rotate(wp_cry, R)
         if v is None:
             return wp
@@ -86,7 +86,7 @@ class PlasticVorticity(Model):
             return jvp_rotate(wp_cry, R, V)
 
         def g_action(V: Scalar) -> WR2:
-            return rotate(cast(WR2, sum((W * V).sub_batch, -1)), R)
+            return rotate(sum((W * V).sub_batch, -1), R)
 
         return wp, self.apply_chain_rule(
             v,

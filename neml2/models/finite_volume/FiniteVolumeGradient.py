@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -85,10 +83,10 @@ class FiniteVolumeGradient(Model):
         # Structural inputs come first, then any promoted parameters in the
         # order ``_nl_params`` was registered (``prefactor`` is the only one
         # here when it gets promoted).
-        u_wrap = cast(Scalar, inputs[0])
+        u_wrap = inputs[0]
         nl_params = inputs[1:]
         u = u_wrap.data  # (*B, N)
-        dx = cast(Scalar, self.dx).data
+        dx = self.dx.data
         pf_wrap = self._get_param("prefactor", nl_params, Scalar)
         prefactor = pf_wrap.data
         inv_dx = 1.0 / dx
