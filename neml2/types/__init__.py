@@ -41,6 +41,7 @@ as free functions, matching how the C++ side exposes them.
 """
 
 from neml2.types._base import TensorWrapper, align_sub_batch
+from neml2.types._primitive import PrimitiveTensor
 from neml2.types.functions import (
     abs,
     bilinear_interpolation,
@@ -115,6 +116,7 @@ from neml2.types.wr2 import WR2
 
 __all__ = [
     "MillerIndex",
+    "PrimitiveTensor",
     "R2",
     "Rot",
     "SR2",

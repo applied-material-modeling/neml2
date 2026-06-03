@@ -27,9 +27,11 @@
 Mirrors ``include/neml2/tensors/R2.h``. Used for orientation matrices, Schmid
 tensors (when the symmetric/skew split isn't taken), and any non-symmetric 3x3.
 
-Methods on the class are limited to constructors, shape/dim traits, and
-operators. Mathematical operations (det, inv, contraction with non-R2 types,
-symmetric/skew projection, rotations) live in :mod:`functions`.
+Arithmetic operators and ``zeros``/``ones``/``full``/``empty``/``fill``
+factories are inherited from :class:`PrimitiveTensor`. R2-specific:
+:meth:`identity` (returns ``eye(3)``) and :meth:`__matmul__` for ``R2 @ R2``
+matrix product (the only base-type that has square base shape and thus
+supports the matrix-product operator).
 """
 
 from __future__ import annotations
@@ -39,13 +41,13 @@ from typing import ClassVar
 
 import torch
 
-from neml2.types._base import TensorWrapper, align_scalar_base, align_sub_batch
+from neml2.types._base import align_sub_batch
+from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
-from neml2.types.scalar import Scalar
 
 
 @dataclass(frozen=True, eq=False)
-class R2(TensorWrapper):
+class R2(PrimitiveTensor):
     """Wraps a `torch.Tensor` of shape ``(..., 3, 3)``."""
 
     data: torch.Tensor
@@ -53,74 +55,19 @@ class R2(TensorWrapper):
     BASE_NDIM: ClassVar[int] = 2
     BASE_SHAPE: ClassVar[tuple[int, ...]] = (3, 3)
 
-    # ---- factories ----
-
     @classmethod
     def identity(
         cls, *, dtype: torch.dtype | None = None, device: torch.device | str | None = None
     ) -> R2:
         return cls(torch.eye(3, dtype=dtype, device=device))
 
-    @classmethod
-    def zeros(
-        cls, *batch: int, dtype: torch.dtype | None = None, device: torch.device | str | None = None
-    ) -> R2:
-        return cls(torch.zeros(*batch, 3, 3, dtype=dtype, device=device))
-
-    # ---- operator overloads ----
-    #
-    # Every binary op routes through :func:`align_sub_batch` so global and
-    # per-sub-batch-site operands combine cleanly at any dynamic batch size.
-    # In particular ``R2 @ R2`` between a global ``(B, 3, 3)`` and per-crystal
-    # ``(B, 5, 3, 3)`` is the canonical broken eager broadcast — alignment
-    # pads the global to ``(B, 1, 3, 3)`` which matmul broadcasts to
-    # ``(B, 5, 3, 3)`` correctly.
-
-    def __add__(self, other) -> R2:
-        if isinstance(other, R2):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return R2(aa.data + bb.data, sub_batch_ndim=sb)
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return R2(aa.data + align_scalar_base(bb.data, 2), sub_batch_ndim=sb)
-        return NotImplemented
-
-    def __radd__(self, other) -> R2:
-        return self.__add__(other)
-
-    def __sub__(self, other) -> R2:
-        if isinstance(other, R2):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return R2(aa.data - bb.data, sub_batch_ndim=sb)
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return R2(aa.data - align_scalar_base(bb.data, 2), sub_batch_ndim=sb)
-        return NotImplemented
-
-    def __neg__(self) -> R2:
-        return R2(-self.data, sub_batch_ndim=self.sub_batch_ndim)
-
-    def __mul__(self, other: Scalar | float | int) -> R2:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return R2(aa.data * align_scalar_base(bb.data, 2), sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return R2(self.data * other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented  # type: ignore[return-value]
-
-    def __rmul__(self, other: Scalar | float | int) -> R2:
-        return self.__mul__(other)
-
-    def __truediv__(self, other) -> R2:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return R2(aa.data / align_scalar_base(bb.data, 2), sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return R2(self.data / other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented
-
     def __matmul__(self, other):
-        """``R2 @ R2 → R2`` (matrix product). Other operands fall through."""
+        """``R2 @ R2 → R2`` (matrix product). Other operands fall through.
+
+        ``align_sub_batch`` pads the LHS/RHS so e.g. a global ``(B, 3, 3)`` and
+        a per-crystal ``(B, 5, 3, 3)`` matmul aligns to ``(B, 1, 3, 3)`` vs
+        ``(B, 5, 3, 3)`` and broadcasts to ``(B, 5, 3, 3)``.
+        """
         if isinstance(other, R2):
             [aa, bb], sb = align_sub_batch(self, other)
             return R2(aa.data @ bb.data, sub_batch_ndim=sb)

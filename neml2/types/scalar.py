@@ -28,6 +28,25 @@
 dispatch (`Scalar * SR2 → SR2`) is deterministic via Python's reflected-operator
 protocol. With a bare `torch.Tensor` on the left, Python would never invoke
 `SR2.__rmul__`.
+
+What Scalar overrides on top of :class:`PrimitiveTensor`:
+
+- **Literal-friendly ``__init__``**: ``Scalar(2.5)`` and ``Scalar([1, 2, 3])``
+  work directly; literals are coerced to ``torch.float64`` (the default
+  precision for typed-wrapper algebra).
+- **``float64`` factory defaults**: ``Scalar.zeros(n)``, ``Scalar.ones(n)``,
+  ``Scalar.full(n, fill_value=...)`` default to ``torch.float64`` rather than
+  torch's global ``float32`` default.
+- **``linspace`` / ``arange``**: Scalar-only, mirroring the torch creation API.
+- **``+`` / ``-`` with Python literals**: ``s + 1.5`` and ``s - 1`` are valid;
+  the other primitives reject this (a uniform additive offset is rare and
+  ambiguous on a (3,3) or (6,) tensor). Multiply / divide by literal are
+  inherited from :meth:`PrimitiveTensor._scale`.
+- **``__rsub__`` / ``__rtruediv__``** for the reverse-with-literal cases.
+- **``__pow__``, ``__abs__``**: torch-backed forwarders, Scalar-only.
+
+Everything else (``__neg__``, region views, ``zeros``/``ones`` shape semantics)
+comes from the base layers.
 """
 
 from __future__ import annotations
@@ -38,21 +57,15 @@ from typing import ClassVar, TypeVar, overload
 import torch
 
 from neml2.types._base import TensorWrapper, align_sub_batch
+from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
 
 _WrapperT = TypeVar("_WrapperT", bound=TensorWrapper)
 
 
 @dataclass(frozen=True, eq=False)
-class Scalar(TensorWrapper):
-    """Wraps a `torch.Tensor` of base shape ``()`` (i.e., one number per batch entry).
-
-    ``data`` may be passed as a torch tensor (used as-is), a Python number,
-    or anything `torch.as_tensor` accepts. Numeric literals are promoted to
-    ``torch.float64`` unless ``dtype`` overrides it — the same default used
-    everywhere else in NEML2, picked to match the precision of the typed
-    wrappers' algebra and the input-file ``[Tensors]`` factory.
-    """
+class Scalar(PrimitiveTensor):
+    """Wraps a `torch.Tensor` of base shape ``()`` (i.e., one number per batch entry)."""
 
     data: torch.Tensor
     sub_batch_ndim: int = 0
@@ -83,16 +96,12 @@ class Scalar(TensorWrapper):
         """Construct a Scalar inheriting dtype/device from an existing wrapper."""
         return cls(x, dtype=like.dtype, device=like.device)
 
-    # ---- torch-analogue factories ----
+    # ---- torch-analogue factories with float64 defaults ----
     #
-    # All factories mirror the torch creation API (``zeros``, ``ones``, ``full``,
-    # ``linspace``, ``arange``) but accept the dynamic batch shape as ``*shape``
-    # positional arguments and default to ``float64``. Sub-batch tagging is
-    # composed post-hoc via the fluent ``Scalar.linspace(...).sub_batch.retag(n)``.
-    #
-    # ``Scalar.full`` takes ``*shape`` first then ``fill_value`` as a keyword,
-    # mirroring the existing ``Vec.zeros(*batch, ...)`` signature on the other
-    # wrappers — not torch's ``(shape, value)`` order.
+    # Override the inherited PrimitiveTensor factories so Scalars default to
+    # ``torch.float64`` (matching ``Scalar.__init__``) rather than torch's
+    # global float32 default. Sub-batch tagging is composed post-hoc via the
+    # fluent ``Scalar.linspace(...).sub_batch.retag(n)``.
 
     @classmethod
     def zeros(
@@ -101,7 +110,6 @@ class Scalar(TensorWrapper):
         dtype: torch.dtype | None = None,
         device: torch.device | str | None = None,
     ) -> Scalar:
-        """Scalar of shape ``shape`` filled with zeros."""
         return cls(torch.zeros(*shape, dtype=dtype or torch.float64, device=device))
 
     @classmethod
@@ -111,7 +119,6 @@ class Scalar(TensorWrapper):
         dtype: torch.dtype | None = None,
         device: torch.device | str | None = None,
     ) -> Scalar:
-        """Scalar of shape ``shape`` filled with ones."""
         return cls(torch.ones(*shape, dtype=dtype or torch.float64, device=device))
 
     @classmethod
@@ -122,7 +129,6 @@ class Scalar(TensorWrapper):
         dtype: torch.dtype | None = None,
         device: torch.device | str | None = None,
     ) -> Scalar:
-        """Scalar of shape ``shape`` filled with ``fill_value``."""
         return cls(torch.full(shape, fill_value, dtype=dtype or torch.float64, device=device))
 
     @classmethod
@@ -154,31 +160,26 @@ class Scalar(TensorWrapper):
             return cls(torch.arange(start, dtype=dtype or torch.float64, device=device))
         return cls(torch.arange(start, end, step, dtype=dtype or torch.float64, device=device))
 
-    # ---- arithmetic with Scalar / float / int ----
+    # ---- arithmetic with Python literals (add/sub) ----
     #
-    # Every binary op routes through :func:`align_sub_batch` so a global
-    # ``Scalar`` and a per-sub-batch-site ``Scalar`` combine cleanly at any
-    # dynamic batch size (mirrors C++ ``utils::align_intmd_dim`` —
-    # ``include/neml2/tensors/functions/utils.h:36``).
+    # ``__mul__`` / ``__truediv__`` are inherited via :meth:`PrimitiveTensor._scale`
+    # which already handles ``float`` / ``int`` literals. ``__add__`` / ``__sub__``
+    # need explicit overrides because the base ``_binary`` deliberately rejects
+    # literals (a uniform additive offset is rare and ambiguous on a (3,3) or
+    # (6,) tensor — on Scalar it's the natural thing).
 
     def __add__(self, other) -> Scalar:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return Scalar(aa.data + bb.data, sub_batch_ndim=sb)
         if isinstance(other, (float, int)):
             return Scalar(self.data + other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented
+        return self._binary(other, lambda a, b: a + b)
 
     def __radd__(self, other) -> Scalar:
         return self.__add__(other)
 
     def __sub__(self, other) -> Scalar:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return Scalar(aa.data - bb.data, sub_batch_ndim=sb)
         if isinstance(other, (float, int)):
             return Scalar(self.data - other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented
+        return self._binary(other, lambda a, b: a - b)
 
     def __rsub__(self, other) -> Scalar:
         if isinstance(other, (float, int)):
@@ -190,43 +191,28 @@ class Scalar(TensorWrapper):
     @overload
     def __mul__(self, other: _WrapperT) -> _WrapperT: ...
     def __mul__(self, other):
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return Scalar(aa.data * bb.data, sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return Scalar(self.data * other, sub_batch_ndim=self.sub_batch_ndim)
-        if isinstance(other, TensorWrapper):
-            # ``Scalar * wrapper`` scales the wrapper. Delegate to the wrapper's
-            # own (correctly base-shaped) scalar multiply — the same result the
-            # reflected-operator protocol would reach, but stated explicitly so
-            # ``Scalar * SR2 -> SR2`` and, crucially, ``Scalar * TensorWrapper``
-            # in generic model code both type-check. Leaf authors can write the
-            # scalar on either side.
+        # The Scalar × Scalar and Scalar × literal cases are handled by the
+        # inherited ``_scale``. The wrapper-promotion case (``Scalar * SR2 ->
+        # SR2``) is delegated explicitly here so it type-checks at the
+        # ``-> _WrapperT`` overload — without this branch we'd return
+        # ``NotImplemented`` and rely on the wrapper's ``__rmul__``, which
+        # works at runtime but isn't visible to type-checkers staring at the
+        # ``Scalar * wrapper`` expression.
+        if isinstance(other, TensorWrapper) and not isinstance(other, Scalar):
             return other * self
-        return NotImplemented
+        return self._scale(other, lambda a, b: a * b)
 
     def __rmul__(self, other) -> Scalar:
-        # Mirrors __mul__: float/int → Scalar; the wrapper branch in __mul__
-        # delegates to ``other * self`` and only triggers when ``other`` is a
-        # non-Scalar TensorWrapper, which can't happen on the rmul path
-        # (those wrappers' own __mul__ handles Scalar directly).
         return self.__mul__(other)
-
-    def __truediv__(self, other) -> Scalar:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return Scalar(aa.data / bb.data, sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return Scalar(self.data / other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented
 
     def __rtruediv__(self, other) -> Scalar:
         if isinstance(other, (float, int)):
             return Scalar(other / self.data, sub_batch_ndim=self.sub_batch_ndim)
         return NotImplemented
 
-    def __neg__(self) -> Scalar:
-        return Scalar(-self.data, sub_batch_ndim=self.sub_batch_ndim)
+    # ---- Scalar-only transcendentals / unary ops ----
+    #
+    # ``__neg__`` is inherited from PrimitiveTensor — its body is the same.
 
     def __abs__(self) -> Scalar:
         return Scalar(torch.abs(self.data), sub_batch_ndim=self.sub_batch_ndim)
@@ -236,3 +222,14 @@ class Scalar(TensorWrapper):
 
 
 register(Scalar)
+
+
+# Tell PrimitiveTensor's generic ``_binary`` dispatch which class to recognise as
+# Scalar for the (Self × Scalar) interop branch. This avoids an import cycle in
+# ``_primitive.py`` (PrimitiveTensor doesn't know about Scalar at class-definition
+# time, but every code path that triggers the Scalar branch must have already
+# imported Scalar to construct one).
+PrimitiveTensor._SCALAR_CLS = Scalar
+
+# Unused import suppressed by being referenced here.
+_ = align_sub_batch

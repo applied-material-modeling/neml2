@@ -115,13 +115,14 @@ class TensorWrapper:
         # ``t_cls(tensor)`` with ``t_cls: type[TensorWrapper]``.
         raise NotImplementedError("TensorWrapper is abstract; instantiate a concrete subclass.")
 
-    # Each concrete ``@dataclass`` subclass defines these operators with its own
-    # return type. The base declarations exist purely so type-checkers accept
-    # wrapper algebra on values typed as the abstract ``TensorWrapper`` — the
-    # generic chain-rule accumulation loops (``apply_chain_rule``) and the
-    # residual / time-integration models that take ``TensorWrapper`` inputs.
-    # They never run (the subclass override always wins), so they raise like
-    # ``__init__``.
+    # Arithmetic operators are provided in full by :class:`PrimitiveTensor`
+    # — the intermediate base that every primitive (``Scalar``, ``Vec``,
+    # ``SR2``, …) subclasses. The abstract stubs below exist purely so
+    # type-checkers accept algebra on values typed as the base
+    # ``TensorWrapper`` (the generic chain-rule accumulation loops in
+    # ``apply_chain_rule`` and the residual / time-integration models that
+    # take ``TensorWrapper`` inputs). They never run at runtime — the
+    # ``PrimitiveTensor`` overrides always win on real instances.
     def __neg__(self) -> TensorWrapper:
         raise NotImplementedError
 
