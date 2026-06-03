@@ -244,15 +244,14 @@ PlasticDeformationRate, PlasticVorticity, OrientationRate, three time
 integrators) and an extra unknown axis (Rot=3 on top of SR2=6 and
 Scalar=1). The step / IFT graphs stay at ~2.5× because the
 **chain-rule pushforward machinery** is genuinely heavier: cross-type
-blocks like ``∂SR2/∂Rot`` flow through the product-rule JVP primitives
-(``jvp_rotate_sym`` / ``jvp_rotate_skew``), and CP has several of those
-that j2's all-symmetric chain doesn't.
+blocks like ``∂SR2/∂Rot`` flow through the product-rule JVP primitive
+(overloaded ``jvp_rotate``), and CP has several of those that j2's
+all-symmetric chain doesn't.
 
 A historical experiment (on the since-removed ``d_RXR_T_*`` matmul
 kernels, and still applicable to the surviving pack/unpack helpers
-``mandel_pack_sym3``, ``skew_pack_axial3``, ``r2_from_sr2``,
-``r2_from_wr2``, ``sym``, ``skew``) collapsed their inner Mandel-slot
-loops into single ``flat @ projection``
+``r2_from_sr2``, ``r2_from_wr2``, ``sym``, ``skew``) collapsed their
+inner Mandel-slot loops into single ``flat @ projection``
 matmuls. Graph nodes dropped a further ~30 %, **CPU wall-time improved
 ~10 %**, but **CUDA wall-time regressed ~9 %** across the batch sweep.
 Inductor doesn't fuse a separate matmul kernel with surrounding
@@ -262,10 +261,10 @@ batch outweighed the CPU win, so the matmul-against-fixed-projection
 form was reverted for these helpers — comments on the affected functions
 document the empirical reasoning. The same caveat applies to every
 free function in ``types/functions.py`` that operates on a small,
-statically-known base shape (e.g. ``deuler_rodrigues``,
-``exp_map``/``dexp_map``): replacing the closed-form pointwise body with
-a constant-projection matmul is unlikely to be a net win on CUDA at
-small batch without changes to the kernel fusion path.
+statically-known base shape (e.g. ``exp_map``/``dexp_map``): replacing
+the closed-form pointwise body with a constant-projection matmul is
+unlikely to be a net win on CUDA at small batch without changes to the
+kernel fusion path.
 
 Future-work candidate: a hand-rolled ``unrolled_matmul(A, B)`` for tiny
 contraction dimensions that emits the equivalent pointwise ops directly

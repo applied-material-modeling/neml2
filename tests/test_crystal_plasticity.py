@@ -27,7 +27,7 @@
 Coverage:
 
 * (a) Tensor types — ``Rot``, ``R2``, ``WR2``, ``MillerIndex`` round-trip
-  and key free-function math (``euler_rodrigues``, ``deuler_rodrigues``,
+  and key free-function math (``euler_rodrigues``, ``jvp_euler_rodrigues``,
   ``exp_map``, ``dexp_map``, ``compose``, ``rotate_sym``, ``rotate_ssr4``).
   Validated against (i) hand-computed known cases, (ii) an independent
   MRP→quaternion→R reference implemented in this test file, (iii)
@@ -75,7 +75,6 @@ from neml2.types import (
     Rot,
     Scalar,
     compose,
-    deuler_rodrigues,
     dexp_map,
     drotate,
     drotate_self,
@@ -193,21 +192,6 @@ def test_rot_euler_rodrigues_yields_orthogonal_unit_determinant():
         R = euler_rodrigues(Rot(torch.tensor(r_vec, dtype=torch.float64))).data
         assert torch.allclose(R @ R.T, torch.eye(3, dtype=torch.float64), atol=1e-14)
         assert math.isclose(float(torch.linalg.det(R)), 1.0, abs_tol=1e-14)
-
-
-def test_deuler_rodrigues_matches_finite_difference():
-    """``deuler_rodrigues(r) == ∂(euler_rodrigues(r))/∂r`` via central FD."""
-    r0 = torch.tensor([0.05, -0.07, 0.12], dtype=torch.float64)
-    analytical = deuler_rodrigues(Rot(r0))  # shape (3, 3, 3): (R_a, R_b, r_k)
-    eps = 1e-7
-    fd = torch.zeros(3, 3, 3, dtype=torch.float64)
-    for k in range(3):
-        rp = r0.clone()
-        rp[k] += eps
-        rm = r0.clone()
-        rm[k] -= eps
-        fd[:, :, k] = (euler_rodrigues(Rot(rp)).data - euler_rodrigues(Rot(rm)).data) / (2.0 * eps)
-    assert torch.allclose(analytical, fd, atol=1e-7)
 
 
 def test_exp_map_yields_orthogonal_rotation():

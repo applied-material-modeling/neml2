@@ -48,7 +48,6 @@ from neml2.types._base import (
     align_scalar_base,
     align_sub_batch,
 )
-from neml2.types.miller_index import MillerIndex
 from neml2.types.r2 import R2
 from neml2.types.rot import Rot
 from neml2.types.scalar import Scalar
@@ -658,9 +657,8 @@ _SQRT2 = math.sqrt(2.0)
 
 
 # NOTE on Mandel / skew pack/unpack vectorization: a "matmul against fixed
-# (9, 6) projection" form was tried for ``mandel_pack_sym3`` /
-# ``skew_pack_axial3`` / ``r2_from_sr2`` / ``r2_from_wr2`` / ``sym`` /
-# ``skew``. It improved CPU wall-time by ~10 % but regressed CUDA wall-time
+# (9, 6) projection" form was tried for ``r2_from_sr2`` / ``r2_from_wr2`` /
+# ``sym`` / ``skew``. It improved CPU wall-time by ~10 % but regressed CUDA wall-time
 # by ~9 % at small batch (B ≤ 1,024): each matmul launches a separate
 # kernel that Inductor cannot fuse with surrounding pointwise ops, while
 # the explicit select+stack chains do fuse into a single Triton kernel
@@ -767,57 +765,6 @@ def euler_rodrigues(r: Rot) -> R2:
         one_plus_rr * one_plus_rr
     )
     return R2(R_mat, sub_batch_ndim=r.sub_batch_ndim)
-
-
-def deuler_rodrigues(r: Rot) -> torch.Tensor:
-    """Derivative ``∂R/∂r`` of the Euler-Rodrigues map; shape ``(..., 3, 3, 3)``.
-
-    Returned as a raw tensor (no R3 wrapper exists in the Python-native stack
-    yet — this derivative only flows through chain-rule actions, never
-    surfaces as a Model input/output). Mirrors ``Rot::deuler_rodrigues`` in
-    ``src/neml2/tensors/Rot.cxx``.
-    """
-    rr = (r.data * r.data).sum(dim=-1)  # (...,)
-    W = r2_from_wr2(WR2(r.data, sub_batch_ndim=r.sub_batch_ndim)).data  # (...,3,3)
-    W2 = W @ W
-    # Levi-Civita symbol (constant 3x3x3).
-    E = torch.zeros(3, 3, 3, dtype=r.dtype, device=r.device)
-    E[0, 1, 2] = E[1, 2, 0] = E[2, 0, 1] = 1.0
-    E[0, 2, 1] = E[2, 1, 0] = E[1, 0, 2] = -1.0
-
-    one_plus_rr = 1.0 + rr  # (...,)
-    inv2 = (1.0 / (one_plus_rr * one_plus_rr)).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    inv3 = (
-        (1.0 / (one_plus_rr * one_plus_rr * one_plus_rr)).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    )
-    rm3 = (rr - 3.0).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    om = (1.0 - rr).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    # Each term: shape (..., 3, 3, 3) over last three axes (i, j, k).
-    rk = r.data  # (..., 3) — broadcast over (3,3) front by unsqueezing -2,-3.
-    W_ij = W  # (..., 3, 3)
-    W2_ij = W2
-    # ...ij,...k -> ...ijk
-    term1 = 8.0 * rm3 * inv3 * (W_ij.unsqueeze(-1) * rk.unsqueeze(-2).unsqueeze(-2))
-    term2 = -32.0 * inv3 * (W2_ij.unsqueeze(-1) * rk.unsqueeze(-2).unsqueeze(-2))
-    # E has shape (3,3,3) with index order (k,i,j); we want (i,j,k) per the C++
-    # ``R3::einsum("...kij->...ijk", {E})``.
-    E_ijk = E.permute(1, 2, 0)
-    term3 = -4.0 * om * inv2 * E_ijk
-    # E_kim · W_mj -> (...,i,j,k) and W_im · E_kmj -> (...,i,j,k); both contract
-    # over ``m``. Done as broadcast-multiply-sum over ``m`` (same idiom as
-    # term1/term2 above; no einsum). The (...,3,3,3,3) intermediate is tiny and
-    # fuses as a single pointwise kernel in Inductor — the CUDA-preferred form.
-    #   EW[...,i,j,k] = sum_m E[k,i,m] * W[...,m,j]
-    E_EW = E.permute(1, 0, 2).unsqueeze(1)  # (i, j=1, k, m)
-    W_EW = W.transpose(-1, -2).unsqueeze(-3).unsqueeze(-2)  # (..., i=1, j, k=1, m)
-    EW = (E_EW * W_EW).sum(dim=-1)  # (..., i, j, k)
-    #   WE[...,i,j,k] = sum_m W[...,i,m] * E[k,m,j]
-    W_WE = W.unsqueeze(-2).unsqueeze(-2)  # (..., i, j=1, k=1, m)
-    E_WE = E.permute(2, 0, 1).unsqueeze(0)  # (i=1, j, k, m)
-    WE = (W_WE * E_WE).sum(dim=-1)  # (..., i, j, k)
-    term4 = -8.0 * inv2 * (EW + WE)
-
-    return term1 + term2 + term3 + term4
 
 
 # ---- Rot composition ----
@@ -1147,7 +1094,7 @@ def _mandel_basis_bilinear(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
 
     Identical structure to :func:`_mandel_basis_matrix` but with two distinct
     input rotation tensors $A$, $B$, so each ``R_ij · R_kl`` product in
-    the formula becomes ``A_ij · B_kl``. Used by :func:`d_rotate_dR` to
+    the formula becomes ``A_ij · B_kl``. Used by :func:`jvp_rotate` (SSR4 case) to
     compute the directional derivative of ``Q(R)`` via the product rule
 
         $dQ(R)[dR] = _mandel_basis_bilinear(R, dR) + _mandel_basis_bilinear(dR, R)$.
@@ -1227,29 +1174,6 @@ def _mandel_basis_bilinear(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
         dim=-2,
     )
     return Q
-
-
-def _d_rotate_ssr4_dR(T: SSR4, R: R2) -> torch.Tensor:
-    """``d(rotate(T, R)) / dR`` (SSR4 overload) as a ``(..., 6, 6, 9)`` Jacobian.
-
-    ``Q(R)`` is quadratic in $R$, so the product rule gives
-    $dQ_dir[A, B] = _mandel_basis_bilinear(R, dR)[A, B] + _mandel_basis_bilinear(dR, R)[A, B]$
-    for any direction ``dR``. The full Jacobian iterates the 9 unit-direction
-    perturbations of $R$; each yields one ``(*B, 6, 6)`` slab assembled into
-    the trailing 9 axis. No autograd.
-    """
-    Q = _mandel_basis_matrix(R.data)  # (..., 6, 6)
-    T_d = T.data  # (..., 6, 6)
-    slabs: list[torch.Tensor] = []
-    for c in range(3):
-        for d in range(3):
-            dR = R.data.new_zeros(*R.data.shape[:-2], 3, 3)
-            dR[..., c, d] = 1.0
-            # dQ shape: (..., 6, 6)
-            dQ = _mandel_basis_bilinear(R.data, dR) + _mandel_basis_bilinear(dR, R.data)
-            dTrot = dQ @ T_d @ Q.transpose(-2, -1) + Q @ T_d @ dQ.transpose(-2, -1)
-            slabs.append(dTrot)
-    return torch.stack(slabs, dim=-1)  # (..., 6, 6, 9)
 
 
 def _rotate_ssr4(T: SSR4, R: R2) -> SSR4:
@@ -1386,10 +1310,10 @@ def _jvp_rotate_ssr4(T: SSR4, R: R2, dR: R2) -> SSR4:
     return SSR4(dTrot, sub_batch_ndim=dR.sub_batch_ndim)
 
 
-# ---- Unified rotate / jvp_rotate / d_rotate_dR entry points ----
+# ---- Unified rotate / jvp_rotate entry points ----
 #
 # The public surface is three names, each overloaded on the operand type. The
-# underlying ``_rotate_*`` / ``_jvp_rotate_*`` / ``_d_rotate_ssr4_dR`` kernels
+# underlying ``_rotate_*`` / ``_jvp_rotate_*`` kernels
 # above hold the actual implementations; this section threads them through
 # ``@typing.overload`` so static type-checkers infer ``rotate(SR2, R2) -> SR2``,
 # ``rotate(R2, R2) -> R2``, etc. The runtime dispatch is a single isinstance
@@ -1452,56 +1376,6 @@ def jvp_rotate(x, R, dR):
     raise TypeError(f"jvp_rotate: unsupported operand type {type(x).__name__}")
 
 
-def d_rotate_dR(x: SSR4, R: R2) -> torch.Tensor:
-    """``d(rotate(x, R)) / dR`` as a raw-tensor Jacobian.
-
-    SSR4-only today — returns the ``(..., 6, 6, 9)`` Jacobian over the 9
-    free components of ``R``. The R2/SR2/WR2 cases have closed-form
-    pushforwards via :func:`jvp_rotate` and don't need the full Jacobian,
-    so they aren't overloaded here. Add ``@overload`` annotations if and
-    when another operand type grows a Jacobian-style derivative.
-    """
-    if not isinstance(x, SSR4):
-        raise TypeError(f"d_rotate_dR: unsupported operand type {type(x).__name__}")
-    return _d_rotate_ssr4_dR(x, R)
-
-
-# ---- Mandel/axial packing helpers (no autograd) ----
-
-
-def mandel_pack_sym3(X_full: torch.Tensor) -> torch.Tensor:
-    """Pack a (...,3,3) symmetric tensor to Mandel (...,6) without going through SR2.
-
-    Useful in chain-rule actions that need the Mandel form of an intermediate
-    full 3×3 result. Equivalent to ``sym(R2(X_full)).data`` but bypasses
-    wrapper construction.
-
-    Kept as the explicit select+add+mul+stack chain. The matmul-against-
-    fixed-projection alternative (``flat @ _MANDEL_PACK``) was measurably
-    slower on CUDA at small batch — see the design note on
-    :func:`r2_from_sr2`.
-    """
-    a = X_full[..., 0, 0]
-    b = X_full[..., 1, 1]
-    c = X_full[..., 2, 2]
-    yz = (X_full[..., 1, 2] + X_full[..., 2, 1]) * (_SQRT2 / 2.0)
-    xz = (X_full[..., 0, 2] + X_full[..., 2, 0]) * (_SQRT2 / 2.0)
-    xy = (X_full[..., 0, 1] + X_full[..., 1, 0]) * (_SQRT2 / 2.0)
-    return torch.stack([a, b, c, yz, xz, xy], dim=-1)
-
-
-def skew_pack_axial3(X_full: torch.Tensor) -> torch.Tensor:
-    """Pack a (...,3,3) tensor to its skew-axial (...,3) form (matches `skew(R2)`).
-
-    Kept as the explicit select+sub+div+stack chain for the same CUDA
-    fusion reason as :func:`mandel_pack_sym3`.
-    """
-    w0 = (X_full[..., 2, 1] - X_full[..., 1, 2]) / 2.0
-    w1 = (X_full[..., 0, 2] - X_full[..., 2, 0]) / 2.0
-    w2 = (X_full[..., 1, 0] - X_full[..., 0, 1]) / 2.0
-    return torch.stack([w0, w1, w2], dim=-1)
-
-
 # ---- Vec helpers ----
 
 
@@ -1531,30 +1405,13 @@ def vec_from_scalars(s0: Scalar, s1: Scalar, s2: Scalar) -> Vec:
     return Vec(torch.stack([aa.data, bb.data, cc.data], dim=-1), sub_batch_ndim=sb)
 
 
-# ---- MillerIndex helpers ----
-
-
-def to_cartesian(mi: MillerIndex, lattice: R2) -> torch.Tensor:
-    """Convert Miller indices to Cartesian coordinates using a lattice matrix.
-
-    ``lattice`` is the matrix whose columns are the three lattice vectors
-    (``a1, a2, a3``); for a cubic crystal with parameter ``a`` this is
-    ``a * I``. Returns a raw ``(..., 3)`` tensor of Cartesian components.
-    """
-    # mi.data: (..., 3); lattice.data: (3, 3) or broadcastable.
-    # ``"...j,ij->...i"`` is the matvec ``lattice @ mi``.
-    return (lattice.data @ mi.data.unsqueeze(-1)).squeeze(-1)
-
-
 __all__ = [
     "abs",
     "bilinear_interpolation",
     "bilinear_interpolation_slopes",
     "compose",
     "cosh",
-    "d_rotate_dR",
     "det",
-    "deuler_rodrigues",
     "dev",
     "dexp_map",
     "diff",
@@ -1575,7 +1432,6 @@ __all__ = [
     "log10",
     "lt",
     "macaulay",
-    "mandel_pack_sym3",
     "mean",
     "norm",
     "outer",
@@ -1584,7 +1440,6 @@ __all__ = [
     "r2_from_wr2",
     "rotate",
     "skew",
-    "skew_pack_axial3",
     "sign",
     "sinh",
     "sqrt",
@@ -1592,7 +1447,6 @@ __all__ = [
     "sum",
     "sym",
     "tanh",
-    "to_cartesian",
     "tr",
     "unit",
     "vec_component",
