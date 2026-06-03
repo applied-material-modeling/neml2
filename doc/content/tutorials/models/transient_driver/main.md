@@ -1,52 +1,230 @@
-@insert-title:tutorials-models-transient-driver
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+mystnb:
+  execution_mode: cache
+---
 
-[TOC]
+(tutorials-models-transient-driver)=
+# Transient driver
 
-## Problem description
+The tutorials so far have evaluated a model at a single state: feed in
+some forces, get back some state. Real material simulations want the
+*trajectory* — strain ramped from zero to a maximum over many steps, with
+each step's converged solution feeding the next. NEML2 packages this
+recursive update inside a `[Drivers]` block called
+[`TransientDriver`](drivers-TransientDriver), built and run from Python via the
+same `load_input` factory introduced in the
+[](tutorials-models-input-file) tutorial.
 
-In the previous tutorial, we demonstrated the use of [ImplicitUpdate](#implicitupdate) to perform constitutive update by solving an implicit system of equations. In particular, we have addressed the constitutive update in the following form
-\f{align}
-  \mathbf{s}_{n+1} = f(\mathbf{f}_{n+1}, \mathbf{s}_n, \mathbf{f}_n; \mathbf{p}). \label{form1}
-\f}
-In other words, the constitutive update takes a recursive form: Given the state and external force of the system (\f$\mathbf{s}_n\f$ and \f$\mathbf{f}_n\f$) at time step \f$n\f$, as well as the "forces" \f$\mathbf{f}_{n+1}\f$ driving the system to advance to the next step \f$n+1\f$, the model yields the state of the system for the next step \f$\mathbf{s}_{n+1}\f$.
+## The recursive update
 
-This form of constitutive update is oftentimes sufficient when coupling with external PDE solvers: The PDE solver calculates the external driving force \f$\mathbf{f}_{n+1}\f$ and asks NEML2 to advance the state of system to \f$\mathbf{s}_{n+1}\f$.
+A single-step constitutive update has the form
 
-However, in many other applications such as parameter calibration, it is favorable to let NEML2 drive the constitutive update (recursively) to effectively simulate the transient response of the material. The corresponding initial-value problem can be formally written as:
+$$
+  \mathbf{s}_{n+1}
+  = f(\mathbf{f}_{n+1},\, \mathbf{s}_n,\, \mathbf{f}_n;\, \mathbf{p}),
+$$
 
-Given initial conditions \f$\mathbf{s}_0\f$ and \f$\mathbf{f}_0\f$, find, \f$\forall n \in [0, N-1]\f$,
-\f{align}
-  \mathbf{s}_{n+1} = f(\mathbf{f}_{n+1}, \mathbf{s}_n, \mathbf{f}_n; \mathbf{p}), \label{form2}
-\f}
-where \f$N\f$ is the total number of steps used to discretize the "transient".
+where $\mathbf{s}_n$ are the state variables at step $n$,
+$\mathbf{f}_n$ the driving forces, and $\mathbf{p}$ the parameters. The
+[](tutorials-models-implicit-model) tutorial shows how `ImplicitUpdate`
+wraps a residual into exactly this map.
 
-NEML2 models, including those composed from submodels, can only be used to describe the first form of constitutive \f$\eqref{form1}\f$, i.e., a single step constitutive update. In order to simulate the initial-value problem defined in \f$\eqref{form2}\f$, a neml2::TransientDriver can be used to perform the recursive constitutive update to obtain the transient response.
+What that map does *not* describe is the trajectory itself: given an
+initial state $\mathbf{s}_0$ and a prescribed force history
+$\{\mathbf{f}_n\}_{n=0}^{N}$, you still have to thread converged outputs
+back in as the next step's inputs. `TransientDriver` is the loop that
+does it:
 
-## Simulating the stress-strain curve
+```python
+for n in range(N):
+    s[n + 1] = model(f[n + 1], s[n], f[n])
+```
 
-Reusing the viscoplasticity model defined in the previous tutorial, along with the Newton-Raphson solver, a predefined driver [TransientDriver](#transientdriver) can be used to obtain the stress-strain curve.
+When coupling NEML2 to an external PDE solver, that loop usually lives
+outside NEML2 — the host solver supplies $\mathbf{f}_{n+1}$ and asks
+NEML2 for $\mathbf{s}_{n+1}$. For self-contained workflows
+(verification, regression tests, parameter calibration, plotting a
+stress–strain curve), `TransientDriver` keeps everything inside NEML2.
 
-@list-input:transient_driver/input.i:Drivers
+:::{note}
+For training and adjoint-style sensitivities through a transient,
+prefer [`pyzag`](https://github.com/applied-material-modeling/pyzag),
+which performs the same recursive update in a much more efficient fashion.
+:::
 
-with tensors defined as
+## The input file
 
-@list-input:transient_driver/input.i:Tensors
+A `[Drivers]` block names the model to step, the prescribed time
+history, and the prescribed driving-force histories (here a single
+symmetric strain tensor `E`). Time and forces are pulled from named
+`[Tensors]` blocks:
 
-The [TransientDriver](#transientdriver) performs the recursive constitutive update. Two types of predictors are implemented:
-- PREVIOUS_STATE, using the converged solution from the previous step as the initial guess for the current solve;
-- LINEAR_EXTRAPOLATION, linearly extrapolates the converged solutions from the previous two steps as the initial guess for the current solve.
+```{literalinclude} input.i
+:language: ini
+:caption: input.i
+```
 
-The optional option "save_as" tells the driver to write the results into a file named "result.pt".
+A few things worth pointing out:
 
-The following C++ code retrieves and executes the driver to obtain the stress-strain curve.
-@list:cpp:transient_driver/ex1.cxx
+- `prescribed_time` is a `Scalar` of shape `(N,)` — one time value per
+  step. `N` sets the number of steps the driver will take.
+- `force_<Type>_names` / `force_<Type>_values` are the prescribed
+  driving forces. The trailing `_names` lists *variable* names that the
+  model exposes; the matching `_values` lists names of `[Tensors]`
+  blocks that supply their step-by-step values. Each force tensor must
+  carry a leading axis of length `N`.
+- Anything not listed as a prescribed force or initial condition starts
+  at zero. For this perfect-viscoplastic model, that means stress is
+  zero at step 0.
+- The `model` referenced by the driver is the same kind of object you
+  would call directly from Python — a single-step forward operator. The
+  driver just wraps the time loop around it.
 
-\note
-The Python binding for neml2::Driver does not yet exist. Instead, a separate Python package named [pyzag](https://github.com/applied-material-modeling/pyzag) can be used in conjunction with NEML2 to perform recursive constitutive updates in a much more efficient manner compared to the NEML2 drivers.
+The `[Tensors]` block uses NEML2's `Python` tensor type to build the
+prescribed arrays inline: a 50-step time vector $t \in [0, 1]$ and a
+matching strain history that linearly ramps to a peak uniaxial strain
+of $\varepsilon_{xx} = 5\%$ with lateral contractions consistent with
+isochoric deformation. See [](tutorials-models-input-file) for the full
+`type = Python` syntax.
 
-The results saved in "result.pt" can be used as a regular pickled [TorchScript](https://pytorch.org/docs/stable/jit.html), which can be loaded using `torch.jit.load`. For example, the following Python script retrieves and plots the strain and stress values.
-@list:python:transient_driver/ex2.py
+## Building and running the driver
 
-![The stress-strain curve](tutorials/models/transient_driver/curve.svg){html: width=75%}
+`load_input(path).get_driver(name)` builds the driver from the input
+file:
 
-@insert-page-navigation
+```{code-cell} ipython3
+import neml2
+
+factory = neml2.load_input("input.i")
+driver = factory.get_driver("driver")
+driver
+```
+
+The driver carries the parsed model, the prescribed-time tensor, and
+the prescribed forces. The number of steps comes from the leading axis
+of `prescribed_time`:
+
+```{code-cell} ipython3
+print("nsteps        =", driver.nsteps)
+print("forces        =", list(driver.forces))
+print("wrapped model =", type(driver.model).__name__)
+```
+
+`driver.run()` executes the time loop. Each step calls the model once,
+threading the previous step's converged state in as the history input
+for the next step. The method returns `True` on success:
+
+```{code-cell} ipython3
+driver.run()
+```
+
+## Reading the per-step output
+
+`driver.result()` returns a flat dict keyed by
+`input.<step>.<variable>` and `output.<step>.<variable>`, with raw
+`torch.Tensor` values. Step 0 holds only the prescribed forces (the
+model is not called at step 0); every later step holds whatever the
+forward operator returned:
+
+```{code-cell} ipython3
+results = driver.result()
+print("total entries:", len(results))
+print("step 0  keys:", [k for k in results if k.startswith("input.0.")])
+print("step 1  inputs:", [k for k in results if k.startswith("input.1.")])
+print("step 1  outputs:", [k for k in results if k.startswith("output.1.")])
+```
+
+The `~k` suffix on a variable name denotes the value from `k` steps
+back — this is how `TransientDriver` exposes history dependence to the
+forward operator. `E~1` is the previous step's strain, `t~1` the
+previous step's time. The single-step model sees both `E` and `E~1`
+and computes a strain rate internally.
+
+Pulling per-step strain and stress values out as 1-D tensors is a
+simple comprehension:
+
+```{code-cell} ipython3
+import torch
+
+nsteps = driver.nsteps
+times = torch.tensor([results[f"input.{i}.t"].item() for i in range(nsteps)])
+strain_xx = torch.tensor(
+    [results[f"input.{i}.E"][0].item() for i in range(nsteps)]
+)
+# Step 0 has no output -> stress is the zero initial condition.
+stress_xx = torch.tensor(
+    [0.0] + [results[f"output.{i}.stress"][0].item() for i in range(1, nsteps)]
+)
+print(f"max strain_xx = {strain_xx.max().item():.4f}")
+print(f"max stress_xx = {stress_xx.max().item():.2f}")
+```
+
+(Index `[0]` picks the first Mandel slot of the `SR2` payload, which is
+the $xx$ component.)
+
+## Plotting the stress–strain curve
+
+With per-step `strain_xx` and `stress_xx` in hand, the curve is just a
+`matplotlib` call. `matplotlib` is available in the `[dev]` extras
+([](tutorials-models-input-file) installs it):
+
+```{code-cell} ipython3
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(5, 4))
+ax.plot(strain_xx, stress_xx, "C0o-", markersize=3)
+ax.set_xlabel(r"$\varepsilon_{xx}$")
+ax.set_ylabel(r"$\sigma_{xx}$")
+ax.grid(True, alpha=0.3)
+fig.tight_layout()
+```
+
+The initial linear segment is purely elastic. Once the von Mises stress
+exceeds the yield surface the Perzyna flow rule activates and the
+stress plateaus at the rate-dependent overstress level — a textbook
+perfect-viscoplastic response.
+
+## Saving the trajectory to disk
+
+The full result dict can be persisted as a TorchScript module. Each
+step becomes a child module whose buffers are the per-variable
+tensors:
+
+```{code-cell} ipython3
+driver.save_gold("result.pt")
+
+loaded = torch.jit.load("result.pt")
+buffers = dict(loaded.named_buffers())
+print("buffer count:", len(buffers))
+print("a few keys :", list(buffers)[:4])
+```
+
+This is the same format used by the regression suite's
+[`TransientRegression`](drivers-TransientRegression) — the gold file checked
+into `tests/regression/.../gold/result.pt` is exactly what
+`save_gold` produces. Reading it back from another script (or a
+different language) is just `torch.jit.load(...).named_buffers()`.
+
+## Where to go next
+
+- The driver above prescribes strain. To prescribe stress instead, swap
+  the unknowns and residuals of the equation system and change the
+  `force_*` block to supply the stress history; the rest of the
+  workflow is unchanged.
+- Every step is a batched call. Give `prescribed_time` and the force
+  tensors a *trailing* batch axis and the driver will sweep that axis
+  in parallel — useful for studying parameter or initial-condition
+  sensitivities. See [](tutorials-models-vectorization) for the
+  underlying batching rules.
+- For gradient-based training through a transient response, see
+  [`pyzag`](https://github.com/applied-material-modeling/pyzag), which
+  implements the same recursive update under autograd.

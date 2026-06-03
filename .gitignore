@@ -1,12 +1,7 @@
 # 3rd-party libraries
-contrib/argparse*
-contrib/Catch2*
-contrib/csvparser*
-contrib/nmhit
-contrib/nmhit-build
-contrib/nlohmann_json*
+contrib/nlohmann_json
+contrib/nlohmann_json-build
 contrib/torch*
-contrib/gperftools*
 
 # CMake
 *.cmake
@@ -51,7 +46,10 @@ Testing
 *.a
 .libs
 *.la
-*.so*
+# `*.so*` would also match e.g. doc page filenames containing `.so`
+# (`neml2.solvers.md`), so be explicit about ELF + versioned suffixes.
+*.so
+*.so.*
 *.lo
 *.lo.d
 *.dylib
@@ -60,10 +58,16 @@ Testing
 *.pdf
 *.gv
 *.json
+pyright-local.json
+pyrightconfig.local.json
 
 # Agents
 .claude/settings.local.json
 !.claude/settings.json
+.claude/scheduled_tasks.json
+.claude/scheduled_tasks.lock
 
 # Files we want to make the user get
 python/examples/kwn/*.tdb
+.neml2_aoti/
+.neml2_aoti_*/

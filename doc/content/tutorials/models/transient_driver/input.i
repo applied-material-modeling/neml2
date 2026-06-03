@@ -1,113 +1,106 @@
-# neml2
+# Drive a perfect-viscoplastic constitutive model through a uniaxial
+# strain history of 50 steps. The implicit-update model `model` is the
+# same kind of object that previous tutorials evaluated point-wise —
+# `TransientDriver` repeatedly calls it, threading converged state from
+# step n into step n+1.
+
+[Tensors]
+  [times]
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 1.0, 50, dtype=torch.float64))'
+  []
+  [max_strain]
+    type = Python
+    expr = 'SR2(torch.tensor([0.05, -0.025, -0.025, 0.0, 0.0, 0.0], dtype=torch.float64))'
+  []
+  [strains]
+    type = Python
+    expr = 'SR2(torch.linspace(0.0, 1.0, 50, dtype=torch.float64).reshape(50, 1) * max_strain.data.unsqueeze(0))'
+  []
+[]
+
 [Drivers]
   [driver]
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'strain'
+    force_SR2_names = 'E'
     force_SR2_values = 'strains'
-    save_as = 'result.pt'
-  []
-[]
-
-[Tensors]
-  [times]
-    type = LinspaceScalar
-    start = 0
-    end = 1
-    nstep = 20
-  []
-  [exx]
-    type = FullScalar
-    value = 0.01
-  []
-  [eyy]
-    type = FullScalar
-    value = -0.005
-  []
-  [ezz]
-    type = FullScalar
-    value = -0.005
-  []
-  [max_strain]
-    type = FillSR2
-    values = 'exx eyy ezz'
-  []
-  [strains]
-    type = LinspaceSR2
-    start = 0
-    end = max_strain
-    nstep = 20
   []
 []
 
 [Models]
-  [eq1]
-    type = SR2LinearCombination
-    from = 'strain plastic_strain'
-    to = 'elastic_strain'
-    weights = '1 -1'
+  [mandel_stress]
+    type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
-  [eq2]
-    type = LinearIsotropicElasticity
-    coefficients = '1e5 0.3'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'elastic_strain'
-  []
-  [eq3]
+  [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'stress'
+    tensor = 'mandel_stress'
     invariant = 'effective_stress'
   []
-  [eq4]
+  [yield]
     type = YieldFunction
     yield_stress = 5
   []
-  [surface]
+  [flow]
     type = ComposedModel
-    models = 'eq3 eq4'
+    models = 'vonmises yield'
   []
-  [eq5]
+  [normality]
     type = Normality
-    model = 'surface'
+    model = 'flow'
     function = 'yield_function'
-    from = 'stress'
+    from = 'mandel_stress'
     to = 'flow_direction'
   []
-  [eq6]
+  [flow_rate]
     type = PerzynaPlasticFlowRate
     reference_stress = 100
     exponent = 2
   []
-  [eq7]
+  [Eprate]
     type = AssociativePlasticFlow
   []
-  [eq8]
-    type = SR2BackwardEulerTimeIntegration
-    variable = 'plastic_strain'
+  [Erate]
+    type = SR2VariableRate
+    variable = 'E'
   []
-  [system]
+  [Eerate]
+    type = SR2LinearCombination
+    from = 'E_rate plastic_strain_rate'
+    to = 'strain_rate'
+    weights = '1 -1'
+  []
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients      = '1e5           0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    rate_form = true
+  []
+  [integrate_stress]
+    type = SR2BackwardEulerTimeIntegration
+    variable = 'stress'
+  []
+  [implicit_rate]
     type = ComposedModel
-    models = 'eq1 eq2 surface eq5 eq6 eq7 eq8'
+    models = 'mandel_stress vonmises yield normality flow_rate Eprate Erate Eerate elasticity integrate_stress'
   []
 []
 
 [EquationSystems]
   [eq_sys]
     type = NonlinearSystem
-    model = 'system'
-    unknowns = 'plastic_strain'
+    model = 'implicit_rate'
+    unknowns = 'stress'
+    residuals = 'stress_residual'
   []
 []
 
 [Solvers]
   [newton]
     type = Newton
-    rel_tol = 1e-08
-    abs_tol = 1e-10
-    max_its = 50
-    verbose = true
     linear_solver = 'lu'
   []
   [lu]
@@ -116,14 +109,14 @@
 []
 
 [Models]
-  [model0]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'stress'
+  []
+  [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
-  []
-  [model]
-    type = ComposedModel
-    models = 'model0 eq1 eq2'
-    additional_outputs = 'plastic_strain'
+    predictor = 'predictor'
   []
 []

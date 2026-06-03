@@ -1,18 +1,22 @@
 # neml2
+# Native port of tests/verification/solid_mechanics/perzyna/voce.i.
+# Perzyna viscoplasticity with Voce isotropic hardening. Reference time /
+# strain / stress trajectories come from voce.csv (converted from the
+# original .vtest by scripts/vtest_to_csv.py).
 [Tensors]
   [times]
-    type = ScalarVTestTimeSeries
-    vtest = 'voce.vtest'
+    type = CSVScalar
+    csv_file = 'voce.csv'
     variable = 'time'
   []
   [strains]
-    type = SR2VTestTimeSeries
-    vtest = 'voce.vtest'
+    type = CSVSR2
+    csv_file = 'voce.csv'
     variable = 'strain'
   []
   [stresses]
-    type = SR2VTestTimeSeries
-    vtest = 'voce.vtest'
+    type = CSVSR2
+    csv_file = 'voce.csv'
     variable = 'stress'
   []
 []
@@ -27,7 +31,7 @@
     save_as = 'result.pt'
   []
   [verification]
-    type = VTestVerification
+    type = Verification
     driver = 'driver'
     SR2_names = 'output.stress'
     SR2_values = 'stresses'

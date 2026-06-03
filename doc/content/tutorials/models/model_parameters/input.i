@@ -1,8 +1,10 @@
-# neml2
+# Same linear-isotropic-elasticity model as the previous tutorial.
+# Re-used here so the focus stays on parameter access / mutation rather
+# than on a new physical setup.
 [Models]
-  [my_model]
+  [elasticity]
     type = LinearIsotropicElasticity
-    coefficient_types = 'BULK_MODULUS SHEAR_MODULUS'
-    coefficients = '1.4e5 7.8e4'
+    coefficients      = '200e3          0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
   []
 []

@@ -13,31 +13,9 @@ else()
   find_dependency(torch MODULE REQUIRED COMPONENTS core)
 endif()
 
-# hit
-if(@_nmhit_bundled@)
-  find_dependency(nmhit CONFIG REQUIRED PATHS ${PACKAGE_PREFIX_DIR} NO_DEFAULT_PATH)
+# json (required by libneml2_aoti, the only consumer)
+if(@nlohmann_json_CONTRIB@ OR @NEML2_WHEEL@)
+  find_dependency(nlohmann_json CONFIG REQUIRED PATHS ${PACKAGE_PREFIX_DIR} NO_DEFAULT_PATH)
 else()
-  find_dependency(nmhit CONFIG REQUIRED)
-endif()
-
-# json
-if(@NEML2_JSON@)
-  if(@_nlohmann_json_bundled@)
-    find_dependency(nlohmann_json CONFIG REQUIRED PATHS ${PACKAGE_PREFIX_DIR} NO_DEFAULT_PATH)
-  else()
-    find_dependency(nlohmann_json CONFIG REQUIRED)
-  endif()
-endif()
-
-# csv-parser
-if(@NEML2_CSV@)
-  if(@_csvparser_bundled@)
-    set(csvparser_ROOT ${PACKAGE_PREFIX_DIR})
-  endif()
-  find_dependency(csvparser MODULE REQUIRED)
-endif()
-
-# MPI
-if(@NEML2_MPI@)
-  find_package(MPI COMPONENTS CXX REQUIRED)
+  find_dependency(nlohmann_json CONFIG REQUIRED)
 endif()

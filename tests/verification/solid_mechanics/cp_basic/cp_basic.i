@@ -1,40 +1,40 @@
 # neml2
+# Native port of tests/verification/solid_mechanics/cp_basic/cp_basic.i.
+# Crystal-plasticity FCC <110>{111} under a NEML(1) deformation-rate/vorticity history.
+# Reference time / deformation_rate / vorticity / stress trajectories are loaded from
+# cp_basic.csv (converted from the original .vtest by scripts/vtest_to_csv.py).
 [Tensors]
   [times]
-    type = ScalarVTestTimeSeries
-    vtest = 'cp_basic.vtest'
+    type = CSVScalar
+    csv_file = 'cp_basic.csv'
     variable = 'time'
   []
   [deformation_rate]
-    type = SR2VTestTimeSeries
-    vtest = 'cp_basic.vtest'
+    type = CSVSR2
+    csv_file = 'cp_basic.csv'
     variable = 'deformation_rate'
   []
   [stresses]
-    type = SR2VTestTimeSeries
-    vtest = 'cp_basic.vtest'
+    type = CSVSR2
+    csv_file = 'cp_basic.csv'
     variable = 'stress'
   []
   [vorticity]
-    type = WR2VTestTimeSeries
-    vtest = 'cp_basic.vtest'
+    type = CSVWR2
+    csv_file = 'cp_basic.csv'
     variable = 'vorticity'
   []
-  [a]
-    type = Scalar
-    values = '1.0'
-  []
   [sdirs]
-    type = MillerIndex
-    values = '1 1 0'
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1.0, 1.0, 0.0]))'
   []
   [splanes]
-    type = MillerIndex
-    values = '1 1 1'
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1.0, 1.0, 1.0]))'
   []
   [initial_orientation]
-    type = FillRot
-    values = '-0.54412095 -0.34931944 0.12600655'
+    type = Python
+    expr = 'Rot(torch.tensor([-0.54412095, -0.34931944, 0.12600655], dtype=torch.float64))'
   []
 []
 
@@ -52,7 +52,7 @@
     save_as = 'result.pt'
   []
   [verification]
-    type = VTestVerification
+    type = Verification
     driver = 'driver'
     SR2_names = 'output.cauchy_stress'
     SR2_values = 'stresses'
@@ -66,7 +66,7 @@
 [Data]
   [crystal_geometry]
     type = CubicCrystal
-    lattice_parameter = 'a'
+    lattice_parameter = '1.0'
     slip_directions = 'sdirs'
     slip_planes = 'splanes'
   []

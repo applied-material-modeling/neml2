@@ -1,55 +1,155 @@
-@insert-title:tutorials-models-input-file
+(tutorials-models-input-file)=
+# Input files
 
-[TOC]
+NEML2 reads material-model definitions from plain text **input files**.
+The same file can be parsed by Python (`neml2.load_input`) and by the
+CLI tools (`neml2-run`, `neml2-inspect`, …), and it ships unchanged
+across operating systems and into compiled-model artifacts.
 
-The user interface of NEML2 is designed in such a way that no programing experience is required to compose custom material models and define how they are solved. This is achieved using _input files_. The input files are simply text files with a specific format that NEML2 can understand. NEML2 can _deserialize_ an input file, i.e., parse and create material models specified within the input file.
+NEML2 uses the [HIT](https://github.com/applied-material-modeling/neml2-hit)
+format. This tutorial covers the syntax you'll use day-to-day; the
+[HIT README](https://github.com/applied-material-modeling/neml2-hit/blob/main/README.md)
+is the authoritative reference for the rest.
 
-Since the input files are nothing more than text files saved on the disk, they can be used in any application that supports standard IO, easily exchanged among different devices running different operating systems, and archived for future reference. Refer to [the format documentation](https://github.com/applied-material-modeling/neml2-hit) for full details.
+## Anatomy
 
-## Syntax {#input-file-syntax}
+A HIT file is a sequence of **sections** and **fields**. A section
+opens with `[name]` and closes with `[]`; a field is a `key = value`
+pair.
 
-Input files use the Hierarchical Input Text (HIT) format. The syntax looks like this:
-```python
-# Comments look like this
-[block1]
-  # This is a comment
-  foo = 1
-  bar = 3.14159
-  baz = 'string value'
-  [nested_block]
-    # ...
+```ini
+# Lines starting with `#` are comments.
+[section]
+  foo = 1                   # an integer
+  bar = 3.14159             # a float
+  baz = 'string value'      # a string
+  qux = 'a b c'             # a 1-D array (whitespace-separated, quoted)
+  [nested_section]
+    type = SomeRegisteredType
   []
 []
 ```
-where key-value pairs are defined under (nested) blocks denoted by square brackets. A value can be an integer, floating-point number, string, or array (as indicated by single quotes). Note that the block indentation is recommended for clarity but is not required.
 
-All NEML2 capabilities that can be defined through the input file fall under a number of _systems_. Names of the top-level blocks specify the systems. For example, the following input file
-```python
-[Tensors]
-  [E]
-    # ...
-  []
-[]
+Indentation is purely visual — HIT doesn't care.
 
+## Sections and systems
+
+A NEML2 input file is organized into a small number of **top-level
+sections**, each corresponding to one of NEML2's *systems*. The most
+common ones are:
+
+- `[Models]` — material models.
+- `[Tensors]` — pre-computed tensors that models reference by name.
+- `[Solvers]` — non-linear and linear solvers.
+- `[Drivers]` — driver objects that step a model through a load
+  history.
+- `[Data]` — supporting datasets (crystal-symmetry data, …).
+- `[EquationSystems]` — assembled non-linear systems.
+
+Inside each top-level section, every nested section describes one
+object. Its
+`type = ...` field names the registered class — every name shown in
+the [syntax catalog](syntax-catalog) is a valid type. For example:
+
+```ini
 [Models]
   [elasticity]
     type = LinearIsotropicElasticity
-    coefficients = 'E 0.3'
+    coefficients      = '200e3          0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
   []
 []
 ```
-defines a tensor named "E" under the `[Tensors]` block and a model named "elasticity" under the `[Models]` block. Notice that an object (in this case the tensor named "E" under the `[Tensors]` section) can be referenced by an input option (in this case "coefficients") by its name, and this mechanism is referred to as cross-referencing. The [Syntax Documentation](@ref syntax-tensors) provides a complete list of objects that can be defined by an input file. The [System Documentation](@ref system-tensors) provides detailed explanation of each system.
 
-\note
-The ordering of objects, i.e., the sequence objects appear in the input file, does not change their behavior.
+defines an object named `elasticity` in the `[Models]` section, whose
+`type` is `LinearIsotropicElasticity`. The remaining fields are the
+options that type declares — see
+[](models-LinearIsotropicElasticity) for what each one means.
 
-## Custom types
+:::{note}
+Section order does not matter. Forward references (consuming a name
+defined later in the file) work; NEML2 resolves everything after the
+full file is parsed.
+:::
 
-In addition to the native value types supported by the HIT format, such as integer, floating-point number, boolean, strings, and arrays, NEML2 defines a few custom value types listed below.
+## Value types
 
-**Tensor shape**: A tensor shape must start with "(" and end with ")". An array of comma-separated integers must be enclosed by the parentheses. For example, "(5,6,7)" can be parsed into a shape tuple of value `(5, 6, 7)`. Note that white spaces are not allowed between the parentheses and could lead to undefined behavior. An empty array, i.e. "()", however, is allowed and fully supported. Refer to @ref tutorials-tensors for a more in-depth description of tensor shape.
+HIT itself stores every value as text; the *type* is enforced at the
+point where NEML2 reads the option. The supported primitive types are:
 
-**Device**: A device string must follow the schema: `(type)[:<device-index>]`, where type can be cpu, cuda, etc., and `:<device-index>` optionally specifies a device index. Some examples are "cpu", "cuda", "cuda:0", "cuda:1", "xpu", etc.
+| Kind      | Examples                                          |
+| :-------- | :------------------------------------------------ |
+| Integer   | `n = 42`, `n = -7`                                |
+| Float     | `x = 3.14`, `x = -1.0e-3`                         |
+| Boolean   | `flag = true`, `flag = false` (lowercase only)    |
+| String    | `name = 'elasticity'` (single line)               |
+| 1-D array | `values = '1 2 3'`                                |
+| 2-D array | `matrix = '1 2 3; 4 5 6'` (rows separated by `;`) |
 
-@insert-page-navigation
+On top of these, NEML2 adds a couple of custom value types worth
+calling out:
+
+- **Tensor shape** — parenthesized, comma-separated, no spaces.
+  `shape = (5,6,7)` parses to the tuple `(5, 6, 7)`. The empty shape
+  `()` is also valid.
+- **Device** — `cpu`, `cuda`, `cuda:0`, etc., following
+  `<type>[:<index>]`.
+
+## Comments
+
+`#` starts a comment that runs to end of line. It can appear on a
+line of its own, after a section header (`[Models] # ok`), or after a
+**quoted** value (`coefficients = '200e3 0.3' # ok`). After an
+**unquoted** value the `#` is treated as part of the value, so
+`foo = 1 # bad` parses the value as `1 # bad`. Quoting the value is
+the safe default in NEML2 anyway.
+
+## Includes
+
+A file can splice in another file at any point:
+
+```ini
+!include shared/material.i
+```
+
+The path is resolved relative to the file containing the directive,
+and the included content is parsed as if it had been inlined. Useful
+for sharing a `[Tensors]` section across several driver inputs.
+
+## Variable substitution
+
+Values can interpolate other fields or environment variables using
+`${...}`:
+
+```ini
+E = 200e3
+nu = 0.3
+
+[Models]
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients = '${E} ${nu}'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+  []
+[]
+
+# Pull from the environment / chain pieces together:
+prefix = /opt/neml2
+lib = ${raw ${prefix} /lib}  # → /opt/neml2/lib
+home = ${env HOME}           # value of the HOME env var, "" if unset
+```
+
+The substitution happens at value-extraction time, so the right-hand
+side can sit anywhere in the file or in an included file.
+
+## Where to go next
+
+- The [HIT README](https://github.com/applied-material-modeling/neml2-hit/blob/main/README.md)
+  for the corners not covered here: override semantics (`:=`),
+  verbatim triple-quoted strings, 2-D array nuances, the full grammar.
+- The [syntax catalog](syntax-catalog) for the option list of every
+  registered type — the canonical answer to "what fields go in this
+  section?"
+- The next tutorial, [](tutorials-models-running-your-first-model),
+  walks through loading and evaluating the model defined in an input
+  file.

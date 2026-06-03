@@ -1,101 +1,29 @@
-# neml2
-[Drivers]
-  [driver]
-    type = TransientDriver
-    model = 'eq4'
-    prescribed_time = 'times'
-    ic_Vec_names = 'x v'
-    ic_Vec_values = 'x0 v0'
-    save_as = 'result.pt'
-  []
-[]
-
-[Tensors]
-  [g]
-    type = Vec
-    values = '0 -9.81 0'
-  []
-  [mu]
-    type = Scalar
-    values = '0.01 0.05 0.1 0.5 1'
-    batch_shape = (5)
-  []
-  [end_time]
-    type = Scalar
-    values = '1'
-    batch_shape = (1,1)
-  []
-  [times]
-    type = LinspaceScalar
-    start = 0
-    end = 'end_time'
-    nstep = 100
-  []
-  [x0]
-    type = Vec
-    values = '0 0 0'
-  []
-  [v0]
-    type = Vec
-    values = '10 5 0
-              8 6 0'
-    batch_shape = (2,1)
-  []
-[]
-
+# A composition of two models bound by shared variable names:
+#
+#   elasticity:  stress    = 3K vol(elastic_strain) + 2G dev(elastic_strain)
+#   vonmises:    vm_stress = sqrt(3/2 * dev(stress) : dev(stress))
+#   chain:       the two glued together by ComposedModel
+#
+# Substitute your custom Model from the previous tutorials in place of
+# `elasticity` (or `vonmises`) — the wiring works exactly the same way.
 [Models]
-  [eq2]
-    type = ProjectileAcceleration
-    velocity = 'v'
-    acceleration = 'a'
-    gravitational_acceleration = 'g'
-    dynamic_viscosity = 'mu'
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients = '100 0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
+    stress = 'stress'
   []
-  [eq3a]
-    type = VecBackwardEulerTimeIntegration
-    variable = 'x'
-    rate = 'v'
+  [vonmises]
+    type = SR2Invariant
+    tensor = 'stress'
+    invariant = 'vm_stress'
+    invariant_type = VONMISES
   []
-  [eq3b]
-    type = VecBackwardEulerTimeIntegration
-    variable = 'v'
-    rate = 'a'
-  []
-  [eq3]
+  [chain]
     type = ComposedModel
-    models = 'eq3a eq3b'
-  []
-  [system]
-    type = ComposedModel
-    models = 'eq2 eq3'
-  []
-[]
-
-[EquationSystems]
-  [eq4]
-    type = NonlinearSystem
-    model = 'system'
-    unknowns = 'x v'
-  []
-[]
-
-[Solvers]
-  [newton]
-    type = Newton
-    rel_tol = 1e-08
-    abs_tol = 1e-10
-    max_its = 50
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
-[Models]
-  [eq4]
-    type = ImplicitUpdate
-    equation_system = 'eq4'
-    solver = 'newton'
+    models = 'elasticity vonmises'
+    # Surface the intermediate stress so callers can see both quantities.
+    additional_outputs = 'stress'
   []
 []

@@ -1,68 +1,171 @@
-@insert-title:tutorials-models-vectorization
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+mystnb:
+  execution_mode: cache
+---
 
-[TOC]
+(tutorials-models-vectorization)=
+# Vectorization
 
-## What is vectorization?
+Every NEML2 model is *inherently batched*. The forward operator
+processes a leading batch of states in a single call — the same code
+path that handles one input handles ten, ten thousand, or a multi-axis
+grid of inputs. From Python this means you almost never want a
+`for`-loop around `model(...)`: build the input as a single tensor with
+a leading batch dimension, call the model once, get a batched output
+back.
 
-Vectorization refers to *array programming*.  Both SIMD (single instruction, multiple data) operation and SIMT (single instruction, multiple threads) operation are implementations of array programming. These terms all refer to the methods that apply operations to an entire set of values at once.
+This tutorial shows the mechanics on the elasticity model from
+[](tutorials-models-running-your-first-model), then puts the loop and
+the batched call side-by-side on the clock so the cost of getting it
+wrong is concrete.
 
-While the benefit of vectorization depends on the instruction support, instruction throughput, and register size, among other factors, it is generally expected that vectorization can provide a considerable amount of speedup to many operations.  For example, given a device's instruction set with 1024-bit registers. These can be used to operate on 16 operands of 64-bits apiece. More specifically, if we are dealing with double-precision floating point numbers, a single instruction can do 16 operations at once. In other words, ideally, \f$ N \f$ operations can be completed using \f$ N/16 \f$ instructions. And again, ideally, this leads to 16 times faster execution than operations without vectorization.
+## Why vectorization
 
-Although the implementation varies, both CPU and CUDA supports vectorization. NEML2 supports vectorization of model evaluation on both CPU and CUDA.  All NEML2 models ensure that the data being processed, e.g., variables, parameters, buffers, are contiguously allocated, and that the same set of operations are applied to those contiguous chunks of data.
+Modern CPUs and GPUs hit their peak throughput only when the same
+operation is applied to a contiguous chunk of data at once — SIMD on
+the CPU, SIMT on CUDA. NEML2 lays out every variable, parameter, and
+buffer contiguously and dispatches one PyTorch kernel per model
+operation, so a batched call lets the kernel work at hardware peak.
+A Python loop instead pays the per-call dispatch overhead — Python
+interpreter, autograd bookkeeping, kernel launch — *once per item*,
+which dominates the actual arithmetic for any non-trivial batch size.
 
-## For loop versus vectorization: A numerical experiment
+## The input file
 
-Given the material model we have been working with in the previous tutorials, how much (wall clock) time would it take to perform 100,000 forward evaluations?
+We reuse the elasticity model from the first tutorial unchanged:
 
-There are two ways of completing this task:
-- using a for loop, or
-- using vectorization
+```{literalinclude} input.i
+:language: ini
+:caption: input.i
+```
 
-### For loop
+```{code-cell} ipython3
+import torch
+import neml2
+from neml2.types import SR2
 
-The following code snippet shows how to use a for loop to perform the \f$ N \f$ evaluations. For convenience, the \f$ N \f$ strains are evenly spaced.
+torch.set_default_dtype(torch.float64)
 
-<div class="tabbed">
+model = neml2.load_model("input.i", "elasticity")
+model
+```
 
-- <b class="tab-title">C++</b>
-  @list:cpp:vectorization/ex1.cxx
-- <b class="tab-title">Python</b>
-  @list:python:vectorization/ex2.py
+## One state at a time
 
-</div>
+A single (unbatched) strain has base shape `(6,)` — the six independent
+components of an `SR2` in Mandel packing. The model returns a stress
+of the same shape:
 
-### Vectorization
+```{code-cell} ipython3
+strain1 = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0]))
+strain1.data.shape, model(strain1).data.shape
+```
 
-The following code snippet shows how to rely on NEML2 internal vectorization to perform the \f$ N \f$ evaluations.
+## A batch of states in one call
 
-<div class="tabbed">
+To evaluate the model on `N` strain states at once, build the input
+with a *leading batch dimension*: shape `(N, 6)` instead of `(6,)`.
+NEML2 detects the extra leading dim and broadcasts every internal
+operation across it. The output comes back with the same leading
+shape:
 
-- <b class="tab-title">C++</b>
-  @list:cpp:vectorization/ex3.cxx
-- <b class="tab-title">Python</b>
-  @list:python:vectorization/ex4.py
+```{code-cell} ipython3
+N = 5
+batch_data = torch.zeros(N, 6)
+batch_data[:, 0] = torch.linspace(0.0, 0.01, N)  # ramp epsilon_xx from 0 to 1%
+strains = SR2(batch_data)
 
-</div>
+stresses = model(strains)
+strains.data.shape, stresses.data.shape
+```
 
-For a fair comparison, the input variables are allocated prior to model evaluation, and only the model evaluation part is timed. The timing study was performed with \f$ N = \{10, 1000, 100000\} \f$ on both CPU and CUDA. Results are summarized in the following table.
+```{code-cell} ipython3
+stresses.data
+```
 
-| Device | N      | For loop | Vectorization |
-| :----- | :----- | :------- | :------------ |
-| CPU    | 10     | 0.061    | 0.003         |
-|        | 1000   | 0.232    | 0.004         |
-|        | 100000 | 16.782   | 0.041         |
-| CUDA   | 10     | 0.145    | 0.004         |
-|        | 1000   | 0.337    | 0.004         |
-|        | 100000 | 26.176   | 0.005         |
+Each row of the output is the stress for the corresponding strain — no
+loop required. The leading dimension is free-form: you can use a 2-D
+batch like `(n_load_steps, n_samples)` and the model returns
+`(n_load_steps, n_samples, 6)`, and so on.
 
-## Remarks
+```{code-cell} ipython3
+multi = torch.zeros(4, 3, 6)
+multi[..., 0] = torch.linspace(0.0, 0.01, 4).unsqueeze(-1)
+model(SR2(multi)).data.shape
+```
 
-While there are many other factors contributing to the performance difference between the for loop approach and the vectorization approach, we hope this simple experiment serves as a reasonable introduction to the benefit of vectorization.
+## Loop vs. batched: a numerical experiment
 
-It is worth noting that, in the above code snippets,
-- The pre-allocated strain tensor has a shape of `(N; 6)`. The leading dimension with size N is referred to as a *batch dimension* in NEML2.
-- The strain tensor with shape `(N; 6)` can operate with scalar-valued model parameters \f$ K \f$ and \f$ G \f$. This behavior relies on the concept of *broadcasting*.
+How much does the loop actually cost? We evaluate the same elastic
+model on $N=10{,}000$ strain states two ways — once as a Python loop
+over single states, once as a single batched call — and time just the
+model evaluations (input allocation is hoisted out so it isn't
+counted):
 
-*Batching* and *broadcasting* are the fundamental mechanisms that allow NEML2 to efficiently vectorize model evaluation while providing users with a unified API for both CPU and CUDA. More details on these mechanisms are discussed in the [tutorials](#tutorials-tensors) on NEML2 tensors.
+```{code-cell} ipython3
+import time
 
-@insert-page-navigation
+N = 10_000
+batch_data = torch.zeros(N, 6)
+batch_data[:, 0] = torch.linspace(0.0, 0.01, N)
+strains = SR2(batch_data)
+
+# --- Python loop: one model call per state ---
+t0 = time.perf_counter()
+for i in range(N):
+    model(SR2(batch_data[i]))
+t_loop = time.perf_counter() - t0
+
+# --- Single batched call: one model invocation, N states ---
+t0 = time.perf_counter()
+model(strains)
+t_batch = time.perf_counter() - t0
+
+print(f"python loop: {t_loop*1e3:8.2f} ms")
+print(f"batched:     {t_batch*1e3:8.2f} ms")
+print(f"speedup:     {t_loop/t_batch:8.1f}x")
+```
+
+Two orders of magnitude is typical even for this trivial model on
+CPU; on GPU the gap widens further because kernel-launch overhead is
+larger relative to the actual compute. For larger models the
+absolute numbers grow but the *ratio* stays in the same ballpark —
+the loop is paying constant per-call overhead that the batched call
+amortizes across the whole batch.
+
+## Dynamic vs. sub-batch dimensions
+
+The leading shape we used above is what NEML2 calls a **dynamic batch
+dimension** — it's free-form, sized at call time, and the model has no
+opinion about what's in it. That's the common case and what you want
+99% of the time.
+
+Some advanced contexts (e.g., the residual axis of an
+`ImplicitUpdate`, or a parameter that itself carries a sample axis)
+introduce a **sub-batch dimension** — a fixed-size axis that's part of
+a tensor's logical shape rather than a free-form batch. The
+`TensorWrapper.sub_batch_ndim` field tracks it, and broadcasting
+rules treat sub-batch axes differently from dynamic ones. The
+distinction rarely matters for the everyday "feed in a batch, get a
+batch back" pattern, but it's worth knowing the term exists.
+
+## Where to go next
+
+- [](tutorials-models-evaluation-device) — the same batched call runs
+  on CUDA the moment you move the model and the input there with
+  `.to(device)`, which is where the SIMT story really pays off.
+- [](tutorials-models-cross-referencing) and
+  [](tutorials-models-composition) — once a model is composed of
+  several pieces, the same batched-call semantics propagate through
+  every internal evaluation.
+- [](tutorials-models-transient-driver) — for time-stepping a batched
+  state through a load history, where each batched call is one step.

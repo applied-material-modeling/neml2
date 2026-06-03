@@ -1,18 +1,23 @@
 # neml2
+# Native port of tests/verification/solid_mechanics/perzyna/isolinear_uniaxial.i.
+# Perzyna viscoplasticity with linear isotropic hardening under uniaxial
+# tensile loading. Reference time / strain / stress trajectories come from
+# isolinear_uniaxial.csv (converted from the original .vtest by
+# scripts/vtest_to_csv.py).
 [Tensors]
   [times]
-    type = ScalarVTestTimeSeries
-    vtest = 'isolinear_uniaxial.vtest'
+    type = CSVScalar
+    csv_file = 'isolinear_uniaxial.csv'
     variable = 'time'
   []
   [strains]
-    type = SR2VTestTimeSeries
-    vtest = 'isolinear_uniaxial.vtest'
+    type = CSVSR2
+    csv_file = 'isolinear_uniaxial.csv'
     variable = 'strain'
   []
   [stresses]
-    type = SR2VTestTimeSeries
-    vtest = 'isolinear_uniaxial.vtest'
+    type = CSVSR2
+    csv_file = 'isolinear_uniaxial.csv'
     variable = 'stress'
   []
 []
@@ -27,7 +32,7 @@
     save_as = 'result.pt'
   []
   [verification]
-    type = VTestVerification
+    type = Verification
     driver = 'driver'
     SR2_names = 'output.stress'
     SR2_values = 'stresses'

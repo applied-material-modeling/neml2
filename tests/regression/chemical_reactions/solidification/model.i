@@ -7,22 +7,13 @@ Ts = 1600
 Tf = 1700
 
 [Tensors]
-  [endtime]
-    type = Scalar
-    values = '${nstep}'
-    batch_shape = '${nbatch}'
-  []
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = endtime
-    nstep = '${nstep}'
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 100.0, 100, dtype=torch.float64).reshape(100, 1))'
   []
   [T]
-    type = LinspaceScalar
-    start = '1800'
-    end = '1400'
-    nstep = '${nstep}'
+    type = Python
+    expr = 'Scalar(torch.linspace(1800.0, 1400.0, 100, dtype=torch.float64))'
   []
 []
 
@@ -62,7 +53,6 @@ Tf = 1700
     value = 'cliquid'
     lower_bound = '${Ts}'
     upper_bound = '${Tf}'
-    complement = false
   []
   [solid_phase_portion]
     type = ScalarLinearCombination

@@ -1,18 +1,23 @@
 # neml2
+# Native port of tests/verification/solid_mechanics/rate_independent/perfect.i.
+# Rate-independent perfect plasticity (J2 yield, no hardening) solved with an
+# FB-complementarity return map. Reference time / strain / stress trajectories
+# come from perfect.csv (converted from the original .vtest by
+# scripts/vtest_to_csv.py).
 [Tensors]
   [times]
-    type = ScalarVTestTimeSeries
-    vtest = 'perfect.vtest'
+    type = CSVScalar
+    csv_file = 'perfect.csv'
     variable = 'time'
   []
   [strains]
-    type = SR2VTestTimeSeries
-    vtest = 'perfect.vtest'
+    type = CSVSR2
+    csv_file = 'perfect.csv'
     variable = 'strain'
   []
   [stresses]
-    type = SR2VTestTimeSeries
-    vtest = 'perfect.vtest'
+    type = CSVSR2
+    csv_file = 'perfect.csv'
     variable = 'stress'
   []
 []
@@ -27,7 +32,7 @@
     save_as = 'result.pt'
   []
   [verification]
-    type = VTestVerification
+    type = Verification
     driver = 'driver'
     SR2_names = 'output.stress'
     SR2_values = 'stresses'

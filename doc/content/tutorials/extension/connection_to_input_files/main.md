@@ -1,67 +1,203 @@
-@insert-title:tutorials-extension-connection-to-input-files
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+mystnb:
+  execution_mode: cache
+---
 
-[TOC]
+(tutorials-extension-input-files)=
+# Connecting to input files
 
-NEML2 utilizes the well-established [registry-factory pattern](https://en.wikipedia.org/wiki/Factory_method_pattern) to allow for runtime object creation and distributed class registration. In NEML2, neml2::Parser, neml2::Registry, and neml2::Factory work together to create objects defined in the input file.
+The first tutorial in this series showed how to call a built-in model
+from an input file. The job of this page is to wire a *new* model
+class — one you wrote yourself — into the same input-file machinery,
+so that an HIT block of the form
 
-## Parser
+```ini
+[Models]
+  [accel]
+    type = ProjectileAcceleration
+    ...
+  []
+[]
+```
 
-A class is said to be runtime-manufacturable if its constructor can be retrieved at runtime using a string identification of its symbol. To allow for a unified object creation signature, runtime-manufacturable objects (e.g., models) are required to derive from neml2::NEML2Object and provide a constructor and a static method with the following signatures
+instantiates your class. The mechanism is a single decorator plus a
+small declarative schema, both living next to the `Model` subclass.
 
-@list:cpp:connection_to_input_files/ex1.cxx:signature
+## The registry-factory pattern
 
-- The static method `expected_options` allows the NEML2 registry to record required input options *expected* from the user in order to create an instance of the class.
-- The constructor is responsible for constructing an instance given input options *extracted* from the input file.
-- The parser is responsible for bridging the gap between the expected input options and the user-specified options.
+NEML2 uses a classic [registry-factory
+pattern](https://en.wikipedia.org/wiki/Factory_method_pattern) for
+runtime object creation:
 
-The following steps take place for each object during input file parsing:
-1. Parser extracts object type from the reserved field `type`.
-2. Parser retrieves *expected* input options from the registry.
-3. Parser iterates over *user-specified* options and override default options.
+1. Every `Model` subclass registers itself under a string *type name*
+   when its module is imported.
+2. `neml2.load_model(path, name)` parses the HIT file, reads the
+   `type = ...` field of the requested block, looks the type name up
+   in the registry, and asks the matched class to build itself from
+   the HIT node.
 
-At the end of this process, a set of input options are gathered for the subsequent object creation.
+There are three pieces a model author touches:
 
-All of the gathered options are stored in the NEML2 factory so that objects can be created at runtime per the user's request.
+`@register_native("TypeName")`
+: Decorator on the class. Adds the class to the native registry
+  under the given HIT type name. Lives in {mod}`neml2.factory`.
 
-## Input file
+`HitSchema(...)`
+: A class-level declaration of the HIT options the block accepts —
+  one entry per input variable, output variable, scalar option,
+  parameter, or sub-object dependency. Lives in {mod}`neml2.schema`.
 
-Before defining the input file options for our custom model, it is a good idea to first design the syntax. For example, in this equation we are mapping from the projectile's current velocity to its acceleration, therefore we'd like to allow user to specify the variable names corresponding to the velocity and acceleration. In addition, since the equation is parametrized by the gravitational acceleration \f$\boldsymbol{g}\f$ and the dynamic viscosity \f$\nu\f$, we should allow user to set their values directly inside the input file (without modifying the source code).
+`from_hit(cls, node, factory)`
+: A classmethod that turns a parsed HIT node into an instance.
+  Models with a `HitSchema` inherit a default implementation from
+  `Model.from_hit` that needs no overriding for the common case;
+  models with dynamic I/O or non-trivial construction logic override
+  it. We rely on the inherited version on this page.
 
-Therefore, the input file syntax should look something like
-@list-input:connection_to_input_files/input.i:Models/accel
+## The example model
 
-By going through this exercise, we have effectively identified the *expected* input file options:
-@list:cpp:connection_to_input_files/ex1.cxx:expected_options
+We will scaffold a deliberately tiny model — a one-dimensional
+projectile under linear drag,
 
-## Registry
+$$
+a = -\mu\, v,
+$$
 
-The registry is a RAII-style singleton responsible for storing the mapping from the string identification of each runtime-manufacturable object to the constructor pointer along with the expected input file options.
+with one scalar input (`v`), one scalar output (`a`), and one scalar
+parameter ($\mu$, the dynamic viscosity). The physics is one line of
+torch; the rest of the file is the input-file connection that this
+tutorial is about.
 
-The registration is accomplished by the static method neml2::Registry::add templated on the class type. The static registration method combined with the singleton enables distributed class registration in each translation unit. The convenience macro register_NEML2_object and its variants wrap around neml2::Registry::add to provide syntatic simplification of the registration call.
+```{literalinclude} projectile.py
+:language: python
+:caption: projectile.py
+```
 
-An example usage of the macro is
-@list:cpp:connection_to_input_files/ex1.cxx:registration
+Two things to notice:
 
+1. **`@register_native("ProjectileAcceleration")`** is what makes
+   `type = ProjectileAcceleration` resolvable from an input file.
+   The string passed to the decorator is the HIT type name — it does
+   not have to match the Python class name (it usually does, by
+   convention).
+2. **`hit = HitSchema(...)`** is the entire input-file surface. Each
+   field is one of:
 
-Note that a dummy static variable (unique to the class typename) is created to prevent duplicate registration.
+   | Field            | Maps to                                                             |
+   |------------------|---------------------------------------------------------------------|
+   | `input(name, T)` | A variable consumed by `forward`; HIT option of the same name lets the user rename it.  |
+   | `output(name, T)`| A variable produced by `forward`; same renaming behavior.           |
+   | `parameter(name, T, attr=...)` | A calibratable `nn.Parameter`; the HIT option's value is a literal, a `[Tensors]` cross-reference, or a `[Models]`-output reference.  |
+   | `option(name, type, attr=..., default=...)` | A plain scalar/string/bool option stored on the instance. |
+   | `dependency(name, "get_model", attr=...)`   | A reference to another model by HIT name; resolved by the factory. |
 
-## Factory
+   The `attr=` on `parameter`/`option`/`dependency` is the instance
+   attribute the resolved value lands on, available to `forward`.
+   For `input`/`output`, the HIT-resolved variable name is recorded
+   in the per-instance `input_spec` / `output_spec` dicts.
 
-The NEML2 factory handles the creation of objects at runtime. The generic API for object creation and retrieval is neml2::Factory::get_object.
+## The input file
 
-In our example, the parser will first extract input file options from the input file and use them to fill out the expected options (defined by the `ProjectileAcceleration::expected_options()` method). The factory then passes the collected options to the constructor to create this object. The constructor should accept an neml2::OptionSet and define how the collected options are used.
-@list:cpp:connection_to_input_files/ex1.cxx:constructor
+The schema above produces this minimal input block:
 
-The following tutorials will explain how to declare variables and parameters in the constructor.
+```{literalinclude} input.i
+:language: ini
+:caption: input.i
+```
 
-Suppose an input file named "input.i" has the following content
-@list-input:connection_to_input_files/input.i
+Each line in the `[accel]` block lines up with one schema field:
 
-To verify that our custom model is correctly accepting these input file options, let us use the factory to create this model and examine the option values.
+- `type = ProjectileAcceleration` — the registry lookup key.
+- `velocity = 'v'` — the user-facing name to use for the
+  `input("velocity", ...)` field. Without this line the canonical
+  name `velocity` is used.
+- `acceleration = 'a'` — same renaming pattern for the
+  `output("acceleration", ...)` field.
+- `dynamic_viscosity = 0.05` — a literal scalar consumed by the
+  `parameter("dynamic_viscosity", ...)` field. The factory turns it
+  into an `nn.Parameter` exposed on the instance as `self.mu` (the
+  attribute name we asked for via `attr="mu"`).
 
-@list:cpp:connection_to_input_files/ex1.cxx:main
+## Loading and inspecting
 
-Output:
-@list-output:ex1
+Before `neml2.load_model` can recognise the type name, the module
+that defines it must have been imported (so the `@register_native`
+decorator has run). In a Python script this is just an `import`; in
+this notebook page the source file is sitting next to `input.i`, so
+we put its directory on `sys.path` and import it.
 
-@insert-page-navigation
+```{code-cell} ipython3
+import sys
+sys.path.insert(0, ".")
+import projectile  # the @register_native runs at import time
+
+import neml2
+model = neml2.load_model("input.i", "accel")
+model
+```
+
+The schema-driven name resolution shows up in `input_spec` and
+`output_spec`:
+
+```{code-cell} ipython3
+model.input_spec, model.output_spec
+```
+
+The canonical names declared in the schema (`velocity`, `acceleration`)
+were overridden by the HIT values (`v`, `a`). The keys here are what
+sibling models inside a `ComposedModel` would use to wire to ours —
+covered in [](tutorials-extension-composition).
+
+The parameter declared in the schema is exposed under the `attr`
+name we picked, as a typed `Scalar` wrapping an `nn.Parameter`:
+
+```{code-cell} ipython3
+model.mu
+```
+
+And the forward operator evaluates as expected:
+
+```{code-cell} ipython3
+from neml2.types import Scalar
+
+model(Scalar(10.0))
+```
+
+## Confirming the registry entry
+
+It is sometimes useful to ask the registry directly what type names
+it knows about — especially when debugging a "not registered" error
+from `load_model`. The registry is a plain dict under
+`neml2.factory`:
+
+```{code-cell} ipython3
+from neml2.factory import _registry
+
+"ProjectileAcceleration" in _registry, _registry["ProjectileAcceleration"]
+```
+
+If a `KeyError` mentioning *"not registered in NativeRegistry"* fires
+at `load_model` time, the cause is almost always that the module
+holding `@register_native` was never imported — fix the import (or
+re-order imports) so the decorator runs before the load call.
+
+## What's next
+
+- The schema fields glossed over here — typed inputs, list options,
+  parameters that may be promoted to runtime inputs — are covered in
+  detail by [](tutorials-extension-arguments).
+- The body of `forward` (and its `v_jvp` chain-rule hook for
+  composability) is the subject of
+  [](tutorials-extension-forward).
+- Once your model loads, the next step is usually to compose it with
+  other models inside a single `[Models]` block — see
+  [](tutorials-extension-composition).

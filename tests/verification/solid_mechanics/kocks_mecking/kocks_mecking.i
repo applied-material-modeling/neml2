@@ -1,43 +1,50 @@
 # neml2
+# Native port of tests/verification/solid_mechanics/kocks_mecking/kocks_mecking.i.
+# Kocks-Mecking rate-independent / rate-dependent flow switch with
+# temperature-dependent shear modulus (interpolated over 3 control
+# temperatures). Reference time / temperature / strain / stress trajectories
+# come from kocks_mecking.csv (converted from the original .vtest by
+# scripts/vtest_to_csv.py).
+#
+# Sub-batch translation: the C++ scenario stores T_controls / E_values /
+# mu_values as ``Scalar(values, batch_shape=(3), intermediate_dimension=1)``,
+# meaning the trailing 3-element axis is the interpolation-table axis (not a
+# dynamic batch axis). The native equivalent is
+# ``Scalar(torch.tensor([...])).with_sub_batch(1)`` — marking the trailing
+# dim as a sub-batch axis.
 [Tensors]
   [times]
-    type = ScalarVTestTimeSeries
-    vtest = 'kocks_mecking.vtest'
+    type = CSVScalar
+    csv_file = 'kocks_mecking.csv'
     variable = 'time'
   []
   [strains]
-    type = SR2VTestTimeSeries
-    vtest = 'kocks_mecking.vtest'
+    type = CSVSR2
+    csv_file = 'kocks_mecking.csv'
     variable = 'strain'
   []
   [stresses]
-    type = SR2VTestTimeSeries
-    vtest = 'kocks_mecking.vtest'
+    type = CSVSR2
+    csv_file = 'kocks_mecking.csv'
     variable = 'stress'
   []
   [temperatures]
-    type = ScalarVTestTimeSeries
-    vtest = 'kocks_mecking.vtest'
+    type = CSVScalar
+    csv_file = 'kocks_mecking.csv'
     variable = 'temperature'
   []
 
   [T_controls]
-    type = Scalar
-    values = '750 850 950'
-    batch_shape = '(3)'
-    intermediate_dimension = 1
+    type = Python
+    expr = 'Scalar(torch.tensor([750.0, 850.0, 950.0], dtype=torch.float64)).with_sub_batch(1)'
   []
   [E_values]
-    type = Scalar
-    values = '200000 175000 150000'
-    batch_shape = '(3)'
-    intermediate_dimension = 1
+    type = Python
+    expr = 'Scalar(torch.tensor([200000.0, 175000.0, 150000.0], dtype=torch.float64)).with_sub_batch(1)'
   []
   [mu_values]
-    type = Scalar
-    values = '76923.07692308 67307.69230769 57692.30769231'
-    batch_shape = '(3)'
-    intermediate_dimension = 1
+    type = Python
+    expr = 'Scalar(torch.tensor([76923.07692308, 67307.69230769, 57692.30769231], dtype=torch.float64)).with_sub_batch(1)'
   []
 []
 
@@ -53,7 +60,7 @@
     save_as = 'result.pt'
   []
   [verification]
-    type = VTestVerification
+    type = Verification
     driver = 'driver'
     SR2_names = 'output.stress'
     SR2_values = 'stresses'
@@ -102,7 +109,6 @@
   [flow]
     type = ComposedModel
     models = 'vonmises yield'
-    automatic_nonlinear_parameter = false
   []
   [normality]
     type = Normality

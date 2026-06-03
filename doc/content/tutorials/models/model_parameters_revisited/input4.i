@@ -1,59 +1,27 @@
-# neml2
-[Tensors]
-  [K_x]
-    type = Scalar
-    values = '300 350 400 450'
-    batch_shape = '(4)'
-  []
-  [K_y]
-    type = Scalar
-    values = '1.4e5 1.35e5 1.32e5 1.25e5'
-    batch_shape = '(4)'
-  []
-  [G_x]
-    type = Scalar
-    values = '300 500'
-    batch_shape = '(2)'
-  []
-  [G_y]
-    type = Scalar
-    values = '7.8e4 7e4'
-    batch_shape = '(2)'
-  []
-[]
-
+# Same composition, but the CTE is now promoted to an *input variable*
+# named ``alpha`` — no provider model, no literal, no tensor. NEML2 sees
+# a bare name that does not match anything else in the file and adds an
+# input slot for it. The caller must supply ``alpha`` at evaluation time.
 [Models]
-  [K]
-    type = ScalarLinearInterpolation
-    argument = 'temperature'
-    abscissa = 'K_x'
-    ordinate = 'K_y'
-  []
-  [G]
-    type = ScalarLinearInterpolation
-    argument = 'temperature'
-    abscissa = 'G_x'
-    ordinate = 'G_y'
-  []
   [eq1]
     type = ThermalEigenstrain
     reference_temperature = '300'
-    CTE = 'alpha'
+    CTE                   = 'alpha'   # ← bare name → promoted to input variable
   []
   [eq2]
-    type = SR2LinearCombination
-    from = 'strain eigenstrain'
-    to = 'elastic_strain'
+    type    = SR2LinearCombination
+    from    = 'strain eigenstrain'
+    to      = 'elastic_strain'
     weights = '1 -1'
   []
   [eq3]
-    type = LinearIsotropicElasticity
-    strain = 'elastic_strain'
-    coefficient_types = 'BULK_MODULUS SHEAR_MODULUS'
-    coefficients = 'K G'
+    type              = LinearIsotropicElasticity
+    strain            = 'elastic_strain'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    coefficients      = '2e5            0.3'
   []
   [eq]
-    type = ComposedModel
+    type   = ComposedModel
     models = 'eq1 eq2 eq3'
   []
 []

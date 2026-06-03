@@ -1,8 +1,12 @@
-# neml2
+# Minimal hello-world NEML2 input file.
+# A single linear isotropic elastic model named "elasticity":
+#   E  = 200 GPa
+#   nu = 0.3
+# Maps a symmetric strain tensor (SR2) to a symmetric stress tensor (SR2).
 [Models]
-  [my_model]
+  [elasticity]
     type = LinearIsotropicElasticity
-    coefficient_types = 'BULK_MODULUS SHEAR_MODULUS'
-    coefficients = '1.4e5 7.8e4'
+    coefficients      = '200e3          0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
   []
 []

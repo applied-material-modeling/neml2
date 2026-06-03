@@ -23,6 +23,9 @@ jobs:
         with:
           # dependencies: python.version_min
           python-version: "3.10"
+      - name: Install nmhit (provides the nmhit-format CLI used by pre-commit)
+        # dependencies: nmhit.version_min
+        run: pip install 'nmhit>=0.2.1'
       - name: Run ruff lint
         uses: pre-commit/action@v3.0.1
         with:
@@ -52,8 +55,6 @@ jobs:
           cpu-torch: true
       - name: Install
         run: pip install ".[dev]" -v
-      - name: Generate Python stubs
-        run: neml2-stub
       - name: Run pyright
         run: pyright
 
@@ -78,7 +79,7 @@ jobs:
       - name: Install
         run: pip install ".[dev]" -v
       - name: Run tests
-        run: pytest -v --junitxml=pytest.xml python/tests
+        run: pytest -v --junitxml=pytest.xml tests
       - name: Test results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         if: always()

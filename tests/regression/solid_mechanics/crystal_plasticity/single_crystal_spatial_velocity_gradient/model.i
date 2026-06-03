@@ -1,111 +1,51 @@
 # neml2
+# Single-crystal driven by a prescribed spatial velocity gradient L; native
+# port of tests/regression/solid_mechanics/crystal_plasticity/
+# single_crystal_spatial_velocity_gradient/model.i.
+# Dynamic batch axis = (20,) (varying end-time / initial orientation); L itself
+# is constant over the 100 time steps.
 [Tensors]
+  # end_time = LinspaceScalar(1, 10, 20) -> shape (20,)
   [end_time]
-    type = LinspaceScalar
-    start = 1
-    end = 10
-    nstep = 20
+    type = Python
+    expr = 'Scalar(torch.linspace(1.0, 10.0, 20, dtype=torch.float64))'
   []
+  # times = LinspaceScalar(0, end_time, 100) -> shape (100, 20)
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
+    type = Python
+    expr = 'Scalar(end_time.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))'
   []
-  [lxx]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.1
-  []
-  [lyy]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.05
-  []
-  [lzz]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.05
-  []
-
-  [lxy]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.01
-  []
-  [lxz]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.02
-  []
-  [lyx]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.01
-  []
-  [lyz]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.025
-  []
-  [lzx]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.03
-  []
-  [lzy]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.01
-  []
-
-  [l_single]
-    type = FillR2
-    values = 'lxx lxy lxz lyx lyy lyz lzx lzy lzz'
-  []
+  # L = constant FillR2 with row-major fill
+  # [[lxx lxy lxz] [lyx lyy lyz] [lzx lzy lzz]]
+  # = [[0.1, 0.01, -0.02], [0.01, -0.05, -0.025], [0.03, -0.01, -0.05]]
+  # LinspaceR2(l_single, l_single, 100) expands batched (20,) along a new
+  # leading axis of length 100 -> shape (100, 20, 3, 3).
   [L]
-    type = LinspaceR2
-    start = l_single
-    end = l_single
-    nstep = 100
+    type = Python
+    expr = 'R2(torch.tensor([[0.1, 0.01, -0.02], [0.01, -0.05, -0.025], [0.03, -0.01, -0.05]], dtype=torch.float64).reshape(1, 1, 3, 3).expand(100, 20, 3, 3).contiguous())'
   []
 
+  # Crystal geometry inputs
   [a]
-    type = Scalar
-    values = '1.0'
+    type = Python
+    expr = 'Scalar(torch.tensor(1.0, dtype=torch.float64))'
   []
   [sdirs]
-    type = MillerIndex
-    values = '1 1 0'
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1, 1, 0], dtype=torch.int64))'
   []
   [splanes]
-    type = MillerIndex
-    values = '1 1 1'
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1, 1, 1], dtype=torch.int64))'
   []
 
-  [R1]
-    type = LinspaceScalar
-    start = 0
-    end = 0.75
-    nstep = 20
-  []
-  [R2]
-    type = LinspaceScalar
-    start = 0
-    end = -0.25
-    nstep = 20
-  []
-  [R3]
-    type = LinspaceScalar
-    start = -0.1
-    end = 0.1
-    nstep = 20
-  []
-
+  # Initial orientation = FillRot(R1, R2, R3, method='standard'):
+  # convert standard Rodrigues r_std to modified-Rodrigues parameters via
+  # r = r_std / (sqrt(|r_std|^2 + 1) + 1). Shape (20, 3).
+  # R1 = linspace(0, 0.75, 20); R2 = linspace(0, -0.25, 20); R3 = linspace(-0.1, 0.1, 20).
   [initial_orientation]
-    type = FillRot
-    values = 'R1 R2 R3'
-    method = 'standard'
+    type = Python
+    expr = 'Rot((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
   []
 []
 

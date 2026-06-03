@@ -1,0 +1,54 @@
+# Copyright 2024, UChicago Argonne, LLC
+# All Rights Reserved
+# Software Name: NEML2 -- the New Engineering material Model Library, version 2
+# By: Argonne National Laboratory
+# OPEN SOURCE LICENSE (MIT)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+"""Native ``Driver`` base.
+
+Mirrors ``include/neml2/drivers/Driver.h``: a Driver is *not* a Model, *not*
+an ``nn.Module``, and does not participate in chain-rule propagation. It is a
+top-level workflow object (e.g. step a model over a time history, dispatch a
+calibration job) constructed from a ``[Drivers]`` block.
+
+Concrete drivers register with ``@register_native("TypeName")`` and live under
+``python/neml2/native/drivers/``. The factory routes ``[Drivers]`` blocks here
+via ``_NativeInputFile.get_driver()``.
+"""
+
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+
+
+class Driver(ABC):
+    """Abstract base for any registered ``[Drivers]`` block.
+
+    Subclasses implement ``from_hit(cls, node, factory)`` (the standard native
+    factory contract) and ``run()``.
+    """
+
+    @abstractmethod
+    def run(self) -> bool:
+        """Execute the driver. Returns True on success."""
+
+
+__all__ = ["Driver"]

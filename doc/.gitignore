@@ -1,2 +1,9 @@
-*.yml
-Doxyfile*.sh
+_build/
+generated/
+
+# Per-build AOTI artifacts produced by {code-cell} blocks in tutorials
+# that invoke neml2-compile. Sphinx-side cwd for an executed cell is the
+# document's source directory, so artifacts land alongside the .md.
+content/aoti/
+content/**/aoti/
+content/**/aoti_promoted/

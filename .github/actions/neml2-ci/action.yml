@@ -13,9 +13,6 @@ inputs:
     required: false
     # dependencies: torch.version
     default: "2.12.0"
-  doxygen-version:
-    required: false
-    default: ""
   cpu-torch:
     required: false
     default: "true"
@@ -76,14 +73,3 @@ runs:
       shell: bash
       run: |
         pip install torch==${{ inputs.torch-version }}
-
-    - name: Install Doxygen (Linux)
-      if: runner.os == 'Linux' && inputs.doxygen-version != ''
-      shell: bash
-      run: |
-        DOXYGEN_VERSION="${{ inputs.doxygen-version }}"
-        DOXYGEN_RELEASE="${DOXYGEN_VERSION//./_}"
-        wget https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_RELEASE}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz
-        tar -xzf doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz
-        mv doxygen-${DOXYGEN_VERSION} "$HOME/doxygen"
-        echo "$HOME/doxygen/bin" >> $GITHUB_PATH

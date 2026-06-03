@@ -1,41 +1,20 @@
 # neml2
 [Tensors]
   [end_time]
-    type = LogspaceScalar
-    start = -1
-    end = 5
-    nstep = 20
+    type = Python
+    expr = 'Scalar(torch.logspace(-1.0, 5.0, 20, dtype=torch.float64))'
   []
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
-  []
-  [exx]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.1
-  []
-  [eyy]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.01
-  []
-  [ezz]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -0.02
+    type = Python
+    expr = 'Scalar(end_time.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))'
   []
   [max_strain]
-    type = FillSR2
-    values = 'exx eyy ezz'
+    type = Python
+    expr = 'SR2(torch.tensor([0.1, -0.01, -0.02, 0.0, 0.0, 0.0], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
   []
   [strains]
-    type = LinspaceSR2
-    start = 0
-    end = max_strain
-    nstep = 100
+    type = Python
+    expr = 'SR2(max_strain.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).reshape(100, 1, 1))'
   []
 []
 

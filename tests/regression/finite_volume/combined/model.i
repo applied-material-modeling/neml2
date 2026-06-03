@@ -1,37 +1,38 @@
 # neml2
 [Tensors]
   [edges]
-    type = LinspaceScalar
-    start = 0.0
-    end = 1.0
-    nstep = 201
-    dim = 0
-    group = 'intermediate'
+    # Coarsened for regression-test runtime: 201 -> 51 (50 cells). Full
+    # resolution lives under tests/regression/; here we only detect drift.
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 1.0, 51, dtype=torch.float64), sub_batch_ndim=1)'
   []
   [centers]
-    type = CenterScalar
-    points = 'edges'
+    type = Python
+    expr = 'Scalar(0.5 * (edges.data[..., :-1] + edges.data[..., 1:]), sub_batch_ndim=1)'
   []
   [dx_centers]
-    type = DifferenceScalar
-    points = 'centers'
+    type = Python
+    expr = 'Scalar(centers.data[..., 1:] - centers.data[..., :-1], sub_batch_ndim=1)'
   []
   [dx]
-    type = DifferenceScalar
-    points = 'edges'
+    type = Python
+    expr = 'Scalar(edges.data[..., 1:] - edges.data[..., :-1], sub_batch_ndim=1)'
   []
   [ic]
-    type = GaussianScalar
-    points = 'centers'
-    width = 0.05
-    height = 1.0
-    center = 0.25
+    type = Python
+    expr = 'Scalar(1.0 * torch.exp(-0.5 * ((centers.data - 0.25) / 0.05) ** 2), sub_batch_ndim=1)'
   []
   [time]
-    type = LinspaceScalar
-    start = 0.0
-    end = 1.0
-    nstep = 25
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 1.0, 25, dtype=torch.float64))'
+  []
+  [D_cells]
+    type = Python
+    expr = 'Scalar(0.5 * torch.ones_like(centers.data), sub_batch_ndim=1)'
+  []
+  [v_cells]
+    type = Python
+    expr = 'Scalar(0.4 * torch.ones_like(centers.data), sub_batch_ndim=1)'
   []
 []
 
@@ -54,14 +55,14 @@
 [Models]
   [diffusivity]
     type = LinearlyInterpolateToCellEdges
-    cell_values = 0.5
+    cell_values = 'D_cells'
     cell_centers = 'centers'
     cell_edges = 'edges'
     edge_values = 'D'
   []
   [advection_velocity]
     type = LinearlyInterpolateToCellEdges
-    cell_values = 0.4
+    cell_values = 'v_cells'
     cell_centers = 'centers'
     cell_edges = 'edges'
     edge_values = 'v_edge'

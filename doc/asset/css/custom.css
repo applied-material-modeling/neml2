@@ -1,0 +1,9 @@
+/* Shibuya's `.math-wrapper { overflow-x: auto }` adds a horizontal
+   scrollbar whenever the rendered MathJax content slightly exceeds the
+   container width -- which it does on every numbered equation, because
+   our `tagSide: right` config pushes the equation tag past the right
+   edge by a few pixels. Drop the auto-scrollbar; wide equations on
+   mobile will fall back to MathJax 3's own responsive shrinking. */
+.yue .math-wrapper {
+  overflow-x: visible;
+}

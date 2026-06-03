@@ -1,55 +1,37 @@
 # neml2
+# Native port of tests/regression/solid_mechanics/mixed_control/model.i.
+# Mixed strain/stress control via MixedControlSetup with a (100, 20) batch:
+# 20 logspaced end times, 100 linear time steps. Component 0 is strain-
+# controlled to 0.1; component 3 is stress-controlled to -130. SR2.fill 6-arg
+# applies sqrt(2) Mandel scaling on shear slots (3,4,5).
 [Tensors]
+  # end_time = LogspaceScalar(-1, 5, 20) -> shape (20,)
   [end_time]
-    type = LogspaceScalar
-    start = -1
-    end = 5
-    nstep = 20
+    type = Python
+    expr = 'Scalar(torch.logspace(-1.0, 5.0, 20, dtype=torch.float64))'
   []
+  # times = LinspaceScalar(0, end_time, 100) -> shape (100, 20)
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
+    type = Python
+    expr = 'Scalar(end_time.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))'
   []
-  [applied_strain]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.1
-  []
-  [applied_stress]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = -130
-  []
-  [zero]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0.0
-  []
-  [zero_control]
-    type = FullScalar
-    batch_shape = '(100,20)'
-    value = 0.0
-  []
-  [one_control]
-    type = FullScalar
-    batch_shape = '(100,20)'
-    value = 1.0
-  []
+  # max_conds = FillSR2(applied_strain=0.1, 0, 0, applied_stress=-130, 0, 0) batched (20,)
+  # SR2.fill 6-arg keeps slots 0..2 verbatim and scales slots 3..5 by sqrt(2).
+  # Here slots 3..5 are -130, 0, 0 -> -130*sqrt(2), 0, 0 in Mandel storage.
   [max_conds]
-    type = FillSR2
-    values = 'applied_strain zero zero applied_stress zero zero'
+    type = Python
+    expr = 'SR2(torch.tensor([0.1, 0.0, 0.0, -130.0 * (2.0 ** 0.5), 0.0, 0.0], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
   []
+  # conditions = LinspaceSR2(0, max_conds, 100) -> shape (100, 20, 6)
   [conditions]
-    type = LinspaceSR2
-    start = 0
-    end = max_conds
-    nstep = 100
+    type = Python
+    expr = 'SR2(max_conds.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).reshape(100, 1, 1))'
   []
+  # control = FillSR2(0, 1, 1, 1, 0, 0) batched (100, 20).
+  # SR2.fill 6-arg scales slots 3..5 by sqrt(2): slot 3 = 1 -> sqrt(2).
   [control]
-    type = FillSR2
-    values = 'zero_control one_control one_control one_control zero_control zero_control'
+    type = Python
+    expr = 'SR2(torch.tensor([0.0, 1.0, 1.0, 2.0 ** 0.5, 0.0, 0.0], dtype=torch.float64).reshape(1, 1, 6).expand(100, 20, 6).contiguous())'
   []
 []
 

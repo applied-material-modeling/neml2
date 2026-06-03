@@ -13,11 +13,6 @@
 #   <line containing the version value>
 
 # ---- Python packages ----
-pybind11_stubgen:
-  version_min: "2.5.5"
-  files:
-    - pyproject.toml
-
 torch:
   version: "2.12.0"
   version_min: "2.10.0"
@@ -28,11 +23,8 @@ torch:
     - .github/workflows/python.yml
     - .github/workflows/notebooks.yml
     - .github/workflows/docs.yml
-    - .github/workflows/integration.yml
-    - doc/content/installation/install.md
     - compatibility.yaml
     - pyproject.toml
-    - doc/content/installation/compatibility.md
 
 pyzag:
   version: "1.1.1"
@@ -41,16 +33,12 @@ pyzag:
     - .github/workflows/compat.yml
 
 nmhit:
-  # `version` is the exact release pinned by the pre-commit hook (no `v`
-  # prefix so it substring-matches both `rev: v0.1.5` and `nmhit==0.1.5`).
-  # `version_min` is the runtime floor in pyproject.toml — bumping it is
-  # only required if neml2 starts depending on newer nmhit Python APIs.
-  version: "0.1.5"
-  version_min: "0.1.2"
+  # Runtime floor for the nmhit Python package (HIT parser bindings used by
+  # `neml2.factory`). The HIT parser is Python-side; CMakeLists.txt does
+  # not pin it.
+  version_min: "0.2.2"
   files:
-    - CMakeLists.txt
     - pyproject.toml
-    - .pre-commit-config.yaml
 
 # ---- Formatters / pre-commit hooks ----
 clang_format:
@@ -79,30 +67,8 @@ jupytext:
     - .pre-commit-config.yaml
 
 # ---- C++ libraries ----
-catch2:
-  version: "v3.5.4"
-  files:
-    - CMakeLists.txt
-
-nlohmann_json:
-  version: "v3.11.3"
-  files:
-    - CMakeLists.txt
-
-csvparser:
-  version: "2.3.0"
-  files:
-    - CMakeLists.txt
-
-argparse:
-  version: "v3.2"
-  files:
-    - CMakeLists.txt
-
-gperftools:
-  version: "gperftools-2.17"
-  files:
-    - CMakeLists.txt
+# nlohmann_json is now a git submodule at `contrib/nlohmann_json-src` (pinned
+# via the submodule SHA, not a version string), so it doesn't appear here.
 
 # ---- Build tools ----
 cmake:
@@ -114,9 +80,7 @@ cmake:
     - .github/workflows/python.yml
     - .github/workflows/notebooks.yml
     - .github/workflows/docs.yml
-    - .github/workflows/integration.yml
     - pyproject.toml
-    - doc/content/installation/install.md
 
 python:
   version_min: "3.10"
@@ -128,21 +92,11 @@ python:
     - .github/workflows/python.yml
     - .github/workflows/notebooks.yml
     - .github/workflows/docs.yml
-    - .github/workflows/integration.yml
     - pyproject.toml
-    - doc/content/installation/install.md
-
-doxygen:
-  version: "1.16.1"
-  files:
-    - .github/actions/neml2-ci/action.yml
-    - .github/workflows/docs.yml
 
 # ---- Project version ----
 neml2:
-  version: "2.1.6"
+  version: "3.0.0"
   files:
     - CMakeLists.txt
     - pyproject.toml
-    - doc/content/installation/integration.md
-    - doc/config/Doxyfile.in

@@ -1,0 +1,33 @@
+# Translated from tests/unit/models/solid_mechanics/kinematics/VolumeAdjustDeformationGradient.i.
+[Drivers]
+  [unit]
+    type = ModelUnitTest
+    model = 'model'
+    input_R2_names = 'input'
+    input_R2_values = 'input'
+    input_Scalar_names = 'jacobian'
+    input_Scalar_values = '0.5'
+    output_R2_names = 'output'
+    output_R2_values = 'output'
+  []
+[]
+
+[Tensors]
+  [input]
+    type = Python
+    expr = "R2(torch.tensor([[2.1, 1.2, 3.7], [4.5, 6.8, 7.9], [1.6, 2.5, 2.3]], dtype=torch.float64))"
+  []
+  [output]
+    type = Python
+    expr = "R2(torch.tensor([[2.6458342048, 1.5119052599, 4.6617078846], [5.6696447245, 8.5674631393, 9.9533812942], [2.0158736799, 3.1498026248, 2.8978184148]], dtype=torch.float64))"
+  []
+[]
+
+[Models]
+  [model]
+    type = VolumeAdjustDeformationGradient
+    input = 'input'
+    output = 'output'
+    jacobian = 'jacobian'
+  []
+[]

@@ -27,9 +27,9 @@
 Post-build wheel repair invoked by cibuildwheel's repair-wheel-command:
 
   Linux:  run auditwheel excluding PyTorch .so files (they are declared runtime
-          deps and must not be bundled), then inject pybind11 stubs.
-  macOS:  skip delocate (torch dylibs are not bundleable; plain macosx_* tags
-          are accepted by PyPI), then inject pybind11 stubs.
+          deps and must not be bundled).
+  macOS:  pass-through (delocate is skipped; torch dylibs are not bundleable and
+          plain macosx_* tags are accepted by PyPI).
 
 Usage: python repair_wheel.py {wheel} {dest_dir}
 """
@@ -37,7 +37,6 @@ Usage: python repair_wheel.py {wheel} {dest_dir}
 import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 
@@ -54,50 +53,19 @@ def _torch_excludes() -> list[str]:
         return []
 
 
-def _generate_stubs(wheel: Path) -> list[Path]:
-    """Install the wheel, run neml2-stub, and return the generated .pyi paths."""
-    subprocess.run(
-        [sys.executable, "-m", "pip", "install", str(wheel)],
-        check=True,
-    )
-    from neml2._stub import _generate_stub
-
-    import neml2
-
-    _generate_stub()
-    return list(Path(neml2.__path__[0]).glob("*.pyi"))
-
-
-def _inject_stubs(wheel: Path, stubs: list[Path], dest_dir: Path) -> None:
-    """Unpack wheel, copy .pyi files into neml2/, repack into dest_dir."""
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory() as tmp:
-        subprocess.run(["wheel", "unpack", str(wheel), "--dest", tmp], check=True)
-        pkg_dir = next(Path(tmp).iterdir())
-        for s in stubs:
-            shutil.copy(s, pkg_dir / "neml2" / s.name)
-        subprocess.run(
-            ["wheel", "pack", str(pkg_dir), "--dest-dir", str(dest_dir)],
-            check=True,
-        )
-
-
 def main() -> None:
     wheel = Path(sys.argv[1])
     dest_dir = Path(sys.argv[2])
-
-    stubs = _generate_stubs(wheel)
+    dest_dir.mkdir(parents=True, exist_ok=True)
 
     if sys.platform.startswith("linux"):
-        with tempfile.TemporaryDirectory() as tmp:
-            subprocess.run(
-                ["auditwheel", "repair", "-w", tmp] + _torch_excludes() + [str(wheel)],
-                check=True,
-            )
-            repaired = next(Path(tmp).glob("*.whl"))
-            _inject_stubs(repaired, stubs, dest_dir)
+        subprocess.run(
+            ["auditwheel", "repair", "-w", str(dest_dir)] + _torch_excludes() + [str(wheel)],
+            check=True,
+        )
     else:
-        _inject_stubs(wheel, stubs, dest_dir)
+        # macOS: pass-through; delocate would try to bundle torch dylibs.
+        shutil.copy(wheel, dest_dir / wheel.name)
 
 
 if __name__ == "__main__":

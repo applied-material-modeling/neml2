@@ -20,7 +20,11 @@ jobs:
         with:
           extra_args: clang-format --all-files --show-diff-on-failure -v
 
-  test:
+  # The C++ artifact shipped from this repo is the libneml2_aoti shared
+  # library. The matrix below verifies it configures and builds cleanly in
+  # Debug and Release on every supported runner. Behavioral coverage of the
+  # Python runtime lives in tests/ and is exercised by the `Python` workflow.
+  build:
     needs: clang-format
     strategy:
       fail-fast: false
@@ -30,6 +34,8 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
@@ -45,135 +51,5 @@ jobs:
       - name: Configure (Werror)
         if: matrix.btype != 'Release'
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -DCMAKE_CXX_FLAGS="-Werror" -S .
-      - name: Build
+      - name: Build libneml2_aoti
         run: cmake --build --preset dev
-      - name: Run tests
-        env:
-          TEST_DEVICE_ARGS: ${{ matrix.runner == 'gpu_runner' && '--devices cuda' || '' }}
-        run: |
-          ./build/dev/tests/unit/tensor_tests $TEST_DEVICE_ARGS -r JUnit::out=tensor_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/unit/unit_tests $TEST_DEVICE_ARGS -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/regression/regression_tests $TEST_DEVICE_ARGS -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/verification/verification_tests $TEST_DEVICE_ARGS -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/dispatchers/dispatcher_tests $TEST_DEVICE_ARGS -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
-      - name: Test results
-        uses: EnricoMi/publish-unit-test-result-action/linux@v2
-        if: always()
-        with:
-          files: |
-            tests/unit/tensor_tests.xml
-            tests/unit/unit_tests.xml
-            tests/regression/regression_tests.xml
-            tests/verification/verification_tests.xml
-            tests/dispatchers/dispatcher_tests.xml
-          check_name: Test Results
-          check_run: false
-          action_fail: true
-          comment_mode: off
-
-  no-pch:
-    needs: clang-format
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/neml2-ci
-        with:
-          # dependencies: python.version_min
-          python-version: "3.10"
-          # dependencies: cmake.version_min
-          cmake-version: "3.26.1"
-          # dependencies: torch.version
-          torch-version: "2.12.0"
-      - name: Configure
-        run: cmake --preset dev -GNinja -DNEML2_PCH=OFF -S .
-      - name: Build
-        run: cmake --build --preset dev
-
-  no-optional:
-    needs: clang-format
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/neml2-ci
-        with:
-          # dependencies: python.version_min
-          python-version: "3.10"
-          # dependencies: cmake.version_min
-          cmake-version: "3.26.1"
-          # dependencies: torch.version
-          torch-version: "2.12.0"
-      - name: Configure
-        run: cmake --preset dev -GNinja -DNEML2_JSON=OFF -DNEML2_CSV=OFF -DNEML2_MPI=OFF -S .
-      - name: Build
-        run: cmake --build --preset dev
-
-  release:
-    needs: clang-format
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/neml2-ci
-        with:
-          # dependencies: python.version_min
-          python-version: "3.10"
-          # dependencies: cmake.version_min
-          cmake-version: "3.26.1"
-          # dependencies: torch.version
-          torch-version: "2.12.0"
-      - name: Configure
-        run: cmake --preset release -GNinja -S .
-      - name: Build
-        run: cmake --build --preset release
-      - name: Run benchmark tests
-        run: ctest --preset benchmark --output-on-failure
-
-  profiling:
-    needs: clang-format
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/neml2-ci
-        with:
-          # dependencies: python.version_min
-          python-version: "3.10"
-          # dependencies: cmake.version_min
-          cmake-version: "3.26.1"
-          # dependencies: torch.version
-          torch-version: "2.12.0"
-      - name: Configure
-        run: cmake --preset profiling -GNinja -S .
-      - name: Build
-        run: cmake --build --preset profiling
-      - name: Check profile generation
-        run: |
-          CPUPROFILE=prof.out ./build/profiling/src/tools/neml2-time benchmark/elasticity/model.i driver nbatch=1 device=cpu
-          [[ -f prof.out ]]
-
-  thread-sanitizer:
-    needs: clang-format
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/neml2-ci
-        with:
-          # dependencies: python.version_min
-          python-version: "3.10"
-          # dependencies: cmake.version_min
-          cmake-version: "3.26.1"
-          # dependencies: torch.version
-          torch-version: "2.12.0"
-      - name: Configure
-        run: cmake --preset tsan -GNinja -S .
-      - name: Build
-        run: cmake --build --preset tsan
-      - name: Run tests
-        run: ctest --preset tsan --output-on-failure

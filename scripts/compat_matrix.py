@@ -175,7 +175,7 @@ def _write_compat(build_torch: str, combinations: list[dict]) -> None:
         "#",
         "# Each row in `combinations` asserts: a NEML2 wheel built for the listed",
         "# `python` on `os`, installed alongside `torch == torch`, MUST pass the",
-        "# Python test suite (python/tests).",
+        "# Python test suite (tests).",
         "#",
         "# CI (.github/workflows/compat.yml) enforces this on every PR and push",
         "# to main. Adding a row tightens the supported set; removing one drops",

@@ -1,90 +1,70 @@
 # neml2
-nbatch = 20
-
+# Single-crystal coupled crystal plasticity with multiplicative F = Fe Fp
+# decomposition, native port of
+# tests/regression/solid_mechanics/crystal_plasticity/single_crystal_coupled_multiplicative/model.i.
+# Dynamic batch axis = (20,) (varying end-time / F_end across the batch);
+# time axis = (100,). Orientation is a prescribed force, NOT an unknown:
+# only ``tauc`` (Scalar) and ``Fp`` (R2) are integrated implicitly.
 [Tensors]
+  # end_time = LinspaceScalar(1, 10, 20) -> shape (20,)
   [end_time]
-    type = LinspaceScalar
-    start = 1
-    end = 10
-    nstep = ${nbatch}
+    type = Python
+    expr = 'Scalar(torch.linspace(1.0, 10.0, 20, dtype=torch.float64))'
   []
+  # times = LinspaceScalar(0, end_time, 100) -> shape (100, 20)
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
-  []
-  [F_start]
-    type = FillR2
-    values = '1 0 0 0 1 0 0 0 1'
-  []
-  [F_end_min]
-    type = FillR2
-    values = '1.005 0.001 0.005 0.001 0.991 -0.03 -0.005 0.002 1.008'
-  []
-  [F_end_max]
-    type = FillR2
-    values = '1.05 0.01 0.05 0.01 0.91 -0.3 -0.05 0.02 1.08'
-  []
-  [F_end]
-    type = LinspaceR2
-    start = F_end_min
-    end = F_end_max
-    nstep = ${nbatch}
-  []
-  [F]
-    type = LinspaceR2
-    start = F_start
-    end = F_end
-    nstep = 100
-  []
-  [Fp0]
-    type = R2
-    values = '1 0 0 0 1 0 0 0 1'
+    type = Python
+    expr = 'Scalar(end_time.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))'
   []
 
+  # F_start = identity (3,3)
+  # F_end_min = '1.005 0.001 0.005  0.001 0.991 -0.03  -0.005 0.002 1.008'
+  # F_end_max = '1.05  0.01  0.05   0.01  0.91  -0.3   -0.05  0.02  1.08'
+  # F_end = LinspaceR2(F_end_min, F_end_max, 20) -> shape (20, 3, 3)
+  # F = LinspaceR2(F_start, F_end, 100) -> shape (100, 20, 3, 3)
+  #   F[k, b] = F_start + (k / 99) * (F_end[b] - F_start)
+  [F]
+    type = Python
+    expr = 'F_start = torch.eye(3, dtype=torch.float64)
+F_end_min = torch.tensor([[1.005, 0.001, 0.005], [0.001, 0.991, -0.03], [-0.005, 0.002, 1.008]], dtype=torch.float64)
+F_end_max = torch.tensor([[1.05, 0.01, 0.05], [0.01, 0.91, -0.3], [-0.05, 0.02, 1.08]], dtype=torch.float64)
+F_end = F_end_min.unsqueeze(0) + torch.linspace(0.0, 1.0, 20, dtype=torch.float64).reshape(20, 1, 1) * (F_end_max - F_end_min).unsqueeze(0)
+F_full = F_start.reshape(1, 1, 3, 3) + torch.linspace(0.0, 1.0, 100, dtype=torch.float64).reshape(100, 1, 1, 1) * (F_end.reshape(1, 20, 3, 3) - F_start.reshape(1, 1, 3, 3))
+result = R2(F_full.contiguous())'
+  []
+
+  # Initial plastic deformation gradient = identity, shape (3, 3) (no batch)
+  [Fp0]
+    type = Python
+    expr = 'R2(torch.eye(3, dtype=torch.float64))'
+  []
+
+  # Crystal geometry inputs
   [a]
-    type = Scalar
-    values = '1.0'
+    type = Python
+    expr = 'Scalar(torch.tensor(1.0, dtype=torch.float64))'
   []
   [sdirs]
-    type = MillerIndex
-    values = '1 1 0'
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1, 1, 0], dtype=torch.int64))'
   []
   [splanes]
-    type = MillerIndex
-    values = '1 1 1'
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1, 1, 1], dtype=torch.int64))'
   []
 
-  [R1]
-    type = LinspaceScalar
-    start = 0
-    end = 0.75
-    nstep = ${nbatch}
-  []
-  [R2]
-    type = LinspaceScalar
-    start = 0
-    end = -0.25
-    nstep = ${nbatch}
-  []
-  [R3]
-    type = LinspaceScalar
-    start = -0.1
-    end = 0.1
-    nstep = ${nbatch}
-  []
-
+  # Initial orientation = FillRot(R1, R2, R3, method='standard'):
+  # convert standard Rodrigues r_std to modified-Rodrigues parameters via
+  # r = r_std / (sqrt(|r_std|^2 + 1) + 1). Shape (20, 3).
+  # R1 = linspace(0, 0.75, 20); R2 = linspace(0, -0.25, 20); R3 = linspace(-0.1, 0.1, 20).
   [initial_orientation]
-    type = FillRot
-    values = 'R1 R2 R3'
-    method = 'standard'
+    type = Python
+    expr = 'Rot((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
   []
+  # r = LinspaceRot(initial_orientation, initial_orientation, 100) -> shape (100, 20, 3)
   [r]
-    type = LinspaceRot
-    start = initial_orientation
-    end = initial_orientation
-    nstep = 100
+    type = Python
+    expr = 'Rot(initial_orientation.data.unsqueeze(0).expand(100, 20, 3).contiguous())'
   []
 []
 
@@ -118,13 +98,13 @@ nbatch = 20
 []
 
 [Models]
-  # Orientation remains constant as we work with the reference configuration
+  # Orientation remains constant; convert modified Rodrigues to the rotation matrix R.
   [euler_rodrigues]
     type = RotationMatrix
     from = 'r'
     to = 'R'
   []
-  # Hardening (this is just a very simple hardening model)
+  # Hardening (very simple)
   [slip_strength]
     type = SingleSlipStrengthMap
     constant_strength = 50.0
@@ -137,6 +117,9 @@ nbatch = 20
     saturated_hardening = 50.0
     slip_hardening = 'tauc'
     sum_slip_rates = 'gamma_rate'
+    # Native does not auto-derive output names from input renames; provide
+    # ``tauc_rate`` explicitly so it matches the integrator's expectation.
+    slip_hardening_rate = 'tauc_rate'
   []
   # Elasticity: St. Venant-Kirchhoff with Green-Lagrange strain
   [mult_decomp]
@@ -194,7 +177,7 @@ nbatch = 20
     B = 'Fp'
     to = 'Fp_rate'
   []
-  # Definition of residuals
+  # Residuals
   [integrate_slip_hardening]
     type = ScalarBackwardEulerTimeIntegration
     variable = 'tauc'

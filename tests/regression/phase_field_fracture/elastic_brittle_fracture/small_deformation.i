@@ -19,46 +19,25 @@
 
 [Tensors]
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = 3
-    nstep = 1000
-  []
-  [exx]
-    type = FullScalar
-    value = 0.016
-  []
-  [eyy]
-    type = FullScalar
-    value = -0.008
-  []
-  [ezz]
-    type = FullScalar
-    value = -0.008
-  []
-  [max_strain]
-    type = FillSR2
-    values = 'exx eyy ezz'
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 3.0, 1000, dtype=torch.float64))'
   []
   [strains]
-    type = LinspaceSR2
-    start = 0
-    end = max_strain
-    nstep = 1000
+    # LinspaceSR2 0 -> (0.016, -0.008, -0.008, 0, 0, 0) across 1000 steps -> (1000, 6).
+    type = Python
+    expr = 'SR2(torch.tensor([0.016, -0.008, -0.008, 0.0, 0.0, 0.0], dtype=torch.float64).reshape(1, 6) * torch.linspace(0.0, 1.0, 1000, dtype=torch.float64).reshape(1000, 1))'
   []
   [p]
-    type = Scalar
-    values = 2
+    type = Python
+    expr = 'Scalar(torch.tensor(2.0, dtype=torch.float64))'
   []
   [GcbylbyCo]
-    type = Scalar
-    values = 0.0152
-    # Gc/l/Co with Gc = 95 N/m, l = 3.125 mm, Co = 2
+    type = Python
+    expr = 'Scalar(torch.tensor(0.0152, dtype=torch.float64))'
   []
 []
 
 [Models]
-  # strain energy density: g * psie0
   [degrade]
     type = PowerDegradationFunction
     phase = 'd'
@@ -72,7 +51,6 @@
     inactive_strain_energy_density = 'psie_inactive'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     coefficients = '25.84e3 0.18'
-    # decomposition = 'NONE'
     decomposition = 'VOLDEV'
   []
   [sed1]
@@ -86,25 +64,21 @@
     to = 'psie'
     weights = '1 1'
   []
-  # crack geometric function: alpha
   [cracked]
     type = CrackGeometricFunctionAT2
     phase = 'd'
     crack = 'alpha'
   []
-  # total energy
   [sum]
     type = ScalarLinearCombination
     from = 'alpha psie'
     to = 'psi'
     weights = 'GcbylbyCo 1'
   []
-  # this guy maps from (strain, d) -> energy
   [energy]
     type = ComposedModel
     models = 'degrade sed0 sed1 sed cracked sum'
   []
-  # phase rate, follows from variation of total energy w.r.t. phase field
   [dpsidd]
     type = Normality
     model = 'energy'
@@ -112,19 +86,16 @@
     from = 'd'
     to = 'dpsi_dd'
   []
-  # obtain d_rate
   [drate]
     type = ScalarVariableRate
     variable = 'd'
   []
-  # define functional
   [functional]
     type = ScalarLinearCombination
     from = 'dpsi_dd d_rate'
     to = 'F'
     weights = '1 1'
   []
-  # Fisher Burmeister Complementary Condition
   [Fish_Burm]
     type = FBComplementarity
     a = 'F'
@@ -132,7 +103,6 @@
     complementarity = 'd_residual'
     a_inequality = 'LE'
   []
-  # system of equations
   [eq]
     type = ComposedModel
     models = 'Fish_Burm functional drate dpsidd'
@@ -161,7 +131,6 @@
 []
 
 [Models]
-  # solve for d
   [predictor]
     type = LinearExtrapolationPredictor
     unknowns_Scalar = 'd'
@@ -172,7 +141,6 @@
     solver = 'newton'
     predictor = 'predictor'
   []
-  # after the solve take derivative of the total energy w.r.t. strain to get stress
   [stress]
     type = Normality
     model = 'energy'

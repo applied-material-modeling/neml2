@@ -1,73 +1,53 @@
 # neml2
+# Taylor polycrystal aggregate: 5 crystals share a global stress / deformation
+# rate. Exercises the BLOCK + DENSE Schur factorisation — group 0 is the
+# per-crystal unknowns (elastic_strain, orientation, slip_hardening) with
+# uniform sub_batch=(5,), group 1 is the global mixed-control unknowns
+# (deformation_rate, target_cauchy_stress) with sub_batch=().
 [Tensors]
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = 50
-    nstep = 100
-    shape_manipulations = 'dynamic_unsqueeze dynamic_expand'
-    shape_manipulation_args = '(-1) (100,1)'
+    type = Python
+    expr = 'Scalar(torch.linspace(0.0, 50.0, 100, dtype=torch.float64).reshape(100, 1))'
   []
-
   [sdirs]
-    type = MillerIndex
-    values = '1 1 0'
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1, 1, 0], dtype=torch.int64))'
   []
   [splanes]
-    type = MillerIndex
-    values = '1 1 1'
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1, 1, 1], dtype=torch.int64))'
   []
-
   [elastic_tensor]
-    type = SSR4
-    values = '287111.0283 127190.5998 127190.5998 0 0 0
-              127190.5998 287111.0283 127190.5998 0 0 0
-              127190.5998 127190.5998 287111.0283 0 0 0
-              0 0 0 120710 0 0
-              0 0 0 0 120710 0
-              0 0 0 0 0 120710'
+    type = Python
+    expr = 'SSR4(torch.tensor([[287111.0283, 127190.5998, 127190.5998, 0, 0, 0], [127190.5998, 287111.0283, 127190.5998, 0, 0, 0], [127190.5998, 127190.5998, 287111.0283, 0, 0, 0], [0, 0, 0, 120710, 0, 0], [0, 0, 0, 0, 120710, 0], [0, 0, 0, 0, 0, 120710]], dtype=torch.float64))'
   []
-
+  # Per-crystal ICs: leading (5,) is the per-crystal sub-batch axis,
+  # declared via sub_batch_ndim=1 so the equation system treats it as a
+  # block-diagonal (BLOCK) axis rather than a dynamic-batch axis.
   [initial_orientation]
-    type = Rot
-    values = '-0.269981 -0.299844 -0.86408
-              0.209546 0.192014 0.514051
-              -0.0251234 -0.0175916 -0.636644
-              -0.146257 -0.0475218 -0.970804
-              -0.174458 -0.302169 -0.523373'
-    batch_shape = '(5)'
-    intermediate_dimension = 1
+    type = Python
+    expr = 'Rot(torch.tensor([[-0.269981, -0.299844, -0.86408], [0.209546, 0.192014, 0.514051], [-0.0251234, -0.0175916, -0.636644], [-0.146257, -0.0475218, -0.970804], [-0.174458, -0.302169, -0.523373]], dtype=torch.float64), sub_batch_ndim=1)'
   []
   [initial_elastic_strain]
-    type = FillSR2
-    values = '0'
-    shape_manipulations = 'intmd_expand'
-    shape_manipulation_args = '(5)'
+    type = Python
+    expr = 'SR2(torch.zeros(5, 6, dtype=torch.float64), sub_batch_ndim=1)'
   []
   [initial_slip_hardening]
-    type = Scalar
-    values = '0'
-    shape_manipulations = 'intmd_expand'
-    shape_manipulation_args = '(5)'
+    type = Python
+    expr = 'Scalar(torch.zeros(5, dtype=torch.float64), sub_batch_ndim=1)'
   []
-
+  # Prescribed forces (no sub-batch — they are global per timestep).
   [control]
-    type = FillSR2
-    values = '1 0 0 0 0 0'
-    shape_manipulations = 'dynamic_expand'
-    shape_manipulation_args = '(100,1)'
+    type = Python
+    expr = 'SR2(torch.tensor([1.0, 0, 0, 0, 0, 0], dtype=torch.float64).reshape(1, 6).expand(100, 1, 6).contiguous())'
   []
   [prescribed]
-    type = FillSR2
-    values = '1e-3 0 0 0 0 0'
-    shape_manipulations = 'dynamic_expand'
-    shape_manipulation_args = '(100,1)'
+    type = Python
+    expr = 'SR2(torch.tensor([1e-3, 0, 0, 0, 0, 0], dtype=torch.float64).reshape(1, 6).expand(100, 1, 6).contiguous())'
   []
   [vorticity]
-    type = FillWR2
-    values = '0 0 0'
-    shape_manipulations = 'dynamic_expand'
-    shape_manipulation_args = '(100,1)'
+    type = Python
+    expr = 'WR2(torch.zeros(100, 1, 3, dtype=torch.float64))'
   []
 []
 

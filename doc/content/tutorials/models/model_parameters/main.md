@@ -1,93 +1,222 @@
-@insert-title:tutorials-models-model-parameters
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+mystnb:
+  execution_mode: cache
+---
 
-[TOC]
+(tutorials-models-parameters)=
+# Model parameters
 
-## Problem description
+The previous tutorial,
+[](tutorials-models-running-your-first-model), loaded a
+`LinearIsotropicElasticity` model with hard-coded Young's modulus and
+Poisson's ratio. This tutorial picks up the same model and shows how
+NEML2 exposes those moduli — and the surface for reading and mutating
+them from Python.
 
-In this tutorial, we will revisit the problem defined in the previous tutorial and demonstrate how to work with model parameters.
+## Inputs, outputs, parameters, and buffers
 
-Recall that the linear elasticity material model can be mathematically written as
-\f[
-  \boldsymbol{\sigma} = 3 K \operatorname{vol} \boldsymbol{\varepsilon} + 2 G \operatorname{dev} \boldsymbol{\varepsilon}.
-\f]
-Also recall that all NEML2 models can be written in the following general form
-\f[
-  y = f(x; p, b).
-\f]
-Pattern matching suggests the following set definitions:
-\f[
-  x = \left\{ \boldsymbol{\varepsilon} \right\}, \quad y = \left\{ \boldsymbol{\sigma} \right\}, \quad p = \left\{ K, G \right\}, \quad b = \varnothing.
-\f]
+Every NEML2 model is a map of the form
 
-## Parameter vs buffer
+$$
+  y = f(x;\, p, b),
+$$
 
-Both \f$ K \f$ and \f$ G \f$ are here categorized as model parameters. The major differences between parameters and buffers are
-- Parameters are "trainable", whereas buffers are not. NEML2 can use automatic differentiation to calculate the derivative of output variables with respect to the model parameters, but not for the model buffers.
-- Parameters can be (recursively) defined by other models, whereas buffers cannot. This feature is discussed in a later tutorial (@ref tutorials-models-model-parameters-revisited).
+with four distinct kinds of data:
 
-In summary, parameter is a more powerful superset of buffer.  However, there is overhead cost associated with maintaining a parameter that buffers avoid.
+- **Input variables** ($x$) — the model's per-evaluation inputs. They
+  are passed as positional arguments to the model call and change on
+  every step. For the elasticity model in `input.i`, $x$ is a single
+  symmetric strain tensor (`SR2`).
+- **Output variables** ($y$) — what the model returns. For elasticity,
+  $y$ is the symmetric stress tensor (`SR2`).
+- **Parameters** ($p$) — the *trainable* coefficients of the model.
+  They live on the `torch.nn.Module` as `nn.Parameter` slots, so they
+  participate in autodiff and can be optimized — see the
+  [](tutorials-optimization) tutorials for the calibration workflow.
+  For elasticity, $p$ is $\{E, \nu\}$.
+- **Buffers** ($b$) — non-trainable persistent state that travels with
+  the module (registered as `nn.Buffer`). Buffers move with the module
+  when you call `.to(device)`, get saved into `state_dict()`, etc., but
+  they do **not** receive gradients.
 
-\note
-Some models allow users to choose whether to declare data as parameters or buffers.
+## The input file
 
-## Retrieving the parameter value
+The input file is identical to the previous tutorial — re-used here so
+we can focus on the parameter surface rather than introducing a new
+physics setup:
 
-All model parameters are associated with a unique name, either predefined by the model itself or chosen by the user. The following code iterates through all parameters in the model and print out their values:
+```{literalinclude} input.i
+:language: ini
+:caption: input.i
+```
 
-<div class="tabbed">
+## Enumerating parameters
 
-- <b class="tab-title">C++</b>
-  @list:cpp:model_parameters/ex1.cxx
+A loaded NEML2 model *is* a `torch.nn.Module`, so the standard PyTorch
+introspection works. `named_parameters()` yields every registered
+parameter with its hierarchical name:
 
-  Output:
-  @list-output:ex1
-- <b class="tab-title">Python</b>
-  @list:python:model_parameters/ex2.py
+```{code-cell} ipython3
+import neml2
 
-  Output:
-  @list-output:ex2
+model = neml2.load_model("input.i", "elasticity")
 
-</div>
+for name, param in model.named_parameters():
+    print(f"{name}: {param.data.item()}")
+```
 
-neml2::Model::get_parameter can be used to retrieve a specific parameter given its name. In other words, the above code is equivalent to
+`LinearIsotropicElasticity` registered two parameters here, `E` and
+`nu`, matching the two `coefficients` we passed in. No buffers are
+registered — `list(model.named_buffers())` is empty for this model.
 
-<div class="tabbed">
+## Reading a parameter by name
 
-- <b class="tab-title">C++</b>
-  @list:cpp:model_parameters/ex3.cxx
+Each registered parameter is also exposed as a Python attribute on the
+model. Reading `model.E` returns the typed wrapper (`Scalar`, here)
+that NEML2 uses for the parameter's tensor type:
 
-  Output:
-  @list-output:ex3
-- <b class="tab-title">Python</b>
-  In Python, model parameters can be more conveniently retrieved as attributes, i.e.
+```{code-cell} ipython3
+print("E  =", model.E)
+print("nu =", model.nu)
+```
 
-  @list:python:model_parameters/ex4.py
+The underlying `torch.nn.Parameter` lives at `.data`, which is what
+you need when you want the raw `torch.Tensor` — for example to read a
+numerical value:
 
-  Output:
-  @list-output:ex4
+```{code-cell} ipython3
+print("E  =", model.E.data.item())
+print("nu =", model.nu.data.item())
+```
 
-</div>
+## Mutating a parameter
 
-## Updating the parameter value
+There are two equivalent ways to change a parameter at runtime. Which
+one to pick depends on whether you want to keep the existing
+`nn.Parameter` (and any optimizer state attached to it) or replace it
+outright.
 
-Model parameters can always be changed by changing the input file. However, in certain cases (e.g., training and optimization), the parameter values should preferrably be updated at runtime (e.g., after each epoch or optimization iteration).
+### In place, on `.data`
 
-The neml2::Model::set_parameter and neml2::Model::set_parameters methods can be used for that purpose:
+In-place mutation of `model.E.data` keeps the same `nn.Parameter`
+object. PyTorch refuses in-place writes to a leaf tensor that requires
+grad, so wrap the mutation in `torch.no_grad()`:
 
+```{code-cell} ipython3
+import torch
 
-<div class="tabbed">
+with torch.no_grad():
+    model.E.data.fill_(150e3)
 
-- <b class="tab-title">C++</b>
-  @list:cpp:model_parameters/ex5.cxx
+print("E =", model.E.data.item())
+```
 
-  Output:
-  @list-output:ex5
-- <b class="tab-title">Python</b>
-  @list:python:model_parameters/ex6.py
+This is the right tool for parameter updates inside an optimization
+loop — the optimizer already holds a reference to `model.E`, and
+in-place mutation leaves that reference valid.
 
-  Output:
-  @list-output:ex6
+### Rebinding the attribute
 
-</div>
+Assigning a fresh `torch.nn.Parameter` to the attribute swaps the
+slot wholesale:
 
-@insert-page-navigation
+```{code-cell} ipython3
+model.nu = torch.nn.Parameter(torch.tensor(0.25, dtype=torch.float64))
+print("nu =", model.nu.data.item())
+```
+
+This is the right tool when you want a parameter with different
+properties (different dtype, different `requires_grad`, different
+shape for a vectorized batch — covered in
+[](tutorials-models-vectorization)). It invalidates any optimizer
+that was tracking the old `nn.Parameter`, so re-create the optimizer
+afterwards if there was one.
+
+## Freezing parameters with `requires_grad`
+
+Every `nn.Parameter` carries a `requires_grad` flag. Toggling it off
+on a parameter excludes it from autodiff — the gradient stays `None`
+through a backward pass, and any optimizer over that parameter will
+leave it alone:
+
+```{code-cell} ipython3
+model.E.data.requires_grad_(False)
+print("E.requires_grad =", model.E.data.requires_grad)
+```
+
+Use this to hold one modulus fixed while calibrating the other —
+see [](tutorials-optimization-calibration) for the full workflow.
+
+## Parameters flow into outputs
+
+Mutating a parameter changes the next evaluation's output. Reload the
+model so the state is clean, then evaluate it once, halve `E`, and
+evaluate again:
+
+```{code-cell} ipython3
+from neml2.types import SR2
+
+model = neml2.load_model("input.i", "elasticity")
+strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+
+print("E = 200e3 ->", model(strain).data)
+
+model.E = torch.nn.Parameter(torch.tensor(100e3, dtype=torch.float64))
+print("E = 100e3 ->", model(strain).data)
+```
+
+For linear elasticity the stress scales linearly with $E$, so the
+second row is exactly half the first. The point is more general: any
+parameter change shows up on the next forward call without re-loading
+the input file.
+
+## Differentiating through parameters
+
+Because parameters are leaf tensors with `requires_grad=True`, autodiff
+flows through them just like through any other `nn.Module` weight.
+Backward from a scalar reduction of the output gives gradients on each
+parameter:
+
+```{code-cell} ipython3
+model = neml2.load_model("input.i", "elasticity")
+strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+
+stress = model(strain)
+stress.data.sum().backward()
+
+print("dL/dE  =", model.E.data.grad.item())
+print("dL/dnu =", model.nu.data.grad.item())
+```
+
+This is the foundation NEML2 builds on for calibration workflows —
+embed a NEML2 model inside a larger PyTorch graph, define a loss
+against experimental data, and optimize the moduli with any
+`torch.optim` optimizer. [](tutorials-optimization-autograd) and
+[](tutorials-optimization-calibration) work the full pipeline; for
+recurrent (time-stepped) calibration through a transient see
+[](tutorials-optimization-pyzag).
+
+## Where to go next
+
+- A parameter doesn't have to be a literal — it can also be supplied
+  by another model, promoted to an input on the host, or shared
+  across siblings in a `ComposedModel`. See
+  [](tutorials-models-parameters-revisited).
+- Real material models compose several pieces (elasticity, hardening,
+  flow rule, …), each contributing its own parameters. The mechanism
+  is the subject of [](tutorials-models-cross-referencing) and
+  [](tutorials-models-composition).
+- Batched evaluation — both over the inputs and over the parameters
+  themselves — is covered in [](tutorials-models-vectorization).
+- Once you're comfortable reading and mutating parameters, the
+  [](tutorials-optimization) tutorials cover calibrating them
+  against experimental data via PyTorch autograd.
