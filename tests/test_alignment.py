@@ -60,9 +60,7 @@ from neml2.types import (
     outer,
     r2_from_sr2,
     r2_from_wr2,
-    rotate_skew,
-    rotate_ssr4,
-    rotate_sym,
+    rotate,
     skew,
     sqrt,
     sym,
@@ -362,7 +360,7 @@ def test_rotate_sym_aligns_global_R_with_per_crystal_SR2():
     B, N = 2, 5
     s = _make(SR2, B, (N,), 0)
     R = _make(R2, B, (), 1)
-    result = rotate_sym(s, R)
+    result = rotate(s, R)
     assert result.sub_batch_ndim == 1
     assert result.data.shape == (B, N, 6)
 
@@ -371,7 +369,7 @@ def test_rotate_skew_aligns_global_R_with_per_crystal_WR2():
     B, N = 2, 5
     w = _make(WR2, B, (N,), 0)
     R = _make(R2, B, (), 1)
-    result = rotate_skew(w, R)
+    result = rotate(w, R)
     assert result.sub_batch_ndim == 1
     assert result.data.shape == (B, N, 3)
 
@@ -380,7 +378,7 @@ def test_rotate_ssr4_aligns_global_R_with_per_crystal_SSR4():
     B, N = 2, 5
     T = _make(SSR4, B, (N,), 0)
     R = _make(R2, B, (), 1)
-    result = rotate_ssr4(T, R)
+    result = rotate(T, R)
     assert result.sub_batch_ndim == 1
     assert result.data.shape == (B, N, 6, 6)
 

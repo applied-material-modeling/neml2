@@ -37,7 +37,7 @@ different output type) lives here.
 from __future__ import annotations
 
 import math
-from typing import TypeVar
+from typing import TypeVar, overload
 
 import torch
 
@@ -972,7 +972,7 @@ def dexp_map(w: WR2) -> R2:
 # the per-crystal orientation matrix R before being summed.
 
 
-def rotate_sym(s: SR2, R: R2) -> SR2:
+def _rotate_sym(s: SR2, R: R2) -> SR2:
     """$sym(R S R^T)$ packed back to Mandel; the symmetric tensor rotation."""
     [ss, rr], sb = align_sub_batch(s, R)
     S_full = r2_from_sr2(ss).data  # (...,3,3) — sub_batch already aligned with rr
@@ -980,7 +980,7 @@ def rotate_sym(s: SR2, R: R2) -> SR2:
     return sym(R2(rotated, sub_batch_ndim=sb))
 
 
-def rotate_skew(w: WR2, R: R2) -> WR2:
+def _rotate_skew(w: WR2, R: R2) -> WR2:
     """$skew(R W R^T)$ packed back to an axial vector."""
     [ww, rr], sb = align_sub_batch(w, R)
     W_full = r2_from_wr2(ww).data
@@ -988,12 +988,12 @@ def rotate_skew(w: WR2, R: R2) -> WR2:
     return skew(R2(rotated, sub_batch_ndim=sb))
 
 
-def jvp_rotate_sym(s: SR2, R: R2, dR: R2) -> SR2:
-    """Pushforward of :func:`rotate_sym` w.r.t. $R$ along the tangent ``dR``.
+def _jvp_rotate_sym(s: SR2, R: R2, dR: R2) -> SR2:
+    """Pushforward of :func:`rotate` (SR2 overload) w.r.t. $R$ along ``dR``.
 
-    ``rotate_sym(s, R) = sym(R S Rᵀ)`` (linear in $s$, so the $s$-direction
-    is just ``rotate_sym(ds, R)`` and needs no primitive). The $R$-direction
-    is the product rule ``sym(dR S Rᵀ + R S dRᵀ)``. ``dR`` is a leading-K ``R2``
+    ``rotate(s, R) = sym(R S Rᵀ)`` (linear in $s$, so the $s$-direction is
+    just ``rotate(ds, R)`` and needs no primitive). The $R$-direction is the
+    product rule ``sym(dR S Rᵀ + R S dRᵀ)``. ``dR`` is a leading-K ``R2``
     tangent; the 3×3 ``@`` / transpose broadcast $K$. All sub-batch alignment
     (e.g. per-crystal $R$ against a per-slip $s$) is handled by
     :func:`align_sub_batch`, exactly as in the forward.
@@ -1006,11 +1006,11 @@ def jvp_rotate_sym(s: SR2, R: R2, dR: R2) -> SR2:
     return sym(R2(rotated, sub_batch_ndim=sb))
 
 
-def jvp_rotate_skew(w: WR2, R: R2, dR: R2) -> WR2:
-    """Pushforward of :func:`rotate_skew` w.r.t. $R$ along ``dR``.
+def _jvp_rotate_skew(w: WR2, R: R2, dR: R2) -> WR2:
+    """Pushforward of :func:`rotate` (WR2 overload) w.r.t. $R$ along ``dR``.
 
-    ``rotate_skew(w, R) = skew(R W Rᵀ)`` (linear in $w$); the $R$-direction
-    is ``skew(dR W Rᵀ + R W dRᵀ)``.
+    ``rotate(w, R) = skew(R W Rᵀ)`` (linear in $w$); the $R$-direction is
+    ``skew(dR W Rᵀ + R W dRᵀ)``.
     """
     [ww, RR, dRR], sb = align_sub_batch(w, R, dR)
     W = r2_from_wr2(ww).data
@@ -1027,18 +1027,18 @@ def jvp_rotate_skew(w: WR2, R: R2, dR: R2) -> WR2:
 # is the full asymmetric outer product (no sym/skew projection).
 
 
-def rotate_r2(a: R2, R: R2) -> R2:
+def _rotate_r2(a: R2, R: R2) -> R2:
     """``R A Rᵀ`` — the full (asymmetric) 3x3 rotation, no projection."""
     [aa, rr], sb = align_sub_batch(a, R)
     rotated = rr.data @ aa.data @ rr.data.transpose(-2, -1)
     return R2(rotated, sub_batch_ndim=sb)
 
 
-def jvp_rotate_r2(a: R2, R: R2, dR: R2) -> R2:
-    """Pushforward of :func:`rotate_r2` w.r.t. $R$ along the tangent ``dR``.
+def _jvp_rotate_r2(a: R2, R: R2, dR: R2) -> R2:
+    """Pushforward of :func:`rotate` (R2 overload) w.r.t. $R$ along ``dR``.
 
-    ``rotate_r2(a, R) = R A Rᵀ`` is linear in $a$ (so the $a$-direction is
-    just ``rotate_r2(da, R)`` and needs no primitive). The $R$-direction is
+    ``rotate(a, R) = R A Rᵀ`` is linear in $a$ (so the $a$-direction is
+    just ``rotate(da, R)`` and needs no primitive). The $R$-direction is
     the product rule ``dR A Rᵀ + R A dRᵀ``. ``dR`` is a leading-K ``R2``
     tangent; the 3x3 ``@`` / transpose broadcast $K$. Sub-batch alignment
     (e.g. per-crystal $R$ against a per-slip $a$) is handled by
@@ -1147,7 +1147,7 @@ def _mandel_basis_bilinear(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
 
     Identical structure to :func:`_mandel_basis_matrix` but with two distinct
     input rotation tensors $A$, $B$, so each ``R_ij · R_kl`` product in
-    the formula becomes ``A_ij · B_kl``. Used by :func:`d_rotate_ssr4_dR` to
+    the formula becomes ``A_ij · B_kl``. Used by :func:`d_rotate_dR` to
     compute the directional derivative of ``Q(R)`` via the product rule
 
         $dQ(R)[dR] = _mandel_basis_bilinear(R, dR) + _mandel_basis_bilinear(dR, R)$.
@@ -1229,8 +1229,8 @@ def _mandel_basis_bilinear(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
     return Q
 
 
-def d_rotate_ssr4_dR(T: SSR4, R: R2) -> torch.Tensor:
-    """``d(rotate_ssr4(T, R)) / dR`` as a ``(..., 6, 6, 9)`` Jacobian.
+def _d_rotate_ssr4_dR(T: SSR4, R: R2) -> torch.Tensor:
+    """``d(rotate(T, R)) / dR`` (SSR4 overload) as a ``(..., 6, 6, 9)`` Jacobian.
 
     ``Q(R)`` is quadratic in $R$, so the product rule gives
     $dQ_dir[A, B] = _mandel_basis_bilinear(R, dR)[A, B] + _mandel_basis_bilinear(dR, R)[A, B]$
@@ -1252,7 +1252,7 @@ def d_rotate_ssr4_dR(T: SSR4, R: R2) -> torch.Tensor:
     return torch.stack(slabs, dim=-1)  # (..., 6, 6, 9)
 
 
-def rotate_ssr4(T: SSR4, R: R2) -> SSR4:
+def _rotate_ssr4(T: SSR4, R: R2) -> SSR4:
     """``T'_ijkl = R_im R_jn R_kp R_lq T_mnpq`` performed in Mandel packing.
 
     Builds the 6x6 Mandel basis rotation ``Q(R)`` and forms $Q T Q^T$;
@@ -1369,10 +1369,10 @@ def jvp_compose(r1: Rot, r2: Rot, *, dr1: Rot | None = None, dr2: Rot | None = N
     return Rot(acc, sub_batch_ndim=sb)
 
 
-def jvp_rotate_ssr4(T: SSR4, R: R2, dR: R2) -> SSR4:
-    """Pushforward of :func:`rotate_ssr4` w.r.t. $R$ along the tangent ``dR``.
+def _jvp_rotate_ssr4(T: SSR4, R: R2, dR: R2) -> SSR4:
+    """Pushforward of :func:`rotate` (SSR4 overload) w.r.t. $R$ along ``dR``.
 
-    ``rotate_ssr4`` is ``Q(R) T Q(R)ᵀ`` with the 6×6 Mandel rotation $Q$
+    ``rotate(T, R)`` is ``Q(R) T Q(R)ᵀ`` with the 6×6 Mandel rotation $Q$
     quadratic in $R$; the directional derivative is
     ``dQ T Qᵀ + Q T dQᵀ`` with
     $dQ = bilinear(R, dR) + bilinear(dR, R)$. $T$ is held fixed (the
@@ -1384,6 +1384,86 @@ def jvp_rotate_ssr4(T: SSR4, R: R2, dR: R2) -> SSR4:
     T_d = T.data  # (*batch, 6, 6)
     dTrot = dQ @ T_d @ Q.transpose(-2, -1) + Q @ T_d @ dQ.transpose(-2, -1)
     return SSR4(dTrot, sub_batch_ndim=dR.sub_batch_ndim)
+
+
+# ---- Unified rotate / jvp_rotate / d_rotate_dR entry points ----
+#
+# The public surface is three names, each overloaded on the operand type. The
+# underlying ``_rotate_*`` / ``_jvp_rotate_*`` / ``_d_rotate_ssr4_dR`` kernels
+# above hold the actual implementations; this section threads them through
+# ``@typing.overload`` so static type-checkers infer ``rotate(SR2, R2) -> SR2``,
+# ``rotate(R2, R2) -> R2``, etc. The runtime dispatch is a single isinstance
+# chain — more specific types (SR2, WR2, SSR4) checked before the catch-all
+# (R2) since they are not subclasses of each other.
+
+
+@overload
+def rotate(x: SR2, R: R2) -> SR2: ...
+@overload
+def rotate(x: WR2, R: R2) -> WR2: ...
+@overload
+def rotate(x: SSR4, R: R2) -> SSR4: ...
+@overload
+def rotate(x: R2, R: R2) -> R2: ...
+def rotate(x, R):
+    """Rotate a typed tensor by an ``R2`` rotation matrix.
+
+    Overloaded on the operand type:
+
+    - ``SR2 -> SR2`` — ``sym(R S Rᵀ)`` packed back to Mandel.
+    - ``WR2 -> WR2`` — ``skew(R W Rᵀ)`` packed back to an axial vector.
+    - ``R2 -> R2`` — the full asymmetric ``R A Rᵀ`` (no projection).
+    - ``SSR4 -> SSR4`` — the 6×6 Mandel basis rotation ``Q(R) T Q(R)ᵀ``.
+    """
+    if isinstance(x, SR2):
+        return _rotate_sym(x, R)
+    if isinstance(x, WR2):
+        return _rotate_skew(x, R)
+    if isinstance(x, SSR4):
+        return _rotate_ssr4(x, R)
+    if isinstance(x, R2):
+        return _rotate_r2(x, R)
+    raise TypeError(f"rotate: unsupported operand type {type(x).__name__}")
+
+
+@overload
+def jvp_rotate(x: SR2, R: R2, dR: R2) -> SR2: ...
+@overload
+def jvp_rotate(x: WR2, R: R2, dR: R2) -> WR2: ...
+@overload
+def jvp_rotate(x: SSR4, R: R2, dR: R2) -> SSR4: ...
+@overload
+def jvp_rotate(x: R2, R: R2, dR: R2) -> R2: ...
+def jvp_rotate(x, R, dR):
+    """Pushforward of :func:`rotate` along the tangent ``dR``.
+
+    Overloaded on ``x``'s type. The forward is always linear in ``x``, so only
+    the ``R``-direction needs an explicit primitive; the ``x``-direction is
+    just ``rotate(dx, R)`` and can be expressed directly.
+    """
+    if isinstance(x, SR2):
+        return _jvp_rotate_sym(x, R, dR)
+    if isinstance(x, WR2):
+        return _jvp_rotate_skew(x, R, dR)
+    if isinstance(x, SSR4):
+        return _jvp_rotate_ssr4(x, R, dR)
+    if isinstance(x, R2):
+        return _jvp_rotate_r2(x, R, dR)
+    raise TypeError(f"jvp_rotate: unsupported operand type {type(x).__name__}")
+
+
+def d_rotate_dR(x: SSR4, R: R2) -> torch.Tensor:
+    """``d(rotate(x, R)) / dR`` as a raw-tensor Jacobian.
+
+    SSR4-only today — returns the ``(..., 6, 6, 9)`` Jacobian over the 9
+    free components of ``R``. The R2/SR2/WR2 cases have closed-form
+    pushforwards via :func:`jvp_rotate` and don't need the full Jacobian,
+    so they aren't overloaded here. Add ``@overload`` annotations if and
+    when another operand type grows a Jacobian-style derivative.
+    """
+    if not isinstance(x, SSR4):
+        raise TypeError(f"d_rotate_dR: unsupported operand type {type(x).__name__}")
+    return _d_rotate_ssr4_dR(x, R)
 
 
 # ---- Mandel/axial packing helpers (no autograd) ----
@@ -1472,7 +1552,7 @@ __all__ = [
     "bilinear_interpolation_slopes",
     "compose",
     "cosh",
-    "d_rotate_ssr4_dR",
+    "d_rotate_dR",
     "det",
     "deuler_rodrigues",
     "dev",
@@ -1489,10 +1569,7 @@ __all__ = [
     "jvp_compose",
     "jvp_euler_rodrigues",
     "jvp_exp_map",
-    "jvp_rotate_r2",
-    "jvp_rotate_skew",
-    "jvp_rotate_ssr4",
-    "jvp_rotate_sym",
+    "jvp_rotate",
     "linear_interpolation",
     "log",
     "log10",
@@ -1505,10 +1582,7 @@ __all__ = [
     "pow",
     "r2_from_sr2",
     "r2_from_wr2",
-    "rotate_r2",
-    "rotate_skew",
-    "rotate_ssr4",
-    "rotate_sym",
+    "rotate",
     "skew",
     "skew_pack_axial3",
     "sign",

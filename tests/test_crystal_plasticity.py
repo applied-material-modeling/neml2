@@ -83,8 +83,7 @@ from neml2.types import (
     exp_map,
     r2_from_sr2,
     r2_from_wr2,
-    rotate_ssr4,
-    rotate_sym,
+    rotate,
     skew,
     sym,
 )
@@ -301,12 +300,12 @@ def test_sym_skew_roundtrip_on_r2():
 
 
 def test_rotate_sym_round_trips_through_full_R2():
-    """``rotate_sym(s, R) == sym(R s_full R^T)`` — direct formula vs free fn."""
+    """``rotate(s, R) == sym(R s_full R^T)`` — direct formula vs free fn."""
     r_vec = torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64)
     s_full = torch.tensor([[1.0, 2.0, 3.0], [2.0, 4.0, 5.0], [3.0, 5.0, 6.0]], dtype=torch.float64)
     s_mandel = sym(R2(s_full))
     R = euler_rodrigues(Rot(r_vec))
-    py_rot = rotate_sym(s_mandel, R).data
+    py_rot = rotate(s_mandel, R).data
     # Direct: sym(R · s_full · R^T) packed in Mandel.
     direct = sym(R2(R.data @ s_full @ R.data.T)).data
     assert torch.allclose(py_rot, direct, atol=1e-12)
@@ -327,7 +326,7 @@ def test_rotate_ssr4_invariance():
     )
     T = SSR4(T_data)
     R_id = R2.identity()
-    assert torch.allclose(rotate_ssr4(T, R_id).data, T.data, atol=1e-12)
+    assert torch.allclose(rotate(T, R_id).data, T.data, atol=1e-12)
 
     r_vec = torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64)
     R = euler_rodrigues(Rot(r_vec))
@@ -336,12 +335,12 @@ def test_rotate_ssr4_invariance():
         dtype=torch.float64,
     )
     eps = sym(R2(eps_full))
-    T_rot = rotate_ssr4(T, R)
+    T_rot = rotate(T, R)
     sigma_a = SR2(torch.einsum("ij,j->i", T_rot.data, eps.data))
     # Path B: rotate strain into crystal frame, multiply, rotate stress back.
-    eps_cry = rotate_sym(eps, R.base.transpose(-2, -1))
+    eps_cry = rotate(eps, R.base.transpose(-2, -1))
     sigma_cry = SR2(torch.einsum("ij,j->i", T_data, eps_cry.data))
-    sigma_b = rotate_sym(sigma_cry, R)
+    sigma_b = rotate(sigma_cry, R)
     assert torch.allclose(sigma_a.data, sigma_b.data, atol=1e-8)
 
 

@@ -32,7 +32,7 @@ from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
-from ....types import R2, SR2, Scalar, jvp_rotate_sym, rotate_sym, sum
+from ....types import R2, SR2, Scalar, jvp_rotate, rotate, sum
 
 if TYPE_CHECKING:
     from ....data import CrystalGeometry
@@ -76,19 +76,19 @@ class PlasticDeformationRate(Model):
         weighted = M * g
         dp_cry = cast(SR2, sum(weighted.sub_batch, -1))
         # Rotate to lab frame: dp_lab = sym(R · dp_cry_full · R^T)
-        dp = rotate_sym(dp_cry, R)
+        dp = rotate(dp_cry, R)
         if v is None:
             return dp
 
         # Differential pushforwards:
-        #   R:  d(dp) = jvp_rotate_sym(dp_cry, R, dR)  (product rule, typed)
-        #   γ̇: dp = rotate_sym(·, R) is LINEAR in dp_cry = Σ γ̇_k M_k, so push the
+        #   R:  d(dp) = jvp_rotate(dp_cry, R, dR)  (product rule, typed)
+        #   γ̇: dp = rotate(·, R) is LINEAR in dp_cry = Σ γ̇_k M_k, so push the
         #       slip-rate tangent through the same sum + rotation, no Jacobian.
         def R_action(V: R2) -> SR2:
-            return jvp_rotate_sym(dp_cry, R, V)
+            return jvp_rotate(dp_cry, R, V)
 
         def g_action(V: Scalar) -> SR2:
-            return rotate_sym(cast(SR2, sum((M * V).sub_batch, -1)), R)
+            return rotate(cast(SR2, sum((M * V).sub_batch, -1)), R)
 
         return dp, self.apply_chain_rule(
             v,

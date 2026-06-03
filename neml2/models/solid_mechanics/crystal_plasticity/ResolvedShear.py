@@ -32,7 +32,7 @@ from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
-from ....types import R2, SR2, Scalar, inner, jvp_rotate_sym, rotate_sym
+from ....types import R2, SR2, Scalar, inner, jvp_rotate, rotate
 
 if TYPE_CHECKING:
     from ....data import CrystalGeometry
@@ -86,7 +86,7 @@ class ResolvedShear(Model):
         # a singleton at axis -2 so the multiply broadcasts (1 vs nslip → nslip).
         M = self._cg.M  # SR2 sub_batch=1
         R_sb = R.sub_batch.unsqueeze(-1)
-        M_rot = rotate_sym(M, R_sb)  # SR2 (..., nslip, 6)
+        M_rot = rotate(M, R_sb)  # SR2 (..., nslip, 6)
         stress_sb = stress.sub_batch.unsqueeze(-1)
         rss = inner(M_rot, stress_sb)
         if v is None:
@@ -94,13 +94,13 @@ class ResolvedShear(Model):
 
         # Differential pushforwards, pure typed-wrapper algebra:
         #   stress: dτ = M_rot : dσ
-        #   R:      dτ = d(sym(R M Rᵀ)) : σ via the jvp_rotate_sym primitive
+        #   R:      dτ = d(sym(R M Rᵀ)) : σ via the jvp_rotate primitive
         #           (product rule in 3×3, no leaf-level Jacobian).
         def stress_action(V: SR2) -> Scalar:
             return inner(M_rot, V.sub_batch.unsqueeze(-1))
 
         def R_action(V: R2) -> Scalar:
-            return inner(jvp_rotate_sym(M, R_sb, V.sub_batch.unsqueeze(-1)), stress_sb)
+            return inner(jvp_rotate(M, R_sb, V.sub_batch.unsqueeze(-1)), stress_sb)
 
         return rss, self.apply_chain_rule(
             v,

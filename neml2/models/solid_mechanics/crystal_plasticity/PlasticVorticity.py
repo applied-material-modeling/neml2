@@ -32,7 +32,7 @@ from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
-from ....types import R2, WR2, Scalar, jvp_rotate_skew, rotate_skew, sum
+from ....types import R2, WR2, Scalar, jvp_rotate, rotate, sum
 
 if TYPE_CHECKING:
     from ....data import CrystalGeometry
@@ -75,18 +75,18 @@ class PlasticVorticity(Model):
         W = self._cg.W  # WR2 sub_batch_ndim=1
         weighted = W * g
         wp_cry = cast(WR2, sum(weighted.sub_batch, -1))
-        wp = rotate_skew(wp_cry, R)
+        wp = rotate(wp_cry, R)
         if v is None:
             return wp
 
         # Differential pushforwards, mirror of PlasticDeformationRate:
-        #   R:  d(wp) = jvp_rotate_skew(wp_cry, R, dR)
-        #   γ̇: rotate_skew(·, R) linear in wp_cry = Σ γ̇_k W_k → push through.
+        #   R:  d(wp) = jvp_rotate(wp_cry, R, dR)
+        #   γ̇: rotate(·, R) linear in wp_cry = Σ γ̇_k W_k → push through.
         def R_action(V: R2) -> WR2:
-            return jvp_rotate_skew(wp_cry, R, V)
+            return jvp_rotate(wp_cry, R, V)
 
         def g_action(V: Scalar) -> WR2:
-            return rotate_skew(cast(WR2, sum((W * V).sub_batch, -1)), R)
+            return rotate(cast(WR2, sum((W * V).sub_batch, -1)), R)
 
         return wp, self.apply_chain_rule(
             v,
