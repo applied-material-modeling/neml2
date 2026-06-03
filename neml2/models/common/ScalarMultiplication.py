@@ -221,29 +221,26 @@ class ScalarMultiplication(Model):
             A_name = nlp_A.input_name
             for i, fv_i in enumerate(self._from_vars):
                 xi = inputs[i]
-                # ∂f_i / ∂x_i = -1/x_i² (reciprocal) else 1
-                coeff = -1.0 / (xi * xi) if self._inv[i] else None
+                # ∂f_i / ∂x_i = -1/x_i² (reciprocal) else 1.
+                # Use a Union-typed local distinct from the ``coeff: Scalar``
+                # above so pyright accepts the ``None`` placeholder branch.
+                cross_coeff: Scalar | None = -1.0 / (xi * xi) if self._inv[i] else None
                 # When non-reciprocal, the ∂f_i factor is 1, so coeff starts at
                 # Π_{k ≠ i} f_k.
-                started = coeff is not None
+                started = cross_coeff is not None
                 for k in range(n):
                     if k == i:
                         continue
                     xk = inputs[k]
                     fk = (1.0 / xk) if self._inv[k] else xk
-                    coeff = (coeff * fk) if started else fk  # type: ignore[operator]
+                    cross_coeff = (cross_coeff * fk) if started else fk  # type: ignore[operator]
                     started = True
                 if not started:  # n == 1 + non-reciprocal i ⇒ coeff is just 1
-
-                    def fn(Va: Scalar, Vb: Scalar) -> Scalar:
-                        return Va * Vb
+                    fn_cross = lambda Va, Vb: Va * Vb  # noqa: E731
                 else:
-
-                    def fn(Va: Scalar, Vb: Scalar, c: Scalar = coeff) -> Scalar:  # type: ignore[assignment]
-                        return c * Va * Vb
-
-                _add_action_2(A_name, fv_i, fn)
-                _add_action_2(fv_i, A_name, fn)
+                    fn_cross = lambda Va, Vb, c=cross_coeff: c * Va * Vb  # noqa: E731
+                _add_action_2(A_name, fv_i, fn_cross)
+                _add_action_2(fv_i, A_name, fn_cross)
 
         return result, *self.propagate_tangents(
             v, self._to, actions, output=result, v2=v2, actions_2=actions_2, vh=vh

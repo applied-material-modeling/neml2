@@ -196,7 +196,7 @@ class Normality(Model):
             # into _modules.
             raise AttributeError("_inner accessed before Normality.__init__ wired the slot")
         inner = self._modules[attr]
-        assert inner is not None
+        assert isinstance(inner, Model)
         return inner
 
     def forward(  # type: ignore[override]

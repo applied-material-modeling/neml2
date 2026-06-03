@@ -37,7 +37,7 @@ different output type) lives here.
 from __future__ import annotations
 
 import math
-from typing import TypeVar, overload
+from typing import TypeVar, cast, overload
 
 import torch
 
@@ -486,7 +486,10 @@ def bilinear_interpolation(
     c1 = Y10 - Y00
     c2 = Y01 - Y00
     c3 = Y11 - Y10 - Y01 + Y00
-    return Y00 + c1 * xi + c2 * eta + c3 * (xi * eta)
+    # Pyright loses _TW precision through the chained ``_TW + _TW * Scalar``
+    # algebra (TensorWrapper's abstract operator stubs return TensorWrapper).
+    # The runtime concrete type is correct; cast to keep callers cast-free.
+    return cast(_TW, Y00 + c1 * xi + c2 * eta + c3 * (xi * eta))
 
 
 def bilinear_interpolation_slopes(
@@ -512,7 +515,8 @@ def bilinear_interpolation_slopes(
     c3 = Y11 - Y10 - Y01 + Y00
     dP_dx1 = (c1 + c3 * eta) * (1.0 / dX1)
     dP_dx2 = (c2 + c3 * xi) * (1.0 / dX2)
-    return dP_dx1, dP_dx2
+    # See the note in :func:`bilinear_interpolation` for why the cast is needed.
+    return cast(_TW, dP_dx1), cast(_TW, dP_dx2)
 
 
 def sqrt(s: Scalar) -> Scalar:
