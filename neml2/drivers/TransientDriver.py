@@ -310,47 +310,24 @@ class TransientDriver(Driver):
         return out
 
     def save_gold(self, path: str | Path) -> None:
-        """Serialize ``result()`` to a TorchScript ``.pt`` matching the C++
-        ``TransientDriver::output_pt`` layout.
+        """Serialize ``result()`` to a ``.pt`` file as a flat ``torch.save`` dict.
 
-        Loads back as ``torch.jit.load(path).named_buffers()`` yielding keys
-        ``input.<step>.<var>`` / ``output.<step>.<var>`` — interoperable with
-        ``TransientRegression`` on either backend.
+        The dict carries the same keys as :meth:`result`:
+        ``input.<step>.<var>`` / ``output.<step>.<var>``, each mapping to a
+        detached, cloned ``torch.Tensor``. Read it back with
+        ``torch.load(path, weights_only=True)``.
+
+        Replaces the old TorchScript-Module format (a Module-of-Modules with
+        ``register_buffer`` per entry, dumped via
+        ``torch.jit.script(...).save(...)``). The flat-dict format avoids the
+        ``torch.jit.{script,load}`` deprecation warnings and survives
+        round-trip with ``weights_only=True`` (which is safe for plain tensor
+        dicts and prevents arbitrary code execution on load).
+        ``TransientRegression`` reads both formats so existing on-disk goldens
+        from the v2 C++ pipeline keep working — see
+        :class:`~neml2.drivers.TransientRegression.TransientRegression`.
         """
-        out_path = Path(path)
-        from torch import nn  # noqa: PLC0415
-
-        class _StepBuffers(nn.Module):
-            def __init__(self, step_data: dict[str, torch.Tensor]) -> None:
-                super().__init__()
-                for name, val in step_data.items():
-                    # Detach + clone — keep the gold file free of any autograd
-                    # graph or downstream-mutation aliasing.
-                    self.register_buffer(name, val.detach().clone())
-
-        class _Result(nn.Module):
-            def __init__(self, ins: list, outs: list) -> None:
-                super().__init__()
-                self.input = nn.ModuleList(
-                    _StepBuffers(
-                        {
-                            n: (v.data if isinstance(v, TensorWrapper) else v)
-                            for n, v in step.items()
-                        }
-                    )
-                    for step in ins
-                )
-                self.output = nn.ModuleList(
-                    _StepBuffers(
-                        {
-                            n: (v.data if isinstance(v, TensorWrapper) else v)
-                            for n, v in step.items()
-                        }
-                    )
-                    for step in outs
-                )
-
-        torch.jit.script(_Result(self.result_in, self.result_out)).save(str(out_path))
+        torch.save(self.result(), str(Path(path)))
 
 
 def _slice_typed(wrapped: TensorWrapper, step: int) -> TensorWrapper:

@@ -122,12 +122,13 @@ def test_compare(input_name):
     nmodel = load_nonlinear_system(pwd / "models" / f"{input_name}.i", "eq_sys")
     pmodel = NEML2PyzagModel(nmodel)
 
-    # Gold reference baked from the (now-retired) C++ pipeline; the gold .pt
-    # records the time-series inputs/outputs as a TorchScript module with
-    # buffer attributes named after the HIT variables.
-    ref = torch.jit.load(pwd / "gold" / f"{input_name}.pt")
-    input_buffers = dict(ref.input.named_buffers())
-    output_buffers = dict(ref.output.named_buffers())
+    # Gold reference: ``{'input': {var: tensor}, 'output': {var: tensor}}``
+    # written by ``torch.save``. The legacy TorchScript-module gold has been
+    # converted to this flat layout to avoid the ``torch.jit.load`` deprecation
+    # warning chain.
+    ref = torch.load(str(pwd / "gold" / f"{input_name}.pt"), weights_only=True)
+    input_buffers = ref["input"]
+    output_buffers = ref["output"]
     forces = torch.cat([input_buffers[v] for v in pmodel.fvars], -1)
     state = torch.cat([output_buffers[v] for v in pmodel.svars], -1)
     nstep = forces.shape[0]

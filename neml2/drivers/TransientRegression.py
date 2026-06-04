@@ -25,10 +25,11 @@
 """Native ``TransientRegression`` — mirror of C++ ``tests/src/TransientRegression.cxx``.
 
 Wraps a paired :class:`TransientDriver`, runs it, then diffs the in-memory
-result dict against a TorchScript ``gold/result.pt`` produced by the C++
-regression suite. ``torch.jit.load`` returns the gold as a
-``RecursiveScriptModule`` whose ``named_buffers()`` enumerate the original
-``input.<step>.<var>`` / ``output.<step>.<var>`` layout.
+result dict against a gold ``.pt`` reference. The reader (:func:`_load_gold`)
+handles both the new plain-``torch.save``-dict format that the Python
+:meth:`TransientDriver.save_gold` now emits and the legacy TorchScript-
+module format produced by the retired C++ regression pipeline (most existing
+on-disk goldens are still in the legacy format).
 
 The diff is asymmetric:
 - Every gold key MUST exist in the native result and match within tolerance.
@@ -52,6 +53,37 @@ from .TransientDriver import TransientDriver
 
 if TYPE_CHECKING:
     from ..factory import _NativeInputFile
+
+
+def _load_gold(path: Path) -> dict[str, torch.Tensor]:
+    """Load a gold-file as a flat ``{key: tensor}`` dict.
+
+    Supports two on-disk formats:
+
+    - **New** — a plain ``torch.save({...})`` dict written by
+      :meth:`TransientDriver.save_gold`. Loaded via
+      ``torch.load(..., weights_only=True)``.
+    - **Legacy** — a TorchScript ``nn.Module`` of registered buffers
+      produced by the retired C++ pipeline (and by older Python
+      ``save_gold`` writes). Loaded via ``torch.jit.load`` and flattened
+      via ``state_dict()`` — NOT ``named_buffers`` (the C++ driver shares
+      storage between ``output.<k>.X`` and ``input.<k+1>.X~1``, and
+      ``named_buffers`` with the default ``remove_duplicate=True`` drops
+      one of every such pair).
+
+    Detection is by sniff: try the plain-dict path first, fall back to
+    TorchScript on any failure. Most existing on-disk goldens are still
+    legacy until they're regenerated.
+    """
+    try:
+        payload = torch.load(str(path), weights_only=True)
+    except Exception:  # noqa: BLE001 — torch.load raises a zoo of types on JIT archives
+        return dict(torch.jit.load(str(path)).state_dict())
+    if isinstance(payload, dict):
+        return {str(k): v for k, v in payload.items()}
+    # Unexpected: file loaded as something else (e.g. a bare Tensor). Treat as
+    # legacy and re-route through torch.jit.
+    return dict(torch.jit.load(str(path)).state_dict())
 
 
 @register_native("TransientRegression")
@@ -97,14 +129,7 @@ class TransientRegression(Driver):
 
         if not self.reference.exists():
             raise FileNotFoundError(f"TransientRegression reference not found: {self.reference}")
-        gold_module = torch.jit.load(str(self.reference))
-        # Use ``state_dict`` (NOT ``named_buffers``): the C++ TransientDriver's
-        # ``advance_step`` does a shallow Tensor copy from ``result_out[k]``
-        # into ``result_in[k+1]``, so e.g. ``output.<k>.flow_rate`` and
-        # ``input.<k+1>.flow_rate~1`` share storage. ``named_buffers`` (default
-        # ``remove_duplicate=True``) drops one of every such pair, hiding
-        # roughly a third of the gold entries from the comparison.
-        gold = dict(gold_module.state_dict())
+        gold = _load_gold(self.reference)
 
         # Pass 1 — every gold key must exist in the result.
         missing = sorted(k for k in gold if k not in result)
