@@ -16,47 +16,50 @@ mystnb:
 # Composing your model with others
 
 The previous three tutorials walked through writing a fresh `Model`:
-[](tutorials-extension-arguments) declared its inputs, outputs, and
-parameters; [](tutorials-extension-input-files) registered it so the
-HIT parser can see it; [](tutorials-extension-forward) implemented
-the math. The payoff for all that scaffolding is that your model now
-behaves like every other entry in the catalog — meaning it can be
-dropped into a [`ComposedModel`](models-ComposedModel) alongside built-ins
-and have NEML2 resolve the wiring automatically.
+[](tutorials-extension-arguments) declared its inputs, outputs,
+parameters, and a buffer; [](tutorials-extension-input-files) wired
+the schema up to the HIT factory; [](tutorials-extension-forward)
+implemented the math. The payoff for all that scaffolding is that the
+custom `ProjectileAcceleration` now behaves like every other entry in
+the catalog — it can be dropped into a
+[`ComposedModel`](models-ComposedModel) alongside built-ins, fed into
+an `ImplicitUpdate`, and driven across time by a `TransientDriver`,
+with NEML2 resolving the wiring automatically by variable name.
 
-This page shows that composition end-to-end. The pattern is the same
-as the one introduced in the broader [](tutorials-models-composition)
-tutorial; the focus here is specifically on **your own custom model
-joining the composition** and on the two knobs that matter most when
-you do — `additional_outputs` for surfacing intermediates, and
-`neml2-inspect` for verifying the wiring before you call anything.
+## The full trajectory problem
 
-## The setup
-
-A composed model is just an aggregate of sibling `[Models]` entries
-that share variable names. Imagine your fresh model is a stress
-predictor of some kind — say the
-[`LinearIsotropicElasticity`](models-LinearIsotropicElasticity) we built up
-in the previous tutorials — and you want to chain it with the
-catalog's [`SR2Invariant`](models-SR2Invariant) to get the von Mises stress
-as a single composed forward operator:
+A complete projectile trajectory model needs more than the
+acceleration formula. Let $\boldsymbol{x}$ be the position and
+$\boldsymbol{v}$ the velocity; the implicit time-integrated system is
 
 $$
-\begin{align}
-  \boldsymbol{\sigma} &= 3K\,\operatorname{vol}\boldsymbol{\varepsilon}^e
-                       + 2G\,\operatorname{dev}\boldsymbol{\varepsilon}^e, \\
-  \bar{\sigma}        &= \sqrt{\tfrac{3}{2}\,
-                          \operatorname{dev}\boldsymbol{\sigma}
-                          :\operatorname{dev}\boldsymbol{\sigma}}.
-\end{align}
+\begin{aligned}
+  \dot{\boldsymbol{x}} & = \boldsymbol{v}, \\
+  \dot{\boldsymbol{v}} & = \boldsymbol{a}
+                       = \boldsymbol{g} - \mu \boldsymbol{v}, \\
+  \mathbf{r}_{\boldsymbol{x}} &= \boldsymbol{x}
+                       - \boldsymbol{x}_n
+                       - (t - t_n)\,\dot{\boldsymbol{x}}, \\
+  \mathbf{r}_{\boldsymbol{v}} &= \boldsymbol{v}
+                       - \boldsymbol{v}_n
+                       - (t - t_n)\,\dot{\boldsymbol{v}}, \\
+  (\boldsymbol{x}, \boldsymbol{v}) &= \mathop{\mathrm{root}}_{\boldsymbol{x}, \boldsymbol{v}}\,\mathbf{r}.
+\end{aligned}
 $$
 
-:::{note}
-We use `LinearIsotropicElasticity` as a stand-in for "your custom
-model from the previous tutorials" so this page is runnable as-is.
-Substitute whatever class you wrote — the wiring story is identical
-for any registered `Model`.
-:::
+The four pieces map onto NEML2 building blocks as follows:
+
+| Equation | Building block |
+|----------|----------------|
+| $\dot{\boldsymbol{v}} = \boldsymbol{g} - \mu \boldsymbol{v}$ | The custom `ProjectileAcceleration` from the previous tutorials. |
+| $\dot{\boldsymbol{x}} = \boldsymbol{v}$ + the two backward-Euler residuals | Two [`VecBackwardEulerTimeIntegration`](models-VecBackwardEulerTimeIntegration) instances, one per state variable. |
+| `root` over $(\boldsymbol{x}, \boldsymbol{v})$ | An [`ImplicitUpdate`](models-ImplicitUpdate) wrapping the residual system. |
+| Recursion through time | A [`TransientDriver`](drivers-TransientDriver) sweeping a prescribed time array. |
+
+The point of this tutorial: each piece lives in `[Models]`, named and
+typed independently; the dependency resolver glues them together by
+matching producer-output names against consumer-input names. The
+custom `ProjectileAcceleration` is no different from a built-in.
 
 ## The input file
 
@@ -65,117 +68,96 @@ for any registered `Model`.
 :caption: input.i
 ```
 
-Three things to notice in the `[Models]` block:
+A few things to notice in this file:
 
-1. **Both models live side by side** under `[Models]`, exactly as they
-   would in any normal input file. Your custom model is no different
-   from `SR2Invariant` here — the registry doesn't distinguish.
-2. **A third entry of `type = ComposedModel`** lists the two children
-   in its `models` field and is what gets named (`chain`) and loaded
-   from Python. The composed model is itself just another `Model`.
-3. **The wiring is implicit, through variable names.** `elasticity`
-   produces a variable called `stress`; `vonmises` consumes a variable
-   called `tensor` that we renamed to `stress`. The dependency
-   resolver sees the producer/consumer match and threads the value
-   through internally — `stress` is no longer a free input of the
-   composed model.
+1. **`ProjectileAcceleration` slots in next to the built-ins.** The
+   `eq2` block uses our custom type just like `eq3a` / `eq3b` use the
+   built-in `VecBackwardEulerTimeIntegration`. The registry doesn't
+   distinguish them.
 
-## Exposing an intermediate output
+2. **Wiring is implicit, through variable names.** `eq2` produces
+   `acceleration = 'a'`; the velocity-update integrator `eq3b` consumes
+   `rate = 'a'`. Similarly `eq3a` consumes `rate = 'v'` from the
+   driver and `eq3b` writes `variable = 'v'`. The dependency resolver
+   sees those matches and threads the values through internally —
+   `a` and `v` are *not* free inputs of the composed `system`.
 
-By default, an intermediate variable that flows between children of a
-`ComposedModel` is *hidden* — only the leaf outputs survive on the
-composed model's output spec. That's the right default (it keeps the
-external surface minimal), but sometimes you want a downstream
-consumer or postprocessor to also see an intermediate. The
-`additional_outputs` option on `ComposedModel` does exactly that:
+3. **`ComposedModel` is itself a `Model`.** `eq3` glues the two
+   integrators together; `system` then glues `eq3` to `eq2`. Either
+   can be loaded from Python and called like any leaf.
 
-```ini
-[chain]
-  type = ComposedModel
-  models = 'elasticity vonmises'
-  additional_outputs = 'stress'   # surface the intermediate
-[]
-```
+4. **`ImplicitUpdate` wraps the system in a Newton solve.** The four
+   residual equations (two from each integrator's `*_residual`
+   output) form the nonlinear system the `Newton` solver drives to
+   zero at each step.
 
-With `stress` listed under `additional_outputs`, it stays an internal
-producer/consumer link **and** appears on the composed model's output
-spec, so a single forward call returns both `vm_stress` and `stress`.
+5. **`TransientDriver` recurses through time.** It calls
+   `eq4 = ImplicitUpdate(...)` once per timestep, threading the
+   previous step's state forward as the `~1` inputs the integrators
+   expect.
 
 ## Inspecting the wiring
 
 Before evaluating anything, ask `neml2-inspect` to print the
-resolved input/output graph. This is the same diagnostic step used in
-[](tutorials-models-composition), and it's worth running every time
-you add or rename a variable — name mismatches surface here as obvious
-dangling inputs instead of cryptic shape errors deep in the forward
-operator:
+resolved input/output graph of the composed `system`. Wiring bugs —
+a typo in a variable name, a forgotten rename — show up here as
+extra unbound inputs or missing outputs, in a tiny fraction of the
+time it takes to read a runtime traceback:
 
 ```{code-cell} ipython3
-!neml2-inspect input.i chain
+import sys, os
+sys.path.insert(0, os.getcwd())
+
+import projectile  # registers ProjectileAcceleration with the native factory
+
+!neml2-inspect input.i system
 ```
 
 Read the output top to bottom:
 
-- **Inputs (1).** `elastic_strain` is the only unbound input — `stress`
-  is no longer free because `elasticity` produces it internally.
-- **Outputs (2).** `vm_stress` is the leaf output of `vonmises`;
-  `stress` is the intermediate we explicitly surfaced via
-  `additional_outputs`. Drop `additional_outputs` and you'd see only
-  `vm_stress` here.
-- **Parameters (2).** `elasticity.E` and `elasticity.nu` are namespaced
-  under the child name — that's how you reach them from Python once
-  the composed model is loaded.
+- **Inputs.** The state-at-previous-step inputs (`x~1`, `v~1`, `t~1`)
+  and the new time `t`. `v`, `a`, `x` are *not* free — they're all
+  resolved inside the composed system.
+- **Outputs.** The two residuals (`x_residual`, `v_residual`) the
+  `ImplicitUpdate` will drive to zero.
 
-A wiring bug — say a typo in `tensor = 'stres'` on `vonmises` —
-would manifest in this output as an extra unbound `stres` input and a
-missing `vm_stress` output (because the resolver couldn't satisfy
-`vonmises`'s `tensor` input). Catching it here takes a second; catching
-it from a `__call__` traceback can take much longer.
+## Running the trajectory
 
-## Loading and evaluating
+The `TransientDriver` loads the entire model graph and recurses the
+implicit update across the prescribed time array. The example below
+launches five projectiles with different viscosities (broadcasting
+the `mu` parameter to shape `(5,)`) — the same custom leaf handles
+the full batch in one call:
 
-From Python the composed model behaves like any other `Model` — load
-it with `neml2.load_model` and call it:
+```{code-cell} ipython3
+import neml2
+
+factory = neml2.load_input("input.i")
+driver = factory.get_driver("driver")
+driver.run()
+```
+
+The driver writes the full state trajectory to `result.pt` (declared
+via `save_as` on the driver block). Load it back to see the shape:
 
 ```{code-cell} ipython3
 import torch
-import neml2
-from neml2.types import SR2
 
-torch.set_default_dtype(torch.float64)
-chain = neml2.load_model("input.i", "chain")
-chain
+result = torch.load("result.pt", weights_only=True)
+{k: tuple(v.shape) for k, v in result.items() if hasattr(v, "shape")}
 ```
 
-The `repr` shows the child models as registered submodules — the
-composed model is a `torch.nn.Module` whose children are the wired-up
-sibling models. The input and output specs match what `neml2-inspect`
-reported:
-
-```{code-cell} ipython3
-list(chain.input_spec.keys()), list(chain.output_spec.keys())
-```
-
-To evaluate, pass the inputs as a `{name: SR2}` dict to
-`call_by_name`. Uniaxial elastic strain along the x-axis, with
-$\nu = 0.3$, gives a stress state with $\sigma_{xx}=1$ and
-$\sigma_{yy}=\sigma_{zz}\approx 0$, hence $\bar\sigma = 1$:
-
-```{code-cell} ipython3
-strain = SR2.fill(0.01, -0.003, -0.003, 0.0, 0.0, 0.0)
-chain.call_by_name({"elastic_strain": strain})
-```
-
-Both outputs come back from the same call: the leaf `vm_stress` *and*
-the intermediate `stress` we surfaced through `additional_outputs`.
+Each per-step entry carries a leading time axis and the trailing
+batch of 5 viscosities — the same composed `system` evaluated 100
+times across all five projectiles simultaneously.
 
 ## Where to go next
 
 - [](tutorials-models-composition) walks through composition more
-  broadly — multi-step chains, parameter binding via output names,
-  and the producer/consumer rules the dependency resolver follows.
-  This page covers the same machinery from the custom-model angle;
+  broadly — the producer/consumer rules the dependency resolver
+  follows, multi-step chains, and parameter binding via output names.
+  This page covered the same machinery from the custom-model angle;
   that page covers the wider story.
-- Composed models are themselves `Model`s, so they can be
-  exported, compiled to AOT-Inductor, or recursively re-composed
-  inside larger graphs without any changes on the consumer side.
+- Composed models are themselves `Model`s, so they can be exported,
+  compiled to AOT-Inductor, or recursively re-composed inside larger
+  graphs without any changes on the consumer side.

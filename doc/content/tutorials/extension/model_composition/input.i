@@ -1,29 +1,89 @@
-# A composition of two models bound by shared variable names:
-#
-#   elasticity:  stress    = 3K vol(elastic_strain) + 2G dev(elastic_strain)
-#   vonmises:    vm_stress = sqrt(3/2 * dev(stress) : dev(stress))
-#   chain:       the two glued together by ComposedModel
-#
-# Substitute your custom Model from the previous tutorials in place of
-# `elasticity` (or `vonmises`) — the wiring works exactly the same way.
+# Compose the custom ProjectileAcceleration with built-in time-integration
+# and implicit-update blocks to integrate a projectile trajectory.
+
+[Tensors]
+  [mu]
+    type = Python
+    expr = 'Scalar([0.01, 0.05, 0.1, 0.5, 1.0])'
+  []
+  [times]
+    type = Python
+    expr = 'Scalar.linspace(0.0, 1.0, 100)'
+  []
+  [x0]
+    type = Python
+    expr = 'Vec.zeros()'
+  []
+  [v0]
+    type = Python
+    expr = 'Vec.fill(10.0, 5.0, 0.0)'
+  []
+[]
+
 [Models]
-  [elasticity]
-    type = LinearIsotropicElasticity
-    coefficients = '100 0.3'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'elastic_strain'
-    stress = 'stress'
+  [eq2]
+    type = ProjectileAcceleration
+    velocity = 'v'
+    acceleration = 'a'
+    dynamic_viscosity = 'mu'
   []
-  [vonmises]
-    type = SR2Invariant
-    tensor = 'stress'
-    invariant = 'vm_stress'
-    invariant_type = VONMISES
+  [eq3a]
+    type = VecBackwardEulerTimeIntegration
+    variable = 'x'
+    rate = 'v'
   []
-  [chain]
+  [eq3b]
+    type = VecBackwardEulerTimeIntegration
+    variable = 'v'
+    rate = 'a'
+  []
+  [eq3]
     type = ComposedModel
-    models = 'elasticity vonmises'
-    # Surface the intermediate stress so callers can see both quantities.
-    additional_outputs = 'stress'
+    models = 'eq3a eq3b'
+  []
+  [system]
+    type = ComposedModel
+    models = 'eq2 eq3'
+  []
+[]
+
+[EquationSystems]
+  [eq4]
+    type = NonlinearSystem
+    model = 'system'
+    unknowns = 'x v'
+    residuals = 'x_residual v_residual'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    rel_tol = 1e-08
+    abs_tol = 1e-10
+    max_its = 50
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
+  [implicit]
+    type = ImplicitUpdate
+    equation_system = 'eq4'
+    solver = 'newton'
+  []
+[]
+
+[Drivers]
+  [driver]
+    type = TransientDriver
+    model = 'implicit'
+    prescribed_time = 'times'
+    ic_Vec_names = 'x v'
+    ic_Vec_values = 'x0 v0'
+    save_as = 'result.pt'
   []
 []

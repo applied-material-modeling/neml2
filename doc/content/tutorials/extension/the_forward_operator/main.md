@@ -34,27 +34,30 @@ def forward(self, *typed_inputs, v=None):
 The positional arguments are the structural inputs in the order they
 appear in `input_spec` — each one is already a typed wrapper
 (`Scalar`, `Vec`, `SR2`, …) the framework constructed for you. The
-single keyword argument `v` carries the first-order tangent seeded on
-each leaf input:
-
-| kwarg | type | role |
-|---|---|---|
-| `v` | `dict[str, dict[str, TensorWrapper]]` \| `None` | First-order tangent seeded on each leaf input. |
+single keyword argument `v` (typed
+`dict[str, dict[str, TensorWrapper]] | None`) carries the first-order
+tangent seeded on each leaf input.
 
 `v=None` is the pure-forward case and is what almost every caller
 uses. When the caller does seed `v`, the forward additionally returns
 the JVP (Jacobian-vector product) of every output against every input
 tangent, propagated through the model's local Jacobian.
 
-:::{note}
-For the specialised case of leaves that sit inside a
-{class}`~neml2.models.solid_mechanics.plasticity.Normality` wrap (which
-needs the second-order chain rule), the signature gains two extra
-opt-in kwargs `v2` / `vh` and the leaf has to declare
-`SUPPORTS_SECOND_ORDER = True`. That path is rarely needed by user
-models — see {class}`~neml2.models.common.SR2Invariant.SR2Invariant` for
-a worked example if you do.
-:::
+The return shape mirrors that choice, in the order the schema's
+`output(...)` calls were declared:
+
+- **`model(*inputs)` (i.e. `v=None`).** Returns a typed wrapper if the
+  model has a single output, or a tuple of typed wrappers if it has
+  several.
+- **`model(*inputs, v={...})`.** Returns the same value(s) above,
+  followed by a single `v_out` dict mapping each output variable to a
+  `{seed_leaf: tangent}` dict.
+
+A single-output model like the projectile therefore returns
+`acceleration: Vec` in the pure-forward case, and
+`(acceleration: Vec, v_out: dict)` when a tangent is seeded. The
+forward body below makes that explicit by returning `a` from the
+`v is None` branch and `a, ...chain_rule_out` otherwise.
 
 ## Implementation
 

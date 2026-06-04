@@ -485,6 +485,14 @@ def _validate_doc(name: str, doc: str) -> None:
 
 def _read_field(node: nmhit.Node, field: HitField) -> Any:
     if field.kind in {"parameter", "buffer"}:
+        # Parameter / buffer specs are normally strings (HIT literal, [Tensors]
+        # cross-ref, or — for parameters — a model-output / bare-variable
+        # promotion spec). But defaults may be typed wrappers (``Vec.fill(...)``
+        # for a buffer constant, etc.). When the HIT block doesn't supply the
+        # option, fall through to the raw default rather than ``str()``-ifying
+        # it via ``_read_str`` and breaking the wrapper.
+        if node.find(field.name) is None and not field.required:
+            return field.default
         return _read_str(node, field.name, field.default)
     if field.reader is not None:
         if field.required:
