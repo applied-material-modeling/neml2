@@ -50,7 +50,7 @@ import torch
 from neml2.chain_rule import combine_sparsity
 from neml2.model import Model
 from neml2.models.common import ComposedModel
-from neml2.types import Scalar, sub_batch_sum
+from neml2.types import Scalar, sum
 
 # ============================================================================
 # Synthetic leaves used throughout the tests
@@ -104,7 +104,7 @@ class _ScalarReduce(Model):
             return y
 
         def action(V):
-            return sub_batch_sum(V, -1)
+            return sum(V.sub_batch, -1)
 
         return y, self.apply_chain_rule(v, self._out_name, {self._in_name: action}, output=y)
 
@@ -163,7 +163,7 @@ class _MultiOutputSplit(Model):
             return y_dense, y_diag
 
         v_dense = self.apply_chain_rule(
-            v, "y_dense", {"x": lambda V: sub_batch_sum(V, -1)}, output=y_dense
+            v, "y_dense", {"x": lambda V: sum(V.sub_batch, -1)}, output=y_dense
         )
         v_diag = self.apply_chain_rule(v, "y_diag", {"x": lambda V: 2.0 * V}, output=y_diag)
         # The composed forward unpacks (*outputs, v_out_combined); merge.
@@ -345,7 +345,7 @@ def test_resolver_handles_diagonal_then_diagonal_through_dense_join():
             if v is None:
                 return z
             actions = {
-                "a": lambda V: sub_batch_sum(V, -1, keepdim=True),
+                "a": lambda V: sum(V.sub_batch, -1, keepdim=True),
                 "b": lambda V: V,
             }
             return z, self.apply_chain_rule(v, "z", actions, output=z)
@@ -510,7 +510,7 @@ def test_diamond_one_dense_path_jvp_matches_autograd():
                 return V
 
             def mid2_action(V):
-                return V.sub_batch_expand(self._L, -1)
+                return V.sub_batch.expand_at(self._L, -1)
 
             actions = {"mid1": mid1_action, "mid2": mid2_action}
             return y, self.apply_chain_rule(v, "y", actions, output=y)

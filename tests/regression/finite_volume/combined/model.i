@@ -4,7 +4,7 @@
     # Coarsened for regression-test runtime: 201 -> 51 (50 cells). Full
     # resolution lives under tests/regression/; here we only detect drift.
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 51, dtype=torch.float64), sub_batch_ndim=1)'
+    expr = 'Scalar.linspace(0.0, 1.0, 51).sub_batch.retag(1)'
   []
   [centers]
     type = Python
@@ -24,7 +24,7 @@
   []
   [time]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 25, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, 1.0, 25)'
   []
   [D_cells]
     type = Python

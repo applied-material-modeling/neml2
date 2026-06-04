@@ -31,7 +31,7 @@ N0 = 1e16
     # resolution scenario lives under tests/regression/ and exercises the
     # C++ regression suite directly; here we only need to detect drift.
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 51, dtype=torch.float64), sub_batch_ndim=1)'
+    expr = 'Scalar.linspace(0.0, 1.0, 51).sub_batch.retag(1)'
   []
   [centers]
     type = Python
@@ -48,7 +48,7 @@ N0 = 1e16
 
   [scale_factor]
     type = Python
-    expr = 'Scalar(torch.tensor(100.0, dtype=torch.float64))'
+    expr = 'Scalar(100.0)'
   []
 
   [true_centers]

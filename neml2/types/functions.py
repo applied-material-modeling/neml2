@@ -37,12 +37,18 @@ different output type) lives here.
 from __future__ import annotations
 
 import math
-from typing import TypeVar
+from collections.abc import Sequence
+from typing import TypeVar, cast, overload
 
 import torch
 
-from neml2.types._base import TensorWrapper, align_scalar_base, align_sub_batch
-from neml2.types.miller_index import MillerIndex
+from neml2.types._base import (
+    DynamicBatchView,
+    SubBatchView,
+    TensorWrapper,
+    align_scalar_base,
+    align_sub_batch,
+)
 from neml2.types.r2 import R2
 from neml2.types.rot import Rot
 from neml2.types.scalar import Scalar
@@ -117,60 +123,143 @@ def _normalize_dims(dims: int | list[int] | tuple[int, ...], start: int, end: in
     return sorted((_normalize_dim(d, start, end) for d in dims), reverse=True)
 
 
-def dynamic_sum(
-    a: TensorWrapper, dims: int | list[int] | tuple[int, ...] = 0, keepdim: bool = False
-) -> TensorWrapper:
-    """Sum over dynamic-batch axes, preserving tensor type and sub-batch rank."""
-    end = len(a.dynamic_batch_shape)
-    dn = _normalize_dims(dims, 0, end)
-    data = torch.sum(a.data, dim=dn, keepdim=keepdim)
-    return type(a)(data, sub_batch_ndim=a.sub_batch_ndim)
+# ---- region-reduction free functions ----
+#
+# Each takes a region view (``t.dynamic_batch`` or ``t.sub_batch``) and
+# reduces over axes in that region. Dispatch is via isinstance; the view
+# carries everything needed to translate the region-relative ``dim`` to
+# an absolute axis and to compute the right ``sub_batch_ndim`` on the
+# result. The view's generic wrapper-type parameter ``_WT`` is threaded
+# through so ``sum(t.sub_batch, ...)`` returns ``type(t)`` precisely —
+# no ``cast`` needed at call sites.
+#
+# ``t.batch`` is rejected because it would silently straddle the
+# dynamic/sub-batch split; ``t.base`` is rejected because reducing base
+# axes would change the wrapper type.
 
 
-def sub_batch_sum(
-    a: TensorWrapper, dims: int | list[int] | tuple[int, ...] = 0, keepdim: bool = False
-) -> TensorWrapper:
-    """Sum over intermediate/sub-batch axes, preserving tensor type."""
-    start = len(a.dynamic_batch_shape)
-    end = start + a.sub_batch_ndim
+def _reduce_view_bounds(
+    view: DynamicBatchView[_TW] | SubBatchView[_TW], op_name: str
+) -> tuple[_TW, int, int]:
+    """Validate ``view`` and return ``(wrapper, region_start, region_end)`` on success."""
+    if isinstance(view, DynamicBatchView):
+        w = view._w
+        return w, 0, len(w.dynamic_batch_shape)
+    if isinstance(view, SubBatchView):
+        w = view._w
+        start = len(w.dynamic_batch_shape)
+        return w, start, start + w.sub_batch_ndim
+    raise TypeError(
+        f"{op_name} expects t.dynamic_batch or t.sub_batch view; got {type(view).__name__}. "
+        "(base reductions change wrapper type; batch reductions would straddle the "
+        "dynamic/sub-batch split.)"
+    )
+
+
+def sum(  # noqa: A001 — intentionally shadows builtin, callers import explicitly
+    view: DynamicBatchView[_TW] | SubBatchView[_TW],
+    dims: int | list[int] | tuple[int, ...] = 0,
+    keepdim: bool = False,
+) -> _TW:
+    """Sum over axes of a region view.
+
+    ``view`` must be ``t.dynamic_batch`` or ``t.sub_batch``. When
+    summing over a sub-batch axis with ``keepdim=False``, the result's
+    ``sub_batch_ndim`` drops by the number of reduced axes. Returns
+    the same wrapper type as the view's underlying wrapper.
+    """
+    w, start, end = _reduce_view_bounds(view, "sum")
     dn = _normalize_dims(dims, start, end)
-    data = torch.sum(a.data, dim=dn, keepdim=keepdim)
-    return type(a)(data, sub_batch_ndim=a.sub_batch_ndim if keepdim else a.sub_batch_ndim - len(dn))
+    data = torch.sum(w.data, dim=dn, keepdim=keepdim)
+    new_sb = w.sub_batch_ndim
+    if isinstance(view, SubBatchView) and not keepdim:
+        new_sb -= len(dn)
+    return w._rewrap(data, sub_batch_ndim=new_sb)
 
 
-def dynamic_mean(a: TensorWrapper, dim: int = 0) -> TensorWrapper:
-    """Mean over one dynamic-batch axis."""
-    end = len(a.dynamic_batch_shape)
-    d = _normalize_dim(dim, 0, end)
-    return type(a)(torch.mean(a.data, dim=d), sub_batch_ndim=a.sub_batch_ndim)
+def mean(view: DynamicBatchView[_TW] | SubBatchView[_TW], dim: int = 0) -> _TW:
+    """Mean over one axis of a region view.
 
-
-def sub_batch_mean(a: TensorWrapper, dim: int = 0) -> TensorWrapper:
-    """Mean over one intermediate/sub-batch axis."""
-    start = len(a.dynamic_batch_shape)
-    end = start + a.sub_batch_ndim
+    ``view`` must be ``t.dynamic_batch`` or ``t.sub_batch``. Always
+    collapses the axis (no ``keepdim``); reducing a sub-batch axis drops
+    ``sub_batch_ndim`` by 1. Returns the same wrapper type as the view's
+    underlying wrapper.
+    """
+    w, start, end = _reduce_view_bounds(view, "mean")
     d = _normalize_dim(dim, start, end)
-    return type(a)(torch.mean(a.data, dim=d), sub_batch_ndim=a.sub_batch_ndim - 1)
+    new_sb = w.sub_batch_ndim - (1 if isinstance(view, SubBatchView) else 0)
+    return w._rewrap(torch.mean(w.data, dim=d), sub_batch_ndim=new_sb)
 
 
-def intmd_diff(a: TensorWrapper, n: int = 1, dim: int = 0) -> TensorWrapper:
-    """``n``-th order finite difference along an intermediate (sub-batch) axis.
+def diff(view: DynamicBatchView[_TW] | SubBatchView[_TW], n: int = 1, dim: int = 0) -> _TW:
+    """``n``-th order finite difference along an axis of a region view.
 
-    Matches ``neml2::intmd_diff`` in ``src/neml2/tensors/functions/diff.cxx``:
-    differentiate ``a`` ``n`` times along the chosen sub-batch axis. The
-    selected axis length shrinks by ``n``; the wrapper type and
-    ``sub_batch_ndim`` are preserved (``at::diff`` does not collapse the axis,
-    so this is *not* a reduction). ``dim`` is interpreted in the sub-batch
-    coordinate space (``0`` is the leading sub-batch axis, ``-1`` the
-    trailing), matching the C++ ``utils::normalize_dim(dim, dynamic_dim,
-    batch_dim)`` convention.
+    The selected axis length shrinks by ``n``; the wrapper type and
+    ``sub_batch_ndim`` are preserved (``torch.diff`` does not collapse
+    the axis, so this is *not* a reduction). ``view`` must be
+    ``t.dynamic_batch`` or ``t.sub_batch``.
+
+    Matches ``neml2::intmd_diff`` in ``src/neml2/tensors/functions/diff.cxx``.
     """
     if n < 0:
-        raise ValueError(f"intmd_diff order n must be non-negative, got {n}")
-    start = len(a.dynamic_batch_shape)
-    end = start + a.sub_batch_ndim
+        raise ValueError(f"diff order n must be non-negative, got {n}")
+    w, start, end = _reduce_view_bounds(view, "diff")
     d = _normalize_dim(dim, start, end)
-    return type(a)(torch.diff(a.data, n=n, dim=d), sub_batch_ndim=a.sub_batch_ndim)
+    return w._rewrap(torch.diff(w.data, n=n, dim=d), sub_batch_ndim=w.sub_batch_ndim)
+
+
+def stack(
+    views: Sequence[DynamicBatchView[_TW] | SubBatchView[_TW]],
+    dim: int = 0,
+) -> _TW:
+    """Stack wrappers along a NEW axis inside a chosen region view.
+
+    Each element of ``views`` must be the same view kind (all
+    ``DynamicBatchView`` *or* all ``SubBatchView``) over wrappers that share
+    concrete type, ``sub_batch_ndim``, and data shape. The new axis is
+    inserted at region-relative position ``dim``; sub-batch policy follows
+    the region (a sub-batch stack bumps ``sub_batch_ndim`` by one, a
+    dynamic-batch stack leaves it alone).
+
+    Example
+    -------
+    >>> v0 = Vec.fill(6.0, 4.0, 0.0)
+    >>> v1 = Vec.fill(8.0, 5.0, 0.0)
+    >>> stack([v0.dynamic_batch, v1.dynamic_batch]).data.shape
+    torch.Size([2, 3])
+    """
+    if not views:
+        raise ValueError("stack: views must be non-empty")
+    first = views[0]
+    if not isinstance(first, DynamicBatchView | SubBatchView):
+        raise TypeError(
+            f"stack: views must be t.dynamic_batch or t.sub_batch, got {type(first).__name__}"
+        )
+    region_type = type(first)
+    first_w = first._w
+    for v in views[1:]:
+        if type(v) is not region_type:
+            raise TypeError(
+                f"stack: heterogeneous view types {region_type.__name__} vs {type(v).__name__}"
+            )
+        w = v._w
+        if type(w) is not type(first_w):
+            raise TypeError(
+                f"stack: heterogeneous wrapper types {type(first_w).__name__} vs {type(w).__name__}"
+            )
+        if w.sub_batch_ndim != first_w.sub_batch_ndim:
+            raise ValueError(
+                f"stack: mismatched sub_batch_ndim {first_w.sub_batch_ndim} vs {w.sub_batch_ndim}"
+            )
+        if w.data.shape != first_w.data.shape:
+            raise ValueError(
+                f"stack: mismatched data shapes "
+                f"{tuple(first_w.data.shape)} vs {tuple(w.data.shape)}"
+            )
+    axis = first._resolve_insert_dim(dim)
+    new_data = torch.stack([v._w.data for v in views], dim=axis)
+    new_sb = first._new_sub_batch_ndim(axes_added=1)
+    return first_w._rewrap(new_data, sub_batch_ndim=new_sb)
 
 
 def sub_batch_zeros_like(
@@ -205,55 +294,55 @@ def sub_batch_zeros_like(
     return type(template)(data, sub_batch_ndim=sub_batch_ndim)
 
 
-def abs(a: TensorWrapper) -> TensorWrapper:  # noqa: A001 - mirrors neml2::abs
+def abs(a: _TW) -> _TW:  # noqa: A001 - mirrors neml2::abs
     """Element-wise absolute value."""
-    return type(a)(torch.abs(a.data), sub_batch_ndim=a.sub_batch_ndim)
+    return a._rewrap(torch.abs(a.data), sub_batch_ndim=a.sub_batch_ndim)
 
 
-def sign(a: TensorWrapper) -> TensorWrapper:
+def sign(a: _TW) -> _TW:
     """Element-wise sign."""
-    return type(a)(torch.sign(a.data), sub_batch_ndim=a.sub_batch_ndim)
+    return a._rewrap(torch.sign(a.data), sub_batch_ndim=a.sub_batch_ndim)
 
 
-def heaviside(a: TensorWrapper) -> TensorWrapper:
+def heaviside(a: _TW) -> _TW:
     """Element-wise Heaviside step function $H(a) = (sign(a) + 1) / 2$.
 
     Matches ``neml2::heaviside`` in
     ``src/neml2/tensors/functions/heaviside.cxx`` (which uses the same
     ``(sign(a) + 1) / 2`` form), preserving wrapper type and ``sub_batch_ndim``.
     """
-    return type(a)((torch.sign(a.data) + 1.0) / 2.0, sub_batch_ndim=a.sub_batch_ndim)
+    return a._rewrap((torch.sign(a.data) + 1.0) / 2.0, sub_batch_ndim=a.sub_batch_ndim)
 
 
-def macaulay(a: TensorWrapper) -> TensorWrapper:
+def macaulay(a: _TW) -> _TW:
     """Element-wise Macaulay bracket $<a>_+ = a * H(a) = a * (sign(a) + 1) / 2$.
 
     Matches ``neml2::macaulay`` in
     ``src/neml2/tensors/functions/macaulay.cxx``; preserves wrapper type and
     ``sub_batch_ndim``.
     """
-    return type(a)(a.data * (torch.sign(a.data) + 1.0) / 2.0, sub_batch_ndim=a.sub_batch_ndim)
+    return a._rewrap(a.data * (torch.sign(a.data) + 1.0) / 2.0, sub_batch_ndim=a.sub_batch_ndim)
 
 
 def clamp(
-    a: TensorWrapper,
+    a: _TW,
     lo: float | int | None = None,
     hi: float | int | None = None,
-) -> TensorWrapper:
+) -> _TW:
     """Element-wise clamp, matching ``neml2::clamp``.
 
     Either bound may be ``None`` to leave that side unbounded. Bounds are
     plain scalars (the C++ ``clamp`` overload used by leaves takes scalar
     endpoints); preserves wrapper type and ``sub_batch_ndim``.
     """
-    return type(a)(torch.clamp(a.data, min=lo, max=hi), sub_batch_ndim=a.sub_batch_ndim)
+    return a._rewrap(torch.clamp(a.data, min=lo, max=hi), sub_batch_ndim=a.sub_batch_ndim)
 
 
 def _as_scalar(value: float | int, like: TensorWrapper) -> Scalar:
     return Scalar(torch.as_tensor(value, dtype=like.dtype, device=like.device))
 
 
-def _logical_binary(a: TensorWrapper, b: TensorWrapper | float | int, op) -> TensorWrapper:
+def _logical_binary(a: _TW, b: TensorWrapper | float | int, op) -> _TW:
     if isinstance(b, (float, int)):
         b = _as_scalar(b, a)
     if type(a) is not type(b) and not isinstance(b, Scalar):
@@ -266,18 +355,18 @@ def _logical_binary(a: TensorWrapper, b: TensorWrapper | float | int, op) -> Ten
     if isinstance(bb, Scalar) and not isinstance(aa, Scalar):
         for _ in range(a.BASE_NDIM):
             b_data = b_data.unsqueeze(-1)
-    return type(a)(op(aa.data, b_data), sub_batch_ndim=sb)
+    return a._rewrap(op(aa.data, b_data), sub_batch_ndim=sb)
 
 
-def gt(a: TensorWrapper, b: TensorWrapper | float | int) -> TensorWrapper:
+def gt(a: _TW, b: TensorWrapper | float | int) -> _TW:
     return _logical_binary(a, b, torch.gt)
 
 
-def lt(a: TensorWrapper, b: TensorWrapper | float | int) -> TensorWrapper:
+def lt(a: _TW, b: TensorWrapper | float | int) -> _TW:
     return _logical_binary(a, b, torch.lt)
 
 
-def where(c: TensorWrapper, a: TensorWrapper, b: TensorWrapper) -> TensorWrapper:
+def where(c: TensorWrapper, a: _TW, b: _TW) -> _TW:
     """Element-wise select, matching ``neml2::where``."""
     if type(a) is not type(b):
         raise TypeError(
@@ -289,7 +378,7 @@ def where(c: TensorWrapper, a: TensorWrapper, b: TensorWrapper) -> TensorWrapper
     if isinstance(cc, Scalar) and not isinstance(aa, Scalar):
         for _ in range(a.BASE_NDIM):
             c_data = c_data.unsqueeze(-1)
-    return type(a)(torch.where(c_data, aa.data, bb.data), sub_batch_ndim=sb)
+    return a._rewrap(torch.where(c_data, aa.data, bb.data), sub_batch_ndim=sb)
 
 
 def linear_interpolation(argument: Scalar, abscissa: Scalar, ordinate: Scalar) -> Scalar:
@@ -298,7 +387,11 @@ def linear_interpolation(argument: Scalar, abscissa: Scalar, ordinate: Scalar) -
     X = abscissa.data
     Y = ordinate.data
     n = X.shape[-1]
-    idx = torch.searchsorted(X, x, right=True).clamp(1, n - 1)
+    # ``torch.searchsorted`` requires its ``values`` argument to be contiguous
+    # for the fast path; otherwise it copies internally and warns once per
+    # process. Several callers (chain-rule tangents, broadcasted argument
+    # batches) hand us views, so normalize here.
+    idx = torch.searchsorted(X, x.contiguous(), right=True).clamp(1, n - 1)
     x1 = X[..., idx - 1]
     x2 = X[..., idx]
     y1 = Y[..., idx - 1]
@@ -323,7 +416,7 @@ def jvp_linear_interpolation(
     X = abscissa.data
     Y = ordinate.data
     n = X.shape[-1]
-    idx = torch.searchsorted(X, x, right=True).clamp(1, n - 1)
+    idx = torch.searchsorted(X, x.contiguous(), right=True).clamp(1, n - 1)
     x1 = X[..., idx - 1]
     x2 = X[..., idx]
     y1 = Y[..., idx - 1]
@@ -384,8 +477,16 @@ def _bilinear_corners(
     # Locate cell index along each axis (clamped to [1, Nk-1] so a query at the
     # extreme upper edge extrapolates from the last segment instead of falling
     # off — matches the C++ mask convention ``x1 > X10 && x1 <= X11``).
-    idx1 = torch.searchsorted(X1b, x1b.unsqueeze(-1), right=True).squeeze(-1).clamp(1, N1 - 1)
-    idx2 = torch.searchsorted(X2b, x2b.unsqueeze(-1), right=True).squeeze(-1).clamp(1, N2 - 1)
+    idx1 = (
+        torch.searchsorted(X1b, x1b.unsqueeze(-1).contiguous(), right=True)
+        .squeeze(-1)
+        .clamp(1, N1 - 1)
+    )
+    idx2 = (
+        torch.searchsorted(X2b, x2b.unsqueeze(-1).contiguous(), right=True)
+        .squeeze(-1)
+        .clamp(1, N2 - 1)
+    )
 
     def _gather_X(X: torch.Tensor, idx: torch.Tensor) -> torch.Tensor:
         return torch.gather(X, -1, idx.unsqueeze(-1)).squeeze(-1)
@@ -452,7 +553,10 @@ def bilinear_interpolation(
     c1 = Y10 - Y00
     c2 = Y01 - Y00
     c3 = Y11 - Y10 - Y01 + Y00
-    return Y00 + c1 * xi + c2 * eta + c3 * (xi * eta)
+    # Pyright loses _TW precision through the chained ``_TW + _TW * Scalar``
+    # algebra (TensorWrapper's abstract operator stubs return TensorWrapper).
+    # The runtime concrete type is correct; cast to keep callers cast-free.
+    return cast(_TW, Y00 + c1 * xi + c2 * eta + c3 * (xi * eta))
 
 
 def bilinear_interpolation_slopes(
@@ -478,7 +582,8 @@ def bilinear_interpolation_slopes(
     c3 = Y11 - Y10 - Y01 + Y00
     dP_dx1 = (c1 + c3 * eta) * (1.0 / dX1)
     dP_dx2 = (c2 + c3 * xi) * (1.0 / dX2)
-    return dP_dx1, dP_dx2
+    # See the note in :func:`bilinear_interpolation` for why the cast is needed.
+    return cast(_TW, dP_dx1), cast(_TW, dP_dx2)
 
 
 def sqrt(s: Scalar) -> Scalar:
@@ -514,15 +619,15 @@ def log10(s: Scalar) -> Scalar:
     return Scalar(torch.log10(s.data), sub_batch_ndim=s.sub_batch_ndim)
 
 
-def pow(a: TensorWrapper, n: float | int | Scalar) -> TensorWrapper:  # noqa: A001
+def pow(a: _TW, n: float | int | Scalar) -> _TW:  # noqa: A001
     """Element-wise power."""
     if isinstance(n, Scalar):
         [aa, nn], sb = align_sub_batch(a, n)
         n_data = nn.data
         for _ in range(a.BASE_NDIM):
             n_data = n_data.unsqueeze(-1)
-        return type(a)(torch.pow(aa.data, n_data), sub_batch_ndim=sb)
-    return type(a)(torch.pow(a.data, n), sub_batch_ndim=a.sub_batch_ndim)
+        return a._rewrap(torch.pow(aa.data, n_data), sub_batch_ndim=sb)
+    return a._rewrap(torch.pow(a.data, n), sub_batch_ndim=a.sub_batch_ndim)
 
 
 # ---- Cross-type products on SR2 ----
@@ -623,9 +728,8 @@ _SQRT2 = math.sqrt(2.0)
 
 
 # NOTE on Mandel / skew pack/unpack vectorization: a "matmul against fixed
-# (9, 6) projection" form was tried for ``mandel_pack_sym3`` /
-# ``skew_pack_axial3`` / ``r2_from_sr2`` / ``r2_from_wr2`` / ``sym`` /
-# ``skew``. It improved CPU wall-time by ~10 % but regressed CUDA wall-time
+# (9, 6) projection" form was tried for ``r2_from_sr2`` / ``r2_from_wr2`` /
+# ``sym`` / ``skew``. It improved CPU wall-time by ~10 % but regressed CUDA wall-time
 # by ~9 % at small batch (B ≤ 1,024): each matmul launches a separate
 # kernel that Inductor cannot fuse with surrounding pointwise ops, while
 # the explicit select+stack chains do fuse into a single Triton kernel
@@ -732,57 +836,6 @@ def euler_rodrigues(r: Rot) -> R2:
         one_plus_rr * one_plus_rr
     )
     return R2(R_mat, sub_batch_ndim=r.sub_batch_ndim)
-
-
-def deuler_rodrigues(r: Rot) -> torch.Tensor:
-    """Derivative ``∂R/∂r`` of the Euler-Rodrigues map; shape ``(..., 3, 3, 3)``.
-
-    Returned as a raw tensor (no R3 wrapper exists in the Python-native stack
-    yet — this derivative only flows through chain-rule actions, never
-    surfaces as a Model input/output). Mirrors ``Rot::deuler_rodrigues`` in
-    ``src/neml2/tensors/Rot.cxx``.
-    """
-    rr = (r.data * r.data).sum(dim=-1)  # (...,)
-    W = r2_from_wr2(WR2(r.data, sub_batch_ndim=r.sub_batch_ndim)).data  # (...,3,3)
-    W2 = W @ W
-    # Levi-Civita symbol (constant 3x3x3).
-    E = torch.zeros(3, 3, 3, dtype=r.dtype, device=r.device)
-    E[0, 1, 2] = E[1, 2, 0] = E[2, 0, 1] = 1.0
-    E[0, 2, 1] = E[2, 1, 0] = E[1, 0, 2] = -1.0
-
-    one_plus_rr = 1.0 + rr  # (...,)
-    inv2 = (1.0 / (one_plus_rr * one_plus_rr)).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    inv3 = (
-        (1.0 / (one_plus_rr * one_plus_rr * one_plus_rr)).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    )
-    rm3 = (rr - 3.0).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    om = (1.0 - rr).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    # Each term: shape (..., 3, 3, 3) over last three axes (i, j, k).
-    rk = r.data  # (..., 3) — broadcast over (3,3) front by unsqueezing -2,-3.
-    W_ij = W  # (..., 3, 3)
-    W2_ij = W2
-    # ...ij,...k -> ...ijk
-    term1 = 8.0 * rm3 * inv3 * (W_ij.unsqueeze(-1) * rk.unsqueeze(-2).unsqueeze(-2))
-    term2 = -32.0 * inv3 * (W2_ij.unsqueeze(-1) * rk.unsqueeze(-2).unsqueeze(-2))
-    # E has shape (3,3,3) with index order (k,i,j); we want (i,j,k) per the C++
-    # ``R3::einsum("...kij->...ijk", {E})``.
-    E_ijk = E.permute(1, 2, 0)
-    term3 = -4.0 * om * inv2 * E_ijk
-    # E_kim · W_mj -> (...,i,j,k) and W_im · E_kmj -> (...,i,j,k); both contract
-    # over ``m``. Done as broadcast-multiply-sum over ``m`` (same idiom as
-    # term1/term2 above; no einsum). The (...,3,3,3,3) intermediate is tiny and
-    # fuses as a single pointwise kernel in Inductor — the CUDA-preferred form.
-    #   EW[...,i,j,k] = sum_m E[k,i,m] * W[...,m,j]
-    E_EW = E.permute(1, 0, 2).unsqueeze(1)  # (i, j=1, k, m)
-    W_EW = W.transpose(-1, -2).unsqueeze(-3).unsqueeze(-2)  # (..., i=1, j, k=1, m)
-    EW = (E_EW * W_EW).sum(dim=-1)  # (..., i, j, k)
-    #   WE[...,i,j,k] = sum_m W[...,i,m] * E[k,m,j]
-    W_WE = W.unsqueeze(-2).unsqueeze(-2)  # (..., i, j=1, k=1, m)
-    E_WE = E.permute(2, 0, 1).unsqueeze(0)  # (i=1, j, k, m)
-    WE = (W_WE * E_WE).sum(dim=-1)  # (..., i, j, k)
-    term4 = -8.0 * inv2 * (EW + WE)
-
-    return term1 + term2 + term3 + term4
 
 
 # ---- Rot composition ----
@@ -937,7 +990,7 @@ def dexp_map(w: WR2) -> R2:
 # the per-crystal orientation matrix R before being summed.
 
 
-def rotate_sym(s: SR2, R: R2) -> SR2:
+def _rotate_sym(s: SR2, R: R2) -> SR2:
     """$sym(R S R^T)$ packed back to Mandel; the symmetric tensor rotation."""
     [ss, rr], sb = align_sub_batch(s, R)
     S_full = r2_from_sr2(ss).data  # (...,3,3) — sub_batch already aligned with rr
@@ -945,7 +998,7 @@ def rotate_sym(s: SR2, R: R2) -> SR2:
     return sym(R2(rotated, sub_batch_ndim=sb))
 
 
-def rotate_skew(w: WR2, R: R2) -> WR2:
+def _rotate_skew(w: WR2, R: R2) -> WR2:
     """$skew(R W R^T)$ packed back to an axial vector."""
     [ww, rr], sb = align_sub_batch(w, R)
     W_full = r2_from_wr2(ww).data
@@ -953,12 +1006,12 @@ def rotate_skew(w: WR2, R: R2) -> WR2:
     return skew(R2(rotated, sub_batch_ndim=sb))
 
 
-def jvp_rotate_sym(s: SR2, R: R2, dR: R2) -> SR2:
-    """Pushforward of :func:`rotate_sym` w.r.t. $R$ along the tangent ``dR``.
+def _jvp_rotate_sym(s: SR2, R: R2, dR: R2) -> SR2:
+    """Pushforward of :func:`rotate` (SR2 overload) w.r.t. $R$ along ``dR``.
 
-    ``rotate_sym(s, R) = sym(R S Rᵀ)`` (linear in $s$, so the $s$-direction
-    is just ``rotate_sym(ds, R)`` and needs no primitive). The $R$-direction
-    is the product rule ``sym(dR S Rᵀ + R S dRᵀ)``. ``dR`` is a leading-K ``R2``
+    ``rotate(s, R) = sym(R S Rᵀ)`` (linear in $s$, so the $s$-direction is
+    just ``rotate(ds, R)`` and needs no primitive). The $R$-direction is the
+    product rule ``sym(dR S Rᵀ + R S dRᵀ)``. ``dR`` is a leading-K ``R2``
     tangent; the 3×3 ``@`` / transpose broadcast $K$. All sub-batch alignment
     (e.g. per-crystal $R$ against a per-slip $s$) is handled by
     :func:`align_sub_batch`, exactly as in the forward.
@@ -971,11 +1024,11 @@ def jvp_rotate_sym(s: SR2, R: R2, dR: R2) -> SR2:
     return sym(R2(rotated, sub_batch_ndim=sb))
 
 
-def jvp_rotate_skew(w: WR2, R: R2, dR: R2) -> WR2:
-    """Pushforward of :func:`rotate_skew` w.r.t. $R$ along ``dR``.
+def _jvp_rotate_skew(w: WR2, R: R2, dR: R2) -> WR2:
+    """Pushforward of :func:`rotate` (WR2 overload) w.r.t. $R$ along ``dR``.
 
-    ``rotate_skew(w, R) = skew(R W Rᵀ)`` (linear in $w$); the $R$-direction
-    is ``skew(dR W Rᵀ + R W dRᵀ)``.
+    ``rotate(w, R) = skew(R W Rᵀ)`` (linear in $w$); the $R$-direction is
+    ``skew(dR W Rᵀ + R W dRᵀ)``.
     """
     [ww, RR, dRR], sb = align_sub_batch(w, R, dR)
     W = r2_from_wr2(ww).data
@@ -992,18 +1045,18 @@ def jvp_rotate_skew(w: WR2, R: R2, dR: R2) -> WR2:
 # is the full asymmetric outer product (no sym/skew projection).
 
 
-def rotate_r2(a: R2, R: R2) -> R2:
+def _rotate_r2(a: R2, R: R2) -> R2:
     """``R A Rᵀ`` — the full (asymmetric) 3x3 rotation, no projection."""
     [aa, rr], sb = align_sub_batch(a, R)
     rotated = rr.data @ aa.data @ rr.data.transpose(-2, -1)
     return R2(rotated, sub_batch_ndim=sb)
 
 
-def jvp_rotate_r2(a: R2, R: R2, dR: R2) -> R2:
-    """Pushforward of :func:`rotate_r2` w.r.t. $R$ along the tangent ``dR``.
+def _jvp_rotate_r2(a: R2, R: R2, dR: R2) -> R2:
+    """Pushforward of :func:`rotate` (R2 overload) w.r.t. $R$ along ``dR``.
 
-    ``rotate_r2(a, R) = R A Rᵀ`` is linear in $a$ (so the $a$-direction is
-    just ``rotate_r2(da, R)`` and needs no primitive). The $R$-direction is
+    ``rotate(a, R) = R A Rᵀ`` is linear in $a$ (so the $a$-direction is
+    just ``rotate(da, R)`` and needs no primitive). The $R$-direction is
     the product rule ``dR A Rᵀ + R A dRᵀ``. ``dR`` is a leading-K ``R2``
     tangent; the 3x3 ``@`` / transpose broadcast $K$. Sub-batch alignment
     (e.g. per-crystal $R$ against a per-slip $a$) is handled by
@@ -1112,7 +1165,7 @@ def _mandel_basis_bilinear(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
 
     Identical structure to :func:`_mandel_basis_matrix` but with two distinct
     input rotation tensors $A$, $B$, so each ``R_ij · R_kl`` product in
-    the formula becomes ``A_ij · B_kl``. Used by :func:`d_rotate_ssr4_dR` to
+    the formula becomes ``A_ij · B_kl``. Used by :func:`jvp_rotate` (SSR4 case) to
     compute the directional derivative of ``Q(R)`` via the product rule
 
         $dQ(R)[dR] = _mandel_basis_bilinear(R, dR) + _mandel_basis_bilinear(dR, R)$.
@@ -1194,30 +1247,7 @@ def _mandel_basis_bilinear(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
     return Q
 
 
-def d_rotate_ssr4_dR(T: SSR4, R: R2) -> torch.Tensor:
-    """``d(rotate_ssr4(T, R)) / dR`` as a ``(..., 6, 6, 9)`` Jacobian.
-
-    ``Q(R)`` is quadratic in $R$, so the product rule gives
-    $dQ_dir[A, B] = _mandel_basis_bilinear(R, dR)[A, B] + _mandel_basis_bilinear(dR, R)[A, B]$
-    for any direction ``dR``. The full Jacobian iterates the 9 unit-direction
-    perturbations of $R$; each yields one ``(*B, 6, 6)`` slab assembled into
-    the trailing 9 axis. No autograd.
-    """
-    Q = _mandel_basis_matrix(R.data)  # (..., 6, 6)
-    T_d = T.data  # (..., 6, 6)
-    slabs: list[torch.Tensor] = []
-    for c in range(3):
-        for d in range(3):
-            dR = R.data.new_zeros(*R.data.shape[:-2], 3, 3)
-            dR[..., c, d] = 1.0
-            # dQ shape: (..., 6, 6)
-            dQ = _mandel_basis_bilinear(R.data, dR) + _mandel_basis_bilinear(dR, R.data)
-            dTrot = dQ @ T_d @ Q.transpose(-2, -1) + Q @ T_d @ dQ.transpose(-2, -1)
-            slabs.append(dTrot)
-    return torch.stack(slabs, dim=-1)  # (..., 6, 6, 9)
-
-
-def rotate_ssr4(T: SSR4, R: R2) -> SSR4:
+def _rotate_ssr4(T: SSR4, R: R2) -> SSR4:
     """``T'_ijkl = R_im R_jn R_kp R_lq T_mnpq`` performed in Mandel packing.
 
     Builds the 6x6 Mandel basis rotation ``Q(R)`` and forms $Q T Q^T$;
@@ -1334,10 +1364,10 @@ def jvp_compose(r1: Rot, r2: Rot, *, dr1: Rot | None = None, dr2: Rot | None = N
     return Rot(acc, sub_batch_ndim=sb)
 
 
-def jvp_rotate_ssr4(T: SSR4, R: R2, dR: R2) -> SSR4:
-    """Pushforward of :func:`rotate_ssr4` w.r.t. $R$ along the tangent ``dR``.
+def _jvp_rotate_ssr4(T: SSR4, R: R2, dR: R2) -> SSR4:
+    """Pushforward of :func:`rotate` (SSR4 overload) w.r.t. $R$ along ``dR``.
 
-    ``rotate_ssr4`` is ``Q(R) T Q(R)ᵀ`` with the 6×6 Mandel rotation $Q$
+    ``rotate(T, R)`` is ``Q(R) T Q(R)ᵀ`` with the 6×6 Mandel rotation $Q$
     quadratic in $R$; the directional derivative is
     ``dQ T Qᵀ + Q T dQᵀ`` with
     $dQ = bilinear(R, dR) + bilinear(dR, R)$. $T$ is held fixed (the
@@ -1351,40 +1381,70 @@ def jvp_rotate_ssr4(T: SSR4, R: R2, dR: R2) -> SSR4:
     return SSR4(dTrot, sub_batch_ndim=dR.sub_batch_ndim)
 
 
-# ---- Mandel/axial packing helpers (no autograd) ----
+# ---- Unified rotate / jvp_rotate entry points ----
+#
+# The public surface is three names, each overloaded on the operand type. The
+# underlying ``_rotate_*`` / ``_jvp_rotate_*`` kernels
+# above hold the actual implementations; this section threads them through
+# ``@typing.overload`` so static type-checkers infer ``rotate(SR2, R2) -> SR2``,
+# ``rotate(R2, R2) -> R2``, etc. The runtime dispatch is a single isinstance
+# chain — more specific types (SR2, WR2, SSR4) checked before the catch-all
+# (R2) since they are not subclasses of each other.
 
 
-def mandel_pack_sym3(X_full: torch.Tensor) -> torch.Tensor:
-    """Pack a (...,3,3) symmetric tensor to Mandel (...,6) without going through SR2.
+@overload
+def rotate(x: SR2, R: R2) -> SR2: ...
+@overload
+def rotate(x: WR2, R: R2) -> WR2: ...
+@overload
+def rotate(x: SSR4, R: R2) -> SSR4: ...
+@overload
+def rotate(x: R2, R: R2) -> R2: ...
+def rotate(x, R):
+    """Rotate a typed tensor by an ``R2`` rotation matrix.
 
-    Useful in chain-rule actions that need the Mandel form of an intermediate
-    full 3×3 result. Equivalent to ``sym(R2(X_full)).data`` but bypasses
-    wrapper construction.
+    Overloaded on the operand type:
 
-    Kept as the explicit select+add+mul+stack chain. The matmul-against-
-    fixed-projection alternative (``flat @ _MANDEL_PACK``) was measurably
-    slower on CUDA at small batch — see the design note on
-    :func:`r2_from_sr2`.
+    - ``SR2 -> SR2`` — ``sym(R S Rᵀ)`` packed back to Mandel.
+    - ``WR2 -> WR2`` — ``skew(R W Rᵀ)`` packed back to an axial vector.
+    - ``R2 -> R2`` — the full asymmetric ``R A Rᵀ`` (no projection).
+    - ``SSR4 -> SSR4`` — the 6×6 Mandel basis rotation ``Q(R) T Q(R)ᵀ``.
     """
-    a = X_full[..., 0, 0]
-    b = X_full[..., 1, 1]
-    c = X_full[..., 2, 2]
-    yz = (X_full[..., 1, 2] + X_full[..., 2, 1]) * (_SQRT2 / 2.0)
-    xz = (X_full[..., 0, 2] + X_full[..., 2, 0]) * (_SQRT2 / 2.0)
-    xy = (X_full[..., 0, 1] + X_full[..., 1, 0]) * (_SQRT2 / 2.0)
-    return torch.stack([a, b, c, yz, xz, xy], dim=-1)
+    if isinstance(x, SR2):
+        return _rotate_sym(x, R)
+    if isinstance(x, WR2):
+        return _rotate_skew(x, R)
+    if isinstance(x, SSR4):
+        return _rotate_ssr4(x, R)
+    if isinstance(x, R2):
+        return _rotate_r2(x, R)
+    raise TypeError(f"rotate: unsupported operand type {type(x).__name__}")
 
 
-def skew_pack_axial3(X_full: torch.Tensor) -> torch.Tensor:
-    """Pack a (...,3,3) tensor to its skew-axial (...,3) form (matches `skew(R2)`).
+@overload
+def jvp_rotate(x: SR2, R: R2, dR: R2) -> SR2: ...
+@overload
+def jvp_rotate(x: WR2, R: R2, dR: R2) -> WR2: ...
+@overload
+def jvp_rotate(x: SSR4, R: R2, dR: R2) -> SSR4: ...
+@overload
+def jvp_rotate(x: R2, R: R2, dR: R2) -> R2: ...
+def jvp_rotate(x, R, dR):
+    """Pushforward of :func:`rotate` along the tangent ``dR``.
 
-    Kept as the explicit select+sub+div+stack chain for the same CUDA
-    fusion reason as :func:`mandel_pack_sym3`.
+    Overloaded on ``x``'s type. The forward is always linear in ``x``, so only
+    the ``R``-direction needs an explicit primitive; the ``x``-direction is
+    just ``rotate(dx, R)`` and can be expressed directly.
     """
-    w0 = (X_full[..., 2, 1] - X_full[..., 1, 2]) / 2.0
-    w1 = (X_full[..., 0, 2] - X_full[..., 2, 0]) / 2.0
-    w2 = (X_full[..., 1, 0] - X_full[..., 0, 1]) / 2.0
-    return torch.stack([w0, w1, w2], dim=-1)
+    if isinstance(x, SR2):
+        return _jvp_rotate_sym(x, R, dR)
+    if isinstance(x, WR2):
+        return _jvp_rotate_skew(x, R, dR)
+    if isinstance(x, SSR4):
+        return _jvp_rotate_ssr4(x, R, dR)
+    if isinstance(x, R2):
+        return _jvp_rotate_r2(x, R, dR)
+    raise TypeError(f"jvp_rotate: unsupported operand type {type(x).__name__}")
 
 
 # ---- Vec helpers ----
@@ -1416,36 +1476,18 @@ def vec_from_scalars(s0: Scalar, s1: Scalar, s2: Scalar) -> Vec:
     return Vec(torch.stack([aa.data, bb.data, cc.data], dim=-1), sub_batch_ndim=sb)
 
 
-# ---- MillerIndex helpers ----
-
-
-def to_cartesian(mi: MillerIndex, lattice: R2) -> torch.Tensor:
-    """Convert Miller indices to Cartesian coordinates using a lattice matrix.
-
-    ``lattice`` is the matrix whose columns are the three lattice vectors
-    (``a1, a2, a3``); for a cubic crystal with parameter ``a`` this is
-    ``a * I``. Returns a raw ``(..., 3)`` tensor of Cartesian components.
-    """
-    # mi.data: (..., 3); lattice.data: (3, 3) or broadcastable.
-    # ``"...j,ij->...i"`` is the matvec ``lattice @ mi``.
-    return (lattice.data @ mi.data.unsqueeze(-1)).squeeze(-1)
-
-
 __all__ = [
     "abs",
     "bilinear_interpolation",
     "bilinear_interpolation_slopes",
     "compose",
     "cosh",
-    "d_rotate_ssr4_dR",
     "det",
-    "deuler_rodrigues",
     "dev",
     "dexp_map",
+    "diff",
     "drotate",
     "drotate_self",
-    "dynamic_mean",
-    "dynamic_sum",
     "euler_rodrigues",
     "exp",
     "exp_map",
@@ -1455,35 +1497,27 @@ __all__ = [
     "jvp_compose",
     "jvp_euler_rodrigues",
     "jvp_exp_map",
-    "jvp_rotate_r2",
-    "jvp_rotate_skew",
-    "jvp_rotate_ssr4",
-    "jvp_rotate_sym",
+    "jvp_rotate",
     "linear_interpolation",
     "log",
     "log10",
     "lt",
-    "mandel_pack_sym3",
+    "macaulay",
+    "mean",
     "norm",
     "outer",
     "pow",
     "r2_from_sr2",
     "r2_from_wr2",
-    "rotate_r2",
-    "rotate_skew",
-    "rotate_ssr4",
-    "rotate_sym",
+    "rotate",
     "skew",
-    "skew_pack_axial3",
     "sign",
     "sinh",
     "sqrt",
-    "sub_batch_mean",
-    "sub_batch_sum",
     "sub_batch_zeros_like",
+    "sum",
     "sym",
     "tanh",
-    "to_cartesian",
     "tr",
     "unit",
     "vec_component",

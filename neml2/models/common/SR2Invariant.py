@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
@@ -144,7 +142,7 @@ class SR2Invariant(Model):
         # Differential pushforward. ∂r/∂tensor = N = coeff · S / r
         # (the flow direction, an SR2). First-order action is the colon
         # product inner(N, V) — pure typed algebra, no Jacobian.
-        N = cast(SR2, S * (coeff / out))  # SR2
+        N = S * (coeff / out)  # SR2
 
         def action(V: SR2) -> Scalar:
             return inner(N, V)

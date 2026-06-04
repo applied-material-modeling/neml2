@@ -44,10 +44,22 @@ and `.sub_batch_ndim` provide the corresponding counts.
 
 ## Fixed-base-shape tensor types
 
-The following wrappers ship in `neml2.types`. All inherit from
-`TensorWrapper` and are `@dataclass(frozen=True, eq=False)` with the
-same two storage fields (`data`, `sub_batch_ndim`) plus the class-level
-`BASE_NDIM` / `BASE_SHAPE` invariants.
+The following wrappers ship in `neml2.types`. The class hierarchy is:
+
+```
+TensorWrapper           (abstract — shape decomposition + region views)
+    └── PrimitiveTensor (concrete intermediate — generic ops + factories)
+            ├── Scalar
+            ├── Vec, R2, SR2, WR2, Rot, SSR4, MillerIndex
+```
+
+`PrimitiveTensor` is the layer where the generic arithmetic operators
+(`+`, `-`, `*`, `/`, `-x`) and shape factories (`zeros`, `ones`, `full`,
+`empty`, `fill`) are defined; each concrete leaf below it is a small
+`@dataclass(frozen=True, eq=False)` declaring `data: torch.Tensor`,
+`sub_batch_ndim: int = 0`, and the class-level `BASE_NDIM` / `BASE_SHAPE`
+constants — plus any class-specific factories (e.g. `R2.identity`,
+`SSR4.identity_sym`, `SR2.fill` with Mandel √2 scaling).
 
 | Type           | Base shape | Storage / convention                                                                                                  |
 | :------------- | :--------- | :-------------------------------------------------------------------------------------------------------------------- |
@@ -60,10 +72,12 @@ same two storage fields (`data`, `sub_batch_ndim`) plus the class-level
 | `SR2`          | `(6,)`     | Symmetric second-order tensor in **Mandel notation**: `(σ₁₁, σ₂₂, σ₃₃, √2·σ₂₃, √2·σ₁₃, √2·σ₁₂)`. The off-diagonal `√2` factors make the inner product `A : B = a · b` in 6-vector form. |
 | `SSR4`         | `(6, 6)`   | Fourth-order tensor with both pairs of minor symmetries (the symmetry class of the elasticity tensor `ℂ`) in Mandel packing. |
 
-All wrappers default to `torch.float64`. Construct them either from a
-raw `torch.Tensor` (`SR2(torch.tensor([0.01, 0, 0, 0, 0, 0]))`) or, for
-`Scalar`, directly from a Python number (`Scalar(200e3)` — defaults to
-`float64`).
+`Scalar` defaults to `torch.float64` for both Python-literal construction
+and its factory methods; the other wrappers accept a `dtype=` kwarg and
+fall through to torch's global default otherwise. Construct them from a
+raw `torch.Tensor` (`SR2.fill(0.01, 0, 0, 0, 0, 0)`), from a
+Python literal (`Scalar(200e3)`), or via the inherited factories
+(`Vec.zeros(N)`, `SR2.fill(σ11, σ22, σ33, σ23, σ13, σ12)`, etc.).
 
 ## Batching
 
@@ -76,7 +90,7 @@ is the shape of the input tensors.
 The canonical pattern:
 
 ```python
-strain_single = SR2(torch.tensor([0.01, 0, 0, 0, 0, 0]))  # base only
+strain_single = SR2.fill(0.01, 0, 0, 0, 0, 0)  # base only
 stress = model(strain_single)
 # stress.data.shape == (6,)
 
@@ -123,7 +137,7 @@ Operationally:
 
 - Default `sub_batch_ndim = 0`. Models that don't need the distinction
   ignore it; everything sits in the dynamic region.
-- Promote axes to sub-batch with `.with_sub_batch(n)` (`n` = number of
+- Promote axes to sub-batch with `.sub_batch.retag(n)` (`n` = number of
   trailing batch axes to mark). The most common case is `n = 1`
   marking a lookup-table or per-cell axis.
 - Sub-batch dims do NOT participate in dynamic-batch broadcasting.
@@ -137,9 +151,7 @@ table:
 from neml2.types import Scalar
 import torch
 
-T_controls = Scalar(
-    torch.linspace(300.0, 1200.0, 20, dtype=torch.float64)
-).with_sub_batch(1)
+T_controls = Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)
 ```
 
 This marks the trailing length-20 axis as the sub-batch (interpolation
@@ -147,35 +159,84 @@ control points), so any model consuming `T_controls` accumulates its
 chain-rule contribution across that axis without conflating it with
 the dynamic per-state batch.
 
-`.with_sub_batch(n)` is also accepted inside a `[Tensors]` HIT block:
+`.sub_batch.retag(n)` is also accepted inside a `[Tensors]` HIT block:
 
 ```ini
 [Tensors]
   [T_controls]
     type = Python
-    expr = 'Scalar(torch.linspace(300.0, 1200.0, 20, dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)'
   []
 []
 ```
 
+## Region views
+
+Shape-manipulation methods live on four region-view properties so the
+intent of any reshape, broadcast, or reduction is unambiguous:
+
+- `t.batch` — the combined `dynamic_batch + sub_batch` region (read-only:
+  `.shape`, `.ndim`, `.cat`; shape-changing ops raise to keep the split
+  unambiguous).
+- `t.dynamic_batch` — dynamic batch only. Ops preserve `sub_batch_ndim`.
+- `t.sub_batch` — sub-batch only. Ops adjust `sub_batch_ndim`.
+- `t.base` — the base region. Read-only except for `transpose` on the
+  square-base types (`R2`, `SSR4`).
+
+Every mutable view exposes the same surface: `.shape`, `.ndim`,
+`.unsqueeze(dim)`, `.squeeze(dim)`, `.expand(*shape)`, `.cat(others, dim)`.
+The view methods return a fresh wrapper, so calls chain cleanly:
+
+```python
+broadcast = SR2.fill(0.1, -0.05, -0.05, 0, 0, 0).dynamic_batch.expand(20)
+# Construct an SR2 of base shape (6,), then broadcast it to (20, 6).
+
+retagged = Scalar.linspace(0, 1, 5).sub_batch.retag(1)
+# Mark the trailing length-5 axis as sub-batch.
+
+tr_R = R.base.transpose(-2, -1)   # Transpose the (3, 3) base of an R2.
+```
+
+The companion free functions `sum`, `mean`, `diff` in `neml2.types`
+take a view argument and dispatch on its kind:
+
+```python
+from neml2.types import sum, mean, diff
+
+avg = mean(t.sub_batch, dim=0)        # Reduce sub-batch axis 0.
+total = sum(t.dynamic_batch, [0, 1])  # Reduce two dynamic axes.
+delta = diff(t.sub_batch, n=1, dim=-1)
+```
+
 ## Construction surface
 
-Beyond raw-tensor construction, the wrappers ship a few convenience
-constructors used throughout the docs and the test suite:
+Beyond raw-tensor construction, every primitive inherits a small
+factory family from `PrimitiveTensor`:
 
-- `Scalar(<float>)` / `Scalar(<int>)` — promote a Python number
-  directly to a 0-dim `Scalar` with `torch.float64`.
-- `SR2.fill(a11, a22, a33, a23, a13, a12)` — build an SR2 from its six
-  Mandel components (with the `√2` factors handled internally).
-- `SR2.zeros()`, `Vec.zeros()`, etc. — zero-valued wrappers.
-- `<Wrapper>.from_value(x, like=other_wrapper)` — promote a Python
-  literal inheriting the `dtype` and `device` of an existing wrapper
-  (used heavily inside leaf `forward` implementations to build
-  in-place neutrals).
+- `<T>.zeros(*batch, dtype=None, device=None)` — zero-filled wrapper of
+  dynamic shape `batch` and base `T.BASE_SHAPE`.
+- `<T>.ones(*batch, ...)`, `<T>.full(*batch, fill_value=..., ...)`,
+  `<T>.empty(*batch, ...)`.
+- `<T>.fill(*components, ...)` — reshape `prod(T.BASE_SHAPE)` scalars
+  into the base. `SR2.fill` overrides this with Mandel-aware 1 / 3 / 6
+  component overloads (the √2 shear scaling is internal).
+- `<T>.identity(...)` where mathematically meaningful (`R2`,
+  `SR2`, `WR2`, `Rot`, `SSR4`'s several projector variants).
 
-Every constructor accepts an optional `device=` / `dtype=` kwarg where
-applicable; see [](tutorials-models-evaluation-device) for the device
-story.
+`Scalar` adds the torch-analogue factories:
+
+- `Scalar(<float>)` / `Scalar(<int>)` / `Scalar(<list>)` — direct
+  literal coercion, defaults to `torch.float64`.
+- `Scalar.zeros`, `Scalar.ones`, `Scalar.full` — override the
+  `PrimitiveTensor` defaults to keep `float64`.
+- `Scalar.linspace(start, end, steps)`, `Scalar.arange(start, end, step)` —
+  mirror the torch creation API.
+- `Scalar.from_value(x, like=other_wrapper)` — promote a Python literal
+  inheriting `dtype`/`device` from an existing wrapper. Useful inside
+  leaf `forward` to build in-place neutrals.
+
+Every constructor accepts an optional `device=` / `dtype=` kwarg; see
+[](tutorials-models-evaluation-device) for the device story.
 
 ## See also
 
@@ -186,4 +247,6 @@ story.
 - [](tutorials-models-input-file) — the `[Tensors]` section that
   constructs wrappers from HIT.
 - `neml2/types/_base.py` — the canonical implementation reference for
-  the shape decomposition + `align_sub_batch` machinery.
+  the shape decomposition, region views, and `align_sub_batch` machinery.
+- `neml2/types/_primitive.py` — the `PrimitiveTensor` intermediate base
+  with generic operators and factories.

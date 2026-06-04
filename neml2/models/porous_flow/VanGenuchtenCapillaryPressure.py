@@ -27,7 +27,6 @@
 from __future__ import annotations
 
 import math
-from typing import cast
 
 import torch
 
@@ -117,20 +116,14 @@ class VanGenuchtenCapillaryPressure(Model):
         eps = torch.finfo(S.dtype).eps
         one_minus_eps = Scalar.from_value(1.0 - eps, like=S)
         too_close = lt(one_minus_eps, S)  # S > 1 - eps  ⇔  1 - eps < S
-        Sc = cast(Scalar, where(too_close, one_minus_eps, S))
+        Sc = where(too_close, one_minus_eps, S)
 
         neg_inv_m = -1.0 / m
         one_minus_m = 1.0 - m
-        base = cast(Scalar, pow(Sc, neg_inv_m)) - 1.0  # S^(-1/m) - 1
-        f = a * cast(Scalar, pow(base, one_minus_m))
+        base = pow(Sc, neg_inv_m) - 1.0  # S^(-1/m) - 1
+        f = a * pow(base, one_minus_m)
         # df/dS = -a/m * (1 - m) * (S^(-1/m) - 1)^(-m) * S^(-1/m - 1)
-        dfds = (
-            -a
-            / m
-            * one_minus_m
-            * cast(Scalar, pow(base, -m))
-            * cast(Scalar, pow(Sc, neg_inv_m - 1.0))
-        )
+        dfds = -a / m * one_minus_m * pow(base, -m) * pow(Sc, neg_inv_m - 1.0)
         return f, dfds
 
     def forward(  # type: ignore[override]
@@ -154,15 +147,12 @@ class VanGenuchtenCapillaryPressure(Model):
             Pcs, dPcs_dS = self._calculate_pressure(Sp_scalar, a, m)
             slope = dPcs_dS / (ln10 * Pcs)
             yintercept = log10(Pcs) - slope * self._Sp
-            Pc_ext = cast(
-                Scalar,
-                pow(Scalar.from_value(10.0, like=S), slope * S + yintercept),
-            )
+            Pc_ext = pow(Scalar.from_value(10.0, like=S), slope * S + yintercept)
             dPc_ext_dS = (ln10 * slope) * Pc_ext
 
             mask = lt(S, self._Sp)
-            Pc = cast(Scalar, where(mask, Pc_ext, Pc_base))
-            dPc_dS = cast(Scalar, where(mask, dPc_ext_dS, dPc_dS_base))
+            Pc = where(mask, Pc_ext, Pc_base)
+            dPc_dS = where(mask, dPc_ext_dS, dPc_dS_base)
         else:
             Pc = Pc_base
             dPc_dS = dPc_dS_base

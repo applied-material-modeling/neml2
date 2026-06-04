@@ -53,7 +53,7 @@ class GreenLagrangeStrain(Model):
         F = deformation_gradient
         # C = F^T F is symmetric by construction; sym() packs (C + C^T)/2 into
         # Mandel storage, matching the C++ ``SR2(C)`` conversion.
-        C = F.T @ F
+        C = F.base.transpose(-2, -1) @ F
         I = SR2.identity(dtype=F.dtype, device=F.device)
         E = 0.5 * (sym(C) - I)
         if v is None:
@@ -64,6 +64,6 @@ class GreenLagrangeStrain(Model):
         # since dF^T F = (F^T dF)^T, and sym(A) packs (A + A^T)/2 to Mandel.
         # Pure typed wrapper algebra; no R3 derivative kernel built.
         def F_action(V: R2) -> SR2:
-            return sym(F.T @ V)
+            return sym(F.base.transpose(-2, -1) @ V)
 
         return E, self.apply_chain_rule(v, "strain", {"deformation_gradient": F_action}, output=E)

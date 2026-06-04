@@ -42,14 +42,16 @@
     tensor = 'mandel_stress'
     invariant = 'effective_stress'
   []
-  [yield]
+  # Block name avoids the bare `yield` keyword: AOTI export rejects Python
+  # reserved keywords as block names (see neml2.factory._check_python_attr_name).
+  [yield_surface]
     type = YieldFunction
     yield_stress = 1000
     isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
-    models = 'vonmises yield'
+    models = 'vonmises yield_surface'
   []
   [normality]
     type = Normality
@@ -82,7 +84,7 @@
     type = ComposedModel
     models = 'isoharden elastic_strain elasticity
               mandel_stress vonmises
-              yield normality eprate Eprate
+              yield_surface normality eprate Eprate
               consistency integrate_ep integrate_Ep'
   []
 []

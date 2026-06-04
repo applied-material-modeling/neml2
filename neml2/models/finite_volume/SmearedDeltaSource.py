@@ -27,7 +27,6 @@
 from __future__ import annotations
 
 import math
-from typing import cast
 
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
@@ -81,8 +80,8 @@ class SmearedDeltaSource(Model):
     _out_name: str
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
-        mag = cast(Scalar, inputs[0])
-        loc = cast(Scalar, inputs[1])
+        mag = inputs[0]
+        loc = inputs[1]
         w = self._get_param("width", nl_params=(), type_cls=Scalar)
         centers = self._get_param("cell_centers", nl_params=(), type_cls=Scalar)
 

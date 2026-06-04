@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ...chain_rule import ChainRuleDict
@@ -74,15 +72,15 @@ class ContractingGeometry(Model):
         n = self.n
 
         eps = torch.finfo(a.dtype).eps
-        ac = cast(Scalar, clamp(1.0 - a, eps, 1.0 - eps))  # clamp(1 - a, eps, 1 - eps)
-        ac_pow_n = cast(Scalar, pow(ac, n))  # (1 - a)^n
+        ac = clamp(1.0 - a, eps, 1.0 - eps)  # clamp(1 - a, eps, 1 - eps)
+        ac_pow_n = pow(ac, n)  # (1 - a)^n
         f = k * ac_pow_n
         if v is None:
             return f
 
         # Differential pushforward.
         # ∂f/∂a = -k * n * (1 - a)^(n - 1)  (clamp is flat outside [eps, 1-eps])
-        ac_pow_nm1 = cast(Scalar, pow(ac, n - 1.0))
+        ac_pow_nm1 = pow(ac, n - 1.0)
         df_da = -1.0 * k * n * ac_pow_nm1
         # ∂f/∂k = (1 - a)^n
         df_dk = ac_pow_n

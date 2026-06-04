@@ -24,7 +24,7 @@ final_center = 0.625
 [Tensors]
   [edges]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.25, 201, dtype=torch.float64), sub_batch_ndim=1)'
+    expr = 'Scalar.linspace(0.0, 1.25, 201).sub_batch.retag(1)'
   []
   [centers]
     type = Python
@@ -54,7 +54,7 @@ final_center = 0.625
   []
   [time]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, ${t}, 500, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, ${t}, 500)'
   []
 
   [result]

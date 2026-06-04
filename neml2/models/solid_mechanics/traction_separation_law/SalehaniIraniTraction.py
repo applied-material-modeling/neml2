@@ -27,7 +27,6 @@
 from __future__ import annotations
 
 import math
-from typing import cast
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
 from ....factory import register_native
@@ -155,16 +154,12 @@ class SalehaniIraniTraction(Model):
         def _resolved(canon: str) -> str:
             return renames.get(canon, canon)
 
-        dn_sep = cast(Scalar, bound[_resolved("normal_separation")])
-        ds1 = cast(Scalar, bound[_resolved("tangential_separation_1")])
-        ds2 = cast(Scalar, bound[_resolved("tangential_separation_2")])
-        d_old = cast(Scalar, bound[self._d_old_name])
+        dn_sep = bound[_resolved("normal_separation")]
+        ds1 = bound[_resolved("tangential_separation_1")]
+        ds2 = bound[_resolved("tangential_separation_2")]
+        d_old = bound[self._d_old_name]
         dn_pen_name = self._dn_pen_name
-        dn_pen = (
-            cast(Scalar, bound[dn_pen_name])
-            if dn_pen_name is not None and dn_pen_name in bound
-            else None
-        )
+        dn_pen = bound[dn_pen_name] if dn_pen_name is not None and dn_pen_name in bound else None
 
         # Parameters: all five are static (allow_nonlinear defaults to False).
         delta_u0_n = self._get_param("delta_u0_n", nl_params, Scalar)
@@ -194,8 +189,8 @@ class SalehaniIraniTraction(Model):
         one = Scalar.from_value(1.0, like=dn_sep)
         zero = Scalar.from_value(0.0, like=dn_sep)
         d_trial = one - exp_x
-        advance = cast(Scalar, gt(d_trial, d_old))
-        d = cast(Scalar, where(advance, d_trial, d_old))
+        advance = gt(d_trial, d_old)
+        d = where(advance, d_trial, d_old)
         factor = one - d
 
         # -------- Assemble traction.
@@ -224,10 +219,10 @@ class SalehaniIraniTraction(Model):
         dx_ds1 = (one + one) * ds1 * inv_dut2
         dx_ds2 = (one + one) * ds2 * inv_dut2
 
-        dd_ddn = cast(Scalar, where(advance, exp_x * dx_dn, zero))
-        dd_dds1 = cast(Scalar, where(advance, exp_x * dx_ds1, zero))
-        dd_dds2 = cast(Scalar, where(advance, exp_x * dx_ds2, zero))
-        dd_dd_old = cast(Scalar, where(advance, zero, one))
+        dd_ddn = where(advance, exp_x * dx_dn, zero)
+        dd_dds1 = where(advance, exp_x * dx_ds1, zero)
+        dd_dds2 = where(advance, exp_x * dx_ds2, zero)
+        dd_dd_old = where(advance, zero, one)
 
         # T_i = a_i * b_i * factor where factor = (1 - damage). For input dj:
         #   dT_i/dj = a_i * (db_i/dj) * factor - a_i * b_i * d(damage)/dj
@@ -242,28 +237,28 @@ class SalehaniIraniTraction(Model):
         a_t_b_s2 = a_t * b_s2
 
         def _dn_sep_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             T0 = a_n * (factor * db_n_dn - b_n * dd_ddn) * Vs
             T1 = -a_t_b_s1 * dd_ddn * Vs
             T2 = -a_t_b_s2 * dd_ddn * Vs
             return vec_from_scalars(T0, T1, T2)
 
         def _ds1_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             T0 = -a_n_b_n * dd_dds1 * Vs
             T1 = a_t * (factor * db_t_dt - b_s1 * dd_dds1) * Vs
             T2 = -a_t_b_s2 * dd_dds1 * Vs
             return vec_from_scalars(T0, T1, T2)
 
         def _ds2_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             T0 = -a_n_b_n * dd_dds2 * Vs
             T1 = -a_t_b_s1 * dd_dds2 * Vs
             T2 = a_t * (factor * db_t_dt - b_s2 * dd_dds2) * Vs
             return vec_from_scalars(T0, T1, T2)
 
         def _d_old_action(V: Scalar) -> Vec:
-            Vs = cast(Scalar, V)
+            Vs = V
             T0 = -a_n_b_n * dd_dd_old * Vs
             T1 = -a_t_b_s1 * dd_dd_old * Vs
             T2 = -a_t_b_s2 * dd_dd_old * Vs
@@ -271,15 +266,15 @@ class SalehaniIraniTraction(Model):
 
         def _dn_pen_action(V: Scalar) -> Vec:
             # The penalty term Kpen * dn_pen contributes only to T_n.
-            Vs = cast(Scalar, V)
+            Vs = V
             zero_Vs = zero * Vs
             return vec_from_scalars(Kpen * Vs, zero_Vs, zero_Vs)
 
         damage_actions: dict[str, ChainRuleAction] = {
-            "normal_separation": lambda V, c=dd_ddn: c * cast(Scalar, V),
-            "tangential_separation_1": lambda V, c=dd_dds1: c * cast(Scalar, V),
-            "tangential_separation_2": lambda V, c=dd_dds2: c * cast(Scalar, V),
-            self._d_old_name: lambda V, c=dd_dd_old: c * cast(Scalar, V),
+            "normal_separation": lambda V, c=dd_ddn: c * V,
+            "tangential_separation_1": lambda V, c=dd_dds1: c * V,
+            "tangential_separation_2": lambda V, c=dd_dds2: c * V,
+            self._d_old_name: lambda V, c=dd_dd_old: c * V,
         }
 
         traction_actions: dict[str, ChainRuleAction] = {

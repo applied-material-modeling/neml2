@@ -24,6 +24,6 @@
 [Tensors]
   [T]
     type = Python
-    expr = 'Scalar(torch.tensor(1.61753845, dtype=torch.float64))'
+    expr = 'Scalar(1.61753845)'
   []
 []

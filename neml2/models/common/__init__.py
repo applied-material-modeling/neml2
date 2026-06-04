@@ -34,6 +34,7 @@ from .BackwardEulerTimeIntegration import (
     R2BackwardEulerTimeIntegration,
     ScalarBackwardEulerTimeIntegration,
     SR2BackwardEulerTimeIntegration,
+    VecBackwardEulerTimeIntegration,
 )
 from .BilinearInterpolation import (
     ScalarBilinearInterpolation,
@@ -133,6 +134,7 @@ __all__ = [
     "R2BackwardEulerTimeIntegration",
     "ScalarBackwardEulerTimeIntegration",
     "SR2BackwardEulerTimeIntegration",
+    "VecBackwardEulerTimeIntegration",
     "ScalarForwardEulerTimeIntegration",
     "SR2ForwardEulerTimeIntegration",
     "FBComplementarity",

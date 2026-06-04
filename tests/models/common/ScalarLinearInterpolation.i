@@ -22,10 +22,10 @@
 [Tensors]
   [T]
     type = Python
-    expr = "Scalar(torch.linspace(273.15, 2000, 100, dtype=torch.float64)).with_sub_batch(1)"
+    expr = "Scalar(torch.linspace(273.15, 2000, 100, dtype=torch.float64)).sub_batch.retag(1)"
   []
   [E]
     type = Python
-    expr = "Scalar(torch.linspace(1.9e5, 1.2e5, 100, dtype=torch.float64)).with_sub_batch(1)"
+    expr = "Scalar(torch.linspace(1.9e5, 1.2e5, 100, dtype=torch.float64)).sub_batch.retag(1)"
   []
 []

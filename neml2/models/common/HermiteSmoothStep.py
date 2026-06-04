@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ...chain_rule import ChainRuleDict
@@ -80,7 +78,7 @@ class HermiteSmoothStep(Model):
         x1 = self._get_param("x1", nl_params, Scalar)
         eps = torch.finfo(argument.dtype).eps
         dx = x1 - x0
-        u = cast(Scalar, clamp((argument - x0) / dx, eps, 1.0 - eps))
+        u = clamp((argument - x0) / dx, eps, 1.0 - eps)
         y = 3.0 * u * u - 2.0 * u * u * u
         out = 1.0 - y if self._complement else y
         if v is None:

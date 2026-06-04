@@ -90,6 +90,48 @@ jobs:
           action_fail: true
           comment_mode: off
 
+  # Separate slow lane: AOTI compile + export tests. They take several minutes
+  # per test (the inductor compile dominates) so we keep them out of the fast
+  # `test` job above and run them only on linux. Without this lane, regressions
+  # in torch.export / AOTI integration go undetected — e.g. a HIT block named
+  # `yield` slipped through because the recompile-time SyntaxError only
+  # surfaces when the export path actually runs.
+  aoti-test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/neml2-ci
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.0"
+          cpu-torch: true
+      - name: Install
+        run: pip install ".[dev]" -v
+      - name: Run AOTI compile / export tests
+        # `-m aoti_compile` selects only the modules / tests carrying that
+        # marker (the same set that `--run-aoti-compile` ungates). Anything
+        # not so marked has already been covered by the `test` job, so no
+        # work is duplicated. The `--import-mode=importlib` baked into
+        # pyproject.toml keeps the project-root source tree from shadowing
+        # the installed wheel — without it, `from neml2.aoti import Model`
+        # finds `./neml2/aoti/__init__.py` (no compiled `_aoti.so` next to
+        # it) instead of the wheel's `<site-packages>/neml2/aoti/`.
+        run: pytest -v --junitxml=pytest-aoti.xml --run-aoti-compile -m aoti_compile tests
+      - name: Test results
+        uses: EnricoMi/publish-unit-test-result-action/linux@v2
+        if: always()
+        with:
+          files: pytest-aoti.xml
+          check_name: AOTI Test Results
+          check_run: false
+          action_fail: true
+          comment_mode: off
+
   wheels:
     needs: lint
     strategy:

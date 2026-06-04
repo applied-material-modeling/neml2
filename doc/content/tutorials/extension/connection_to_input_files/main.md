@@ -65,16 +65,17 @@ There are three pieces a model author touches:
 
 ## The example model
 
-We will scaffold a deliberately tiny model — a one-dimensional
-projectile under linear drag,
+We will scaffold the same projectile model the previous tutorial
+declared — a `Vec` velocity in, a `Vec` acceleration out, under
+gravity plus linear drag:
 
 $$
-a = -\mu\, v,
+\boldsymbol{a} \;=\; \boldsymbol{g} \;-\; \mu\, \boldsymbol{v},
 $$
 
-with one scalar input (`v`), one scalar output (`a`), and one scalar
-parameter ($\mu$, the dynamic viscosity). The physics is one line of
-torch; the rest of the file is the input-file connection that this
+with $\mu$ a calibratable `Scalar` parameter and $\boldsymbol{g}$ a
+constant `Vec` buffer. The physics is one line of typed-wrapper
+algebra; the rest of the file is the input-file connection that this
 tutorial is about.
 
 ```{literalinclude} projectile.py
@@ -97,13 +98,14 @@ Two things to notice:
    | `input(name, T)` | A variable consumed by `forward`; HIT option of the same name lets the user rename it.  |
    | `output(name, T)`| A variable produced by `forward`; same renaming behavior.           |
    | `parameter(name, T, attr=...)` | A calibratable `nn.Parameter`; the HIT option's value is a literal, a `[Tensors]` cross-reference, or a `[Models]`-output reference.  |
+   | `buffer(name, T, attr=..., default=...)` | A non-trainable constant baked into the model (`nn.Buffer`); same HIT spec shapes as `parameter` minus the `[Models]`-output mode. |
    | `option(name, type, attr=..., default=...)` | A plain scalar/string/bool option stored on the instance. |
    | `dependency(name, "get_model", attr=...)`   | A reference to another model by HIT name; resolved by the factory. |
 
-   The `attr=` on `parameter`/`option`/`dependency` is the instance
-   attribute the resolved value lands on, available to `forward`.
-   For `input`/`output`, the HIT-resolved variable name is recorded
-   in the per-instance `input_spec` / `output_spec` dicts.
+   The `attr=` on `parameter`/`buffer`/`option`/`dependency` is the
+   instance attribute the resolved value lands on, available to
+   `forward`. For `input`/`output`, the HIT-resolved variable name is
+   recorded in the per-instance `input_spec` / `output_spec` dicts.
 
 ## The input file
 
@@ -167,9 +169,9 @@ model.mu
 And the forward operator evaluates as expected:
 
 ```{code-cell} ipython3
-from neml2.types import Scalar
+from neml2.types import Vec
 
-model(Scalar(10.0))
+model(Vec.fill(10.0, 2.0, 0.0))
 ```
 
 ## Confirming the registry entry

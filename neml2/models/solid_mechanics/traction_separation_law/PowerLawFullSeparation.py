@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
@@ -126,8 +124,8 @@ class PowerLawFullSeparation(Model):
         # Opening branch (delta_n > 0).
         beta_sq = beta * beta
         pow_base = beta_sq / GIIc + eps
-        Gc_mixed = cast(Scalar, pow(1.0 / GIc, eta)) + cast(Scalar, pow(pow_base, eta))
-        Gc_term = cast(Scalar, pow(Gc_mixed, -1.0 / eta))
+        Gc_mixed = pow(1.0 / GIc, eta) + pow(pow_base, eta)
+        Gc_term = pow(Gc_mixed, -1.0 / eta)
         prefactor = (2.0 + 2.0 * beta_sq) / (K * delta_c)
         delta_final_open = prefactor * Gc_term
         # Compression branch (delta_n <= 0): pure-shear closed form.
@@ -136,8 +134,8 @@ class PowerLawFullSeparation(Model):
         # Branch select. The mask is treated as constant w.r.t. ``dn``
         # (matches C++ ``.detach()``): ``normal_separation`` carries no
         # action and pushes forward to structural zero.
-        pos_mask = cast(Scalar, gt(dn, 0.0))
-        delta_f = cast(Scalar, where(pos_mask, delta_final_open, delta_final_default))
+        pos_mask = gt(dn, 0.0)
+        delta_f = where(pos_mask, delta_final_open, delta_final_default)
 
         if v is None:
             return delta_f
@@ -158,22 +156,20 @@ class PowerLawFullSeparation(Model):
             # Compression branch is independent of delta_c.
             zero = Scalar.from_value(0.0, like=delta_f)
             ddf_dinit_open = -delta_final_open / delta_c
-            ddf_dinit = cast(Scalar, where(pos_mask, ddf_dinit_open, zero))
-            actions[delta_c_nlp.input_name] = lambda V, c=ddf_dinit: c * cast(Scalar, V)
+            ddf_dinit = where(pos_mask, ddf_dinit_open, zero)
+            actions[delta_c_nlp.input_name] = lambda V, c=ddf_dinit: c * V
 
         beta_nlp = self._nl_params.get("beta")
         if beta_nlp is not None:
             zero = Scalar.from_value(0.0, like=delta_f)
             # dGc_mixed/dbeta = eta (beta^2/GIIc + eps)^(eta-1) (2 beta / GIIc)
-            dGc_mixed_dbeta = eta * cast(Scalar, pow(pow_base, eta - 1.0)) * (2.0 * beta / GIIc)
+            dGc_mixed_dbeta = eta * pow(pow_base, eta - 1.0) * (2.0 * beta / GIIc)
             # dGc_term/dbeta = (-1/eta) Gc_mixed^(-1/eta - 1) dGc_mixed/dbeta
-            dGc_term_dbeta = (
-                (-1.0 / eta) * cast(Scalar, pow(Gc_mixed, -1.0 / eta - 1.0)) * dGc_mixed_dbeta
-            )
+            dGc_term_dbeta = (-1.0 / eta) * pow(Gc_mixed, -1.0 / eta - 1.0) * dGc_mixed_dbeta
             dprefactor_dbeta = 4.0 * beta / (K * delta_c)
             ddf_dbeta_open = dprefactor_dbeta * Gc_term + prefactor * dGc_term_dbeta
-            ddf_dbeta = cast(Scalar, where(pos_mask, ddf_dbeta_open, zero))
-            actions[beta_nlp.input_name] = lambda V, c=ddf_dbeta: c * cast(Scalar, V)
+            ddf_dbeta = where(pos_mask, ddf_dbeta_open, zero)
+            actions[beta_nlp.input_name] = lambda V, c=ddf_dbeta: c * V
 
         return delta_f, self.apply_chain_rule(v, "full_separation", actions, output=delta_f)
 

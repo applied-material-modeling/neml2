@@ -75,7 +75,7 @@ $$ y = f(x; p) $$
 ## Verify
 
 ```bash
-sphinx-build -W -b html doc doc/_build/html
+sphinx-build -j auto -W -b html doc doc/_build/html
 ```
 
 `-W` promotes broken xrefs / missing files / ambiguous anchors to

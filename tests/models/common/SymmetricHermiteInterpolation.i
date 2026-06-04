@@ -2,11 +2,11 @@
 [Tensors]
   [foo]
     type = Python
-    expr = 'Scalar(torch.tensor([-0.5, 0.01, 0.15, 0.6, 0.95, 1.05, 2.0], dtype=torch.float64))'
+    expr = 'Scalar([-0.5, 0.01, 0.15, 0.6, 0.95, 1.05, 2.0])'
   []
   [bar]
     type = Python
-    expr = 'Scalar(torch.tensor([0.0, 0.0, 0.056, 2.0, 0.432, 0.056, 0.0], dtype=torch.float64))'
+    expr = 'Scalar([0.0, 0.0, 0.056, 2.0, 0.432, 0.056, 0.0])'
   []
 []
 

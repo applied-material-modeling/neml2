@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
@@ -103,8 +101,8 @@ class CamanhoDavilaCriticalSeparation(Model):
         # Branch select. The mask is treated as constant w.r.t. ``dn``
         # (matches C++ ``.detach()``): ``normal_separation`` carries no
         # action and pushes forward to structural zero.
-        pos_mask = cast(Scalar, gt(dn, 0.0))
-        delta_c = cast(Scalar, where(pos_mask, delta_init_open, delta_s0))
+        pos_mask = gt(dn, 0.0)
+        delta_c = where(pos_mask, delta_init_open, delta_s0)
 
         if v is None:
             return delta_c
@@ -130,8 +128,8 @@ class CamanhoDavilaCriticalSeparation(Model):
                 * beta
                 * (1.0 / (1.0 + beta_sq) - delta_n0 * delta_n0 / delta_mixed_sq)
             )
-            ddc_dbeta = cast(Scalar, where(pos_mask, ddc_dbeta_open, zero))
-            actions[beta_nlp.input_name] = lambda V, c=ddc_dbeta: c * cast(Scalar, V)
+            ddc_dbeta = where(pos_mask, ddc_dbeta_open, zero)
+            actions[beta_nlp.input_name] = lambda V, c=ddc_dbeta: c * V
 
         return delta_c, self.apply_chain_rule(v, "critical_separation", actions, output=delta_c)
 

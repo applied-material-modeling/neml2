@@ -6,7 +6,7 @@
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar(torch.linspace(0, 1, 5, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0, 1, 5)'
   []
   [strains]
     type = Python

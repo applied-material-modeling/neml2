@@ -27,13 +27,12 @@
 from __future__ import annotations
 
 import math
-from typing import cast
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
-from ...types import Scalar, pow, sub_batch_sum
+from ...types import Scalar, pow, sum
 
 
 @register_native("PrecipitateVolumeFraction")
@@ -86,14 +85,14 @@ class PrecipitateVolumeFraction(Model):
         # sub-batch sum line up. A true scalar radius (no per-bin axis) has
         # data shape ``()`` and falls through unchanged — broadcast handles it.
         if n.sub_batch_ndim > R.sub_batch_ndim and R.data.ndim >= n.sub_batch_ndim:
-            R = R.with_sub_batch(n.sub_batch_ndim)
+            R = R.sub_batch.retag(n.sub_batch_ndim)
 
         # Forward: f = sum_i (4/3) π R_i^3 n_i. Typed Scalar algebra; both R
         # and n carry sub_batch_ndim>=1 over the size-bin axis, then we reduce
         # along the trailing sub-batch axis to a sub_batch_ndim=0 scalar.
-        coef_n = (4.0 / 3.0) * math.pi * cast(Scalar, pow(R, 3.0))
+        coef_n = (4.0 / 3.0) * math.pi * pow(R, 3.0)
         volume = coef_n * n
-        f = cast(Scalar, sub_batch_sum(volume, -1))
+        f = sum(volume.sub_batch, -1)
 
         if v is None:
             return f
@@ -108,16 +107,16 @@ class PrecipitateVolumeFraction(Model):
         actions: dict[str, ChainRuleAction] = {}
 
         def n_action(V: Scalar) -> Scalar:
-            return cast(Scalar, sub_batch_sum(coef_n * V, -1))
+            return sum((coef_n * V).sub_batch, -1)
 
         actions["number_density"] = n_action
 
         R_nlp = self._nl_params.get("R")
         if R_nlp is not None:
-            coef_R = 4.0 * math.pi * cast(Scalar, pow(R, 2.0)) * n
+            coef_R = 4.0 * math.pi * pow(R, 2.0) * n
 
             def R_action(V: Scalar) -> Scalar:
-                return cast(Scalar, sub_batch_sum(coef_R * V, -1))
+                return sum((coef_R * V).sub_batch, -1)
 
             actions[R_nlp.input_name] = R_action
 

@@ -56,14 +56,14 @@
     type = LinearIsotropicHardening
     hardening_modulus = 5500
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 10
     isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
-    models = 'vonmises yield'
+    models = 'vonmises yield_surface'
   []
   [normality]
     type = Normality
@@ -109,7 +109,7 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'mandel_stress vonmises isoharden yield normality flow_rate Eprate eprate Erate Eerate elasticity integrate_stress integrate_ep'
+    models = 'mandel_stress vonmises isoharden yield_surface normality flow_rate Eprate eprate Erate Eerate elasticity integrate_stress integrate_ep'
   []
 []
 

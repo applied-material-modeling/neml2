@@ -17,7 +17,7 @@
   []
   [max_strain]
     type = Python
-    expr = 'SR2(torch.tensor([0.1, -0.05, -0.05, 0.0, 0.0, 0.0], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
+    expr = 'SR2.fill(0.1, -0.05, -0.05, 0.0, 0.0, 0.0).dynamic_batch.expand(20)'
   []
   [strains]
     type = Python
@@ -160,7 +160,7 @@
     tensor = 'overstress'
     invariant = 'effective_stress'
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 1000
     isotropic_hardening = 'isotropic_hardening'
@@ -193,7 +193,7 @@
     models = 'plastic_strain_rate plastic_strain elastic_strain cauchy_stress mandel_stress
               kinematic_plastic_strain_rate kinematic_plastic_strain kinharden
               equivalent_plastic_strain_rate equivalent_plastic_strain isoharden
-              overstress vonmises yield consistency'
+              overstress vonmises yield_surface consistency'
   []
 []
 

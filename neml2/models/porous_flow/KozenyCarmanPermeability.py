@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -91,7 +89,7 @@ class KozenyCarmanPermeability(Model):
         # in-tree fixture's reference output values were computed against it.
         ratio = phi / (1.0 - phi)
         ratio0 = phi0 / (1.0 - phi0)
-        K = K0 * cast(Scalar, pow(ratio, n)) / cast(Scalar, pow(ratio0, m))
+        K = K0 * pow(ratio, n) / pow(ratio0, m)
 
         if v is None:
             return K
@@ -100,13 +98,7 @@ class KozenyCarmanPermeability(Model):
         #   df/dphi = n * (phi/(1-phi))^(n-1) * 1/(1-phi)^2,
         # so dK/dphi = K0 / ratio0^m * n * ratio^(n-1) / (1-phi)^2.
         one_minus_phi = 1.0 - phi
-        dK_dphi = (
-            K0
-            / cast(Scalar, pow(ratio0, m))
-            * (n * cast(Scalar, pow(ratio, n - 1.0)))
-            / one_minus_phi
-            / one_minus_phi
-        )
+        dK_dphi = K0 / pow(ratio0, m) * (n * pow(ratio, n - 1.0)) / one_minus_phi / one_minus_phi
         actions: dict[str, ChainRuleAction] = {
             "porosity": lambda V, c=dK_dphi: c * V,
         }

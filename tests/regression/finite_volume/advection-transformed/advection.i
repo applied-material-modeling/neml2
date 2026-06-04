@@ -17,7 +17,7 @@ t = 1.0
 [Tensors]
   [edges]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 101, dtype=torch.float64), sub_batch_ndim=1)'
+    expr = 'Scalar.linspace(0.0, 1.0, 101).sub_batch.retag(1)'
   []
   [centers]
     type = Python
@@ -34,7 +34,7 @@ t = 1.0
 
   [scale_factor]
     type = Python
-    expr = 'Scalar(torch.tensor(0.1, dtype=torch.float64))'
+    expr = 'Scalar(0.1)'
   []
 
   [true_centers]
@@ -53,7 +53,7 @@ t = 1.0
 
   [cell_velocity]
     type = Python
-    expr = 'Scalar(torch.tensor(0.5, dtype=torch.float64))'
+    expr = 'Scalar(0.5)'
   []
 
   [unscaled_ic]
@@ -68,7 +68,7 @@ t = 1.0
 
   [time]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 500, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, 1.0, 500)'
   []
 []
 

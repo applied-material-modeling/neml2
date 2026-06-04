@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ....chain_rule import ChainRuleDict
@@ -75,10 +73,10 @@ class PowerLawIsotropicHardeningStaticRecovery(Model):
         # h_dot = -(|h| / tau)^(n - 1) * h / tau. ``abs`` / ``pow`` on a Scalar
         # return Scalar at runtime; the explicit casts let pyright see the
         # narrow Scalar type the generic ``TensorWrapper`` signatures discard.
-        abs_h = cast(Scalar, abs(h))
+        abs_h = abs(h)
         u = abs_h / tau  # |h| / tau
         nm1 = n - 1.0
-        h_dot = -cast(Scalar, pow(u, nm1)) * h / tau
+        h_dot = -pow(u, nm1) * h / tau
 
         if v is None:
             return h_dot
@@ -94,21 +92,16 @@ class PowerLawIsotropicHardeningStaticRecovery(Model):
         #   d h_dot / d n   = -h * tau^(-n) * |h|^(n - 1) * log(|h| / tau + eps)
         # where ``eps`` is the dtype's machine epsilon, matching
         # ``machine_precision(_h.scalar_type())`` in the C++ source.
-        coef_h = -n * cast(Scalar, pow(cast(Scalar, abs(h / tau)), nm1)) / cast(Scalar, abs(tau))
+        coef_h = -n * pow(abs(h / tau), nm1) / abs(tau)
 
         h_name = next(iter(self.input_spec))
         actions = {h_name: lambda V, c=coef_h: c * V}
         if "tau" in self._nl_params:
-            coef_tau = n * h * cast(Scalar, pow(tau, -1.0 - n)) * cast(Scalar, pow(abs_h, nm1))
+            coef_tau = n * h * pow(tau, -1.0 - n) * pow(abs_h, nm1)
             actions[self._nl_params["tau"].input_name] = lambda V, c=coef_tau: c * V
         if "n" in self._nl_params:
             eps = torch.finfo(h.dtype).eps
-            coef_n = (
-                -h
-                * cast(Scalar, pow(tau, -n))
-                * cast(Scalar, pow(abs_h, nm1))
-                * log(abs_h / tau + eps)
-            )
+            coef_n = -h * pow(tau, -n) * pow(abs_h, nm1) * log(abs_h / tau + eps)
             actions[self._nl_params["n"].input_name] = lambda V, c=coef_n: c * V
 
         return h_dot, self.apply_chain_rule(v, self._h_rate, actions, output=h_dot)

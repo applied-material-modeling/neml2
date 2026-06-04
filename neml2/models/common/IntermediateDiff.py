@@ -26,15 +26,13 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
 from ...schema import HitSchema, input, option, output
 from ...types import (
     SR2,
-    intmd_diff,
+    diff,
 )
 
 
@@ -72,7 +70,7 @@ class SR2IntermediateDiff(Model):
     ):
         d = self._dim
         n = self._n
-        out = cast(SR2, intmd_diff(x, n, d))
+        out = diff(x.sub_batch, n, d)
         if v is None:
             return out
 
@@ -82,7 +80,7 @@ class SR2IntermediateDiff(Model):
         # the sub-batch ``dim`` index is therefore identical for input and
         # tangent.
         def action(V: SR2) -> SR2:
-            return cast(SR2, intmd_diff(V, n, d))
+            return diff(V.sub_batch, n, d)
 
         return out, self.apply_chain_rule(v, "to", {"from": action}, output=out)
 

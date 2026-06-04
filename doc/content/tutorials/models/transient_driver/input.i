@@ -7,11 +7,11 @@
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar(torch.linspace(0.0, 1.0, 50, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0.0, 1.0, 50)'
   []
   [max_strain]
     type = Python
-    expr = 'SR2(torch.tensor([0.05, -0.025, -0.025, 0.0, 0.0, 0.0], dtype=torch.float64))'
+    expr = 'SR2.fill(0.05, -0.025, -0.025, 0.0, 0.0, 0.0)'
   []
   [strains]
     type = Python
@@ -40,13 +40,13 @@
     tensor = 'mandel_stress'
     invariant = 'effective_stress'
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 5
   []
   [flow]
     type = ComposedModel
-    models = 'vonmises yield'
+    models = 'vonmises yield_surface'
   []
   [normality]
     type = Normality
@@ -85,7 +85,7 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'mandel_stress vonmises yield normality flow_rate Eprate Erate Eerate elasticity integrate_stress'
+    models = 'mandel_stress vonmises yield_surface normality flow_rate Eprate Erate Eerate elasticity integrate_stress'
   []
 []
 

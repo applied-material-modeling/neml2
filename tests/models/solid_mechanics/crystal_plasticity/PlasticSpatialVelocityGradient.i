@@ -35,7 +35,7 @@
   []
   [gamma]
     type = Python
-    expr = 'Scalar(torch.ones(12, dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar.ones(12).sub_batch.retag(1)'
   []
   [lp]
     type = Python

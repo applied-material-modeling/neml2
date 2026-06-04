@@ -15,15 +15,15 @@
 [Tensors]
   [rho]
     type = Python
-    expr = 'Scalar(torch.tensor([1.0, 4.0, 9.0, 16.0])).with_sub_batch(1)'
+    expr = 'Scalar([1.0, 4.0, 9.0, 16.0]).sub_batch.retag(1)'
   []
   [gamma_dot]
     type = Python
-    expr = 'Scalar(torch.tensor([0.1, -0.2, 0.3, -0.4])).with_sub_batch(1)'
+    expr = 'Scalar([0.1, -0.2, 0.3, -0.4]).sub_batch.retag(1)'
   []
   [rho_dot]
     type = Python
-    expr = 'Scalar(torch.tensor([0.15, 0.4, 0.45, 0.0])).with_sub_batch(1)'
+    expr = 'Scalar([0.15, 0.4, 0.45, 0.0]).sub_batch.retag(1)'
   []
 []
 

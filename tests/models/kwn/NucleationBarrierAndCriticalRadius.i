@@ -20,19 +20,19 @@
 [Tensors]
   [gamma]
     type = Python
-    expr = 'Scalar(torch.tensor(0.2, dtype=torch.float64))'
+    expr = 'Scalar(0.2)'
   []
   [dg_total]
     type = Python
-    expr = 'Scalar(torch.tensor(4.0, dtype=torch.float64))'
+    expr = 'Scalar(4.0)'
   []
   [barrier]
     type = Python
-    expr = 'Scalar(torch.tensor(0.03351032163829113, dtype=torch.float64))'
+    expr = 'Scalar(0.03351032163829113)'
   []
   [R_crit]
     type = Python
-    expr = 'Scalar(torch.tensor(0.2, dtype=torch.float64))'
+    expr = 'Scalar(0.2)'
   []
 []
 

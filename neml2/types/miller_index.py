@@ -45,13 +45,18 @@ from typing import ClassVar
 
 import torch
 
-from neml2.types._base import TensorWrapper
+from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
 
 
 @dataclass(frozen=True, eq=False)
-class MillerIndex(TensorWrapper):
-    """Wraps a `torch.Tensor` of shape ``(..., 3)`` carrying Miller indices."""
+class MillerIndex(PrimitiveTensor):
+    """Wraps a `torch.Tensor` of shape ``(..., 3)`` carrying Miller indices.
+
+    Inherits all arithmetic and ``zeros``/``ones``/``full``/``empty``/``fill``
+    factories from :class:`PrimitiveTensor`. No class-specific overrides — the
+    C++ analogue has the same minimal surface.
+    """
 
     data: torch.Tensor
     sub_batch_ndim: int = 0

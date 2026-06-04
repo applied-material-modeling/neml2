@@ -35,6 +35,10 @@ where ``(w0, w1, w2)`` are the stored components. Used for vorticity (plastic
 spin) and the rate variable inside the orientation exponential time
 integration. Mathematical operations (``exp_map``, ``dexp_map``, conversion
 to/from full ``R2``) live in :mod:`functions`.
+
+Arithmetic operators and ``zeros``/``ones``/``full``/``empty``/``fill``
+factories are inherited from :class:`PrimitiveTensor`. The only WR2-specific
+factory is :meth:`identity`, which returns the zero skew (additive identity).
 """
 
 from __future__ import annotations
@@ -44,13 +48,12 @@ from typing import ClassVar
 
 import torch
 
-from neml2.types._base import TensorWrapper, align_scalar_base, align_sub_batch
+from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
-from neml2.types.scalar import Scalar
 
 
 @dataclass(frozen=True, eq=False)
-class WR2(TensorWrapper):
+class WR2(PrimitiveTensor):
     """Wraps a `torch.Tensor` of shape ``(..., 3)`` storing the axial vector."""
 
     data: torch.Tensor
@@ -58,71 +61,12 @@ class WR2(TensorWrapper):
     BASE_NDIM: ClassVar[int] = 1
     BASE_SHAPE: ClassVar[tuple[int, ...]] = (3,)
 
-    # ---- factories ----
-
     @classmethod
     def identity(
         cls, *, dtype: torch.dtype | None = None, device: torch.device | str | None = None
     ) -> WR2:
         """The zero skew tensor — the additive identity (no canonical 'unit' skew)."""
         return cls(torch.zeros(3, dtype=dtype, device=device))
-
-    @classmethod
-    def zeros(
-        cls, *batch: int, dtype: torch.dtype | None = None, device: torch.device | str | None = None
-    ) -> WR2:
-        return cls(torch.zeros(*batch, 3, dtype=dtype, device=device))
-
-    # ---- operator overloads ----
-    #
-    # Every binary op routes through :func:`align_sub_batch` so global and
-    # per-sub-batch-site operands combine cleanly at any dynamic batch size
-    # (mirrors C++ ``utils::align_intmd_dim``). In particular,
-    # ``w - wp`` between a global vorticity ``(B, 3)`` and a per-crystal
-    # plastic vorticity ``(B, 5, 3)`` aligns correctly at any ``B``.
-
-    def __add__(self, other) -> WR2:
-        if isinstance(other, WR2):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return WR2(aa.data + bb.data, sub_batch_ndim=sb)
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return WR2(aa.data + align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        return NotImplemented
-
-    def __radd__(self, other) -> WR2:
-        return self.__add__(other)
-
-    def __sub__(self, other) -> WR2:
-        if isinstance(other, WR2):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return WR2(aa.data - bb.data, sub_batch_ndim=sb)
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return WR2(aa.data - align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        return NotImplemented
-
-    def __neg__(self) -> WR2:
-        return WR2(-self.data, sub_batch_ndim=self.sub_batch_ndim)
-
-    def __mul__(self, other: Scalar | float | int) -> WR2:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return WR2(aa.data * align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return WR2(self.data * other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented  # type: ignore[return-value]
-
-    def __rmul__(self, other: Scalar | float | int) -> WR2:
-        return self.__mul__(other)
-
-    def __truediv__(self, other) -> WR2:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return WR2(aa.data / align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return WR2(self.data / other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented
 
 
 register(WR2)

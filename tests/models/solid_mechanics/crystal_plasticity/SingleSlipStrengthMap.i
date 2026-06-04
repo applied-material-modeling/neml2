@@ -21,7 +21,7 @@
   []
   [hardening]
     type = Python
-    expr = 'Scalar(torch.tensor(7.5))'
+    expr = 'Scalar(7.5)'
   []
   [strengths]
     type = Python

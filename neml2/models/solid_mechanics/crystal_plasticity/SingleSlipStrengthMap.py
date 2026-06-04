@@ -79,14 +79,14 @@ class SingleSlipStrengthMap(Model):
         tau_const = self._get_param("constant_strength", nl_params, Scalar)
         # Broadcast to per-slip: insert a length-nslip sub-batch axis at the end.
         nslip = self._cg.nslip
-        out = (tau_bar + tau_const).sub_batch_expand(nslip, -1)
+        out = (tau_bar + tau_const).sub_batch.expand_at(nslip, -1)
         if v is None:
             return out
 
         # ∂τ̂_k/∂τ_bar = 1 for every k; broadcast the per-crystal tangent
         # along a new trailing sub-batch axis of size nslip.
         def tau_bar_action(V: Scalar) -> Scalar:
-            return V.sub_batch_expand(nslip, -1)
+            return V.sub_batch.expand_at(nslip, -1)
 
         return out, self.apply_chain_rule(
             v, "slip_strengths", {"slip_hardening": tau_bar_action}, output=out

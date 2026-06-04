@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -67,22 +65,22 @@ class DumpInSmallestBin(Model):
     cell_centers: Scalar
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
-        mag = cast(Scalar, inputs[0])
+        mag = inputs[0]
         # cell_centers carries an N-cell axis. The HIT-stored parameter loses
         # its declared sub_batch_ndim metadata (the tensor is stored as a bare
         # nn.Parameter and re-wrapped with sub_batch_ndim=0 on access), so
         # retag here to view that trailing axis as the per-cell sub-batch.
-        centers = self._get_param("cell_centers", nl_params=(), type_cls=Scalar).with_sub_batch(1)
+        centers = self._get_param("cell_centers", nl_params=(), type_cls=Scalar).sub_batch.retag(1)
         N = int(centers.sub_batch_shape[-1])
 
         # Promote mag (sub_batch=0) to a per-cell Scalar of size 1 along a new
         # cell axis -- the C++ ``mag_raw.unsqueeze(...)`` branch when
         # ``_magnitude.intmd_dim() == 0``.
-        mag_cell = mag.sub_batch_unsqueeze(dim=0, n=1)  # Scalar(sub_batch=1, size=1)
+        mag_cell = mag.sub_batch.unsqueeze(0)  # Scalar(sub_batch=1, size=1)
         # Zero tail occupying cells [1, N): same dtype/device as centers (now
         # retagged with sub_batch_ndim=1), new sub-batch axis of size N-1.
         zero_tail = sub_batch_zeros_like(centers, size=N - 1, sub_batch_ndim=1)
-        src = Scalar.sub_batch_cat([mag_cell, zero_tail], dim=0)  # Scalar(sub_batch=1, size=N)
+        src = mag_cell.sub_batch.cat([zero_tail], dim=0)  # Scalar(sub_batch=1, size=N)
 
         if v is None:
             return src
@@ -90,13 +88,13 @@ class DumpInSmallestBin(Model):
         # D-062 pushforward. Forward is linear in ``mag`` (mag occupies cell 0,
         # zeros elsewhere), so the action mirrors the forward structure on the
         # tangent ``V``: lift ``V`` to a per-cell Scalar of size 1, concat with
-        # a zero tail. ``V`` has leading-K dynamic axis; ``sub_batch_unsqueeze``
-        # and ``sub_batch_cat`` both broadcast over the dynamic batch (including
+        # a zero tail. ``V`` has leading-K dynamic axis; both ``sub_batch.unsqueeze``
+        # and ``sub_batch.cat`` broadcast over the dynamic batch (including
         # leading K) cleanly.
         def mag_action(V: Scalar) -> Scalar:
-            V_cell = V.sub_batch_unsqueeze(dim=0, n=1)
+            V_cell = V.sub_batch.unsqueeze(0)
             V_tail = sub_batch_zeros_like(V_cell, size=N - 1, sub_batch_ndim=1)
-            return Scalar.sub_batch_cat([V_cell, V_tail], dim=0)
+            return V_cell.sub_batch.cat([V_tail], dim=0)
 
         return src, self.apply_chain_rule(v, "dumped_source", {"magnitude": mag_action}, output=src)
 

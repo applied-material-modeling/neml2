@@ -14,11 +14,11 @@ oSiCm1 = 0.08
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar(torch.linspace(0, 1e4, 200, dtype=torch.float64))'
+    expr = 'Scalar.linspace(0, 1e4, 200)'
   []
   [alpha]
     type = Python
-    expr = 'Scalar(torch.full((200,), 0.01, dtype=torch.float64))'
+    expr = 'Scalar.full(200, fill_value=0.01)'
   []
 []
 

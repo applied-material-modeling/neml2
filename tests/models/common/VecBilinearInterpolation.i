@@ -30,15 +30,15 @@
 [Tensors]
   [T_vals]
     type = Python
-    expr = "Scalar(torch.tensor([0.0, 1.0, 2.0], dtype=torch.float64)).with_sub_batch(1)"
+    expr = "Scalar(torch.tensor([0.0, 1.0, 2.0], dtype=torch.float64)).sub_batch.retag(1)"
   []
   [eps_vals]
     type = Python
-    expr = "Scalar(torch.tensor([0.0, 2.0], dtype=torch.float64)).with_sub_batch(1)"
+    expr = "Scalar(torch.tensor([0.0, 2.0], dtype=torch.float64)).sub_batch.retag(1)"
   []
   [S]
     type = Python
-    expr = "Vec(torch.tensor([[[1.0, 10.0, 100.0], [2.0, 20.0, 200.0]], [[3.0, 30.0, 300.0], [4.0, 40.0, 400.0]], [[5.0, 50.0, 500.0], [6.0, 60.0, 600.0]]], dtype=torch.float64)).with_sub_batch(2)"
+    expr = "Vec(torch.tensor([[[1.0, 10.0, 100.0], [2.0, 20.0, 200.0]], [[3.0, 30.0, 300.0], [4.0, 40.0, 400.0]], [[5.0, 50.0, 500.0], [6.0, 60.0, 600.0]]], dtype=torch.float64)).sub_batch.retag(2)"
   []
   [E_correct]
     type = Python

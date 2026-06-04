@@ -35,6 +35,7 @@ from ...types import (
     SR2,
     Scalar,
     TensorWrapper,
+    Vec,
 )
 
 
@@ -146,8 +147,21 @@ class R2BackwardEulerTimeIntegration(_BackwardEulerTimeIntegration):
     hit = _backward_euler_schema(R2)
 
 
+@register_native("VecBackwardEulerTimeIntegration")
+class VecBackwardEulerTimeIntegration(_BackwardEulerTimeIntegration):
+    r"""Define the backward Euler time integration residual
+    $r = s - s_n - (t - t_n) \dot{s}$, where $s$ is the variable being
+    integrated, $\dot{s}$ is the variable rate, and $t$ is time.
+    Subscripts $n$ denote quantities from the previous time step.
+    """
+
+    _type = Vec
+    hit = _backward_euler_schema(Vec)
+
+
 __all__ = [
     "ScalarBackwardEulerTimeIntegration",
     "SR2BackwardEulerTimeIntegration",
     "R2BackwardEulerTimeIntegration",
+    "VecBackwardEulerTimeIntegration",
 ]

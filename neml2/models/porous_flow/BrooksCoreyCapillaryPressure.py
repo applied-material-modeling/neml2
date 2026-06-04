@@ -27,7 +27,6 @@
 from __future__ import annotations
 
 import math
-from typing import cast
 
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
@@ -121,27 +120,24 @@ class BrooksCoreyCapillaryPressure(Model):
         # ``where`` are declared generic over ``TensorWrapper``; narrow the
         # results back to ``Scalar`` so pyright sees the Scalar algebra.
         neg_inv_p = -1.0 / p
-        Pc_base = Pt * cast(Scalar, pow(S, neg_inv_p))
-        dPc_dS_base = -Pt / p * cast(Scalar, pow(S, neg_inv_p - 1.0))
+        Pc_base = Pt * pow(S, neg_inv_p)
+        dPc_dS_base = -Pt / p * pow(S, neg_inv_p - 1.0)
 
         if self._log_extension:
             # Evaluate the Brooks-Corey branch at the transition saturation
             # ``Sp`` to anchor the log-linear extension below ``Sp``.
             ln10 = math.log(10.0)
             Sp = Scalar.from_value(self._Sp, like=S)
-            Pcs = Pt * cast(Scalar, pow(Sp, neg_inv_p))
-            dPcs_dS = -Pt / p * cast(Scalar, pow(Sp, neg_inv_p - 1.0))
+            Pcs = Pt * pow(Sp, neg_inv_p)
+            dPcs_dS = -Pt / p * pow(Sp, neg_inv_p - 1.0)
             slope = dPcs_dS / (ln10 * Pcs)
             yintercept = log10(Pcs) - slope * Sp
-            Pc_ext = cast(
-                Scalar,
-                pow(Scalar.from_value(10.0, like=S), slope * S + yintercept),
-            )
+            Pc_ext = pow(Scalar.from_value(10.0, like=S), slope * S + yintercept)
             dPc_ext_dS = (ln10 * slope) * Pc_ext
 
             mask = lt(S, self._Sp)
-            Pc = cast(Scalar, where(mask, Pc_ext, Pc_base))
-            dPc_dS = cast(Scalar, where(mask, dPc_ext_dS, dPc_dS_base))
+            Pc = where(mask, Pc_ext, Pc_base)
+            dPc_dS = where(mask, dPc_ext_dS, dPc_dS_base)
         else:
             Pc = Pc_base
             dPc_dS = dPc_dS_base

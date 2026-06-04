@@ -111,7 +111,7 @@ So when would you go through `[Tensors]`? Three common reasons:
    expression (`torch.linspace(...)`), a CSV file, or a computed
    combination of other tensors — none of which can be written as a
    bare literal in the consumer's field.
-3. **Sub-batch structure.** `.with_sub_batch(n)` tags trailing dims as
+3. **Sub-batch structure.** `.sub_batch.retag(n)` tags trailing dims as
    the sub-batch axis. A bare literal can't carry that metadata.
 
 A representative non-trivial entry, the temperature-controls axis of a
@@ -121,7 +121,7 @@ lookup table:
 [Tensors]
   [T_controls]
     type = Python
-    expr = 'Scalar(torch.linspace(300.0, 1200.0, 20, dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)'
   []
 []
 ```

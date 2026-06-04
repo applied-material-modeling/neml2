@@ -28,7 +28,7 @@ import neml2
 from neml2.types import SR2
 
 model = neml2.load_model("input.i", "elasticity")
-stress = model(SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0])))
+stress = model(SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0))
 ```
 
 `load_model` parses the file and returns the named model ready to call.

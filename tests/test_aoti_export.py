@@ -95,6 +95,12 @@ def test_export_forward_jvp_matches_finite_difference(forward_export):
     """The JVP package's flat Jacobian must agree with central differences on
     the value package."""
     from neml2.export import load_package
+    from neml2.types import TensorWrapper
+
+    def _as_tensor(x):
+        # load_package re-wraps outputs as typed wrappers (SR2 / Scalar / ...);
+        # torch.allclose only accepts raw tensors, so unwrap here.
+        return x.data if isinstance(x, TensorWrapper) else x
 
     _, out_dir = forward_export
 
@@ -105,6 +111,7 @@ def test_export_forward_jvp_matches_finite_difference(forward_export):
     strain = torch.randn(4, 6, generator=gen, dtype=torch.float64) * 1e-3
 
     *_, J = jvp_pkg(strain)
+    J = _as_tensor(J)
     # Elasticity is linear: stress = C : strain, so J = C (6x6) independent of
     # the operating point. Cross-check column-by-column via FD.
     eps = 1e-6
@@ -116,7 +123,7 @@ def test_export_forward_jvp_matches_finite_difference(forward_export):
         if isinstance(s0, tuple):
             s0 = s0[0]
             s1 = s1[0]
-        fd = (s1 - s0) / eps
+        fd = (_as_tensor(s1) - _as_tensor(s0)) / eps
         assert torch.allclose(J[..., k], fd, rtol=5e-4, atol=5e-4)
 
 
@@ -263,21 +270,25 @@ def test_export_implicit_with_predictor_emits_third_artifact(implicit_export):
 
 
 def test_export_unregistered_type_raises(tmp_path):
+    """Asking AOTI to export an unregistered type must fail loudly at the
+    factory boundary, before any compile work happens. Uses an obviously
+    fictional type name so the test stays meaningful as the native catalog
+    expands (we picked a real-but-then-ported v2 type before — it became a
+    pass-through the moment that type was ported).
+    """
     from neml2.cli.aoti_export import export_model_for_aoti
 
     hit_text = """
 [Models]
   [m]
-    type = VoceIsotropicHardening
-    saturated_hardening = 1
-    saturation_rate = 1
+    type = NotARealNeml2Type
   []
 []
 """
     hit_file = tmp_path / "unregistered.i"
     hit_file.write_text(hit_text)
 
-    with pytest.raises(KeyError, match="VoceIsotropicHardening"):
+    with pytest.raises(KeyError, match="NotARealNeml2Type"):
         export_model_for_aoti(hit_file, "m", tmp_path / "out")
 
 
@@ -336,6 +347,11 @@ def test_export_with_nl_parameter_matches_eager(tmp_path):
     assert (tmp_path / "chain.pt2").exists()
 
     # Numerical parity with the eager Python-native model.
+    from neml2.types import TensorWrapper
+
+    def _as_tensor(x):
+        return x.data if isinstance(x, TensorWrapper) else x
+
     eager = load_model(hit_file, "chain")
     pkg = load_package(tmp_path / "chain.pt2")
     in_order = list(eager.input_spec)
@@ -350,4 +366,4 @@ def test_export_with_nl_parameter_matches_eager(tmp_path):
     aoti_out = pkg(*args)
     if isinstance(aoti_out, tuple):
         aoti_out = aoti_out[0]
-    assert torch.allclose(eager_out, aoti_out, rtol=1e-10, atol=1e-10)
+    assert torch.allclose(_as_tensor(eager_out), _as_tensor(aoti_out), rtol=1e-10, atol=1e-10)

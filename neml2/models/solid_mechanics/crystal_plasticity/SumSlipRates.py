@@ -26,13 +26,11 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
 from ....schema import HitSchema, input, output
-from ....types import Scalar, sub_batch_sum
+from ....types import Scalar, sum
 from ....types import abs as tensor_abs
 from ....types import sign as tensor_sign
 
@@ -57,14 +55,14 @@ class SumSlipRates(Model):
         # The slip axis is structurally the trailing dim of `g.data`. The
         # sub_batch_ndim hint resets to 0 across ComposedModel boundaries
         # , so we infer the reduction from tensor shape, not the hint.
-        out = cast(Scalar, sub_batch_sum(tensor_abs(g), -1))
+        out = sum(tensor_abs(g).sub_batch, -1)
         if v is None:
             return out
         # ∂(Σ|γ_k|)/∂γ_k = sign(γ_k); pushforward weights the per-slip tangent
         # then sums over slip — pure typed Scalar algebra.
-        sign_g = cast(Scalar, tensor_sign(g))
+        sign_g = tensor_sign(g)
 
         def g_action(V: Scalar) -> Scalar:
-            return cast(Scalar, sub_batch_sum(sign_g * V, -1))
+            return sum((sign_g * V).sub_batch, -1)
 
         return out, self.apply_chain_rule(v, "sum_slip_rates", {"slip_rates": g_action}, output=out)

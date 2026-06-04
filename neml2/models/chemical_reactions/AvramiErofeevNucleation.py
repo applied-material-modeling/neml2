@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import torch
 
 from ...chain_rule import ChainRuleDict
@@ -83,14 +81,14 @@ class AvramiErofeevNucleation(Model):
 
         u = 1.0 - a  # 1 - a
         mlog_u = -_log(u)  # -log(1 - a)
-        u_pow_n = cast(Scalar, pow(mlog_u, n))  # (-log(1-a))^n
+        u_pow_n = pow(mlog_u, n)  # (-log(1-a))^n
         f = k * u * u_pow_n
         if v is None:
             return f
 
         # Differential pushforward.
         # ∂f/∂a = k * [ n * (-log(1-a))^(n-1) - (-log(1-a))^n ]
-        u_pow_nm1 = cast(Scalar, pow(mlog_u, n - 1.0))
+        u_pow_nm1 = pow(mlog_u, n - 1.0)
         df_da = k * (n * u_pow_nm1 - u_pow_n)
         # ∂f/∂k = (1 - a) * (-log(1-a))^n
         df_dk = u * u_pow_n

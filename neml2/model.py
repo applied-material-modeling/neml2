@@ -222,7 +222,8 @@ class Model(nn.Module, ABC):
         """
         schema = getattr(type(self), "hit", None)
         name_kinds = {"input", "output", "var_inputs", "derived_input", "derived_output"}
-        storable_kinds = {"option", "dependency", "parameter", "parameters"} | name_kinds
+        _typed_storage_kinds = {"parameter", "parameters", "buffer", "buffers"}
+        storable_kinds = {"option", "dependency"} | _typed_storage_kinds | name_kinds
 
         # ``factory`` is reserved: from_hit may inject it for parameter
         # resolution, and direct Python construction may pass it too.
@@ -230,7 +231,7 @@ class Model(nn.Module, ABC):
 
         storable: set[str] = set()
         for field in getattr(schema, "fields", ()):
-            if field.kind in name_kinds or field.kind in {"parameter", "parameters"}:
+            if field.kind in name_kinds or field.kind in _typed_storage_kinds:
                 # Name-bearing and parameter fields are always accepted —
                 # under either the schema option name (user-friendly direct
                 # ctor) or the attr name when one is declared.
@@ -254,18 +255,20 @@ class Model(nn.Module, ABC):
         instance_input: dict[str, type[TensorWrapper]] | None = None
         instance_output: dict[str, type[TensorWrapper]] | None = None
         rename_map: dict[str, str] = {}
-        # Parameter declarations deferred to pass 2 so mode-3/4 promoted-input
-        # writes (which mutate self.input_spec inside declare_typed_parameter)
-        # don't get clobbered by the instance_input assignment at the bottom
-        # of pass 1.
-        deferred_params: list[Any] = []
+        # Parameter / buffer declarations deferred to pass 2 so mode-3/4
+        # promoted-input writes (which mutate ``self.input_spec`` inside
+        # ``declare_typed_parameter``) don't get clobbered by the
+        # ``instance_input`` assignment at the bottom of pass 1. Each entry
+        # is ``(name, value, field)`` — pass 2 dispatches on ``field.kind`` to
+        # the parameter or buffer declarator.
+        deferred_typed: list[Any] = []
 
         for field in getattr(schema, "fields", ()):
             if field.kind not in storable_kinds:
                 continue
             is_name = field.kind in name_kinds
-            is_parameter = field.kind == "parameter"
-            is_parameters = field.kind == "parameters"
+            is_singular = field.kind in {"parameter", "buffer"}
+            is_plural = field.kind in {"parameters", "buffers"}
 
             # Look up the value under attr (HIT-driven path uses ctor_name=attr)
             # or under the option name (direct Python ctor uses the user-friendly
@@ -283,40 +286,42 @@ class Model(nn.Module, ABC):
                 from .schema import _MISSING  # noqa: PLC0415
 
                 value = field.name if field.default is _MISSING else field.default
-            elif (is_parameter or is_parameters) and not field.required:
-                # Direct Python construction without HIT: a parameter with a
-                # schema default (e.g. literal "1.0") still needs declaring.
+            elif (is_singular or is_plural) and not field.required:
+                # Direct Python construction without HIT: a parameter/buffer
+                # with a schema default (e.g. literal "1.0") still needs
+                # declaring.
                 value = field.default
             elif field.attr is not None and not field.required:
                 value = field.default
             else:
                 continue
 
-            if is_parameter:
+            if is_singular:
                 # Defer to pass 2 — declare_typed_parameter may extend
                 # input_spec (mode 3/4), which would race against the
-                # instance_input assignment below.
-                deferred_params.append((field.ctor_name, value, field))
+                # instance_input assignment below. Buffers are deferred for
+                # symmetry even though they never extend input_spec.
+                deferred_typed.append((field.ctor_name, value, field))
                 continue
 
-            if is_parameters:
-                # Expand each list entry into its own parameter named
+            if is_plural:
+                # Expand each list entry into its own parameter/buffer named
                 # ``<attr-or-name>_<i>``. Defer to pass 2 (same reason as
-                # single parameters). Store the registered names on
-                # self.<attr> so the leaf can iterate them in forward.
+                # the singular case). Store the registered names on
+                # ``self.<attr>`` so the leaf can iterate them in forward.
                 if isinstance(value, str):
                     specs = value.split()
                 elif isinstance(value, (list, tuple)):
                     specs = list(value)
                 else:
                     raise TypeError(
-                        f"parameters({field.name!r}): expected list/tuple/string, "
+                        f"{field.kind}({field.name!r}): expected list/tuple/string, "
                         f"got {type(value).__name__}"
                     )
                 base = field.attr or field.name
                 names = [f"{base}_{i}" for i in range(len(specs))]
                 for name, spec in zip(names, specs, strict=True):
-                    deferred_params.append((name, spec, field))
+                    deferred_typed.append((name, spec, field))
                 if field.attr is not None:
                     setattr(self, field.attr, names)
                 continue
@@ -388,17 +393,27 @@ class Model(nn.Module, ABC):
         if rename_map:
             self._var_renames = rename_map
 
-        # Pass 2: declare parameters. Runs after instance_input/output were
-        # applied, so mode-3/4 promoted-input writes inside
-        # declare_typed_parameter stick.
-        for name, value, field in deferred_params:
-            self.declare_typed_parameter(
-                name,
-                value,
-                field.value_type,
-                factory=factory,
-                allow_nonlinear=field.allow_nonlinear,
-            )
+        # Pass 2: declare parameters / buffers. Runs after instance_input/output
+        # were applied, so mode-3/4 promoted-input writes inside
+        # ``declare_typed_parameter`` stick. ``buffer`` / ``buffers`` fields
+        # dispatch to ``declare_typed_buffer``, which has no input-promotion
+        # modes (constants only).
+        for name, value, field in deferred_typed:
+            if field.kind in {"buffer", "buffers"}:
+                self.declare_typed_buffer(
+                    name,
+                    value,
+                    field.value_type,
+                    factory=factory,
+                )
+            else:
+                self.declare_typed_parameter(
+                    name,
+                    value,
+                    field.value_type,
+                    factory=factory,
+                    allow_nonlinear=field.allow_nonlinear,
+                )
 
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> Any:
@@ -460,6 +475,9 @@ class Model(nn.Module, ABC):
         self, name: str, value: TensorWrapper, persistent: bool = True
     ) -> None:
         """Register a typed tensor buffer (no autograd; baked as a constant by AOTI export)."""
+        from .factory import _check_python_attr_name  # noqa: PLC0415  (avoid import cycle)
+
+        _check_python_attr_name(name, kind="buffer", owner=type(self).__name__)
         self.register_buffer(name, value.data, persistent=persistent)
         self._typed_storage_classes[name] = type(value)
         self._typed_storage_sub_batch_ndim[name] = value.sub_batch_ndim
@@ -474,6 +492,9 @@ class Model(nn.Module, ABC):
         ``aoti_export._freeze_parameters_to_buffers``); the forward-only AOTI
         graph is unchanged.
         """
+        from .factory import _check_python_attr_name  # noqa: PLC0415  (avoid import cycle)
+
+        _check_python_attr_name(name, kind="parameter", owner=type(self).__name__)
         self.register_parameter(name, nn.Parameter(value.data))
         self._typed_storage_classes[name] = type(value)
         self._typed_storage_sub_batch_ndim[name] = value.sub_batch_ndim
@@ -644,6 +665,96 @@ class Model(nn.Module, ABC):
             tail_index=len(self._nl_params),
             provider=provider,
             provider_output=provider_output,
+        )
+
+    def declare_typed_buffer(
+        self,
+        name: str,
+        spec,
+        type_cls: type[TensorWrapper],
+        *,
+        factory: _NativeInputFile | None = None,
+    ) -> None:
+        """Resolve *spec* as a constant value and register it as a typed buffer.
+
+        Buffer-flavored sibling of :meth:`declare_typed_parameter`. Accepts
+        the same literal / [Tensors]-cross-ref spec shapes (modes 1 and 2)
+        but *not* the input-promotion modes (3 / 4): a buffer is a constant
+        baked into the model, so promoting it to a chain-rule input would
+        contradict its semantics.
+
+        Resolution order:
+
+        1. ``TensorWrapper`` / ``torch.Tensor`` / ``float`` / ``int`` — wrap
+           as ``type_cls`` and register via :meth:`register_typed_buffer`.
+        2. ``str``:
+
+           a. Try parse as a whitespace-separated list of floats — register
+              as a typed buffer (HIT literal).
+           b. If a *factory* is available, try ``factory.get_tensor(spec)``
+              — register as a typed buffer ([Tensors] cross-ref).
+
+        Raises ``ValueError`` on any string spec that resolves to neither a
+        literal nor a ``[Tensors]`` entry.
+        """
+        # ── mode 1: already-loaded value ──────────────────────────────────────
+        # ``clone()`` defensively so a schema default ``Vec.fill(...)``
+        # (constructed once at class-definition) doesn't end up shared across
+        # every instance of the leaf — each model owns its buffer storage.
+        if isinstance(spec, TensorWrapper):
+            self.register_typed_buffer(name, type(spec)(spec.data.clone()))
+            return
+        if isinstance(spec, torch.Tensor):
+            self.register_typed_buffer(name, type_cls(spec.to(dtype=torch.float64).clone()))
+            return
+        if isinstance(spec, (int, float)):
+            self.register_typed_buffer(
+                name, type_cls(torch.as_tensor(float(spec), dtype=torch.float64))
+            )
+            return
+
+        if not isinstance(spec, str):
+            raise TypeError(
+                f"declare_typed_buffer({name!r}): unsupported spec type "
+                f"{type(spec).__name__}; expected float/int/Tensor/TensorWrapper/str"
+            )
+
+        # ── mode 1: HIT literal — try whitespace-separated float list ─────────
+        try:
+            floats = [float(tok) for tok in spec.split()]
+        except ValueError:
+            floats = None
+        if floats is not None:
+            t = torch.tensor(floats, dtype=torch.float64)
+            if len(floats) == 1:
+                t = t.squeeze(0)
+            self.register_typed_buffer(name, type_cls(t))
+            return
+
+        # ── mode 2: factory.get_tensor lookup ([Tensors] cross-ref) ───────────
+        if factory is not None:
+            try:
+                tensor_val = factory.get_tensor(spec)
+            except KeyError:
+                tensor_val = None
+            if tensor_val is not None:
+                if isinstance(tensor_val, type_cls):
+                    pass
+                elif isinstance(tensor_val, torch.Tensor):
+                    tensor_val = type_cls(tensor_val.to(dtype=torch.float64))
+                else:
+                    raise TypeError(
+                        f"[Tensors/{spec}] returned {type(tensor_val).__name__!r}, "
+                        f"but buffer {name!r} expects {type_cls.__name__!r}."
+                    )
+                self.register_typed_buffer(name, tensor_val)
+                return
+
+        raise ValueError(
+            f"declare_typed_buffer({name!r}): cannot resolve spec {spec!r} as a literal "
+            "or [Tensors] entry. Buffers are constant values — promoting them to an "
+            "input is not supported (use a parameter with allow_nonlinear=True if you "
+            "need that)."
         )
 
     def _get_param(self, name: str, nl_params: Sequence[TensorWrapper], type_cls: type[_TW]) -> _TW:
@@ -939,4 +1050,4 @@ def _retag_to_output(contribution: TensorWrapper, output: TensorWrapper) -> Tens
     """
     if contribution.sub_batch_ndim <= output.sub_batch_ndim:
         return contribution
-    return contribution.with_sub_batch(output.sub_batch_ndim)
+    return contribution.sub_batch.retag(output.sub_batch_ndim)

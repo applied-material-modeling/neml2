@@ -13,19 +13,19 @@
 [Tensors]
   [phi]
     type = Python
-    expr = 'Scalar(torch.tensor([0.01, 0.65, 0.98], dtype=torch.float64))'
+    expr = 'Scalar([0.01, 0.65, 0.98])'
   []
   [phi0]
     type = Python
-    expr = 'Scalar(torch.tensor([0.71, 0.35, 1.0], dtype=torch.float64))'
+    expr = 'Scalar([0.71, 0.35, 1.0])'
   []
   [p]
     type = Python
-    expr = 'Scalar(torch.tensor([0.0, 0.4, 1.8], dtype=torch.float64))'
+    expr = 'Scalar([0.0, 0.4, 1.8])'
   []
   [K]
     type = Python
-    expr = 'Scalar(torch.tensor([3.0, 3.842902621, 2.892865159], dtype=torch.float64))'
+    expr = 'Scalar([3.0, 3.842902621, 2.892865159])'
   []
 []
 

@@ -32,14 +32,14 @@
 [Tensors]
   [T_vals]
     type = Python
-    expr = "Scalar(torch.tensor([0.0, 1.0, 2.0], dtype=torch.float64)).with_sub_batch(1)"
+    expr = "Scalar(torch.tensor([0.0, 1.0, 2.0], dtype=torch.float64)).sub_batch.retag(1)"
   []
   [eps_vals]
     type = Python
-    expr = "Scalar(torch.tensor([0.0, 2.0], dtype=torch.float64)).with_sub_batch(1)"
+    expr = "Scalar(torch.tensor([0.0, 2.0], dtype=torch.float64)).sub_batch.retag(1)"
   []
   [S]
     type = Python
-    expr = "Scalar(torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]], dtype=torch.float64)).with_sub_batch(2)"
+    expr = "Scalar(torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]], dtype=torch.float64)).sub_batch.retag(2)"
   []
 []

@@ -10,7 +10,7 @@
   []
   [max_strain]
     type = Python
-    expr = 'SR2(torch.tensor([0.1, -0.05, -0.05, 0.0, 0.0, 0.0], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
+    expr = 'SR2.fill(0.1, -0.05, -0.05, 0.0, 0.0, 0.0).dynamic_batch.expand(20)'
   []
   [strains]
     type = Python
@@ -62,14 +62,14 @@
     tensor = 'mandel_stress'
     invariant = 'effective_stress'
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 5
     isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
-    models = 'vonmises yield'
+    models = 'vonmises yield_surface'
   []
   [normality]
     type = Normality
@@ -99,7 +99,7 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'isoharden elastic_strain elasticity mandel_stress vonmises yield normality flow_rate eprate Eprate integrate_ep integrate_Ep'
+    models = 'isoharden elastic_strain elasticity mandel_stress vonmises yield_surface normality flow_rate eprate Eprate integrate_ep integrate_Ep'
   []
 []
 

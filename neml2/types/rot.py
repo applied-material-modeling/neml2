@@ -30,10 +30,16 @@ the same convention as ``include/neml2/tensors/Rot.h``; it differs from the
 standard Rodrigues parameters ``n * tan(theta/2)`` (which can be obtained by
 the inverse map). The zero vector is the identity rotation.
 
-Mathematical operations on rotations (composition, exponential map, Euler
-matrix conversion, derivatives) live in :mod:`neml2.types.functions`
-as free functions. The class itself only carries constructors, operators,
-and shape/dim traits.
+MRPs aren't a vector space in the rotation-composition sense, but the
+underlying 3-vector storage supports the usual scalar arithmetic. The Newton
+residual in ``WR2ImplicitExponentialTimeIntegration`` uses ``-`` between Rots
+as elementwise 3-vector subtraction (correct as long as both sides are MRPs
+of the same orientation up to roundoff). Composition itself goes through the
+free :func:`compose` in :mod:`functions`.
+
+Arithmetic operators and ``zeros``/``ones``/``full``/``empty``/``fill``
+factories are inherited from :class:`PrimitiveTensor`. The only Rot-specific
+factory is :meth:`identity`.
 """
 
 from __future__ import annotations
@@ -43,13 +49,12 @@ from typing import ClassVar
 
 import torch
 
-from neml2.types._base import TensorWrapper, align_scalar_base, align_sub_batch
+from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
-from neml2.types.scalar import Scalar
 
 
 @dataclass(frozen=True, eq=False)
-class Rot(TensorWrapper):
+class Rot(PrimitiveTensor):
     """Wraps a `torch.Tensor` of shape ``(..., 3)`` in MRP packing."""
 
     data: torch.Tensor
@@ -57,73 +62,12 @@ class Rot(TensorWrapper):
     BASE_NDIM: ClassVar[int] = 1
     BASE_SHAPE: ClassVar[tuple[int, ...]] = (3,)
 
-    # ---- factories ----
-
     @classmethod
     def identity(
         cls, *, dtype: torch.dtype | None = None, device: torch.device | str | None = None
     ) -> Rot:
         """The identity rotation — the zero MRP vector."""
         return cls(torch.zeros(3, dtype=dtype, device=device))
-
-    @classmethod
-    def zeros(
-        cls, *batch: int, dtype: torch.dtype | None = None, device: torch.device | str | None = None
-    ) -> Rot:
-        return cls(torch.zeros(*batch, 3, dtype=dtype, device=device))
-
-    # ---- operator overloads ----
-    #
-    # MRPs aren't a vector space in the rotation-composition sense, but the
-    # underlying 3-vector storage supports the usual scalar arithmetic.
-    # WR2ImplicitExponentialTimeIntegration's residual ``r = s - s_n.rotate(inc)``
-    # uses ``-`` between Rots as elementwise 3-vector subtraction (the residual
-    # is set to zero by the Newton solve, so the algebra is correct as long as
-    # both sides are MRPs of the same orientation up to roundoff). Composition
-    # itself goes through the free ``compose(Rot, Rot)`` function.
-
-    def __add__(self, other) -> Rot:
-        if isinstance(other, Rot):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return Rot(aa.data + bb.data, sub_batch_ndim=sb)
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return Rot(aa.data + align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        return NotImplemented
-
-    def __radd__(self, other) -> Rot:
-        return self.__add__(other)
-
-    def __sub__(self, other) -> Rot:
-        if isinstance(other, Rot):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return Rot(aa.data - bb.data, sub_batch_ndim=sb)
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return Rot(aa.data - align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        return NotImplemented
-
-    def __neg__(self) -> Rot:
-        return Rot(-self.data, sub_batch_ndim=self.sub_batch_ndim)
-
-    def __mul__(self, other: Scalar | float | int) -> Rot:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return Rot(aa.data * align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return Rot(self.data * other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented  # type: ignore[return-value]
-
-    def __rmul__(self, other: Scalar | float | int) -> Rot:
-        return self.__mul__(other)
-
-    def __truediv__(self, other) -> Rot:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return Rot(aa.data / align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return Rot(self.data / other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented
 
 
 register(Rot)

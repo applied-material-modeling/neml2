@@ -39,11 +39,11 @@
   # Prescribed forces (no sub-batch — they are global per timestep).
   [control]
     type = Python
-    expr = 'SR2(torch.tensor([1.0, 0, 0, 0, 0, 0], dtype=torch.float64).reshape(1, 6).expand(100, 1, 6).contiguous())'
+    expr = 'SR2.fill(1.0, 0, 0, 0, 0, 0).dynamic_batch.expand(100, 1)'
   []
   [prescribed]
     type = Python
-    expr = 'SR2(torch.tensor([1e-3, 0, 0, 0, 0, 0], dtype=torch.float64).reshape(1, 6).expand(100, 1, 6).contiguous())'
+    expr = 'SR2.fill(1e-3, 0, 0, 0, 0, 0).dynamic_batch.expand(100, 1)'
   []
   [vorticity]
     type = Python

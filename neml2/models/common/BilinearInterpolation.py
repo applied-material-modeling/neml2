@@ -34,8 +34,6 @@ analytical chain-rule slopes from
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -110,16 +108,16 @@ def _make_bilinear(type_name: str, ordinate_cls: type[TensorWrapper]) -> type[Mo
             Y = self._get_param("ordinate", nl_params, ordinate_cls)
             # The ordinate as registered carries ``sub_batch_ndim=0``; re-tag
             # to the (N1, N2) sub-batch layout the primitive expects.
-            Y_sb = Y.with_sub_batch(2)
-            X1_sb = X1.with_sub_batch(1)
-            X2_sb = X2.with_sub_batch(1)
-            out = cast(TensorWrapper, bilinear_interpolation(x1, x2, X1_sb, X2_sb, Y_sb))
+            Y_sb = Y.sub_batch.retag(2)
+            X1_sb = X1.sub_batch.retag(1)
+            X2_sb = X2.sub_batch.retag(1)
+            out = bilinear_interpolation(x1, x2, X1_sb, X2_sb, Y_sb)
             if v is None:
                 return out
 
             slope1, slope2 = bilinear_interpolation_slopes(x1, x2, X1_sb, X2_sb, Y_sb)
-            slope1_c = cast(TensorWrapper, slope1)
-            slope2_c = cast(TensorWrapper, slope2)
+            slope1_c = slope1
+            slope2_c = slope2
 
             def x1_action(V: Scalar) -> TensorWrapper:
                 # slope * V broadcasts the Scalar tangent across the ordinate's

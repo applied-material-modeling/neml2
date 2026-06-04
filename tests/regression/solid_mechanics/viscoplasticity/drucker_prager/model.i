@@ -10,7 +10,7 @@
   []
   [max_strain]
     type = Python
-    expr = 'SR2(torch.tensor([0.1, -0.01, -0.02, 0.0, 0.0, 0.0], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
+    expr = 'SR2.fill(0.1, -0.01, -0.02, 0.0, 0.0, 0.0).dynamic_batch.expand(20)'
   []
   [strains]
     type = Python
@@ -61,7 +61,7 @@
     type = LinearIsotropicHardening
     hardening_modulus = 1000
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 50
     effective_stress = 'effective_stress'
@@ -69,7 +69,7 @@
   []
   [flow]
     type = ComposedModel
-    models = 'vonmises first_invariant effective_stress yield'
+    models = 'vonmises first_invariant effective_stress yield_surface'
   []
   [normality]
     type = Normality

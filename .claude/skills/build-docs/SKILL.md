@@ -24,9 +24,14 @@ End-to-end documentation build for NEML2. The doc pipeline is a single
 
 ```bash
 pip install ".[dev]" -v
-sphinx-build -b html doc doc/_build/html
+sphinx-build -j auto -b html doc doc/_build/html
 xdg-open doc/_build/html/index.html       # macOS: `open ...`
 ```
+
+`-j auto` parallelises HTML emission across the available cores —
+roughly halves the wall-clock for a cold build on a typical laptop.
+The `neml2_syntax` extension's `neml2-syntax --json` invocation runs
+once at build start and is unaffected.
 
 Add `-W` (warnings as errors) when you want CI parity. Add `-E` (rebuild
 environment) after a toctree change if some pages still show stale

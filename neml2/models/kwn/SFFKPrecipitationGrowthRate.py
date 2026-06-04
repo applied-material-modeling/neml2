@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -131,14 +129,14 @@ class SFFKPrecipitationGrowthRate(Model):
         d_rate_dsum = -rate / proj_sum
 
         def sum_action(V: Scalar) -> Scalar:
-            return cast(Scalar, d_rate_dsum * V)
+            return d_rate_dsum * V
 
         actions["projected_diffusivity_sum"] = sum_action
 
         d_rate_dT = -rate / T
 
         def T_action(V: Scalar) -> Scalar:
-            return cast(Scalar, d_rate_dT * V)
+            return d_rate_dT * V
 
         actions["temperature"] = T_action
 
@@ -147,7 +145,7 @@ class SFFKPrecipitationGrowthRate(Model):
             d_rate_dR = -rate / R
 
             def R_action(V: Scalar) -> Scalar:
-                return cast(Scalar, d_rate_dR * V)
+                return d_rate_dR * V
 
             actions[R_nlp.input_name] = R_action
 
@@ -156,7 +154,7 @@ class SFFKPrecipitationGrowthRate(Model):
             inv_denom = 1.0 / denom
 
             def dg_action(V: Scalar) -> Scalar:
-                return cast(Scalar, inv_denom * V)
+                return inv_denom * V
 
             actions[dg_nlp.input_name] = dg_action
 
@@ -165,7 +163,7 @@ class SFFKPrecipitationGrowthRate(Model):
             d_rate_dRg = -rate / R_g
 
             def R_g_action(V: Scalar) -> Scalar:
-                return cast(Scalar, d_rate_dRg * V)
+                return d_rate_dRg * V
 
             actions[R_g_nlp.input_name] = R_g_action
 

@@ -25,13 +25,13 @@ mu = 0.2
 zeta = 0.05
 
 [Tensors]
-  [yield]
+  [yield_surface]
     type = Python
     expr = 'Scalar(torch.tensor(${Y}, dtype=torch.float64))'
   []
   [endtime]
     type = Python
-    expr = 'Scalar(torch.tensor([2700.0], dtype=torch.float64))'
+    expr = 'Scalar([2700.0])'
   []
   [times]
     type = Python
@@ -39,7 +39,7 @@ zeta = 0.05
   []
   [T]
     type = Python
-    expr = 'Scalar(torch.linspace(300.0, 1500.0, ${nstep}, dtype=torch.float64))'
+    expr = 'Scalar.linspace(300.0, 1500.0, ${nstep})'
   []
 []
 

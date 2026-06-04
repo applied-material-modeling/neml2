@@ -26,13 +26,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
-from ....types import R2, Scalar, jvp_rotate_r2, rotate_r2, sub_batch_sum
+from ....types import R2, Scalar, jvp_rotate, rotate, sum
 
 if TYPE_CHECKING:
     from ....data import CrystalGeometry
@@ -77,22 +77,22 @@ class PlasticSpatialVelocityGradient(Model):
     ):
         A = self._cg.A  # R2 sub_batch_ndim=1, the full d_i (x) n_i Schmid tensor
         weighted = A * g
-        lp_cry = cast(R2, sub_batch_sum(weighted, -1))
+        lp_cry = sum(weighted.sub_batch, -1)
         # Rotate to lab frame: l^p = R · lp_cry · R^T (no sym/skew projection).
-        lp = rotate_r2(lp_cry, R)
+        lp = rotate(lp_cry, R)
         if v is None:
             return lp
 
         # Differential pushforwards, mirror of PlasticDeformationRate:
-        #   R:  d(lp) = jvp_rotate_r2(lp_cry, R, dR)  (product rule, typed)
-        #   gamma_dot: rotate_r2(., R) is LINEAR in lp_cry = Sum_k gamma_dot_k A_k,
+        #   R:  d(lp) = jvp_rotate(lp_cry, R, dR)  (product rule, typed)
+        #   gamma_dot: rotate(., R) is LINEAR in lp_cry = Sum_k gamma_dot_k A_k,
         #             so push the slip-rate tangent through the same sum + rotation,
         #             no Jacobian.
         def R_action(V: R2) -> R2:
-            return jvp_rotate_r2(lp_cry, R, V)
+            return jvp_rotate(lp_cry, R, V)
 
         def g_action(V: Scalar) -> R2:
-            return rotate_r2(cast(R2, sub_batch_sum(A * V, -1)), R)
+            return rotate(sum((A * V).sub_batch, -1), R)
 
         return lp, self.apply_chain_rule(
             v,

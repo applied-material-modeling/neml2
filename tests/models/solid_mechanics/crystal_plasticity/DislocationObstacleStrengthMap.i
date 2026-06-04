@@ -15,11 +15,11 @@
 [Tensors]
   [rho]
     type = Python
-    expr = 'Scalar(torch.tensor([1.0, 4.0, 9.0, 16.0])).with_sub_batch(1)'
+    expr = 'Scalar([1.0, 4.0, 9.0, 16.0]).sub_batch.retag(1)'
   []
   [tau]
     type = Python
-    expr = 'Scalar(torch.tensor([15.0, 25.0, 35.0, 45.0])).with_sub_batch(1)'
+    expr = 'Scalar([15.0, 25.0, 35.0, 45.0]).sub_batch.retag(1)'
   []
 []
 

@@ -26,6 +26,11 @@
 
 Base shape ``(6,)``; packing ``[xx, yy, zz, sqrt(2)*yz, sqrt(2)*xz, sqrt(2)*xy]``
 to match ``include/neml2/tensors/SR2.h``.
+
+Arithmetic operators and ``zeros``/``ones``/``full``/``empty`` factories are
+inherited from :class:`PrimitiveTensor`. SR2-specific: :meth:`identity`
+(returns the Mandel-packed unit tensor) and a Mandel-aware :meth:`fill`
+override that accepts 1, 3, or 6 components with √2 shear scaling.
 """
 
 from __future__ import annotations
@@ -35,13 +40,12 @@ from typing import ClassVar
 
 import torch
 
-from neml2.types._base import TensorWrapper, align_scalar_base, align_sub_batch
+from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
-from neml2.types.scalar import Scalar
 
 
 @dataclass(frozen=True, eq=False)
-class SR2(TensorWrapper):
+class SR2(PrimitiveTensor):
     """Wraps a `torch.Tensor` of shape ``(..., 6)`` in Mandel packing."""
 
     data: torch.Tensor
@@ -49,19 +53,11 @@ class SR2(TensorWrapper):
     BASE_NDIM: ClassVar[int] = 1
     BASE_SHAPE: ClassVar[tuple[int, ...]] = (6,)
 
-    # ---- factories ----
-
     @classmethod
     def identity(
         cls, *, dtype: torch.dtype | None = None, device: torch.device | str | None = None
     ) -> SR2:
         return cls(torch.tensor([1.0, 1.0, 1.0, 0.0, 0.0, 0.0], dtype=dtype, device=device))
-
-    @classmethod
-    def zeros(
-        cls, *batch: int, dtype: torch.dtype | None = None, device: torch.device | str | None = None
-    ) -> SR2:
-        return cls(torch.zeros(*batch, 6, dtype=dtype, device=device))
 
     @classmethod
     def fill(
@@ -77,7 +73,9 @@ class SR2(TensorWrapper):
         * 6 values ``s11 s22 s33 s23 s13 s12`` -> the full symmetric tensor; the
           three shear entries are scaled by ``sqrt(2)`` into Mandel storage.
 
-        This is the native translation of the C++ ``FillSR2`` user tensor.
+        Overrides the generic :meth:`PrimitiveTensor.fill` to handle the short
+        forms and the Mandel √2 scaling. The 6-component form is *not* a raw
+        ``tensor([...]).reshape((6,))`` — the shear scaling matters.
         """
         vals = [float(c) for c in components]
         if len(vals) == 1:
@@ -90,62 +88,6 @@ class SR2(TensorWrapper):
         else:
             raise ValueError(f"SR2.fill expects 1, 3, or 6 components, got {len(vals)}")
         return cls(torch.tensor(data, dtype=dtype, device=device))
-
-    # ---- operator overloads ----
-    #
-    # Every binary op routes through :func:`align_sub_batch` so global and
-    # per-sub-batch-site operands combine cleanly at any dynamic batch size.
-    # Mirrors C++ ``utils::align_intmd_dim`` — every typed-tensor operator in
-    # ``src/neml2/tensors/functions/operators.cxx`` does the same.
-
-    def __add__(self, other) -> SR2:
-        if isinstance(other, SR2):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SR2(aa.data + bb.data, sub_batch_ndim=sb)
-        if isinstance(other, Scalar):
-            # ``Scalar + SR2``: broadcast the Scalar across SR2's trailing
-            # (6,) base. Mirrors the multiply path; see align_scalar_base
-            # for the 0-d-aware unsqueeze.
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SR2(aa.data + align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        return NotImplemented
-
-    def __radd__(self, other) -> SR2:
-        return self.__add__(other)
-
-    def __sub__(self, other) -> SR2:
-        if isinstance(other, SR2):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SR2(aa.data - bb.data, sub_batch_ndim=sb)
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SR2(aa.data - align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        return NotImplemented
-
-    def __neg__(self) -> SR2:
-        return SR2(-self.data, sub_batch_ndim=self.sub_batch_ndim)
-
-    def __mul__(self, other: Scalar | float | int) -> SR2:
-        if isinstance(other, Scalar):
-            # Scalar-mixed product: align sub-batch, then base-unsqueeze the
-            # Scalar's data to broadcast against the SR2's trailing (6,) base.
-            # Mirrors C++ operators.cxx:150-160 (Scalar unsqueezed across the base dim).
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SR2(aa.data * align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return SR2(self.data * other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented  # type: ignore[return-value]
-
-    def __rmul__(self, other: Scalar | float | int) -> SR2:
-        return self.__mul__(other)
-
-    def __truediv__(self, other) -> SR2:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SR2(aa.data / align_scalar_base(bb.data, 1), sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return SR2(self.data / other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented
 
 
 register(SR2)

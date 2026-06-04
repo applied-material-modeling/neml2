@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -136,7 +134,7 @@ class RateLimitedPrecipitateGrowthRate(Model):
         d_rate_dx = coef / dx
 
         def x_action(V: Scalar) -> Scalar:
-            return cast(Scalar, d_rate_dx * V)
+            return d_rate_dx * V
 
         actions["current_concentration"] = x_action
 
@@ -145,7 +143,7 @@ class RateLimitedPrecipitateGrowthRate(Model):
             d_rate_dxeq = -coef / dx
 
             def x_eq_action(V: Scalar) -> Scalar:
-                return cast(Scalar, d_rate_dxeq * V)
+                return d_rate_dxeq * V
 
             actions[x_eq_nlp.input_name] = x_eq_action
 
@@ -154,7 +152,7 @@ class RateLimitedPrecipitateGrowthRate(Model):
             d_rate_ddx = -coef * numer / (dx * dx)
 
             def dx_action(V: Scalar) -> Scalar:
-                return cast(Scalar, d_rate_ddx * V)
+                return d_rate_ddx * V
 
             actions[dx_nlp.input_name] = dx_action
 
@@ -163,7 +161,7 @@ class RateLimitedPrecipitateGrowthRate(Model):
             d_rate_dR = -coef * numer / (dx * R)
 
             def R_action(V: Scalar) -> Scalar:
-                return cast(Scalar, d_rate_dR * V)
+                return d_rate_dR * V
 
             actions[R_nlp.input_name] = R_action
 
@@ -172,7 +170,7 @@ class RateLimitedPrecipitateGrowthRate(Model):
             d_rate_dD = numer / (R * dx)
 
             def D_action(V: Scalar) -> Scalar:
-                return cast(Scalar, d_rate_dD * V)
+                return d_rate_dD * V
 
             actions[D_nlp.input_name] = D_action
 

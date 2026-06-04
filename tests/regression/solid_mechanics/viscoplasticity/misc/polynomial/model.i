@@ -12,11 +12,11 @@
   []
   [start_temperature]
     type = Python
-    expr = 'Scalar(torch.linspace(100.0, 1000.0, 20, dtype=torch.float64))'
+    expr = 'Scalar.linspace(100.0, 1000.0, 20)'
   []
   [end_temperature]
     type = Python
-    expr = 'Scalar(torch.linspace(200.0, 1500.0, 20, dtype=torch.float64))'
+    expr = 'Scalar.linspace(200.0, 1500.0, 20)'
   []
   # temperatures: LinspaceScalar(start, end, 100) -> shape (100, 20)
   [temperatures]
@@ -26,7 +26,7 @@
   # max_strain: SR2 with components (exx=0.1, eyy=-0.05, ezz=-0.05, 0, 0, 0) batched (20,)
   [max_strain]
     type = Python
-    expr = 'SR2(torch.tensor([0.1, -0.05, -0.05, 0.0, 0.0, 0.0], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
+    expr = 'SR2.fill(0.1, -0.05, -0.05, 0.0, 0.0, 0.0).dynamic_batch.expand(20)'
   []
   # strains: LinspaceSR2(0, max_strain, 100) -> shape (100, 20, 6)
   [strains]
@@ -35,11 +35,11 @@
   []
   [s1_0]
     type = Python
-    expr = 'Scalar(torch.zeros(20, dtype=torch.float64))'
+    expr = 'Scalar.zeros(20)'
   []
   [s2_0]
     type = Python
-    expr = 'Scalar(torch.zeros(20, dtype=torch.float64))'
+    expr = 'Scalar.zeros(20)'
   []
   [A0]
     type = Python

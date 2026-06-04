@@ -6,15 +6,15 @@
   # the lookup-table axis the interpolator slides along.
   [T_controls]
     type = Python
-    expr = 'Scalar(torch.linspace(300.0, 1200.0, 20, dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)'
   []
   [mu_values]
     type = Python
-    expr = 'Scalar(torch.tensor([76670.48346056, 75465.18012589, 74314.80514263, 73374.72880675, 72651.54680595, 71928.36480514, 71120.75130575, 70035.97830454, 68951.20530333, 67842.26597027, 66399.97991161, 65315.20691041, 63884.85335476, 62763.98151868, 61373.80474086, 59927.44073925, 58481.07673765, 56544.43551627, 54599.93973483, 52791.98473282], dtype=torch.float64)).with_sub_batch(1)'
+    expr = 'Scalar([76670.48346056, 75465.18012589, 74314.80514263, 73374.72880675, 72651.54680595, 71928.36480514, 71120.75130575, 70035.97830454, 68951.20530333, 67842.26597027, 66399.97991161, 65315.20691041, 63884.85335476, 62763.98151868, 61373.80474086, 59927.44073925, 58481.07673765, 56544.43551627, 54599.93973483, 52791.98473282]).sub_batch.retag(1)'
   []
   [E_test]
     type = Python
-    expr = 'Scalar(torch.tensor(1.0e5, dtype=torch.float64))'
+    expr = 'Scalar(1.0e5)'
   []
 []
 
@@ -62,7 +62,7 @@
     shear_modulus = 'mu'
     C = 'C'
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 'ys'
     isotropic_hardening = 'isotropic_hardening'
@@ -75,7 +75,7 @@
   []
   [flow]
     type = ComposedModel
-    models = 'vonmises yield'
+    models = 'vonmises yield_surface'
     automatic_nonlinear_parameter = false
   []
   [normality]
@@ -186,7 +186,7 @@
     type = ComposedModel
     models = 'isoharden elasticity g
               mandel_stress vonmises
-              yield yield_zero normality eprate Eprate Erate Eerate
+              yield_surface yield_zero normality eprate Eprate Erate Eerate
               ri_flowrate rd_flowrate flowrate integrate_ep integrate_stress effective_strain_rate
               mixed mixed_old'
   []

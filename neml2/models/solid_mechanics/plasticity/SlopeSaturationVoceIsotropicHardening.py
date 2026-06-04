@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ....chain_rule import ChainRuleDict
 from ....factory import register_native
 from ....model import Model
@@ -95,7 +93,7 @@ class SlopeSaturationVoceIsotropicHardening(Model):
         theta0 = self._get_param("theta0", nl_params, Scalar)
 
         # h_dot = sign(R) * theta0 * (1 - h / R) * gamma_dot
-        sR = cast(Scalar, sign(R))
+        sR = sign(R)
         one_minus_h_over_R = -(h / R) + 1.0
         h_dot = sR * theta0 * one_minus_h_over_R * gamma_dot
 

@@ -7,7 +7,7 @@
   # end_time = LinspaceScalar(1, 10, 20) -> shape (20,)
   [end_time]
     type = Python
-    expr = 'Scalar(torch.linspace(1.0, 10.0, 20, dtype=torch.float64))'
+    expr = 'Scalar.linspace(1.0, 10.0, 20)'
   []
   # times = LinspaceScalar(0, end_time, 100) -> shape (100, 20)
   [times]
@@ -17,7 +17,7 @@
   # deformation_rate_single = FillSR2(0.1, -0.05, -0.05) batched (20,) -> (20, 6)
   [deformation_rate_single]
     type = Python
-    expr = 'SR2(torch.tensor([0.1, -0.05, -0.05, 0.0, 0.0, 0.0], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
+    expr = 'SR2.fill(0.1, -0.05, -0.05, 0.0, 0.0, 0.0).dynamic_batch.expand(20)'
   []
   # deformation_rate = LinspaceSR2(d_single, d_single, 100) -> shape (100, 20, 6)
   [deformation_rate]
@@ -38,7 +38,7 @@
   # Crystal geometry inputs: lattice parameter + slip direction + slip plane
   [a]
     type = Python
-    expr = 'Scalar(torch.tensor(1.0, dtype=torch.float64))'
+    expr = 'Scalar(1.0)'
   []
   [sdirs]
     type = Python

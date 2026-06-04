@@ -26,6 +26,13 @@
 
 Base shape ``(6, 6)``; both index pairs symmetric, packed in Mandel basis so
 ``SSR4 : SR2`` is a plain matrix-vector product.
+
+Arithmetic operators and ``zeros``/``ones``/``full``/``empty``/``fill``
+factories are inherited from :class:`PrimitiveTensor`. SSR4-specific:
+several identity / projector factories (full identity, symmetric identity,
+volumetric / deviatoric / cubic-symmetry projectors) and a polymorphic
+:meth:`__matmul__` that contracts with either ``SR2`` (returning ``SR2``)
+or ``SSR4`` (returning ``SSR4``).
 """
 
 from __future__ import annotations
@@ -35,14 +42,14 @@ from typing import ClassVar
 
 import torch
 
-from neml2.types._base import TensorWrapper, align_scalar_base, align_sub_batch
+from neml2.types._base import align_sub_batch
+from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
-from neml2.types.scalar import Scalar
 from neml2.types.sr2 import SR2
 
 
 @dataclass(frozen=True, eq=False)
-class SSR4(TensorWrapper):
+class SSR4(PrimitiveTensor):
     """Wraps a `torch.Tensor` of shape ``(..., 6, 6)`` in Mandel packing."""
 
     data: torch.Tensor
@@ -50,7 +57,7 @@ class SSR4(TensorWrapper):
     BASE_NDIM: ClassVar[int] = 2
     BASE_SHAPE: ClassVar[tuple[int, ...]] = (6, 6)
 
-    # ---- factories ----
+    # ---- identity / projector factories ----
 
     @classmethod
     def identity(
@@ -135,46 +142,7 @@ class SSR4(TensorWrapper):
         M[5, 5] = 1.0
         return cls(M)
 
-    # ---- operator overloads ----
-    #
-    # Every binary op routes through :func:`align_sub_batch` so global and
-    # per-sub-batch-site operands combine cleanly at any dynamic batch size
-    # (mirrors C++ ``utils::align_intmd_dim``).
-
-    def __add__(self, other) -> SSR4:
-        if isinstance(other, SSR4):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SSR4(aa.data + bb.data, sub_batch_ndim=sb)
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SSR4(aa.data + align_scalar_base(bb.data, 2), sub_batch_ndim=sb)
-        return NotImplemented
-
-    def __radd__(self, other) -> SSR4:
-        return self.__add__(other)
-
-    def __sub__(self, other) -> SSR4:
-        if isinstance(other, SSR4):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SSR4(aa.data - bb.data, sub_batch_ndim=sb)
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SSR4(aa.data - align_scalar_base(bb.data, 2), sub_batch_ndim=sb)
-        return NotImplemented
-
-    def __neg__(self) -> SSR4:
-        return SSR4(-self.data, sub_batch_ndim=self.sub_batch_ndim)
-
-    def __mul__(self, other: Scalar | float | int) -> SSR4:
-        if isinstance(other, Scalar):
-            [aa, bb], sb = align_sub_batch(self, other)
-            return SSR4(aa.data * align_scalar_base(bb.data, 2), sub_batch_ndim=sb)
-        if isinstance(other, (float, int)):
-            return SSR4(self.data * other, sub_batch_ndim=self.sub_batch_ndim)
-        return NotImplemented  # type: ignore[return-value]
-
-    def __rmul__(self, other: Scalar | float | int) -> SSR4:
-        return self.__mul__(other)
+    # ---- mixed-type matmul (stays here because it changes return type) ----
 
     def __matmul__(self, other):
         """SSR4 @ SR2 → SR2 (contraction ``C : A``) or SSR4 @ SSR4 → SSR4."""

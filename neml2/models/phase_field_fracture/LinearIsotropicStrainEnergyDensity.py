@@ -36,7 +36,7 @@ both backends: ``strain`` -> (``active_strain_energy_density``,
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
 from ...factory import register_native
@@ -257,14 +257,14 @@ class LinearIsotropicStrainEnergyDensity(Model):
                 return K * tr(Va) * tr(Vb) + 2.0 * G * inner(dev(Va), dev(Vb))
 
             def inact_action_2(Va: SR2, Vb: SR2) -> Scalar:
-                return cast(Scalar, 0.0 * tr(Va) * tr(Vb))
+                return 0.0 * tr(Va) * tr(Vb)
 
             return act_action_2, inact_action_2
 
         # VOLDEV: indicator on which branch is active.
         etr = tr(strain)
-        h_pos = cast(Scalar, heaviside(etr))
-        h_neg = cast(Scalar, heaviside(-etr))
+        h_pos = heaviside(etr)
+        h_neg = heaviside(-etr)
 
         def act_action_2(Va: SR2, Vb: SR2) -> Scalar:
             return K * h_pos * tr(Va) * tr(Vb) + 2.0 * G * inner(dev(Va), dev(Vb))
@@ -289,7 +289,7 @@ class LinearIsotropicStrainEnergyDensity(Model):
         edev = dev(strain)
         # 0.5 * K * tr(e)^2 + G * (dev(e) : dev(e)); inactive part is zero.
         psie_active = 0.5 * K * etr * etr + G * inner(edev, edev)
-        psie_inactive = cast(Scalar, 0.0 * etr)  # structural zero, sub-batch aligned
+        psie_inactive = 0.0 * etr  # structural zero, sub-batch aligned
 
         # dpsi_active/de = K * tr(e) * I + 2 G dev(e) ; action on V is the
         # inner product of that gradient with V, written entirely in typed
@@ -298,7 +298,7 @@ class LinearIsotropicStrainEnergyDensity(Model):
             return K * etr * tr(V) + 2.0 * G * inner(edev, dev(V))
 
         def inact_action(V: SR2) -> Scalar:
-            return cast(Scalar, 0.0 * tr(V))
+            return 0.0 * tr(V)
 
         return psie_active, psie_inactive, (act_action, inact_action)
 
@@ -309,7 +309,7 @@ class LinearIsotropicStrainEnergyDensity(Model):
         edev = dev(strain)
         # Macaulay split on the trace:
         #   etr_pos = <etr>_+ ,  etr_neg = etr - etr_pos = -<-etr>_+
-        etr_pos = cast(Scalar, macaulay(etr))
+        etr_pos = macaulay(etr)
         etr_neg = etr - etr_pos
         psie_active = 0.5 * K * etr_pos * etr_pos + G * inner(edev, edev)
         psie_inactive = 0.5 * K * etr_neg * etr_neg

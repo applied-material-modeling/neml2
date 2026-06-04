@@ -26,8 +26,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_native
 from ...model import Model
@@ -116,17 +114,17 @@ class AdvectiveStress(Model):
             )
         bound = dict(zip(names, inputs, strict=True))
 
-        F = cast(R2, bound[self._F_name])
-        P = cast(R2, bound[self._P_name])
+        F = bound[self._F_name]
+        P = bound[self._P_name]
         js_name = self._js_name
         jt_name = self._jt_name
         Js = (
-            cast(Scalar, bound[js_name])
+            bound[js_name]
             if js_name is not None and js_name in bound
             else Scalar.from_value(1.0, like=F)
         )
         Jt = (
-            cast(Scalar, bound[jt_name])
+            bound[jt_name]
             if jt_name is not None and jt_name in bound
             else Scalar.from_value(1.0, like=F)
         )
@@ -134,8 +132,8 @@ class AdvectiveStress(Model):
         coeff = self._get_param("coeff", (), Scalar)
 
         # ``s = -c/3 * Js^(-5/3) * Jt^(-2/3)`` — the shared scalar prefactor.
-        Js_p = cast(Scalar, pow(Js, -5.0 / 3.0))
-        Jt_p = cast(Scalar, pow(Jt, -2.0 / 3.0))
+        Js_p = pow(Js, -5.0 / 3.0)
+        Jt_p = pow(Jt, -2.0 / 3.0)
         s = (-coeff / 3.0) * Js_p * Jt_p
 
         # ``q = P : F`` Frobenius inner product (full ``(3,3)`` contraction).
@@ -156,16 +154,16 @@ class AdvectiveStress(Model):
         actions: dict[str, ChainRuleAction] = {}
 
         if js_name is not None and js_name in bound:
-            dps_dJs = (5.0 / 9.0) * coeff * cast(Scalar, pow(Js, -8.0 / 3.0)) * Jt_p * q
-            actions[js_name] = lambda V, c=dps_dJs: c * cast(Scalar, V)
+            dps_dJs = (5.0 / 9.0) * coeff * pow(Js, -8.0 / 3.0) * Jt_p * q
+            actions[js_name] = lambda V, c=dps_dJs: c * V
         if jt_name is not None and jt_name in bound:
-            dps_dJt = (2.0 / 9.0) * coeff * Js_p * cast(Scalar, pow(Jt, -5.0 / 3.0)) * q
-            actions[jt_name] = lambda V, c=dps_dJt: c * cast(Scalar, V)
+            dps_dJt = (2.0 / 9.0) * coeff * Js_p * pow(Jt, -5.0 / 3.0) * q
+            actions[jt_name] = lambda V, c=dps_dJt: c * V
 
         coeffP = s * P
         coeffF = s * F
-        actions[self._P_name] = lambda V, A=coeffF: inner(A, cast(R2, V))
-        actions[self._F_name] = lambda V, A=coeffP: inner(A, cast(R2, V))
+        actions[self._P_name] = lambda V, A=coeffF: inner(A, V)
+        actions[self._F_name] = lambda V, A=coeffP: inner(A, V)
 
         return ps, self.apply_chain_rule(
             v,

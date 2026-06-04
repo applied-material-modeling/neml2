@@ -25,15 +25,14 @@
 """Common base for the typed tensor wrapper classes.
 
 `TensorWrapper` is **not** a `@dataclass` itself — it carries the shared
-methods (`.dtype`, `.device`, `.batch_shape`, `.to(...)`, `__repr__`) and
-declares the class-level `BASE_NDIM` / `BASE_SHAPE` invariants that each
-concrete wrapper (`Scalar`, `SR2`, `SSR4`) supplies. The concrete classes
-are `@dataclass(frozen=True, eq=False)` and each declares two fields:
-``data: torch.Tensor`` (the underlying tensor) and
-``sub_batch_ndim: int = 0`` (number of trailing batch axes that act as
-the structured "sub-batch" region — the Python-native analogue of the
-C++ `intmd_dim`). `TensorWrapper`'s methods read both via ``self.data``
-and ``self.sub_batch_ndim``.
+methods (`.dtype`, `.device`, `.batch`, `.dynamic_batch`, `.sub_batch`,
+`.base`, `.to(...)`, `__repr__`) and declares the class-level `BASE_NDIM`
+/ `BASE_SHAPE` invariants that each concrete wrapper (`Scalar`, `SR2`,
+`SSR4`) supplies. The concrete classes are `@dataclass(frozen=True,
+eq=False)` and each declares two fields: ``data: torch.Tensor`` (the
+underlying tensor) and ``sub_batch_ndim: int = 0`` (number of trailing
+batch axes that act as the structured "sub-batch" region — the
+Python-native analogue of the C++ `intmd_dim`).
 
 Shape decomposition
 -------------------
@@ -51,20 +50,45 @@ A wrapper's tensor shape splits into three regions::
 - ``dynamic_batch_shape`` is everything left over (the variable dimension
   count that ``torch.export`` traces as dynamic).
 
-``batch_shape`` returns ``dynamic + sub_batch`` (matching the C++
-``batch_dim() = dynamic_dim + intmd_dim`` invariant), so code that
-broadcasts over "everything but base" keeps working unchanged.
+The combined ``batch_shape`` (``dynamic + sub_batch``) matches the C++
+``batch_dim() = dynamic_dim + intmd_dim`` invariant.
+
+Region-view API
+---------------
+
+Shape-manipulating ops are exposed through four lightweight view
+properties — ``t.batch``, ``t.dynamic_batch``, ``t.sub_batch``,
+``t.base`` — instead of region-prefixed top-level methods. Each view is
+computed on access (no storage, no pytree registration) and its
+methods return a fresh wrapper, so chaining works:
+
+    t.dynamic_batch.expand(20).sub_batch.unsqueeze(0)
+
+The shared surface across views is ``.shape``, ``.ndim``, ``.unsqueeze``,
+``.squeeze``, ``.expand``, ``.cat``. Region-specific extras:
+
+- ``sub_batch.diagonalize()`` — embed trailing sub-batch axis as a diagonal block
+- ``sub_batch.expand_at(size, dim=0)`` — insert one new sub-batch axis
+  (the C++ ``intmd_expand`` pattern)
+- ``sub_batch.retag(n)`` / ``sub_batch.flatten()`` — re-tag ``sub_batch_ndim``
+- ``base.transpose(dim0, dim1)`` — swap two base axes (requires BASE_NDIM >= 2)
+
+The ``base`` region is otherwise read-only — ``BASE_SHAPE`` is fixed by
+the wrapper type, so ``.expand`` / ``.unsqueeze`` / ``.squeeze`` on
+``base`` raise.
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, ClassVar, TypeVar, overload
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar, overload
 
 import torch
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
+_WT = TypeVar("_WT", bound="TensorWrapper")
 
 
 class TensorWrapper:
@@ -91,25 +115,14 @@ class TensorWrapper:
         # ``t_cls(tensor)`` with ``t_cls: type[TensorWrapper]``.
         raise NotImplementedError("TensorWrapper is abstract; instantiate a concrete subclass.")
 
-    # Each concrete ``@dataclass`` subclass defines these operators with its own
-    # return type. The base declarations exist purely so type-checkers accept
-    # wrapper algebra on values typed as the abstract ``TensorWrapper`` — the
-    # generic chain-rule accumulation loops (``apply_chain_rule``) and the
-    # residual / time-integration models that take ``TensorWrapper`` inputs.
-    # They never run (the subclass override always wins), so they raise like
-    # ``__init__``.
-    # Declared so type-checkers accept wrapper algebra on values typed as the
-    # abstract ``TensorWrapper`` (the generic ``apply_chain_rule`` accumulation
-    # and the residual / time-integration models). Returns are ``TensorWrapper``
-    # (not ``Self``) so the concrete ``-> SR2`` / ``-> Scalar`` overrides stay
-    # covariantly compatible, and ``other`` is left unannotated to match the
-    # subclasses' own permissive runtime isinstance dispatch. The reflected
-    # ``__radd__`` / ``__rsub__`` / ``__rmul__`` are declared too so
-    # ``float * wrapper`` (the natural order in leaf math) typechecks at the
-    # abstract level. Subclasses must override each reflected operator with an
-    # explicit ``def`` (not a ``__radd__ = __add__`` alias) — the alias picks
-    # up the base's ``-> TensorWrapper`` declaration instead of the concrete
-    # subclass return type pyright would otherwise infer from ``__add__``.
+    # Arithmetic operators are provided in full by :class:`PrimitiveTensor`
+    # — the intermediate base that every primitive (``Scalar``, ``Vec``,
+    # ``SR2``, …) subclasses. The abstract stubs below exist purely so
+    # type-checkers accept algebra on values typed as the base
+    # ``TensorWrapper`` (the generic chain-rule accumulation loops in
+    # ``apply_chain_rule`` and the residual / time-integration models that
+    # take ``TensorWrapper`` inputs). They never run at runtime — the
+    # ``PrimitiveTensor`` overrides always win on real instances.
     def __neg__(self) -> TensorWrapper:
         raise NotImplementedError
 
@@ -148,8 +161,8 @@ class TensorWrapper:
         than silently smearing the wrong tensor type through the chain.
 
         The ``sub_batch_ndim`` of the outer call wins. That matches the
-        ``with_sub_batch`` re-tagging idiom (a wrapper view with a different
-        rank tag) and lets parent dispatchers re-tag without copying.
+        ``sub_batch.retag`` idiom (a wrapper view with a different rank
+        tag) and lets parent dispatchers re-tag without copying.
         """
         if isinstance(self.data, TensorWrapper):
             inner = self.data
@@ -172,7 +185,7 @@ class TensorWrapper:
     def shape(self) -> torch.Size:
         return self.data.shape
 
-    # ---- shape decomposition ----
+    # ---- shape decomposition (read-only properties; mirror the view shapes) ----
 
     @property
     def base_shape(self) -> torch.Size:
@@ -201,146 +214,35 @@ class TensorWrapper:
             return bsh
         return bsh[: len(bsh) - n]
 
-    # ---- sub-batch retagging ----
+    # ---- region views ----
 
-    def with_sub_batch(self, ndim: int) -> Self:
-        """Return a wrapper viewing the same ``data`` with ``sub_batch_ndim=ndim``.
+    @property
+    def batch(self: Self) -> BatchView[Self]:
+        """View into the combined batch region (``dynamic + sub_batch``).
 
-        Validates that ``ndim`` is non-negative and does not exceed the
-        number of non-base dims currently present.
+        Read-only surface (``.shape``, ``.ndim``, ``.cat``). For
+        shape-changing ops, use ``.dynamic_batch`` or ``.sub_batch``
+        explicitly so the intent — whether a new axis is dynamic or
+        structured — is unambiguous.
         """
-        if ndim < 0:
-            raise ValueError(f"sub_batch_ndim must be non-negative, got {ndim}")
-        batch_ndim = self.data.ndim - self.BASE_NDIM
-        if ndim > batch_ndim:
-            raise ValueError(
-                f"sub_batch_ndim={ndim} exceeds available batch dims "
-                f"({batch_ndim}); tensor shape={tuple(self.data.shape)}, "
-                f"BASE_NDIM={self.BASE_NDIM}"
-            )
-        if ndim == self.sub_batch_ndim:
-            return self  # type: ignore[return-value]
-        return self._rewrap(self.data, sub_batch_ndim=ndim)
+        return BatchView(self)
 
-    def flatten_sub_batch(self) -> Self:
-        """Return a wrapper with the sub-batch region demoted to dynamic batch."""
-        return self.with_sub_batch(0)
+    @property
+    def dynamic_batch(self: Self) -> DynamicBatchView[Self]:
+        """View into the dynamic batch region. ``sub_batch_ndim`` is preserved by ops here."""
+        return DynamicBatchView(self)
 
-    # ---- sub-batch-aware tensor ops ----
-    #
-    # These mirror the C++ ``intmd_*`` helpers used by KWN, finite-volume,
-    # and crystal-plasticity. Each lives on the base class so every
-    # concrete wrapper picks it up. The "sub-batch axis index" is
-    # interpreted relative to the sub-batch region: ``dim=0`` is the
-    # leading sub-batch axis, ``dim=-1`` (or ``dim=sub_batch_ndim-1``)
-    # is the trailing one (immediately before ``base``).
+    @property
+    def sub_batch(self: Self) -> SubBatchView[Self]:
+        """View into the sub-batch region. Ops here adjust ``sub_batch_ndim``."""
+        return SubBatchView(self)
 
-    def _sub_batch_axis(self, dim: int) -> int:
-        """Resolve a sub-batch-relative dim to an absolute axis on ``data``."""
-        if dim < 0:
-            dim += self.sub_batch_ndim
-        if dim < 0 or dim >= self.sub_batch_ndim:
-            raise IndexError(
-                f"sub-batch dim {dim} out of range for sub_batch_ndim={self.sub_batch_ndim}"
-            )
-        # Sub-batch starts right after dynamic batch and ends right before base.
-        sb_start = self.data.ndim - self.BASE_NDIM - self.sub_batch_ndim
-        return sb_start + dim
-
-    def _sub_batch_insert_axis(self, dim: int) -> int:
-        """Resolve a sub-batch-relative insertion point (range ``[0, sub_batch_ndim]``)."""
-        if dim < 0:
-            dim += self.sub_batch_ndim + 1
-        if dim < 0 or dim > self.sub_batch_ndim:
-            raise IndexError(
-                f"sub-batch insert dim {dim} out of range for sub_batch_ndim={self.sub_batch_ndim}"
-            )
-        sb_start = self.data.ndim - self.BASE_NDIM - self.sub_batch_ndim
-        return sb_start + dim
-
-    def sub_batch_expand(self, size: int, dim: int = 0) -> Self:
-        """Insert a new sub-batch axis of given ``size`` at sub-batch position ``dim``.
-
-        Increases ``sub_batch_ndim`` by 1. Mirrors C++ ``intmd_expand(size, d)``.
-        ``dim=0`` (default) puts the new axis at the leading sub-batch
-        position; ``dim=sub_batch_ndim`` (or ``-1`` after the +1 increment)
-        puts it adjacent to ``base``.
+    @property
+    def base(self: Self) -> BaseView[Self]:
+        """View into the base region. Shape is fixed by the wrapper type;
+        read-only except for ``transpose``.
         """
-        if size <= 0:
-            raise ValueError(f"sub_batch_expand size must be positive, got {size}")
-        insert_at = self._sub_batch_insert_axis(dim)
-        new_data = self.data.unsqueeze(insert_at).expand(
-            *self.data.shape[:insert_at], size, *self.data.shape[insert_at:]
-        )
-        return self._rewrap(new_data, sub_batch_ndim=self.sub_batch_ndim + 1)
-
-    def sub_batch_unsqueeze(self, dim: int = 0, n: int = 1) -> Self:
-        """Insert ``n`` size-1 sub-batch axes at sub-batch position ``dim``.
-
-        Increases ``sub_batch_ndim`` by ``n``. Mirrors C++ ``intmd_unsqueeze``.
-        """
-        if n < 0:
-            raise ValueError(f"sub_batch_unsqueeze n must be non-negative, got {n}")
-        if n == 0:
-            return self  # type: ignore[return-value]
-        insert_at = self._sub_batch_insert_axis(dim)
-        new_data = self.data
-        for _ in range(n):
-            new_data = new_data.unsqueeze(insert_at)
-        return self._rewrap(new_data, sub_batch_ndim=self.sub_batch_ndim + n)
-
-    def sub_batch_diagonalize(self) -> Self:
-        """Embed the trailing sub-batch axis as a diagonal block.
-
-        Takes a wrapper with ``sub_batch_shape[-1] == L`` and returns one
-        with the trailing sub-batch axis duplicated as an ``(L, L)``
-        diagonal pair ($δ_{ij}$-style). Increases ``sub_batch_ndim`` by
-        1. Mirrors C++ ``intmd_diagonalize``.
-
-        Used by per-site rate models (e.g. KWN's
-        ``RateLimitedPrecipitateGrowthRate``) to express block-diagonal
-        derivatives without ever materialising the full dense block.
-        """
-        if self.sub_batch_ndim == 0:
-            raise ValueError(
-                "sub_batch_diagonalize requires at least one sub-batch dim; got sub_batch_ndim=0"
-            )
-        if self.BASE_NDIM != 0:
-            # KWN-style block-diagonal derivatives only need scalar bins
-            # today. Adding the base-dim shuffle is straightforward but
-            # not exercised by any in-scope caller; refuse rather than
-            # ship untested code.
-            raise NotImplementedError(
-                "sub_batch_diagonalize for BASE_NDIM > 0 wrappers is not "
-                "implemented yet; no in-scope caller needs it."
-            )
-        new_data = torch.diag_embed(self.data)
-        return self._rewrap(new_data, sub_batch_ndim=self.sub_batch_ndim + 1)
-
-    @classmethod
-    def sub_batch_cat(cls, tensors: Sequence[Self], dim: int = 0) -> Self:
-        """Concatenate wrappers along sub-batch axis ``dim``.
-
-        All inputs must be the same concrete wrapper type and share
-        ``sub_batch_ndim``. Mirrors C++ ``intmd_cat``.
-        """
-        if not tensors:
-            raise ValueError("sub_batch_cat requires at least one tensor")
-        first = tensors[0]
-        for t in tensors[1:]:
-            if type(t) is not type(first):
-                raise TypeError(
-                    f"sub_batch_cat got mixed wrapper types: "
-                    f"{type(first).__name__} vs {type(t).__name__}"
-                )
-            if t.sub_batch_ndim != first.sub_batch_ndim:
-                raise ValueError(
-                    f"sub_batch_cat got mismatched sub_batch_ndim: "
-                    f"{first.sub_batch_ndim} vs {t.sub_batch_ndim}"
-                )
-        axis = first._sub_batch_axis(dim)
-        new_data = torch.cat([t.data for t in tensors], dim=axis)
-        return first._rewrap(new_data, sub_batch_ndim=first.sub_batch_ndim)
+        return BaseView(self)
 
     # ---- internal: clone-with-new-tensor-and-metadata ----
 
@@ -361,6 +263,340 @@ class TensorWrapper:
     # ``__repr__``; we deliberately don't override it here. The auto-repr
     # surfaces ``data`` and ``sub_batch_ndim`` directly, which is the
     # closest thing to a round-trippable representation we can offer.
+
+
+# ---------------------------------------------------------------------------
+# Region views — lightweight, computed-on-access wrappers that expose the
+# shape-manipulating ops for one of the four regions of a TensorWrapper.
+#
+# Each view holds a reference to its wrapper, knows where its region
+# starts and how long it is, translates region-relative dim indices to
+# absolute axes on ``data``, and returns fresh wrappers (so calls chain).
+#
+# Views are *not* pytree-registered — they're transient handles, not
+# part of the data model.
+# ---------------------------------------------------------------------------
+
+
+class _RegionView(Generic[_WT]):
+    """Common machinery for the four region views.
+
+    Subclasses define ``_REGION`` (a human-readable name used in error
+    messages) and ``_bounds`` (the ``(start, length)`` slice of
+    ``data.shape`` that the view governs).
+
+    Generic over the wrapper type so view methods preserve the concrete
+    return type: ``Scalar.sub_batch.unsqueeze(0)`` is typed as ``Scalar``.
+    """
+
+    _REGION: ClassVar[str]
+
+    __slots__ = ("_w",)
+
+    def __init__(self, wrapper: _WT) -> None:
+        self._w: _WT = wrapper
+
+    def _bounds(self) -> tuple[int, int]:
+        raise NotImplementedError
+
+    @property
+    def shape(self) -> torch.Size:
+        start, length = self._bounds()
+        if length == 0:
+            return torch.Size(())
+        return self._w.data.shape[start : start + length]
+
+    @property
+    def ndim(self) -> int:
+        return self._bounds()[1]
+
+    # ---- region-relative dim resolution ----
+
+    def _resolve_dim(self, dim: int) -> int:
+        """Region-relative ``dim`` -> absolute axis on ``data``. Range ``[0, ndim)``."""
+        n = self.ndim
+        if dim < 0:
+            dim += n
+        if dim < 0 or dim >= n:
+            raise IndexError(f"{self._REGION} dim {dim} out of range for {self._REGION}_ndim={n}")
+        start, _ = self._bounds()
+        return start + dim
+
+    def _resolve_insert_dim(self, dim: int) -> int:
+        """Region-relative insertion point. Range ``[0, ndim]``."""
+        n = self.ndim
+        if dim < 0:
+            dim += n + 1
+        if dim < 0 or dim > n:
+            raise IndexError(
+                f"{self._REGION} insert dim {dim} out of range for {self._REGION}_ndim={n}"
+            )
+        start, _ = self._bounds()
+        return start + dim
+
+
+class _MutableRegionView(_RegionView[_WT]):
+    """Common shape-changing ops shared by ``batch`` / ``dynamic_batch`` / ``sub_batch``.
+
+    The base region is fixed and uses a separate ``BaseView`` that
+    doesn't inherit these ops.
+    """
+
+    def _new_sub_batch_ndim(self, *, axes_added: int = 0, axes_removed: int = 0) -> int:
+        """Subclasses override to declare how an op changes ``sub_batch_ndim``."""
+        raise NotImplementedError
+
+    def unsqueeze(self, dim: int = -1, n: int = 1) -> _WT:
+        """Insert ``n`` size-1 axes at region-relative position ``dim``."""
+        if n < 0:
+            raise ValueError(f"{self._REGION}.unsqueeze: n must be non-negative, got {n}")
+        if n == 0:
+            return self._w
+        insert_at = self._resolve_insert_dim(dim)
+        new_data = self._w.data
+        for _ in range(n):
+            new_data = new_data.unsqueeze(insert_at)
+        new_sb = self._new_sub_batch_ndim(axes_added=n)
+        return self._w._rewrap(new_data, sub_batch_ndim=new_sb)
+
+    def squeeze(self, dim: int = -1) -> _WT:
+        """Drop a size-1 axis at region-relative position ``dim``."""
+        axis = self._resolve_dim(dim)
+        if self._w.data.shape[axis] != 1:
+            raise ValueError(
+                f"{self._REGION}.squeeze: axis {dim} has size "
+                f"{self._w.data.shape[axis]}, expected 1"
+            )
+        new_data = self._w.data.squeeze(axis)
+        new_sb = self._new_sub_batch_ndim(axes_removed=1)
+        return self._w._rewrap(new_data, sub_batch_ndim=new_sb)
+
+    def expand(self, *shape: int) -> _WT:
+        """Make the region's shape equal to ``shape``.
+
+        Mirrors ``torch.Tensor.expand`` left-padding: if the region's
+        current ``ndim`` is less than ``len(shape)``, size-1 axes are
+        inserted at the *start* of the region first. The result is made
+        contiguous so downstream ``.contiguous()`` calls are redundant.
+
+        Raises ``ValueError`` when ``len(shape) < ndim`` (would lose
+        existing axes — use ``squeeze`` to drop them explicitly).
+        """
+        cur = self.shape
+        target = tuple(shape)
+        if len(cur) > len(target):
+            raise ValueError(
+                f"{self._REGION}.expand: target {target} has fewer dims than "
+                f"current {tuple(cur)}; squeeze first if dropping axes is intended"
+            )
+        pad = len(target) - len(cur)
+        start, length = self._bounds()
+        # Insert ``pad`` size-1 axes at the start of the region so the
+        # subsequent broadcast has matching ndim.
+        new_data = self._w.data
+        for _ in range(pad):
+            new_data = new_data.unsqueeze(start)
+        # Now build the full target shape on data: everything before the
+        # region stays, region is broadcast to ``target``, everything after
+        # the region stays.
+        before = self._w.data.shape[:start]
+        after = self._w.data.shape[start + length :]
+        full_target = (*before, *target, *after)
+        new_data = new_data.expand(full_target).contiguous()
+        new_sb = self._new_sub_batch_ndim(axes_added=pad)
+        return self._w._rewrap(new_data, sub_batch_ndim=new_sb)
+
+    def cat(self, others: Sequence[_WT], dim: int = -1) -> _WT:
+        """Concatenate ``self``'s wrapper with ``others`` along region-relative ``dim``.
+
+        All inputs must be the same concrete wrapper type and share
+        ``sub_batch_ndim``.
+        """
+        wrappers = (self._w, *others)
+        for w in others:
+            if type(w) is not type(self._w):
+                raise TypeError(
+                    f"{self._REGION}.cat: mixed wrapper types "
+                    f"{type(self._w).__name__} vs {type(w).__name__}"
+                )
+            if w.sub_batch_ndim != self._w.sub_batch_ndim:
+                raise ValueError(
+                    f"{self._REGION}.cat: mismatched sub_batch_ndim "
+                    f"{self._w.sub_batch_ndim} vs {w.sub_batch_ndim}"
+                )
+        axis = self._resolve_dim(dim)
+        new_data = torch.cat([w.data for w in wrappers], dim=axis)
+        return self._w._rewrap(new_data, sub_batch_ndim=self._w.sub_batch_ndim)
+
+
+class BatchView(_MutableRegionView[_WT]):
+    """Read-mostly view into the combined batch region (``dynamic + sub_batch``).
+
+    Use ``.dynamic_batch`` or ``.sub_batch`` for shape-changing ops so
+    intent is unambiguous. The mutable ops are inherited but disallowed
+    on ``batch`` because the dynamic-vs-sub-batch split would be
+    ambiguous; ``cat`` is the one allowed mutator and treats the batch
+    region as a single axis range, leaving ``sub_batch_ndim`` unchanged.
+    """
+
+    _REGION = "batch"
+
+    def _bounds(self) -> tuple[int, int]:
+        return (0, self._w.data.ndim - self._w.BASE_NDIM)
+
+    def _new_sub_batch_ndim(self, *, axes_added: int = 0, axes_removed: int = 0) -> int:
+        return self._w.sub_batch_ndim
+
+    def unsqueeze(self, dim: int = -1, n: int = 1) -> _WT:
+        raise TypeError(
+            "batch.unsqueeze is ambiguous (would the new axis be dynamic or "
+            "sub-batch?); use t.dynamic_batch.unsqueeze(...) or t.sub_batch.unsqueeze(...)"
+        )
+
+    def squeeze(self, dim: int = -1) -> _WT:
+        raise TypeError(
+            "batch.squeeze is ambiguous; "
+            "use t.dynamic_batch.squeeze(...) or t.sub_batch.squeeze(...)"
+        )
+
+    def expand(self, *shape: int) -> _WT:
+        raise TypeError(
+            "batch.expand is ambiguous; use t.dynamic_batch.expand(...) or t.sub_batch.expand(...)"
+        )
+
+
+class DynamicBatchView(_MutableRegionView[_WT]):
+    """View into the dynamic batch region. Ops preserve ``sub_batch_ndim``."""
+
+    _REGION = "dynamic_batch"
+
+    def _bounds(self) -> tuple[int, int]:
+        w = self._w
+        return (0, w.data.ndim - w.BASE_NDIM - w.sub_batch_ndim)
+
+    def _new_sub_batch_ndim(self, *, axes_added: int = 0, axes_removed: int = 0) -> int:
+        # New dynamic axes are dynamic; sub_batch_ndim never changes.
+        return self._w.sub_batch_ndim
+
+
+class SubBatchView(_MutableRegionView[_WT]):
+    """View into the sub-batch region. Shape-changing ops adjust ``sub_batch_ndim``.
+
+    Extra ops beyond the shared surface:
+
+    - ``expand_at(size, dim=0)`` — insert one new sub-batch axis of given
+      size at sub-batch position ``dim``. Mirrors the C++ ``intmd_expand``
+      pattern and the v2 ``sub_batch_expand`` method.
+    - ``diagonalize()`` — embed the trailing sub-batch axis as an
+      ``(L, L)`` diagonal block. The KWN block-diagonal-derivative kernel.
+    - ``retag(n)`` / ``flatten()`` — pure metadata moves; no data copy.
+    """
+
+    _REGION = "sub_batch"
+
+    def _bounds(self) -> tuple[int, int]:
+        w = self._w
+        sb_start = w.data.ndim - w.BASE_NDIM - w.sub_batch_ndim
+        return (sb_start, w.sub_batch_ndim)
+
+    def _new_sub_batch_ndim(self, *, axes_added: int = 0, axes_removed: int = 0) -> int:
+        return self._w.sub_batch_ndim + axes_added - axes_removed
+
+    def expand_at(self, size: int, dim: int = 0) -> _WT:
+        """Insert one new sub-batch axis of ``size`` at sub-batch position ``dim``.
+
+        ``dim=0`` puts the new axis at the leading sub-batch position;
+        ``dim=-1`` puts it adjacent to ``base``. Mirrors C++
+        ``intmd_expand(size, d)``.
+        """
+        if size <= 0:
+            raise ValueError(f"sub_batch.expand_at: size must be positive, got {size}")
+        insert_at = self._resolve_insert_dim(dim)
+        new_data = self._w.data.unsqueeze(insert_at).expand(
+            *self._w.data.shape[:insert_at], size, *self._w.data.shape[insert_at:]
+        )
+        return self._w._rewrap(new_data, sub_batch_ndim=self._w.sub_batch_ndim + 1)
+
+    def diagonalize(self) -> _WT:
+        """Embed the trailing sub-batch axis as an ``(L, L)`` diagonal block.
+
+        Takes a wrapper with ``sub_batch_shape[-1] == L`` and returns
+        one with the trailing axis duplicated as an ``(L, L)`` diagonal
+        pair ($δ_{ij}$-style). Increases ``sub_batch_ndim`` by 1.
+        Mirrors C++ ``intmd_diagonalize``.
+
+        Used by per-site rate models (e.g. KWN's
+        ``RateLimitedPrecipitateGrowthRate``) to express
+        block-diagonal derivatives without materialising the full
+        dense block.
+        """
+        if self._w.sub_batch_ndim == 0:
+            raise ValueError(
+                "sub_batch.diagonalize requires at least one sub-batch dim; got sub_batch_ndim=0"
+            )
+        if self._w.BASE_NDIM != 0:
+            raise NotImplementedError(
+                "sub_batch.diagonalize for BASE_NDIM > 0 wrappers is not "
+                "implemented; no in-scope caller needs it."
+            )
+        new_data = torch.diag_embed(self._w.data)
+        return self._w._rewrap(new_data, sub_batch_ndim=self._w.sub_batch_ndim + 1)
+
+    def retag(self, ndim: int) -> _WT:
+        """Return a view of the same ``data`` with ``sub_batch_ndim=ndim``.
+
+        Pure metadata move — no copy. Validates that ``ndim`` is
+        non-negative and does not exceed the number of non-base dims
+        currently present.
+        """
+        if ndim < 0:
+            raise ValueError(f"sub_batch.retag: ndim must be non-negative, got {ndim}")
+        batch_ndim = self._w.data.ndim - self._w.BASE_NDIM
+        if ndim > batch_ndim:
+            raise ValueError(
+                f"sub_batch.retag: ndim={ndim} exceeds available batch dims "
+                f"({batch_ndim}); tensor shape={tuple(self._w.data.shape)}, "
+                f"BASE_NDIM={self._w.BASE_NDIM}"
+            )
+        if ndim == self._w.sub_batch_ndim:
+            return self._w
+        return self._w._rewrap(self._w.data, sub_batch_ndim=ndim)
+
+    def flatten(self) -> _WT:
+        """Demote the sub-batch region to dynamic batch (``retag(0)``)."""
+        return self.retag(0)
+
+
+class BaseView(_RegionView[_WT]):
+    """View into the base region.
+
+    The base shape is fixed by the wrapper type — you cannot
+    ``expand``, ``unsqueeze``, ``squeeze``, ``cat``, or ``reshape`` it
+    at this layer (build a different-typed wrapper instead). The one
+    safe mutator is ``transpose``, useful for the ``R2`` 3×3 case.
+    """
+
+    _REGION = "base"
+
+    def _bounds(self) -> tuple[int, int]:
+        w = self._w
+        return (w.data.ndim - w.BASE_NDIM, w.BASE_NDIM)
+
+    def transpose(self, dim0: int = -2, dim1: int = -1) -> _WT:
+        """Swap two base axes. Requires ``BASE_NDIM >= 2``.
+
+        Default arguments swap the trailing two axes, which is the
+        ``R2.T`` / matrix-transpose case.
+        """
+        if self._w.BASE_NDIM < 2:
+            raise TypeError(
+                f"base.transpose requires BASE_NDIM >= 2; "
+                f"{type(self._w).__name__} has BASE_NDIM={self._w.BASE_NDIM}"
+            )
+        ax0 = self._resolve_dim(dim0)
+        ax1 = self._resolve_dim(dim1)
+        new_data = self._w.data.transpose(ax0, ax1)
+        return self._w._rewrap(new_data, sub_batch_ndim=self._w.sub_batch_ndim)
 
 
 # ---------------------------------------------------------------------------
@@ -416,16 +652,11 @@ def align_sub_batch(*wrappers: TensorWrapper) -> tuple[tuple[TensorWrapper, ...]
     sub-batch region — i.e. between the dynamic batch and any existing
     sub-batch axes. This is the only padding pattern that lets a global
     tensor (``sub_batch_ndim=0``, shape ``(B, *base)``) broadcast cleanly
-    against a per-sub-batch-site tensor (shape ``(B, *sub_batch, *base)``):
-    PyTorch's implicit broadcast pads missing leading dims with ``1`` on the
-    left, which yields ``(1, B)`` vs ``(B, 5)`` and fails at any ``B != 1``;
-    inserting in the middle yields ``(B, 1, *base)`` vs ``(B, 5, *base)``
-    which broadcasts correctly for any $B$.
+    against a per-sub-batch-site tensor (shape ``(B, *sub_batch, *base)``).
 
-    The Python ``sub_batch_unsqueeze(dim=0, n=k)`` primitive on
-    :class:`TensorWrapper` already does exactly the C++
-    ``intmd_unsqueeze(0, k)`` operation — this helper just orchestrates the
-    pairwise/n-ary case for binary ops and free functions.
+    The ``sub_batch.unsqueeze(0, n=k)`` view primitive on
+    :class:`TensorWrapper` does the per-wrapper work — this helper just
+    orchestrates the pairwise/n-ary case for binary ops and free functions.
 
     Returns
     -------
@@ -457,6 +688,6 @@ def align_sub_batch(*wrappers: TensorWrapper) -> tuple[tuple[TensorWrapper, ...]
     if all(w.sub_batch_ndim == smax for w in wrappers):
         return tuple(wrappers), smax
     return tuple(
-        w if w.sub_batch_ndim == smax else w.sub_batch_unsqueeze(0, smax - w.sub_batch_ndim)
+        w if w.sub_batch_ndim == smax else w.sub_batch.unsqueeze(0, smax - w.sub_batch_ndim)
         for w in wrappers
     ), smax

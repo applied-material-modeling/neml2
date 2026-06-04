@@ -10,7 +10,7 @@
   []
   [max_strain]
     type = Python
-    expr = 'SR2(torch.tensor([0.1, -0.05, -0.05, 0.0, 0.0, 0.0], dtype=torch.float64).unsqueeze(0).expand(20, 6).contiguous())'
+    expr = 'SR2.fill(0.1, -0.05, -0.05, 0.0, 0.0, 0.0).dynamic_batch.expand(20)'
   []
   [strains]
     type = Python
@@ -157,14 +157,14 @@
     tensor = 'overstress'
     invariant = 'effective_stress'
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 5
     isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
-    models = 'overstress vonmises yield'
+    models = 'overstress vonmises yield_surface'
     automatic_nonlinear_parameter = false
   []
   [normality]
@@ -219,7 +219,7 @@
     models = 'alias_k_voce alias_k_recv isoharden isoharden_recovery isoharden_total
               alias_X1_fa alias_X1_recv X1rate X1_recovery X1_total
               alias_X2_fa alias_X2_recv X2rate X2_recovery X2_total
-              kinharden mandel_stress overstress vonmises yield
+              kinharden mandel_stress overstress vonmises yield_surface
               normality flow_rate Eprate
               Erate Eerate elasticity
               integrate_stress integrate_k integrate_X1 integrate_X2'

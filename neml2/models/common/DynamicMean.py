@@ -26,15 +26,13 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 from ...chain_rule import ChainRuleDict
 from ...factory import register_native
 from ...model import Model
 from ...schema import HitSchema, input, option, output
 from ...types import (
     SR2,
-    dynamic_mean,
+    mean,
 )
 
 
@@ -63,7 +61,7 @@ class SR2DynamicMean(Model):
         v: ChainRuleDict | None = None,
     ):
         d = self._dim
-        out = cast(SR2, dynamic_mean(x, d))
+        out = mean(x.dynamic_batch, d)
         if v is None:
             return out
 
@@ -75,7 +73,7 @@ class SR2DynamicMean(Model):
         d_tan = d + 1 if d >= 0 else d
 
         def action(V: SR2) -> SR2:
-            return cast(SR2, dynamic_mean(V, d_tan))
+            return mean(V.dynamic_batch, d_tan)
 
         return out, self.apply_chain_rule(v, "to", {"from": action}, output=out)
 

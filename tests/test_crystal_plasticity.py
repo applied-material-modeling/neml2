@@ -27,7 +27,7 @@
 Coverage:
 
 * (a) Tensor types — ``Rot``, ``R2``, ``WR2``, ``MillerIndex`` round-trip
-  and key free-function math (``euler_rodrigues``, ``deuler_rodrigues``,
+  and key free-function math (``euler_rodrigues``, ``jvp_euler_rodrigues``,
   ``exp_map``, ``dexp_map``, ``compose``, ``rotate_sym``, ``rotate_ssr4``).
   Validated against (i) hand-computed known cases, (ii) an independent
   MRP→quaternion→R reference implemented in this test file, (iii)
@@ -75,7 +75,6 @@ from neml2.types import (
     Rot,
     Scalar,
     compose,
-    deuler_rodrigues,
     dexp_map,
     drotate,
     drotate_self,
@@ -83,8 +82,7 @@ from neml2.types import (
     exp_map,
     r2_from_sr2,
     r2_from_wr2,
-    rotate_ssr4,
-    rotate_sym,
+    rotate,
     skew,
     sym,
 )
@@ -196,21 +194,6 @@ def test_rot_euler_rodrigues_yields_orthogonal_unit_determinant():
         assert math.isclose(float(torch.linalg.det(R)), 1.0, abs_tol=1e-14)
 
 
-def test_deuler_rodrigues_matches_finite_difference():
-    """``deuler_rodrigues(r) == ∂(euler_rodrigues(r))/∂r`` via central FD."""
-    r0 = torch.tensor([0.05, -0.07, 0.12], dtype=torch.float64)
-    analytical = deuler_rodrigues(Rot(r0))  # shape (3, 3, 3): (R_a, R_b, r_k)
-    eps = 1e-7
-    fd = torch.zeros(3, 3, 3, dtype=torch.float64)
-    for k in range(3):
-        rp = r0.clone()
-        rp[k] += eps
-        rm = r0.clone()
-        rm[k] -= eps
-        fd[:, :, k] = (euler_rodrigues(Rot(rp)).data - euler_rodrigues(Rot(rm)).data) / (2.0 * eps)
-    assert torch.allclose(analytical, fd, atol=1e-7)
-
-
 def test_exp_map_yields_orthogonal_rotation():
     for w_vec in [[0.0, 0.0, 0.0], [1e-10, 1e-10, 1e-10], [0.1, -0.2, 0.05]]:
         r = exp_map(WR2(torch.tensor(w_vec, dtype=torch.float64)))
@@ -301,12 +284,12 @@ def test_sym_skew_roundtrip_on_r2():
 
 
 def test_rotate_sym_round_trips_through_full_R2():
-    """``rotate_sym(s, R) == sym(R s_full R^T)`` — direct formula vs free fn."""
+    """``rotate(s, R) == sym(R s_full R^T)`` — direct formula vs free fn."""
     r_vec = torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64)
     s_full = torch.tensor([[1.0, 2.0, 3.0], [2.0, 4.0, 5.0], [3.0, 5.0, 6.0]], dtype=torch.float64)
     s_mandel = sym(R2(s_full))
     R = euler_rodrigues(Rot(r_vec))
-    py_rot = rotate_sym(s_mandel, R).data
+    py_rot = rotate(s_mandel, R).data
     # Direct: sym(R · s_full · R^T) packed in Mandel.
     direct = sym(R2(R.data @ s_full @ R.data.T)).data
     assert torch.allclose(py_rot, direct, atol=1e-12)
@@ -327,7 +310,7 @@ def test_rotate_ssr4_invariance():
     )
     T = SSR4(T_data)
     R_id = R2.identity()
-    assert torch.allclose(rotate_ssr4(T, R_id).data, T.data, atol=1e-12)
+    assert torch.allclose(rotate(T, R_id).data, T.data, atol=1e-12)
 
     r_vec = torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64)
     R = euler_rodrigues(Rot(r_vec))
@@ -336,12 +319,12 @@ def test_rotate_ssr4_invariance():
         dtype=torch.float64,
     )
     eps = sym(R2(eps_full))
-    T_rot = rotate_ssr4(T, R)
+    T_rot = rotate(T, R)
     sigma_a = SR2(torch.einsum("ij,j->i", T_rot.data, eps.data))
     # Path B: rotate strain into crystal frame, multiply, rotate stress back.
-    eps_cry = rotate_sym(eps, R.T)
+    eps_cry = rotate(eps, R.base.transpose(-2, -1))
     sigma_cry = SR2(torch.einsum("ij,j->i", T_data, eps_cry.data))
-    sigma_b = rotate_sym(sigma_cry, R)
+    sigma_b = rotate(sigma_cry, R)
     assert torch.allclose(sigma_a.data, sigma_b.data, atol=1e-8)
 
 

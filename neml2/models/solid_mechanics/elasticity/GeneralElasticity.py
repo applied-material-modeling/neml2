@@ -36,8 +36,8 @@ from ....types import (
     Rot,
     euler_rodrigues,
     jvp_euler_rodrigues,
-    jvp_rotate_ssr4,
-    rotate_ssr4,
+    jvp_rotate,
+    rotate,
 )
 
 
@@ -82,7 +82,7 @@ class GeneralElasticity(Model):
     ):
         T = self._get_param("T", nl_params, SSR4)
         R = euler_rodrigues(orientation)
-        T_rot = rotate_ssr4(T, R)
+        T_rot = rotate(T, R)
         stress = T_rot @ strain
         if v is None:
             return stress
@@ -91,14 +91,14 @@ class GeneralElasticity(Model):
         #   strain:      dσ = T_rot : dε
         #   orientation: dσ = (∂T_rot/∂R : ε) pushed through dR = ∂R/∂r · dr,
         #                via the typed JVP primitives jvp_euler_rodrigues /
-        #                jvp_rotate_ssr4 (which hide the only irreducible
+        #                jvp_rotate (which hide the only irreducible
         #                geometric contractions). No leaf-level Jacobian formed.
         def strain_action(V: SR2) -> SR2:
             return T_rot @ V
 
         def orientation_action(V: Rot) -> SR2:
             dR = jvp_euler_rodrigues(orientation, V)
-            return jvp_rotate_ssr4(T, R, dR) @ strain
+            return jvp_rotate(T, R, dR) @ strain
 
         actions: dict = {"strain": strain_action, "orientation": orientation_action}
         return stress, self.apply_chain_rule(v, "stress", actions, output=stress)

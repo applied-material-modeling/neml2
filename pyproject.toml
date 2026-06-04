@@ -33,7 +33,7 @@ NEML2_WHEEL = "ON"
 [project]
 name = "neml2"
 # dependencies: neml2.version
-version = "3.0.0"
+version = "3.0.1"
 authors = [
   { name = "Mark Messner", email = "messner@anl.gov" },
   { name = "Gary Hu", email = "thu@anl.gov" },
@@ -149,6 +149,16 @@ pythonVersion = "3.10"
 # `float64`, ...) via __all__, so `from torch import X` floods this rule
 # with false positives. Qualified `torch.X` access still works as expected.
 reportPrivateImportUsage = "none"
+
+[tool.pytest.ini_options]
+# `importlib` import mode is load-bearing: the package source tree lives at
+# `./neml2/` next to `pyproject.toml`, so the default `prepend` mode pushes the
+# project root onto sys.path and `import neml2` resolves to the source dir
+# instead of the installed wheel. That hides the pybind11 `_aoti.so` (built
+# into the wheel under `<site-packages>/neml2/aoti/`) and trips
+# `ModuleNotFoundError: No module named 'neml2.aoti._aoti'` once any AOTI
+# test actually runs. importlib mode leaves sys.path alone.
+addopts = "--import-mode=importlib"
 
 [tool.cibuildwheel]
 build = "cp310-* cp311-* cp312-* cp313-* cp314-*"

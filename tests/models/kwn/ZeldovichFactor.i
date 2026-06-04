@@ -13,19 +13,19 @@
 [Tensors]
   [R_crit]
     type = Python
-    expr = 'Scalar(torch.tensor(2.0, dtype=torch.float64))'
+    expr = 'Scalar(2.0)'
   []
   [gamma]
     type = Python
-    expr = 'Scalar(torch.tensor(4.0, dtype=torch.float64))'
+    expr = 'Scalar(4.0)'
   []
   [T]
     type = Python
-    expr = 'Scalar(torch.tensor(1.0, dtype=torch.float64))'
+    expr = 'Scalar(1.0)'
   []
   [Z]
     type = Python
-    expr = 'Scalar(torch.tensor(0.07957747154594767, dtype=torch.float64))'
+    expr = 'Scalar(0.07957747154594767)'
   []
 []
 

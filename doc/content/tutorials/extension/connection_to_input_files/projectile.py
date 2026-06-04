@@ -1,42 +1,51 @@
 # A minimal NEML2 Model subclass illustrating the input-file wiring.
 #
-# Forward operator: linear-drag deceleration of a projectile,
-#     a = -mu * v
-# with `mu` a single Scalar parameter. The point of this file is the
-# *connection to HIT* — the schema declaration and the
-# `@register_native` decorator — not the physics.
+# Forward operator: gravity-plus-linear-drag projectile acceleration,
+#     a = g - mu * v
+# with `g` a Vec buffer (constant gravity) and `mu` a single Scalar
+# parameter. The point of this file is the *connection to HIT* — the
+# schema declaration and the `@register_native` decorator — not the
+# physics.
 
 from __future__ import annotations
 
 from neml2.chain_rule import ChainRuleDict
 from neml2.factory import register_native
 from neml2.model import Model
-from neml2.schema import HitSchema, input, output, parameter
-from neml2.types import Scalar
+from neml2.schema import HitSchema, buffer, input, output, parameter
+from neml2.types import Scalar, Vec
 
 
 @register_native("ProjectileAcceleration")
 class ProjectileAcceleration(Model):
-    """Linear-drag projectile acceleration: a = -mu * v."""
+    """Projectile acceleration under gravity and linear drag: a = g - mu * v."""
 
     hit = HitSchema(
-        input("velocity", Scalar, "Projectile velocity"),
-        output("acceleration", Scalar, "Projectile acceleration"),
+        input("velocity", Vec, "Projectile velocity"),
+        output("acceleration", Vec, "Projectile acceleration"),
         parameter("dynamic_viscosity", Scalar, "Drag coefficient mu", attr="mu"),
+        buffer(
+            "gravity",
+            Vec,
+            "Gravitational acceleration vector",
+            attr="g",
+            default=Vec.fill(0.0, -9.81, 0.0),
+        ),
     )
 
-    # Annotate the parameter attribute so static checkers see the
-    # typed wrapper that Model.__getattr__ returns.
+    # Annotate the typed attributes so static checkers see the wrappers
+    # that Model.__getattr__ returns.
     mu: Scalar
+    g: Vec
 
     def forward(  # type: ignore[override]
         self,
-        v: Scalar,
+        v: Vec,
         *nl_params: Scalar,
         v_jvp: ChainRuleDict | None = None,
     ):
         mu = self._get_param("mu", nl_params, Scalar)
-        a = -mu * v
+        a = self.g - mu * v
 
         if v_jvp is None:
             return a
