@@ -174,7 +174,7 @@ class HitSchema:
             if field.kind == "var_inputs":
                 kwargs[field.ctor_name] = _read_var_names(node, field)
                 continue
-            if field.kind == "parameters":
+            if field.kind in {"parameters", "buffers"}:
                 kwargs[field.ctor_name] = _read_parameter_list(node, field)
                 continue
             if field.kind in {"input", "output"}:
@@ -368,6 +368,64 @@ def parameters(
     )
 
 
+def buffer(
+    name: str,
+    type_cls: type[TensorWrapper],
+    doc: str,
+    *,
+    attr: str | None = None,
+    default: Any = _MISSING,
+) -> HitField:
+    """Declare a typed buffer — a non-trainable, constant typed tensor.
+
+    Resolves the HIT value through :meth:`Model.declare_typed_buffer`, which
+    accepts the same spec shapes as :func:`parameter` (mode 1 literal, mode 2
+    ``[Tensors]`` cross-ref) but does *not* support input-promotion (modes
+    3/4). Buffers are frozen at construction time and baked into the AOTI
+    artifact as constants — use this for material constants like gravity,
+    Boltzmann's constant, or any value the user might want to override per
+    block but never differentiate against.
+
+    Replaces the manual two-step pattern of declaring a fixed default inside
+    ``__post_init__`` and calling :meth:`Model.register_typed_buffer` —
+    schemas can now declare the buffer in one line, with a default visible
+    in the auto-generated syntax catalog.
+    """
+    return HitField(
+        "buffer",
+        name,
+        type_cls,
+        doc=doc,
+        default=default,
+        attr=attr,
+    )
+
+
+def buffers(
+    name: str,
+    type_cls: type[TensorWrapper],
+    doc: str,
+    *,
+    attr: str | None = None,
+    default: Any = _MISSING,
+) -> HitField:
+    """Declare a *list* of typed buffers, one per token of a HIT list option.
+
+    Mirrors :func:`parameters` for buffer semantics. Each list entry is
+    registered as ``<attr-or-name>_<i>`` via :meth:`Model.declare_typed_buffer`
+    and the list of registered names is stored on ``self.<attr>`` for the
+    leaf to iterate inside ``forward``.
+    """
+    return HitField(
+        "buffers",
+        name,
+        type_cls,
+        doc=doc,
+        default=default,
+        attr=attr,
+    )
+
+
 def option(
     name: str,
     value_type: type,
@@ -426,7 +484,7 @@ def _validate_doc(name: str, doc: str) -> None:
 
 
 def _read_field(node: nmhit.Node, field: HitField) -> Any:
-    if field.kind == "parameter":
+    if field.kind in {"parameter", "buffer"}:
         return _read_str(node, field.name, field.default)
     if field.reader is not None:
         if field.required:

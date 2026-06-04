@@ -79,7 +79,7 @@ from __future__ import annotations
 import torch
 
 from neml2.model import Model
-from neml2.schema import HitSchema, input, output, parameter
+from neml2.schema import HitSchema, buffer, input, output, parameter
 from neml2.types import Vec, Scalar
 
 
@@ -95,14 +95,14 @@ class ProjectileAcceleration(Model):
             "Dynamic viscosity of the medium",
             attr="mu",
         ),
+        buffer(
+            "gravity",
+            Vec,
+            "Gravitational acceleration vector",
+            attr="g",
+            default=Vec.fill(0.0, -9.81, 0.0),
+        ),
     )
-
-    def __post_init__(self) -> None:
-        # Gravitational acceleration is a non-trainable constant — register
-        # it as a typed buffer in __post_init__, after the schema has
-        # populated parameters but before forward() can run.
-        g = Vec.fill(0.0, -9.81, 0.0)
-        self.register_typed_buffer("g", g)
 
     def forward(self, velocity, *nl_params, v=None):
         # Forward operator deferred to the next tutorial.
@@ -125,6 +125,8 @@ A few things are happening above:
   registered parameter on the instance as `self.mu`, so the forward
   operator can write `self.mu * velocity` without going through a
   string lookup.
+- `buffer(name, type_cls, doc, default=...)` declares a typed *buffer*
+  — a non-trainable constant baked into the model.
 
 ## Variable declaration
 
