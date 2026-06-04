@@ -37,6 +37,7 @@ via ``_NativeInputFile.get_driver()``.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import ClassVar
 
 
 class Driver(ABC):
@@ -45,6 +46,11 @@ class Driver(ABC):
     Subclasses implement ``from_hit(cls, node, factory)`` (the standard native
     factory contract) and ``run()``.
     """
+
+    #: HIT section a registered subclass belongs to — drives ``neml2-syntax``
+    #: classification without hard-coded type sets. Inherited; override on a
+    #: subclass only when the class deliberately lives in a different section.
+    SECTION: ClassVar[str] = "Drivers"
 
     @abstractmethod
     def run(self) -> bool:

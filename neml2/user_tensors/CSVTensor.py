@@ -54,6 +54,7 @@ import nmhit
 import torch
 
 from ..factory import register_native
+from ..schema import HitSchema, option
 from ..types import SR2, WR2, Scalar, Vec
 
 if TYPE_CHECKING:
@@ -123,6 +124,36 @@ class _CSVTensorBase:
 
     TYPE_NAME: ClassVar[str]
     WRAPPER: ClassVar[type[TensorWrapper]]
+    SECTION: ClassVar[str] = "Tensors"
+
+    # Shared documentation schema — every CSV<Type> subclass inherits the same
+    # HIT surface via :meth:`from_hit`. ``variable`` and ``column_names`` are
+    # mutually exclusive (validated at parse time) but the schema can't express
+    # that constraint; both are declared optional and the constructor enforces
+    # the rule.
+    hit = HitSchema(
+        option(
+            "csv_file",
+            str,
+            "Path to the CSV file. Resolved relative to the input file's directory when "
+            "not absolute.",
+        ),
+        option(
+            "variable",
+            str,
+            "Column-name prefix expanded via the per-type suffix convention (e.g. "
+            "``stress`` -> ``stress_xx``, ``stress_yy``, ... for SR2). Mutually exclusive "
+            "with ``column_names``.",
+            default="",
+        ),
+        option(
+            "column_names",
+            list,
+            "Explicit whitespace-separated list of CSV column names; bypasses the "
+            "``variable`` suffix expansion. Mutually exclusive with ``variable``.",
+            default=[],
+        ),
+    )
 
     @classmethod
     def _default_column_names(cls, variable: str) -> list[str]:

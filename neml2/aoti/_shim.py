@@ -55,6 +55,7 @@ from torch import nn
 
 from .. import types as _types
 from ..factory import register_native
+from ..schema import HitSchema, option
 from ..types import TensorWrapper
 from ._aoti import Model as _BoundModel
 
@@ -81,6 +82,21 @@ class AOTIModel(nn.Module):
     ``input_spec`` -- the caller mutates them in place via
     ``self._inner.named_parameters()`` to drive runtime-flexible behavior.
     """
+
+    #: Inherits from ``nn.Module`` rather than :class:`neml2.model.Model` so
+    #: the bound ``torch::inductor::AOTIModelPackageLoader`` runtime drives
+    #: evaluation; the explicit class attribute keeps it in the [Models]
+    #: section of the syntax catalog despite not subclassing Model.
+    SECTION = "Models"
+
+    hit = HitSchema(
+        option(
+            "meta",
+            str,
+            "Path to the AOTI metadata JSON produced by ``neml2-compile``. Resolved "
+            "relative to the input file's directory when not absolute.",
+        ),
+    )
 
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> AOTIModel:

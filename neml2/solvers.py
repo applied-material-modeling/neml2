@@ -71,6 +71,8 @@ class DenseLU:
     dense one and uses a standard LU decomposition to solve the system of equations.
     """
 
+    SECTION = "Solvers"
+
     # No tunable options; the empty schema documents that in the syntax catalog.
     hit = HitSchema()
 
@@ -105,6 +107,8 @@ class SchurComplement:
     """Schur complement linear solver. Solves a block-partitioned system A x = b
     by forming and solving the Schur complement of the primary block.
     """
+
+    SECTION = "Solvers"
 
     hit = HitSchema(
         option(
@@ -251,6 +255,9 @@ class SchurComplement:
 @register_native("Newton")
 class Newton:
     """The standard Newton-Raphson solver which always takes the 'full' Newton step."""
+
+    #: Inherited by ``NewtonWithLineSearch``.
+    SECTION = "Solvers"
 
     hit = HitSchema(
         dependency(

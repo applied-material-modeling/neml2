@@ -136,6 +136,8 @@ def cubic_symmetry_operators(
 class CubicCrystal:
     """A specialization of the general CrystalGeometry class defining a cubic crystal system."""
 
+    SECTION = "Data"
+
     # Construction-only options. ``from_hit`` owns the parsing (the lattice
     # parameter may be a literal float or a [Tensors] cross-reference, and the
     # symmetry operators are fixed to the cubic "432" group rather than read

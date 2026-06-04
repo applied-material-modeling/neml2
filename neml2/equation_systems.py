@@ -765,6 +765,11 @@ def norm_sq(v: AssembledVector) -> torch.Tensor:
 class LinearSystem:
     """Base class for systems with assembled operators."""
 
+    #: HIT section for ``neml2-syntax`` classification — inherited by every
+    #: registered subclass (``ModelNonlinearSystem`` lives under
+    #: ``[EquationSystems]`` in the input file).
+    SECTION = "EquationSystems"
+
     def __init__(self) -> None:
         self._ulayout = self.setup_ulayout()
         self._glayout = self.setup_glayout()

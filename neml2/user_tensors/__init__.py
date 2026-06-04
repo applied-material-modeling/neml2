@@ -22,14 +22,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Native [Tensors] block types other than ``Python`` inline expressions.
+"""Native ``[Tensors]`` block types.
 
-Currently exposes the ``CSV<Type>`` family used by the verification test
-suite to load reference snapshots from on-disk CSV files. New tensor types
-that need a registered HIT type (rather than an inline Python expression)
-belong here.
+Exposes :class:`~neml2.user_tensors.PythonTensor.PythonTensor` (HIT
+``type = Python``) for inline Python expressions and the ``CSV<Type>``
+family used by the verification test suite to load reference snapshots from
+on-disk CSV files.
 """
 
 from .CSVTensor import CSVSR2, CSVWR2, CSVScalar, CSVVec  # noqa: F401 (register)
+from .PythonTensor import PythonTensor  # noqa: F401 (register)
 
-__all__ = ["CSVScalar", "CSVSR2", "CSVVec", "CSVWR2"]
+__all__ = ["CSVScalar", "CSVSR2", "CSVVec", "CSVWR2", "PythonTensor"]
