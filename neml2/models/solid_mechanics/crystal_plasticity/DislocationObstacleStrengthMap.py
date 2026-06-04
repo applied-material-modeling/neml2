@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar, sqrt
 
 
-@register_native("DislocationObstacleStrengthMap")
+@register_neml2_object("DislocationObstacleStrengthMap")
 class DislocationObstacleStrengthMap(Model):
     r"""Dislocation density to strength as in Taylor
     $\tau_i = \tau_{const} + \alpha \mu b \sqrt{\rho_i}$.

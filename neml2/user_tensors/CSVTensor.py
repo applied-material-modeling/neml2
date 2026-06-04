@@ -53,7 +53,8 @@ from typing import TYPE_CHECKING, ClassVar
 import nmhit
 import torch
 
-from ..factory import register_native
+from ..factory import register_neml2_object
+from ..schema import HitSchema, option
 from ..types import SR2, WR2, Scalar, Vec
 
 if TYPE_CHECKING:
@@ -123,6 +124,36 @@ class _CSVTensorBase:
 
     TYPE_NAME: ClassVar[str]
     WRAPPER: ClassVar[type[TensorWrapper]]
+    SECTION: ClassVar[str] = "Tensors"
+
+    # Shared documentation schema — every CSV<Type> subclass inherits the same
+    # HIT surface via :meth:`from_hit`. ``variable`` and ``column_names`` are
+    # mutually exclusive (validated at parse time) but the schema can't express
+    # that constraint; both are declared optional and the constructor enforces
+    # the rule.
+    hit = HitSchema(
+        option(
+            "csv_file",
+            str,
+            "Path to the CSV file. Resolved relative to the input file's directory when "
+            "not absolute.",
+        ),
+        option(
+            "variable",
+            str,
+            "Column-name prefix expanded via the per-type suffix convention (e.g. "
+            "``stress`` -> ``stress_xx``, ``stress_yy``, ... for SR2). Mutually exclusive "
+            "with ``column_names``.",
+            default="",
+        ),
+        option(
+            "column_names",
+            list,
+            "Explicit whitespace-separated list of CSV column names; bypasses the "
+            "``variable`` suffix expansion. Mutually exclusive with ``variable``.",
+            default=[],
+        ),
+    )
 
     @classmethod
     def _default_column_names(cls, variable: str) -> list[str]:
@@ -157,7 +188,7 @@ class _CSVTensorBase:
         raise NotImplementedError
 
 
-@register_native("CSVScalar")
+@register_neml2_object("CSVScalar")
 class CSVScalar(_CSVTensorBase):
     """Load a single column from CSV as a ``Scalar`` with shape ``(N,)``."""
 
@@ -175,7 +206,7 @@ class CSVScalar(_CSVTensorBase):
         return Scalar(columns[0])
 
 
-@register_native("CSVSR2")
+@register_neml2_object("CSVSR2")
 class CSVSR2(_CSVTensorBase):
     """Load 6 columns from CSV as an ``SR2`` with shape ``(N, 6)``.
 
@@ -200,7 +231,7 @@ class CSVSR2(_CSVTensorBase):
         return SR2(torch.stack(columns, dim=-1))
 
 
-@register_native("CSVVec")
+@register_neml2_object("CSVVec")
 class CSVVec(_CSVTensorBase):
     """Load 3 columns from CSV as a ``Vec`` with shape ``(N, 3)``."""
 
@@ -219,7 +250,7 @@ class CSVVec(_CSVTensorBase):
         return Vec(torch.stack(columns, dim=-1))
 
 
-@register_native("CSVWR2")
+@register_neml2_object("CSVWR2")
 class CSVWR2(_CSVTensorBase):
     """Load 3 columns from CSV as a ``WR2`` (skew) with shape ``(N, 3)``.
 

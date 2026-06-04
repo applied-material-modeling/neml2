@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, derived_output, input, parameter
 from ....types import Scalar, abs, log, pow
 
 
-@register_native("PowerLawIsotropicHardeningStaticRecovery")
+@register_neml2_object("PowerLawIsotropicHardeningStaticRecovery")
 class PowerLawIsotropicHardeningStaticRecovery(Model):
     r"""This particular model implements a power law recovery of the type
     $\dot{k} = -\left(\frac{\lVert k \rVert}{\tau}\right)^{n-1} \frac{k}{\tau}$

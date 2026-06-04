@@ -54,7 +54,8 @@ import torch
 from torch import nn
 
 from .. import types as _types
-from ..factory import register_native
+from ..factory import register_neml2_object
+from ..schema import HitSchema, option
 from ..types import TensorWrapper
 from ._aoti import Model as _BoundModel
 
@@ -64,7 +65,7 @@ if TYPE_CHECKING:
     from ..factory import _NativeInputFile
 
 
-@register_native("AOTIModel")
+@register_neml2_object("AOTIModel")
 class AOTIModel(nn.Module):
     """HIT-loadable wrapper around :class:`neml2.aoti.Model`.
 
@@ -81,6 +82,21 @@ class AOTIModel(nn.Module):
     ``input_spec`` -- the caller mutates them in place via
     ``self._inner.named_parameters()`` to drive runtime-flexible behavior.
     """
+
+    #: Inherits from ``nn.Module`` rather than :class:`neml2.model.Model` so
+    #: the bound ``torch::inductor::AOTIModelPackageLoader`` runtime drives
+    #: evaluation; the explicit class attribute keeps it in the [Models]
+    #: section of the syntax catalog despite not subclassing Model.
+    SECTION = "Models"
+
+    hit = HitSchema(
+        option(
+            "meta",
+            str,
+            "Path to the AOTI metadata JSON produced by ``neml2-compile``. Resolved "
+            "relative to the input file's directory when not absolute.",
+        ),
+    )
 
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> AOTIModel:

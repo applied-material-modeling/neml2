@@ -44,7 +44,7 @@ input as a "parameter" output rather than a generic "to" copy.
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
@@ -93,7 +93,7 @@ class _InputParameter(Model):
         )
 
 
-@register_native("ScalarInputParameter")
+@register_neml2_object("ScalarInputParameter")
 class ScalarInputParameter(_InputParameter):
     """Scalar-valued input parameter. Mirrors ``InputParameter<Scalar>``."""
 
@@ -103,7 +103,7 @@ class ScalarInputParameter(_InputParameter):
     )
 
 
-@register_native("VecInputParameter")
+@register_neml2_object("VecInputParameter")
 class VecInputParameter(_InputParameter):
     """Vec-valued input parameter. Mirrors ``InputParameter<Vec>``."""
 
@@ -113,7 +113,7 @@ class VecInputParameter(_InputParameter):
     )
 
 
-@register_native("RotInputParameter")
+@register_neml2_object("RotInputParameter")
 class RotInputParameter(_InputParameter):
     """Rot-valued input parameter. Mirrors ``InputParameter<Rot>``."""
 
@@ -123,7 +123,7 @@ class RotInputParameter(_InputParameter):
     )
 
 
-@register_native("WR2InputParameter")
+@register_neml2_object("WR2InputParameter")
 class WR2InputParameter(_InputParameter):
     """WR2-valued input parameter. Mirrors ``InputParameter<WR2>``."""
 
@@ -133,7 +133,7 @@ class WR2InputParameter(_InputParameter):
     )
 
 
-@register_native("R2InputParameter")
+@register_neml2_object("R2InputParameter")
 class R2InputParameter(_InputParameter):
     """R2-valued input parameter. Mirrors ``InputParameter<R2>``."""
 
@@ -143,7 +143,7 @@ class R2InputParameter(_InputParameter):
     )
 
 
-@register_native("SR2InputParameter")
+@register_neml2_object("SR2InputParameter")
 class SR2InputParameter(_InputParameter):
     """SR2-valued input parameter. Mirrors ``InputParameter<SR2>``."""
 
@@ -153,7 +153,7 @@ class SR2InputParameter(_InputParameter):
     )
 
 
-@register_native("SSR4InputParameter")
+@register_neml2_object("SSR4InputParameter")
 class SSR4InputParameter(_InputParameter):
     """SSR4-valued input parameter. Mirrors ``InputParameter<SSR4>``."""
 
@@ -163,7 +163,7 @@ class SSR4InputParameter(_InputParameter):
     )
 
 
-@register_native("MillerIndexInputParameter")
+@register_neml2_object("MillerIndexInputParameter")
 class MillerIndexInputParameter(_InputParameter):
     """MillerIndex-valued input parameter. Mirrors ``InputParameter<MillerIndex>``."""
 

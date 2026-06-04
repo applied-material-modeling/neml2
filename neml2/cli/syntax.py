@@ -35,14 +35,8 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from ..factory import _registry
-from ..model import Model
 from ..schema import _MISSING, BLOCK_NAME, HitField, HitSchema
-
-_SOLVER_TYPES = frozenset({"DenseLU", "SchurComplement", "Newton", "NewtonWithLineSearch"})
-_EQUATION_SYSTEM_TYPES = frozenset({"NonlinearSystem"})
-_DATA_TYPES = frozenset({"CubicCrystal"})
-_DRIVER_TYPES = frozenset({"TransientDriver", "TransientRegression", "Verification"})
-_TENSOR_TYPES = frozenset({"CSVScalar", "CSVSR2", "CSVVec", "CSVWR2"})
+from ._extensions import add_load_argument, load_user_extensions
 
 
 @dataclass(frozen=True)
@@ -56,19 +50,20 @@ class SyntaxRecord:
 
 
 def _section_for(type_name: str, cls: type) -> str:
-    if type_name in _SOLVER_TYPES:
-        return "Solvers"
-    if type_name in _EQUATION_SYSTEM_TYPES:
-        return "EquationSystems"
-    if type_name in _DATA_TYPES:
-        return "Data"
-    if type_name in _DRIVER_TYPES:
-        return "Drivers"
-    if type_name in _TENSOR_TYPES:
-        return "Tensors"
-    if issubclass(cls, Model):
-        return "Models"
-    return ""
+    """Read the registered class's HIT section.
+
+    Each registered class declares its section through a ``SECTION`` class
+    attribute, usually inherited from its base (:class:`neml2.model.Model`,
+    :class:`neml2.driver.Driver`, :class:`neml2.equation_systems.LinearSystem`,
+    ...). Classes outside an inheritance chain (linear/nonlinear solvers,
+    standalone tensor/data classes) set their own.
+
+    Falls back to ``""`` when no section is declared — surfaced by
+    :func:`collect_records` validation.
+    """
+    del type_name
+    section = getattr(cls, "SECTION", "")
+    return section if isinstance(section, str) else ""
 
 
 def _source_path(cls: type) -> str:
@@ -90,10 +85,23 @@ def _ascii_doc(text: str, context: str) -> str:
 
 
 def collect_records() -> list[SyntaxRecord]:
-    """Collect Python-native syntax records from the native registry."""
+    """Collect Python-native syntax records from the native registry.
+
+    Every registered class must declare a HIT ``SECTION`` (usually inherited
+    from its base class — see :func:`_section_for`). A missing section means
+    the type would silently fall out of the syntax catalog, so this raises
+    rather than skipping.
+    """
     records: list[SyntaxRecord] = []
     for type_name, cls in sorted(_registry.items()):
         section = _section_for(type_name, cls)
+        if not section:
+            raise ValueError(
+                f"{cls.__module__}.{cls.__qualname__} (registered as {type_name!r}) has "
+                "no SECTION declared. Add ``SECTION = '<Section>'`` to the class or one "
+                "of its base classes so neml2-syntax knows which HIT section it belongs "
+                "to."
+            )
         doc = _ascii_doc(inspect.getdoc(cls) or "", f"{type_name} doc")
         hit = getattr(cls, "hit", None)
         records.append(
@@ -210,6 +218,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--server", action="store_true", help="run as a JSON server on stdin/stdout"
     )
+    add_load_argument(parser)
     return parser
 
 
@@ -269,6 +278,12 @@ def main(
         err_stream.write(
             "error: --server is incompatible with --json, --section, --type, and --summary\n"
         )
+        return 1
+
+    try:
+        load_user_extensions(args.load)
+    except ImportError as exc:
+        err_stream.write(f"error: {exc}\n")
         return 1
 
     records = collect_records()

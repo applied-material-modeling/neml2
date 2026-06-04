@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import SR2
 
 
-@register_native("IsotropicMandelStress")
+@register_neml2_object("IsotropicMandelStress")
 class IsotropicMandelStress(Model):
     """``mandel_stress = cauchy_stress`` (isotropic, small-strain).
 

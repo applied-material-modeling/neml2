@@ -29,7 +29,7 @@ from __future__ import annotations
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option, output
 from ...types import (
@@ -38,7 +38,7 @@ from ...types import (
 )
 
 
-@register_native("FBComplementarity")
+@register_neml2_object("FBComplementarity")
 class FBComplementarity(Model):
     r"""If $a \ge 0, b \ge 0, ab = 0$ then the Fischer Burmeister (FB)
     complementarity condition is:$r = a+b-\sqrt(a^2+b^2) = 0$.

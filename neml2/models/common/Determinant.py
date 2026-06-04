@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
@@ -54,7 +54,7 @@ class _Determinant(Model):
     _value_type: type[TensorWrapper]
 
 
-@register_native("R2Determinant")
+@register_neml2_object("R2Determinant")
 class R2Determinant(_Determinant):
     """Determinant of a full ``R2`` tensor."""
 
@@ -85,7 +85,7 @@ class R2Determinant(_Determinant):
         return J, self.apply_chain_rule(v, "determinant", {"input": F_action}, output=J)
 
 
-@register_native("SR2Determinant")
+@register_neml2_object("SR2Determinant")
 class SR2Determinant(_Determinant):
     """Determinant of a symmetric ``SR2`` tensor."""
 

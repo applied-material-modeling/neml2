@@ -29,13 +29,13 @@ from __future__ import annotations
 import math
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar, pow, sum
 
 
-@register_native("PrecipitateVolumeFraction")
+@register_neml2_object("PrecipitateVolumeFraction")
 class PrecipitateVolumeFraction(Model):
     r"""Compute the precipitate volume fraction from a discrete size distribution.
 

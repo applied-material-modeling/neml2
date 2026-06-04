@@ -15,13 +15,13 @@ acceleration (output), ``g`` is the gravitational acceleration vector
 from __future__ import annotations
 
 from neml2.chain_rule import ChainRuleDict
-from neml2.factory import register_native
+from neml2.factory import register_neml2_object
 from neml2.model import Model
 from neml2.schema import HitSchema, buffer, input, output, parameter
 from neml2.types import Scalar, Vec
 
 
-@register_native("ProjectileAcceleration")
+@register_neml2_object("ProjectileAcceleration")
 class ProjectileAcceleration(Model):
     """Newton's second law for a projectile in a viscous medium:
     ``a = g - mu * v``.

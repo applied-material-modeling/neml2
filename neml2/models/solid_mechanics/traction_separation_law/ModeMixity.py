@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import Scalar, gt, where
 
 
-@register_native("ModeMixity")
+@register_neml2_object("ModeMixity")
 class ModeMixity(Model):
     r"""Mode-mixity ratio $\beta = \delta_s / \delta_n^+$ in the opening
     branch; $\beta = 0$ in compression. Uses a safe-divisor

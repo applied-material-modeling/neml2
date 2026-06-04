@@ -44,7 +44,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import BLOCK_NAME, HitSchema, option, output
 from ....types import SSR4, Scalar
@@ -55,7 +55,7 @@ if TYPE_CHECKING:
     from ....factory import _NativeInputFile
 
 
-@register_native("CubicElasticityTensor")
+@register_neml2_object("CubicElasticityTensor")
 class CubicElasticityTensor(Model):
     """This class defines a cubic anisotropic elasticity tensor using three
     parameters.  Various options are available for which three parameters to

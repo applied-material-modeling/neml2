@@ -145,7 +145,7 @@ def test_aoti_stub_loads_through_native_factory(scenario: Path, tmp_path: Path):
     shim drives like a native Model (typed-wrapper positional args, tuple
     output) -- the path TransientDriver / TransientRegression will use.
 
-    This covers the HIT shim (``register_native("AOTIModel")``) end-to-end:
+    This covers the HIT shim (``register_neml2_object("AOTIModel")``) end-to-end:
     factory dispatch, ``from_hit`` meta-path resolution, typed-wrapper
     marshalling at the call boundary, output matches eager.
     """

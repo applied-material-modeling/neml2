@@ -58,8 +58,8 @@ from ...chain_rule import (
     SparsityFlag,
     combine_sparsity,
 )
-from ...factory import register_native
-from ...model import Model, NLParam
+from ...factory import register_neml2_object
+from ...model import Model, NLParam, register_submodule
 from ...resolver import DependencyResolver
 from ...schema import HitSchema, option
 from ...types import TensorWrapper
@@ -117,7 +117,7 @@ if TYPE_CHECKING:
     from ...factory import _NativeInputFile
 
 
-@register_native("ComposedModel")
+@register_neml2_object("ComposedModel")
 class ComposedModel(Model):
     """Compose multiple Models together to form a single Model. The execution order
     of the composed models is determined by an internal dependency resolver such
@@ -162,18 +162,7 @@ class ComposedModel(Model):
         self._child_supports_second_order: list[bool] = []
         used_attrs: set[str] = set()
         for i, m in enumerate(order):
-            # Prefer the HIT block name (stashed on the model by the factory)
-            # so ``self.named_parameters()`` returns readable, user-meaningful
-            # names like ``elasticity.E`` rather than ``_child_11.E``. Fall
-            # back to ``_child_{i}`` if no HIT name is available (direct
-            # Python construction) or if the name would collide with an
-            # existing attribute or a previously-registered child.
-            hit_name = getattr(m, "_hit_name", None)
-            attr = hit_name if hit_name and hit_name.isidentifier() else None
-            if attr is None or attr in used_attrs or hasattr(self, attr):
-                attr = f"_child_{i}"
-            used_attrs.add(attr)
-            self.add_module(attr, m)
+            attr = register_submodule(self, m, fallback=f"_child_{i}", used=used_attrs)
             self._plan.append(
                 (attr, list(m.input_spec), list(m.input_spec.values()), list(m.output_spec))
             )

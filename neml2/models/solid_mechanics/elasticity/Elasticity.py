@@ -36,7 +36,7 @@ concrete elastic relation:
   so the model defines the relation between rates instead of totals.
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical input/output names so concrete
 native elasticity leaves can reuse the contract; ``forward`` raises
 ``NotImplementedError`` so any accidental direct use surfaces immediately.

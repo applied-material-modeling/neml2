@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import R2, Scalar, pow
 
 
-@register_native("VolumeAdjustDeformationGradient")
+@register_neml2_object("VolumeAdjustDeformationGradient")
 class VolumeAdjustDeformationGradient(Model):
     r"""Calculate the volume-adjusted deformation gradient, i.e. $F_e = J^{-\frac{1}/{3}} F$, where
     $F$ is the pre-adjusted deformation

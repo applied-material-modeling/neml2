@@ -46,6 +46,23 @@ def test_collect_records_covers_native_sections():
     assert records["Newton"].section == "Solvers"
     assert records["NonlinearSystem"].section == "EquationSystems"
     assert records["CubicCrystal"].section == "Data"
+    # AOTIModel deliberately inherits from nn.Module rather than Model so the
+    # bound AOTIModelPackageLoader runtime drives evaluation; the explicit
+    # _MODEL_TYPES entry in cli/syntax.py keeps it visible under [Models].
+    assert records["AOTIModel"].section == "Models"
+    # The non-Model registered classes now expose HitSchema so the syntax
+    # catalog and auto-doc pipeline can render their HIT surface.
+    for type_name in (
+        "TransientDriver",
+        "TransientRegression",
+        "Verification",
+        "AOTIModel",
+        "CSVScalar",
+        "CSVSR2",
+        "CSVVec",
+        "CSVWR2",
+    ):
+        assert records[type_name].hit is not None, type_name
 
 
 def test_hit_schema_record_emits_option_metadata():
@@ -79,6 +96,21 @@ def test_schema_backed_solver_emits_option_metadata():
         "rel_tol",
         "max_its",
     }
+
+
+def test_collect_records_rejects_type_without_section(monkeypatch: pytest.MonkeyPatch):
+    """A registered class missing ``SECTION`` is a programming bug — the
+    catalog would silently drop the type otherwise. Fake a stale registry entry
+    and assert :func:`collect_records` raises with a clear pointer at the
+    offending class.
+    """
+
+    class _SectionlessType:
+        """Stand-in for a registered class whose base forgot to declare SECTION."""
+
+    monkeypatch.setitem(_syntax_cli._registry, "_SectionlessType", _SectionlessType)
+    with pytest.raises(ValueError, match="no SECTION declared"):
+        _syntax_cli.collect_records()
 
 
 def test_record_without_schema_is_summary_only():

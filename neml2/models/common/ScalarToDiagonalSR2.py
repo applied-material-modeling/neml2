@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
@@ -36,7 +36,7 @@ from ...types import (
 )
 
 
-@register_native("ScalarToDiagonalSR2")
+@register_neml2_object("ScalarToDiagonalSR2")
 class ScalarToDiagonalSR2(Model):
     """Create a diagonal symmetric rank 2 tensor with values filled by a scalar."""
 

@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import Scalar, sum
@@ -35,7 +35,7 @@ from ....types import abs as tensor_abs
 from ....types import sign as tensor_sign
 
 
-@register_native("SumSlipRates")
+@register_neml2_object("SumSlipRates")
 class SumSlipRates(Model):
     r"""Calculates the sum of the absolute value of all the slip rates as
     $\sum_{i=1}^{n_{slip}} \left| \dot{\gamma}_i \right|$.

@@ -29,7 +29,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
 from ....types import R2, Scalar, jvp_rotate, rotate, sum
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from ....data import CrystalGeometry
 
 
-@register_native("PlasticSpatialVelocityGradient")
+@register_neml2_object("PlasticSpatialVelocityGradient")
 class PlasticSpatialVelocityGradient(Model):
     r"""Caclulates the plastic spatial velocity gradient as
     $l^p = \sum_{i=1}^{n_{slip}} \dot{\gamma}_i Q \left(d_i \otimes n_i \right) Q^T$

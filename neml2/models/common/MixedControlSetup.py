@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option, output
 from ...types import (
@@ -37,7 +37,7 @@ from ...types import (
 )
 
 
-@register_native("MixedControlSetup")
+@register_neml2_object("MixedControlSetup")
 class MixedControlSetup(Model):
     """Per-component selection between strain- and stress-controlled inputs.
 

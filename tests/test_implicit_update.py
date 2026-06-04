@@ -93,3 +93,60 @@ def test_implicit_update_input_output_specs():
 
     assert list(update.input_spec) == ["x", "c"]
     assert list(update.output_spec) == ["x"]
+
+
+class _ParamResidual(Model):
+    """Toy residual with a parameter, for naming tests only.
+
+    Forward returns ``K * x - c`` so the converged ``x`` is ``c / K`` and
+    ``self.K`` is exposed as a registered parameter.
+    """
+
+    input_spec = {"x": Scalar, "c": Scalar}
+    output_spec = {"x_residual": Scalar}
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.K = torch.nn.Parameter(torch.tensor(2.0, dtype=torch.float64))
+
+    def forward(self, x: Scalar, c: Scalar, v=None):
+        r = self.K * x - c
+        if v is None:
+            return r
+        return r, self.apply_chain_rule(
+            v,
+            "x_residual",
+            {"x": lambda V: self.K * V, "c": lambda V: -V},
+            output=r,
+        )
+
+
+def test_implicit_update_routes_residual_params_under_hit_name():
+    """When the residual model carries a HIT block name, ImplicitUpdate must
+    register it as a submodule under that name — not the opaque
+    ``_residual_model`` attribute slot. Mirrors the same convention used by
+    ComposedModel / Normality so ``named_parameters()`` reads as
+    ``surface.K`` instead of ``_residual_model.K``.
+    """
+    inner = _ParamResidual()
+    # Simulate the factory stamping the HIT block name onto the constructed
+    # object (see factory._get_object). Bypasses the full HIT round-trip so the
+    # test stays focused on the naming routing — the residual surface itself
+    # doesn't need to round-trip through HIT for that.
+    inner._hit_name = "surface"  # type: ignore[assignment]
+    system = ModelNonlinearSystem(inner, unknowns=[["x"]])
+    update = ImplicitUpdate(system, Newton())
+    names = {n for n, _ in update.named_parameters()}
+    assert names == {"surface.K"}
+
+
+def test_implicit_update_falls_back_to_residual_model_without_hit_name():
+    """When the residual model is built directly in Python (no ``_hit_name``),
+    fall back to the ``_residual_model`` attribute slot so existing eager-
+    construction call sites keep working.
+    """
+    inner = _ParamResidual()
+    system = ModelNonlinearSystem(inner, unknowns=[["x"]])
+    update = ImplicitUpdate(system, Newton())
+    names = {n for n, _ in update.named_parameters()}
+    assert names == {"_residual_model.K"}

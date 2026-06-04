@@ -36,7 +36,7 @@ holds the forward/action logic; each registered variant only differs in the
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import BLOCK_NAME, HitSchema, output, parameter
 from ...types import (
@@ -120,7 +120,7 @@ class _ConstantParameter(Model):
         )
 
 
-@register_native("ScalarConstantParameter")
+@register_neml2_object("ScalarConstantParameter")
 class ScalarConstantParameter(_ConstantParameter):
     """Scalar-valued constant parameter. Mirrors ``ConstantParameter<Scalar>``."""
 
@@ -145,7 +145,7 @@ class ScalarConstantParameter(_ConstantParameter):
     )
 
 
-@register_native("VecConstantParameter")
+@register_neml2_object("VecConstantParameter")
 class VecConstantParameter(_ConstantParameter):
     """Vec-valued constant parameter. Mirrors ``ConstantParameter<Vec>``."""
 
@@ -170,7 +170,7 @@ class VecConstantParameter(_ConstantParameter):
     )
 
 
-@register_native("RotConstantParameter")
+@register_neml2_object("RotConstantParameter")
 class RotConstantParameter(_ConstantParameter):
     """Rot-valued constant parameter. Mirrors ``ConstantParameter<Rot>``."""
 
@@ -195,7 +195,7 @@ class RotConstantParameter(_ConstantParameter):
     )
 
 
-@register_native("WR2ConstantParameter")
+@register_neml2_object("WR2ConstantParameter")
 class WR2ConstantParameter(_ConstantParameter):
     """WR2-valued constant parameter. Mirrors ``ConstantParameter<WR2>``."""
 
@@ -220,7 +220,7 @@ class WR2ConstantParameter(_ConstantParameter):
     )
 
 
-@register_native("R2ConstantParameter")
+@register_neml2_object("R2ConstantParameter")
 class R2ConstantParameter(_ConstantParameter):
     """R2-valued constant parameter. Mirrors ``ConstantParameter<R2>``."""
 
@@ -245,7 +245,7 @@ class R2ConstantParameter(_ConstantParameter):
     )
 
 
-@register_native("SR2ConstantParameter")
+@register_neml2_object("SR2ConstantParameter")
 class SR2ConstantParameter(_ConstantParameter):
     """SR2-valued constant parameter. Mirrors ``ConstantParameter<SR2>``."""
 
@@ -270,7 +270,7 @@ class SR2ConstantParameter(_ConstantParameter):
     )
 
 
-@register_native("SSR4ConstantParameter")
+@register_neml2_object("SSR4ConstantParameter")
 class SSR4ConstantParameter(_ConstantParameter):
     """SSR4-valued constant parameter. Mirrors ``ConstantParameter<SSR4>``."""
 
@@ -295,7 +295,7 @@ class SSR4ConstantParameter(_ConstantParameter):
     )
 
 
-@register_native("MillerIndexConstantParameter")
+@register_neml2_object("MillerIndexConstantParameter")
 class MillerIndexConstantParameter(_ConstantParameter):
     """MillerIndex-valued constant parameter. Mirrors ``ConstantParameter<MillerIndex>``."""
 

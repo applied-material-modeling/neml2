@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, derived_output, input, parameter
 from ....types import Scalar, abs, sign, sqrt
 
 
-@register_native("PerSlipForestDislocationEvolution")
+@register_neml2_object("PerSlipForestDislocationEvolution")
 class PerSlipForestDislocationEvolution(Model):
     r"""Standard forest hardening model per slip system defined by
     $\dot{\rho}_i = (k_1 \sqrt{\rho_i} - k_2 \rho_i) \left| \dot{\gamma}_i \right|$.

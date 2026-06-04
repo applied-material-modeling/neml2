@@ -33,7 +33,7 @@ suffix). Concrete children -- e.g. ``PowerLawIsotropicHardeningStaticRecovery``
 -- supply the actual recovery law in ``set_value``.
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical input/output names that concrete
 native isotropic static recovery leaves reuse; ``forward`` raises
 ``NotImplementedError`` so any accidental direct use surfaces immediately.

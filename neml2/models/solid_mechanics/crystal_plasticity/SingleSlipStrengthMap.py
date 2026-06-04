@@ -29,7 +29,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output, parameter
 from ....types import Scalar
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from ....data import CrystalGeometry
 
 
-@register_native("SingleSlipStrengthMap")
+@register_neml2_object("SingleSlipStrengthMap")
 class SingleSlipStrengthMap(Model):
     r"""Calculates the slip system strength for all slip systems as
     $\hat{\tau}_i = \bar{\tau} + \tau_0$ where $\hat{\tau}_i$ is

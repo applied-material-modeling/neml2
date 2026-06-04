@@ -47,7 +47,7 @@ runtime object creation:
 
 There are three pieces a model author touches:
 
-`@register_native("TypeName")`
+`@register_neml2_object("TypeName")`
 : Decorator on the class. Adds the class to the native registry
   under the given HIT type name. Lives in {mod}`neml2.factory`.
 
@@ -85,7 +85,7 @@ tutorial is about.
 
 Two things to notice:
 
-1. **`@register_native("ProjectileAcceleration")`** is what makes
+1. **`@register_neml2_object("ProjectileAcceleration")`** is what makes
    `type = ProjectileAcceleration` resolvable from an input file.
    The string passed to the decorator is the HIT type name — it does
    not have to match the Python class name (it usually does, by
@@ -132,7 +132,7 @@ Each line in the `[accel]` block lines up with one schema field:
 ## Loading and inspecting
 
 Before `neml2.load_model` can recognise the type name, the module
-that defines it must have been imported (so the `@register_native`
+that defines it must have been imported (so the `@register_neml2_object`
 decorator has run). In a Python script this is just an `import`; in
 this notebook page the source file is sitting next to `input.i`, so
 we put its directory on `sys.path` and import it.
@@ -140,7 +140,7 @@ we put its directory on `sys.path` and import it.
 ```{code-cell} ipython3
 import sys
 sys.path.insert(0, ".")
-import projectile  # the @register_native runs at import time
+import projectile  # the @register_neml2_object runs at import time
 
 import neml2
 model = neml2.load_model("input.i", "accel")
@@ -189,8 +189,29 @@ from neml2.factory import _registry
 
 If a `KeyError` mentioning *"not registered in NativeRegistry"* fires
 at `load_model` time, the cause is almost always that the module
-holding `@register_native` was never imported — fix the import (or
+holding `@register_neml2_object` was never imported — fix the import (or
 re-order imports) so the decorator runs before the load call.
+
+## Loading the extension from the CLI
+
+Every `neml2-*` console script accepts a cumulative `--load PATH`
+flag for exactly this situation: a custom model defined outside the
+`neml2` package can be driven from the shell without writing a
+wrapper script. `PATH` is either a filesystem path to a `.py` file
+(or a package directory) or a dotted module name on `sys.path`. The
+flag is processed before the input file is parsed, so the registered
+type is visible by the time `load_model` runs:
+
+```bash
+neml2-run --load ./projectile.py input.i driver
+neml2-inspect --load ./projectile.py input.i accel
+neml2-syntax --load ./projectile.py --type ProjectileAcceleration --json -
+neml2-compile --load ./projectile.py input.i --model accel
+```
+
+Repeat `--load` to pull in several extensions; they import in the
+order given, so a later module may depend on names registered by an
+earlier one. See [](cli-utilities) for the option in context.
 
 ## What's next
 

@@ -98,7 +98,7 @@ The Python package layout under `neml2/`:
 
 ### Factory / Registry pattern
 
-Every concrete native object (model, driver, tensor, solver, ...) self-registers via the `@register_native("TypeName")` decorator from `neml2.factory`. HIT input files then instantiate them by type name. `Model` subclasses declare their input/output/parameter surface via a class-level `hit = HitSchema(...)` and a `from_hit` constructor; the `@register_native` decorator + `HitSchema` together feed both the live factory and the auto-generated `neml2-syntax` catalog.
+Every concrete native object (model, driver, tensor, solver, ...) self-registers via the `@register_neml2_object("TypeName")` decorator from `neml2.factory`. HIT input files then instantiate them by type name. `Model` subclasses declare their input/output/parameter surface via a class-level `hit = HitSchema(...)` and a `from_hit` constructor; the `@register_neml2_object` decorator + `HitSchema` together feed both the live factory and the auto-generated `neml2-syntax` catalog.
 
 When adding a new submodule under `neml2/models/<domain>/`, append the import to the parent `__init__.py` so `import neml2` triggers registration — there is no lazy-loading machinery and unimported modules' types are invisible to the factory.
 

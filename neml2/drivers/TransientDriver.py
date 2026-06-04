@@ -49,7 +49,8 @@ import nmhit
 import torch
 
 from ..driver import Driver
-from ..factory import register_native
+from ..factory import register_neml2_object
+from ..schema import HitField, HitSchema, dependency, option
 from ..types import R2, SR2, SSR4, WR2, MillerIndex, Rot, Scalar, TensorWrapper, Vec
 
 if TYPE_CHECKING:
@@ -118,12 +119,76 @@ def _read_typed_pairs(
     return out
 
 
-@register_native("TransientDriver")
+def _typed_io_fields() -> tuple[HitField, ...]:
+    """Build documentation fields for the ``force_<Type>_*`` / ``ic_<Type>_*``
+    name/value pairs that ``_read_typed_pairs`` ingests at parse time.
+
+    Each typed wrapper (Scalar, Vec, SR2, ...) maps to four optional list
+    options: ``force_<T>_names`` paired with ``force_<T>_values`` and the same
+    pair under ``ic_<T>_*`` for initial conditions. The schema doesn't drive
+    parsing here (the driver overrides ``from_hit``) — it exists so
+    ``neml2-syntax`` can render the full HIT surface.
+    """
+    fields: list[HitField] = []
+    for type_name in _TYPE_MAP:
+        for prefix, prefix_doc, article in (
+            ("force", "driving force", "a"),
+            ("ic", "initial condition", "an"),
+        ):
+            fields.append(
+                option(
+                    f"{prefix}_{type_name}_names",
+                    list,
+                    f"{type_name} variable names assigned {article} {prefix_doc} value.",
+                    default=[],
+                )
+            )
+            fields.append(
+                option(
+                    f"{prefix}_{type_name}_values",
+                    list,
+                    f"{type_name} {prefix_doc} tokens. Each is either an inline Scalar literal "
+                    f"(Scalar only) or a [Tensors] block name. Length must match "
+                    f"``{prefix}_{type_name}_names``.",
+                    default=[],
+                )
+            )
+    return tuple(fields)
+
+
+@register_neml2_object("TransientDriver")
 class TransientDriver(Driver):
     """Drive a model over a prescribed time history.
 
     Mirrors C++ ``TransientDriver``. See module docstring for differences.
     """
+
+    # Documentation-only schema; ``from_hit`` below owns the parsing because
+    # ``force_<Type>_*`` / ``ic_<Type>_*`` are a wide product of optional list
+    # options that the typed Model-style schema can't express directly.
+    hit = HitSchema(
+        dependency("model", "get_model", "The Model to drive over the time history."),
+        option(
+            "prescribed_time",
+            str,
+            "[Tensors] block name of a Scalar whose leading axis is the per-step time history.",
+        ),
+        option(
+            "time",
+            str,
+            "Name of the model input that receives the per-step time value.",
+            default="t",
+        ),
+        option(
+            "save_as",
+            str,
+            "Output file path. Accepted for compatibility with the C++ driver but ignored "
+            "by the native runtime; results are held in memory and retrieved via "
+            ":meth:`result`.",
+            default="",
+        ),
+        *_typed_io_fields(),
+    )
 
     def __init__(
         self,

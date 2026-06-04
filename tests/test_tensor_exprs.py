@@ -336,7 +336,7 @@ def test_old_type_format_raises_helpful_error(tmp_path):
 []
 """,
     )
-    with pytest.raises(ValueError, match="expected 'Python' or a registered tensor type"):
+    with pytest.raises(ValueError, match="expected a registered tensor type"):
         f.get_tensor("t")
 
 

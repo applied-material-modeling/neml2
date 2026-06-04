@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar, pow
 
 
-@register_native("PowerLawPermeability")
+@register_neml2_object("PowerLawPermeability")
 class PowerLawPermeability(Model):
     r"""Power-law porosity-permeability relation
     $K = K_0 \left( \frac{\varphi}{\varphi_0} \right)^p$ where

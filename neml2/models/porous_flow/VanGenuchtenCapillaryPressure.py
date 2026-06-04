@@ -31,13 +31,13 @@ import math
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option, output, parameter
 from ...types import Scalar, log10, lt, pow, where
 
 
-@register_native("VanGenuchtenCapillaryPressure")
+@register_neml2_object("VanGenuchtenCapillaryPressure")
 class VanGenuchtenCapillaryPressure(Model):
     r"""Define the van Genuchten correlation for capillary pressure
     $P_c = a \left( S_e^{-\frac{1}{m}} - 1 \right)^{1-m}$. Here

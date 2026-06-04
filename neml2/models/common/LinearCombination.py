@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, output, parameter, parameters, var_inputs
 from ...types import (
@@ -138,7 +138,7 @@ class _LinearCombination(Model):
         return out, *self.propagate_tangents(v, self._to, actions_1, output=out, v2=v2, vh=vh)
 
 
-@register_native("ScalarLinearCombination")
+@register_neml2_object("ScalarLinearCombination")
 class ScalarLinearCombination(_LinearCombination):
     r"""Calculate linear combination of multiple Scalar tensors as
     $u = w_i v_i + b$ (Einstein summation assumed), where $w_i$ are
@@ -155,7 +155,7 @@ class ScalarLinearCombination(_LinearCombination):
     )
 
 
-@register_native("SR2LinearCombination")
+@register_neml2_object("SR2LinearCombination")
 class SR2LinearCombination(_LinearCombination):
     r"""Calculate linear combination of multiple SR2 tensors as
     $u = w_i v_i + b$ (Einstein summation assumed), where $w_i$ are

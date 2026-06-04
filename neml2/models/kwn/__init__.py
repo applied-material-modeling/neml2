@@ -26,7 +26,7 @@
 """Native KWN (Kampmann--Wagner Numerical) models.
 
 One file per C++ header under ``include/neml2/models/kwn/``; this package
-re-imports each file so ``@register_native`` side effects fire on package
+re-imports each file so ``@register_neml2_object`` side effects fire on package
 import.
 """
 

@@ -39,6 +39,7 @@ import sys
 from typing import TYPE_CHECKING, Any
 
 from ..factory import load_input
+from ._extensions import add_load_argument, load_user_extensions
 
 if TYPE_CHECKING:
     from ..model import Model
@@ -98,6 +99,7 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="emit a structured JSON description on stdout instead of the human-readable format",
     )
+    add_load_argument(parser)
     return parser
 
 
@@ -106,6 +108,7 @@ def main(argv: list[str] | None = None) -> int:
     # overrides without REMAINDER greedily capturing ``--json``.
     args, additional_args = _build_parser().parse_known_args(argv)
     try:
+        load_user_extensions(args.load)
         factory = load_input(args.input, additional_args=additional_args)
         model = factory.get_model(args.model)
     except Exception as exc:  # noqa: BLE001

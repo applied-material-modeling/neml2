@@ -35,7 +35,7 @@ import torch
 from torch import nn
 
 from .chain_rule import ChainRuleDict
-from .factory import register_native
+from .factory import register_neml2_object
 from .model import Model
 from .schema import HitSchema, dependency, option
 from .types import TensorWrapper
@@ -765,6 +765,11 @@ def norm_sq(v: AssembledVector) -> torch.Tensor:
 class LinearSystem:
     """Base class for systems with assembled operators."""
 
+    #: HIT section for ``neml2-syntax`` classification — inherited by every
+    #: registered subclass (``ModelNonlinearSystem`` lives under
+    #: ``[EquationSystems]`` in the input file).
+    SECTION = "EquationSystems"
+
     def __init__(self) -> None:
         self._ulayout = self.setup_ulayout()
         self._glayout = self.setup_glayout()
@@ -841,7 +846,7 @@ class NonlinearSystem(LinearSystem):
     """Nonlinear system with C++-matching Newton sign convention."""
 
 
-@register_native("NonlinearSystem")
+@register_neml2_object("NonlinearSystem")
 class ModelNonlinearSystem(NonlinearSystem):
     """A nonlinear system defined by a Model."""
 

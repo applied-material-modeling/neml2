@@ -26,7 +26,7 @@
 """Native porous-flow models.
 
 One file per C++ header under ``include/neml2/models/porous_flow/``; this
-package re-imports each file so ``@register_native`` side effects fire on
+package re-imports each file so ``@register_neml2_object`` side effects fire on
 package import.
 """
 

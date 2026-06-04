@@ -25,7 +25,7 @@
 """Pytest conftest for the native regression suite.
 
 Side-effect-imports the test-only ``_fixtures`` package so its
-``@register_native``-decorated models (``TabulatedPolynomialModel``,
+``@register_neml2_object``-decorated models (``TabulatedPolynomialModel``,
 ``TorchScriptFlowRate``) are registered with the native factory before any
 scenario ``.i`` file is collected. The package lives alongside the regression
 tests under ``python/tests/native/_fixtures/`` rather than in
@@ -44,4 +44,4 @@ _NATIVE_TESTS_DIR = Path(__file__).resolve().parent.parent
 if str(_NATIVE_TESTS_DIR) not in sys.path:
     sys.path.insert(0, str(_NATIVE_TESTS_DIR))
 
-import _fixtures  # noqa: E402, F401  (side-effect: @register_native fires)
+import _fixtures  # noqa: E402, F401  (side-effect: @register_neml2_object fires)

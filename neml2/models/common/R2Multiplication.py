@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option, output
 from ...types import R2, inv
 
 
-@register_native("R2Multiplication")
+@register_neml2_object("R2Multiplication")
 class R2Multiplication(Model):
     r"""Multiplication of form ``A B``, where $A$ and $B$ are second order
     tensors. A and B can be inverted and/or transposed per request.

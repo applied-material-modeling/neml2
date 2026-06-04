@@ -26,7 +26,7 @@
 
 Mirrors the C++ Factory / Registry pattern for Python-native models:
 
-- :func:`register_native` — decorator that registers a model class under its
+- :func:`register_neml2_object` — decorator that registers a model class under its
   C++ type name. ``Model`` subclasses usually inherit schema-backed
   ``from_hit(node, factory)``; non-model objects and special cases implement
   their own.
@@ -80,7 +80,7 @@ def _check_python_attr_name(name: str, *, kind: str, owner: str) -> None:
         )
 
 
-def register_native(type_name: str) -> Callable[[type[_T]], type[_T]]:
+def register_neml2_object(type_name: str) -> Callable[[type[_T]], type[_T]]:
     """Decorator: register a Model (or solver/system) class under *type_name*.
 
     The class must provide a ``from_hit(cls, node, factory)`` classmethod that
@@ -235,19 +235,21 @@ class _NativeInputFile:
     # ── [Tensors] support (mode 2 of declare_typed_parameter) ────────────────
 
     def get_tensor(self, name: str) -> Any:
-        """Evaluate a named ``[Tensors/<name>]`` Python expression and return the result.
+        """Build (or return cached) the ``[Tensors/<name>]`` value.
 
-        The block must declare ``type = Python`` and an ``expr`` parameter containing
-        a Python expression (or a multi-line code block that assigns to ``result``).
-        The expression is evaluated in a namespace pre-populated with ``torch``, all
-        ``neml2.types`` symbols (``Scalar``, ``SR2``, ``SSR4``, free functions),
-        ``math``, ``np`` (numpy, if importable), and ``tensor(name)`` for cross-references.
+        Dispatches on the block's ``type`` to a class in the native registry —
+        ``type = Python`` resolves to
+        :class:`~neml2.user_tensors.PythonTensor.PythonTensor` (inline Python
+        expression evaluated in the typed-tensor namespace),
+        ``type = CSV<T>`` to the corresponding CSV reader, and so on.
 
-        Returns the raw value produced by the expression — either a ``torch.Tensor``
-        or a ``TensorWrapper`` subclass.  The call site (``declare_typed_parameter`` mode 2)
-        is responsible for wrapping a raw ``torch.Tensor`` into the appropriate typed wrapper.
+        Returns the raw value produced by the registered class — either a
+        ``torch.Tensor`` or a ``TensorWrapper`` subclass. The call site
+        (``declare_typed_parameter`` mode 2) is responsible for wrapping a raw
+        ``torch.Tensor`` into the appropriate typed wrapper.
 
-        Raises ``KeyError`` if no ``[Tensors/<name>]`` block exists.
+        Raises ``KeyError`` if no ``[Tensors/<name>]`` block exists or its
+        ``type`` isn't registered.
         """
         key = ("Tensors", name)
         if key in self._cache:
@@ -258,32 +260,26 @@ class _NativeInputFile:
             raise KeyError(f"No [Tensors/{name}] found in {self._path}")
 
         type_str = node.param_str("type")
+        if type_str not in _registry:
+            raise ValueError(
+                f"[Tensors/{name}] has type={type_str!r}; expected a registered tensor "
+                "type. For an inline Python expression use:\n"
+                f"  [Tensors/{name}]\n"
+                "    type = Python\n"
+                "    expr = '...pytorch expression...'\n"
+                "  []"
+            )
 
+        # Cycle detection wraps the dispatch itself because registered tensor
+        # classes (notably ``Python``) may recursively call back into
+        # ``get_tensor`` through the eval namespace's ``__missing__`` hook.
         if name in self._evaluating:
             raise RecursionError(
                 f"[Tensors/{name}] cross-references itself (directly or indirectly)."
             )
         self._evaluating.add(name)
         try:
-            if type_str == "Python":
-                # Inline Python expression — evaluated in the typed-tensor namespace.
-                result = _eval_tensor_code(
-                    node.param_str("expr"), name, _build_tensor_eval_namespace(self)
-                )
-            elif type_str in _registry:
-                # Registered tensor type (e.g. CSVScalar, CSVSR2). The class
-                # builds its own typed wrapper from the HIT block.
-                cls = _registry[type_str]
-                result = cls.from_hit(node, self)
-            else:
-                raise ValueError(
-                    f"[Tensors/{name}] has type={type_str!r}; expected 'Python' or a "
-                    "registered tensor type. For an inline Python expression use:\n"
-                    f"  [Tensors/{name}]\n"
-                    "    type = Python\n"
-                    "    expr = '...pytorch expression...'\n"
-                    "  []"
-                )
+            result = _registry[type_str].from_hit(node, self)
         finally:
             self._evaluating.discard(name)
 
@@ -483,7 +479,7 @@ def load_nonlinear_system(path: str | Path, name: str) -> Any:
 
 
 __all__ = [
-    "register_native",
+    "register_neml2_object",
     "load_input",
     "load_string",
     "load_model",

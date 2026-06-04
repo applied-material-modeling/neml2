@@ -31,7 +31,7 @@ Cauchy stress to Mandel stress (e.g. ``IsotropicMandelStress``, future
 anisotropic variants).
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical input/output names; native models
 are flat (no schema inheritance), so concrete leaves like
 ``IsotropicMandelStress`` declare their own ``HitSchema`` instead of

@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import SR2, Scalar
 
 
-@register_native("PhaseTransformationEigenstrain")
+@register_neml2_object("PhaseTransformationEigenstrain")
 class PhaseTransformationEigenstrain(Model):
     r"""Define the (cummulative, as opposed to instantaneous) linear isotropic phase
     transformation (from phase A to phase B) eigenstrain, i.e.

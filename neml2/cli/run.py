@@ -30,6 +30,7 @@ import argparse
 import sys
 
 from ..factory import load_input
+from ._extensions import add_load_argument, load_user_extensions
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -42,6 +43,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("input", help="path to the input file")
     parser.add_argument("driver", help="name of the driver in the input file")
+    add_load_argument(parser)
     return parser
 
 
@@ -51,6 +53,7 @@ def main(argv: list[str] | None = None) -> int:
     # subsequent flags too.
     args, additional_args = _build_parser().parse_known_args(argv)
     try:
+        load_user_extensions(args.load)
         factory = load_input(args.input, additional_args=additional_args)
         factory.get_driver(args.driver).run()
     except Exception as exc:  # noqa: BLE001

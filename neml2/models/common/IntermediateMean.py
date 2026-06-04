@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
@@ -36,7 +36,7 @@ from ...types import (
 )
 
 
-@register_native("SR2IntermediateMean")
+@register_neml2_object("SR2IntermediateMean")
 class SR2IntermediateMean(Model):
     """``to = mean(from, dim=trailing_sub_batch_axis)``; reduces sub_batch_ndim by 1.
 

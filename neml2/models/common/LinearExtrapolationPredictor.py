@@ -31,7 +31,7 @@ from typing import cast
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...schema import HitSchema, option
 from ...types import (
     R2,
@@ -61,7 +61,7 @@ def _opt_str(node, name, default):  # noqa: ANN001, ANN202
     return node.param_str(name) if node.find(name) is not None else default
 
 
-@register_native("LinearExtrapolationPredictor")
+@register_neml2_object("LinearExtrapolationPredictor")
 class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
     r"""Use temporal extrapolation assuming constant rate of change as the initial guess for the
     unknowns at the current time step. The linear extrapolation can be written as

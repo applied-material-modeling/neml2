@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import SR2, Scalar, pow
 
 
-@register_native("VolumeChangeEigenstrain")
+@register_neml2_object("VolumeChangeEigenstrain")
 class VolumeChangeEigenstrain(Model):
     r"""Define the (cumulative, as opposed to instantaneous) linear isotropic
     volume expansion eigenstrain, i.e.

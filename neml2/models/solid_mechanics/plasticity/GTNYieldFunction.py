@@ -32,13 +32,13 @@ from ....chain_rule import (
     SecondOrderChainRuleAction,
     SecondOrderChainRuleDict,
 )
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar, cosh, sinh
 
 
-@register_native("GTNYieldFunction")
+@register_neml2_object("GTNYieldFunction")
 class GTNYieldFunction(Model):
     r"""Gurson-Tvergaard-Needleman yield function for poroplasticity. The yield
     function is defined as

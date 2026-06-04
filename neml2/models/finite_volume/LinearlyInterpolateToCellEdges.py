@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, output, parameter
 from ...types import Scalar
 
 
-@register_native("LinearlyInterpolateToCellEdges")
+@register_neml2_object("LinearlyInterpolateToCellEdges")
 class LinearlyInterpolateToCellEdges(Model):
     """Linear interpolation from cell centers to interior cell edges.
 

@@ -48,7 +48,8 @@ import nmhit
 import torch
 
 from ..driver import Driver
-from ..factory import register_native
+from ..factory import register_neml2_object
+from ..schema import HitSchema, dependency, option
 from .TransientDriver import TransientDriver
 
 if TYPE_CHECKING:
@@ -86,9 +87,31 @@ def _load_gold(path: Path) -> dict[str, torch.Tensor]:
     return dict(torch.jit.load(str(path)).state_dict())
 
 
-@register_native("TransientRegression")
+@register_neml2_object("TransientRegression")
 class TransientRegression(Driver):
     """Run a TransientDriver and diff its result against a gold ``.pt`` file."""
+
+    hit = HitSchema(
+        dependency("driver", "get_driver", "The TransientDriver to run before diffing."),
+        option(
+            "reference",
+            str,
+            "Path to the gold ``.pt`` file. Resolved relative to the input file's directory "
+            "when not absolute.",
+        ),
+        option(
+            "rtol",
+            float,
+            "Relative tolerance for per-tensor comparison.",
+            default=1.0e-5,
+        ),
+        option(
+            "atol",
+            float,
+            "Absolute tolerance for per-tensor comparison.",
+            default=1.0e-8,
+        ),
+    )
 
     def __init__(
         self,

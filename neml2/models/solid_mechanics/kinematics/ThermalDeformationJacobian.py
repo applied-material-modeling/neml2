@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar
 
 
-@register_native("ThermalDeformationJacobian")
+@register_neml2_object("ThermalDeformationJacobian")
 class ThermalDeformationJacobian(Model):
     r"""Define the linear isotropic thermal deformation Jacobian, i.e. $J = 1 + \alpha (T - T_0)$,
     where $\alpha$ is the coefficient of thermal expansion (CTE), $T$ is

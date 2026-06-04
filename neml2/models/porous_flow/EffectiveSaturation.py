@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar
 
 
-@register_native("EffectiveSaturation")
+@register_neml2_object("EffectiveSaturation")
 class EffectiveSaturation(Model):
     r"""Define the effective saturation, taking the form of
     $S = \frac{\frac{\phi}{\phi_\mathrm{max}} - S_r}{1-S_r}$ where

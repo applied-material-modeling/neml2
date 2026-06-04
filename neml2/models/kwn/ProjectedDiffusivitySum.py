@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, output, parameters, var_inputs
 from ...types import Scalar, pow
 
 
-@register_native("ProjectedDiffusivitySum")
+@register_neml2_object("ProjectedDiffusivitySum")
 class ProjectedDiffusivitySum(Model):
     """Compute the projected diffusivity sum for SFFK and nucleation."""
 

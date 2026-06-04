@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar
 
 
-@register_native("SwellingAndPhaseChangeDeformationJacobian")
+@register_neml2_object("SwellingAndPhaseChangeDeformationJacobian")
 class SwellingAndPhaseChangeDeformationJacobian(Model):
     r"""Define the linear isotropic phase change deformation Jacobian for a freezing liquid or a
     melting solid, i.e. $J = \left( 1 + \alpha c \phi^f + (1-c) \phi^f \Delta \Omega \right)$, where

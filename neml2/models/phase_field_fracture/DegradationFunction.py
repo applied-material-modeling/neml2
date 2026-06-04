@@ -33,7 +33,7 @@ that maps the phase-field variable to a scalar degradation factor:
 the actual ``g(d)`` expression and its differential pushforward.
 
 Because the C++ class is not registered with ``register_NEML2_object``, this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. Native models are flat (no schema inheritance), so existing
 concrete leaves declare their own ``HitSchema`` instead of inheriting from
 this base. ``forward`` raises ``NotImplementedError`` so any accidental

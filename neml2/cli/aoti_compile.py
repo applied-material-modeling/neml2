@@ -50,6 +50,7 @@ import os
 import sys
 from pathlib import Path
 
+from ._extensions import add_load_argument, load_user_extensions
 from .aoti_export import export_model_for_aoti
 
 
@@ -100,6 +101,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "fully baked."
         ),
     )
+    add_load_argument(parser)
     return parser
 
 
@@ -196,6 +198,12 @@ def main(argv: list[str] | None = None) -> int:
     input_path: Path = args.input.resolve()
     if not input_path.exists():
         print(f"Error: input file not found: {input_path}", file=sys.stderr)
+        return 1
+
+    try:
+        load_user_extensions(args.load)
+    except ImportError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return 1
 
     output_dir: Path = (args.output_dir or Path.cwd() / "aoti" / args.model).resolve()

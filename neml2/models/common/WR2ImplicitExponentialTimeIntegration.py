@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, derived_input, derived_output, input, option
 from ...types import (
@@ -41,7 +41,7 @@ from ...types import (
 )
 
 
-@register_native("WR2ImplicitExponentialTimeIntegration")
+@register_neml2_object("WR2ImplicitExponentialTimeIntegration")
 class WR2ImplicitExponentialTimeIntegration(Model):
     r"""Define the implicit discrete exponential time integration residual of a
     rotation variable. The residual can be written as

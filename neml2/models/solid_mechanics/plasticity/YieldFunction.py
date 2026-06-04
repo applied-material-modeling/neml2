@@ -29,13 +29,13 @@ from __future__ import annotations
 import math
 
 from ....chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar
 
 
-@register_native("YieldFunction")
+@register_neml2_object("YieldFunction")
 class YieldFunction(Model):
     r"""Classical macroscale plasticity yield function,
     $f = \bar{\sigma} - \sigma_y - h$, where $\bar{\sigma}$ is the

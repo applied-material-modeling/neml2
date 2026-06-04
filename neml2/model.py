@@ -59,7 +59,7 @@ from __future__ import annotations
 from abc import ABC
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
 import torch
 from torch import nn
@@ -93,7 +93,37 @@ __all__ = [
     "SecondOrderChainRuleAction",
     "Model",
     "NLParam",
+    "register_submodule",
 ]
+
+
+def register_submodule(
+    parent: nn.Module,
+    child: nn.Module,
+    fallback: str,
+    *,
+    used: set[str] | None = None,
+) -> str:
+    """Add *child* to *parent* under its HIT block name if available.
+
+    The factory stamps ``_hit_name`` on every object it constructs; preferring
+    that name over an opaque attribute slot keeps ``named_parameters()``
+    readable (``elasticity.E`` instead of ``_residual_model.E``). Falls back to
+    *fallback* when the HIT name is missing (direct Python construction), is
+    not a valid Python identifier, would collide with an existing attribute on
+    *parent*, or is already in *used* (when a parent registers several children
+    in one pass and must avoid collisions across siblings).
+
+    Returns the attribute name the child was registered under.
+    """
+    hit_name = getattr(child, "_hit_name", None)
+    attr = hit_name if hit_name and hit_name.isidentifier() else None
+    if attr is None or (used is not None and attr in used) or hasattr(parent, attr):
+        attr = fallback
+    if used is not None:
+        used.add(attr)
+    parent.add_module(attr, child)
+    return attr
 
 
 @dataclass(frozen=True)
@@ -136,6 +166,10 @@ class Model(nn.Module, ABC):
     single typed wrapper or a tuple thereof).  When called with ``v``, it
     additionally returns the sensitivity dict as the final element of the tuple.
     """
+
+    #: HIT section every registered subclass belongs to. Inherited; subclasses
+    #: that deliberately live elsewhere (none today) can override.
+    SECTION: ClassVar[str] = "Models"
 
     input_spec: dict[str, type[TensorWrapper]]
     output_spec: dict[str, type[TensorWrapper]]

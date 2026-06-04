@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, option, output
 from ....types import Rot, inner, lt, where
 
 
-@register_native("FixOrientation")
+@register_neml2_object("FixOrientation")
 class FixOrientation(Model):
     r"""Swap the modified-Rodrigues representation to the shadow parameter set
     when $\left\lVert r \right\rVert^2 \geq t$ (default threshold

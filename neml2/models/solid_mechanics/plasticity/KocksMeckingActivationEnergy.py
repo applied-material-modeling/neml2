@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, option, output, parameter
 from ....types import Scalar, log
 
 
-@register_native("KocksMeckingActivationEnergy")
+@register_neml2_object("KocksMeckingActivationEnergy")
 class KocksMeckingActivationEnergy(Model):
     r"""Calculates the Kocks-Mecking normalized activation as
     $g = \frac{kT}{\mu b^3} \log \frac{\dot{\varepsilon}_0}{\dot{\varepsilon}}$

@@ -35,8 +35,8 @@ from math import prod
 import torch
 
 from ....chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ....factory import register_native
-from ....model import Model
+from ....factory import register_neml2_object
+from ....model import Model, register_submodule
 from ....schema import HitSchema, dependency, option
 from ....types import TensorWrapper
 
@@ -114,7 +114,7 @@ def _check_inner_supports_second_order(inner: Model) -> None:
         )
 
 
-@register_native("Normality")
+@register_neml2_object("Normality")
 class Normality(Model):
     r"""Store the first derivatives of a scalar-valued function in given variables,
     i.e. $u_i = \dfrac{f(\boldsymbol{v})}{v_i}$.
@@ -161,16 +161,10 @@ class Normality(Model):
         # Register the inner model under its HIT block name (stashed on the
         # object by the factory) instead of a fixed ``_inner`` slot, so
         # ``self.named_parameters()`` returns readable names like
-        # ``yld.sy`` rather than ``_inner.sy``. Mirrors the same trick in
-        # ``ComposedModel.__init__``. Falls back to ``_inner`` when no HIT
-        # name is available (direct Python construction) or when the HIT name
-        # would collide with an existing attribute.
-        hit_name = getattr(model, "_hit_name", None)
-        attr = hit_name if hit_name and hit_name.isidentifier() else None
-        if attr is None or hasattr(self, attr):
-            attr = "_inner"
-        self._inner_attr = attr
-        self.add_module(attr, model)
+        # ``yld.sy`` rather than ``_inner.sy``. Falls back to ``_inner`` when
+        # no HIT name is available (direct Python construction) or when the
+        # HIT name would collide with an existing attribute.
+        self._inner_attr = register_submodule(self, model, fallback="_inner")
         self._function = function
         self._from = list(from_)
         self._to = list(to)

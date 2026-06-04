@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, derived_output, input, output, parameter
 from ....types import SR2, Scalar
 
 
-@register_native("WiechertElement")
+@register_neml2_object("WiechertElement")
 class WiechertElement(Model):
     r"""Wiechert (generalized Maxwell) viscoelastic model with two Maxwell branches in
     parallel with an equilibrium spring. Total stress is

@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter, parameters, var_inputs
 from ...types import Scalar, log
 
 
-@register_native("IdealSolutionVolumetricDrivingForce")
+@register_neml2_object("IdealSolutionVolumetricDrivingForce")
 class IdealSolutionVolumetricDrivingForce(Model):
     r"""Ideal-solution volumetric Gibbs free energy of precipitation.
 

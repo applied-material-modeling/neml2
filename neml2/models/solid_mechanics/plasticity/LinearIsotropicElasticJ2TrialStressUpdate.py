@@ -35,7 +35,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, derived_input, input, option, output
 
@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from ....factory import _NativeInputFile
 
 
-@register_native("LinearIsotropicElasticJ2TrialStressUpdate")
+@register_neml2_object("LinearIsotropicElasticJ2TrialStressUpdate")
 class LinearIsotropicElasticJ2TrialStressUpdate(Model):
     r"""Update the trial stress under the assumptions of J2 plasticity and
     isotropic linear elasticity.

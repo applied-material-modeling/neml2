@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar, clamp, pow
 
 
-@register_native("ContractingGeometry")
+@register_neml2_object("ContractingGeometry")
 class ContractingGeometry(Model):
     r"""Contracting-geometry reaction mechanism.
 

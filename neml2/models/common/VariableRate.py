@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, derived_input, derived_output, input
 from ...types import (
@@ -110,7 +110,7 @@ def _variable_rate_schema(t: type[TensorWrapper]) -> HitSchema:
     )
 
 
-@register_native("ScalarVariableRate")
+@register_neml2_object("ScalarVariableRate")
 class ScalarVariableRate(_VariableRate):
     r"""Calculate the first order discrete time derivative of a variable as
     $\dot{f} = \frac{f-f_n}{t-t_n}$, where $f$ is the variable, $f_n$ is the variable at the
@@ -121,7 +121,7 @@ class ScalarVariableRate(_VariableRate):
     hit = _variable_rate_schema(Scalar)
 
 
-@register_native("VecVariableRate")
+@register_neml2_object("VecVariableRate")
 class VecVariableRate(_VariableRate):
     r"""Calculate the first order discrete time derivative of a variable as
     $\dot{f} = \frac{f-f_n}{t-t_n}$, where $f$ is the variable, $f_n$ is the variable at the
@@ -132,7 +132,7 @@ class VecVariableRate(_VariableRate):
     hit = _variable_rate_schema(Vec)
 
 
-@register_native("SR2VariableRate")
+@register_neml2_object("SR2VariableRate")
 class SR2VariableRate(_VariableRate):
     r"""Calculate the first order discrete time derivative of a variable as
     $\dot{f} = \frac{f-f_n}{t-t_n}$, where $f$ is the variable, $f_n$ is the variable at the
@@ -143,7 +143,7 @@ class SR2VariableRate(_VariableRate):
     hit = _variable_rate_schema(SR2)
 
 
-@register_native("R2VariableRate")
+@register_neml2_object("R2VariableRate")
 class R2VariableRate(_VariableRate):
     r"""Calculate the first order discrete time derivative of a variable as
     $\dot{f} = \frac{f-f_n}{t-t_n}$, where $f$ is the variable, $f_n$ is the variable at the

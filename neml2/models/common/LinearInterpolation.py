@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import BLOCK_NAME, HitSchema, input, output, parameter
 from ...types import (
@@ -37,7 +37,7 @@ from ...types import (
 )
 
 
-@register_native("ScalarLinearInterpolation")
+@register_neml2_object("ScalarLinearInterpolation")
 class ScalarLinearInterpolation(Model):
     """Interpolate a Scalar as a function of the given argument. See
     neml2::Interpolation for rules on shapes of the interpolant and the

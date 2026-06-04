@@ -71,7 +71,13 @@ from .equation_systems import (  # noqa: F401 (side-effect: registers NonlinearS
     DenseRHS,
     ModelNonlinearSystem,
 )
-from .factory import load_input, load_model, load_nonlinear_system, load_string, register_native
+from .factory import (
+    load_input,
+    load_model,
+    load_nonlinear_system,
+    load_string,
+    register_neml2_object,
+)
 from .model import Model
 from .models import (
     chemical_reactions as _chemical_reactions_module,  # noqa: F401 (registers chemical-reactions leaves)
@@ -176,7 +182,7 @@ __all__ = [
     "ChainRuleDict",
     "ChainRuleAction",
     "TangentAction",
-    "register_native",
+    "register_neml2_object",
     "load_input",
     "load_string",
     "load_model",

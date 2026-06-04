@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar
 
 
-@register_native("FiniteVolumeGradient")
+@register_neml2_object("FiniteVolumeGradient")
 class FiniteVolumeGradient(Model):
     """Compute prefactor-weighted gradients at cell edges using first-order reconstruction."""
 

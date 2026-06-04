@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import Scalar
 
 
-@register_native("CrackGeometricFunctionAT2")
+@register_neml2_object("CrackGeometricFunctionAT2")
 class CrackGeometricFunctionAT2(Model):
     r"""Crack geometric function associated with the AT-2 functional,
     $\alpha = d^2$ where $d$ is the phase-field variable.

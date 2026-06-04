@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict, SecondOrderChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, output, parameter
 from ....types import Scalar, exp
 
 
-@register_native("KocksMeckingYieldStress")
+@register_neml2_object("KocksMeckingYieldStress")
 class KocksMeckingYieldStress(Model):
     r"""The yield stress given by the Kocks-Mecking model. $\sigma_y = \exp{C} \mu$ with $\mu$ the
     shear modulus and $C$ the

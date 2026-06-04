@@ -29,7 +29,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
 from ....types import R2, SR2, Scalar, jvp_rotate, rotate, sum
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from ....data import CrystalGeometry
 
 
-@register_native("PlasticDeformationRate")
+@register_neml2_object("PlasticDeformationRate")
 class PlasticDeformationRate(Model):
     r"""Caclulates the plastic deformation rate as
     $d^p = \sum_{i=1}^{n_{slip}} \dot{\gamma}_i Q \operatorname{sym}{\left(d_i \otimes n_i \right)} Q^T$

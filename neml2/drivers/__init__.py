@@ -25,7 +25,7 @@
 """Native ``[Drivers]`` registrations.
 
 One file per registered driver type. Importing this package fires the
-``@register_native`` decorators so the factory can resolve ``[Drivers]`` blocks
+``@register_neml2_object`` decorators so the factory can resolve ``[Drivers]`` blocks
 from HIT input.
 """
 

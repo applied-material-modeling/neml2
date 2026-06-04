@@ -57,7 +57,8 @@ import nmhit
 import torch
 
 from ..driver import Driver
-from ..factory import register_native
+from ..factory import register_neml2_object
+from ..schema import HitField, HitSchema, dependency, option
 from ..types import SR2, WR2, Scalar, Vec
 from .TransientDriver import TransientDriver
 
@@ -83,9 +84,64 @@ def _read_token_list(node: nmhit.Node, name: str) -> list[str]:
     return raw.split() if raw else []
 
 
-@register_native("Verification")
+def _typed_ref_fields() -> tuple[HitField, ...]:
+    """Build the ``<Type>_names`` / ``<Type>_values`` option pairs the driver
+    consumes for every wrapper class in :data:`_SUPPORTED_TYPES`.
+
+    Documentation-only — :meth:`Verification.from_hit` parses them directly. The
+    schema exists so ``neml2-syntax`` can render the full HIT surface.
+    """
+    fields: list[HitField] = []
+    for type_name in _SUPPORTED_TYPES:
+        fields.append(
+            option(
+                f"{type_name}_names",
+                list,
+                f"Result-buffer variable names (e.g. ``output.stress``) whose per-step "
+                f"values are compared against ``{type_name}_values``.",
+                default=[],
+            )
+        )
+        fields.append(
+            option(
+                f"{type_name}_values",
+                list,
+                f"[Tensors] block names producing the reference {type_name} per result "
+                f"variable named in ``{type_name}_names``; same length and order.",
+                default=[],
+            )
+        )
+    return tuple(fields)
+
+
+@register_neml2_object("Verification")
 class Verification(Driver):
     """Run a TransientDriver and diff its result against per-variable references."""
+
+    hit = HitSchema(
+        dependency("driver", "get_driver", "The TransientDriver to run before diffing."),
+        option(
+            "rtol",
+            float,
+            "Relative tolerance for per-tensor comparison.",
+            default=1.0e-5,
+        ),
+        option(
+            "atol",
+            float,
+            "Absolute tolerance for per-tensor comparison.",
+            default=1.0e-8,
+        ),
+        option(
+            "time_steps",
+            list,
+            "Optional whitespace-separated list of step indices to compare. When absent, "
+            "every step is checked. A single step entry switches to snapshot comparison "
+            "(the reference is treated as the value at that step, not time-axis-sliced).",
+            default=[],
+        ),
+        *_typed_ref_fields(),
+    )
 
     def __init__(
         self,

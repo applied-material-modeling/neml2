@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option
 from ...types import (
@@ -42,7 +42,7 @@ def _read_list_str(node, name):  # noqa: ANN001, ANN202
     return list(node.param_list_str(name))
 
 
-@register_native("VecComponents")
+@register_neml2_object("VecComponents")
 class VecComponents(Model):
     """Decompose a Vec into its three Scalar components.
 

@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, output, parameter, parameters, var_inputs
 from ...types import Scalar
 
 
-@register_native("CurrentConcentration")
+@register_neml2_object("CurrentConcentration")
 class CurrentConcentration(Model):
     r"""Compute the current matrix concentration from precipitate volume fractions.
 

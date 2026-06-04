@@ -33,7 +33,7 @@ registered variant only differs in the ``hit`` schema's wrapper type.
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import SR2, Scalar, TensorWrapper, lt, where
@@ -111,7 +111,7 @@ class _TwoStageThermalAnnealing(Model):
         )
 
 
-@register_native("ScalarTwoStageThermalAnnealing")
+@register_neml2_object("ScalarTwoStageThermalAnnealing")
 class ScalarTwoStageThermalAnnealing(_TwoStageThermalAnnealing):
     """Scalar-valued two-stage thermal annealing. Mirrors ``TwoStageThermalAnnealing<Scalar>``."""
 
@@ -128,7 +128,7 @@ class ScalarTwoStageThermalAnnealing(_TwoStageThermalAnnealing):
     )
 
 
-@register_native("SR2TwoStageThermalAnnealing")
+@register_neml2_object("SR2TwoStageThermalAnnealing")
 class SR2TwoStageThermalAnnealing(_TwoStageThermalAnnealing):
     """SR2-valued two-stage thermal annealing. Mirrors ``TwoStageThermalAnnealing<SR2>``."""
 

@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import BLOCK_NAME, HitSchema, input, output, parameter
 from ...types import Scalar, clamp, lt, where
 
 
-@register_native("SymmetricHermiteInterpolation")
+@register_neml2_object("SymmetricHermiteInterpolation")
 class SymmetricHermiteInterpolation(Model):
     r"""Define the symmetric Hermite interpolation function, taking the form of
     $\dfrac{1}{x_h-x_l}(24c^2-32c^3)$ for $0 le c le 0.5$;

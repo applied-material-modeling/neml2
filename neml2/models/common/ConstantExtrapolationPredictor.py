@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, option
 from ...types import (
@@ -44,7 +44,7 @@ def _read_list_str(node, name):  # noqa: ANN001, ANN202
     return list(node.param_list_str(name))
 
 
-@register_native("ConstantExtrapolationPredictor")
+@register_neml2_object("ConstantExtrapolationPredictor")
 class ConstantExtrapolationPredictor(Model):
     """Initial guess for an implicit update: each unknown takes its ``~1`` value.
 

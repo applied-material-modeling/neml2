@@ -27,14 +27,14 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, option, output, parameter
 from ....types import Scalar, cosh, tanh
 from ....types import pow as wpow
 
 
-@register_native("KocksMeckingFlowSwitch")
+@register_neml2_object("KocksMeckingFlowSwitch")
 class KocksMeckingFlowSwitch(Model):
     """Switches between rate independent and rate dependent flow rules based on the value of the
     Kocks-Mecking normalized activation energy.  For activation energies less than the threshold

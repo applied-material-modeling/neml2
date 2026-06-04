@@ -40,8 +40,8 @@ from ...equation_systems import (
     _flatten_sub_batch_and_base,
     _unflatten_sub_batch_and_base,
 )
-from ...factory import register_native
-from ...model import Model
+from ...factory import register_neml2_object
+from ...model import Model, register_submodule
 from ...schema import HitSchema, dependency
 from ...solvers import Newton, RetCode
 from ...types import TensorWrapper
@@ -126,7 +126,7 @@ def _matrix_pushforward(
     return output_type(contribution, sub_batch_ndim=len(output_sub_batch_shape))
 
 
-@register_native("ImplicitUpdate")
+@register_neml2_object("ImplicitUpdate")
 class ImplicitUpdate(Model):
     """Update an implicit model by solving the underlying nonlinear system of equations."""
 
@@ -184,7 +184,10 @@ class ImplicitUpdate(Model):
         # ``named_parameters()`` reach the leaves' calibration parameters.
         # ``ModelNonlinearSystem`` is a plain Python object (not an nn.Module),
         # so its ``.model`` attribute is otherwise invisible to the walker.
-        self._residual_model = system.model
+        # Prefer the residual's HIT block name (e.g. ``surface.E``) over an
+        # opaque slot — falls back to ``_residual_model`` when the inner model
+        # was built directly in Python or the name would collide.
+        register_submodule(self, system.model, fallback="_residual_model")
         self.solver = solver
         self.predictor = predictor
         self.last_iterations = 0

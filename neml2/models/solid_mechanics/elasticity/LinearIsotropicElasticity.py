@@ -39,7 +39,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, option, output
 from ....types import SR2, Scalar, dev, vol
@@ -50,7 +50,7 @@ if TYPE_CHECKING:
     from ....factory import _NativeInputFile
 
 
-@register_native("LinearIsotropicElasticity")
+@register_neml2_object("LinearIsotropicElasticity")
 class LinearIsotropicElasticity(Model):
     r"""Relate elastic strain to stress (or stress to strain, in compliance form)
     for a linear isotropic material.

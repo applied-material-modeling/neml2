@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
@@ -37,7 +37,7 @@ from ...types import (
 )
 
 
-@register_native("R2ToWR2")
+@register_neml2_object("R2ToWR2")
 class R2ToWR2(Model):
     """Extract the skew symmetric part of a second order tensor."""
 

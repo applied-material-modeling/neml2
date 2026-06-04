@@ -29,7 +29,7 @@ from __future__ import annotations
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar, pow
@@ -44,7 +44,7 @@ def _log(s: Scalar) -> Scalar:
     return Scalar(torch.log(s.data), sub_batch_ndim=s.sub_batch_ndim)
 
 
-@register_native("AvramiErofeevNucleation")
+@register_neml2_object("AvramiErofeevNucleation")
 class AvramiErofeevNucleation(Model):
     r"""Avrami--Erofeev nucleation reaction mechanism.
 

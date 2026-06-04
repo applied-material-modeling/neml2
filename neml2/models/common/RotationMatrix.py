@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
@@ -38,7 +38,7 @@ from ...types import (
 )
 
 
-@register_native("RotationMatrix")
+@register_neml2_object("RotationMatrix")
 class RotationMatrix(Model):
     """``orientation_matrix = euler_rodrigues(orientation)``.
 
