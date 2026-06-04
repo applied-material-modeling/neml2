@@ -475,6 +475,9 @@ class Model(nn.Module, ABC):
         self, name: str, value: TensorWrapper, persistent: bool = True
     ) -> None:
         """Register a typed tensor buffer (no autograd; baked as a constant by AOTI export)."""
+        from .factory import _check_python_attr_name  # noqa: PLC0415  (avoid import cycle)
+
+        _check_python_attr_name(name, kind="buffer", owner=type(self).__name__)
         self.register_buffer(name, value.data, persistent=persistent)
         self._typed_storage_classes[name] = type(value)
         self._typed_storage_sub_batch_ndim[name] = value.sub_batch_ndim
@@ -489,6 +492,9 @@ class Model(nn.Module, ABC):
         ``aoti_export._freeze_parameters_to_buffers``); the forward-only AOTI
         graph is unchanged.
         """
+        from .factory import _check_python_attr_name  # noqa: PLC0415  (avoid import cycle)
+
+        _check_python_attr_name(name, kind="parameter", owner=type(self).__name__)
         self.register_parameter(name, nn.Parameter(value.data))
         self._typed_storage_classes[name] = type(value)
         self._typed_storage_sub_batch_ndim[name] = value.sub_batch_ndim

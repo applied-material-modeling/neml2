@@ -42,6 +42,7 @@ dependencies via the factory's ``get_model`` / ``get_solver`` /
 
 from __future__ import annotations
 
+import keyword
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, TypeVar
@@ -52,6 +53,31 @@ import torch
 _registry: dict[str, type] = {}
 
 _T = TypeVar("_T")
+
+
+def _check_python_attr_name(name: str, *, kind: str, owner: str) -> None:
+    """Refuse names that won't survive becoming a Python attribute on an ``nn.Module``.
+
+    Eager use only requires the name be a valid Python identifier — ``setattr`` and
+    ``__getattr__`` happily handle reserved keywords like ``yield`` or ``class``.
+    The trap is :func:`torch.export`: during ``GraphModule.recompile()`` torch
+    rewrites the module hierarchy back into literal Python *source* (``self.X.Y.Z``).
+    If any path component is a Python keyword, the parser rejects the source with
+    ``SyntaxError`` and AOTI compilation collapses with a deeply nested traceback.
+
+    We refuse the name up front so the error surfaces at HIT-load time with a
+    message the user can act on, instead of at export time. Pure Python-eager use
+    is also blocked — that's intentional: keeping an export-friendly name now is
+    cheaper than discovering the conflict the first time someone runs
+    ``neml2-compile``.
+    """
+    if keyword.iskeyword(name):
+        raise ValueError(
+            f"{kind} name {name!r} ({owner}) is a Python reserved keyword. Pick a "
+            f"different name — Python keywords cannot appear as path components in "
+            f"torch.export's generated forward source, so AOTI compilation will fail "
+            f"at recompile time with a SyntaxError on this path."
+        )
 
 
 def register_native(type_name: str) -> Callable[[type[_T]], type[_T]]:
@@ -138,6 +164,12 @@ class _NativeInputFile:
             )
 
         cls = _registry[type_name]
+        # Block names cross the user→Python boundary here; if the name is a
+        # Python keyword it survives setattr() / hasattr() fine but breaks
+        # torch.export's GraphModule.recompile (see _check_python_attr_name).
+        # Refuse early so the failure is loud and local instead of a SyntaxError
+        # deep inside the AOTI lowering.
+        _check_python_attr_name(name, kind="HIT block", owner=f"[{section}/{name}]")
         obj = cls.from_hit(node, self)
         # Variable-name resolution (HIT override → schema default → option name)
         # happens inside _store_schema_values via the input()/output() / var_*

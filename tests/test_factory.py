@@ -373,3 +373,50 @@ def test_variable_rename_resolved_at_construction():
     renamed_stress = model(SR2(strain_t))
     direct_stress = direct(SR2(strain_t))
     assert torch.allclose(renamed_stress.data, direct_stress.data, rtol=1e-12, atol=1e-12)
+
+
+def test_load_rejects_python_keyword_block_name():
+    """HIT block names that are Python reserved keywords (`yield`, `class`, etc.)
+    must be refused at load time. Eager Python use would silently work, but the
+    same name breaks torch.export's GraphModule.recompile (it generates literal
+    Python source ``self.X.yield.Y`` which the parser rejects with SyntaxError).
+    See _check_python_attr_name in neml2.factory.
+    """
+    import nmhit
+    import pytest
+
+    hit_text = """
+[Models]
+  [yield]
+    type = YieldFunction
+    yield_stress = 1000
+  []
+[]
+"""
+    root = nmhit.parse_text(hit_text)
+    factory = _NativeInputFile(root, Path("synthetic.i"))
+    with pytest.raises(ValueError, match=r"Python reserved keyword"):
+        factory.get_model("yield")
+
+
+def test_register_typed_parameter_rejects_python_keyword_attr_name():
+    """The schema-author-controlled `attr=...` for parameter/buffer fields must
+    also avoid Python keywords. Same root cause: keyword attribute names break
+    torch.export's source-form recompile.
+    """
+    import pytest
+    import torch
+
+    from neml2.model import Model
+    from neml2.types import Scalar
+
+    class _Bare(Model):
+        input_spec = {}
+        output_spec = {}
+
+        def forward(self, *args, **kwargs):  # pragma: no cover — never called
+            raise NotImplementedError
+
+    m = _Bare()
+    with pytest.raises(ValueError, match=r"Python reserved keyword"):
+        m.register_typed_parameter("class", Scalar(torch.tensor(1.0)))
