@@ -117,7 +117,18 @@ jobs:
         # marker (the same set that `--run-aoti-compile` ungates). Anything
         # not so marked has already been covered by the `test` job, so no
         # work is duplicated.
-        run: pytest -v --junitxml=pytest-aoti.xml --run-aoti-compile -m aoti_compile tests
+        #
+        # `working-directory: ${{ runner.temp }}` is load-bearing: running
+        # pytest from the repo root would push the source tree onto sys.path
+        # ahead of the installed wheel, shadowing the pybind11 .so that lives
+        # under the wheel's `neml2/aoti/_aoti...so` (the source tree only has
+        # the .py shim that *imports* it). Mirrors the cibuildwheel
+        # `test-command = "pytest -v {project}/tests"` pattern.
+        working-directory: ${{ runner.temp }}
+        run: |
+          pytest -v --junitxml="$GITHUB_WORKSPACE/pytest-aoti.xml" \
+            --run-aoti-compile -m aoti_compile \
+            "$GITHUB_WORKSPACE/tests"
       - name: Test results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         if: always()
