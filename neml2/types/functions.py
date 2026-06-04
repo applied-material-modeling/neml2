@@ -387,7 +387,11 @@ def linear_interpolation(argument: Scalar, abscissa: Scalar, ordinate: Scalar) -
     X = abscissa.data
     Y = ordinate.data
     n = X.shape[-1]
-    idx = torch.searchsorted(X, x, right=True).clamp(1, n - 1)
+    # ``torch.searchsorted`` requires its ``values`` argument to be contiguous
+    # for the fast path; otherwise it copies internally and warns once per
+    # process. Several callers (chain-rule tangents, broadcasted argument
+    # batches) hand us views, so normalize here.
+    idx = torch.searchsorted(X, x.contiguous(), right=True).clamp(1, n - 1)
     x1 = X[..., idx - 1]
     x2 = X[..., idx]
     y1 = Y[..., idx - 1]
@@ -412,7 +416,7 @@ def jvp_linear_interpolation(
     X = abscissa.data
     Y = ordinate.data
     n = X.shape[-1]
-    idx = torch.searchsorted(X, x, right=True).clamp(1, n - 1)
+    idx = torch.searchsorted(X, x.contiguous(), right=True).clamp(1, n - 1)
     x1 = X[..., idx - 1]
     x2 = X[..., idx]
     y1 = Y[..., idx - 1]
@@ -473,8 +477,16 @@ def _bilinear_corners(
     # Locate cell index along each axis (clamped to [1, Nk-1] so a query at the
     # extreme upper edge extrapolates from the last segment instead of falling
     # off — matches the C++ mask convention ``x1 > X10 && x1 <= X11``).
-    idx1 = torch.searchsorted(X1b, x1b.unsqueeze(-1), right=True).squeeze(-1).clamp(1, N1 - 1)
-    idx2 = torch.searchsorted(X2b, x2b.unsqueeze(-1), right=True).squeeze(-1).clamp(1, N2 - 1)
+    idx1 = (
+        torch.searchsorted(X1b, x1b.unsqueeze(-1).contiguous(), right=True)
+        .squeeze(-1)
+        .clamp(1, N1 - 1)
+    )
+    idx2 = (
+        torch.searchsorted(X2b, x2b.unsqueeze(-1).contiguous(), right=True)
+        .squeeze(-1)
+        .clamp(1, N2 - 1)
+    )
 
     def _gather_X(X: torch.Tensor, idx: torch.Tensor) -> torch.Tensor:
         return torch.gather(X, -1, idx.unsqueeze(-1)).squeeze(-1)
