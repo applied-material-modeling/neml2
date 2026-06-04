@@ -16,6 +16,28 @@ needed), each forwards trailing positional tokens as HIT overrides
 under [`neml2/cli/`](https://github.com/applied-material-modeling/neml2/tree/main/neml2/cli)
 and is also importable as a regular Python function.
 
+All four tools accept a cumulative `--load PATH` flag for importing
+user-defined extensions (custom `Model` / `Driver` / `Solver` /
+`[Tensors]` / `[Data]` classes) before the tool's own work begins.
+`PATH` is either a path to a `.py` file or a package directory, or a
+dotted module name on `sys.path`. The matching `@register_native`
+decorators fire on import and the new types become resolvable from the
+input file and visible to `neml2-syntax`. Repeat `--load` for several
+extensions — they import in the order given, so later modules may
+depend on names registered by earlier ones.
+
+```bash
+# A custom model defined in ./my_models.py is now driveable by neml2-run
+# (and inspectable by neml2-inspect / neml2-compile, listed by neml2-syntax).
+neml2-run --load ./my_models.py input.i my_driver
+
+# Multiple extensions in priority order — later may depend on earlier:
+neml2-syntax --load ./shared.py --load ./project_models.py --summary --json -
+```
+
+See [](tutorials-extension-input-files) for the author's side of the
+contract.
+
 Most of the worked examples below reuse a single input file — a linear
 isotropic elastic model named `elasticity`, wrapped in a five-step
 `TransientDriver` named `driver`:

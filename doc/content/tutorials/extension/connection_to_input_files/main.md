@@ -192,6 +192,27 @@ at `load_model` time, the cause is almost always that the module
 holding `@register_native` was never imported — fix the import (or
 re-order imports) so the decorator runs before the load call.
 
+## Loading the extension from the CLI
+
+Every `neml2-*` console script accepts a cumulative `--load PATH`
+flag for exactly this situation: a custom model defined outside the
+`neml2` package can be driven from the shell without writing a
+wrapper script. `PATH` is either a filesystem path to a `.py` file
+(or a package directory) or a dotted module name on `sys.path`. The
+flag is processed before the input file is parsed, so the registered
+type is visible by the time `load_model` runs:
+
+```bash
+neml2-run --load ./projectile.py input.i driver
+neml2-inspect --load ./projectile.py input.i accel
+neml2-syntax --load ./projectile.py --type ProjectileAcceleration --json -
+neml2-compile --load ./projectile.py input.i --model accel
+```
+
+Repeat `--load` to pull in several extensions; they import in the
+order given, so a later module may depend on names registered by an
+earlier one. See [](cli-utilities) for the option in context.
+
 ## What's next
 
 - The schema fields glossed over here — typed inputs, list options,

@@ -36,6 +36,7 @@ from typing import Any, TextIO
 
 from ..factory import _registry
 from ..schema import _MISSING, BLOCK_NAME, HitField, HitSchema
+from ._extensions import add_load_argument, load_user_extensions
 
 
 @dataclass(frozen=True)
@@ -217,6 +218,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--server", action="store_true", help="run as a JSON server on stdin/stdout"
     )
+    add_load_argument(parser)
     return parser
 
 
@@ -276,6 +278,12 @@ def main(
         err_stream.write(
             "error: --server is incompatible with --json, --section, --type, and --summary\n"
         )
+        return 1
+
+    try:
+        load_user_extensions(args.load)
+    except ImportError as exc:
+        err_stream.write(f"error: {exc}\n")
         return 1
 
     records = collect_records()
