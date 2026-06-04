@@ -4,7 +4,7 @@
 # dependencies: cmake.version_min
 cmake_minimum_required(VERSION 3.26.1)
 # dependencies: neml2.version
-project(NEML2 VERSION 3.0.1 LANGUAGES C CXX)
+project(NEML2 VERSION 3.0.2 LANGUAGES C CXX)
 
 # ----------------------------------------------------------------------------
 # Policy
