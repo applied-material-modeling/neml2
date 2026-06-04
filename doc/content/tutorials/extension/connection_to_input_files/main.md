@@ -93,14 +93,14 @@ Two things to notice:
 2. **`hit = HitSchema(...)`** is the entire input-file surface. Each
    field is one of:
 
-   | Field            | Maps to                                                             |
-   |------------------|---------------------------------------------------------------------|
-   | `input(name, T)` | A variable consumed by `forward`; HIT option of the same name lets the user rename it.  |
-   | `output(name, T)`| A variable produced by `forward`; same renaming behavior.           |
-   | `parameter(name, T, attr=...)` | A calibratable `nn.Parameter`; the HIT option's value is a literal, a `[Tensors]` cross-reference, or a `[Models]`-output reference.  |
-   | `buffer(name, T, attr=..., default=...)` | A non-trainable constant baked into the model (`nn.Buffer`); same HIT spec shapes as `parameter` minus the `[Models]`-output mode. |
-   | `option(name, type, attr=..., default=...)` | A plain scalar/string/bool option stored on the instance. |
-   | `dependency(name, "get_model", attr=...)`   | A reference to another model by HIT name; resolved by the factory. |
+   | Field                                       | Maps to                                                                                                                              |
+   | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+   | `input(name, T)`                            | A variable consumed by `forward`; HIT option of the same name lets the user rename it.                                               |
+   | `output(name, T)`                           | A variable produced by `forward`; same renaming behavior.                                                                            |
+   | `parameter(name, T, attr=...)`              | A calibratable `nn.Parameter`; the HIT option's value is a literal, a `[Tensors]` cross-reference, or a `[Models]`-output reference. |
+   | `buffer(name, T, attr=..., default=...)`    | A non-trainable constant baked into the model (`nn.Buffer`); same HIT spec shapes as `parameter` minus the `[Models]`-output mode.   |
+   | `option(name, type, attr=..., default=...)` | A plain scalar/string/bool option stored on the instance.                                                                            |
+   | `dependency(name, "get_model", attr=...)`   | A reference to another model by HIT name; resolved by the factory.                                                                   |
 
    The `attr=` on `parameter`/`buffer`/`option`/`dependency` is the
    instance attribute the resolved value lands on, available to
@@ -164,14 +164,6 @@ name we picked, as a typed `Scalar` wrapping an `nn.Parameter`:
 
 ```{code-cell} ipython3
 model.mu
-```
-
-And the forward operator evaluates as expected:
-
-```{code-cell} ipython3
-from neml2.types import Vec
-
-model(Vec.fill(10.0, 2.0, 0.0))
 ```
 
 ## Confirming the registry entry

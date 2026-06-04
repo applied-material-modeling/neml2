@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-from neml2.chain_rule import ChainRuleDict
 from neml2.factory import register_neml2_object
 from neml2.model import Model
 from neml2.schema import HitSchema, buffer, input, output, parameter
@@ -33,24 +32,5 @@ class ProjectileAcceleration(Model):
         ),
     )
 
-    # Annotate the typed attributes so static checkers see the wrappers
-    # that Model.__getattr__ returns.
-    mu: Scalar
-    g: Vec
-
-    def forward(  # type: ignore[override]
-        self,
-        v: Vec,
-        *nl_params: Scalar,
-        v_jvp: ChainRuleDict | None = None,
-    ):
-        mu = self._get_param("mu", nl_params, Scalar)
-        a = self.g - mu * v
-
-        if v_jvp is None:
-            return a
-
-        in_name = next(iter(self.input_spec))
-        out_name = next(iter(self.output_spec))
-        actions = {in_name: lambda V, c=-mu: c * V}
-        return a, self.apply_chain_rule(v_jvp, out_name, actions, output=a)
+    def forward(self, velocity, *nl_params, v=None):
+        raise NotImplementedError

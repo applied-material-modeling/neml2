@@ -76,25 +76,19 @@ The minimum needed for our example:
 ```{code-cell} ipython3
 from __future__ import annotations
 
-import torch
-
+from neml2.factory import register_neml2_object
 from neml2.model import Model
 from neml2.schema import HitSchema, buffer, input, output, parameter
-from neml2.types import Vec, Scalar
+from neml2.types import Scalar, Vec
 
 
 class ProjectileAcceleration(Model):
-    """Acceleration of a projectile in a viscous medium."""
+    """Projectile acceleration under gravity and linear drag: a = g - mu * v."""
 
     hit = HitSchema(
-        input("velocity", Vec, "Velocity of the projectile"),
-        output("acceleration", Vec, "Acceleration of the projectile"),
-        parameter(
-            "dynamic_viscosity",
-            Scalar,
-            "Dynamic viscosity of the medium",
-            attr="mu",
-        ),
+        input("velocity", Vec, "Projectile velocity"),
+        output("acceleration", Vec, "Projectile acceleration"),
+        parameter("dynamic_viscosity", Scalar, "Drag coefficient mu", attr="mu"),
         buffer(
             "gravity",
             Vec,
@@ -105,7 +99,6 @@ class ProjectileAcceleration(Model):
     )
 
     def forward(self, velocity, *nl_params, v=None):
-        # Forward operator deferred to the next tutorial.
         raise NotImplementedError
 ```
 
@@ -244,45 +237,6 @@ m.mu.data.requires_grad
 The model is a `torch.nn.Module`, so the usual PyTorch idioms work
 unchanged — `model.to(device)`, `model.state_dict()`,
 `torch.optim.Adam(model.parameters(), ...)`, etc.
-
-## Buffer declaration
-
-There is **no** dedicated `buffer(...)` schema helper, because
-buffers are typically *constants* of the model — environment values,
-lookup tables, geometric data — that the user shouldn't have to
-re-supply via HIT every time. The idiomatic place to register them
-is the model's `__post_init__` hook, using
-{meth}`Model.register_typed_buffer`:
-
-```python
-def __post_init__(self) -> None:
-    g = Vec.fill(0.0, -9.81, 0.0)
-    self.register_typed_buffer("g", g)
-```
-
-`__post_init__` runs at the end of `Model.__init__`, after the schema
-has populated any `attr`-declared options on `self` but *before* the
-forward operator can be called. The registered buffer:
-
-- appears in `named_buffers()`,
-- moves with the module under `.to(device)`,
-- is baked as a constant during AOTI export, and
-- does **not** participate in autograd.
-
-```{code-cell} ipython3
-dict(m.named_buffers())
-```
-
-```{code-cell} ipython3
-m.g
-```
-
-If the constant *does* depend on a HIT option (say, the user picks
-the gravity vector per-problem), declare an `option(...)` field for
-that knob and read it from `self.<attr>` inside `__post_init__` before
-calling `register_typed_buffer`. The `neml2.schema.option` helper
-documented in the schema module supports `str`, `int`, `float`, and
-`bool` HIT values out of the box.
 
 ## Inspecting the declared surface
 
