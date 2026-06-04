@@ -13,7 +13,7 @@ mystnb:
 ---
 
 (tutorials-extension-composition)=
-# Composing your model with others
+# Composing with existing models
 
 The previous three tutorials walked through writing a fresh `Model`:
 [](tutorials-extension-arguments) declared its inputs, outputs,
@@ -139,8 +139,9 @@ Read the output top to bottom:
 The `TransientDriver` loads the entire model graph and recurses the
 implicit update across the prescribed time array. The `v0` block in
 the input file stacks five `Vec.fill(...)` launches into a single
-`(5, 3)` initial condition via `dynamic_batch.stack`, so one driver
-call covers all five projectiles:
+`(5, 3)` initial condition via the free `stack(...)` over
+`dynamic_batch` views, so one driver call covers all five
+projectiles:
 
 ```{code-cell} ipython3
 import neml2

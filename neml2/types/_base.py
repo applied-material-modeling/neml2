@@ -428,38 +428,6 @@ class _MutableRegionView(_RegionView[_WT]):
         new_data = torch.cat([w.data for w in wrappers], dim=axis)
         return self._w._rewrap(new_data, sub_batch_ndim=self._w.sub_batch_ndim)
 
-    def stack(self, others: Sequence[_WT], dim: int = 0) -> _WT:
-        """Stack ``self`` with ``others`` along a NEW region-relative ``dim``.
-
-        Like ``torch.stack``: a fresh axis is inserted at ``dim`` and each
-        wrapper contributes one slice. All inputs must be the same concrete
-        wrapper type, share ``sub_batch_ndim``, and have identical data
-        shapes. The new axis is added to the chosen region — its presence in
-        ``sub_batch_ndim`` follows the region's policy (sub-batch bumps it,
-        dynamic-batch leaves it alone).
-        """
-        wrappers = (self._w, *others)
-        for w in others:
-            if type(w) is not type(self._w):
-                raise TypeError(
-                    f"{self._REGION}.stack: mixed wrapper types "
-                    f"{type(self._w).__name__} vs {type(w).__name__}"
-                )
-            if w.sub_batch_ndim != self._w.sub_batch_ndim:
-                raise ValueError(
-                    f"{self._REGION}.stack: mismatched sub_batch_ndim "
-                    f"{self._w.sub_batch_ndim} vs {w.sub_batch_ndim}"
-                )
-            if w.data.shape != self._w.data.shape:
-                raise ValueError(
-                    f"{self._REGION}.stack: mismatched data shapes "
-                    f"{tuple(self._w.data.shape)} vs {tuple(w.data.shape)}"
-                )
-        axis = self._resolve_insert_dim(dim)
-        new_data = torch.stack([w.data for w in wrappers], dim=axis)
-        new_sb = self._new_sub_batch_ndim(axes_added=1)
-        return self._w._rewrap(new_data, sub_batch_ndim=new_sb)
-
 
 class BatchView(_MutableRegionView[_WT]):
     """Read-mostly view into the combined batch region (``dynamic + sub_batch``).
@@ -494,12 +462,6 @@ class BatchView(_MutableRegionView[_WT]):
     def expand(self, *shape: int) -> _WT:
         raise TypeError(
             "batch.expand is ambiguous; use t.dynamic_batch.expand(...) or t.sub_batch.expand(...)"
-        )
-
-    def stack(self, others: Sequence[_WT], dim: int = 0) -> _WT:
-        raise TypeError(
-            "batch.stack is ambiguous (would the new axis be dynamic or sub-batch?); "
-            "use t.dynamic_batch.stack(...) or t.sub_batch.stack(...)"
         )
 
 

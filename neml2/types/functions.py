@@ -37,6 +37,7 @@ different output type) lives here.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from typing import TypeVar, cast, overload
 
 import torch
@@ -205,6 +206,60 @@ def diff(view: DynamicBatchView[_TW] | SubBatchView[_TW], n: int = 1, dim: int =
     w, start, end = _reduce_view_bounds(view, "diff")
     d = _normalize_dim(dim, start, end)
     return w._rewrap(torch.diff(w.data, n=n, dim=d), sub_batch_ndim=w.sub_batch_ndim)
+
+
+def stack(
+    views: Sequence[DynamicBatchView[_TW] | SubBatchView[_TW]],
+    dim: int = 0,
+) -> _TW:
+    """Stack wrappers along a NEW axis inside a chosen region view.
+
+    Each element of ``views`` must be the same view kind (all
+    ``DynamicBatchView`` *or* all ``SubBatchView``) over wrappers that share
+    concrete type, ``sub_batch_ndim``, and data shape. The new axis is
+    inserted at region-relative position ``dim``; sub-batch policy follows
+    the region (a sub-batch stack bumps ``sub_batch_ndim`` by one, a
+    dynamic-batch stack leaves it alone).
+
+    Example
+    -------
+    >>> v0 = Vec.fill(6.0, 4.0, 0.0)
+    >>> v1 = Vec.fill(8.0, 5.0, 0.0)
+    >>> stack([v0.dynamic_batch, v1.dynamic_batch]).data.shape
+    torch.Size([2, 3])
+    """
+    if not views:
+        raise ValueError("stack: views must be non-empty")
+    first = views[0]
+    if not isinstance(first, DynamicBatchView | SubBatchView):
+        raise TypeError(
+            f"stack: views must be t.dynamic_batch or t.sub_batch, got {type(first).__name__}"
+        )
+    region_type = type(first)
+    first_w = first._w
+    for v in views[1:]:
+        if type(v) is not region_type:
+            raise TypeError(
+                f"stack: heterogeneous view types {region_type.__name__} vs {type(v).__name__}"
+            )
+        w = v._w
+        if type(w) is not type(first_w):
+            raise TypeError(
+                f"stack: heterogeneous wrapper types {type(first_w).__name__} vs {type(w).__name__}"
+            )
+        if w.sub_batch_ndim != first_w.sub_batch_ndim:
+            raise ValueError(
+                f"stack: mismatched sub_batch_ndim {first_w.sub_batch_ndim} vs {w.sub_batch_ndim}"
+            )
+        if w.data.shape != first_w.data.shape:
+            raise ValueError(
+                f"stack: mismatched data shapes "
+                f"{tuple(first_w.data.shape)} vs {tuple(w.data.shape)}"
+            )
+    axis = first._resolve_insert_dim(dim)
+    new_data = torch.stack([v._w.data for v in views], dim=axis)
+    new_sb = first._new_sub_batch_ndim(axes_added=1)
+    return first_w._rewrap(new_data, sub_batch_ndim=new_sb)
 
 
 def sub_batch_zeros_like(

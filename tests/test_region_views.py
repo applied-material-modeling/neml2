@@ -140,49 +140,72 @@ def test_batch_view_cat_treats_combined_region_as_one_axis():
     assert c.sub_batch_ndim == 1
 
 
-# ---------- stack ----------
+# ---------- stack (free function) ----------
 
 
-def test_dynamic_batch_stack_inserts_new_axis_preserves_sub_batch():
+def test_stack_dynamic_batch_inserts_new_axis_preserves_sub_batch():
+    from neml2.types import stack  # noqa: PLC0415
+
     a = Scalar(torch.tensor([1.0, 2.0]))
     b = Scalar(torch.tensor([10.0, 20.0]))
     c = Scalar(torch.tensor([100.0, 200.0]))
-    s = a.dynamic_batch.stack([b, c], dim=0)
+    s = stack([a.dynamic_batch, b.dynamic_batch, c.dynamic_batch], dim=0)
     assert s.data.shape == torch.Size([3, 2])
     assert s.data[0].tolist() == [1.0, 2.0]
     assert s.data[2].tolist() == [100.0, 200.0]
     assert s.sub_batch_ndim == 0
 
 
-def test_sub_batch_stack_bumps_sub_batch_ndim():
-    """The new axis lands in the (empty-to-start) sub-batch region — to the
-    right of the dynamic axes — so shape (4,) + (4,) becomes (4, 2)."""
+def test_stack_sub_batch_bumps_sub_batch_ndim():
+    """A sub-batch stack inserts the new axis to the right of the dynamic
+    region, so shape (4,) + (4,) becomes (4, 2)."""
+    from neml2.types import stack  # noqa: PLC0415
+
     a = Scalar(torch.zeros(4))
     b = Scalar(torch.ones(4))
-    s = a.sub_batch.stack([b], dim=0)
+    s = stack([a.sub_batch, b.sub_batch], dim=0)
     assert s.data.shape == torch.Size([4, 2])
     assert s.sub_batch_ndim == 1
-    # dynamic batch unchanged; sub_batch now has the stacking axis.
     assert s.dynamic_batch.shape == torch.Size([4])
     assert s.sub_batch.shape == torch.Size([2])
 
 
-def test_batch_view_stack_rejects_with_ambiguity_message():
+def test_stack_rejects_heterogeneous_view_kinds():
+    from neml2.types import stack  # noqa: PLC0415
+
     a = Scalar(torch.zeros(3))
     b = Scalar(torch.zeros(3))
-    with pytest.raises(TypeError, match="ambiguous"):
-        a.batch.stack([b])
+    with pytest.raises(TypeError, match="heterogeneous view types"):
+        stack([a.dynamic_batch, b.sub_batch])
 
 
-def test_stack_rejects_mixed_types_or_shapes():
-    from neml2.types import Vec  # noqa: PLC0415
+def test_stack_rejects_heterogeneous_wrappers_and_shapes():
+    from neml2.types import Vec, stack  # noqa: PLC0415
 
     s = Scalar(torch.zeros(3))
     v = Vec(torch.zeros(3))
-    with pytest.raises(TypeError, match="mixed wrapper types"):
-        s.dynamic_batch.stack([v])  # type: ignore[list-item]
+    with pytest.raises(TypeError, match="heterogeneous wrapper types"):
+        stack([s.dynamic_batch, v.dynamic_batch])
     with pytest.raises(ValueError, match="mismatched data shapes"):
-        Scalar(torch.zeros(3)).dynamic_batch.stack([Scalar(torch.zeros(4))])
+        stack([Scalar(torch.zeros(3)).dynamic_batch, Scalar(torch.zeros(4)).dynamic_batch])
+
+
+def test_stack_rejects_base_view_or_batch_view():
+    from neml2.types import stack  # noqa: PLC0415
+
+    a = Scalar(torch.zeros(3))
+    b = Scalar(torch.zeros(3))
+    with pytest.raises(TypeError, match="must be t.dynamic_batch or t.sub_batch"):
+        stack([a.batch, b.batch])  # type: ignore[list-item]
+    with pytest.raises(TypeError, match="must be t.dynamic_batch or t.sub_batch"):
+        stack([a.base, b.base])  # type: ignore[list-item]
+
+
+def test_stack_rejects_empty():
+    from neml2.types import stack  # noqa: PLC0415
+
+    with pytest.raises(ValueError, match="non-empty"):
+        stack([])
 
 
 # ---------- base view ----------

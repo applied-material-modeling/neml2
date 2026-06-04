@@ -17,12 +17,12 @@
   [v0]
     type = Python
     expr = '''
-      v0 = Vec.fill(6.0, 4.0, 0.0)
-      v1 = Vec.fill(8.0, 5.0, 0.0)
-      v2 = Vec.fill(10.0, 5.0, 0.0)
+      v0 = Vec.fill(6.0, 8.0, 0.0)
+      v1 = Vec.fill(8.0, 7.0, 0.0)
+      v2 = Vec.fill(10.0, 6.0, 0.0)
       v3 = Vec.fill(12.0, 5.0, 0.0)
-      v4 = Vec.fill(14.0, 5.0, 0.0)
-      result = v0.dynamic_batch.stack([v1, v2, v3, v4])
+      v4 = Vec.fill(14.0, 4.0, 0.0)
+      result = stack([v0.dynamic_batch, v1.dynamic_batch, v2.dynamic_batch, v3.dynamic_batch, v4.dynamic_batch])
     '''
   []
 []
