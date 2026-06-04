@@ -35,7 +35,7 @@ import torch
 from torch import nn
 
 from .chain_rule import ChainRuleDict
-from .factory import register_native
+from .factory import register_neml2_object
 from .model import Model
 from .schema import HitSchema, dependency, option
 from .types import TensorWrapper
@@ -846,7 +846,7 @@ class NonlinearSystem(LinearSystem):
     """Nonlinear system with C++-matching Newton sign convention."""
 
 
-@register_native("NonlinearSystem")
+@register_neml2_object("NonlinearSystem")
 class ModelNonlinearSystem(NonlinearSystem):
     """A nonlinear system defined by a Model."""
 

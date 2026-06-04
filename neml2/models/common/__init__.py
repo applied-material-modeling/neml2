@@ -26,7 +26,7 @@
 """Native common models.
 
 One file per C++ header under ``include/neml2/models/common/``; this package
-re-imports each file so ``@register_native`` side effects fire on package import.
+re-imports each file so ``@register_neml2_object`` side effects fire on package import.
 """
 
 from .ArrheniusParameter import ArrheniusParameter

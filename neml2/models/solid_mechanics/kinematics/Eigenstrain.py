@@ -34,7 +34,7 @@ surface is the ``eigenstrain : SR2`` output declared in
 and parameters.
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical ``eigenstrain`` output name so
 the documented surface is visible in one place; ``forward`` raises
 ``NotImplementedError`` so any accidental direct use surfaces immediately.

@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar, exp
 
 
-@register_native("ExponentialLawPermeability")
+@register_neml2_object("ExponentialLawPermeability")
 class ExponentialLawPermeability(Model):
     r"""Define the relationship between non-dimensionalized porosity and permeability.
 

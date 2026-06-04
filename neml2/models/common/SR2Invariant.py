@@ -29,7 +29,7 @@ from __future__ import annotations
 import torch
 
 from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option, output
 from ...types import (
@@ -42,7 +42,7 @@ from ...types import (
 )
 
 
-@register_native("SR2Invariant")
+@register_neml2_object("SR2Invariant")
 class SR2Invariant(Model):
     """Scalar invariants of an ``SR2`` tensor.
 

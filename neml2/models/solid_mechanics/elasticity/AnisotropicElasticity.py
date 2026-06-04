@@ -32,7 +32,7 @@ adds the ``orientation : Rot`` input (active convention) to the elastic
 strain / stress contract while leaving ``set_value`` to subclasses.
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical input/output names plus the
 ``orientation`` input that concrete native anisotropic leaves can reuse;
 ``forward`` raises ``NotImplementedError`` so any accidental direct use

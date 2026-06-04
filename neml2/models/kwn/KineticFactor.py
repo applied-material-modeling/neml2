@@ -29,13 +29,13 @@ from __future__ import annotations
 import math
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar, pow
 
 
-@register_native("KineticFactor")
+@register_neml2_object("KineticFactor")
 class KineticFactor(Model):
     r"""Nucleation kinetic factor.
 

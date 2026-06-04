@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar, gt, sqrt, where
 
 
-@register_native("CamanhoDavilaCriticalSeparation")
+@register_neml2_object("CamanhoDavilaCriticalSeparation")
 class CamanhoDavilaCriticalSeparation(Model):
     r"""Camanho-Davila mixed-mode critical (damage-onset) separation. Opening branch:
     $\delta_c = \delta_{n0} \delta_{s0} \sqrt{1+\beta^2} / \sqrt{\delta_{s0}^2 + \beta^2 \delta_{n0}^2}$

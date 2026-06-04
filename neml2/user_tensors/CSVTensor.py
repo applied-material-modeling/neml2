@@ -53,7 +53,7 @@ from typing import TYPE_CHECKING, ClassVar
 import nmhit
 import torch
 
-from ..factory import register_native
+from ..factory import register_neml2_object
 from ..schema import HitSchema, option
 from ..types import SR2, WR2, Scalar, Vec
 
@@ -188,7 +188,7 @@ class _CSVTensorBase:
         raise NotImplementedError
 
 
-@register_native("CSVScalar")
+@register_neml2_object("CSVScalar")
 class CSVScalar(_CSVTensorBase):
     """Load a single column from CSV as a ``Scalar`` with shape ``(N,)``."""
 
@@ -206,7 +206,7 @@ class CSVScalar(_CSVTensorBase):
         return Scalar(columns[0])
 
 
-@register_native("CSVSR2")
+@register_neml2_object("CSVSR2")
 class CSVSR2(_CSVTensorBase):
     """Load 6 columns from CSV as an ``SR2`` with shape ``(N, 6)``.
 
@@ -231,7 +231,7 @@ class CSVSR2(_CSVTensorBase):
         return SR2(torch.stack(columns, dim=-1))
 
 
-@register_native("CSVVec")
+@register_neml2_object("CSVVec")
 class CSVVec(_CSVTensorBase):
     """Load 3 columns from CSV as a ``Vec`` with shape ``(N, 3)``."""
 
@@ -250,7 +250,7 @@ class CSVVec(_CSVTensorBase):
         return Vec(torch.stack(columns, dim=-1))
 
 
-@register_native("CSVWR2")
+@register_neml2_object("CSVWR2")
 class CSVWR2(_CSVTensorBase):
     """Load 3 columns from CSV as a ``WR2`` (skew) with shape ``(N, 3)``.
 

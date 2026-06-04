@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar, exp
 
 
-@register_native("NucleationFluxMagnitude")
+@register_neml2_object("NucleationFluxMagnitude")
 class NucleationFluxMagnitude(Model):
     r"""Magnitude of the nucleation flux (excluding the Dirac delta term).
 

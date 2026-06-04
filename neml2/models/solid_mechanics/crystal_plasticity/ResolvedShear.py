@@ -29,7 +29,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
 from ....types import R2, SR2, Scalar, inner, jvp_rotate, rotate
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from ....data import CrystalGeometry
 
 
-@register_native("ResolvedShear")
+@register_neml2_object("ResolvedShear")
 class ResolvedShear(Model):
     r"""Calculates the resolved shears as
     $\tau_i = \sigma : Q \operatorname{sym}\left(d_i \otimes n_i \right) Q^T$ where $\tau_i$ is the

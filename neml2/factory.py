@@ -26,7 +26,7 @@
 
 Mirrors the C++ Factory / Registry pattern for Python-native models:
 
-- :func:`register_native` — decorator that registers a model class under its
+- :func:`register_neml2_object` — decorator that registers a model class under its
   C++ type name. ``Model`` subclasses usually inherit schema-backed
   ``from_hit(node, factory)``; non-model objects and special cases implement
   their own.
@@ -80,7 +80,7 @@ def _check_python_attr_name(name: str, *, kind: str, owner: str) -> None:
         )
 
 
-def register_native(type_name: str) -> Callable[[type[_T]], type[_T]]:
+def register_neml2_object(type_name: str) -> Callable[[type[_T]], type[_T]]:
     """Decorator: register a Model (or solver/system) class under *type_name*.
 
     The class must provide a ``from_hit(cls, node, factory)`` classmethod that
@@ -479,7 +479,7 @@ def load_nonlinear_system(path: str | Path, name: str) -> Any:
 
 
 __all__ = [
-    "register_native",
+    "register_neml2_object",
     "load_input",
     "load_string",
     "load_model",

@@ -32,7 +32,7 @@ actual reduction operator and its differential pushforward.
 
 Because the C++ template itself is not registered (no
 ``register_NEML2_object`` on the abstract base), this native port is also
-unregistered: ``@register_native`` is intentionally omitted. Native models are
+unregistered: ``@register_neml2_object`` is intentionally omitted. Native models are
 flat (no schema inheritance), so concrete leaves declare their own
 ``HitSchema`` independently rather than inheriting from this base; ``forward``
 raises ``NotImplementedError`` so any accidental direct use surfaces

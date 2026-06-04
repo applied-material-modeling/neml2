@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import SR2, Scalar
 
 
-@register_native("LinearKinematicHardening")
+@register_neml2_object("LinearKinematicHardening")
 class LinearKinematicHardening(Model):
     r"""Map kinematic plastic strain to back stress following a linear
     relationship, i.e., $\boldsymbol{X} = H \boldsymbol{K}_p$ where

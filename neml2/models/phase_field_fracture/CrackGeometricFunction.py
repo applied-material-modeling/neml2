@@ -32,7 +32,7 @@ the canonical ``phase : Scalar`` input and ``crack : Scalar`` output that all
 crack geometric functions share, leaving the forward map to subclasses.
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical input/output names; ``forward``
 raises ``NotImplementedError`` so any accidental direct use surfaces
 immediately. Native models are flat (no schema inheritance), so existing

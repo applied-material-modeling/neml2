@@ -29,14 +29,14 @@ from __future__ import annotations
 import torch
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, derived_output, input, parameter
 from ....types import SR2, Scalar, inner, log, norm
 from ....types import pow as wpow
 
 
-@register_native("ChabochePlasticHardening")
+@register_neml2_object("ChabochePlasticHardening")
 class ChabochePlasticHardening(Model):
     r"""Map the flow rate (i.e., the consistency parameter in the KKT conditions)
     to the rate of internal variables. This object defines the non-associative

@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import SR2, Scalar
 
 
-@register_native("ThermalEigenstrain")
+@register_neml2_object("ThermalEigenstrain")
 class ThermalEigenstrain(Model):
     r"""Define the (cummulative, as opposed to instantaneous) linear isotropic thermal
     eigenstrain, i.e. $\boldsymbol{\varepsilon}_T = \alpha (T - T_0) \boldsymbol{I}$,

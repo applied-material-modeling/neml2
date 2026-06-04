@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
@@ -37,7 +37,7 @@ from ...types import (
 )
 
 
-@register_native("R2ToSR2")
+@register_neml2_object("R2ToSR2")
 class R2ToSR2(Model):
     """Extract the symmetric part of a R2 tensor."""
 

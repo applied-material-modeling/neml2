@@ -34,7 +34,7 @@ that every reaction-mechanism leaf shares, leaving the actual forward map to
 subclasses.
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical input/output names so concrete
 native reaction-mechanism leaves can mirror the C++ contract; ``forward``
 raises ``NotImplementedError`` so any accidental direct use surfaces

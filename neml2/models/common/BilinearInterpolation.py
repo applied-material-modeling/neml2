@@ -35,7 +35,7 @@ analytical chain-rule slopes from
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import BLOCK_NAME, HitSchema, input, output, parameter
 from ...types import (
@@ -58,7 +58,7 @@ def _make_bilinear(type_name: str, ordinate_cls: type[TensorWrapper]) -> type[Mo
     arguments are Scalars at the query point.
     """
 
-    @register_native(type_name)
+    @register_neml2_object(type_name)
     class _BilinearInterpolation(Model):
         # Match the C++ ``Interpolation<T>`` HIT surface: ``ordinate`` is a
         # typed parameter, the output defaults to the model's block name.

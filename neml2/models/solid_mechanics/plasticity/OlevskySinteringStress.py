@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar
 
 
-@register_native("OlevskySinteringStress")
+@register_neml2_object("OlevskySinteringStress")
 class OlevskySinteringStress(Model):
     r"""Define the Olevsky-Skorohod sintering stress to be used in conjunction with poroplasticity
     yield functions such as the GTNYieldFunction. The sintering stress is defined as

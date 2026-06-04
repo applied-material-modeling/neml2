@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, derived_input, input, output, parameter
 from ....types import Scalar, Vec, gt, lt, vec_from_scalars, where
 
 
-@register_native("BilinearTraction")
+@register_neml2_object("BilinearTraction")
 class BilinearTraction(Model):
     r"""Bilinear cohesive-zone traction with internal damage state. Computes the
     bilinear damage variable from $(\delta_m, \delta_c, \delta_f)$

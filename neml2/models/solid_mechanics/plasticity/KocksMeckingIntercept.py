@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, output, parameter
 from ....types import Scalar
 
 
-@register_native("KocksMeckingIntercept")
+@register_neml2_object("KocksMeckingIntercept")
 class KocksMeckingIntercept(Model):
     r"""The critical value of the normalized activation energy given by
     $g_0 \frac{C-B}{A}$

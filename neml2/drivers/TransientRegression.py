@@ -48,7 +48,7 @@ import nmhit
 import torch
 
 from ..driver import Driver
-from ..factory import register_native
+from ..factory import register_neml2_object
 from ..schema import HitSchema, dependency, option
 from .TransientDriver import TransientDriver
 
@@ -87,7 +87,7 @@ def _load_gold(path: Path) -> dict[str, torch.Tensor]:
     return dict(torch.jit.load(str(path)).state_dict())
 
 
-@register_native("TransientRegression")
+@register_neml2_object("TransientRegression")
 class TransientRegression(Driver):
     """Run a TransientDriver and diff its result against a gold ``.pt`` file."""
 

@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import Scalar, clamp, gt, sqrt, where
 
 
-@register_native("CylindricalChannelGeometry")
+@register_neml2_object("CylindricalChannelGeometry")
 class CylindricalChannelGeometry(Model):
     r"""Dimensionless inner/outer radii of a cylindrical reaction product.
 

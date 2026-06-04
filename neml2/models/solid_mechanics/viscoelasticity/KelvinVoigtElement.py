@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, derived_input, input, output, parameter
 from ....types import SR2, Scalar
 
 
-@register_native("KelvinVoigtElement")
+@register_neml2_object("KelvinVoigtElement")
 class KelvinVoigtElement(Model):
     r"""Stress response of a Kelvin-Voigt viscoelastic element (spring and
     dashpot in parallel),

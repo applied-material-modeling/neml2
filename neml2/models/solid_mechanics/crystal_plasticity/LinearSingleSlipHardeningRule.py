@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar
 
 
-@register_native("LinearSingleSlipHardeningRule")
+@register_neml2_object("LinearSingleSlipHardeningRule")
 class LinearSingleSlipHardeningRule(Model):
     r"""Simple linear slip system hardening defined by
     $\dot{\tau} = \theta \sum_{i=1}^{n_{slip}} \left| \dot{\gamma}_i \right|$

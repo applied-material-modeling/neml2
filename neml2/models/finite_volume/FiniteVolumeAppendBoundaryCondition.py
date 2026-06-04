@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option, output, parameter
 from ...types import Scalar
 
 
-@register_native("FiniteVolumeAppendBoundaryCondition")
+@register_neml2_object("FiniteVolumeAppendBoundaryCondition")
 class FiniteVolumeAppendBoundaryCondition(Model):
     """Concatenate a single BC value onto the trailing sub-batch axis.
 

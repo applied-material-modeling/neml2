@@ -29,7 +29,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ...chain_rule import ChainRuleAction, ChainRuleDict, SecondOrderChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, option, output, parameter, var_inputs
 from ...types import Scalar
@@ -47,7 +47,7 @@ def _opt_list_bool(node: nmhit.Node, name: str, default: list[bool]) -> list[boo
     return list(node.param_list_bool(name)) if node.find(name) is not None else list(default)
 
 
-@register_native("ScalarMultiplication")
+@register_neml2_object("ScalarMultiplication")
 class ScalarMultiplication(Model):
     """Calculate the product of multiple Scalar variables with a constant scaling
     coefficient. Using reciprocal, one can have the reciprocity of each variable

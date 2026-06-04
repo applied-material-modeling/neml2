@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, derived_input, input, option, output
 from ...types import (
@@ -101,7 +101,7 @@ def _forward_euler_schema(t: type[TensorWrapper]) -> HitSchema:
     )
 
 
-@register_native("ScalarForwardEulerTimeIntegration")
+@register_neml2_object("ScalarForwardEulerTimeIntegration")
 class ScalarForwardEulerTimeIntegration(_ForwardEulerTimeIntegration):
     r"""Perform forward Euler time integration defined as
     $s = s_n + (t - t_n) \dot{s}$, where $s$ is the variable being
@@ -113,7 +113,7 @@ class ScalarForwardEulerTimeIntegration(_ForwardEulerTimeIntegration):
     hit = _forward_euler_schema(Scalar)
 
 
-@register_native("SR2ForwardEulerTimeIntegration")
+@register_neml2_object("SR2ForwardEulerTimeIntegration")
 class SR2ForwardEulerTimeIntegration(_ForwardEulerTimeIntegration):
     r"""Perform forward Euler time integration defined as
     $s = s_n + (t - t_n) \dot{s}$, where $s$ is the variable being

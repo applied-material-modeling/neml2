@@ -37,7 +37,7 @@ Mirrors ``tests/src/TabulatedPolynomialModel.cxx``. Forward semantics:
 
 with ``smooth_index(x, lb, ub) = 0.5 (sigmoid(k(x-lb)) - sigmoid(k(x-ub)))``.
 
-Test-fixture only. Self-registers via ``@register_native`` so the
+Test-fixture only. Self-registers via ``@register_neml2_object`` so the
 ``polynomial`` regression scenario can instantiate it from HIT.
 """
 
@@ -50,7 +50,7 @@ import torch
 
 from neml2 import allow_autograd
 from neml2.chain_rule import ChainRuleDict
-from neml2.factory import _NativeInputFile, register_native
+from neml2.factory import _NativeInputFile, register_neml2_object
 from neml2.model import Model
 from neml2.schema import HitSchema, input, option, output
 from neml2.types import Scalar
@@ -65,7 +65,7 @@ def _resolve_tensor(factory: _NativeInputFile, spec: str) -> torch.Tensor:
     return val.data
 
 
-@register_native("TabulatedPolynomialModel")
+@register_neml2_object("TabulatedPolynomialModel")
 class TabulatedPolynomialModel(Model):
     """Native mirror of the C++ test helper.
 

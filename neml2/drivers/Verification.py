@@ -57,7 +57,7 @@ import nmhit
 import torch
 
 from ..driver import Driver
-from ..factory import register_native
+from ..factory import register_neml2_object
 from ..schema import HitField, HitSchema, dependency, option
 from ..types import SR2, WR2, Scalar, Vec
 from .TransientDriver import TransientDriver
@@ -114,7 +114,7 @@ def _typed_ref_fields() -> tuple[HitField, ...]:
     return tuple(fields)
 
 
-@register_native("Verification")
+@register_neml2_object("Verification")
 class Verification(Driver):
     """Run a TransientDriver and diff its result against per-variable references."""
 

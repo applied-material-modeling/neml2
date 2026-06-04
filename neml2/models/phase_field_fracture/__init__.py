@@ -26,7 +26,7 @@
 """Native phase-field-fracture models.
 
 One file per C++ header under ``include/neml2/models/phase_field_fracture/``;
-this package re-imports each file so ``@register_native`` side effects fire on
+this package re-imports each file so ``@register_neml2_object`` side effects fire on
 package import.
 """
 

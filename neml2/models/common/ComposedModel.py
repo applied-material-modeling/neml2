@@ -58,7 +58,7 @@ from ...chain_rule import (
     SparsityFlag,
     combine_sparsity,
 )
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model, NLParam, register_submodule
 from ...resolver import DependencyResolver
 from ...schema import HitSchema, option
@@ -117,7 +117,7 @@ if TYPE_CHECKING:
     from ...factory import _NativeInputFile
 
 
-@register_native("ComposedModel")
+@register_neml2_object("ComposedModel")
 class ComposedModel(Model):
     """Compose multiple Models together to form a single Model. The execution order
     of the composed models is determined by an internal dependency resolver such

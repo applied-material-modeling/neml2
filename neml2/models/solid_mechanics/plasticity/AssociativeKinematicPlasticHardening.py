@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import SR2, Scalar
 
 
-@register_native("AssociativeKinematicPlasticHardening")
+@register_neml2_object("AssociativeKinematicPlasticHardening")
 class AssociativeKinematicPlasticHardening(Model):
     r"""Map the flow rate (i.e., the consistency parameter in the KKT conditions)
     to the rate of internal variables. This object calculates the rate of

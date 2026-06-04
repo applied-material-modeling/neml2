@@ -31,7 +31,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from neml2.factory import _NativeInputFile, load_input, load_model, register_native
+from neml2.factory import _NativeInputFile, load_input, load_model, register_neml2_object
 from neml2.model import Model
 from neml2.models.common import ComposedModel
 from neml2.models.solid_mechanics.elasticity import LinearIsotropicElasticity
@@ -46,14 +46,14 @@ _ELASTICITY_I = (
 
 
 # ---------------------------------------------------------------------------
-# register_native / from_hit protocol
+# register_neml2_object / from_hit protocol
 # ---------------------------------------------------------------------------
 
 
 def test_schema_less_model_requires_hit_schema_or_from_hit_override():
     import nmhit
 
-    @register_native("_MissingHitSchema")
+    @register_neml2_object("_MissingHitSchema")
     class _Bad(Model):
         input_spec = {}
         output_spec = {}
@@ -73,15 +73,15 @@ def test_schema_less_model_requires_hit_schema_or_from_hit_override():
         factory.get_model("m")
 
 
-def test_register_native_requires_from_hit_for_non_model_classes():
+def test_register_neml2_object_requires_from_hit_for_non_model_classes():
     with pytest.raises(TypeError, match="from_hit"):
 
-        @register_native("_MissingFromHit")
+        @register_neml2_object("_MissingFromHit")
         class _Bad:
             pass
 
 
-def test_register_native_tags_class():
+def test_register_neml2_object_tags_class():
     from neml2.models.solid_mechanics.elasticity import LinearIsotropicElasticity
 
     assert LinearIsotropicElasticity._native_type_name == "LinearIsotropicElasticity"  # type: ignore[attr-defined]

@@ -30,7 +30,7 @@ calls ``surrogate(s, T, G, C)`` with ``G = 0.1`` / ``C = 0.2`` constants
 (matching the C++ hard-coded scalar fills). The TorchScript surrogate
 returns a single scalar ``ep_dot``.
 
-Test-fixture only. Self-registers via ``@register_native``.
+Test-fixture only. Self-registers via ``@register_neml2_object``.
 """
 
 from __future__ import annotations
@@ -43,13 +43,13 @@ import torch
 
 from neml2 import allow_autograd
 from neml2.chain_rule import ChainRuleDict
-from neml2.factory import _NativeInputFile, register_native
+from neml2.factory import _NativeInputFile, register_neml2_object
 from neml2.model import Model
 from neml2.schema import HitSchema, input, option, output
 from neml2.types import Scalar
 
 
-@register_native("TorchScriptFlowRate")
+@register_neml2_object("TorchScriptFlowRate")
 class TorchScriptFlowRate(Model):
     """Native mirror of the C++ test helper.
 

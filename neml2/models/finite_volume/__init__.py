@@ -26,7 +26,7 @@
 """Native finite-volume models.
 
 One file per C++ header under ``include/neml2/models/finite_volume/``; this
-package re-imports each file so ``@register_native`` side effects fire on
+package re-imports each file so ``@register_neml2_object`` side effects fire on
 package import.
 """
 

@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar, exp
 
 
-@register_native("VoceIsotropicHardening")
+@register_neml2_object("VoceIsotropicHardening")
 class VoceIsotropicHardening(Model):
     r"""Voce isotropic hardening model, $h = R \left[ 1 - \exp(-d \bar{\varepsilon}_p) \right]$,
     where $R$ is the isotropic

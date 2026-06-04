@@ -29,7 +29,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, dependency, input, output
 from ....types import R2, WR2, Scalar, jvp_rotate, rotate, sum
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from ....data import CrystalGeometry
 
 
-@register_native("PlasticVorticity")
+@register_neml2_object("PlasticVorticity")
 class PlasticVorticity(Model):
     r"""Caclulates the plastic vorcitity as
     $w^p = \sum_{i=1}^{n_{slip}} \dot{\gamma}_i Q \operatorname{skew}{\left(d_i \otimes n_i \right)} Q^T$

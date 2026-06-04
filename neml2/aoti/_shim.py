@@ -54,7 +54,7 @@ import torch
 from torch import nn
 
 from .. import types as _types
-from ..factory import register_native
+from ..factory import register_neml2_object
 from ..schema import HitSchema, option
 from ..types import TensorWrapper
 from ._aoti import Model as _BoundModel
@@ -65,7 +65,7 @@ if TYPE_CHECKING:
     from ..factory import _NativeInputFile
 
 
-@register_native("AOTIModel")
+@register_neml2_object("AOTIModel")
 class AOTIModel(nn.Module):
     """HIT-loadable wrapper around :class:`neml2.aoti.Model`.
 

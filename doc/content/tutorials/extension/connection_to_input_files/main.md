@@ -47,7 +47,7 @@ runtime object creation:
 
 There are three pieces a model author touches:
 
-`@register_native("TypeName")`
+`@register_neml2_object("TypeName")`
 : Decorator on the class. Adds the class to the native registry
   under the given HIT type name. Lives in {mod}`neml2.factory`.
 
@@ -85,7 +85,7 @@ tutorial is about.
 
 Two things to notice:
 
-1. **`@register_native("ProjectileAcceleration")`** is what makes
+1. **`@register_neml2_object("ProjectileAcceleration")`** is what makes
    `type = ProjectileAcceleration` resolvable from an input file.
    The string passed to the decorator is the HIT type name — it does
    not have to match the Python class name (it usually does, by
@@ -132,7 +132,7 @@ Each line in the `[accel]` block lines up with one schema field:
 ## Loading and inspecting
 
 Before `neml2.load_model` can recognise the type name, the module
-that defines it must have been imported (so the `@register_native`
+that defines it must have been imported (so the `@register_neml2_object`
 decorator has run). In a Python script this is just an `import`; in
 this notebook page the source file is sitting next to `input.i`, so
 we put its directory on `sys.path` and import it.
@@ -140,7 +140,7 @@ we put its directory on `sys.path` and import it.
 ```{code-cell} ipython3
 import sys
 sys.path.insert(0, ".")
-import projectile  # the @register_native runs at import time
+import projectile  # the @register_neml2_object runs at import time
 
 import neml2
 model = neml2.load_model("input.i", "accel")
@@ -189,7 +189,7 @@ from neml2.factory import _registry
 
 If a `KeyError` mentioning *"not registered in NativeRegistry"* fires
 at `load_model` time, the cause is almost always that the module
-holding `@register_native` was never imported — fix the import (or
+holding `@register_neml2_object` was never imported — fix the import (or
 re-order imports) so the decorator runs before the load call.
 
 ## Loading the extension from the CLI

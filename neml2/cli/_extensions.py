@@ -26,7 +26,7 @@
 
 Downstream users author custom ``Model`` / ``Driver`` / ``Solver`` / ``Data``
 / tensor classes outside the ``neml2`` package. Importing the module that
-defines them is what fires the ``@register_native`` decorators that make the
+defines them is what fires the ``@register_neml2_object`` decorators that make the
 types resolvable from a HIT input file.
 
 A user-friendly CLI workflow needs a way to do that without writing a wrapper
@@ -72,7 +72,7 @@ def add_load_argument(parser: argparse.ArgumentParser) -> None:
 
 
 def load_user_extensions(paths: list[str]) -> None:
-    """Import every entry in *paths* so its ``@register_native`` decorators fire.
+    """Import every entry in *paths* so its ``@register_neml2_object`` decorators fire.
 
     File paths take precedence over dotted-module resolution: if *path* names
     an existing file or directory on disk, it is imported by spec under a

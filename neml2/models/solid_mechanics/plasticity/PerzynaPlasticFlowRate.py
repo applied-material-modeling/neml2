@@ -27,14 +27,14 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar, abs, heaviside, log
 from ....types import pow as wpow
 
 
-@register_native("PerzynaPlasticFlowRate")
+@register_neml2_object("PerzynaPlasticFlowRate")
 class PerzynaPlasticFlowRate(Model):
     r"""Perzyna's viscous approximation of the consistent yield envelope (with a
     power law), i.e. $\dot{\gamma} = \left( \frac{\left< f \right>}{\eta} \right)^n$, where $f$ is

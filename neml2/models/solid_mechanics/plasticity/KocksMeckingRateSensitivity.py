@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, option, output, parameter
 from ....types import Scalar
 
 
-@register_native("KocksMeckingRateSensitivity")
+@register_neml2_object("KocksMeckingRateSensitivity")
 class KocksMeckingRateSensitivity(Model):
     r"""Calculates the temperature-dependent rate sensitivity for a Perzyna-type model using the
     Kocks-Mecking model.  The value is $n = \frac{\mu b^3}{k T A}$ with $\mu$ the

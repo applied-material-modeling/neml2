@@ -31,14 +31,14 @@ import math
 import torch
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import SR2
 from ....types.functions import dev, inner, norm
 
 
-@register_native("AssociativeJ2FlowDirection")
+@register_neml2_object("AssociativeJ2FlowDirection")
 class AssociativeJ2FlowDirection(Model):
     """The plastic flow direction assuming an associative J2 flow."""
 

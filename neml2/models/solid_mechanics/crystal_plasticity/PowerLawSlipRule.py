@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar
@@ -35,7 +35,7 @@ from ....types import abs as tensor_abs
 from ....types import pow as tensor_pow
 
 
-@register_native("PowerLawSlipRule")
+@register_neml2_object("PowerLawSlipRule")
 class PowerLawSlipRule(Model):
     r"""Power law slip rule defined as
     $\dot{\gamma}_i = \dot{\gamma}_0 \left| \frac{\tau_i}{\hat{\tau}_i} \right|^{n-1} \frac{\tau_i}{\hat{\tau}_i}$

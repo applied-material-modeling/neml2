@@ -28,7 +28,7 @@
 Construction-time inputs shared by reference across consumers (mirrors the C++
 ``[Data]`` section). ``CrystalGeometry`` is the base slip-system geometry;
 ``CubicCrystal`` is the registered ``[Data]`` block that specializes it to the
-cubic crystal system. Importing this package fires the ``@register_native``
+cubic crystal system. Importing this package fires the ``@register_neml2_object``
 side effects.
 """
 

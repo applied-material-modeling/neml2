@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import Scalar
 
 
-@register_native("FiniteVolumeUpwindedAdvectiveFlux")
+@register_neml2_object("FiniteVolumeUpwindedAdvectiveFlux")
 class FiniteVolumeUpwindedAdvectiveFlux(Model):
     """Compute upwinded advective fluxes at cell edges."""
 

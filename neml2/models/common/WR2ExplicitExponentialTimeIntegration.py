@@ -27,7 +27,7 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, derived_input, input, option, output
 from ...types import (
@@ -41,7 +41,7 @@ from ...types import (
 )
 
 
-@register_native("WR2ExplicitExponentialTimeIntegration")
+@register_neml2_object("WR2ExplicitExponentialTimeIntegration")
 class WR2ExplicitExponentialTimeIntegration(Model):
     r"""Perform explicit discrete exponential time integration of a rotation. The
     update can be written as $s = \exp\left[ (t-t_n)\dot{s}\right] \circ s_n$,

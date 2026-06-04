@@ -32,7 +32,7 @@ produce internal-variable rates (associative plastic flow, associative
 isotropic/kinematic plastic hardening, etc.).
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds only the canonical ``flow_rate`` input; concrete
 native subclasses declare their own ``HitSchema`` (native models are flat, no
 schema inheritance) and implement the forward mapping. ``forward`` raises

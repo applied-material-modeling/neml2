@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option, output, parameter
 from ...types import Scalar
 
 
-@register_native("DiffusionLimitedReaction")
+@register_neml2_object("DiffusionLimitedReaction")
 class DiffusionLimitedReaction(Model):
     r"""Diffusion-limited reaction rate for a shrinking-core product phase.
 

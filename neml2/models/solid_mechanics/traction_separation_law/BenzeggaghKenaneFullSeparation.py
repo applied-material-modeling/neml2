@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar, gt, pow, where
 
 
-@register_native("BenzeggaghKenaneFullSeparation")
+@register_neml2_object("BenzeggaghKenaneFullSeparation")
 class BenzeggaghKenaneFullSeparation(Model):
     r"""Mixed-mode full (failure) separation under the Benzeggagh-Kenane criterion.
     Opening: $\delta_f = (2/(K \delta_c))(G_{Ic} + (G_{IIc}-G_{Ic}) (\beta^2/(1+\beta^2))^\eta)$,

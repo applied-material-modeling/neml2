@@ -42,7 +42,7 @@ identity pushforward ``action(V) = V`` -- the canonical D-062 linear leaf
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
@@ -90,7 +90,7 @@ class _CopyVariable(Model):
         )
 
 
-@register_native("CopyScalar")
+@register_neml2_object("CopyScalar")
 class CopyScalar(_CopyVariable):
     """Scalar-valued variable copy. Mirrors ``CopyVariable<Scalar>``."""
 
@@ -100,7 +100,7 @@ class CopyScalar(_CopyVariable):
     )
 
 
-@register_native("CopyVec")
+@register_neml2_object("CopyVec")
 class CopyVec(_CopyVariable):
     """Vec-valued variable copy. Mirrors ``CopyVariable<Vec>``."""
 
@@ -110,7 +110,7 @@ class CopyVec(_CopyVariable):
     )
 
 
-@register_native("CopyRot")
+@register_neml2_object("CopyRot")
 class CopyRot(_CopyVariable):
     """Rot-valued variable copy. Mirrors ``CopyVariable<Rot>``."""
 
@@ -120,7 +120,7 @@ class CopyRot(_CopyVariable):
     )
 
 
-@register_native("CopyWR2")
+@register_neml2_object("CopyWR2")
 class CopyWR2(_CopyVariable):
     """WR2-valued variable copy. Mirrors ``CopyVariable<WR2>``."""
 
@@ -130,7 +130,7 @@ class CopyWR2(_CopyVariable):
     )
 
 
-@register_native("CopyR2")
+@register_neml2_object("CopyR2")
 class CopyR2(_CopyVariable):
     """R2-valued variable copy. Mirrors ``CopyVariable<R2>``."""
 
@@ -140,7 +140,7 @@ class CopyR2(_CopyVariable):
     )
 
 
-@register_native("CopySR2")
+@register_neml2_object("CopySR2")
 class CopySR2(_CopyVariable):
     """SR2-valued variable copy. Mirrors ``CopyVariable<SR2>``."""
 
@@ -150,7 +150,7 @@ class CopySR2(_CopyVariable):
     )
 
 
-@register_native("CopySSR4")
+@register_neml2_object("CopySSR4")
 class CopySSR4(_CopyVariable):
     """SSR4-valued variable copy. Mirrors ``CopyVariable<SSR4>``."""
 
@@ -160,7 +160,7 @@ class CopySSR4(_CopyVariable):
     )
 
 
-@register_native("CopyMillerIndex")
+@register_neml2_object("CopyMillerIndex")
 class CopyMillerIndex(_CopyVariable):
     """MillerIndex-valued variable copy. Mirrors ``CopyVariable<MillerIndex>``."""
 

@@ -44,7 +44,7 @@ to map the user-chosen parameterization into the model's canonical pair (K, G)
 or triple (C1, C2, C3).
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical option surface so concrete native
 elasticity leaves can be authored consistently; ``forward`` raises
 ``NotImplementedError`` so any accidental direct use surfaces immediately.

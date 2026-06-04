@@ -29,13 +29,13 @@ from __future__ import annotations
 import math
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, derived_input, input, output, parameter
 from ....types import Scalar, Vec, exp, gt, vec_from_scalars, where
 
 
-@register_native("SalehaniIraniTraction")
+@register_neml2_object("SalehaniIraniTraction")
 class SalehaniIraniTraction(Model):
     r"""3D coupled exponential cohesive law of Salehani & Irani with internal damage state.
     Computes $d_\text{trial} = 1 - \exp(-x)$ where $x = b_n + b_{s1}^2 + b_{s2}^2$, caps it for

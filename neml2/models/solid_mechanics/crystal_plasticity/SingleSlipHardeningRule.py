@@ -33,7 +33,7 @@ The C++ base declares the ``slip_hardening`` input, the corresponding rate
 output via ``rate_name(...)``, and the ``sum_slip_rates`` input.
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical input/output names (matching the
 concrete native leaves' explicit ``slip_hardening_rate`` output);
 ``forward`` raises ``NotImplementedError`` so any accidental direct use

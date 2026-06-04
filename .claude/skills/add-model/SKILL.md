@@ -1,13 +1,13 @@
 ---
 name: add-model
-description: Scaffold a new NEML2 `Model` subclass under `neml2/models/<domain>/`. NEML2 models are pure Python classes deriving from `neml2.model.Model` (an `nn.Module`), declared via a `HitSchema`, decorated with `@register_native("TypeName")`, and tested with a `.i` driver under `tests/models/<domain>/`. Trigger on any "add a Foo model", "scaffold a new yield function", "create an SR2-to-SR2 mapping", etc.
+description: Scaffold a new NEML2 `Model` subclass under `neml2/models/<domain>/`. NEML2 models are pure Python classes deriving from `neml2.model.Model` (an `nn.Module`), declared via a `HitSchema`, decorated with `@register_neml2_object("TypeName")`, and tested with a `.i` driver under `tests/models/<domain>/`. Trigger on any "add a Foo model", "scaffold a new yield function", "create an SR2-to-SR2 mapping", etc.
 ---
 
 # add-model
 
 A NEML2 model is a Python class with three load-bearing pieces:
 
-1. `@register_native("TypeName")` decorator (from `neml2.factory`).
+1. `@register_neml2_object("TypeName")` decorator (from `neml2.factory`).
 2. `hit = HitSchema(input(...), output(...), parameter(...))` block from
    `neml2.schema`.
 3. `forward(self, *typed_inputs, v=None, v2=None, vh=None)` body in
@@ -25,14 +25,14 @@ A NEML2 model is a Python class with three load-bearing pieces:
 
 ```python
 # neml2/models/solid_mechanics/plasticity/MyHardening.py
-from neml2.factory import register_native
+from neml2.factory import register_neml2_object
 from neml2.model import Model
 from neml2.schema import HitSchema, input, output, parameter
 from neml2.chain_rule import ChainRuleDict
 from neml2.types import Scalar
 
 
-@register_native("MyHardening")
+@register_neml2_object("MyHardening")
 class MyHardening(Model):
     r"""h = K * ep — single-line statement of the forward."""
 

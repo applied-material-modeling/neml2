@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar, Vec, vec_from_scalars
 
 
-@register_native("OrthotropicLinearTraction")
+@register_neml2_object("OrthotropicLinearTraction")
 class OrthotropicLinearTraction(Model):
     r"""Orthotropic linear-elastic interface traction:
     $T_n = K_n \delta_n^\text{sep}$, $T_{si} = K_t \delta_{si}$.

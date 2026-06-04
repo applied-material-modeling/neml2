@@ -34,7 +34,7 @@ extension knobs ``log_extension`` / ``transition_saturation``; concrete
 subclasses implement ``calculate_pressure`` on the base branch.
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical I/O names and option surface;
 ``forward`` raises ``NotImplementedError`` so any accidental direct use
 surfaces immediately. Native models are flat (no schema inheritance), so

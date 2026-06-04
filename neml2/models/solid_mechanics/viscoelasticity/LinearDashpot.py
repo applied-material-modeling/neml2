@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import SR2, Scalar
 
 
-@register_native("LinearDashpot")
+@register_neml2_object("LinearDashpot")
 class LinearDashpot(Model):
     r"""Newtonian dashpot constitutive law,
     $\dot{\boldsymbol{\varepsilon}} = \boldsymbol{\sigma} / \eta$, where $\eta$ is the viscosity.

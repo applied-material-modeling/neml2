@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import R2, SR2, sym
 
 
-@register_native("GreenLagrangeStrain")
+@register_neml2_object("GreenLagrangeStrain")
 class GreenLagrangeStrain(Model):
     r"""Green-Lagrange strain, $E = \frac{1}{2} (C - I)$, where
     $C = F^T F$ is the right Cauchy-Green tensor and $I$ is the

@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, derived_output, input, parameter
 from ....types import Scalar, sign
 
 
-@register_native("SlopeSaturationVoceIsotropicHardening")
+@register_neml2_object("SlopeSaturationVoceIsotropicHardening")
 class SlopeSaturationVoceIsotropicHardening(Model):
     r"""SlopeSaturationVoce isotropic hardening model,
     $\dot{h} = \theta_0 \left(1 - \frac{h}{R} \right) \varepsilon_p$, where $R$ is the

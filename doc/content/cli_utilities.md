@@ -20,7 +20,7 @@ All four tools accept a cumulative `--load PATH` flag for importing
 user-defined extensions (custom `Model` / `Driver` / `Solver` /
 `[Tensors]` / `[Data]` classes) before the tool's own work begins.
 `PATH` is either a path to a `.py` file or a package directory, or a
-dotted module name on `sys.path`. The matching `@register_native`
+dotted module name on `sys.path`. The matching `@register_neml2_object`
 decorators fire on import and the new types become resolvable from the
 input file and visible to `neml2-syntax`. Repeat `--load` for several
 extensions — they import in the order given, so later modules may

@@ -29,14 +29,14 @@ from __future__ import annotations
 import math
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar
 from ...types.functions import exp
 
 
-@register_native("SmearedDeltaSource")
+@register_neml2_object("SmearedDeltaSource")
 class SmearedDeltaSource(Model):
     """Smeared Gaussian source for a Dirac delta distribution.
 

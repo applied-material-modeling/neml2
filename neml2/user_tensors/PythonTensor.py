@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from ..factory import _build_tensor_eval_namespace, _eval_tensor_code, register_native
+from ..factory import _build_tensor_eval_namespace, _eval_tensor_code, register_neml2_object
 from ..schema import HitSchema, option
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from ..factory import _NativeInputFile
 
 
-@register_native("Python")
+@register_neml2_object("Python")
 class PythonTensor:
     """Tensor built from an inline Python expression.
 

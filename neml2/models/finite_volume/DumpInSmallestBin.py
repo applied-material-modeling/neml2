@@ -27,14 +27,14 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar
 from ...types.functions import sub_batch_zeros_like
 
 
-@register_native("DumpInSmallestBin")
+@register_neml2_object("DumpInSmallestBin")
 class DumpInSmallestBin(Model):
     """Dump the source magnitude into the smallest cell-center bin.
 

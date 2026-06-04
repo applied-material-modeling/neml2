@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar
 
 
-@register_native("LinearIsotropicHardening")
+@register_neml2_object("LinearIsotropicHardening")
 class LinearIsotropicHardening(Model):
     r"""Map equivalent plastic strain to isotropic hardening following a linear
     relationship, i.e., $h = K \bar{\varepsilon}_p$ where $K$ is

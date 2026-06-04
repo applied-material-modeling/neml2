@@ -40,7 +40,7 @@ from .equation_systems import (
     norm,
     norm_sq,
 )
-from .factory import register_native
+from .factory import register_neml2_object
 from .schema import HitSchema, dependency, option
 
 if TYPE_CHECKING:
@@ -65,7 +65,7 @@ class NonlinearResult:
     iterations: int
 
 
-@register_native("DenseLU")
+@register_neml2_object("DenseLU")
 class DenseLU:
     """Dense LU linear solver. This solver assembles the (possibly) sparse matrix into a
     dense one and uses a standard LU decomposition to solve the system of equations.
@@ -102,7 +102,7 @@ class DenseLU:
         return AssembledMatrix(A.col_layout, b.col_layout, [[x]])
 
 
-@register_native("SchurComplement")
+@register_neml2_object("SchurComplement")
 class SchurComplement:
     """Schur complement linear solver. Solves a block-partitioned system A x = b
     by forming and solving the Schur complement of the primary block.
@@ -252,7 +252,7 @@ class SchurComplement:
             )
 
 
-@register_native("Newton")
+@register_neml2_object("Newton")
 class Newton:
     """The standard Newton-Raphson solver which always takes the 'full' Newton step."""
 
@@ -339,7 +339,7 @@ class Newton:
         system.set_u(system.u() + du)
 
 
-@register_native("NewtonWithLineSearch")
+@register_neml2_object("NewtonWithLineSearch")
 class NewtonWithLineSearch(Newton):
     """The Newton-Raphson solver with line search."""
 

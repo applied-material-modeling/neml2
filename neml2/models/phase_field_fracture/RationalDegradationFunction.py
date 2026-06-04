@@ -27,14 +27,14 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option, output, parameter
 from ...types import Scalar
 from ...types.functions import pow as type_pow
 
 
-@register_native("RationalDegradationFunction")
+@register_neml2_object("RationalDegradationFunction")
 class RationalDegradationFunction(Model):
     r"""Rational degradation function used to degrade the elastic strain energy
     density,

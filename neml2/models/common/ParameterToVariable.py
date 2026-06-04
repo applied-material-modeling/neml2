@@ -46,7 +46,7 @@ that mirrors the C++ "no Jacobian" behavior.
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, output, parameter
 from ...types import (
@@ -118,7 +118,7 @@ class _ParameterToVariable(Model):
         )
 
 
-@register_native("ScalarParameterToVariable")
+@register_neml2_object("ScalarParameterToVariable")
 class ScalarParameterToVariable(_ParameterToVariable):
     """Scalar parameter-to-variable. Mirrors ``ParameterToVariable<Scalar>``."""
 
@@ -137,7 +137,7 @@ class ScalarParameterToVariable(_ParameterToVariable):
     )
 
 
-@register_native("VecParameterToVariable")
+@register_neml2_object("VecParameterToVariable")
 class VecParameterToVariable(_ParameterToVariable):
     """Vec parameter-to-variable. Mirrors ``ParameterToVariable<Vec>``."""
 
@@ -156,7 +156,7 @@ class VecParameterToVariable(_ParameterToVariable):
     )
 
 
-@register_native("RotParameterToVariable")
+@register_neml2_object("RotParameterToVariable")
 class RotParameterToVariable(_ParameterToVariable):
     """Rot parameter-to-variable. Mirrors ``ParameterToVariable<Rot>``."""
 
@@ -175,7 +175,7 @@ class RotParameterToVariable(_ParameterToVariable):
     )
 
 
-@register_native("WR2ParameterToVariable")
+@register_neml2_object("WR2ParameterToVariable")
 class WR2ParameterToVariable(_ParameterToVariable):
     """WR2 parameter-to-variable. Mirrors ``ParameterToVariable<WR2>``."""
 
@@ -194,7 +194,7 @@ class WR2ParameterToVariable(_ParameterToVariable):
     )
 
 
-@register_native("R2ParameterToVariable")
+@register_neml2_object("R2ParameterToVariable")
 class R2ParameterToVariable(_ParameterToVariable):
     """R2 parameter-to-variable. Mirrors ``ParameterToVariable<R2>``."""
 
@@ -213,7 +213,7 @@ class R2ParameterToVariable(_ParameterToVariable):
     )
 
 
-@register_native("SR2ParameterToVariable")
+@register_neml2_object("SR2ParameterToVariable")
 class SR2ParameterToVariable(_ParameterToVariable):
     """SR2 parameter-to-variable. Mirrors ``ParameterToVariable<SR2>``."""
 
@@ -232,7 +232,7 @@ class SR2ParameterToVariable(_ParameterToVariable):
     )
 
 
-@register_native("SSR4ParameterToVariable")
+@register_neml2_object("SSR4ParameterToVariable")
 class SSR4ParameterToVariable(_ParameterToVariable):
     """SSR4 parameter-to-variable. Mirrors ``ParameterToVariable<SSR4>``."""
 
@@ -251,7 +251,7 @@ class SSR4ParameterToVariable(_ParameterToVariable):
     )
 
 
-@register_native("MillerIndexParameterToVariable")
+@register_neml2_object("MillerIndexParameterToVariable")
 class MillerIndexParameterToVariable(_ParameterToVariable):
     """MillerIndex parameter-to-variable. Mirrors ``ParameterToVariable<MillerIndex>``."""
 

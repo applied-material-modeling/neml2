@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import Scalar, heaviside, macaulay
 
 
-@register_native("MacaulaySplit")
+@register_neml2_object("MacaulaySplit")
 class MacaulaySplit(Model):
     r"""Split a Scalar into its Macaulay (positive) and negative parts:
     $\langle x \rangle_+ = \max(x, 0)$ and

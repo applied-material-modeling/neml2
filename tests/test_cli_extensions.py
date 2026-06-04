@@ -42,11 +42,11 @@ _EXT_BODY = textwrap.dedent(
     '''
     """Minimal user extension for the --load CLI tests."""
 
-    from neml2.factory import register_native
+    from neml2.factory import register_neml2_object
     from neml2.schema import HitSchema, option
 
 
-    @register_native("{type_name}")
+    @register_neml2_object("{type_name}")
     class {class_name}:
         """A custom user-defined Tensors class."""
 
@@ -74,7 +74,7 @@ def _write_extension(dir_path: Path, filename: str, type_name: str, class_name: 
 def cleanup_registry():
     """Remove any test-registered type names from the global registry on teardown.
 
-    Module-level side effects (``@register_native``) are not reversible by
+    Module-level side effects (``@register_neml2_object``) are not reversible by
     Python alone — this fixture undoes them so registry-mutation tests don't
     pollute downstream tests.
     """

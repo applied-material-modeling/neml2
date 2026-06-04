@@ -31,13 +31,13 @@ from collections.abc import Callable
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, output, parameter, parameters, var_inputs
 from ...types import Scalar, abs, pow, sign
 
 
-@register_native("ScalarPNorm")
+@register_neml2_object("ScalarPNorm")
 class ScalarPNorm(Model):
     r"""Weighted $p$-norm of an arbitrary number of Scalar inputs:
     $y = (\sum_i w_i |x_i|^p + \varepsilon)^{1/p}$. The weights default

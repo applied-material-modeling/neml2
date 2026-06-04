@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option, output, parameter
 from ...types import Scalar, clamp
 
 
-@register_native("HermiteSmoothStep")
+@register_neml2_object("HermiteSmoothStep")
 class HermiteSmoothStep(Model):
     r"""The smooth step function defined by Hermite polynomials.
 

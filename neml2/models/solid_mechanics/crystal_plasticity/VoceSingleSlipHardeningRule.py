@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar
 
 
-@register_native("VoceSingleSlipHardeningRule")
+@register_neml2_object("VoceSingleSlipHardeningRule")
 class VoceSingleSlipHardeningRule(Model):
     r"""Voce hardening for a SingleSlipStrength type model defined by
     $\dot{\tau} = \theta_0 \left( 1 - \frac{\tau}{\tau_f} \right) \sum_{i=1}^{n_{slip}} \left| \dot{\gamma}_i \right|$

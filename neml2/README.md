@@ -22,7 +22,7 @@ results.
   `DenseNewtonStep`, `DenseIFT`).
 - `solvers.py` — `DenseLU`, `SchurComplement` (block 2-group factorisation), `Newton`.
 - `factory.py` — HIT input parsing (`load_input`, `load_model`,
-  `register_native`, `_NativeInputFile.get_tensor`).
+  `register_neml2_object`, `_NativeInputFile.get_tensor`).
 - `data/` — registered `[Data]` objects: `CrystalGeometry` (base) and
   `CubicCrystal`.
 - `models/` — registered leaves, one file per C++ header; the composition

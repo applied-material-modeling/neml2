@@ -49,7 +49,7 @@ import nmhit
 import torch
 
 from ..driver import Driver
-from ..factory import register_native
+from ..factory import register_neml2_object
 from ..schema import HitField, HitSchema, dependency, option
 from ..types import R2, SR2, SSR4, WR2, MillerIndex, Rot, Scalar, TensorWrapper, Vec
 
@@ -156,7 +156,7 @@ def _typed_io_fields() -> tuple[HitField, ...]:
     return tuple(fields)
 
 
-@register_native("TransientDriver")
+@register_neml2_object("TransientDriver")
 class TransientDriver(Driver):
     """Drive a model over a prescribed time history.
 

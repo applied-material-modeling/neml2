@@ -35,7 +35,7 @@ from math import prod
 import torch
 
 from ....chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model, register_submodule
 from ....schema import HitSchema, dependency, option
 from ....types import TensorWrapper
@@ -114,7 +114,7 @@ def _check_inner_supports_second_order(inner: Model) -> None:
         )
 
 
-@register_native("Normality")
+@register_neml2_object("Normality")
 class Normality(Model):
     r"""Store the first derivatives of a scalar-valued function in given variables,
     i.e. $u_i = \dfrac{f(\boldsymbol{v})}{v_i}$.

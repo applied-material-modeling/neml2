@@ -35,7 +35,7 @@ an active part (driving fracture) and an inactive part: ``strain : SR2`` in,
 actual decomposition and its differential pushforward.
 
 Because the C++ class is not registered with ``register_NEML2_object``, this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. Native models are flat (no schema inheritance), so concrete leaves
 declare their own ``HitSchema`` instead of inheriting from this base.
 ``forward`` raises ``NotImplementedError`` so any accidental direct use

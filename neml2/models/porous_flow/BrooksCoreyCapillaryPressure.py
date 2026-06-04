@@ -29,13 +29,13 @@ from __future__ import annotations
 import math
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, option, output, parameter
 from ...types import Scalar, log10, lt, pow, where
 
 
-@register_native("BrooksCoreyCapillaryPressure")
+@register_neml2_object("BrooksCoreyCapillaryPressure")
 class BrooksCoreyCapillaryPressure(Model):
     r"""Define the Brooks-Corey correlation for capillary pressure
     $P_c = P_t S_e^{-\frac{1}{p}}$. Here $S_e$ is the effective

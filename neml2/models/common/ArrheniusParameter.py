@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import BLOCK_NAME, HitSchema, input, option, output, parameter
 from ...types import Scalar, exp
 
 
-@register_native("ArrheniusParameter")
+@register_neml2_object("ArrheniusParameter")
 class ArrheniusParameter(Model):
     r"""Define the variable as a function of temperature according to the
     Arrhenius law $p = p_0 \exp \left( -\frac{Q}{RT} \right)$, where

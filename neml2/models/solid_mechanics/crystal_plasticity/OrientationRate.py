@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ....chain_rule import ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import SR2, WR2, r2_from_sr2, skew
 
 
-@register_native("OrientationRate")
+@register_neml2_object("OrientationRate")
 class OrientationRate(Model):
     r"""Defines the rate of the crystal orientations as a spin given by
     $\Omega^e = w - w^p - \varepsilon d^p + d^p \varepsilon$ where

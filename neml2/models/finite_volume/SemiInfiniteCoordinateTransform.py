@@ -27,13 +27,13 @@
 from __future__ import annotations
 
 from ...chain_rule import ChainRuleDict
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar
 
 
-@register_native("SemiInfiniteCoordinateTransform")
+@register_neml2_object("SemiInfiniteCoordinateTransform")
 class SemiInfiniteCoordinateTransform(Model):
     """Transform a semi-infinite coordinate to x / (x + s).
 

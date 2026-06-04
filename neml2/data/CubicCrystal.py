@@ -36,7 +36,7 @@ from typing import TYPE_CHECKING
 
 import torch
 
-from ..factory import register_native
+from ..factory import register_neml2_object
 from ..schema import HitSchema, parameter
 from ..types import (
     R2,
@@ -132,7 +132,7 @@ def cubic_symmetry_operators(
 # ---------------------------------------------------------------------------
 
 
-@register_native("CubicCrystal")
+@register_neml2_object("CubicCrystal")
 class CubicCrystal:
     """A specialization of the general CrystalGeometry class defining a cubic crystal system."""
 

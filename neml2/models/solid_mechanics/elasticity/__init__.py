@@ -25,7 +25,7 @@
 """Solid-mechanics elasticity models.
 
 One file per registered type; this package re-imports each so the
-``@register_native`` side effects fire on package import.
+``@register_neml2_object`` side effects fire on package import.
 """
 
 from .AnisotropicElasticity import AnisotropicElasticity

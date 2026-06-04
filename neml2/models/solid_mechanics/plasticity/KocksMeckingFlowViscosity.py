@@ -29,13 +29,13 @@ from __future__ import annotations
 import math
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import BLOCK_NAME, HitSchema, input, option, output, parameter
 from ....types import Scalar, exp
 
 
-@register_native("KocksMeckingFlowViscosity")
+@register_neml2_object("KocksMeckingFlowViscosity")
 class KocksMeckingFlowViscosity(Model):
     r"""Calculates the temperature-dependent flow viscosity for a Perzyna-type
     model using the Kocks-Mecking model.  The value is

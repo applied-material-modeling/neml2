@@ -31,7 +31,7 @@ function -> flow-rate map (e.g. ``PerzynaPlasticFlowRate``,
 ``KocksMeckingFlowSwitch``, ...).
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
-native port is also unregistered: ``@register_native`` is intentionally
+native port is also unregistered: ``@register_neml2_object`` is intentionally
 omitted. The class scaffolds the canonical input/output names; native models
 are flat (no schema inheritance), so concrete leaves like
 ``PerzynaPlasticFlowRate`` declare their own ``HitSchema`` instead of

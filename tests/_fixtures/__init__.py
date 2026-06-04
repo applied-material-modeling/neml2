@@ -31,7 +31,7 @@ These are the native counterparts of the C++ test helpers under
 inputs — they have no place in the production native package.
 
 Importing this package side-effect-registers every fixture with the native
-factory registry via ``@register_native``. The native ``regression/conftest.py``
+factory registry via ``@register_neml2_object``. The native ``regression/conftest.py``
 imports it so the registrations fire before pytest collects the input files.
 """
 

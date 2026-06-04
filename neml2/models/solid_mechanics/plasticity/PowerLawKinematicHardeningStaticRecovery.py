@@ -29,13 +29,13 @@ from __future__ import annotations
 import torch
 
 from ....chain_rule import ChainRuleAction, ChainRuleDict
-from ....factory import register_native
+from ....factory import register_neml2_object
 from ....model import Model
 from ....schema import HitSchema, derived_output, input, parameter
 from ....types import SR2, Scalar, inner, log, norm, pow
 
 
-@register_native("PowerLawKinematicHardeningStaticRecovery")
+@register_neml2_object("PowerLawKinematicHardeningStaticRecovery")
 class PowerLawKinematicHardeningStaticRecovery(Model):
     r"""This object defines kinematic hardening static recovery on a backstress term.
     This particular model uses a power law for recovery

@@ -29,7 +29,7 @@ an ``nn.Module``, and does not participate in chain-rule propagation. It is a
 top-level workflow object (e.g. step a model over a time history, dispatch a
 calibration job) constructed from a ``[Drivers]`` block.
 
-Concrete drivers register with ``@register_native("TypeName")`` and live under
+Concrete drivers register with ``@register_neml2_object("TypeName")`` and live under
 ``python/neml2/native/drivers/``. The factory routes ``[Drivers]`` blocks here
 via ``_NativeInputFile.get_driver()``.
 """

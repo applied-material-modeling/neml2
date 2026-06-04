@@ -40,7 +40,7 @@ from ...equation_systems import (
     _flatten_sub_batch_and_base,
     _unflatten_sub_batch_and_base,
 )
-from ...factory import register_native
+from ...factory import register_neml2_object
 from ...model import Model, register_submodule
 from ...schema import HitSchema, dependency
 from ...solvers import Newton, RetCode
@@ -126,7 +126,7 @@ def _matrix_pushforward(
     return output_type(contribution, sub_batch_ndim=len(output_sub_batch_shape))
 
 
-@register_native("ImplicitUpdate")
+@register_neml2_object("ImplicitUpdate")
 class ImplicitUpdate(Model):
     """Update an implicit model by solving the underlying nonlinear system of equations."""
 
