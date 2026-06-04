@@ -75,7 +75,7 @@ constants — plus any class-specific factories (e.g. `R2.identity`,
 `Scalar` defaults to `torch.float64` for both Python-literal construction
 and its factory methods; the other wrappers accept a `dtype=` kwarg and
 fall through to torch's global default otherwise. Construct them from a
-raw `torch.Tensor` (`SR2(torch.tensor([0.01, 0, 0, 0, 0, 0]))`), from a
+raw `torch.Tensor` (`SR2.fill(0.01, 0, 0, 0, 0, 0)`), from a
 Python literal (`Scalar(200e3)`), or via the inherited factories
 (`Vec.zeros(N)`, `SR2.fill(σ11, σ22, σ33, σ23, σ13, σ12)`, etc.).
 
@@ -90,7 +90,7 @@ is the shape of the input tensors.
 The canonical pattern:
 
 ```python
-strain_single = SR2(torch.tensor([0.01, 0, 0, 0, 0, 0]))  # base only
+strain_single = SR2.fill(0.01, 0, 0, 0, 0, 0)  # base only
 stress = model(strain_single)
 # stress.data.shape == (6,)
 
@@ -151,9 +151,7 @@ table:
 from neml2.types import Scalar
 import torch
 
-T_controls = Scalar(
-    torch.linspace(300.0, 1200.0, 20, dtype=torch.float64)
-).sub_batch.retag(1)
+T_controls = Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)
 ```
 
 This marks the trailing length-20 axis as the sub-batch (interpolation
@@ -167,7 +165,7 @@ the dynamic per-state batch.
 [Tensors]
   [T_controls]
     type = Python
-    expr = 'Scalar(torch.linspace(300.0, 1200.0, 20, dtype=torch.float64)).sub_batch.retag(1)'
+    expr = 'Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)'
   []
 []
 ```

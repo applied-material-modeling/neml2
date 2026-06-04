@@ -80,7 +80,7 @@ Pick a small uniaxial-tension input and evaluate the model:
 import torch
 from neml2.types import SR2
 
-strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)
 stress = model(strain)
 stress
 ```
@@ -118,7 +118,7 @@ without side effects. `torch.autograd.grad` returns the gradient
 directly:
 
 ```{code-cell} ipython3
-strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)
 stress = model(strain)
 
 # Differentiate the xx-component of stress w.r.t. both parameters.

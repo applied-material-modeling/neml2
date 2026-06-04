@@ -140,7 +140,7 @@ model
 import torch
 from neml2.types import Vec
 
-vel = Vec(torch.tensor([10.0, 2.0, 0.0], dtype=torch.float64))
+vel = Vec.fill(10.0, 2.0, 0.0)
 accel = model(vel)
 accel
 ```

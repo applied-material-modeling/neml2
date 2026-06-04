@@ -166,7 +166,7 @@ evaluate again:
 from neml2.types import SR2
 
 model = neml2.load_model("input.i", "elasticity")
-strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)
 
 print("E = 200e3 ->", model(strain).data)
 
@@ -188,7 +188,7 @@ parameter:
 
 ```{code-cell} ipython3
 model = neml2.load_model("input.i", "elasticity")
-strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)
 
 stress = model(strain)
 stress.data.sum().backward()

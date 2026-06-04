@@ -66,7 +66,7 @@ components of an `SR2` in Mandel packing. The model returns a stress
 of the same shape:
 
 ```{code-cell} ipython3
-strain1 = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0]))
+strain1 = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)
 strain1.data.shape, model(strain1).data.shape
 ```
 

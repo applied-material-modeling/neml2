@@ -89,7 +89,7 @@ import torch
 from neml2.types import SR2
 
 # Uniaxial tension along the x-axis: epsilon_xx = 1%
-strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)
 strain
 ```
 

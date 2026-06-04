@@ -1,7 +1,7 @@
 [Tensors]
   [g]
     type = Python
-    expr = 'Vec(torch.tensor([0.0, -9.81, 0.0], dtype=torch.float64))'
+    expr = 'Vec.fill(0.0, -9.81, 0.0)'
   []
   [mu]
     type = Python

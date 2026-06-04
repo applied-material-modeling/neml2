@@ -162,7 +162,7 @@ $\nu = 0.3$, gives a stress state with $\sigma_{xx}=1$ and
 $\sigma_{yy}=\sigma_{zz}\approx 0$, hence $\bar\sigma = 1$:
 
 ```{code-cell} ipython3
-strain = SR2(torch.tensor([0.01, -0.003, -0.003, 0.0, 0.0, 0.0]))
+strain = SR2.fill(0.01, -0.003, -0.003, 0.0, 0.0, 0.0)
 chain.call_by_name({"elastic_strain": strain})
 ```
 

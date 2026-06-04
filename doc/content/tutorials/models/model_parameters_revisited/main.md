@@ -98,7 +98,7 @@ like any other module's weights:
 import torch
 from neml2.types import SR2, Scalar
 
-strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)
 T = Scalar(350.0)
 
 (stress,) = model(T, strain)
@@ -138,7 +138,7 @@ model = neml2.load_model("input2.i", "eq")
 print("eq1.alpha:")
 print(model.eq1.alpha.data)
 print()
-strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)
 T = Scalar(350.0)
 (stress,) = model(T, strain)
 print("stress.data.shape:", tuple(stress.data.shape))
@@ -210,7 +210,7 @@ slot the eigenstrain model already uses:
 import torch
 from neml2.types import SR2, Scalar
 
-strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)
 T = Scalar(350.0)
 (stress,) = model(T, strain)
 stress
@@ -257,7 +257,7 @@ forward call now takes a third argument, in the order shown by
 import torch
 from neml2.types import SR2, Scalar
 
-strain = SR2(torch.tensor([0.01, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))
+strain = SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)
 T = Scalar(350.0)
 alpha = Scalar(1.2e-5)
 (stress,) = model(T, alpha, strain)

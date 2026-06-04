@@ -101,7 +101,7 @@ class ProjectileAcceleration(Model):
         # Gravitational acceleration is a non-trainable constant — register
         # it as a typed buffer in __post_init__, after the schema has
         # populated parameters but before forward() can run.
-        g = Vec(torch.tensor([0.0, -9.81, 0.0], dtype=torch.float64))
+        g = Vec.fill(0.0, -9.81, 0.0)
         self.register_typed_buffer("g", g)
 
     def forward(self, velocity, *nl_params, v=None):
@@ -254,7 +254,7 @@ is the model's `__post_init__` hook, using
 
 ```python
 def __post_init__(self) -> None:
-    g = Vec(torch.tensor([0.0, -9.81, 0.0], dtype=torch.float64))
+    g = Vec.fill(0.0, -9.81, 0.0)
     self.register_typed_buffer("g", g)
 ```
 

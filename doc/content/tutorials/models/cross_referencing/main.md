@@ -121,7 +121,7 @@ lookup table:
 [Tensors]
   [T_controls]
     type = Python
-    expr = 'Scalar(torch.linspace(300.0, 1200.0, 20, dtype=torch.float64)).sub_batch.retag(1)'
+    expr = 'Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)'
   []
 []
 ```

@@ -205,8 +205,8 @@ strain_batch[:, 0] = torch.linspace(0.005, 0.025, N)   # ramp ε_xx
 strain_b  = SR2(strain_batch)
 guess_b   = SR2(torch.zeros(N, 6, dtype=torch.float64))
 psn_b     = SR2(torch.zeros(N, 6, dtype=torch.float64))
-t_b       = Scalar(torch.ones(N, dtype=torch.float64))
-tn_b      = Scalar(torch.zeros(N, dtype=torch.float64))
+t_b       = Scalar.ones(N)
+tn_b      = Scalar.zeros(N)
 
 (plastic_strain_b,) = model(strain_b, guess_b, psn_b, t_b, tn_b)
 plastic_strain_b.data
