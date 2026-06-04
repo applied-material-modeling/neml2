@@ -54,14 +54,6 @@ if TYPE_CHECKING:
 class LinearIsotropicElasticity(Model):
     r"""Relate elastic strain to stress (or stress to strain, in compliance form)
     for a linear isotropic material.
-
-    Stiffness form (default): :math:`\sigma = 3K\,\mathrm{vol}(\varepsilon) +
-    2G\,\mathrm{dev}(\varepsilon)`.
-    Compliance form: :math:`\varepsilon = (1/3K)\,\mathrm{vol}(\sigma) +
-    (1/2G)\,\mathrm{dev}(\sigma)`.
-    Rate form adds the ``_rate`` suffix to the input/output variable names; the
-    math is identical (the relation between rates is linear-in-rate just like
-    the relation between totals).
     """
 
     hit = HitSchema(
