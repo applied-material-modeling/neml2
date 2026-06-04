@@ -129,7 +129,7 @@
     activation_energy = 5e4
     ideal_gas_constant = 8.314
   []
-  [yield]
+  [yield_surface]
     type = GTNYieldFunction
     yield_stress = 60.0
     q1 = 'q1'
@@ -139,7 +139,7 @@
   []
   [flow]
     type = ComposedModel
-    models = 'j2 sh sp yield'
+    models = 'j2 sh sp yield_surface'
     automatic_nonlinear_parameter = false
   []
   [flow_rate]

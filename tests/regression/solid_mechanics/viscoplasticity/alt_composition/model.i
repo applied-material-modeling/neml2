@@ -62,14 +62,14 @@
     tensor = 'mandel_stress'
     invariant = 'effective_stress'
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 5
     isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
-    models = 'vonmises yield'
+    models = 'vonmises yield_surface'
   []
   [normality]
     type = Normality
@@ -99,7 +99,7 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'isoharden elastic_strain elasticity mandel_stress vonmises yield normality flow_rate eprate Eprate integrate_ep integrate_Ep'
+    models = 'isoharden elastic_strain elasticity mandel_stress vonmises yield_surface normality flow_rate eprate Eprate integrate_ep integrate_Ep'
   []
 []
 

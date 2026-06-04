@@ -57,7 +57,7 @@ def test_definition():
         "flow_rate_eta",
         "flow_rate_n",
         "isoharden_K",
-        "yield_sy",
+        "yield_surface_sy",
     }
     # Each wrapper-side mirror must match the underlying model's parameter at init time.
     for pname, mirror in pmodel.named_parameters():

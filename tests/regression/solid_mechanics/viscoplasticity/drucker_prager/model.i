@@ -61,7 +61,7 @@
     type = LinearIsotropicHardening
     hardening_modulus = 1000
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 50
     effective_stress = 'effective_stress'
@@ -69,7 +69,7 @@
   []
   [flow]
     type = ComposedModel
-    models = 'vonmises first_invariant effective_stress yield'
+    models = 'vonmises first_invariant effective_stress yield_surface'
   []
   [normality]
     type = Normality

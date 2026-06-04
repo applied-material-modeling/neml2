@@ -68,13 +68,13 @@
     tensor = 'O'
     invariant = 'effective_stress'
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 1000
   []
   [flow]
     type = ComposedModel
-    models = 'overstress vonmises yield'
+    models = 'overstress vonmises yield_surface'
   []
   [normality]
     type = Normality
@@ -107,7 +107,7 @@
     type = ComposedModel
     models = 'kinharden elastic_strain elasticity
               mandel_stress overstress vonmises
-              yield normality Kprate Eprate
+              yield_surface normality Kprate Eprate
               consistency integrate_Kp integrate_Ep'
   []
 []

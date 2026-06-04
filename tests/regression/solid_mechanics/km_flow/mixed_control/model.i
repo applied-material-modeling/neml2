@@ -117,7 +117,7 @@
     shear_modulus = 'mu'
     C = -5.41
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 'ys'
     isotropic_hardening = 'isotropic_hardening'
@@ -130,7 +130,7 @@
   []
   [flow]
     type = ComposedModel
-    models = 'vonmises yield'
+    models = 'vonmises yield_surface'
     automatic_nonlinear_parameter = false
   []
   [normality]
@@ -233,7 +233,7 @@
     type = ComposedModel
     models = 'isoharden elasticity g
               mandel_stress vonmises
-              yield yield_zero normality eprate Eprate Erate Eerate
+              yield_surface yield_zero normality eprate Eprate Erate Eerate
               ri_flowrate rd_flowrate flowrate integrate_ep integrate_stress effective_strain_rate
               mixed'
   []

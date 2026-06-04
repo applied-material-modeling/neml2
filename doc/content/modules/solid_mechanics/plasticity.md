@@ -155,7 +155,7 @@ the Fischer-Burmeister consistency condition.
 - **Yield surface** — `[overstress]` builds
   $\boldsymbol{\Xi} = \boldsymbol{\sigma} - \boldsymbol{X}$ as `O`,
   `[vonmises]` ([](models-SR2Invariant)) produces the effective stress, and
-  `[yield]` ([](models-YieldFunction)) assembles $f^p$ from the effective
+  `[yield_surface]` ([](models-YieldFunction)) assembles $f^p$ from the effective
   stress, yield strength, and isotropic hardening.
 - **Flow** — `[flow]` is a [](models-ComposedModel) glueing the overstress,
   invariant, and yield steps so that [](models-Normality) can differentiate

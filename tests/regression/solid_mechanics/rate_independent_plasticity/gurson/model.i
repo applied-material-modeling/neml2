@@ -77,7 +77,7 @@
     tensor = 'mandel_stress'
     invariant = 'poro_invariant'
   []
-  [yield]
+  [yield_surface]
     type = GTNYieldFunction
     yield_stress = 60.0
     q1 = 1.25
@@ -87,7 +87,7 @@
   []
   [flow]
     type = ComposedModel
-    models = 'j2 i1 yield'
+    models = 'j2 i1 yield_surface'
   []
   [normality]
     type = Normality
@@ -127,7 +127,7 @@
     type = ComposedModel
     models = 'isoharden elastic_strain elasticity
               mandel_stress j2 i1
-              yield normality Eprate voidrate
+              yield_surface normality Eprate voidrate
               consistency integrate_Ep integrate_voidrate eprate integrate_ep'
   []
 []

@@ -78,13 +78,13 @@
     activation_energy = 3000.0
     ideal_gas_constant = 8.314
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 'ys'
   []
   [flow]
     type = ComposedModel
-    models = 'vonmises yield'
+    models = 'vonmises yield_surface'
     automatic_nonlinear_parameter = false
   []
   [normality]
@@ -111,7 +111,7 @@
     type = ComposedModel
     models = 'elastic_strain elasticity
               mandel_stress vonmises
-              yield normality Eprate
+              yield_surface normality Eprate
               consistency integrate_Ep'
   []
 []

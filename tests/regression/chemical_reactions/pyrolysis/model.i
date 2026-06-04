@@ -25,7 +25,7 @@ mu = 0.2
 zeta = 0.05
 
 [Tensors]
-  [yield]
+  [yield_surface]
     type = Python
     expr = 'Scalar(torch.tensor(${Y}, dtype=torch.float64))'
   []

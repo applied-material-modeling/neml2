@@ -160,7 +160,7 @@
     tensor = 'overstress'
     invariant = 'effective_stress'
   []
-  [yield]
+  [yield_surface]
     type = YieldFunction
     yield_stress = 1000
     isotropic_hardening = 'isotropic_hardening'
@@ -193,7 +193,7 @@
     models = 'plastic_strain_rate plastic_strain elastic_strain cauchy_stress mandel_stress
               kinematic_plastic_strain_rate kinematic_plastic_strain kinharden
               equivalent_plastic_strain_rate equivalent_plastic_strain isoharden
-              overstress vonmises yield consistency'
+              overstress vonmises yield_surface consistency'
   []
 []
 
