@@ -27,27 +27,34 @@ A Python-native NEML2 model derives from
 {class}`neml2.model.Model` and implements one method:
 
 ```python
-def forward(self, *typed_inputs, v=None, v2=None, vh=None):
+def forward(self, *typed_inputs, v=None):
     ...
 ```
 
 The positional arguments are the structural inputs in the order they
 appear in `input_spec` — each one is already a typed wrapper
 (`Scalar`, `Vec`, `SR2`, …) the framework constructed for you. The
-three keyword arguments are the chain-rule channels:
+single keyword argument `v` carries the first-order tangent seeded on
+each leaf input:
 
 | kwarg | type | role |
 |---|---|---|
 | `v` | `dict[str, dict[str, TensorWrapper]]` \| `None` | First-order tangent seeded on each leaf input. |
-| `v2` | nested dict \| `None` | Second-order tangent (Normality wraps only). |
-| `vh` | first-order dict \| `None` | Second slot of an asymmetric bilinear (Normality only). |
 
-`v=None` is the pure-forward case and is what 95% of callers use. The
-other two channels are opt-in: a leaf only has to wire them up when
-it might sit inside a
-{class}`~neml2.models.solid_mechanics.plasticity.Normality` wrap, in which
-case it must additionally set the class attribute `SUPPORTS_SECOND_ORDER
-= True`.
+`v=None` is the pure-forward case and is what almost every caller
+uses. When the caller does seed `v`, the forward additionally returns
+the JVP (Jacobian-vector product) of every output against every input
+tangent, propagated through the model's local Jacobian.
+
+:::{note}
+For the specialised case of leaves that sit inside a
+{class}`~neml2.models.solid_mechanics.plasticity.Normality` wrap (which
+needs the second-order chain rule), the signature gains two extra
+opt-in kwargs `v2` / `vh` and the leaf has to declare
+`SUPPORTS_SECOND_ORDER = True`. That path is rarely needed by user
+models — see {class}`~neml2.models.common.SR2Invariant.SR2Invariant` for
+a worked example if you do.
+:::
 
 ## Implementation
 
@@ -74,32 +81,18 @@ Three things are happening:
    algebra: `Vec - Scalar * Vec` returns a `Vec` of the correct shape,
    batched or not. This branch alone is enough for the pure-forward
    contract — if `v is None`, the method returns the output and stops.
-2. **Declare the local Jacobian.** `actions_1` is a dict keyed by
-   *input variable name* (the user-facing name resolved from HIT, not
-   the schema option name — that's what `self._v_name` holds). Each
-   value is a closure that receives an incoming tangent `V` for that
-   input and returns the contribution to ∂(output)/∂(seed-leaf). Here
-   $\partial \boldsymbol{a}/\partial \boldsymbol{v} = -\mu I$, so the
-   closure is `lambda V: -self.mu * V` — the framework handles the
-   matrix-free pushforward.
-3. **Dispatch through `propagate_tangents`.**
-   {meth}`~neml2.model.Model.propagate_tangents` calls
-   {meth}`~neml2.model.Model.apply_chain_rule` for `v` (always), and
-   {meth}`~neml2.model.Model.apply_chain_rule_2` for `v2` / `vh` (when
-   requested). The return shape matches what the caller asked for:
-   `(v_out,)` if only `v` was passed, `(v_out, v2_out)` for `v2`,
-   `(v_out, v2_out, vh_out)` for `vh`. Unpacking with `*` splices
-   those into the final return tuple.
-
-:::{note}
-This leaf is **linear** in its single input, so the Hessian
-$\partial^2 \boldsymbol{a}/\partial \boldsymbol{v}^2$ vanishes and we
-pass no `actions_2`. `apply_chain_rule_2` then collapses to applying
-`actions_1` to incoming `v2` entries — the correct
-zero-Hessian contribution. For a non-linear leaf, see e.g.
-{class}`~neml2.models.common.SR2Invariant.SR2Invariant`, which passes an
-explicit `actions_2` map.
-:::
+2. **Declare the local Jacobian.** `actions` is a dict keyed by *input
+   variable name* (the user-facing name resolved from HIT, not the
+   schema option name). Each value is a closure that receives an
+   incoming tangent `V` for that input and returns the contribution
+   to ∂(output)/∂(seed-leaf). Here $\partial \boldsymbol{a}/\partial
+   \boldsymbol{v} = -\mu I$, so the closure is `lambda V: -self.mu * V`
+   — the framework handles the matrix-free pushforward.
+3. **Dispatch through `apply_chain_rule`.**
+   {meth}`~neml2.model.Model.apply_chain_rule` consumes the incoming
+   `v` channel together with the `actions` dict and returns the JVP
+   keyed by output and seed leaf. The forward returns the tuple
+   `(value, v_out)`.
 
 :::{note}
 The closure `lambda V: -self.mu * V` is matrix-free: the framework
@@ -203,7 +196,7 @@ internally consistent.
   by the dependency resolver and the chain-rule contributions are
   threaded automatically.
 - For richer chain-rule examples — multiple inputs, non-linear
-  leaves, second-order support — read the source of
+  leaves — read the source of
   {class}`~neml2.models.common.LinearCombination._LinearCombination`,
   {class}`~neml2.models.solid_mechanics.plasticity.YieldFunction.YieldFunction`,
   and
