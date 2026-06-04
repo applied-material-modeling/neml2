@@ -5,7 +5,7 @@
   # Three different bags of balls, each bag a different drag coefficient.
   [mu]
     type = Python
-    expr = 'Scalar(torch.tensor([0.05, 0.1, 0.5]))'
+    expr = 'Scalar(torch.tensor([0.1, 0.5, 1.0]))'
   []
   [times]
     type = Python

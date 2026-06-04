@@ -196,6 +196,8 @@ for k, ax in enumerate(axes):
                 label=f"launch {j}")
     ax.set_xlabel("x")
     ax.set_title(rf"$\mu = {mu_values[k]:g}$")
+    ax.set_xlim(-1, 26)
+    ax.set_ylim(-12, 4)
     ax.axhline(0.0, color="black", linewidth=0.5)
     ax.grid(True)
 axes[0].set_ylabel("y")
@@ -204,8 +206,8 @@ fig.tight_layout()
 plt.show()
 ```
 
-The lightly-damped bag ($\mu = 0.05$) sees the balls fly furthest;
-the heavily-damped bag ($\mu = 0.5$) drags them down within a few
+The lightly-damped bag ($\mu = 0.1$) sees the balls fly furthest;
+the heavily-damped bag ($\mu = 1$) drags them down within a few
 meters. NEML2 found all 15 trajectories in one solve per step
 without any per-(launch, viscosity) bookkeeping in the model code —
 the custom `ProjectileAcceleration` leaf does its share without
