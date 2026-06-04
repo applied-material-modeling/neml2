@@ -1,8 +1,4 @@
 [Tensors]
-  [mu]
-    type = Python
-    expr = 'Scalar(0.001)'
-  []
   [v_in]
     type = Python
     expr = 'Vec.fill(10.0, 2.0, 0.0)'
@@ -18,7 +14,7 @@
     type = ProjectileAcceleration
     velocity = 'v'
     acceleration = 'a'
-    dynamic_viscosity = 'mu'
+    dynamic_viscosity = '0.001'
   []
 []
 

@@ -4,53 +4,56 @@
 [Tensors]
   [mu]
     type = Python
-    expr = 'Scalar([0.01, 0.05, 0.1, 0.5, 1.0])'
+    expr = 'Scalar(0.1)'
   []
   [times]
     type = Python
-    expr = 'Scalar.linspace(0.0, 1.0, 100)'
+    expr = 'Scalar.linspace(0.0, 2.0, 100)'
   []
   [x0]
     type = Python
-    expr = 'Vec.zeros()'
+    expr = 'Vec.zeros(5)'
   []
   [v0]
     type = Python
-    expr = 'Vec.fill(10.0, 5.0, 0.0)'
+    expr = '''
+      v0 = Vec.fill(6.0, 4.0, 0.0)
+      v1 = Vec.fill(8.0, 5.0, 0.0)
+      v2 = Vec.fill(10.0, 5.0, 0.0)
+      v3 = Vec.fill(12.0, 5.0, 0.0)
+      v4 = Vec.fill(14.0, 5.0, 0.0)
+      result = v0.dynamic_batch.stack([v1, v2, v3, v4])
+    '''
   []
 []
 
 [Models]
-  [eq2]
+  [eq1]
     type = ProjectileAcceleration
     velocity = 'v'
     acceleration = 'a'
     dynamic_viscosity = 'mu'
   []
-  [eq3a]
+  [eq2]
     type = VecBackwardEulerTimeIntegration
     variable = 'x'
     rate = 'v'
   []
-  [eq3b]
+  [eq3]
     type = VecBackwardEulerTimeIntegration
     variable = 'v'
     rate = 'a'
   []
-  [eq3]
+  [residual]
     type = ComposedModel
-    models = 'eq3a eq3b'
-  []
-  [system]
-    type = ComposedModel
-    models = 'eq2 eq3'
+    models = 'eq1 eq2 eq3'
   []
 []
 
 [EquationSystems]
-  [eq4]
+  [system]
     type = NonlinearSystem
-    model = 'system'
+    model = 'residual'
     unknowns = 'x v'
     residuals = 'x_residual v_residual'
   []
@@ -70,9 +73,9 @@
 []
 
 [Models]
-  [implicit]
+  [eq4]
     type = ImplicitUpdate
-    equation_system = 'eq4'
+    equation_system = 'system'
     solver = 'newton'
   []
 []
@@ -80,10 +83,9 @@
 [Drivers]
   [driver]
     type = TransientDriver
-    model = 'implicit'
+    model = 'eq4'
     prescribed_time = 'times'
     ic_Vec_names = 'x v'
     ic_Vec_values = 'x0 v0'
-    save_as = 'result.pt'
   []
 []
