@@ -211,7 +211,7 @@ axes[2].set_title("Gradient norm")
 axes[2].grid(alpha=0.3)
 
 fig.tight_layout()
-fig.show()
+plt.show()
 ```
 
 What to look for in each panel:
