@@ -195,24 +195,24 @@ perfect-viscoplastic response.
 
 ## Saving the trajectory to disk
 
-The full result dict can be persisted as a TorchScript module. Each
-step becomes a child module whose buffers are the per-variable
-tensors:
+The full result dict can be persisted to a single `.pt` file. The
+layout is a flat `{key: tensor}` dict keyed by the same
+`input.<step>.<var>` / `output.<step>.<var>` strings that
+[`driver.result()`](drivers-TransientDriver) returns in memory:
 
 ```{code-cell} ipython3
 driver.save_gold("result.pt")
 
-loaded = torch.jit.load("result.pt")
-buffers = dict(loaded.named_buffers())
-print("buffer count:", len(buffers))
-print("a few keys :", list(buffers)[:4])
+loaded = torch.load("result.pt", weights_only=True)
+print("entry count:", len(loaded))
+print("a few keys :", list(loaded)[:4])
 ```
 
 This is the same format used by the regression suite's
-[`TransientRegression`](drivers-TransientRegression) — the gold file checked
-into `tests/regression/.../gold/result.pt` is exactly what
-`save_gold` produces. Reading it back from another script (or a
-different language) is just `torch.jit.load(...).named_buffers()`.
+[`TransientRegression`](drivers-TransientRegression) — the gold file
+checked into `tests/regression/.../gold/result.pt` is exactly what
+`save_gold` produces. Reading it back from another script is just
+`torch.load(path, weights_only=True)`.
 
 ## Where to go next
 
