@@ -2,17 +2,22 @@
 # and implicit-update blocks to integrate a projectile trajectory.
 
 [Tensors]
+  # Three different bags of balls, each bag a different drag coefficient.
   [mu]
     type = Python
-    expr = 'Scalar(0.1)'
+    expr = 'Scalar(torch.tensor([0.05, 0.1, 0.5]))'
   []
   [times]
     type = Python
     expr = 'Scalar.linspace(0.0, 2.0, 100)'
   []
+  # Initial conditions carry a TRAILING size-1 dynamic-batch placeholder
+  # (-> shape (5, 1, *base)) so the (3,) viscosity broadcasts cleanly into
+  # the second batch axis. The composed run evaluates 5 launches x 3
+  # viscosities = 15 trajectories in one Newton solve per step.
   [x0]
     type = Python
-    expr = 'Vec.zeros(5)'
+    expr = 'Vec.zeros(5).dynamic_batch.unsqueeze(-1)'
   []
   [v0]
     type = Python
@@ -22,7 +27,8 @@
       v2 = Vec.fill(10.0, 6.0, 0.0)
       v3 = Vec.fill(12.0, 5.0, 0.0)
       v4 = Vec.fill(14.0, 4.0, 0.0)
-      result = stack([v0.dynamic_batch, v1.dynamic_batch, v2.dynamic_batch, v3.dynamic_batch, v4.dynamic_batch])
+      stacked = stack([v0.dynamic_batch, v1.dynamic_batch, v2.dynamic_batch, v3.dynamic_batch, v4.dynamic_batch])
+      result = stacked.dynamic_batch.unsqueeze(-1)
     '''
   []
 []

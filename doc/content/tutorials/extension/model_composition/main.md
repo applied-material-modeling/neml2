@@ -137,11 +137,20 @@ Read the output top to bottom:
 ## Running the trajectory
 
 The `TransientDriver` loads the entire model graph and recurses the
-implicit update across the prescribed time array. The `v0` block in
-the input file stacks five `Vec.fill(...)` launches into a single
-`(5, 3)` initial condition via the free `stack(...)` over
-`dynamic_batch` views, so one driver call covers all five
-projectiles:
+implicit update across the prescribed time array. The input file
+sets up a small *bag-of-balls* scenario: three bags with different
+drag coefficients $\mu$, each holding five balls thrown at
+different launch velocities. Total: 15 trajectories, evaluated
+batched in one Newton solve per step.
+
+The trick that makes it batched is in `[Tensors]`: the launch
+velocity stacks five `Vec.fill(...)` rows into shape `(5, 3)`, then
+`dynamic_batch.unsqueeze(-1)` reserves a trailing size-1 axis →
+`(5, 1, 3)`. The `mu` parameter ships with shape `(3,)`. When the
+two meet inside `eq1`, broadcasting fills the placeholder axis with
+the three viscosities, giving a `(5, 3, 3)` evaluation that all
+shares the same composed graph and the same Newton iterate
+per step.
 
 ```{code-cell} ipython3
 import neml2
@@ -152,8 +161,8 @@ driver.run()
 ```
 
 `driver.result()` returns a flat dict keyed by `input.<step>.<var>`
-/ `output.<step>.<var>`. The leading `5` on each step's position
-and velocity is the batched projectile axis:
+/ `output.<step>.<var>`. The leading `(5, 3)` on each step's
+position and velocity is the batched (ball, bag) grid:
 
 ```{code-cell} ipython3
 result = driver.result()
@@ -163,8 +172,9 @@ result = driver.result()
 
 ## Plotting the trajectories
 
-Stack the per-step `x` outputs along a new time axis and project
-onto the $x$–$y$ plane to see all five arcs:
+Stack the per-step `x` outputs along a new leading time axis and
+project onto the $x$–$y$ plane. One subplot per bag (viscosity),
+five trajectories each:
 
 ```{code-cell} ipython3
 import torch
@@ -173,28 +183,34 @@ import matplotlib.pyplot as plt
 nsteps = sum(1 for k in result if k.startswith("output.") and k.endswith(".x"))
 positions = torch.stack(
     [result[f"output.{i}.x"] for i in range(1, nsteps + 1)]
-).detach()
+).detach()  # shape (nsteps, 5 launches, 3 viscosities, 3 components)
 
-fig, ax = plt.subplots(figsize=(6, 4))
-for j in range(positions.shape[1]):
-    ax.plot(positions[:, j, 0], positions[:, j, 1], "-o", markersize=2,
-            label=f"projectile {j}")
-ax.set_xlabel("x")
-ax.set_ylabel("y")
-ax.axhline(0.0, color="black", linewidth=0.5)
-ax.grid(True)
-ax.legend(loc="upper right", fontsize="small")
+mu_values = factory.get_tensor("mu").data.tolist()
+n_launches = positions.shape[1]
+n_visc = positions.shape[2]
+
+fig, axes = plt.subplots(1, n_visc, figsize=(12, 4), sharey=True)
+for k, ax in enumerate(axes):
+    for j in range(n_launches):
+        ax.plot(positions[:, j, k, 0], positions[:, j, k, 1], "-o", markersize=2,
+                label=f"launch {j}")
+    ax.set_xlabel("x")
+    ax.set_title(rf"$\mu = {mu_values[k]:g}$")
+    ax.axhline(0.0, color="black", linewidth=0.5)
+    ax.grid(True)
+axes[0].set_ylabel("y")
+axes[-1].legend(loc="upper right", fontsize="small")
 fig.tight_layout()
 plt.show()
 ```
 
-Each trajectory bends under gravity ($g$) and decays under linear
-drag ($\mu$) — faster launches climb higher and travel farther
-before drag pulls them down. The composed graph runs the whole
-batch in one Newton solve per step; the custom
-`ProjectileAcceleration` leaf does its share without knowing
-anything about the integrator sitting next to it or the batch
-dimension threading through.
+The lightly-damped bag ($\mu = 0.05$) sees the balls fly furthest;
+the heavily-damped bag ($\mu = 0.5$) drags them down within a few
+meters. NEML2 found all 15 trajectories in one solve per step
+without any per-(launch, viscosity) bookkeeping in the model code —
+the custom `ProjectileAcceleration` leaf does its share without
+knowing anything about the integrator sitting next to it or the
+batch dimensions threading through.
 
 ## Where to go next
 
