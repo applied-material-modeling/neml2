@@ -19,11 +19,6 @@
         values = 0
         batch_shape = '(1)'
     []
-    [S]
-        type = Scalar
-        values = 0
-        batch_shape = '(1)'
-    []
     [tau_p] # MPa
         type = Scalar
         values = 2030
@@ -63,6 +58,10 @@
     [h] #m
         type = Scalar
         values = 2.581e-10
+    []
+    [w] #m 
+        type = Scalar
+        values = 7.9e-9
     []
     [k_B] # eV/K
         type = Scalar
@@ -148,9 +147,9 @@
         type = ThermallyActivatedDislocationMobility
         effective_shear = 'state/internal/tau_eff'
         athermal_shear = 'state/internal/s_a'
-        L = 'state/internal/L'
         temperature = 'forces/T'
         h = 'h'
+        w = 'w'
         b = 'b'
         a = 'a'
         Bk = 'Bk'
@@ -159,7 +158,6 @@
         p = 'p'
         q = 'q'
         k_B = 'k_B'
-        s = 'S'
         H_0 = 'H_0'
         v_disl = 'state/internal/v_disl'
     []
@@ -167,9 +165,9 @@
         type = ThermallyActivatedDislocationMobility_diag
         effective_shear      = 'state/internal/tau_eff'
         athermal_shear       = 'state/internal/s_a'
-        L                    = 'state/internal/L'
         temperature          = 'forces/T'
         h    = 'h'
+        w    = 'w'
         b    = 'b'
         a    = 'a'
         Bk   = 'Bk'
@@ -178,13 +176,15 @@
         p    = 'p'
         q    = 'q'
         k_B  = 'k_B'
-        s    = 'S'
         H_0  = 'H_0'
         v_disl    = 'state/internal/v_disl'
+        K         = 'state/internal/K'
+        K_mcl_eff = 'state/internal/K_mcl_eff'
         tau_ratio = 'state/internal/tau_ratio'
         D_G       = 'state/internal/D_G'
         mclD_G    = 'state/internal/mclD_G'
-        exp_arg   = 'state/internal/exp_arg'
+        exp_core   = 'state/internal/exp_core'
+        exp_arg    = 'state/internal/exp_arg'
     []
     [rho_m_rate]
         type = KocksMeckingDislocationDensity

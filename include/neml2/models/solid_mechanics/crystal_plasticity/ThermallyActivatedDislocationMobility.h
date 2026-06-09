@@ -18,11 +18,11 @@ protected:
     // Input variables (effective shear and athermal shear)
     const Variable<Scalar> & _tau_eff;
     const Variable<Scalar> & _tau_a;
-    const Variable<Scalar> & _L;
     const Variable<Scalar> & _T;
 
     // Variables from equation
     const Scalar & _h;      // buffer
+    const Scalar & _w;      // buffer
     const Scalar & _b;      // buffer
     const Scalar & _a;      // buffer
     const Scalar & _Bk;     // parameter
@@ -32,7 +32,6 @@ protected:
     const Scalar & _q;      // parameter
     const Scalar & _D_H;    // parameter
     const Scalar & _k_B;    // buffer
-    const Scalar & _s;      // parameter
 
     // Output variable (dislocation velocity)
     Variable<Scalar> & _v;
