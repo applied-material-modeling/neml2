@@ -18,20 +18,19 @@ pip install -e ".[dev]" -v
 ```
 
 This drives [scikit-build-core](https://scikit-build-core.readthedocs.io/)
-through the `NEML2_WHEEL` CMake path and lays down an editable Python
+to build the bundled C++ runtime and lays down an editable Python
 install plus everything the dev workflow needs (pytest, pre-commit,
 sphinx, …).
 
 ## CMake presets
 
 For pure C++ development (the wheel build is invoked separately by
-`pip`), `CMakePresets.json` defines two presets, used at different
-stages and *not* interchangeable:
+`pip`), `CMakePresets.json` defines two presets, each serving a
+different purpose:
 
 `dev` — the day-to-day build preset
 : Debug build of the C++ library and pybind extensions. This is the
-  only preset with an accompanying *build* preset of the same name, so
-  it's the one to use for actually compiling sources:
+  preset for actually compiling sources:
 
   ```shell
   cmake --preset dev -S .
@@ -40,34 +39,25 @@ stages and *not* interchangeable:
 
 `cc` — a configure-only preset for tooling
 : Configures with `CMAKE_EXPORT_COMPILE_COMMANDS=ON` and
-  `NEML2_WHEEL=ON` so that the resulting `compile_commands.json`
-  covers both `libneml2_aoti` sources and the pybind extension `.cxx`
-  files. A `compile_commands.json` symlink is dropped into the repo
-  root for clangd / clang-tidy / other static-analysis tools to pick
-  up. There is no matching build preset — `cc` is not meant for
-  compiling, just for indexing:
+  `NEML2_WHEEL=ON` so the resulting `compile_commands.json` covers
+  both `libneml2_aoti` sources and the pybind extension `.cxx` files.
+  A `compile_commands.json` symlink is dropped into the repo root for
+  clangd / clang-tidy / other static-analysis tools to pick up. Use
+  `dev` if you also need to compile from a `cc`-configured build dir.
 
   ```shell
   cmake --preset cc -S .
-  # No `cmake --build --preset cc` — use `dev` (or a plain
-  # `cmake --build build/cc -j$(nproc)`) if you want to actually
-  # compile from this build dir.
   ```
 
-## Notable configure options
+## One-off CMake variable overrides
 
-The presets are tuned for routine work; override them when you need to:
-
-| Option         | Default      | Purpose                                                  |
-| :------------- | :----------- | :------------------------------------------------------- |
-| `NEML2_TOOLS`  | `ON`         | Build the CLI binaries (`neml2-run`, `neml2-inspect`, …). |
-| `NEML2_MPI`    | `OFF`        | Link the dispatcher submodule against MPI. With it OFF the submodule is still built but the MPI-using classes throw at construction. |
-| `NEML2_WHEEL`  | `OFF`        | Build the Python wheel. Set automatically by `pip install`. |
-
-Override on the configure line:
+The presets cover the vast majority of cases. For a single-shot
+override (for example, switching the build type or pointing at a
+custom LibTorch), append `-D<NAME>=<VALUE>` to the configure line in
+the usual way:
 
 ```shell
-cmake --preset dev -DNEML2_MPI=ON -S .
+cmake --preset dev -DCMAKE_BUILD_TYPE=RelWithDebInfo -S .
 ```
 
 ## Custom LibTorch
@@ -80,10 +70,9 @@ before configuring:
 cmake --preset dev -Dtorch_ROOT=/path/to/libtorch -S .
 ```
 
-`TORCH_ROOT` (all-caps), `torch_ROOT` / `TORCH_ROOT` / `torch_DIR` /
-`TORCH_DIR` env vars, and the active Python's `torch` site-packages are
-also consulted in that order. See `cmake/Modules/Findtorch.cmake` for
-the full discovery procedure.
+Equivalent environment variables and the active Python's `torch`
+site-packages are also consulted; see the bundled `Findtorch.cmake`
+module for the full discovery procedure.
 
 ## Running the test suite
 

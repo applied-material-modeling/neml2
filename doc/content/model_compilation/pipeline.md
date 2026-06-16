@@ -63,8 +63,8 @@ exposes) and:
 
 - rejects any name that doesn't resolve;
 - rejects any name that lives inside an `ImplicitUpdate`'s
-  `system.model` tree — the dense/block equation-system wrappers
-  (`DenseRHS`, `DenseNewtonStep`, `DenseIFT`, ...) have fixed
+  `system.model` tree — the equation-system AOTI export wrappers
+  (`RHS`, `NewtonStep`, `IFT`) have fixed
   `(u_flat, g_flat)` forward signatures and can't yet accept a
   `*nl_params` tail.
 
@@ -75,8 +75,9 @@ value before any rewriting. Those tensors land in
 
 ## Step 3 — Re-route promoted parameters through NLParam
 
-This is the deepest pipeline step. Each promoted name has to
-transition from "static field on the leaf" to "graph input the
+This step transitions each promoted name from a static field on the
+leaf to a graph input the caller supplies on every invocation. Each
+promoted name has to move from "static field on the leaf" to "graph input the
 caller supplies on every invocation". `_promote_to_nl_params`:
 
 - deletes the static slot from the leaf's `_parameters` dict;
@@ -110,22 +111,25 @@ batch axis (the `sub_batch_shape`). The implicit-update tracer
 needs that shape to build the right Schur/Block layout, but the
 shape is only knowable from the driver inputs in the HIT file.
 
-`_hit_driver_example_inputs` walks the `[Drivers]` section,
-materializes one example tensor per declared force/state variable,
-and `_seed_implicit_subbatch` propagates each tensor's
-sub-batch shape into the matching `ModelNonlinearSystem`'s
-per-variable spec.
+`_read_settings` parses `[Settings]/example_batch_shape` (uniform
+field or per-variable subsection); `_resolve_example_shapes` expands
+that into a `name → (dyn, sub)` map over the model's `input_spec`;
+`_seed_implicit_subbatch` then calls `system.initialize(...)` on every
+nested `ModelNonlinearSystem` with example inputs of the resolved
+shape, so the system's per-variable `sub_batch_shape` is populated
+before the tracer runs.
 
-The step is silently skipped when the HIT file has no `[Drivers]`
-section — the bulk-constitutive default of `sub_batch_shape = ()`
-is correct for that case.
+When no `example_batch_shape` is declared, the resolver falls back to
+a small built-in default that's correct for the bulk-constitutive
+case.
 
 ## Step 6 — Partition into segments
 
-`torch.export` traces eager Python; a Newton loop's
-`while not converged` is not traceable. So every `ImplicitUpdate`
-must become its own segment, with the Newton iteration driven by
-the C++ orchestrator (one `.pt2` call per step until convergence).
+Every `ImplicitUpdate` becomes its own segment so the Newton loop
+can be driven from the C++ orchestrator (one `.pt2` call per step
+until convergence). `torch.export` traces eager Python and can't
+trace `while not converged`, so the data-dependent loop boundary is
+the natural split point.
 
 `_partition_into_segments` dispatches:
 
@@ -144,72 +148,49 @@ contract to the loader.
 
 ## Step 7 — Trace, lower, package
 
-Each segment routes through `neml2.export.compile_model`, a thin
+Each segment routes through `neml2.models.export.compile_model`, a thin
 adapter around `torch.export.export` + `torch._inductor.aoti_
 compile_and_package`. The adapter handles three pieces of
 machinery the raw torch APIs don't:
 
 **Dynamic batch dim.** Every input gets axis 0 marked as a single
-shared `Dim("batch", min=1, max=2**20)` so the lowered kernel
-specializes once and serves any batch size from 1 to ~1M without
-recompilation. The cost is modest extra symbolic-shape machinery
-inside the kernel; the benefit is that a single artifact serves
-both single-point evaluation and large fan-out runs.
+shared dynamic `Dim` so the lowered kernel specializes once and
+serves any batch size in the supported range without recompilation.
+The cost is modest extra symbolic-shape machinery inside the kernel;
+the benefit is that a single artifact serves both single-point
+evaluation and large fan-out runs.
 
 **Pytree-structured signatures.** Typed wrappers (`Scalar`, `SR2`,
-`R2`, ...) are dataclasses registered with `torch.utils._pytree.
-register_dataclass(field_names=..., drop_field_names=...)`. The
-adapter walks each example input through `_dyn_spec`, mirroring
-the registered pytree structure so the dynamic-shape spec reaches
-the underlying `torch.Tensor` leaves. `drop_field_names` excludes
-static metadata (e.g. `sub_batch_ndim`) from the trace boundary.
+`R2`, ...) are pytree-registered dataclasses. The adapter mirrors
+their pytree structure when building the dynamic-shape spec so
+torch.export sees the right dynamism on the underlying tensor
+leaves, while static metadata (e.g. sub-batch widths) stays out of
+the trace boundary.
 
-**Forward-signature variants.** Leaves come in three shapes —
-pure `*inputs`, named positionals followed by `*nl_params`, or
-named positionals only — and torch.export collapses
-`VAR_POSITIONAL` packs into a single nested-tuple argument. The
-adapter splits the example list at the named-positional count and
-re-bundles the tail into the pack, so the `dynamic_shapes`
-structure matches what `torch.export` actually sees.
+**Forward-signature variants.** Different leaves use different
+forward signatures — pure `*inputs`, named positionals followed by
+`*nl_params`, or named positionals only — and the adapter normalizes
+the example list and dynamic-shape spec to whichever shape the
+target leaf expects.
 
 The lowered output is a `.pt2` package per graph. **Implicit
 segments** lower three graphs each (`rhs`, `step`, `ift`) plus an
 optional `predictor`; **forward segments** lower one value graph
-plus an optional flat-Jacobian graph (`jvp`). Which implicit
-factorisation backs `step` and `ift` is dispatched on the source
-model's solver:
-
-- `solver.linear_solver` is `SchurComplement` → `BlockRHS`,
-  `BlockNewtonStep`, `BlockIFT` (handles sub-batch and mixed
-  `BLOCK + DENSE` 2-group factorisations);
-- otherwise → `DenseRHS`, `DenseNewtonStep`, `DenseIFT` (single-
-  group case).
+plus an optional flat-Jacobian graph (`jvp`). Implicit segments
+all route through the `RHS` / `NewtonStep` / `IFT` wrappers in
+`neml2.es.implicit`; `NewtonStep` and `IFT` forward
+to whichever `linear_solver` the source model is configured with
+(`DenseLU` for the common single-group case; `SchurComplement` for
+the `BLOCK + DENSE` 2-group factorisation).
 
 The C++ orchestrator sees the same flat `(u_flat, g_flat) →
-(u_new, b_new)` contract either way — the block-ness is internal
-to the `.pt2`.
-
-### ELF GNU_STACK patch
-
-`compile_model` post-processes every `.so` inside each emitted
-`.pt2`: it walks the ELF program headers and clears the `PF_X`
-bit on the `PT_GNU_STACK` entry. Without this, PyTorch 2.12's
-constants-folding assembler omits the `.note.GNU-stack` section,
-and ld.bfd / lld respond by marking the resulting shared object's
-stack as executable. SELinux and modern hardened-kernel systems
-refuse to `dlopen()` such an object.
-
-The patch is one byte per `.so` and is reversible (the artifact
-loader doesn't depend on the bit), but without it the C++ runtime
-fails to open the artifact on roughly half of all production
-Linux installs. The dispatch lives behind a single helper so the
-day torch upstreams a fix, we delete the helper and the call
-site.
+(u_new, b_new)` contract either way — the multi-group / sub-batch
+structure is internal to the `.pt2`.
 
 ## After export: emit the HIT stub
 
-Once `_write_meta` has serialized the metadata JSON,
-`emit_aoti_stub` rewrites the source HIT file:
+Once the metadata JSON has been written, `emit_aoti_stub` rewrites
+the source HIT file:
 
 - parse the original with `nmhit`;
 - find the top-level `[Models]` block containing `model_name`
@@ -235,11 +216,10 @@ correctly.
 | HIT-stub emission                    | `neml2/cli/aoti_compile.py::emit_aoti_stub`                      |
 | Top-level export                     | `neml2/cli/aoti_export.py::export_model_for_aoti`                |
 | Promote / freeze / re-route          | `_validate_promoted`, `_promote_to_nl_params`, `_freeze_remaining_parameters_to_buffers` |
-| Sub-batch propagation                | `_hit_driver_example_inputs`, `_seed_implicit_subbatch`          |
+| Example-shape resolution + sub-batch seeding | `_read_settings`, `_resolve_example_shapes`, `_seed_implicit_subbatch` |
 | Partitioning                         | `_partition_into_segments`, `_contains_implicit`, `_flatten_composed` |
 | Forward / implicit segment lowering  | `_compile_forward_segment`, `_compile_implicit_segment`          |
-| `torch.export` adapter               | `neml2/export.py::compile_model`                                 |
-| ELF GNU_STACK patch                  | `neml2/export.py::_clear_elf_execstack`                          |
+| `torch.export` adapter               | `neml2/models/export.py::compile_model`                          |
 
 ## See also
 

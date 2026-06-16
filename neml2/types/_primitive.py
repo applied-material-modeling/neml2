@@ -63,7 +63,14 @@ from typing import TYPE_CHECKING, ClassVar
 
 import torch
 
-from neml2.types._base import TensorWrapper, align_scalar_base, align_sub_batch
+from neml2.types._base import (
+    TensorWrapper,
+    align_k,
+    align_scalar_base,
+    align_sub_batch,
+    combine_k_state,
+    combine_sub_batch_state,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -91,7 +98,9 @@ class PrimitiveTensor(TensorWrapper):
         Handles the two cases every primitive needs uniformly:
 
         1. ``other`` is the same concrete type: align sub-batch, apply ``op_fn``
-           to the underlying tensors, re-wrap.
+           to the underlying tensors, re-wrap. Per-axis ``sub_batch_state`` is
+           combined via :func:`combine_sub_batch_state` so axes that are
+           ``"broadcast"`` on *both* sides stay compact through the op.
         2. ``other`` is a ``Scalar``: align sub-batch, broadcast the scalar's
            data against the wrapper's base shape via :func:`align_scalar_base`,
            apply ``op_fn``, re-wrap.
@@ -102,13 +111,32 @@ class PrimitiveTensor(TensorWrapper):
         """
         if isinstance(other, type(self)):
             [aa, bb], sb = align_sub_batch(self, other)
-            return type(self)(op_fn(aa.data, bb.data), sub_batch_ndim=sb)
+            state, meta = combine_sub_batch_state(aa, bb)
+            [aaK, bbK], k_ndim = align_k(aa, bb)
+            k_state, k_pairing = combine_k_state(aaK, bbK)
+            return aaK._rewrap(
+                op_fn(aaK.data, bbK.data),
+                sub_batch_ndim=sb,
+                sub_batch_state=state,
+                sub_batch_meta=meta,
+                k_ndim=k_ndim,
+                k_state=k_state,
+                k_pairing=k_pairing,
+            )
         scalar_cls = type(self)._SCALAR_CLS
         if scalar_cls is not None and isinstance(other, scalar_cls):
             [aa, bb], sb = align_sub_batch(self, other)
-            return type(self)(
-                op_fn(aa.data, align_scalar_base(bb.data, type(self).BASE_NDIM)),
+            state, meta = combine_sub_batch_state(aa, bb)
+            [aaK, bbK], k_ndim = align_k(aa, bb)
+            k_state, k_pairing = combine_k_state(aaK, bbK)
+            return aaK._rewrap(
+                op_fn(aaK.data, align_scalar_base(bbK.data, type(self).BASE_NDIM)),
                 sub_batch_ndim=sb,
+                sub_batch_state=state,
+                sub_batch_meta=meta,
+                k_ndim=k_ndim,
+                k_state=k_state,
+                k_pairing=k_pairing,
             )
         return NotImplemented
 
@@ -119,9 +147,13 @@ class PrimitiveTensor(TensorWrapper):
         unambiguous meaning. ``__add__`` / ``__sub__`` deliberately do *not*
         accept literals: a uniform additive offset is rare and ambiguous
         enough to require an explicit ``cls.full(*batch, fill_value=...)``.
+
+        The literal branch preserves :attr:`sub_batch_state` since the op
+        is pure pointwise on ``data`` and changes nothing about the
+        per-axis storage mode.
         """
         if isinstance(other, (float, int)):
-            return type(self)(op_fn(self.data, other), sub_batch_ndim=self.sub_batch_ndim)
+            return self._rewrap(op_fn(self.data, other), sub_batch_ndim=self.sub_batch_ndim)
         return self._binary(other, op_fn)
 
     def __add__(self: Self, other) -> Self:
@@ -151,7 +183,7 @@ class PrimitiveTensor(TensorWrapper):
         return NotImplemented
 
     def __neg__(self: Self) -> Self:
-        return type(self)(-self.data, sub_batch_ndim=self.sub_batch_ndim)
+        return self._rewrap(-self.data, sub_batch_ndim=self.sub_batch_ndim)
 
     # ---- generic shape factories ----
 
@@ -164,6 +196,43 @@ class PrimitiveTensor(TensorWrapper):
     ) -> Self:
         """Zero-filled wrapper of dynamic shape ``batch`` and base ``cls.BASE_SHAPE``."""
         return cls(torch.zeros(*batch, *cls.BASE_SHAPE, dtype=dtype, device=device))
+
+    @classmethod
+    def zeros_like(
+        cls,
+        template: TensorWrapper,
+        *,
+        sub_batch_shape: tuple[int, ...] | None = None,
+    ) -> Self:
+        """Zero-filled wrapper inheriting ``template``'s K + dynamic batch layout.
+
+        ``sub_batch_shape`` (defaulting to ``template.sub_batch_shape``)
+        overrides the sub-batch region, useful when the caller needs a
+        zero tail of a different cell-axis length than ``template`` to
+        splice into a typed cat / arithmetic. The K metadata
+        (``k_ndim`` / ``k_state`` / ``k_pairing``) is carried from
+        ``template`` so the result aligns rank-by-rank for downstream
+        chain-rule binary ops (zeros are direction-agnostic in K, so
+        inheriting ``template``'s state is the only choice that keeps
+        the leading K axes positionally consistent with the operand the
+        result will combine with).
+        """
+        sb = (
+            tuple(int(s) for s in template.sub_batch_shape)
+            if sub_batch_shape is None
+            else tuple(int(s) for s in sub_batch_shape)
+        )
+        k_shape = tuple(template.data.shape[: template.k_ndim])
+        dyn = template.dynamic_batch_shape
+        shape = (*k_shape, *dyn, *sb, *cls.BASE_SHAPE)
+        data = torch.zeros(shape, dtype=template.dtype, device=template.device)
+        return cls(
+            data,
+            sub_batch_ndim=len(sb),
+            k_ndim=template.k_ndim,
+            k_state=template.k_state,
+            k_pairing=template.k_pairing,
+        )
 
     @classmethod
     def ones(

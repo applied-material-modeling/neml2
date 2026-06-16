@@ -26,9 +26,7 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, derived_input, derived_output, input
 from ...types import (
     R2,
@@ -37,6 +35,8 @@ from ...types import (
     TensorWrapper,
     Vec,
 )
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 class _VariableRate(Model):

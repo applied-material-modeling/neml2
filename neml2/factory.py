@@ -170,6 +170,16 @@ class _NativeInputFile:
         # Refuse early so the failure is loud and local instead of a SyntaxError
         # deep inside the AOTI lowering.
         _check_python_attr_name(name, kind="HIT block", owner=f"[{section}/{name}]")
+        # Reject unknown HIT fields against the class's declared schema.
+        # Catches stale options (e.g. a removed `priority` on ComposedModel)
+        # and typos before they're silently ignored -- runs uniformly whether
+        # the class uses the schema-driven kwargs_from_hit path or owns its
+        # own from_hit.
+        from .schema import HitSchema  # noqa: PLC0415
+
+        schema = getattr(cls, "hit", None)
+        if isinstance(schema, HitSchema):
+            schema.reject_unknown_fields(node)
         obj = cls.from_hit(node, self)
         # Variable-name resolution (HIT override → schema default → option name)
         # happens inside _store_schema_values via the input()/output() / var_*
@@ -472,8 +482,8 @@ def load_nonlinear_system(path: str | Path, name: str) -> Any:
 
     Convenience wrapper around ``load_input(path).get_equation_system(name)``
     — mirrors :func:`load_model`. Returns a
-    :class:`~neml2.equation_systems.NonlinearSystem` (typically a
-    :class:`~neml2.equation_systems.ModelNonlinearSystem`).
+    :class:`~neml2.es.NonlinearSystem` (typically a
+    :class:`~neml2.es.ModelNonlinearSystem`).
     """
     return load_input(path).get_equation_system(name)
 

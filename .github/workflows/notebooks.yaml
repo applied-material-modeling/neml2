@@ -1,0 +1,84 @@
+name: Notebook execution
+
+on:
+  pull_request:
+    branches: [main]
+    # Each notebook is self-contained: its subfolder owns its .ipynb,
+    # paired .md, and every file it loads at runtime (including a
+    # symlink to any shared HIT input). Any change inside one of these
+    # subfolders re-executes that notebook on PR. The nightly cron
+    # re-executes all of them to catch drift from upstream (torch
+    # releases, NEML2 internals).
+    paths:
+      - "doc/content/tutorials/**/main.ipynb"
+      - "doc/content/tutorials/**/main.md"
+      - "doc/content/tutorials/**/*.i"
+      - ".github/workflows/notebooks.yaml"
+  schedule:
+    # Nightly at 06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+# Newer commits should cancel old runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  notebooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # `git diff` against the PR base needs history.
+          fetch-depth: 0
+      - uses: ./.github/actions/neml2-ci
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.0"
+      - name: Install NEML2 and dev dependencies
+        run: pip install ".[dev]" -v
+      - name: Select notebooks to execute
+        id: select
+        # PR: re-run the notebook for every subfolder that has any
+        # changed file. Scheduled / manual / push: run all of them.
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            NOTEBOOKS="$(
+              git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- doc/content/tutorials \
+                | xargs -I{} dirname {} \
+                | sort -u \
+                | while read -r dir; do
+                    nb="$dir/main.ipynb"
+                    [ -f "$nb" ] && echo "$nb"
+                  done
+            )"
+          else
+            NOTEBOOKS="$(git ls-files 'doc/content/tutorials/**/main.ipynb')"
+          fi
+          # Surface the selection on the workflow summary page.
+          {
+            echo "## Notebook execution"
+            echo "**Trigger:** \`${{ github.event_name }}\`"
+            if [ -z "$NOTEBOOKS" ]; then
+              echo "**Selection:** no notebooks to execute."
+            else
+              count="$(echo "$NOTEBOOKS" | wc -l | tr -d ' ')"
+              echo "**Selection:** $count notebook(s)"
+              echo ""
+              echo "$NOTEBOOKS" | sed 's/^/- /'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Notebooks to execute:"
+          echo "${NOTEBOOKS:-(none)}"
+          echo "notebooks=$(echo $NOTEBOOKS | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+      - name: Execute notebooks with nbmake
+        if: steps.select.outputs.notebooks != ''
+        run: pytest -v -s --nbmake --nbmake-timeout=14400 ${{ steps.select.outputs.notebooks }}

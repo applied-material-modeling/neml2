@@ -1,0 +1,108 @@
+name: "NEML2 dependencies"
+description: "Set up Python, CMake, PyTorch, and system dependencies for building NEML2"
+inputs:
+  python-version:
+    required: false
+    # dependencies: python.version_min
+    default: "3.10"
+  cmake-version:
+    required: false
+    # dependencies: cmake.version_min
+    default: "3.26.1"
+  torch-version:
+    required: false
+    # dependencies: torch.version
+    default: "2.12.0"
+  cpu-torch:
+    required: false
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install system dependencies (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt install -y ninja-build build-essential
+
+    - name: Install CMake (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        CMAKE_VERSION="${{ inputs.cmake-version }}"
+        wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz
+        tar -xzf cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz
+        mv cmake-${CMAKE_VERSION}-linux-x86_64 "$HOME/cmake"
+        echo "$HOME/cmake/bin" >> $GITHUB_PATH
+
+    - name: Install CMake (MacOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        CMAKE_VERSION="${{ inputs.cmake-version }}"
+        wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-macos-universal.tar.gz
+        tar -xzf cmake-${CMAKE_VERSION}-macos-universal.tar.gz
+        mv cmake-${CMAKE_VERSION}-macos-universal "$HOME/cmake"
+        echo "$HOME/cmake/bin" >> $GITHUB_PATH
+
+    - name: Install PyTorch (Linux)
+      if: ${{ runner.os == 'Linux' && inputs.cpu-torch == 'true' }}
+      shell: bash
+      run: |
+        pip install torch==${{ inputs.torch-version }} --index-url https://download.pytorch.org/whl/cpu
+
+    - name: Install PyTorch + nvcc + CCCL headers (Linux, with CUDA)
+      # Inductor's CUDA JIT / AOT codegen needs three things on top of
+      # what the default ``torch`` wheel bundles (libcudart, libcublas,
+      # cuda_fp16.h ...):
+      #
+      # * ``nvidia-cuda-nvcc`` -- the compiler itself.
+      # * ``nvidia-cuda-cccl`` -- the CUDA C++ Core Libraries (Thrust /
+      #   CUB / libcudacxx). Provides ``<nv/target>``, which
+      #   ``cuda_fp16.h`` and the Inductor-emitted kernels both
+      #   ``#include``. Without it Inductor's compile fails with
+      #   ``cuda_fp16.h:NNNN: fatal error: nv/target: No such file or
+      #   directory``.
+      #
+      # All three packages land at
+      # ``<site-packages>/nvidia/cuXX/{bin,include,lib,nvvm}/`` -- the
+      # canonical CUDA-install layout -- so a single ``CUDA_HOME``
+      # pointing at that dir covers nvcc + every header any of these
+      # packages ships.
+      if: ${{ runner.os == 'Linux' && inputs.cpu-torch == 'false' }}
+      shell: bash
+      run: |
+        pip install torch==${{ inputs.torch-version }} nvidia-cuda-nvcc nvidia-cuda-cccl
+
+    - name: Export CUDA_HOME from the pip nvcc install
+      # ``nvidia-cuda-nvcc`` lands at ``<site-packages>/nvidia/cuXX/`` --
+      # XX matches the CUDA major version torch was built against (cu12,
+      # cu13, etc.). Glob for the directory, sanity-check ``bin/nvcc``
+      # is present, and write the absolute path to ``$GITHUB_ENV`` so
+      # downstream steps inherit it.
+      if: ${{ runner.os == 'Linux' && inputs.cpu-torch == 'false' }}
+      shell: bash
+      run: |
+        CUDA_HOME=$(python -c "
+        import pathlib, site, sys
+        for sp in site.getsitepackages():
+            for d in sorted(pathlib.Path(sp, 'nvidia').glob('cu*')):
+                if (d / 'bin' / 'nvcc').exists():
+                    print(d); sys.exit(0)
+        ")
+        if [ -n "$CUDA_HOME" ]; then
+          echo "CUDA_HOME=$CUDA_HOME" >> "$GITHUB_ENV"
+          echo "$CUDA_HOME/bin" >> "$GITHUB_PATH"
+          echo "Using CUDA_HOME=$CUDA_HOME"
+        else
+          echo "::warning::nvidia-cuda-nvcc did not land where expected; Inductor CUDA codegen will fail"
+        fi
+
+    - name: Install PyTorch (MacOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        pip install torch==${{ inputs.torch-version }}

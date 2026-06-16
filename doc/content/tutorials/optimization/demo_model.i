@@ -1,0 +1,250 @@
+# neml2
+# Demo Kocks-Mecking viscoplastic model used by the deterministic.ipynb /
+# statistical.ipynb tutorials that drive pyzag-based calibration.
+#
+# Migrated from the v2 fixture at python/examples/demo_model.i:
+#
+#   - v2 ``[Tensors]`` entries used ``type = Scalar`` with ``batch_shape``
+#     + ``intermediate_dimension``; v3 expresses the same constants as
+#     ``type = Python`` with inline expressions. The 20-knot ``T_controls``
+#     / ``mu_values`` table goes in via ``.sub_batch.retag(1)`` so the
+#     ``ScalarLinearInterpolation`` lookup sees them as sub-batched.
+#   - VoceIsotropicHardening's ``saturated_hardening`` (``R``) and
+#     ``saturation_rate`` (``d``) are read from 4-knot temperature
+#     interpolation tables -- those are nonlinear parameters in this
+#     model, so pyzag's calibration loop can sweep their ordinates.
+#   - The Kocks-Mecking parameters ``A`` / ``B`` / ``C`` stay as
+#     ``ScalarConstantParameter`` so they participate in calibration
+#     too; KocksMeckingIntercept derives ``g0`` from them.
+
+[Tensors]
+  # 20-knot temperature -> shear-modulus interpolation table. Sub-batched
+  # via ``.sub_batch.retag(1)`` so ScalarLinearInterpolation's lookup
+  # sees the 20 axis as sub-batch rather than dynamic batch (which would
+  # broadcast against the load history's dyn axis incorrectly).
+  [T_controls]
+    type = Python
+    expr = 'Scalar([300.0, 347.36842105, 394.73684211, 442.10526316, 489.47368421, 536.84210526, 584.21052632, 631.57894737, 678.94736842, 726.31578947, 773.68421053, 821.05263158, 868.42105263, 915.78947368, 963.15789474, 1010.52631579, 1057.89473684, 1105.26315789, 1152.63157895, 1200.0]).sub_batch.retag(1)'
+  []
+  [mu_values]
+    type = Python
+    expr = 'Scalar([76670.48346056, 75465.18012589, 74314.80514263, 73374.72880675, 72651.54680595, 71928.36480514, 71120.75130575, 70035.97830454, 68951.20530333, 67842.26597027, 66399.97991161, 65315.20691041, 63884.85335476, 62763.98151868, 61373.80474086, 59927.44073925, 58481.07673765, 56544.43551627, 54599.93973483, 52791.98473282]).sub_batch.retag(1)'
+  []
+  # 4-knot temperature -> hardening tables. Same sub-batch retag for the
+  # same reason. R / d values are calibration targets in pyzag.
+  [T_train]
+    type = Python
+    expr = 'Scalar([300.0, 600.0, 900.0, 1200.0]).sub_batch.retag(1)'
+  []
+  [R_values]
+    type = Python
+    expr = 'Scalar([300.0, 200.0, 100.0, 50.0]).sub_batch.retag(1)'
+  []
+  [d_values]
+    type = Python
+    expr = 'Scalar([30.0, 20.0, 15.0, 12.0]).sub_batch.retag(1)'
+  []
+[]
+
+[Models]
+  [A]
+    type = ScalarConstantParameter
+    value = -8.679
+  []
+  [B]
+    type = ScalarConstantParameter
+    value = -0.744
+  []
+  [C]
+    type = ScalarConstantParameter
+    value = -5.41
+  []
+  [g0]
+    type = KocksMeckingIntercept
+    A = 'A'
+    B = 'B'
+    C = 'C'
+  []
+  [mandel_stress]
+    type = IsotropicMandelStress
+    cauchy_stress = 'stress'
+  []
+  [vonmises]
+    type = SR2Invariant
+    invariant_type = 'VONMISES'
+    tensor = 'mandel_stress'
+    invariant = 'effective_stress'
+  []
+  [isoharden]
+    type = VoceIsotropicHardening
+    saturated_hardening = 'R'
+    saturation_rate = 'd'
+  []
+  [mu]
+    type = ScalarLinearInterpolation
+    argument = 'temperature'
+    abscissa = 'T_controls'
+    ordinate = 'mu_values'
+  []
+  [R]
+    type = ScalarLinearInterpolation
+    argument = 'temperature'
+    abscissa = 'T_train'
+    ordinate = 'R_values'
+  []
+  [d]
+    type = ScalarLinearInterpolation
+    argument = 'temperature'
+    abscissa = 'T_train'
+    ordinate = 'd_values'
+  []
+  [ys]
+    type = KocksMeckingYieldStress
+    shear_modulus = 'mu'
+    C = 'C'
+  []
+  [yield_surface]
+    type = YieldFunction
+    yield_stress = 'ys'
+    isotropic_hardening = 'isotropic_hardening'
+  []
+  [yield_zero]
+    type = YieldFunction
+    yield_stress = 0
+    isotropic_hardening = 'isotropic_hardening'
+    yield_function = 'fp_alt'
+  []
+  [flow]
+    type = ComposedModel
+    models = 'vonmises yield_surface'
+  []
+  [normality]
+    type = Normality
+    model = 'flow'
+    function = 'yield_function'
+    from = 'mandel_stress isotropic_hardening'
+    to = 'flow_direction isotropic_hardening_direction'
+  []
+  [ri_flowrate]
+    type = FBComplementarity
+    a = 'yield_function'
+    a_inequality = 'LE'
+    b = 'gamma_rate_ri'
+  []
+  [km_sensitivity]
+    type = KocksMeckingRateSensitivity
+    A = 'A'
+    shear_modulus = 'mu'
+    k = 1.38064e-20
+    b = 2.474e-7
+  []
+  [km_viscosity]
+    type = KocksMeckingFlowViscosity
+    A = 'A'
+    B = 'B'
+    shear_modulus = 'mu'
+    k = 1.38064e-20
+    b = 2.474e-7
+    eps0 = 1e10
+  []
+  [rd_flowrate]
+    type = PerzynaPlasticFlowRate
+    reference_stress = 'km_viscosity'
+    exponent = 'km_sensitivity'
+    yield_function = 'fp_alt'
+    flow_rate = 'gamma_rate_rd'
+  []
+  [effective_strain_rate]
+    type = SR2Invariant
+    invariant_type = 'EFFECTIVE_STRAIN'
+    tensor = 'strain_rate'
+    invariant = 'effective_strain_rate'
+  []
+  [g]
+    type = KocksMeckingActivationEnergy
+    strain_rate = 'effective_strain_rate'
+    shear_modulus = 'mu'
+    k = 1.38064e-20
+    b = 2.474e-7
+    eps0 = 1e10
+  []
+  [flowrate]
+    type = KocksMeckingFlowSwitch
+    activation_energy = 'activation_energy'
+    g0 = 'g0'
+    rate_independent_flow_rate = 'gamma_rate_ri'
+    rate_dependent_flow_rate = 'gamma_rate_rd'
+    sharpness = 100.0
+  []
+  [Eprate]
+    type = AssociativePlasticFlow
+  []
+  [eprate]
+    type = AssociativeIsotropicPlasticHardening
+  []
+  [Erate]
+    type = SR2VariableRate
+    variable = 'strain'
+  []
+  [Eerate]
+    type = SR2LinearCombination
+    from = 'strain_rate plastic_strain_rate'
+    to = 'elastic_strain_rate'
+    weights = '1 -1'
+  []
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients = '1e5 0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
+    rate_form = true
+  []
+  [integrate_stress]
+    type = SR2BackwardEulerTimeIntegration
+    variable = 'stress'
+  []
+  [integrate_ep]
+    type = ScalarBackwardEulerTimeIntegration
+    variable = 'equivalent_plastic_strain'
+  []
+  [mixed]
+    type = MixedControlSetup
+    x_above = 'fixed_values'
+    x_below = 'mixed_state'
+    y = 'stress'
+    z = 'strain'
+  []
+  # Lag-1 unpacking. SR2VariableRate('strain') and
+  # SR2BackwardEulerTimeIntegration('stress') consume ``strain~1`` /
+  # ``stress~1`` as inputs, but pyzag only carries the packed
+  # ``mixed_state~1`` history. This mirrors [mixed] at lag-1 to
+  # produce those inputs from ``mixed_state~1`` + ``fixed_values~1``
+  # + ``control~1``. Matches the v2 demo_model.i wiring (and the
+  # tests/unit/pyzag/models/km_mixed_model.i fixture); without it the
+  # eq_sys glayout requests two givens nobody pushes.
+  [mixed_old]
+    type = MixedControlSetup
+    control = 'control~1'
+    x_above = 'fixed_values~1'
+    x_below = 'mixed_state~1'
+    y = 'stress~1'
+    z = 'strain~1'
+  []
+  [implicit_rate]
+    type = ComposedModel
+    models = 'isoharden elasticity g
+              mandel_stress vonmises
+              yield_surface yield_zero normality eprate Eprate Erate Eerate
+              ri_flowrate rd_flowrate flowrate integrate_ep integrate_stress effective_strain_rate
+              mixed mixed_old'
+  []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+    unknowns = 'mixed_state equivalent_plastic_strain gamma_rate_ri'
+    residuals = 'stress_residual equivalent_plastic_strain_residual complementarity'
+  []
+[]

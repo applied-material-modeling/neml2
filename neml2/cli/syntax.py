@@ -54,7 +54,7 @@ def _section_for(type_name: str, cls: type) -> str:
 
     Each registered class declares its section through a ``SECTION`` class
     attribute, usually inherited from its base (:class:`neml2.model.Model`,
-    :class:`neml2.driver.Driver`, :class:`neml2.equation_systems.LinearSystem`,
+    :class:`neml2.driver.Driver`, :class:`neml2.es.LinearSystem`,
     ...). Classes outside an inheritance chain (linear/nonlinear solvers,
     standalone tensor/data classes) set their own.
 

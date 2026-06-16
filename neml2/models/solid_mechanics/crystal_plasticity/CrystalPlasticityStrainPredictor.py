@@ -28,11 +28,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, parameter
 from ....types import SR2, Scalar, lt, norm, where
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 if TYPE_CHECKING:
     from ....factory import _NativeInputFile

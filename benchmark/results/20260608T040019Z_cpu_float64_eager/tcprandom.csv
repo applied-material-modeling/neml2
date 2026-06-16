@@ -1,0 +1,11 @@
+scenario,nbatch,n_warmup,n_runs,median_ms,mean_ms,std_ms,min_ms,max_ms,p10_ms,p90_ms,cpu_rss_mb,cuda_peak_mb
+tcprandom,1,5,20,5821.25,5821.25,nan,nan,nan,nan,nan,7910.20703125,0.0
+tcprandom,2,5,20,7092.45,7092.45,nan,nan,nan,nan,nan,7910.20703125,0.0
+tcprandom,4,5,20,7589.45,7589.45,nan,nan,nan,nan,nan,7910.20703125,0.0
+tcprandom,8,5,20,8470.2,8470.2,nan,nan,nan,nan,nan,7910.20703125,0.0
+tcprandom,16,5,20,9079.7,9079.7,nan,nan,nan,nan,nan,7910.20703125,0.0
+tcprandom,32,5,20,11316.45,11316.45,nan,nan,nan,nan,nan,7910.20703125,0.0
+tcprandom,64,5,20,14179.8,14179.8,nan,nan,nan,nan,nan,7910.20703125,0.0
+tcprandom,128,5,20,18456.25,18456.25,nan,nan,nan,nan,nan,7910.20703125,0.0
+tcprandom,256,5,20,25314.4,25314.4,nan,nan,nan,nan,nan,7910.20703125,0.0
+tcprandom,512,5,20,32859.15,32859.15,nan,nan,nan,nan,nan,7910.20703125,0.0

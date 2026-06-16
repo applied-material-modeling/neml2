@@ -35,7 +35,6 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/stl/filesystem.h>
 #include <torch/csrc/utils/pybind.h>
 
 #include "neml2/csrc/aoti/Model.h"
@@ -68,7 +67,17 @@ compile time are reachable through ``named_parameters()`` and may be
 mutated in-place (e.g. ``model.named_parameters()['E'].fill_(210000.0)``).
 Everything else is baked into the graph as a constant.
 )")
-      .def(py::init<const std::filesystem::path &>(),
+      // Take ``meta_path`` as ``std::string`` (rather than
+      // ``std::filesystem::path`` via the stl/filesystem caster) so the
+      // pybind11-stubgen-generated annotation comes out as ``str``
+      // instead of ``os.PathLike``. The current stubgen release
+      // (≤2.5.5) emits ``os.PathLike`` without an accompanying
+      // ``import os``, which trips pyright; pybind/pybind11-stubgen#280
+      // fixes this upstream, drop this lambda + restore
+      // ``py::init<const std::filesystem::path &>()`` once a release
+      // with that PR lands.
+      .def(py::init([](const std::string & meta_path)
+                    { return std::make_unique<Model>(std::filesystem::path{meta_path}); }),
            py::arg("meta_path"),
            "Load all .pt2 segments + metadata from `meta_path`. Throws on "
            "any missing file or schema mismatch.")
@@ -91,14 +100,27 @@ Everything else is baked into the graph as a constant.
           "dtype",
           [](const Model & m) { return m.dtype(); },
           "Floating-point dtype the artifact was compiled for (immutable).")
-      .def("forward",
-           &Model::forward,
-           py::arg("inputs"),
-           R"(
+      .def(
+          "forward",
+          [](const Model & m, const std::map<std::string, at::Tensor> & inputs)
+          {
+            // ``Model::forward`` returns ``std::map`` which is sorted by key;
+            // re-pack into a Python dict in ``output_names`` declaration
+            // order so the caller can rely on ``list(outs.keys()) ==
+            // model.output_names()`` for tuple-style consumers.
+            auto out_map = m.forward(inputs);
+            py::dict result;
+            for (const auto & name : m.output_names())
+              result[name.c_str()] = out_map.at(name);
+            return result;
+          },
+          py::arg("inputs"),
+          R"(
 Evaluate the model.
 
 ``inputs`` is keyed by the names returned by ``input_names``; missing
-keys raise an error. Returns one tensor per name in ``output_names``.
+keys raise an error. Returns one tensor per name in ``output_names``,
+preserving declaration order.
 )")
       .def("jvp",
            &Model::jvp,

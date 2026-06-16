@@ -26,11 +26,11 @@
 
 from __future__ import annotations
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import SR2, WR2, r2_from_sr2, r2_from_wr2, sym
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("ElasticStrainRate")

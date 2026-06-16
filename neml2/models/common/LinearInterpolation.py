@@ -26,15 +26,15 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import BLOCK_NAME, HitSchema, input, output, parameter
 from ...types import (
     Scalar,
     jvp_linear_interpolation,
     linear_interpolation,
 )
+from ..chain_rule import ChainRuleDict, SecondOrderChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("ScalarLinearInterpolation")

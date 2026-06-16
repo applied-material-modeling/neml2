@@ -28,9 +28,7 @@ from __future__ import annotations
 
 import torch
 
-from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, option, output
 from ...types import (
     SR2,
@@ -40,6 +38,8 @@ from ...types import (
     sqrt,
     tr,
 )
+from ..chain_rule import ChainRuleDict, SecondOrderChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("SR2Invariant")

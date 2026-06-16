@@ -1,0 +1,83 @@
+name: C++ backend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Newer commits should cancel old runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: clang-format --all-files --show-diff-on-failure -v
+
+  # The C++ artifact shipped from this repo is the libneml2_aoti shared
+  # library. The matrix below verifies it configures and builds cleanly in
+  # Debug and Release on every supported runner. Behavioral coverage of the
+  # Python runtime lives in tests/ and is exercised by the `Python` workflow.
+  build:
+    needs: clang-format
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, macos-latest, gpu_runner]
+        btype: [Debug, Release]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: ./.github/actions/neml2-ci
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.0"
+          cpu-torch: ${{ matrix.runner != 'gpu_runner' && 'true' || 'false' }}
+      - name: Configure
+        if: matrix.btype == 'Release'
+        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=Release -S .
+      - name: Configure (Werror)
+        if: matrix.btype != 'Release'
+        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -DCMAKE_CXX_FLAGS="-Werror" -S .
+      - name: Build libneml2_aoti
+        run: cmake --build --preset dev
+
+  # Benchmark smoke tests. Each scenario under benchmark/<name>/model.i is
+  # compiled through neml2-compile and driven once at batch=2 via the
+  # ctest entries registered in benchmark/CMakeLists.txt. Single Linux/CPU
+  # runner -- every scenario runs with --device cpu, so adding macos /
+  # gpu_runner would buy no new coverage and ~triple CI wall time.
+  benchmark:
+    needs: clang-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: ./.github/actions/neml2-ci
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.0"
+          cpu-torch: true
+      - name: Install neml2 (editable)
+        run: pip install -e ".[dev]" -v
+      - name: Configure dev preset
+        run: cmake --preset dev -GNinja -S .
+      - name: Run benchmark smoke tests
+        run: ctest --test-dir build/dev -L benchmark --output-on-failure

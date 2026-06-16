@@ -15,16 +15,10 @@ mystnb:
 (tutorials-extension-composition)=
 # Composing with existing models
 
-The previous three tutorials walked through writing a fresh `Model`:
-[](tutorials-extension-arguments) declared its inputs, outputs,
-parameters, and a buffer; [](tutorials-extension-input-files) wired
-the schema up to the HIT factory; [](tutorials-extension-forward)
-implemented the math. The payoff for all that scaffolding is that the
-custom `ProjectileAcceleration` now behaves like every other entry in
-the catalog — it can be dropped into a
-[`ComposedModel`](models-ComposedModel) alongside built-ins, fed into
-an `ImplicitUpdate`, and driven across time by a `TransientDriver`,
-with NEML2 resolving the wiring automatically by variable name.
+You'll plug the `ProjectileAcceleration` model from the previous
+tutorials into a full trajectory simulation — alongside built-in time
+integrators, a Newton solve, and a transient driver — and let NEML2
+wire everything up by matching variable names.
 
 ## The full trajectory problem
 
@@ -32,7 +26,6 @@ A complete projectile trajectory model needs more than the
 acceleration formula. Let $\boldsymbol{x}$ be the position and
 $\boldsymbol{v}$ the velocity; the implicit time-integrated system is
 
-$$
 \begin{align}
   \dot{\boldsymbol{v}} & = \boldsymbol{a}
                        = \boldsymbol{g} - \mu \boldsymbol{v}, \\
@@ -44,7 +37,6 @@ $$
                        - (t - t_n)\,\dot{\boldsymbol{v}}, \\
   (\boldsymbol{x}, \boldsymbol{v}) &= \mathop{\mathrm{root}}_{\boldsymbol{x}, \boldsymbol{v}}\,\mathbf{r}.
 \end{align}
-$$
 
 The four pieces map onto NEML2 building blocks as follows:
 
@@ -55,10 +47,9 @@ The four pieces map onto NEML2 building blocks as follows:
 | `root` over $(\boldsymbol{x}, \boldsymbol{v})$                             | An [`ImplicitUpdate`](models-ImplicitUpdate) wrapping the residual system.                                         |
 | Recursion through time                                                     | A [`TransientDriver`](drivers-TransientDriver) sweeping a prescribed time array.                                   |
 
-The point of this tutorial: each piece lives in `[Models]`, named and
-typed independently; the dependency resolver glues them together by
-matching producer-output names against consumer-input names. The
-custom `ProjectileAcceleration` is no different from a built-in.
+Each piece is its own block in `[Models]`; NEML2 connects them by
+matching output names to input names. The custom
+`ProjectileAcceleration` plugs in the same way a built-in would.
 
 ## The input file
 
@@ -69,48 +60,29 @@ custom `ProjectileAcceleration` is no different from a built-in.
 
 A few things to notice in this file:
 
-1. **`ProjectileAcceleration` slots in next to the built-ins.** The
-   `eq1` block uses our custom type just like `eq2` / `eq3` use the
-   built-in `VecBackwardEulerTimeIntegration`. The registry doesn't
-   distinguish them.
-
-2. **Wiring is implicit, through variable names.** `eq1` produces
-   `acceleration = 'a'`; the velocity-update integrator `eq3`
-   consumes `rate = 'a'`. Similarly `eq2` consumes `rate = 'v'` and
-   `eq3` writes `variable = 'v'`. The dependency resolver sees those
-   matches and threads the values through internally — `a`, the
-   intra-step `v` hand-off between `eq1` and `eq3`, and the
-   integrator chain are *not* free inputs of the composed
-   `residual`.
-
-3. **`ComposedModel` glues the three leaves into one residual
-   block.** The `residual` block lists `'eq1 eq2 eq3'` and exposes
-   `x_residual` and `v_residual` as its outputs — these are the two
-   equations the nonlinear solve will drive to zero.
-
-4. **`NonlinearSystem` declares the unknowns / residuals pairing.**
-   The `system` block names `x` and `v` as the unknowns and
-   `x_residual` / `v_residual` as the corresponding residuals. The
-   solver doesn't see the model directly at this layer — only the
-   variable roles.
-
-5. **`ImplicitUpdate` wraps the system in a Newton solve.** `eq4`
-   binds the equation system to a solver and exposes itself as
-   another `Model` — its outputs are the converged `x` and `v` at
-   the current step.
-
-6. **`TransientDriver` recurses through time.** It calls
-   `eq4 = ImplicitUpdate(...)` once per timestep, threading the
-   previous step's state forward as the `~1` inputs the integrators
-   expect.
+- **`ProjectileAcceleration` sits next to the built-ins.** The `eq1`
+  block uses our custom type just like `eq2` / `eq3` use the built-in
+  `VecBackwardEulerTimeIntegration`.
+- **Wiring is implicit, through variable names.** `eq1` writes
+  `acceleration = 'a'`, and the velocity integrator `eq3` reads
+  `rate = 'a'`. Same story for `v`. NEML2 sees the matches and
+  threads the values through, so `a` is *not* a free input of the
+  composed `residual`.
+- **The rest of the blocks (`residual`, `system`, `eq4`, `driver`)**
+  bundle the three leaves into a single residual, declare which
+  variables are unknowns, wrap the system in a Newton solve, and
+  recurse it through time. See
+  [`ComposedModel`](models-ComposedModel),
+  [`ImplicitUpdate`](models-ImplicitUpdate), and
+  [`TransientDriver`](drivers-TransientDriver) for the full option
+  surface.
 
 ## Inspecting the wiring
 
-Before evaluating anything, ask `neml2-inspect` to print the
-resolved input/output graph of the composed `residual` block.
-Wiring bugs — a typo in a variable name, a forgotten rename — show
-up here as extra unbound inputs or missing outputs, in a tiny
-fraction of the time it takes to read a runtime traceback:
+Before running anything, use `neml2-inspect` to print the resolved
+input/output graph of the composed `residual` block. Typos and
+forgotten renames show up here as unbound inputs or missing outputs,
+which is much easier to debug than a deep runtime traceback:
 
 ```{code-cell} ipython3
 import sys, os
@@ -118,39 +90,33 @@ sys.path.insert(0, os.getcwd())
 
 import projectile  # registers ProjectileAcceleration with the native factory
 
-# `neml2-inspect` is the same tool you'd call from the shell, but a shell
-# subprocess wouldn't inherit our `import projectile` and the registry
-# lookup would fail. Calling the CLI's `main` in-process keeps the registry
-# warm and gives the identical output.
+# `neml2-inspect` is the same CLI you'd call from the shell (with
+# `--load projectile.py` to register the extension). We call the CLI's
+# `main` in-process here so the same `import projectile` above does
+# double duty and the output prints inline in the notebook.
 from neml2.cli.inspect import main as _inspect_main
 _inspect_main(["input.i", "residual"])
 ```
 
-Read the output top to bottom:
-
-- **Inputs.** The trial state `x` / `v`, the state-at-previous-step
-  inputs (`x~1`, `v~1`, `t~1`), and the new time `t`. `a` is *not*
-  free — it's resolved internally by `eq1`.
-- **Outputs.** The two residuals (`x_residual`, `v_residual`) the
-  `ImplicitUpdate` will drive to zero.
+The inputs are the trial state (`x`, `v`), the previous step's state
+(`x~1`, `v~1`, `t~1`), and the new time `t`. Note that `a` does not
+appear — it's resolved internally by `eq1`. The outputs are the two
+residuals `x_residual` and `v_residual` that the `ImplicitUpdate`
+will drive to zero.
 
 ## Running the trajectory
 
-The `TransientDriver` loads the entire model graph and recurses the
-implicit update across the prescribed time array. The input file
-sets up a small *bag-of-balls* scenario: three bags with different
-drag coefficients $\mu$, each holding five balls thrown at
-different launch velocities. Total: 15 trajectories, evaluated
-batched in one Newton solve per step.
+The input file sets up a *bag-of-balls* scenario: three bags with
+different drag coefficients $\mu$, each holding five balls thrown at
+different launch velocities. That's 15 trajectories, all evaluated in
+a single batched Newton solve per step.
 
-The trick that makes it batched is in `[Tensors]`: the launch
-velocity stacks five `Vec.fill(...)` rows into shape `(5, 3)`, then
-`dynamic_batch.unsqueeze(-1)` reserves a trailing size-1 axis →
-`(5, 1, 3)`. The `mu` parameter ships with shape `(3,)`. When the
-two meet inside `eq1`, broadcasting fills the placeholder axis with
-the three viscosities, giving a `(5, 3, 3)` evaluation that all
-shares the same composed graph and the same Newton iterate
-per step.
+The batching falls out of broadcasting in `[Tensors]`: the launch
+velocity is a `Vec` whose dynamic-batch shape is `(5, 1)` (five
+launches, one placeholder viscosity slot), and `mu` is a `Scalar`
+with dynamic-batch shape `(3,)`. When they meet inside `eq1`, the
+size-1 slot broadcasts against the three viscosities for a `(5, 3)`
+evaluation — one composed graph, one Newton iterate per step.
 
 ```{code-cell} ipython3
 import neml2
@@ -208,19 +174,17 @@ plt.show()
 
 The lightly-damped bag ($\mu = 0.1$) sees the balls fly furthest;
 the heavily-damped bag ($\mu = 1$) drags them down within a few
-meters. NEML2 found all 15 trajectories in one solve per step
-without any per-(launch, viscosity) bookkeeping in the model code —
-the custom `ProjectileAcceleration` leaf does its share without
-knowing anything about the integrator sitting next to it or the
-batch dimensions threading through.
+meters. All 15 trajectories ran in one Newton solve per step: the
+`ProjectileAcceleration` leaf is written in terms of a single
+`(v, mu)` pair, and the `(5, 3)` batch grid threads through every
+piece without any per-(launch, viscosity) bookkeeping in the leaf
+code.
 
 ## Where to go next
 
-- [](tutorials-models-composition) walks through composition more
-  broadly — the producer/consumer rules the dependency resolver
-  follows, multi-step chains, and parameter binding via output names.
-  This page covered the same machinery from the custom-model angle;
-  that page covers the wider story.
-- Composed models are themselves `Model`s, so they can be exported,
-  compiled to AOT-Inductor, or recursively re-composed inside larger
-  graphs without any changes on the consumer side.
+- [](tutorials-models-composition) covers composition more broadly —
+  the producer/consumer matching rules, multi-step chains, and
+  parameter binding via output names.
+- A composed model is itself a `Model`, so the same export,
+  AOT-Inductor compilation, and outer composition paths apply to it
+  — see [](tutorials-models-compiled) for the round trip.

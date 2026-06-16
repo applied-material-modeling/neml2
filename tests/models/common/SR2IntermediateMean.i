@@ -45,5 +45,6 @@
     type = SR2IntermediateMean
     from = 'S'
     to = 'S_mean'
+    reduces = ''  # unlabelled sub-batch in this fixture
   []
 []

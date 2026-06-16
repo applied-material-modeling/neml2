@@ -1,105 +1,120 @@
 # neml2
+[Settings]
+  example_batch_shape = '(${nbatch},)'
+[]
+
 [Tensors]
+  # HIT-substituted shim so the verbatim triple-quoted Python blocks below
+  # can reference nbatch as a bare identifier. ${...} substitution only
+  # works inside single-line single-quoted HIT strings; triple-quoted
+  # blocks are passed verbatim to the Python eval namespace.
+  [nbatch]
+    type = Python
+    expr = '${nbatch}'
+  []
+  # end_time = LinspaceScalar(1, 10, nbatch) -> shape (nbatch,)
   [end_time]
-    type = LinspaceScalar
-    start = 1
-    end = 10
-    nstep = ${nbatch}
+    type = Python
+    expr = '''
+      Scalar(torch.linspace(1.0, 10.0, nbatch, dtype=torch.float64))
+    '''
   []
+  # times = LinspaceScalar(0, end_time, 100) -> shape (100, nbatch)
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
+    type = Python
+    expr = '''
+      Scalar(
+          end_time.data.unsqueeze(0)
+          * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1)
+      )
+    '''
   []
-  [dxx]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0.1
-  []
-  [dyy]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = -0.05
-  []
-  [dzz]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = -0.05
-  []
+  # deformation_rate_single = FillSR2(dxx=0.1, dyy=-0.05, dzz=-0.05) batched (nbatch,)
   [deformation_rate_single]
-    type = FillSR2
-    values = 'dxx dyy dzz'
+    type = Python
+    expr = '''
+      SR2.fill(0.1, -0.05, -0.05).dynamic_batch.expand(nbatch)
+    '''
   []
+  # deformation_rate = LinspaceSR2(d_single, d_single, 100) -> shape (100, nbatch, 6), constant copy
   [deformation_rate]
-    type = LinspaceSR2
-    start = deformation_rate_single
-    end = deformation_rate_single
-    nstep = 100
+    type = Python
+    expr = '''
+      SR2(deformation_rate_single.data.unsqueeze(0).expand(100, nbatch, 6).contiguous())
+    '''
   []
-
-  [w1]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0.1
-  []
-  [w2]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = -0.05
-  []
-  [w3]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = -0.05
-  []
+  # vorticity_single = FillWR2(w1=0.1, w2=-0.05, w3=-0.05) batched (nbatch,)
   [vorticity_single]
-    type = FillWR2
-    values = 'w1 w2 w3'
+    type = Python
+    expr = '''
+      WR2(torch.tensor([0.1, -0.05, -0.05], dtype=torch.float64).unsqueeze(0).expand(nbatch, 3).contiguous())
+    '''
   []
+  # vorticity = LinspaceWR2(v_single, v_single, 100) -> shape (100, nbatch, 3), constant copy
   [vorticity]
-    type = LinspaceWR2
-    start = vorticity_single
-    end = vorticity_single
-    nstep = 100
+    type = Python
+    expr = '''
+      WR2(vorticity_single.data.unsqueeze(0).expand(100, nbatch, 3).contiguous())
+    '''
   []
 
+  # Crystal geometry inputs: lattice parameter + slip direction + slip plane
+  # a = Scalar(1.0)
   [a]
-    type = Scalar
-    values = '1.0'
+    type = Python
+    expr = '''
+      Scalar(torch.tensor([1.0], dtype=torch.float64))
+    '''
   []
+  # sdirs = MillerIndex(1 1 0)
   [sdirs]
-    type = MillerIndex
-    values = '1 1 0'
+    type = Python
+    expr = '''
+      MillerIndex(torch.tensor([1, 1, 0], dtype=torch.int64))
+    '''
   []
+  # splanes = MillerIndex(1 1 1)
   [splanes]
-    type = MillerIndex
-    values = '1 1 1'
+    type = Python
+    expr = '''
+      MillerIndex(torch.tensor([1, 1, 1], dtype=torch.int64))
+    '''
   []
 
-  [R1]
-    type = LinspaceScalar
-    start = 0
-    end = 0.75
-    nstep = ${nbatch}
+  # r_std components: LinspaceScalar (nbatch,) for each Rodrigues axis.
+  # NOTE: blocks renamed from v2's [R1]/[R2]/[R3] because [R2] would shadow
+  # the neml2.types.R2 class already in the [Tensors] Python eval namespace
+  # (factory pre-populates types.__all__; the __missing__ hook never fires
+  # for names that are already bound).
+  [Ra]
+    type = Python
+    expr = '''
+      Scalar(torch.linspace(0.0, 0.75, nbatch, dtype=torch.float64))
+    '''
   []
-  [R2]
-    type = LinspaceScalar
-    start = 0
-    end = -0.25
-    nstep = ${nbatch}
+  [Rb]
+    type = Python
+    expr = '''
+      Scalar(torch.linspace(0.0, -0.25, nbatch, dtype=torch.float64))
+    '''
   []
-  [R3]
-    type = LinspaceScalar
-    start = -0.1
-    end = 0.1
-    nstep = ${nbatch}
+  [Rc]
+    type = Python
+    expr = '''
+      Scalar(torch.linspace(-0.1, 0.1, nbatch, dtype=torch.float64))
+    '''
   []
 
+  # initial_orientation = FillRot(Ra, Rb, Rc, method='standard'):
+  # convert standard Rodrigues r_std to modified-Rodrigues parameters via
+  # r = r_std / (sqrt(|r_std|^2 + 1) + 1). Shape (nbatch, 3).
   [initial_orientation]
-    type = FillRot
-    values = 'R1 R2 R3'
-    method = 'standard'
+    type = Python
+    expr = '''
+      Rot((lambda v: v / (torch.sqrt((v * v).sum(-1, keepdim=True) + 1.0) + 1.0))(
+          torch.stack([Ra.data, Rb.data, Rc.data], dim=-1)
+      ))
+    '''
   []
 []
 
@@ -114,7 +129,6 @@
     force_WR2_values = 'vorticity'
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
-    device = ${device}
   []
 []
 

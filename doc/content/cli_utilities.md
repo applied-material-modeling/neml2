@@ -57,9 +57,9 @@ sweep — without writing any Python.
 ```{program-output} neml2-run --help
 ```
 
-Running our shared example: `neml2-run` is silent on success and
-returns a zero exit code, which is what makes it well-behaved inside a
-CI script.
+Running our shared example: `neml2-run` itself emits no output on
+success and returns a zero exit code, so a clean run looks empty in
+CI. (Drivers can still print their own progress.)
 
 ```{program-output} neml2-run input.i driver
 :cwd: .
@@ -77,8 +77,9 @@ for `neml2-inspect` and `neml2-compile`:
 ```
 
 List-valued overrides (e.g. swapping `coefficients = '200e3 0.3'` for
-a different pair) involve quoting that varies by shell — either edit
-the input file directly or use the Python API for those.
+a different pair) need careful shell quoting around the whole value.
+If that gets fiddly, edit the input file directly or use the Python
+API.
 
 (cli-neml2-inspect)=
 ## `neml2-inspect`
@@ -142,9 +143,10 @@ class — the same data the documentation's syntax catalog under
 
 ## `neml2-compile`
 
-Exports a model to an AOT-Inductor package — a pair of `.pt2` files
-plus a metadata JSON — that can be loaded later from either Python or
-C++ without parsing the original input file. Use it when you want a
+Exports a model to an AOT-Inductor package — one or more `.pt2`
+files plus a metadata JSON and a drop-in HIT stub — that can be
+loaded later from either Python or C++ without parsing the original
+input file. Use it when you want a
 portable, dependency-light artifact for inference: shipping a
 calibrated model to a downstream simulator, dropping the HIT parser
 from a deployment image, baking parameters into a frozen graph for

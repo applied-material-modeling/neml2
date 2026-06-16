@@ -26,12 +26,12 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar
-from ...types.functions import sub_batch_zeros_like
+from ...types.functions import cat
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("DumpInSmallestBin")
@@ -56,11 +56,9 @@ class DumpInSmallestBin(Model):
         parameter("cell_centers", Scalar, "Cell center locations.", allow_nonlinear=True),
     )
 
-    # magnitude is a global Scalar (sub_batch=0); the output carries the cell
-    # sub-batch axis from cell_centers -- that's a dense coupling.
-    list_deriv = {
-        ("dumped_source", "magnitude"): "dense",
-    }
+    # magnitude is a global Scalar (sub_batch=0); the output carries the
+    # per-cell sub-batch axis from cell_centers -- so the edge INTRODUCES
+    # the ``"cell"`` label on the output.
 
     cell_centers: Scalar
 
@@ -79,8 +77,8 @@ class DumpInSmallestBin(Model):
         mag_cell = mag.sub_batch.unsqueeze(0)  # Scalar(sub_batch=1, size=1)
         # Zero tail occupying cells [1, N): same dtype/device as centers (now
         # retagged with sub_batch_ndim=1), new sub-batch axis of size N-1.
-        zero_tail = sub_batch_zeros_like(centers, size=N - 1, sub_batch_ndim=1)
-        src = mag_cell.sub_batch.cat([zero_tail], dim=0)  # Scalar(sub_batch=1, size=N)
+        zero_tail = Scalar.zeros_like(centers, sub_batch_shape=(N - 1,))
+        src = cat([mag_cell.sub_batch, zero_tail.sub_batch], dim=0)  # (sub_batch=1, size=N)
 
         if v is None:
             return src
@@ -89,12 +87,12 @@ class DumpInSmallestBin(Model):
         # zeros elsewhere), so the action mirrors the forward structure on the
         # tangent ``V``: lift ``V`` to a per-cell Scalar of size 1, concat with
         # a zero tail. ``V`` has leading-K dynamic axis; both ``sub_batch.unsqueeze``
-        # and ``sub_batch.cat`` broadcast over the dynamic batch (including
-        # leading K) cleanly.
+        # and the free ``cat`` over region views broadcast over the
+        # dynamic batch (including leading K) cleanly.
         def mag_action(V: Scalar) -> Scalar:
             V_cell = V.sub_batch.unsqueeze(0)
-            V_tail = sub_batch_zeros_like(V_cell, size=N - 1, sub_batch_ndim=1)
-            return V_cell.sub_batch.cat([V_tail], dim=0)
+            V_tail = Scalar.zeros_like(V_cell, sub_batch_shape=(N - 1,))
+            return cat([V_cell.sub_batch, V_tail.sub_batch], dim=0)
 
         return src, self.apply_chain_rule(v, "dumped_source", {"magnitude": mag_action}, output=src)
 

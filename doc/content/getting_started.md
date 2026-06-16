@@ -8,8 +8,8 @@ Once NEML2 is installed, the immediate question is
 There are three day-to-day ways to do it — the one you reach for depends
 on whether you're exploring interactively, scripting from the shell, or
 deploying a calibrated model into production. All three operate on the
-same artifact: a [HIT](https://github.com/idaholab/nmhit) input file
-that names one or more models. A minimal example, used throughout this
+same artifact: a [HIT](https://github.com/applied-material-modeling/neml2-hit)
+input file that names one or more models. A minimal example, used throughout this
 page, lives at `tutorials/models/running_your_first_model/input.i`:
 
 ```{literalinclude} tutorials/models/running_your_first_model/input.i
@@ -58,18 +58,19 @@ A `neml2-run` invocation against the bundled CLI example
 neml2-run input.i driver
 ```
 
-`neml2-run` is silent on success and returns exit code 0 — it composes
-cleanly with `set -e` and CI. The full tool-by-tool reference, including
-`neml2-syntax` for browsing the registered-object catalog, is in
-[](cli-utilities).
+`neml2-run` itself emits no output on success and returns exit code 0,
+so a clean run looks empty in CI. (Drivers can still print their own
+progress.) The full tool-by-tool reference, including `neml2-syntax`
+for browsing the registered-object catalog, is in [](cli-utilities).
 
 ## AOTI: `neml2-compile`
 
 The deployment path. Once a model is locked in, `neml2-compile` lowers
-it through `torch.export` + AOT-Inductor into a self-contained `.pt2`
-package plus a metadata sidecar. The result loads in milliseconds, skips
-the HIT parser entirely on each call, and is consumable from either
-Python or C++ without a NEML2 Python dependency:
+it through `torch.export` + AOT-Inductor into a self-contained artifact
+set: one or more `.pt2` graphs, a metadata sidecar, and a drop-in HIT
+stub. The result loads quickly, skips the HIT parser entirely on each
+call, and is consumable from either Python or C++ without a NEML2
+Python dependency:
 
 ```bash
 neml2-compile input.i --model elasticity

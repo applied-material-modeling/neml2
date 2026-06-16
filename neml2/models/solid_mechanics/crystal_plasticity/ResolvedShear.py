@@ -28,11 +28,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, dependency, input, output
 from ....types import R2, SR2, Scalar, inner, jvp_rotate, rotate
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 if TYPE_CHECKING:
     from ....data import CrystalGeometry
@@ -61,12 +61,9 @@ class ResolvedShear(Model):
     )
     # Rotating per-crystal R into per-slip Schmid combines per-crystal data with
     # per-slip data; the output has sub_batch_ndim=1 (per-slip). Each per-slip
-    # output entry depends on one σ and one R — for chain rule purposes this is
-    # "dense" because the sub-batch axis is added at this leaf.
-    list_deriv = {
-        ("resolved_shears", "stress"): "dense",
-        ("resolved_shears", "orientation_matrix"): "dense",
-    }
+    # output entry depends on its grain's one σ and one R -- so the edge
+    # INTRODUCES the per-slip axis on the output, with no slip axis on the
+    # input. (The per-grain axis, if present, is preserved diagonally.)
 
     def __init__(self, *, crystal_geometry: CrystalGeometry) -> None:
         super().__init__()

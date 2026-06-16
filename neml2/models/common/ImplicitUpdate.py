@@ -31,20 +31,14 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 
-from ...chain_rule import ChainRuleDict
-from ...equation_systems import (
-    AssembledMatrix,
-    AxisLayout,
-    ModelNonlinearSystem,
-    _flatten_base,
-    _flatten_sub_batch_and_base,
-    _unflatten_sub_batch_and_base,
-)
+from ...es import AssembledMatrix, AxisLayout, ModelNonlinearSystem, SparseVector
+from ...es._helpers import _flatten_base
 from ...factory import register_neml2_object
-from ...model import Model, register_submodule
 from ...schema import HitSchema, dependency
 from ...solvers import Newton, RetCode
-from ...types import TensorWrapper
+from ...types import Tensor, TensorWrapper
+from ..chain_rule import ChainRuleDict
+from ..model import Model, register_submodule
 
 if TYPE_CHECKING:
     import nmhit
@@ -66,7 +60,12 @@ def _matrix_variable_block(
     matrix: AssembledMatrix,
     row_name: str,
     col_name: str,
-) -> torch.Tensor:
+) -> Tensor:
+    """Sub-block of ``matrix`` for one ``(row_var, col_var)`` pair.
+
+    Returns a :class:`~neml2.types.Tensor` slice via the ``.base[..., r, c]``
+    region-view indexing so the caller never sees a raw ``torch.Tensor``.
+    """
     row_group_index = next(
         i for i, group in enumerate(matrix.row_layout.groups) if row_name in group
     )
@@ -75,9 +74,8 @@ def _matrix_variable_block(
     )
     row_start, row_end = _var_offset(matrix.row_layout, row_group_index, row_name)
     col_start, col_end = _var_offset(matrix.col_layout, col_group_index, col_name)
-    return matrix.tensors[row_group_index][col_group_index][
-        ..., row_start:row_end, col_start:col_end
-    ]
+    block = matrix.tensors[row_group_index][col_group_index]
+    return block.base[..., row_start:row_end, col_start:col_end]
 
 
 def _lookup_history_sbn(unknown_name: str, input_sbn: dict[str, int]) -> int:
@@ -101,29 +99,50 @@ def _lookup_history_sbn(unknown_name: str, input_sbn: dict[str, int]) -> int:
 
 
 def _matrix_pushforward(
-    block: torch.Tensor,
+    block: Tensor,
     tangent: TensorWrapper,
     output_type: type[TensorWrapper],
     output_sub_batch_shape: torch.Size,
 ) -> TensorWrapper:
     """Apply an assembled ``du/dg`` block to a leading-K typed tangent.
 
-    Tangents in a ``ChainRuleDict`` are always typed wrappers (D-061/D-062).
+    Tangents in a ``ChainRuleDict`` are always typed wrappers; the leading
+    ``K`` direction axis is the chain-rule batch dim. The block is a
+    :class:`~neml2.types.Tensor` with ``base_ndim=2`` (rows x cols of the
+    assembled Jacobian sub-block). Flatten the tangent's sub-batch + base
+    into a single DOF axis, wrap as :class:`Tensor`, contract via
+    :class:`Tensor` matmul, then unflatten back to the output wrapper's
+    typed shape.
     """
-    flat_tangent = _flatten_sub_batch_and_base(
-        tangent.data,
-        type(tangent),
-        tangent.sub_batch_shape,
-        len(tangent.dynamic_batch_shape),
+    # Flatten the tangent's (*sub_batch, *BASE) trailing axes into a
+    # single DOF axis, wrap as a Tensor whose batch_ndim covers the
+    # leading (K, *dynamic_batch) axes. ``tangent.dynamic_batch_shape``
+    # already includes the chain-rule K dim, so it is the full leading
+    # axis count for the flat tensor.
+    dyn_ndim = len(tangent.dynamic_batch_shape)
+    type_t = type(tangent)
+    sub_total = 1
+    for s in tangent.sub_batch_shape:
+        sub_total *= int(s)
+    base_size = 1
+    for s in type_t.BASE_SHAPE:
+        base_size *= int(s)
+    flat_tangent_data = tangent.data.reshape(*tangent.data.shape[:dyn_ndim], sub_total * base_size)
+    flat_tangent = Tensor(flat_tangent_data, batch_ndim=dyn_ndim, sub_batch_ndim=0)
+    # Contract: (*Bblock, n_row, n_col) @ (K, *dyn, n_col) -> (K, *dyn, n_row).
+    # Tensor.__matmul__ broadcasts the leading batch axes naturally.
+    contribution_t = block @ flat_tangent
+    # Re-shape the trailing n_row axis into (*output_sub_batch, *output_BASE).
+    out_trailing = (*output_sub_batch_shape, *output_type.BASE_SHAPE)
+    if out_trailing:
+        contribution = contribution_t.data.reshape(*contribution_t.batch_shape, *out_trailing)
+    else:
+        # Scalar output with no sub-batch: drop the trailing length-1.
+        contribution = contribution_t.data.squeeze(-1)
+    return output_type(
+        contribution,
+        sub_batch_ndim=len(output_sub_batch_shape),
     )
-    flat_contribution = torch.matmul(block.unsqueeze(0), flat_tangent.unsqueeze(-1)).squeeze(-1)
-    contribution = _unflatten_sub_batch_and_base(
-        flat_contribution,
-        output_type,
-        output_sub_batch_shape,
-        flat_contribution.ndim - 1,
-    )
-    return output_type(contribution, sub_batch_ndim=len(output_sub_batch_shape))
 
 
 @register_neml2_object("ImplicitUpdate")
@@ -217,12 +236,15 @@ class ImplicitUpdate(Model):
         self.input_spec = {name: all_specs[name] for name in input_names}
         self.output_spec = {name: system.model.input_spec[name] for name in system.unknown_names}
 
-    def _initial_unknowns(self, state: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+    def _initial_unknowns(
+        self,
+        state: dict[str, TensorWrapper],
+    ) -> dict[str, TensorWrapper]:
         if self.predictor is None:
             return {name: state[name] for name in self.system.unknown_names}
 
         predicted = self.predictor.call_by_name(state)
-        unknowns: dict[str, torch.Tensor] = {}
+        unknowns: dict[str, TensorWrapper] = {}
         for name in self.system.unknown_names:
             if name in predicted:
                 unknowns[name] = predicted[name]
@@ -232,19 +254,13 @@ class ImplicitUpdate(Model):
 
     def _solve(
         self,
-        state: dict[str, torch.Tensor],
+        state: dict[str, TensorWrapper],
         sub_batch_ndim: dict[str, int] | None = None,
-    ) -> dict[str, torch.Tensor]:
+    ) -> SparseVector:
         givens = {name: state[name] for name in self.system.given_names}
         unknowns = self._initial_unknowns(state)
         # Bridge: caller's ``sub_batch_ndim`` dict is keyed by INPUT names
-        # (e.g. ``concentration~1``), but the equation system needs entries
-        # keyed by every state name — given names AND unknown names. Unknowns
-        # are derived from history inputs by the same ``name~k`` rule
-        # ``_wrap_outputs`` uses, so we mirror that here. Without this bridge
-        # the system would default unknowns' sub_batch_ndim to 0 even when the
-        # corresponding history declared it non-zero, silently reclassifying
-        # what should be a per-site sub-batch axis as a dynamic-batch axis.
+        # (e.g. ``concentration~1``); mirror onto unknowns via ``name~k`` rule.
         full_sbn = dict(sub_batch_ndim) if sub_batch_ndim is not None else {}
         for uname in self.system.unknown_names:
             if uname in full_sbn:
@@ -266,7 +282,8 @@ class ImplicitUpdate(Model):
             dyn_n = max(val.ndim - tcls.BASE_NDIM - sbn, 0)
             if dyn_n > len(dyn_shape):
                 dyn_shape = tuple(val.shape[:dyn_n])
-        self.system.initialize(u=unknowns, g=givens, sub_batch_ndim=full_sbn, dyn_shape=dyn_shape)
+        u_sv, g_sv = self.system.to_sparse(unknowns, givens, full_sbn)
+        self.system.initialize(u=u_sv, g=g_sv, dyn_shape=dyn_shape)
         result = self.solver.solve(self.system)
         self.last_iterations = result.iterations
         self.last_status = result.ret
@@ -291,7 +308,10 @@ class ImplicitUpdate(Model):
                 block = _matrix_variable_block(du_dg, unknown_name, given_name)
                 for leaf_name, V in given_sens.items():
                     contribution = _matrix_pushforward(
-                        block, V, unknown_type, unknown_sub_batch_shape
+                        block,
+                        V,
+                        unknown_type,
+                        unknown_sub_batch_shape,
                     )
                     if leaf_name in unknown_sens:
                         unknown_sens[leaf_name] = unknown_sens[leaf_name] + contribution
@@ -305,46 +325,59 @@ class ImplicitUpdate(Model):
         *inputs,
         v: ChainRuleDict | None = None,
     ):
-        # Accept either raw torch.Tensor (when called directly by user code
-        # or by an ``EquationSystem``) or ``TensorWrapper`` (when called as a
-        # child of ``ComposedModel``, which wraps every input to its declared
-        # ``input_spec`` type before dispatch). Unwrapping here keeps the
-        # internal Newton solve and IFT machinery operating on raw tensors,
-        # which is what ``_solve`` and ``_ImplicitUpdateFn`` expect.
-        from ...types import TensorWrapper  # noqa: PLC0415
-
-        raw_inputs = tuple(t.data if isinstance(t, TensorWrapper) else t for t in inputs)
-        # Capture each input's caller-side ``sub_batch_ndim`` (0 when the
-        # caller handed us a raw tensor) so we can mirror it onto the
-        # corresponding output unknowns — see ``_wrap_outputs``.
-        input_sbn = {
-            name: (t.sub_batch_ndim if isinstance(t, TensorWrapper) else 0)
+        # Accept either typed wrappers (the normal ComposedModel-dispatched
+        # path) or raw torch.Tensor (direct-Python calls / EquationSystem).
+        # Wrap raw at the entry boundary -- per rule 1 the rest of this
+        # method works exclusively in typed wrappers.
+        typed_inputs: tuple[TensorWrapper, ...] = tuple(
+            t if isinstance(t, TensorWrapper) else self.input_spec[name](t)
             for name, t in zip(self.input_spec, inputs, strict=True)
+        )
+        # V2P-3: sub_batch_labels removed; only propagate sub_batch_ndim.
+        input_sbn = {
+            name: t.sub_batch_ndim for name, t in zip(self.input_spec, typed_inputs, strict=True)
         }
 
         if v is not None:
-            # Chain-rule pushforward path — used by the AOTI export wrappers and
-            # the v-aware ComposedModel composition. Pure forward, no autograd
-            # graph through the Newton solve. (D-039 does not apply here; the
-            # IFT is expressed directly in `_output_sensitivities`.)
-            state = dict(zip(self.input_spec, raw_inputs, strict=True))
+            # Chain-rule pushforward path -- used by the AOTI export wrappers
+            # and the v-aware ComposedModel composition. Pure forward, no
+            # autograd graph through the Newton solve. (D-039 does not apply
+            # here; the IFT is expressed directly in `_output_sensitivities`.)
+            state = dict(zip(self.input_spec, typed_inputs, strict=True))
             solved = self._solve(state, sub_batch_ndim=input_sbn)
-            raw_outputs = tuple(solved[name] for name in self.output_spec)
-            wrapped = self._wrap_outputs(raw_outputs, input_sbn)
+            wrapped = tuple(solved[name] for name in self.output_spec)
             return (*wrapped, self._output_sensitivities(v))
 
         # Eager autograd path: Newton runs under no_grad inside the
         # autograd.Function's forward; the Function's backward implements IFT,
         # re-evaluating the residual at u* under autograd so torch.autograd.grad
-        # recovers `dr/dinput` and `dr/dparam` in one sweep — no per-leaf
+        # recovers `dr/dinput` and `dr/dparam` in one sweep -- no per-leaf
         # parameter chain-rule actions needed.
+        #
+        # The autograd.Function boundary is a legitimate raw-tensor surface
+        # (PyTorch contract): forward and backward signatures must use raw
+        # tensors. We extract `.data` here as the framework-boundary unwrap
+        # (CLAUDE.md rule 2 exception) and rewrap on exit using the typed
+        # source-of-truth from `self.system.u().disassemble()`.
+        raw_inputs = tuple(t.data for t in typed_inputs)  # noqa: data-ok autograd.Function boundary
         params = tuple(self.parameters())
         raw_outputs = _ImplicitUpdateFn.apply(
             self, len(raw_inputs), input_sbn, *raw_inputs, *params
         )
         if not isinstance(raw_outputs, tuple):
             raw_outputs = (raw_outputs,)
-        return self._wrap_outputs(raw_outputs, input_sbn)
+        # Rewrap using system.u() as the typed-metadata source-of-truth:
+        # the system's converged state mirrors u_star with full layout
+        # metadata (types, sub_batch_ndim, sub_batch_labels). We attach
+        # that metadata to the autograd-graphed raw outputs from Function.apply.
+        typed_template = self.system.u().disassemble()
+        return tuple(
+            self.output_spec[name](
+                raw,
+                sub_batch_ndim=typed_template[name].sub_batch_ndim,
+            )
+            for name, raw in zip(self.output_spec, raw_outputs, strict=True)
+        )
 
     def _wrap_outputs(
         self,
@@ -353,23 +386,26 @@ class ImplicitUpdate(Model):
     ) -> tuple[TensorWrapper, ...]:
         """Return one typed wrapper per unknown.
 
-        Each output unknown's ``sub_batch_ndim`` is inherited from the
-        caller-supplied history input (``alpha~1`` → ``alpha``). This is the
-        right anchor because that's the shape the user already committed to —
-        the system's internally inferred ``ulayout.sub_batch_shape`` can
-        over-credit sub-batch axes when a sibling input (e.g. a 0-d $T$)
-        forces ``_dynamic_batch_ndim`` to 0 and re-categorizes everyone
-        else's batch axes as sub-batch.
+        Each output unknown's ``sub_batch_ndim`` AND ``sub_batch_labels``
+        are inherited from the caller-supplied history input (``alpha~1``
+        → ``alpha``). This is the right anchor because that's the shape
+        AND labelling the user already committed to -- the system's
+        internally inferred ``ulayout.sub_batch_shape`` can over-credit
+        sub-batch axes when a sibling input (e.g. a 0-d $T$) forces
+        ``_dynamic_batch_ndim`` to 0 and re-categorizes everyone else's
+        batch axes as sub-batch.
 
         Returning raw ``torch.Tensor`` here would drop the hint and the
         next consumer (typically ``ComposedModel._coerce_to_input_type``)
-        would re-wrap with the default ``sub_batch_ndim=0`` — broken for any
-        per-bin scenario.
+        would re-wrap with the default ``sub_batch_ndim=0`` and no
+        labels -- broken for any per-bin scenario and silent label
+        dropping at the boundary E3a relies on.
         """
         wrapped: list[TensorWrapper] = []
         for name, raw in zip(self.output_spec, raw_outputs, strict=True):
             type_cls = self.output_spec[name]
-            wrapped.append(type_cls(raw, sub_batch_ndim=_lookup_history_sbn(name, input_sbn)))
+            sbn = _lookup_history_sbn(name, input_sbn)
+            wrapped.append(type_cls(raw, sub_batch_ndim=sbn))
         return tuple(wrapped)
 
 
@@ -417,11 +453,27 @@ class _ImplicitUpdateFn(torch.autograd.Function):
         inputs = inputs_and_params[:n_inputs]
         params = inputs_and_params[n_inputs:]
 
-        # Newton runs detached — backward uses IFT, not iteration backprop.
-        state = dict(zip(owner.input_spec, (t.detach() for t in inputs), strict=True))
+        # Newton runs detached -- backward uses IFT, not iteration backprop.
+        # Wrap each raw input into the declared typed wrapper so the
+        # ``_solve`` path (and the system internals it touches) operate
+        # in typed-wrapper algebra. The detach happens on the raw
+        # tensor first so the autograd graph stops at this boundary.
+        state: dict[str, TensorWrapper] = {}
+        for name, raw in zip(owner.input_spec, inputs, strict=True):
+            type_cls = owner.input_spec[name]
+            sbn = input_sbn.get(name, 0)
+            kwargs: dict[str, Any] = {"sub_batch_ndim": sbn}
+            state[name] = type_cls(raw.detach(), **kwargs)
         with torch.no_grad():
             solved = owner._solve(state, sub_batch_ndim=input_sbn)
-        u_star = tuple(solved[name].detach() for name in owner.system.unknown_names)
+        # Autograd boundary: forward must return raw torch.Tensor. The
+        # ``.data`` extraction below is the framework-contract exception
+        # (CLAUDE.md rule 2); the caller in ``ImplicitUpdate.forward``
+        # rewraps using ``system.u().disassemble()`` as the typed source.
+        u_star = tuple(
+            solved[name].data.detach()  # noqa: data-ok autograd.Function boundary
+            for name in owner.system.unknown_names
+        )
 
         ctx.owner = owner
         ctx.n_inputs = n_inputs
@@ -472,11 +524,25 @@ class _ImplicitUpdateFn(torch.autograd.Function):
         # ``grad_fn = _ImplicitUpdateFnBackward`` and would otherwise leak the
         # outer Function back into the residual graph, causing recursion when
         # ``torch.autograd.grad`` below traverses it.
-        u_dict = {name: u_star[i].detach() for i, name in enumerate(unknown_names)}
-        g_dict = {
-            name: inp for inp, name in zip(inputs_g, input_names, strict=True) if name in given_set
+        # Wrap raw saved tensors into typed wrappers at the autograd boundary
+        # so the downstream ``to_sparse`` (Phase 3, strict-typed) sees only
+        # ``TensorWrapper`` values. The forward path has the same wrap at
+        # its entry; this is the symmetric one for backward.
+        input_spec = system.model.input_spec
+        u_dict: dict[str, TensorWrapper] = {
+            name: input_spec[name](
+                u_star[i].detach(),
+                sub_batch_ndim=ctx.input_sbn.get(name, 0),
+            )
+            for i, name in enumerate(unknown_names)
         }
-        system.initialize(u=u_dict, g=g_dict, sub_batch_ndim=ctx.input_sbn)
+        g_dict: dict[str, TensorWrapper] = {
+            name: input_spec[name](inp, sub_batch_ndim=ctx.input_sbn.get(name, 0))
+            for inp, name in zip(inputs_g, input_names, strict=True)
+            if name in given_set
+        }
+        u_sv, g_sv = system.to_sparse(u_dict, g_dict, ctx.input_sbn)
+        system.initialize(u=u_sv, g=g_sv)
 
         # Build the autograd-traced residual r(u*, g, p). enable_grad is
         # required because torch.autograd.Function.backward runs in a
@@ -484,25 +550,37 @@ class _ImplicitUpdateFn(torch.autograd.Function):
         with torch.enable_grad():
             _, _, b = system.assemble(need_A=False, need_B=False, need_b=True)
             assert b is not None
-            r_flat = -b.tensors[0]  # b = -r per Newton sign convention
+            # b is an AssembledVector wrapping a Tensor; the autograd graph
+            # is preserved on the underlying data.  We need a raw tensor
+            # at the boundary because torch.autograd.grad below works on
+            # raw outputs, not on our typed wrapper -- this is the IFT
+            # adjoint boundary.
+            r_flat = (-b.tensors[0]).data  # b = -r per Newton sign convention
 
-        # A = dr/du computed under no_grad — we only need its numerical
+        # A = dr/du computed under no_grad -- we only need its numerical
         # value, not its derivative.
         with torch.no_grad():
             A_only, _, _ = system.assemble(need_A=True, need_B=False, need_b=False)
         assert A_only is not None
-        A_tensor = A_only.tensors[0][0]  # (*B, n, n)
+        A_block = A_only.tensors[0][0]  # Tensor with base=(n, n)
 
-        # Flatten grad_outputs in unknown_names order (= ulayout flat layout).
-        # The default `residual = <unknown>_residual` naming preserves the
-        # 1-to-1 row/column ordering between A_tensor and grad_u_flat.
+        # Flatten grad_outputs in unknown_names order (= ulayout flat
+        # layout). The default `residual = <unknown>_residual` naming
+        # preserves the 1-to-1 row/column ordering between A and the
+        # grad-output vector.
         grad_u_parts = [
             _flatten_base(g, system.model.input_spec[name])
             for g, name in zip(grad_outputs, unknown_names, strict=True)
         ]
-        grad_u_flat = torch.cat(grad_u_parts, dim=-1).unsqueeze(-1)  # (*B, n, 1)
+        from neml2.types import cat as _cat  # noqa: PLC0415
 
-        lam = torch.linalg.solve(A_tensor.transpose(-1, -2), grad_u_flat).squeeze(-1)
+        grad_u_t = _cat([p.base for p in grad_u_parts])
+
+        # Adjoint solve: A^T @ lam = grad_u  =>  lam = A^T \ grad_u.
+        # Use `Tensor.solve` so the transpose stays in typed-tensor land
+        # via the .base.transpose view.
+        lam_t = A_block.base.transpose(-1, -2).solve(grad_u_t)
+        lam = lam_t.data
 
         # IFT adjoint: grad_θ = -(dr/dθ)^T · λ for θ ∈ {given_inputs, params}.
         differentiable: list[torch.Tensor] = [
@@ -532,7 +610,16 @@ class _ImplicitUpdateFn(torch.autograd.Function):
             for g, p in zip(grad_iter, params, strict=True)
         ]
 
-        # Order matches forward: (owner, n_inputs, input_sbn, *inputs, *params).
+        # Order matches forward: ``(owner, n_inputs, input_sbn, *inputs,
+        # *params)``. The three leading positional args are non-tensor
+        # passthroughs; their grad entries are None.
+        #
+        # Historical note: there used to be a fourth leading arg
+        # ``input_labels`` (removed in the V2P-7 label-machinery
+        # cleanup). The matching ``None`` in this tuple lingered after
+        # the arg was dropped, which made backward return one too many
+        # gradients (``returned an incorrect number of gradients
+        # (expected N, got N+1)``).
         return (None, None, None, *grad_inputs, *grad_params)
 
 

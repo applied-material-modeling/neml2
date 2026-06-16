@@ -1,0 +1,15 @@
+scenario,nbatch,n_warmup,n_runs,median_ms,mean_ms,std_ms,min_ms,max_ms,p10_ms,p90_ms,cpu_rss_mb,cuda_peak_mb
+chaboche6,1,5,20,909.75,909.75,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,2,5,20,966.15,966.15,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,4,5,20,1008.8999999999999,1008.8999999999999,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,8,5,20,1184.85,1184.85,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,16,5,20,1196.25,1196.25,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,32,5,20,1481.7,1481.7,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,64,5,20,1963.05,1963.05,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,128,5,20,3342.75,3342.75,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,256,5,20,3491.15,3491.15,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,512,5,20,5430.35,5430.35,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,1024,5,20,7803.75,7803.75,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,2048,5,20,8282.35,8282.35,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,4096,5,20,19388.3,19388.3,nan,nan,nan,nan,nan,7910.20703125,nan
+chaboche6,8192,5,20,32259.65,32259.65,nan,nan,nan,nan,nan,7910.20703125,nan

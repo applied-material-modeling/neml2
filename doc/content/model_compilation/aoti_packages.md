@@ -25,8 +25,10 @@ See [](cli-utilities) for the broader CLI surface.
 
 ## The four artifacts
 
-For a single-segment model (pure forward or pure implicit, the common
-case), `neml2-compile` emits exactly four files:
+For a forward single-segment model, `neml2-compile` typically emits
+four files (forward graph, optional JVP graph, metadata, HIT stub).
+Implicit single-segment models emit the per-segment set covered in
+the segment table below.
 
 | File                  | Contents                                                                    |
 | :-------------------- | :-------------------------------------------------------------------------- |
@@ -49,117 +51,65 @@ boundary into separate **segments**, each numbered `_seg{i}_`:
 | `<name>_seg{i}_predictor.pt2`   | Newton initial guess (only if the source had one).      |
 
 The `_seg0_` infix is dropped in the single-segment shortcut, so
-single-segment artifacts always look like the first table.
+single-segment forward artifacts use the names in the first table
+and single-segment implicit artifacts use the per-segment names from
+the second table without the `_seg0_` prefix.
 
 ### What's in the metadata JSON
 
 The metadata is the source of truth: the `.pt2` files are opaque to
 NEML2, and re-loading an artifact in a new process never re-introspects
-the Python source. Schema version is currently `2`; the C++ loader
-refuses any other value with a "regenerate via `neml2-compile`"
-message.
+the Python source.
 
-```json
-{
-  "schema_version": 2,
-  "type": "composed",            // always — kept for the unified loader path
-  "device": "cpu",               // "cpu" | "cuda"
-  "dtype":  "float64",           // "float64" | "float32"
+The exact field layout evolves alongside the export pipeline, so the
+schema is documented in code rather than mirrored here:
 
-  "inputs":  [{"name": "strain", "var_size": 6, "var_type": "SR2", ...}, ...],
-  "outputs": [{"name": "stress", "var_size": 6, "var_type": "SR2", ...}, ...],
+- The emitter at `neml2/cli/aoti_export.py` is the authoritative
+  Python-side definition of what the file contains.
+- The loader at `neml2/csrc/aoti/Model.cxx` is the authoritative
+  C++-side reader.
 
-  "parameters": [                // promoted set only -- empty when fully baked
-    {"name": "E", "dtype": "float64", "shape": [], "device": "cpu",
-     "values": [200000.0], "origin": "parameter"}
-  ],
+Both share an integer `schema_version` field bumped on any breaking
+layout change. The C++ loader refuses any non-matching version with
+a clear "regenerate via `neml2-compile`" message; the only
+remediation is a re-compile.
 
-  "segments": [/* one per segment, in dependency order */]
-}
-```
+<!-- dependencies: aoti.schema_version -->
+The current schema version is `3`.
 
-Field reference:
+At the top level the metadata records:
 
-| Field                | Meaning                                                                                    |
-| :------------------- | :----------------------------------------------------------------------------------------- |
-| `schema_version`     | Currently `2`. Bumped on any breaking change.                                              |
-| `type`               | Always `"composed"`. Kept for the unified loader path.                                     |
-| `device` / `dtype`   | Baked into the `.pt2` graphs at export. There is no runtime override.                      |
-| `inputs` / `outputs` | Master input/output order. `var_size` is flat storage (1 for `Scalar`, 6 for `SR2`, …).   |
-| `parameters`         | Promoted set. Empty when no `-p` flags were given.                                         |
-| `segments`           | Per-segment graph + IO layout, executed in order at runtime.                               |
+- **Device + dtype**, baked into the `.pt2` graphs at export. There
+  is no runtime override.
+- **Inputs and outputs** — master input/output order with per-variable
+  storage size, base shape, and sub-batch shape.
+- **Promoted parameters** — the `-p` set, with initial values. Empty
+  in the fully-baked case (the artifact is then a frozen inference
+  graph and `named_parameters()` is empty at load time).
+- **Segments** — one entry per per-`ImplicitUpdate` boundary the
+  exporter split on; executed in order at runtime, with each segment's
+  outputs feeding the next segment's inputs via a shared
+  `name → tensor` state map.
 
-The `sub_batch_shape` field (optional, per-variable) records the
-variable's structured per-site axes; `sparsity` (optional, outputs
-only) declares per-input exceptions to the default diagonal
-cross-derivative pattern. Both are absent for the common bulk
-constitutive case.
+### Segment kinds
 
-There is intentionally no `buffers` array: at the AOTI boundary every
-parameter and buffer is either baked into the graph (default) or
-promoted to a graph input (via `--parameter`). The `origin` field on
-each promoted entry is purely diagnostic.
+Two segment kinds appear inside `segments`:
 
-### Forward segment
+- **Forward** segments lower to a single value graph (`_seg{i}.pt2`)
+  plus an optional flat-Jacobian graph (`_seg{i}_jvp.pt2`). Call shape
+  is `(*user_inputs, *promoted_params) -> outputs`.
+- **Implicit** segments lower to three graphs — `_rhs.pt2` (Newton
+  residual), `_step.pt2` (fused assemble + LU solve + update +
+  post-update residual), `_ift.pt2` (`-A^{-1} B`
+  implicit-function-theorem sensitivity at the converged state) —
+  plus an optional `_predictor.pt2` graph when the source had a
+  `Predictor`. The Newton loop body is one loader call per iteration
+  plus a convergence sync; the IFT graph is consumed by `jacobian()`
+  and `jvp()`.
 
-```json
-{
-  "kind": "forward",
-  "package": "<name>_seg{i}.pt2",
-  "jvp_package": "<name>_seg{i}_jvp.pt2",      // optional
-  "inputs":  [{"name": "...", "var_size": N}, ...],
-  "outputs": [{"name": "...", "var_size": N}, ...],
-  "param_inputs": ["E", "nu", ...]             // promoted names this segment consumes
-}
-```
-
-- `package` — graph signature `(*user_inputs, *promoted_params) -> tuple[Tensor, ...]`.
-- `jvp_package` — graph signature `(*user_inputs, *promoted_params) -> (*outputs, J)`,
-  where `J` is a `(*B, sum(out_sizes), sum(in_sizes))` block-stacked
-  Jacobian over the user inputs only.
-- `param_inputs` is empty in the fully-baked case; the loader call
-  shape then reduces to `(*user_inputs)`.
-
-### Implicit segment
-
-```json
-{
-  "kind": "implicit",
-  "rhs_package":  "<name>_seg{i}_rhs.pt2",
-  "step_package": "<name>_seg{i}_step.pt2",
-  "ift_package":  "<name>_seg{i}_ift.pt2",
-  "predictor_package": "<name>_seg{i}_predictor.pt2",  // omitted when no predictor
-
-  "unknowns":   [{"name": "...", "var_size": N, "unflattened_shape": [...]}, ...],
-  "givens":     [{"name": "...", "var_size": N, "unflattened_shape": [...]}, ...],
-  "u_size": <int>, "g_size": <int>,
-
-  "atol": <float>, "rtol": <float>, "miters": <int>,
-
-  "predictor_inputs":  [...],   // present iff predictor_package is set
-  "predictor_outputs": [...],
-
-  "param_inputs": [...],
-  "predictor_param_inputs": [...]
-}
-```
-
-The three core graphs of an implicit segment are:
-
-- `rhs_package` — `(u_flat, g_flat, *promoted) -> -r(u, g)`. Used for
-  the baseline residual and the initial convergence check.
-- `step_package` — `(u_flat, g_flat, *promoted) -> (u_new_flat, b_new_flat)`.
-  Fuses assemble (`A`, `b`) + LU solve + `u_new = u + Δu` + post-update
-  residual into one AOTI graph. The Newton loop body is one loader
-  call plus an `at::all(b < atol).item<bool>()` convergence sync.
-- `ift_package` — `(u_flat, g_flat, *promoted) -> (-A^{-1} B)` of shape
-  `(*B, u_size, g_size)`. Implicit-function-theorem sensitivity at the
-  converged state; consumed by `jacobian()` and `jvp()`.
-
-`givens` pack into `g_flat` in declaration order; `unknowns` pack into
-`u_flat` the same way. The `unflattened_shape` field records the
-per-variable `(*sub_batch, *base)` layout for round-tripping through
-the flat slot.
+Each segment declares its inputs / outputs / promoted-parameter inputs
+in the same per-variable structure as the top-level layout; see the
+emitter source for the current set of fields.
 
 ### Cross-segment state
 
@@ -207,8 +157,11 @@ import neml2
 model = neml2.load_model("elasticity_aoti.i", "elasticity")
 ```
 
-The runtime surface on the underlying `neml2.aoti.Model` binding is
-three operations plus a mutable parameter map:
+The runtime surface on the underlying `neml2.aoti.Model` binding
+centers on four call paths, backed by introspection properties
+(`input_names`, `output_names`, `device`, `dtype`, …) and a
+`set_parameter(name, tensor)` helper for replacing a promoted
+parameter wholesale:
 
 | Operation               | Returns                                             |
 | :---------------------- | :-------------------------------------------------- |
@@ -218,7 +171,7 @@ three operations plus a mutable parameter map:
 | `named_parameters()`    | Mutable dict of promoted parameters; empty if baked. |
 
 All three call paths take a dict keyed by the master input names
-returned by `input_names()`; missing keys throw.
+listed in `input_names`; missing keys throw.
 
 ```python
 binding = model._inner    # the bare neml2.aoti.Model runtime
@@ -275,26 +228,22 @@ effectively a frozen inference graph.
 
 ### Constraint: no parameters inside `ImplicitUpdate`
 
-Promotion of any parameter that lives inside an `ImplicitUpdate`'s
-`system.model` tree is **rejected up-front** with a clear
-`NotImplementedError`. Parameters in forward segments of a composed
-model promote normally; see [](model-compilation-pipeline) for the
-underlying constraint on the equation-system wrappers.
+Trying to promote a parameter that lives inside an `ImplicitUpdate`'s
+`system.model` tree raises a `NotImplementedError` at compile time,
+with a message pointing at the offending name. Parameters in forward
+segments of a composed model promote normally; see
+[](model-compilation-pipeline) for the underlying constraint on the
+equation-system wrappers.
 
 ## Dynamic batch dimension
 
-The leading batch dimension is compiled as a dynamic axis:
-
-```python
-batch = Dim("batch", min=1, max=2**20)
-```
-
-The same artifact handles any batch size from 1 to roughly a million
-without recompilation. The cost is modest extra symbolic-shape
-machinery inside the lowered kernel; the benefit is that a single
-artifact serves both single-point evaluation (a unit-cell stress
-update) and large fan-out runs (a finite-element kernel sweeping
-thousands of integration points) with no extra moving parts.
+The leading batch dimension is compiled as a dynamic axis. The same
+artifact handles any batch size from 1 to roughly a million without
+recompilation. The cost is modest extra symbolic-shape machinery
+inside the lowered kernel; the benefit is that a single artifact
+serves both single-point evaluation (a unit-cell stress update) and
+large fan-out runs (a finite-element kernel sweeping thousands of
+integration points) with no extra moving parts.
 
 Sub-batch axes — the structured per-site dimensions some models
 carry — are baked into the artifact at export time. To change them,
@@ -302,13 +251,12 @@ re-compile.
 
 ## Device and dtype pinning
 
-The `.pt2` graphs are pinned to a specific device + dtype at export
-time. There is intentionally no `to()`: offering one would either
-be a misleading no-op (the graph stays put) or a contract-breaking
-half-move (parameters shift, graph doesn't). To retarget, re-run
-`neml2-compile` with a different `--device` / `--dtype`. Promoted
-parameter tensors are placed on the same device as the graph at load
-time.
+The `.pt2` graphs are pinned to the device and dtype they were
+exported with, so the artifact does not expose a runtime `to()`:
+any move would silently desync the graph from its parameters. To
+target a different device or dtype, re-run `neml2-compile` with the
+new `--device` / `--dtype`. Promoted parameter tensors are placed
+on the same device as the graph at load time.
 
 ## C++ runtime
 
@@ -329,10 +277,8 @@ model.named_parameters().at("E").fill_(210000.0);
 
 The constructor takes a single filesystem path to the metadata JSON;
 the per-segment `.pt2` files are resolved relative to that path.
-There is no participation in the `NEML2Object` / `Factory` /
-`Registry` machinery — `neml2::aoti::Model` is a bare class, so
-HIT-input parsing is the *loader*'s responsibility. The class itself
-just consumes a metadata path.
+The class is a bare loader — it does not participate in HIT-input
+parsing, which is the caller's responsibility.
 
 The class is non-copyable and non-movable; hold it as a
 `std::unique_ptr` / `std::shared_ptr` or as an automatic on the
@@ -341,15 +287,6 @@ stack.
 For build-system wiring — `find_package(neml2)`, pkg-config,
 `#include` paths, and the runtime library search — see
 [](external-project-integration).
-
-## Versioning
-
-The supported schema version is `2`. Pre-v2 caches are not
-backwards-compatible (the `parameters` array and per-segment
-`param_inputs` field are required). When the schema bumps again the
-C++ loader will refuse the old version with a clear
-"regenerate via `neml2-compile`" message; that is the only
-remediation path.
 
 ## See also
 

@@ -26,14 +26,14 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
-from ...schema import HitSchema, input, output
+from ...schema import HitSchema, input, option, output
 from ...types import (
     SR2,
     mean,
 )
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("SR2IntermediateMean")
@@ -42,15 +42,20 @@ class SR2IntermediateMean(Model):
 
     Mirrors C++ ``IntermediateMean<SR2>``. Used in CP to average per-crystal
     cauchy stress into a mean over crystals (taylor-style homogenisation).
+
+    The ``reduces`` HIT parameter names the sub-batch label this
+    reducer collapses (e.g. ``reduces = 'grain'`` for the CP
+    polycrystal mean). The composed-model propagator uses it to track
+    per-label structural state through the chain.
     """
 
-    # The output couples sites along the sub-batch axis (every output depends on
-    # every input site) — declare dense per D-049.
     hit = HitSchema(
         input("from", SR2, "Input tensor to average"),
         output("to", SR2, "Averaged tensor"),
+        option("reduces", str, "Sub-batch label this reducer collapses.", attr="_reduces"),
     )
-    list_deriv = {("to", "from"): "dense"}
+
+    _reduces: str
 
     def forward(  # type: ignore[override]
         self,

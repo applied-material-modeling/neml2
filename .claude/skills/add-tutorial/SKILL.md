@@ -12,6 +12,54 @@ HTML. Tutorials sit under `doc/content/tutorials/{models,extension,
 optimization}/<name>/` as a directory containing `main.md` plus any
 supporting `input.i` / sibling files.
 
+## Voice (most important rule)
+
+Tutorials are **user-facing**. The reader showed up to *do* something,
+not to learn how NEML2 is built. Write to a working engineer or
+materials scientist who just installed the package — friendly,
+concrete, and economical with jargon. Specific rules:
+
+- **Open with what the reader will accomplish in one or two
+  sentences**, not with a formal model definition.
+- **Lead with running code, then explain.** Most readers run the cells
+  first and read prose only when something surprises them. Prose
+  *before* a code cell is for context they need to interpret the
+  code, not for theory dumps.
+- **Domain math good; meta-abstraction bad.** Equations that describe
+  the material model itself — `σ = 3K·vol(ε) + 2G·dev(ε)`, a hardening
+  curve, a flow rule — add clarity and belong in the tutorial. They
+  tell the reader what the code is actually computing. Drop the
+  *abstractions over NEML2 itself*: things like the `y = f(x; p, b)`
+  framing, generic claims about "input variables, output variables,
+  parameters, and buffers" before the reader has seen one, or wrapping
+  a concrete example in unnecessary symbology. Show the physics with
+  symbols; skip the meta-notation that merely restates the function
+  signature.
+- **Skip implementation jargon.** Avoid "declarative surface of a
+  Model subclass", "trainable parameters that participate in
+  autograd", "the forward operator", "broadcast-state tangents".
+  These read as insider language. Say "your model needs an input" /
+  "parameters can be fitted to data later" / "the function NEML2
+  will call".
+- **Don't enumerate every option.** "Young's modulus and Poisson's
+  ratio" is enough on first encounter; the reference catalog lists
+  the other parameterisations for anyone who wants them. Link, don't
+  list.
+- **One concept per tutorial.** If the reader has to track inputs,
+  outputs, parameters, AND buffers in tutorial 1, they're
+  overwhelmed. Split. Cross-link the follow-ups via `[](label)`.
+- **Skip "abstractly" detours.** If a paragraph starts with "more
+  abstractly" or "in general", delete it — that's reference-page
+  material.
+- **The reader doesn't care about your refactor history.** No "v2
+  used to do X; v3 now does Y" framing inside tutorials. (That's
+  migration-guide territory.)
+
+A simple test before merging: a colleague who's never opened NEML2
+should be able to follow the page top-to-bottom without opening
+another tab. If they have to, the tutorial leaned on unexplained
+jargon or assumed a missing prerequisite.
+
 ## Layout
 
 ```
@@ -50,13 +98,9 @@ mystnb:
 (tutorials-<section>-<name>)=
 # Title
 
-One-paragraph motivation. Reference the physics + the prerequisite
-tutorials with [](label) cross-refs.
-
-## The physics
-
-Math in MyST: $...$ for inline, $$...$$ for display, `\begin{align}`
-for numbered groups (each line gets its own number).
+One or two sentences on what the reader will accomplish here. Link
+prerequisites with [](label) only if they're truly required to follow
+along.
 
 ## The input file
 
@@ -64,6 +108,9 @@ for numbered groups (each line gets its own number).
 :language: ini
 :caption: input.i
 \```
+
+Brief prose if the input file uses anything non-obvious. If it's a
+basic block, the file speaks for itself.
 
 ## Loading the model
 
@@ -81,6 +128,13 @@ from neml2.types import SR2
 strain = SR2(torch.tensor([0.01, 0, 0, 0, 0, 0], dtype=torch.float64))
 model(strain)
 \```
+
+## (Optional) The math behind it
+
+If the equation IS the lesson, put it here, after the reader has
+already seen the model run. Math in MyST: `$...$` for inline, `$$...$$`
+for display, `\begin{align}` for numbered groups. If the math just
+restates what the code does, drop this section.
 
 ## Where to go next
 

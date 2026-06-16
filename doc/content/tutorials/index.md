@@ -18,5 +18,4 @@ models/index
 
 extension/index
 optimization/index
-notebooks/index
 ```

@@ -3,11 +3,11 @@
 
 ## Overview
 
-Viscoelastic models describe time-dependent stress-strain behavior in which the
-response is partially elastic (recoverable) and partially viscous
-(rate-dependent). Unlike pure elasticity, viscoelasticity retains a memory of
-past loading through internal strain variables; unlike plasticity, the response
-is linear in the constitutive sense — there is no yield surface and no
+Viscoelastic models describe time-dependent stress-strain behavior
+that is partly elastic (recoverable) and partly viscous
+(rate-dependent). A viscoelastic material carries memory of past
+loading through internal strain variables, but the constitutive
+response stays linear — there is no yield surface and no
 consistency parameter.
 
 NEML2 builds viscoelastic models from two primitive rheological elements — a
@@ -158,11 +158,12 @@ stress, so it exercises both series and parallel assembly in one input file:
 
 The unknowns are now `maxwell_viscous_strain` and `kelvin_voigt_strain` — two
 [](models-SR2BackwardEulerTimeIntegration) instances, two residuals, one
-Newton solve. Comparing this against `tests/regression/.../burgers/model.i`
-(which uses [](models-BurgersElement) directly) is a useful exercise: the
-two input files are mathematically identical and produce the same gold
-result, but only one of them lets you change the topology without writing
-new C++/Python.
+Newton solve. The hand-composed input is mathematically identical to
+`tests/regression/.../burgers/model.i` (which uses
+[](models-BurgersElement) directly) and produces the same gold
+result — the difference is that the composed form lets you change
+the topology by editing the input file, without authoring a new
+Model class.
 
 ## See also
 

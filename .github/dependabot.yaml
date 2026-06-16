@@ -1,0 +1,33 @@
+# Dependabot config. See:
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Both ecosystems open PRs against ``main``. The torch pin is held in
+# ``scripts/dependencies.yaml`` and propagated to pyproject.toml via
+# ``scripts/dep_manager.py``, so a Dependabot PR that bumps torch in
+# pyproject.toml will fail the ``deps`` workflow until the YAML is
+# re-bumped in lockstep -- by design.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - python
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions

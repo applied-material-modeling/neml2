@@ -1,0 +1,110 @@
+# Dependency registry for neml2.
+# Use scripts/dep_manager.py to check and update these dependencies.
+#
+# Schema per entry:
+#   DEP_NAME:
+#     FIELD: VALUE          # any scalar field (version, version_min, ...)
+#     files:                # source files that embed this dep's value fields
+#       - RELATIVE_PATH     # one entry per file; all # dependencies: DEP.FIELD
+#                           # annotations within it are updated automatically
+#
+# Annotation convention in source files:
+#   # dependencies: DEP_NAME.FIELD
+#   <line containing the version value>
+
+# ---- Python packages ----
+torch:
+  version: "2.12.0"
+  version_min: "2.10.0"
+  version_max: "2.12.0"
+  files:
+    - .github/actions/neml2-ci/action.yaml
+    - .github/workflows/cpp.yaml
+    - .github/workflows/python.yaml
+    - .github/workflows/notebooks.yaml
+    - .github/workflows/docs.yaml
+    - doc/content/installation/compatibility.yaml
+    - pyproject.toml
+
+pyzag:
+  version: "1.1.1"
+  files:
+    - pyproject.toml
+    - .github/workflows/compat.yaml
+
+nmhit:
+  version_min: "0.3.2"
+  files:
+    - pyproject.toml
+
+clang_format:
+  version: "v22.1.3"
+  files:
+    - .pre-commit-config.yaml
+
+ruff:
+  version: "0.15.13"
+  files:
+    - .pre-commit-config.yaml
+    - pyproject.toml
+
+pyright:
+  version: "1.1.409"
+  files:
+    - pyproject.toml
+
+pybind11_stubgen:
+  version_min: "2.5.5"
+  files:
+    - pyproject.toml
+
+jupytext:
+  version: "v1.19.1"
+  files:
+    - .pre-commit-config.yaml
+
+# ---- Build tools ----
+cmake:
+  version_min: "3.26.1"
+  files:
+    - .github/actions/neml2-ci/action.yaml
+    - CMakeLists.txt
+    - .github/workflows/cpp.yaml
+    - .github/workflows/python.yaml
+    - .github/workflows/notebooks.yaml
+    - .github/workflows/docs.yaml
+    - pyproject.toml
+
+python:
+  version_min: "3.10"
+  files:
+    - .github/actions/neml2-ci/action.yaml
+    - .github/workflows/deps.yaml
+    - .github/workflows/copyright.yaml
+    - .github/workflows/cpp.yaml
+    - .github/workflows/python.yaml
+    - .github/workflows/notebooks.yaml
+    - .github/workflows/docs.yaml
+    - pyproject.toml
+
+# ---- Project version ----
+neml2:
+  version: "3.0.3"
+  files:
+    - CMakeLists.txt
+    - pyproject.toml
+
+# ---- AOTI artifact metadata schema ----
+# Bumped on any breaking change to the layout of ``<model>_meta.json``
+# (the manifest the C++ loader at ``neml2/csrc/aoti/Model.cxx`` reads).
+# The Python emitter (``neml2/cli/aoti_export.py``) and the C++ loader
+# must agree, so both are tracked here alongside the documentation page
+# that describes the schema. The example artifacts under
+# ``doc/content/tutorials/models/compiled_models/`` are regenerated at
+# tutorial-rebuild time and so are not tracked here.
+aoti:
+  schema_version: "3"
+  files:
+    - neml2/cli/aoti_export.py
+    - neml2/csrc/aoti/Model.cxx
+    - doc/content/model_compilation/aoti_packages.md

@@ -34,11 +34,11 @@ from math import prod
 
 import torch
 
-from ....chain_rule import ChainRuleDict, SecondOrderChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model, register_submodule
 from ....schema import HitSchema, dependency, option
 from ....types import TensorWrapper
+from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
+from ...model import Model, register_submodule
 
 
 def _read_list_str(node, name):  # noqa: ANN001, ANN202
@@ -58,30 +58,129 @@ def _identity_seed(
 
     Returns a ``type_cls`` wrapper with data ``(n, *batch, *BASE_SHAPE)`` — the
     ``n = base_size`` seed directions index the base components of the variable
-    (the Hessian-row / ``__id`` direction), carried as the leftmost batch axis.
+    (the Hessian-row / ``__id`` direction), carried as the leftmost K axis
+    with ``k_ndim=1``, ``k_state=("full",)``. Without the K metadata the
+    leading axis is misclassified as batch and downstream typed-wrapper
+    binary ops corrupt the shape (the chain rule's align_k expects the
+    leading axis to be K — same contract as user-provided outer seeds).
     """
     n = _base_size(type_cls)
     eye = torch.eye(n, dtype=ref.dtype, device=ref.device)  # (n, n)
     eye = eye.reshape(n, *([1] * len(batch_shape)), *type_cls.BASE_SHAPE)
-    return type_cls(eye.expand(n, *batch_shape, *type_cls.BASE_SHAPE).contiguous())
+    data = eye.expand(n, *batch_shape, *type_cls.BASE_SHAPE).contiguous()
+    return type_cls(
+        data,
+        k_ndim=1,
+        k_state=("full",),
+        k_pairing=(None,),
+    )
 
 
 def _reshape_first_deriv(
-    t: torch.Tensor | TensorWrapper, from_type: type[TensorWrapper]
-) -> torch.Tensor:
-    """Leading-K first-derivative tangent ``(n_from, *B)`` → ``(*B, *BASE_SHAPE)``.
+    t: torch.Tensor | TensorWrapper, to_type: type[TensorWrapper]
+) -> TensorWrapper:
+    """Leading-K first-derivative tangent ``(n_from, *B)`` → ``to_type(*B, *BASE_SHAPE)``.
 
     ``t`` is a ``Scalar`` tangent of the (scalar) inner function with the
     ``n_from`` ``__id`` directions as the leftmost axis; moving that axis to the
-    back and unflattening it into the from-variable's base recovers the
-    derivative ``∂function/∂from`` as a ``from_type``-shaped raw tensor.
+    back and unflattening it into ``to_type``'s base recovers the derivative
+    ``∂function/∂from`` as a typed wrapper. ``sub_batch_ndim`` is carried
+    through when *t* is itself a wrapper, so Normality's outputs preserve the
+    per-site axis hint across the leaf boundary (which ``ComposedModel`` and
+    the export-side wrappers rely on -- raw-tensor returns from leaves are
+    rejected by :func:`~neml2.models.common.ComposedModel._check_leaf_outputs_typed`).
     """
-    raw = t.data if isinstance(t, TensorWrapper) else t  # (n_from, *B)
+    if isinstance(t, TensorWrapper):
+        raw = t.data
+        sbn = t.sub_batch_ndim
+    else:
+        raw = t
+        sbn = 0
     moved = raw.movedim(0, -1)  # (*B, n_from)
-    base = from_type.BASE_SHAPE
-    if base == ():
-        return moved.squeeze(-1)  # (*B,)
-    return moved.reshape(*moved.shape[:-1], *base)
+    base = to_type.BASE_SHAPE
+    data = moved.squeeze(-1) if base == () else moved.reshape(*moved.shape[:-1], *base)
+    return to_type(data, sub_batch_ndim=sbn)
+
+
+def _collect_outer_seed_k(
+    v: ChainRuleDict,
+) -> dict[str, tuple[int, tuple, tuple]]:
+    """Index the outer V dict by seed name → (k_ndim, k_state, k_pairing).
+
+    Multiple inputs share the same seed_name (they were seeded with the same
+    outer K). Pick one representative per seed.
+    """
+    seen: dict[str, tuple[int, tuple, tuple]] = {}
+    for tans in v.values():
+        for seed_name, tan in tans.items():
+            if seed_name in seen:
+                continue
+            if not hasattr(tan, "k_ndim"):
+                continue
+            seen[seed_name] = (tan.k_ndim, tuple(tan.k_state), tuple(tan.k_pairing))
+    return seen
+
+
+def _wrap_with_outer_k(
+    to_type: type[TensorWrapper],
+    data: torch.Tensor,
+    sub_batch_ndim: int,
+    k_meta: tuple[int, tuple, tuple] | None,
+) -> TensorWrapper:
+    """Wrap ``data`` as ``to_type`` and re-attach outer-seed K metadata.
+
+    ``data`` has shape ``(N_outer_flat, *batch, *base)`` where ``N_outer_flat``
+    is the leading axis carrying the outer seed K (single axis, regardless of
+    whether outer K was originally multi-axis — the second-order chain rule
+    machinery treats Vb's K as a single leading dim per pair).
+
+    When ``k_meta`` is provided and ``k_ndim > 1``, we unflatten the leading
+    axis back into the outer K shape so downstream binary ops align K
+    correctly. When ``k_ndim == 1`` or ``k_meta`` is missing, fall back to a
+    single full K axis.
+    """
+    if k_meta is None:
+        return to_type(data, sub_batch_ndim=sub_batch_ndim)
+    k_ndim, k_state, k_pairing = k_meta
+    if k_ndim <= 1:
+        return to_type(
+            data,
+            sub_batch_ndim=sub_batch_ndim,
+            k_ndim=1,
+            k_state=("full",),
+            k_pairing=(None,),
+        )
+    # Multi-axis outer K: leading flat dim → unflatten into the outer K's
+    # per-axis storage shape. Each "broadcast" axis stores size 1; each
+    # "full" axis stores the corresponding base/full extent.
+    # The flat size is the product of storage extents (size-1 for broadcast).
+    leading = data.shape[0]
+    # Inspect the original outer V (one rep) to get the K storage shape: we
+    # don't have direct access here, so reconstruct from k_state — broadcast=1,
+    # full=leading_per_full. With exactly one "full" axis (the common case),
+    # leading is fully on that axis.
+    full_count = sum(1 for s in k_state if s == "full")
+    if full_count == 1:
+        # Each broadcast axis is size 1; one full axis carries `leading`.
+        k_storage = tuple(1 if s == "broadcast" else leading for s in k_state)
+    else:
+        # Multiple full axes: caller would need original storage to split. For
+        # now bail to single-axis K (correct for the cases we test).
+        return to_type(
+            data,
+            sub_batch_ndim=sub_batch_ndim,
+            k_ndim=1,
+            k_state=("full",),
+            k_pairing=(None,),
+        )
+    new_data = data.reshape(*k_storage, *data.shape[1:])
+    return to_type(
+        new_data,
+        sub_batch_ndim=sub_batch_ndim,
+        k_ndim=k_ndim,
+        k_state=k_state,
+        k_pairing=k_pairing,
+    )
 
 
 def _check_inner_supports_second_order(inner: Model) -> None:
@@ -246,7 +345,7 @@ class Normality(Model):
             inner_result = self._inner(*inner_args, v=seed_v)
             inner_v_out = inner_result[-1]
             f_v = inner_v_out.get(self._function, {})
-            outputs: list[torch.Tensor] = []
+            outputs: list[TensorWrapper] = []
             for i, from_name in enumerate(self._from):
                 to_type = self.output_spec[self._to[i]]
                 tangent = f_v.get(f"{from_name}__id")
@@ -294,7 +393,7 @@ class Normality(Model):
         f_v2 = inner_v2_out.get(self._function, {})
 
         # Outputs: ∂f/∂from[i] from the identity-seeded v.
-        outputs = []
+        outputs: list[TensorWrapper] = []
         for i, from_name in enumerate(self._from):
             to_type = self.output_spec[self._to[i]]
             tangent = f_v.get(f"{from_name}__id")
@@ -312,7 +411,14 @@ class Normality(Model):
         # The leading n_from[i] is the __id direction (= base index of to[i]);
         # moving it to the back and unflattening into to[i]'s base yields a
         # leading-K (= N_outer) tangent of to[i] directly, no matmul.
+        #
+        # The leading N_outer axis carries the OUTER seed's K. We re-attach the
+        # outer K metadata (k_ndim, k_state, k_pairing) by looking up any v
+        # entry that carries this seed_name — they share the same K layout by
+        # construction. Without this, the rewrapped contribution has k_ndim=0
+        # and the K-axis leaks into batch, corrupting downstream shape alignment.
         v_out: ChainRuleDict = {}
+        outer_k_meta = _collect_outer_seed_k(v)
         for i, to_name in enumerate(self._to):
             from_i = self._from[i]
             to_type = self.output_spec[to_name]
@@ -322,7 +428,8 @@ class Normality(Model):
             for outer_seed_name, block in row.items():
                 moved = block.data.movedim(0, -1)  # (N_outer, *batch, n_from[i])
                 data = moved.squeeze(-1) if base == () else moved.reshape(*moved.shape[:-1], *base)
-                contribution = to_type(data, sub_batch_ndim=block.sub_batch_ndim)
+                k_meta = outer_k_meta.get(outer_seed_name)
+                contribution = _wrap_with_outer_k(to_type, data, block.sub_batch_ndim, k_meta)
                 if outer_seed_name in inner_block:
                     inner_block[outer_seed_name] = inner_block[outer_seed_name] + contribution
                 else:

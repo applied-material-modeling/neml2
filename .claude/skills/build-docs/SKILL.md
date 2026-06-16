@@ -22,21 +22,40 @@ End-to-end documentation build for NEML2. The doc pipeline is a single
 
 ## Standard workflow
 
+The wrapper script `doc/scripts/build.sh` captures the canonical
+invocation -- prefer it over typing `sphinx-build` directly:
+
 ```bash
 pip install ".[dev]" -v
-sphinx-build -j auto -b html doc doc/_build/html
-xdg-open doc/_build/html/index.html       # macOS: `open ...`
+doc/scripts/build.sh                 # build to doc/_build/html
+xdg-open doc/_build/html/index.html  # macOS: `open ...`
 ```
 
-`-j auto` parallelises HTML emission across the available cores —
-roughly halves the wall-clock for a cold build on a typical laptop.
-The `neml2_syntax` extension's `neml2-syntax --json` invocation runs
-once at build start and is unaffected.
+The wrapper runs `sphinx-build -j auto -W --keep-going -b html doc
+doc/_build/html` and pre-creates `doc/_build/html/.jupyter_cache` so
+the parallel myst-nb workers don't race the directory `mkdir`
+(otherwise one worker wins and the rest crash with `FileExistsError`).
+`-j auto` roughly halves the cold-build wall-clock; the
+`neml2_syntax` extension's `neml2-syntax --json` invocation runs once
+at build start and is unaffected.
 
-Add `-W` (warnings as errors) when you want CI parity. Add `-E` (rebuild
-environment) after a toctree change if some pages still show stale
-sidebar groups — sphinx's incremental builder doesn't always invalidate
-every dependent page when the global toc changes.
+Common flags:
+
+| Flag                  | Effect |
+|-----------------------|--------|
+| `--clean`             | `rm -rf` the destination + jupyter cache before building. Use after a toctree change or when in doubt about stale state. |
+| `--serve`             | After building, start `python -m http.server` on the destination bound to `127.0.0.1` (default port 8765). Foreground; Ctrl-C stops. Prints the SSH-tunnel command. |
+| `--dest PATH`         | Output directory (default `doc/_build/html`). |
+| `--port N`            | Override the serve port. |
+| `-j`, `--jobs N`      | Override `sphinx-build -j` (default `auto`). |
+| `--no-strict`         | Drop `-W` (treat warnings as errors). Useful when iterating on a known-warning page. |
+| `-h`, `--help`        | Print usage. |
+
+Add `-E` (rebuild environment) manually if some pages still show
+stale sidebar groups after a structural change — sphinx's incremental
+builder doesn't always invalidate every dependent page when the global
+toc changes. The wrapper doesn't expose `-E` directly; just use
+`--clean` for the same effect.
 
 ## Live-preview mode
 
@@ -46,6 +65,8 @@ sphinx-autobuild doc doc/_build/html
 
 Serves at `http://127.0.0.1:8000/` and rebuilds + reloads on every
 change under `doc/`. Tab keeps its scroll position across rebuilds.
+`doc/scripts/build.sh --serve` is the one-shot equivalent (no
+autoreload) suited for tunnelled remote review.
 
 ## Layout
 

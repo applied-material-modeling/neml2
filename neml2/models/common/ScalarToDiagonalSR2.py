@@ -26,14 +26,14 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
     SR2,
     Scalar,
 )
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("ScalarToDiagonalSR2")

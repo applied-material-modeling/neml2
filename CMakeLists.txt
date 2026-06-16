@@ -4,7 +4,16 @@
 # dependencies: cmake.version_min
 cmake_minimum_required(VERSION 3.26.1)
 # dependencies: neml2.version
-project(NEML2 VERSION 3.0.2 LANGUAGES C CXX)
+project(NEML2 VERSION 3.0.3 LANGUAGES C CXX)
+
+# ----------------------------------------------------------------------------
+# Testing (enable_testing + ctest plumbing)
+# ----------------------------------------------------------------------------
+# include(CTest) sets BUILD_TESTING ON by default and creates ctest entries.
+# The benchmark suite (the only ctest consumer today) is registered under
+# benchmark/CMakeLists.txt and gated on this variable + NEML2_WHEEL=OFF so
+# wheel builds skip it.
+include(CTest)
 
 # ----------------------------------------------------------------------------
 # Policy
@@ -354,6 +363,16 @@ if(NEML2_WHEEL)
       endmacro()
 
       add_native_extension(pyaoti aoti LIBS aoti)
+endif()
+
+# ----------------------------------------------------------------------------
+# Benchmark suite (ctest entries; one per benchmark/<scenario>/model.i)
+# ----------------------------------------------------------------------------
+# Wheel builds skip ctest entries entirely — they're a developer convenience,
+# not something shipped in the wheel. The dev preset (Debug, NEML2_WHEEL=OFF)
+# is the consumer.
+if(BUILD_TESTING AND NOT NEML2_WHEEL)
+      add_subdirectory(benchmark)
 endif()
 
 # ----------------------------------------------------------------------------

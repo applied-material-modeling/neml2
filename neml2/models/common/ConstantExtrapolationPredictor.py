@@ -26,9 +26,7 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, option
 from ...types import (
     R2,
@@ -38,6 +36,8 @@ from ...types import (
     TensorWrapper,
 )
 from .._hit import _opt_list_str
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 def _read_list_str(node, name):  # noqa: ANN001, ANN202

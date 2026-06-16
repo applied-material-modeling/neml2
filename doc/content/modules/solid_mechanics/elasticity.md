@@ -19,11 +19,13 @@ NEML2 splits the catalog along two axes:
   [](models-CubicElasticityTensor)) instead produce the fourth-order
   stiffness $\mathbb{C}$ itself, which other models consume.
 - **Material symmetry.** Isotropic leaves take two independent
-  constants in any conventional parameterization ($E$, $\nu$, $K$,
-  $G$, $\lambda$, $M$). The cubic leaf takes three. The fully
-  anisotropic leaf ([](models-GeneralElasticity)) accepts an arbitrary
-  $\mathbb{C}$ and rotates it into the lab frame via a crystal
-  orientation.
+  constants drawn from the standard elastic constants ($E$, $\nu$,
+  $K$, $G$, $\lambda$, $M$); which pairs each leaf accepts is
+  documented in the per-type pages of the syntax catalog. The cubic
+  leaf [](models-CubicElasticityTensor) takes three constants. The
+  fully anisotropic leaf ([](models-GeneralElasticity)) accepts an
+  arbitrary $\mathbb{C}$ and rotates it into the lab frame via a
+  crystal orientation.
 
 A standalone kinematics helper, [](models-GreenLagrangeStrain), is
 shipped here as well: it converts a deformation gradient
@@ -32,14 +34,17 @@ $\boldsymbol{E} = \tfrac{1}{2}(\boldsymbol{F}^T\boldsymbol{F} - \boldsymbol{I})$
 the conjugate strain measure for finite-deformation elastic
 formulations.
 
-Every concrete leaf inherits two switches:
+The strain-to-stress leaf [](models-LinearIsotropicElasticity)
+carries two switches:
 
-- `compliance` — when `true`, the model defines the inverse map
-  (stress $\to$ strain) instead of the default (strain $\to$ stress).
-- `rate_form` — when `true`, the input/output variable names are
-  suffixed with `_rate`, so the model relates strain *rate* to stress
-  *rate* (the math is identical because the relation is linear in
-  rate).
+- `compliance` — when `true`, defines the inverse stress $\to$ strain
+  map instead of the default strain $\to$ stress.
+- `rate_form` — when `true`, suffixes the input/output variable names
+  with `_rate` (the math is identical because the relation is linear
+  in rate).
+
+The tensor-form and general-anisotropic leaves don't expose these
+switches — see the syntax catalog for their per-type option lists.
 
 ## Math
 
@@ -127,9 +132,11 @@ The `[Models]` block declares a single named object, `model`, of type
 `LinearIsotropicElasticity`. Its option surface is two parallel
 lists:
 
-- `coefficient_types` lists the kind of each constant in the
-  enumeration
-  `{YOUNGS_MODULUS, POISSONS_RATIO, BULK_MODULUS, SHEAR_MODULUS, LAME_LAMBDA, P_WAVE_MODULUS}`.
+- `coefficient_types` lists the kind of each constant — for
+  `LinearIsotropicElasticity` the supported pair is currently
+  `(YOUNGS_MODULUS, POISSONS_RATIO)`. The full enumeration recognized
+  by the option parser is documented in the syntax catalog at
+  [](models-LinearIsotropicElasticity).
 - `coefficients` lists the values, in the same order.
 
 Here the pair `(100, 0.3)` is tagged `(YOUNGS_MODULUS, POISSONS_RATIO)`,
@@ -152,10 +159,12 @@ driver is what makes the file runnable end-to-end with
 `neml2-run input.i`, but everything you need to drop this elasticity
 block into a larger material model lives inside `[Models]`.
 
-To use a different parameterization, change the two lists in lockstep
-— e.g. `coefficients = '83.33 38.46'`,
-`coefficient_types = 'BULK_MODULUS SHEAR_MODULUS'` is the same
-physical material. To define the inverse relation (stress $\to$ strain)
+If your material data is in a different parameterization, convert
+externally to `(E, ν)` before plugging in. The companion
+[](models-IsotropicElasticityTensor) (which outputs the SSR4
+stiffness instead of the stress directly) currently also accepts
+`(BULK_MODULUS, SHEAR_MODULUS)` if that pairing is more natural.
+To define the inverse relation (stress $\to$ strain)
 add `compliance = true`. To work in rate form (e.g. for a
 [](models-ImplicitUpdate) residual that lives on stress and strain
 *rates*) add `rate_form = true` — the input/output names then become

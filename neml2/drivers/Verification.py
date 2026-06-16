@@ -56,10 +56,10 @@ from typing import TYPE_CHECKING
 import nmhit
 import torch
 
-from ..driver import Driver
 from ..factory import register_neml2_object
 from ..schema import HitField, HitSchema, dependency, option
 from ..types import SR2, WR2, Scalar, Vec
+from .driver import Driver
 from .TransientDriver import TransientDriver
 
 if TYPE_CHECKING:

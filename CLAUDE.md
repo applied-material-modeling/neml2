@@ -8,6 +8,39 @@ NEML2 is a Python-native material modeling library that vectorizes constitutive 
 
 The legacy C++ tower from v2.x was retired in the v3 migration. The only C++ that remains is `neml2/csrc/aoti/`, a thin runtime that loads the AOT-Inductor `.pt2` packages produced by `neml2-compile`; the runtime is built once into `neml2/lib/libneml2_aoti.so` as part of the wheel and is invisible to most contributors. See [](doc/content/migration/212_300.md) for the v2 → v3 rewrite summary.
 
+## Hard rules — these supersede convenience
+
+These three rules are non-negotiable across the codebase. They exist because violations are individually local but collectively cascade into the kind of silent metadata-loss bug that consumes weeks of debugging. Re-read this section before any non-trivial edit.
+
+### 1. No raw `torch.Tensor` returns from neml2 internal functions
+
+Every internal neml2 function, method, leaf, helper, and chain-rule operator returns a typed wrapper (`Scalar`, `SR2`, `Tensor`, ...) with correct `sub_batch_ndim` and `sub_batch_labels`. Internal callers should never have to re-attach metadata; the producer always returns typed.
+
+The only legitimate raw-tensor surfaces are the two framework-imposed boundaries:
+
+- **AOTI shim** (`neml2/aoti/`, `neml2/cli/aoti_*.py`): `torch.export` and `torch._inductor` operate on raw tensors and pytrees by contract. Metadata is persisted at export and re-attached on load.
+- **`torch.autograd.Function`** (e.g. `_ImplicitUpdateFn`): PyTorch's autograd machinery requires raw at the `forward`/`backward` signatures. The wrap-back happens immediately on exit from the enclosing typed method.
+
+Everywhere else, returning raw is a bug.
+
+### 2. No `.data` access outside `neml2/types/`
+
+The `.data` attribute exists for the type implementations themselves. Every other caller is forbidden from touching it. If you need an op that the typed wrappers don't expose, **add the op inside `neml2/types/`** and use it from your call site — don't reach around the typed API.
+
+A `.data` access elsewhere means one of:
+- The caller is about to do raw `torch.*` arithmetic and rewrap, dropping labels/state/meta and reconstructing them by guess. This is the root cause of metadata-loss bugs.
+- A wrapper primitive is missing. Add it.
+
+Same two framework boundaries (AOTI shim, `torch.autograd.Function`) are the only exceptions, and even there the unwrap is encapsulated in a helper inside `neml2/types/`, not done ad hoc at the call site. Genuine framework-boundary unwraps in those exception files bear a `# noqa: data-ok` marker explaining why.
+
+### 3. Fix the root cause; never patch the call site
+
+When you find a bug, trace upstream until you reach the source of the wrong behaviour, not the place where it became visible. Patching the consumer warrants patches at every other consumer hitting the same root, and the codebase ends up with N scattered workarounds for one underlying bug. If the answer is "I'll patch this site for now and fix upstream later", choose fix upstream now — "later" almost never happens and the patch becomes load-bearing.
+
+A useful test: *would a hypothetical new caller hit this same bug?* If yes, the bug is in what they're calling. Fix it there.
+
+These three rules reinforce each other. Rule 1 forces functions to produce typed outputs. Rule 2 forces typed operations to exist for every need. Rule 3 forces the fix to land at the wrapper/producer level once, instead of N times at each consumer.
+
 ## Build & develop
 
 ```bash
@@ -30,15 +63,33 @@ Only two presets exist: `dev` (build) and `cc` (compile-commands-only, no `cmake
 
 ## Tests
 
-All tests are pytest. Test layout under `tests/` is organised by subsystem:
+All tests are pytest. Test layout under `tests/` is fixed at five top-level
+buckets:
+
+- `tests/unit/` -- Python unit tests of individual modules (typed
+  wrappers, chain rule, factory, schema, solvers, drivers, AOTI export
+  metadata, CLI extensions, pyzag adapter). Fast.
+- `tests/models/` -- `ModelUnitTest`-driven `.i` files exercising one
+  registered model leaf at a time. Discovered by
+  ``tests/models/test_model_unit_tests.py``.
+- `tests/regression/` -- parametrized regression sweep that pins each
+  scenario's output against a checked-in ``gold/result.pt`` reference.
+- `tests/verification/` -- parametrized verification sweep that
+  compares scenario output against an external ground truth.
+- `tests/aoti/` -- AOTI end-to-end smoke tests (compile, load, run
+  one scenario per pattern). Slow -- each test triggers an Inductor
+  compile -- but runs by default.
 
 ```bash
 pytest tests/                                  # everything
-pytest tests/test_model.py                     # one file
-pytest tests/test_model.py::test_forward       # one function
+pytest tests/unit/                             # the fast unit suite
+pytest tests/unit/test_factory.py              # one file
+pytest tests/unit/test_factory.py::test_load_input_simple   # one function
 pytest tests/regression/                       # the parametrized regression sweep
 pytest tests/verification/                     # the parametrized verification sweep
-pytest --run-aoti-compile tests/aoti/          # opt in to the slow AOTI compile tests
+pytest tests/aoti/                             # AOTI compile smoke suite
+pytest -n auto tests/aoti/                     # AOTI suite parallel (4.6x speedup at -n 8)
+pytest --cov tests/unit tests/models tests/aoti   # branch+line coverage report
 ```
 
 `tests/regression/test_regression.py` and `tests/verification/test_verification.py` discover scenarios by walking their respective directories for `.i` files and emit one parametrize id per scenario (the input file's relative path). For spot-checks after a code change, target a single scenario via `-k` or the full parametrize id:
@@ -54,11 +105,15 @@ When adding a `Model` subclass, use the `/add-model` skill; for a regression or 
 
 ## Documentation
 
-Sphinx with the shibuya theme and MyST-NB. Build with:
+Sphinx with the shibuya theme and MyST-NB. Use the wrapper script:
 
 ```bash
-sphinx-build -j auto -W --keep-going -b html doc doc/_build/html
+doc/scripts/build.sh            # parallel build, -W, --keep-going, html → doc/_build/html
+doc/scripts/build.sh --clean    # wipe doc/_build first (cold build)
+doc/scripts/build.sh --serve    # build + serve at http://127.0.0.1:8765/ (binds 127.0.0.1)
 ```
+
+The script wraps `sphinx-build -j auto -W --keep-going` and pre-creates `doc/_build/html/.jupyter_cache` so myst-nb's parallel workers don't race the directory creation. Pass `--port N`, `-j N`, `--no-strict`, or `--dest PATH` to override defaults; `--help` for the full list.
 
 The `/build-docs` skill walks through the full pipeline (including notebook execution caching and the auto-generated HIT-syntax catalog). The `neml2` package must be importable for autodoc / `neml2-syntax` to introspect the registered objects — an editable `pip install -e ".[dev]"` is enough.
 
@@ -77,19 +132,22 @@ The installed wheel exposes four console scripts (defined in `pyproject.toml` un
 
 The Python package layout under `neml2/`:
 
-- `model.py` — `Model` base class (a `torch.nn.Module`). All user-authored constitutive leaves inherit from this.
 - `factory.py` — HIT input parsing via `nmhit`, `load_input` / `load_model` / `load_nonlinear_system` entry points, `[Tensors]` namespace for inline Python expressions.
 - `schema.py` — declarative HIT syntax: `input`, `output`, `parameter`, `option` field helpers + `HitSchema` container that drives both parsing and the auto-generated docs.
-- `chain_rule.py` — type aliases for the first / second-order chain-rule sensitivity dicts threaded through `Model.forward(..., v=, v2=, vh=)`.
-- `resolver.py` — `DependencyResolver` builds the `ComposedModel` dependency graph from individual leaves' declared inputs and outputs.
-- `models/` — the composable forward operators. `ComposedModel` glues children together via the dependency graph; `ImplicitUpdate` wraps a residual model in a Newton solve with optional `Predictor`. Domain libraries live in `models/{solid_mechanics,chemical_reactions,phase_field_fracture,porous_flow,finite_volume,common,kwn}/`; crystal plasticity is a subdirectory of `solid_mechanics/`.
+- `models/` — the composable forward operators *and* the framework infrastructure that powers them:
+  - `models/model.py` — `Model` base class (a `torch.nn.Module`). All user-authored constitutive leaves inherit from this.
+  - `models/chain_rule.py` — type aliases for the first / second-order chain-rule sensitivity dicts threaded through `Model.forward(..., v=, v2=, vh=)`.
+  - `models/resolver.py` — `DependencyResolver` builds the `ComposedModel` dependency graph from individual leaves' declared inputs and outputs.
+  - `models/export.py` — adapter around `torch.export` + `torch._inductor.aoti_compile_and_package`; the single entry point through which every AOTI lowering passes.
+  - `models/_guard.py` — `forward()` guard that blocks raw `torch.autograd` / `einsum` calls inside leaves; the `allow_autograd` / `allow_einsum` context managers carve out exceptions.
+  - `models/common/` — `ComposedModel` glues children together via the dependency graph; `ImplicitUpdate` wraps a residual model in a Newton solve with optional `Predictor`.
+  - `models/{solid_mechanics,chemical_reactions,phase_field_fracture,porous_flow,finite_volume,kwn}/` — domain leaf libraries. Crystal plasticity is a subdirectory of `solid_mechanics/`.
 - `types/` — typed tensor wrappers (`Scalar`, `Vec`, `R2`, `SR2`, `Rot`, `Quaternion`, `MillerIndex`, fourth-order `SSR4` / `WSR4` / ...). Each is a dataclass registered with `torch.utils._pytree.register_dataclass` so it round-trips through `torch.export`. `.data` exposes the underlying `torch.Tensor`.
-- `solvers.py` — `NonlinearSolver` (Newton, NewtonWithLineSearch, SchurComplement) and `LinearSolver` (DenseLU).
-- `equation_systems.py` — `EquationSystem`, `LinearSystem`, `NonlinearSystem`, sparse/dense assembled vectors and matrices, axis layout. Dense/Block variants (`DenseRHS`, `DenseNewtonStep`, `DenseIFT`, `BlockRHS`, ...) back both the eager Newton loop and the AOTI implicit-segment lowering.
-- `drivers/` — `TransientDriver`, `ModelUnitTest`, `TransientRegression`, `Verification` — the top-level "run a model over a load history" objects exposed in input files.
+- `solvers/` — package with `dense_lu.py`, `schur_complement.py`, `newton.py`, `newton_linesearch.py` (per-class files mirroring v2's layout).
+- `es/` — equation-systems package with `axis_layout.py`, `assembled.py` (AssembledVector/Matrix wrapping the dynamic-base `Tensor`), `system.py` (LinearSystem / NonlinearSystem / ModelNonlinearSystem), and `implicit.py` (AOTI implicit-segment export wrappers `RHS` / `NewtonStep` / `IFT`). The same three wrappers cover the DenseLU and SchurComplement solver paths -- the linear solver is configured externally and forwarded.
+- `drivers/` — `driver.py` (the abstract `Driver` base) plus the concrete `TransientDriver`, `ModelUnitTest`, `TransientRegression`, `Verification` files — the top-level "run a model over a load history" objects exposed in input files.
 - `data/` — `CubicCrystal`, `CrystalGeometry` and related crystallography data classes.
 - `user_tensors/` — registered `[Tensors]` block types other than `Python` (currently the `CSV<Type>` family).
-- `export.py` — adapter around `torch.export` + `torch._inductor.aoti_compile_and_package`; the single entry point through which every AOTI lowering passes.
 - `cli/aoti_compile.py`, `cli/aoti_export.py` — the `neml2-compile` orchestration and the per-segment export path; see [](doc/content/model_compilation/pipeline.md).
 - `aoti/` — Python-side `AOTIModel` shim that loads a `_meta.json` + per-segment `.pt2` files and exposes `forward` / `jvp` / `jacobian`. Backed by the pybind module `aoti/_aoti.cxx` (which links `libneml2_aoti.so`).
 - `pyzag/` — `NEML2PyzagModel` adapter that exposes a NEML2 `Model` as a `torch.nn.Module` consumable by the pyzag training library.
@@ -104,7 +162,7 @@ When adding a new submodule under `neml2/models/<domain>/`, append the import to
 
 ## Conventions
 
-- Python source: linted and formatted with `ruff` (line length 100), CI-enforced via the `lint` job in `.github/workflows/python.yml`. Run `pre-commit run --all-files` before pushing.
+- Python source: linted and formatted with `ruff` (line length 100), CI-enforced via the `lint` job in `.github/workflows/python.yaml`. Run `pre-commit run --all-files` before pushing.
 - Type-checked with `pyright` against the installed package (CI: the `typecheck` job).
 - Math in docstrings uses MyST dollarmath (`$x$` inline, `$$...$$` display); MyST `dollarmath` and `amsmath` extensions are enabled in `doc/conf.py`. Code references stay in `` `backticks` ``; the difference matters for rendering in the syntax catalog.
 - HIT inputs use the `nmhit` Python parser (also a pre-commit `nmhit-format` hook). The format itself is unchanged from v2.

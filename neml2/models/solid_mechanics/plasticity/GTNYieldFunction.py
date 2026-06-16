@@ -26,16 +26,16 @@
 
 from __future__ import annotations
 
-from ....chain_rule import (
+from ....factory import register_neml2_object
+from ....schema import HitSchema, input, output, parameter
+from ....types import Scalar, cosh, sinh
+from ...chain_rule import (
     ChainRuleAction,
     ChainRuleDict,
     SecondOrderChainRuleAction,
     SecondOrderChainRuleDict,
 )
-from ....factory import register_neml2_object
-from ....model import Model
-from ....schema import HitSchema, input, output, parameter
-from ....types import Scalar, cosh, sinh
+from ...model import Model
 
 
 @register_neml2_object("GTNYieldFunction")

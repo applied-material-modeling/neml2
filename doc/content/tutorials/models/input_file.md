@@ -1,10 +1,10 @@
 (tutorials-models-input-file)=
 # Input files
 
-NEML2 reads material-model definitions from plain text **input files**.
-The same file can be parsed by Python (`neml2.load_input`) and by the
-CLI tools (`neml2-run`, `neml2-inspect`, …), and it ships unchanged
-across operating systems and into compiled-model artifacts.
+You'll learn enough of NEML2's input-file syntax to read and write the
+files you'll see throughout the rest of the tutorials. The same file
+is parsed by Python (`neml2.load_input`) and by the CLI tools
+(`neml2-run`, `neml2-inspect`, …).
 
 NEML2 uses the [HIT](https://github.com/applied-material-modeling/neml2-hit)
 format. This tutorial covers the syntax you'll use day-to-day; the
@@ -34,22 +34,12 @@ Indentation is purely visual — HIT doesn't care.
 
 ## Sections and systems
 
-A NEML2 input file is organized into a small number of **top-level
-sections**, each corresponding to one of NEML2's *systems*. The most
-common ones are:
-
-- `[Models]` — material models.
-- `[Tensors]` — pre-computed tensors that models reference by name.
-- `[Solvers]` — non-linear and linear solvers.
-- `[Drivers]` — driver objects that step a model through a load
-  history.
-- `[Data]` — supporting datasets (crystal-symmetry data, …).
-- `[EquationSystems]` — assembled non-linear systems.
+A NEML2 input file is organized into a few **top-level sections** —
+`[Models]`, `[Tensors]`, `[Solvers]`, `[Drivers]`, and a few others
+(see the [syntax catalog](syntax-catalog) for the full list).
 
 Inside each top-level section, every nested section describes one
-object. Its
-`type = ...` field names the registered class — every name shown in
-the [syntax catalog](syntax-catalog) is a valid type. For example:
+object. Its `type = ...` field names the registered class. For example:
 
 ```ini
 [Models]

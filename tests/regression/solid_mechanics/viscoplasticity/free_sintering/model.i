@@ -140,7 +140,6 @@
   [flow]
     type = ComposedModel
     models = 'j2 sh sp yield_surface'
-    automatic_nonlinear_parameter = false
   []
   [flow_rate]
     type = PerzynaPlasticFlowRate

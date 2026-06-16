@@ -48,14 +48,14 @@ from typing import TYPE_CHECKING
 import nmhit
 import torch
 
-from ..driver import Driver
 from ..factory import register_neml2_object
 from ..schema import HitField, HitSchema, dependency, option
 from ..types import R2, SR2, SSR4, WR2, MillerIndex, Rot, Scalar, TensorWrapper, Vec
+from .driver import Driver
 
 if TYPE_CHECKING:
     from ..factory import _NativeInputFile
-    from ..model import Model
+    from ..models.model import Model
 
 #: HIT ``force_<Type>_*`` / ``ic_<Type>_*`` tag -> native wrapper class. Mirrors
 #: ``testing._TYPE_MAP`` (and the C++ ``FOR_ALL_TENSORBASE`` macro expansion).
@@ -401,7 +401,7 @@ def _slice_typed(wrapped: TensorWrapper, step: int) -> TensorWrapper:
 
 
 def _as_typed(value, type_cls: type[TensorWrapper]) -> TensorWrapper:
-    """Coerce ``value`` to ``type_cls``, preserving sub_batch_ndim when possible."""
+    """Coerce ``value`` to ``type_cls``, preserving sub_batch_ndim."""
     if isinstance(value, type_cls):
         return value
     if isinstance(value, TensorWrapper):

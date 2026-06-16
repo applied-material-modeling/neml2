@@ -22,23 +22,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""neml2 — Python-native NEML2 model authoring surface.
+"""neml2 -- Python-native NEML2 model authoring surface.
 
 New constitutive models live under :mod:`neml2.models`; typed tensor
-primitives (``Scalar``, ``SR2``, ``SSR4``) and free functions on them live
-in :mod:`neml2.types`; the named-I/O model base and composition machinery
-live in :mod:`neml2.model`, :mod:`neml2.resolver`, and
-``neml2.models.common.ComposedModel``; the export pipeline that turns
-models into ``.pt2`` artifacts loadable from C++ lives in
-:mod:`neml2.export`. The pyzag training adapter lives in
+primitives (``Scalar``, ``SR2``, ``SSR4``) and free functions on them
+live in :mod:`neml2.types`; the named-I/O ``Model`` base, the dependency
+resolver, the chain-rule typing, the ``ComposedModel`` glue, and the
+``compile_model`` AOTI export entry point all live under
+:mod:`neml2.models`. Driver subclasses (``TransientDriver`` and friends)
+live under :mod:`neml2.drivers`. The pyzag training adapter lives in
 :mod:`neml2.pyzag`.
 """
 
 from pathlib import Path
 
-from ._guard import allow_autograd, allow_einsum  # noqa: F401 (also installs the forward guard)
-from .chain_rule import ChainRuleAction, ChainRuleDict, TangentAction
 from .cli import export_model_for_aoti
+from .models._guard import (  # noqa: F401 (also installs the forward guard)
+    allow_autograd,
+    allow_einsum,
+)
+from .models.chain_rule import ChainRuleAction, ChainRuleDict, TangentAction
 
 # AOTI subpackage is gated on the optional NEML2_AOTI build (the pybind
 # _aoti.so isn't present otherwise). Import for side effects so the HIT shim
@@ -48,28 +51,33 @@ try:
     from . import aoti as _aoti_module  # noqa: F401 (registers AOTIModel)
 except ImportError:
     pass
+# Eagerly expose ``neml2.pyzag`` as an attribute so notebooks / tests
+# can write ``neml2.pyzag.NEML2PyzagModel(...)`` without an explicit
+# import. Safe to place anywhere in this file -- ``pyzag.interface``
+# imports only from the leaf modules (``neml2.es``, ``neml2.types``,
+# ``neml2.models``) that are already loaded by this point. It used
+# to re-export ``load_nonlinear_system`` and tripped a circular
+# import; that's been removed.
+from . import pyzag as pyzag  # noqa: F401
 from .data import (  # noqa: F401 (registers CubicCrystal [Data] block)
     CrystalGeometry,
     CubicCrystal,
     cubic_symmetry_operators,
 )
-from .driver import Driver
 from .drivers import (  # noqa: F401 (registers TransientDriver / TransientRegression / Verification)
     TransientDriver,
     TransientRegression,
     Verification,
 )
+from .drivers.driver import Driver
 from .drivers.ModelUnitTest import ModelUnitTest, ModelUnitTestReport
-from .equation_systems import (  # noqa: F401 (side-effect: registers NonlinearSystem)
+from .es import (  # noqa: F401 (side-effect: registers NonlinearSystem)
     AssembledMatrix,
     AssembledVector,
     AxisLayout,
-    DenseImplicitSensitivity,
-    DenseLinearizedSystem,
-    DenseNewtonStep,
-    DenseOperator,
-    DenseRHS,
     ModelNonlinearSystem,
+    SparseMatrix,
+    SparseVector,
 )
 from .factory import (
     load_input,
@@ -78,7 +86,6 @@ from .factory import (
     load_string,
     register_neml2_object,
 )
-from .model import Model
 from .models import (
     chemical_reactions as _chemical_reactions_module,  # noqa: F401 (registers chemical-reactions leaves)
 )
@@ -90,6 +97,8 @@ from .models import (  # noqa: F401 (registers phase-field-fracture leaves)
 )
 from .models import porous_flow as _porous_flow_module  # noqa: F401 (registers porous-flow leaves)
 from .models.common import ComposedModel, ImplicitUpdate
+from .models.model import Model
+from .models.resolver import DependencyResolver
 from .models.solid_mechanics import (  # noqa: F401 (registers solid-mechanics leaves)
     crystal_plasticity as _crystal_plasticity_module,
 )
@@ -107,7 +116,6 @@ from .models.solid_mechanics.crystal_plasticity import (  # noqa: F401 (re-expor
     SumSlipRates,
     VoceSingleSlipHardeningRule,
 )
-from .resolver import DependencyResolver
 from .schema import HitSchema
 from .solvers import (
     DenseLU,
@@ -116,6 +124,18 @@ from .solvers import (
     NonlinearResult,
     RetCode,
     SchurComplement,
+)
+from .types import (  # noqa: F401 (convenience re-exports of the most common typed wrappers)
+    R2,
+    SR2,
+    SSR4,
+    WR2,
+    MillerIndex,
+    Rot,
+    Scalar,
+    Tensor,
+    TensorWrapper,
+    Vec,
 )
 from .user_tensors import (  # noqa: F401 (registers CSV<Type> [Tensors] block types)
     CSVSR2,
@@ -150,12 +170,9 @@ __all__ = [
     "AxisLayout",
     "AssembledVector",
     "AssembledMatrix",
+    "SparseVector",
+    "SparseMatrix",
     "ModelNonlinearSystem",
-    "DenseRHS",
-    "DenseOperator",
-    "DenseLinearizedSystem",
-    "DenseImplicitSensitivity",
-    "DenseNewtonStep",
     "DenseLU",
     "SchurComplement",
     "Newton",

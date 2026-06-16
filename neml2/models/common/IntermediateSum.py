@@ -26,14 +26,14 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
-from ...schema import HitSchema, input, output
+from ...schema import HitSchema, input, option, output
 from ...types import (
     SR2,
     sum,
 )
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("SR2IntermediateSum")
@@ -42,15 +42,19 @@ class SR2IntermediateSum(Model):
 
     Mirrors C++ ``IntermediateSum<SR2>``: reduces the trailing sub-batch axis
     by summing along it, dropping ``sub_batch_ndim`` by 1.
+
+    The ``reduces`` HIT parameter names the sub-batch label this
+    reducer collapses; the composed-model propagator uses it to track
+    per-label structural state through the chain.
     """
 
-    # The output couples sites along the sub-batch axis (every output depends
-    # on every input site) -- declare dense per D-049.
     hit = HitSchema(
         input("from", SR2, "Variable to reduce"),
         output("to", SR2, "The reduced variable"),
+        option("reduces", str, "Sub-batch label this reducer collapses.", attr="_reduces"),
     )
-    list_deriv = {("to", "from"): "dense"}
+
+    _reduces: str
 
     def forward(  # type: ignore[override]
         self,

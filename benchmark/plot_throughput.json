@@ -1,0 +1,25 @@
+{
+  "comment": "Default plot config for benchmark/plot_throughput.py. Each entry pairs a result folder with its legend label and matplotlib styling. kwargs apply to BOTH the scatter (data points + error bars) and the fitted scaling-curve line; the script pins linestyle='none' on the scatter and marker=None on the fit so user-supplied marker/linestyle land where they belong. To compare a different sweep, add/edit an entry and re-run `python -m benchmark.plot_throughput --config benchmark/plot_throughput.json --output-dir <dir>`.",
+  "folders": [
+    {
+      "path": "benchmark/results/20260608T040019Z_cpu_float64_eager",
+      "label": "v2 CPU (JIT)",
+      "kwargs": {"linestyle": "--", "marker": "x", "color": "tab:gray"}
+    },
+    {
+      "path": "benchmark/results/20260610T193958Z_cpu_float64_aoti",
+      "label": "v3 CPU (AOTI)",
+      "kwargs": {"linestyle": "-", "marker": "o", "color": "tab:blue"}
+    },
+    {
+      "path": "benchmark/results/20260608T100110Z_cuda_float64_eager",
+      "label": "v2 CUDA (JIT)",
+      "kwargs": {"linestyle": "--", "marker": "x", "color": "tab:orange"}
+    },
+    {
+      "path": "benchmark/results/20260610T001242Z_cuda_float64_aoti",
+      "label": "v3 CUDA (AOTI)",
+      "kwargs": {"linestyle": "-", "marker": "o", "color": "tab:red"}
+    }
+  ]
+}

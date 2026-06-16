@@ -28,11 +28,11 @@ from __future__ import annotations
 
 import torch
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar, pow
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 def _log(s: Scalar) -> Scalar:

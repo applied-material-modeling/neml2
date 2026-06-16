@@ -15,49 +15,21 @@ mystnb:
 (tutorials-extension-forward)=
 # The forward operator
 
-The previous two tutorials wired up the *structure* of the projectile
-model — its inputs, outputs, parameters, and the HIT block that
-instantiates it. What's left is the math: the body of `forward()` that
-turns a velocity into an acceleration, optionally accompanied by the
-chain-rule machinery for first-order derivatives through composed models.
+The previous tutorial declared the projectile model's inputs, outputs,
+and parameters. This one fills in the math: a `forward()` method that
+turns a velocity into an acceleration.
 
-## Method signature
+## The `forward` method
 
-A Python-native NEML2 model derives from
-{class}`neml2.model.Model` and implements one method:
+`forward()` is the function NEML2 calls to evaluate your model. The
+positional arguments are the inputs in the order you declared them in
+the schema — each one is already a typed wrapper (`Vec`, `SR2`, …) the
+framework built for you. Return the outputs in schema order.
 
-```python
-def forward(self, *typed_inputs, v=None):
-    ...
-```
-
-The positional arguments are the structural inputs in the order they
-appear in `input_spec` — each one is already a typed wrapper
-(`Scalar`, `Vec`, `SR2`, …) the framework constructed for you. The
-single keyword argument `v` (typed
-`dict[str, dict[str, TensorWrapper]] | None`) carries the first-order
-tangent seeded on each leaf input.
-
-`v=None` is the pure-forward case and is what almost every caller
-uses. When the caller does seed `v`, the forward additionally returns
-the JVP (Jacobian-vector product) of every output against every input
-tangent, propagated through the model's local Jacobian.
-
-The return shape mirrors that choice, in the order the schema's
-`output(...)` calls were declared:
-
-- **`model(*inputs)` (i.e. `v=None`).** Returns a typed wrapper if the
-  model has a single output, or a tuple of typed wrappers if it has
-  several.
-- **`model(*inputs, v={...})`.** Returns the same value(s) above,
-  followed by a single `v_out` dict mapping each output variable to a
-  `{seed_leaf: tangent}` dict.
-
-A single-output model like the projectile therefore returns
-`acceleration: Vec` in the pure-forward case, and
-`(acceleration: Vec, v_out: dict)` when a tangent is seeded. The
-forward body below makes that explicit by returning `a` from the
-`v is None` branch and `a, ...chain_rule_out` otherwise.
+There's also a `v=None` keyword in the signature — that's the
+chain-rule hook for first derivatives, covered later on this page.
+Until you need derivatives, you can leave it alone; calls without
+`v` get back just the outputs.
 
 ## Implementation
 
@@ -67,10 +39,9 @@ $$
   \boldsymbol{a} = \boldsymbol{g} - \mu \boldsymbol{v}.
 $$
 
-With the schema declared in [](tutorials-extension-arguments), `self.g`
-is a `Vec` (the gravity parameter), `self.mu` is a `Scalar` (the
-dynamic viscosity), and the velocity arrives as the first positional
-argument. The forward method is:
+`self.g` is the gravity vector, `self.mu` is the drag coefficient, and
+the velocity comes in as the first positional argument. The whole
+forward is:
 
 ```{literalinclude} projectile.py
 :language: python
@@ -78,38 +49,24 @@ argument. The forward method is:
 :pyobject: ProjectileAcceleration.forward
 ```
 
-Three things are happening:
+The first line is the physics: `Vec - Scalar * Vec` gives back a `Vec`,
+batched or not. If `v is None` (the usual case) the method returns and
+you're done.
 
-1. **Compute the value.** The arithmetic is plain typed-wrapper
-   algebra: `Vec - Scalar * Vec` returns a `Vec` of the correct shape,
-   batched or not. This branch alone is enough for the pure-forward
-   contract — if `v is None`, the method returns the output and stops.
-2. **Declare the local Jacobian.** `actions` is a dict keyed by *input
-   variable name* (the user-facing name resolved from HIT, not the
-   schema option name). Each value is a closure that receives an
-   incoming tangent `V` for that input and returns the contribution
-   to ∂(output)/∂(seed-leaf). Here $\partial \boldsymbol{a}/\partial
-   \boldsymbol{v} = -\mu I$, so the closure is `lambda V: -self.mu * V`
-   — the framework handles the matrix-free pushforward.
-3. **Dispatch through `apply_chain_rule`.**
-   {meth}`~neml2.model.Model.apply_chain_rule` consumes the incoming
-   `v` channel together with the `actions` dict and returns the JVP
-   keyed by output and seed leaf. The forward returns the tuple
-   `(value, v_out)`.
-
-:::{note}
-The closure `lambda V: -self.mu * V` is matrix-free: the framework
-hands it whatever shape of incoming tangent the caller seeded, and the
-returned typed wrapper is accumulated by seed leaf. Nothing in the
-forward ever materializes a Jacobian block.
-:::
+The `else` branch is the chain-rule hook. `actions` maps each input
+variable to a small function that takes an incoming tangent
+(something the same shape as that input) and returns its
+contribution to the output's tangent. For this model the math is
+simple: $\partial \boldsymbol{a}/\partial \boldsymbol{v} = -\mu I$,
+so the closure is `lambda V: -self.mu * V`. `apply_chain_rule` then
+sums the contribution against any tangents the caller seeded on
+`v`, without ever building the full Jacobian matrix in memory.
 
 ## Evaluation
 
-The model definition is now *complete*: structural declarations from
-the schema, registration with the factory, and a body for `forward()`.
-The custom model can be evaluated through the same `neml2.load_model`
-entry point as any built-in type.
+That's the whole model. Load it the same way you'd load any built-in
+type — `neml2.load_model` finds it through the factory as long as the
+module that registers it has been imported.
 
 The input file from the previous tutorial wires the model into HIT:
 
@@ -118,8 +75,7 @@ The input file from the previous tutorial wires the model into HIT:
 :caption: input.i
 ```
 
-Import the module that contains the registered class, then load and
-call the model.
+Import the module so the class registers, then load and call:
 
 ```{code-cell} ipython3
 import sys, os
@@ -147,16 +103,12 @@ preserves the `Vec` shape on the way out.
 
 ## First derivatives
 
-Because the forward implements the `v` channel, the same model can also
-report directional derivatives without any extra wiring. Seed an
-incoming tangent on the velocity input and the JVP comes back keyed by
-output and by seed leaf:
+Because `forward()` implements the `v` branch, the same model can hand
+back directional derivatives with no extra wiring. Seed a tangent on
+the velocity input and the JVP comes back through `v_out`:
 
 ```{code-cell} ipython3
-# A K=3 batch of seed tangents — the identity on Vec — yields the full
-# Jacobian column of ∂a/∂v evaluated against I. ``v`` is keyed
-# {input_var: {seed_leaf: tangent}}; ``v_out`` is keyed the same way
-# but with the output variable on the outer level.
+# Seed the identity on Vec to read off the full Jacobian column ∂a/∂v.
 seed = Vec(torch.eye(3, dtype=torch.float64))
 accel, v_out = model(vel, v={"v": {"velocity_leaf": seed}})
 v_out["a"]["velocity_leaf"].data
@@ -167,13 +119,9 @@ This matches the analytical $\partial \boldsymbol{a}/\partial
 
 ## Driving the model from a unit-test input
 
-The `ModelUnitTest` driver is the convention for pinning a custom
-leaf's behavior in CI: it loads the model from HIT, runs the forward
-on user-supplied inputs, checks values against
-`output_<Type>_values`, and cross-checks the first-derivative
-implementation against PyTorch's autograd JVP oracle. The driver
-discovers the model automatically once the module that registers it
-has been imported.
+`ModelUnitTest` is the usual way to pin a custom model's behavior in
+CI. It loads the model, runs it on inputs you supply, checks the
+outputs, and cross-checks the derivatives against PyTorch's autograd:
 
 ```{literalinclude} unit_test.i
 :language: ini
@@ -187,20 +135,16 @@ report = ModelUnitTest.from_file("unit_test.i").run()
 print(f"value checks: {report.value_checks}, JVP checks: {report.jvp_checks}")
 ```
 
-Both passes — values against the analytical answer and the analytical
-JVP against autograd — succeed, confirming the forward body is
-internally consistent.
+If both counters are positive (and the cell didn't raise), every
+value and every JVP matched. A zero on either side means that check
+was skipped, not that it failed silently.
 
-## What's next
+## Where to go next
 
-- The model so far is a *single leaf*. The next tutorial,
-  [](tutorials-extension-composition), shows how to glue several
-  leaves into a `ComposedModel`, where each leaf's `forward` is called
-  by the dependency resolver and the chain-rule contributions are
-  threaded automatically.
-- For richer chain-rule examples — multiple inputs, non-linear
-  leaves — read the source of
-  {class}`~neml2.models.common.LinearCombination._LinearCombination`,
-  {class}`~neml2.models.solid_mechanics.plasticity.YieldFunction.YieldFunction`,
-  and
-  {class}`~neml2.models.common.ConstantParameter._ConstantParameter`.
+- The next tutorial, [](tutorials-extension-composition), shows how to
+  glue several models together so a dependency resolver wires their
+  inputs and outputs and threads the chain rule for you.
+- For richer chain-rule examples (multiple inputs, non-linear leaves)
+  the leaves under `neml2/models/common/` (e.g. `LinearCombination`)
+  and `neml2/models/solid_mechanics/plasticity/` (e.g.
+  `YieldFunction`) are a good read.

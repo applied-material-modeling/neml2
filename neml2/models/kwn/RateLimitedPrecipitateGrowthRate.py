@@ -26,11 +26,11 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar
+from ..chain_rule import ChainRuleAction, ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("RateLimitedPrecipitateGrowthRate")
@@ -69,22 +69,10 @@ class RateLimitedPrecipitateGrowthRate(Model):
             allow_nonlinear=True,
         ),
     )
-    # ``radius`` is a per-bin (sub_batch_ndim=1) Scalar while the other
-    # parameters and the structural input may be scalar (sub_batch_ndim=0). The
-    # bin-broadcast made by ``align_sub_batch`` makes site-i of ``growth_rate``
-    # depend on the single scalar value of any sub_batch_ndim=0 input/promoted
-    # parameter -- a cross-bin (dense) coupling rather than the default
-    # per-site diagonal one. Declare every input pair as ``"dense"`` so the
-    # composed-model resolver picks the conservative (BLOCK -> DENSE fallback)
-    # sparsity flag. Per-bin inputs still produce a strictly bin-diagonal
-    # action; the flag is purely an upper bound used by the system assembler.
-    list_deriv = {
-        ("growth_rate", "current_concentration"): "dense",
-        ("growth_rate", "radius"): "dense",
-        ("growth_rate", "equilibrium_concentration"): "dense",
-        ("growth_rate", "concentration_difference"): "dense",
-        ("growth_rate", "diffusivity"): "dense",
-    }
+    # Conservative ``"bin"`` introduction across every edge -- see the
+    # SFFK variant's docstring for the same rationale (mixed scalar /
+    # per-bin inputs; the union semantics of ``introduces`` make this
+    # idempotent for per-bin inputs).
 
     # ``from_hit`` auto-declares the four parameters (stored as R, x_eq, dx, D).
     # Annotate so pyright sees the typed wrappers that ``Model.__getattr__``

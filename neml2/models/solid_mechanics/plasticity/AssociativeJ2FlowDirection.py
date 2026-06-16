@@ -30,12 +30,12 @@ import math
 
 import torch
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import SR2
 from ....types.functions import dev, inner, norm
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("AssociativeJ2FlowDirection")

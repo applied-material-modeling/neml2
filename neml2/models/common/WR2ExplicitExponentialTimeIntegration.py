@@ -26,9 +26,7 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, derived_input, input, option, output
 from ...types import (
     WR2,
@@ -39,6 +37,8 @@ from ...types import (
     jvp_compose,
     jvp_exp_map,
 )
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("WR2ExplicitExponentialTimeIntegration")

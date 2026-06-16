@@ -14,17 +14,18 @@ TSLs are damage-driven: a scalar damage variable accumulates as the
 effective separation grows, and the traction degrades from an initial
 elastic response toward zero at full debonding.
 
-Rather than ship monolithic TSL classes, NEML2 provides a catalog of
-small composable primitives that you assemble into a TSL via a
-[](models-ComposedModel). Each primitive does exactly one mathematical
-step, so a custom TSL — e.g. a different damage formula paired with
-the bilinear envelope, or the Camanho–Davila initiation paired with a
-new propagation criterion — needs no Python at all; just write a new
-input file.
+NEML2 provides a catalog of small composable primitives that you
+assemble into a TSL via a [](models-ComposedModel), so a custom
+variant (a different damage formula with the bilinear envelope, the
+Camanho–Davila initiation with a new propagation criterion) is
+usually an input-file change rather than a new class. A genuinely
+new building block — a damage formula not on the list, a new
+initiation criterion — still wants a small `Model` subclass,
+following the same pattern as the existing primitives.
 
 The catalog is organized by role:
 
-**Kinematic helpers** (live in `models/common/`):
+**Kinematic helpers** (general-purpose primitives reused across modules):
 - [](models-VecComponents) — split the displacement-jump `Vec` into
   three named `Scalar` components.
 - [](models-MacaulaySplit) — split the normal jump into its positive
@@ -150,14 +151,15 @@ Reading the `[Models]` block top to bottom:
    $p = 2$), giving $\delta_s$ from the math above.
 2. **`macaulay_n`** ([](models-MacaulaySplit)) takes the signed normal
    jump and emits its positive part as `normal_separation`
-   ($\langle \delta_n \rangle_+$) and its magnitude-of-negative part
-   as `normal_penetration` ($\langle \delta_n \rangle_-$). The
-   positive part drives damage and softening; the negative part is
-   handed to the traction assembly as the elastic penetration channel
-   that keeps compression damage-free.
+   ($\langle \delta_n \rangle_+$) and its negative part as
+   `normal_penetration`
+   ($\langle \delta_n \rangle_- = \delta_n - \langle \delta_n \rangle_+$,
+   i.e. the signed-negative branch that vanishes whenever
+   $\delta_n \ge 0$). The positive part drives damage and softening;
+   the negative part is handed to the traction assembly as the
+   elastic penetration channel that keeps compression damage-free.
 3. **`mode_mixity`** ([](models-ModeMixity)) computes
-   $\beta = \delta_s / \langle \delta_n \rangle_+$. This is the only
-   mode-mixity number the rest of the chain consumes.
+   $\beta = \delta_s / \langle \delta_n \rangle_+$.
 4. **`critical_separation`**
    ([](models-CamanhoDavilaCriticalSeparation)) evaluates
    $\delta_c(\beta)$ from the penalty stiffness $K$ and the per-mode

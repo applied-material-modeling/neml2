@@ -2,16 +2,18 @@
 # Installation
 
 NEML2 ships as a Python wheel on
-[PyPI](https://pypi.org/project/neml2/), and that is the only supported
+[PyPI](https://pypi.org/project/neml2/), and that's the recommended
 install path for end users:
 
 ```shell
 pip install neml2
 ```
 
-[PyTorch](https://pytorch.org/get-started/locally/) is the sole runtime
-dependency and is pulled in automatically. See [](torch-compat) for the
-torch versions every wheel is regression-tested against.
+[PyTorch](https://pytorch.org/get-started/locally/) and a couple of
+small helper packages are the only runtime dependencies, and pip pulls
+them in automatically. See [](torch-compat) for the torch versions
+every wheel is regression-tested against, and [](dependency-management)
+for the full dependency list.
 
 Verify the install:
 
@@ -42,8 +44,9 @@ The wheel installs into your site-packages under `neml2/`:
 └── version, hash            # build metadata
 ```
 
-Python consumers stop reading here: `import neml2` works as soon as the
-wheel is installed.
+Python consumers can skip ahead to [](getting-started); the next
+section on torch variants is worth a look if you need a specific CUDA
+/ ROCm / nightly build.
 
 C++ consumers point their build system at the relevant subdirectories of
 the wheel — both CMake and `pkg-config` are supported. The wiring is
@@ -63,10 +66,13 @@ PyPI index serves — that's the right choice for most users and needs
 no further action.
 
 If you need a *specific* torch variant — a particular CUDA runtime, a
-ROCm build, a CPU-only build, the nightly channel — install that torch
-first using the selector at
-[pytorch.org/get-started](https://pytorch.org/get-started/locally/),
-then run `pip install neml2`. NEML2 picks up whichever torch is already
-on the import path; if it supports your accelerator, NEML2 does too. To
-run a model on the GPU, pass `device="cuda"` (or any `torch.device`)
-at construction or evaluation time.
+ROCm build, a CPU-only build, the nightly channel — install it in two
+steps:
+
+1. Install the torch variant you want via the selector at
+   [pytorch.org/get-started](https://pytorch.org/get-started/locally/).
+2. Run `pip install neml2`.
+
+NEML2 picks up whichever torch is already on the import path, so any
+accelerator torch supports works too. For moving a model onto a device
+and allocating inputs there, see [](tutorials-models-evaluation-device).

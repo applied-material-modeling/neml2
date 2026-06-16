@@ -22,32 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import pytest
 import torch
 
 torch.set_default_dtype(torch.float64)
-
-
-def pytest_addoption(parser):
-    parser.addoption(
-        "--run-aoti-compile",
-        action="store_true",
-        default=False,
-        help="run tests that compile AOTI packages",
-    )
-
-
-def pytest_configure(config):
-    config.addinivalue_line(
-        "markers",
-        "aoti_compile: tests that compile AOTI packages and are skipped by default",
-    )
-
-
-def pytest_collection_modifyitems(config, items):
-    if config.getoption("--run-aoti-compile"):
-        return
-    skip_aoti = pytest.mark.skip(reason="requires --run-aoti-compile")
-    for item in items:
-        if "aoti_compile" in item.keywords:
-            item.add_marker(skip_aoti)

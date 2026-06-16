@@ -74,7 +74,7 @@ model.nu.data.requires_grad_(False)
 
 ## A scalar loss, end-to-end
 
-Pick a small uniaxial-tension input and evaluate the model:
+Pick a small uniaxial-strain input and evaluate the model:
 
 ```{code-cell} ipython3
 import torch
@@ -85,11 +85,13 @@ stress = model(strain)
 stress
 ```
 
-Notice the `grad_fn=<AddBackward0>` on the underlying tensor — the
+Notice the `grad_fn=…` annotation on the underlying tensor — the
 forward call wired up the autograd graph that connects `stress` back to
 `model.E` and `model.nu`. Any scalar function of `stress` can now be
-back-propagated. As a stand-in for a real calibration objective, use
-the Frobenius norm of the stress tensor:
+back-propagated. As a stand-in for a real calibration objective, drop
+down to the underlying `torch.Tensor` via `stress.data` so we can
+call PyTorch's tensor `.norm()` directly — autograd is preserved
+through this access:
 
 ```{code-cell} ipython3
 loss = stress.data.norm()
@@ -144,21 +146,17 @@ updates.
 
 ## What about implicit models?
 
-The story above relies on `stress` having an autograd path back to the
-parameters. For an explicit constitutive law that path is the chain of
-tensor operations the model executes. For an *implicit* model — one
-that returns the solution of an internal Newton solve, e.g. a
-viscoplastic update — the path through the Newton iterations would
-naively be untraceable, since the iterates are intermediate variables
-that get discarded.
-
-NEML2's `ImplicitUpdate` wrapper handles this by applying the
-**implicit function theorem** at the converged solution: it overrides
-the autograd rule so that `d(output)/d(parameter)` comes from a single
-linear solve against the Jacobian at the fixed point. The result is
-exact (not the numerical drift you would get by differentiating
-through the solver) and cheap (one back-solve regardless of how many
-iterations the forward pass took).
+For an implicit model — one whose output comes from an internal Newton
+solve, e.g. a viscoplastic update — autograd still flows back to the
+parameters with no changes to your training code. The reason is that
+`ImplicitUpdate` overrides the backward rule: at the converged
+solution it applies the implicit function theorem so the gradient
+comes from a single linear solve against the Jacobian at the fixed
+point, instead of recording every intermediate iterate from every
+step in the autograd tape. The result is the analytically exact
+derivative at the converged point, and the backward pass costs one
+linear solve regardless of how many Newton iterations the forward
+pass took.
 
 You don't have to do anything special to take advantage of this — as
 long as the implicit residual is wrapped in `ImplicitUpdate`, autograd

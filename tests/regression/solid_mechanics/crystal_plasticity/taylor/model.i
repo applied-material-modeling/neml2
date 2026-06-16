@@ -26,15 +26,29 @@
   # block-diagonal (BLOCK) axis rather than a dynamic-batch axis.
   [initial_orientation]
     type = Python
-    expr = 'Rot(torch.tensor([[-0.269981, -0.299844, -0.86408], [0.209546, 0.192014, 0.514051], [-0.0251234, -0.0175916, -0.636644], [-0.146257, -0.0475218, -0.970804], [-0.174458, -0.302169, -0.523373]], dtype=torch.float64), sub_batch_ndim=1)'
+    expr = '''
+      Rot(torch.tensor([[-0.269981, -0.299844, -0.86408],
+                        [0.209546, 0.192014, 0.514051],
+                        [-0.0251234, -0.0175916, -0.636644],
+                        [-0.146257, -0.0475218, -0.970804],
+                        [-0.174458, -0.302169, -0.523373]],
+                       dtype=torch.float64),
+          sub_batch_ndim=1).sub_batch.retag(1)
+    '''
   []
   [initial_elastic_strain]
     type = Python
-    expr = 'SR2(torch.zeros(5, 6, dtype=torch.float64), sub_batch_ndim=1)'
+    expr = '''
+      SR2(torch.zeros(5, 6, dtype=torch.float64),
+          sub_batch_ndim=1).sub_batch.retag(1)
+    '''
   []
   [initial_slip_hardening]
     type = Python
-    expr = 'Scalar(torch.zeros(5, dtype=torch.float64), sub_batch_ndim=1)'
+    expr = '''
+      Scalar(torch.zeros(5, dtype=torch.float64),
+             sub_batch_ndim=1).sub_batch.retag(1)
+    '''
   []
   # Prescribed forces (no sub-batch — they are global per timestep).
   [control]
@@ -184,6 +198,7 @@
     type = SR2IntermediateMean
     from = 'cauchy_stress'
     to = 'mean_cauchy_stress'
+    reduces = 'grain'
   []
   [match_mean_cauchy_stress]
     type = SR2LinearCombination
@@ -211,7 +226,7 @@
     model = 'implicit_model'
     unknowns = 'elastic_strain orientation slip_hardening; deformation_rate target_cauchy_stress'
     residuals = 'elastic_strain_residual orientation_residual slip_hardening_residual; y_residual target_cauchy_stress_residual'
-    istructure = 'BLOCK DENSE'
+    structure = 'block dense'
   []
 []
 

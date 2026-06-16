@@ -28,11 +28,11 @@ from __future__ import annotations
 
 import math
 
-from ....chain_rule import ChainRuleDict, SecondOrderChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar
+from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("YieldFunction")

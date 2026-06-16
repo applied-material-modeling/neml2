@@ -69,6 +69,11 @@ class Scalar(PrimitiveTensor):
 
     data: torch.Tensor
     sub_batch_ndim: int = 0
+    sub_batch_state: tuple = ()
+    sub_batch_meta: tuple = ()
+    k_ndim: int = 0
+    k_state: tuple = ()
+    k_pairing: tuple = ()
     BASE_NDIM: ClassVar[int] = 0
     BASE_SHAPE: ClassVar[tuple[int, ...]] = ()
 
@@ -76,11 +81,32 @@ class Scalar(PrimitiveTensor):
         self,
         data,
         sub_batch_ndim: int = 0,
+        sub_batch_state: tuple = (),
+        sub_batch_meta: tuple = (),
+        k_ndim: int = 0,
+        k_state: tuple = (),
+        k_pairing: tuple = (),
         *,
         dtype: torch.dtype | None = None,
         device: torch.device | str | None = None,
     ) -> None:
-        if isinstance(data, torch.Tensor):
+        # Accept TensorWrapper input via the same auto-unwrap policy the
+        # base ``__post_init__`` enforces for dataclass-generated __init__s
+        # (Vec, SR2, etc.). This branch is the Scalar-specific equivalent;
+        # without it, ``Scalar(other_scalar, ...)`` falls through to
+        # ``torch.as_tensor(other_scalar)`` which doesn't know about
+        # TensorWrapper and raises. The outer call's metadata wins, matching
+        # the base policy.
+        if isinstance(data, TensorWrapper):
+            if not isinstance(data, Scalar):
+                raise TypeError(
+                    f"Cannot wrap a {type(data).__name__} as a Scalar; "
+                    "wrapper types must match. Pass `inner.data` instead of the wrapper."
+                )
+            data = data.data
+            if dtype is not None or device is not None:
+                data = data.to(dtype=dtype, device=device)
+        elif isinstance(data, torch.Tensor):
             if dtype is not None or device is not None:
                 data = data.to(dtype=dtype, device=device)
         else:
@@ -90,6 +116,12 @@ class Scalar(PrimitiveTensor):
         # dataclass-declared fields.
         object.__setattr__(self, "data", data)
         object.__setattr__(self, "sub_batch_ndim", sub_batch_ndim)
+        object.__setattr__(self, "sub_batch_state", sub_batch_state)
+        object.__setattr__(self, "sub_batch_meta", sub_batch_meta)
+        object.__setattr__(self, "k_ndim", k_ndim)
+        object.__setattr__(self, "k_state", k_state)
+        object.__setattr__(self, "k_pairing", k_pairing)
+        self.__post_init__()
 
     @classmethod
     def from_value(cls, x: float | int, *, like: TensorWrapper) -> Scalar:
@@ -170,7 +202,7 @@ class Scalar(PrimitiveTensor):
 
     def __add__(self, other) -> Scalar:
         if isinstance(other, (float, int)):
-            return Scalar(self.data + other, sub_batch_ndim=self.sub_batch_ndim)
+            return self._rewrap(self.data + other, sub_batch_ndim=self.sub_batch_ndim)
         return self._binary(other, lambda a, b: a + b)
 
     def __radd__(self, other) -> Scalar:
@@ -178,12 +210,12 @@ class Scalar(PrimitiveTensor):
 
     def __sub__(self, other) -> Scalar:
         if isinstance(other, (float, int)):
-            return Scalar(self.data - other, sub_batch_ndim=self.sub_batch_ndim)
+            return self._rewrap(self.data - other, sub_batch_ndim=self.sub_batch_ndim)
         return self._binary(other, lambda a, b: a - b)
 
     def __rsub__(self, other) -> Scalar:
         if isinstance(other, (float, int)):
-            return Scalar(other - self.data, sub_batch_ndim=self.sub_batch_ndim)
+            return self._rewrap(other - self.data, sub_batch_ndim=self.sub_batch_ndim)
         return NotImplemented
 
     @overload
@@ -207,7 +239,7 @@ class Scalar(PrimitiveTensor):
 
     def __rtruediv__(self, other) -> Scalar:
         if isinstance(other, (float, int)):
-            return Scalar(other / self.data, sub_batch_ndim=self.sub_batch_ndim)
+            return self._rewrap(other / self.data, sub_batch_ndim=self.sub_batch_ndim)
         return NotImplemented
 
     # ---- Scalar-only transcendentals / unary ops ----
@@ -215,10 +247,10 @@ class Scalar(PrimitiveTensor):
     # ``__neg__`` is inherited from PrimitiveTensor — its body is the same.
 
     def __abs__(self) -> Scalar:
-        return Scalar(torch.abs(self.data), sub_batch_ndim=self.sub_batch_ndim)
+        return self._rewrap(torch.abs(self.data), sub_batch_ndim=self.sub_batch_ndim)
 
     def __pow__(self, n: float | int) -> Scalar:
-        return Scalar(torch.pow(self.data, n), sub_batch_ndim=self.sub_batch_ndim)
+        return self._rewrap(torch.pow(self.data, n), sub_batch_ndim=self.sub_batch_ndim)
 
 
 register(Scalar)

@@ -34,13 +34,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, derived_input, input, option, output
 
 # Avoid the bare ``input`` shadowing the builtin in type hints below.
 from ....types import Scalar
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 if TYPE_CHECKING:
     import nmhit

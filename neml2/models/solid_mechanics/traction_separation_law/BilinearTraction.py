@@ -26,11 +26,11 @@
 
 from __future__ import annotations
 
-from ....chain_rule import ChainRuleAction, ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, derived_input, input, output, parameter
 from ....types import Scalar, Vec, gt, lt, vec_from_scalars, where
+from ...chain_rule import ChainRuleAction, ChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("BilinearTraction")

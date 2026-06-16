@@ -5,15 +5,15 @@
 
 The `finite_volume` module provides composable building blocks for
 solving 1D PDEs with the cell-centered finite volume method. The
-primitives are designed for arbitrary batch dimensions and integrate
-with the standard NEML2 time-integration and nonlinear-solve
-infrastructure, so a transport model assembled from them looks
-indistinguishable to the rest of the framework from a constitutive
-model assembled from elasticity and plasticity primitives.
+primitives batch over arbitrary leading dimensions and plug into
+`TransientDriver`, `ImplicitUpdate`, and `ComposedModel` like any
+other NEML2 model, so finite-volume transport models compose with
+the rest of the framework through the same interfaces a
+constitutive model uses.
 
-The catalog could be used to discretize arbitrary PDEs, but the
-provided examples and regression tests focus on 1D transport
-(advection-diffusion-reaction). The module ships:
+The primitives generalize to a range of cell-centered finite-volume
+problems; the provided examples and regression tests focus on 1D
+transport (advection-diffusion-reaction). The module ships:
 
 - **Discretization operators** — `LinearlyInterpolateToCellEdges`,
   `FiniteVolumeGradient`, `FiniteVolumeUpwindedAdvectiveFlux`.
@@ -118,13 +118,11 @@ a prescribed value to the left or right end of an intermediate
 tensor with [](models-FiniteVolumeAppendBoundaryCondition). Applied
 to the flux array $J$, this realizes a Neumann condition; applied
 to $u$ on a ghost edge, it realizes a Dirichlet condition. The two
-ends are configured by chaining the primitive twice (left, then
-right).
+ends are configured by chaining the primitive twice, once per side.
 
 ## Example: combined advection-diffusion-reaction
 
-The following input file (under `tests/regression/finite_volume/combined/`)
-discretizes
+The following input file discretizes
 
 $$
 \partial_t u + \partial_x\!\left(v u - D\, \partial_x u\right)
@@ -145,9 +143,10 @@ The example builds a single implicit-update model out of three
 layers.
 
 **Mesh and field tensors** (`[Tensors]`) — `edges` is a 1D
-`Scalar` carrying the cell edges with `sub_batch_ndim=1`, which
-marks the trailing axis as the *spatial* axis (so framework
-batching is independent of grid refinement). `centers` and
+`Scalar` carrying the cell edges with `sub_batch_ndim=1`. That
+puts the spatial axis in sub-batch, so any leading batch dimension
+(parameter sweep, ensemble of simulations) composes on top without
+any code change here. `centers` and
 `dx_centers` derive cell-center positions and center-to-center
 spacings; `dx` is the cell-width vector. The initial condition
 `ic` is a Gaussian centered at $x = 0.25$, and `D_cells`,

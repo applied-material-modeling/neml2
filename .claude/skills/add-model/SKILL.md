@@ -1,9 +1,20 @@
 ---
 name: add-model
-description: Scaffold a new NEML2 `Model` subclass under `neml2/models/<domain>/`. NEML2 models are pure Python classes deriving from `neml2.model.Model` (an `nn.Module`), declared via a `HitSchema`, decorated with `@register_neml2_object("TypeName")`, and tested with a `.i` driver under `tests/models/<domain>/`. Trigger on any "add a Foo model", "scaffold a new yield function", "create an SR2-to-SR2 mapping", etc.
+description: Scaffold a new NEML2 `Model` subclass under `neml2/models/<domain>/`. NEML2 models are pure Python classes deriving from `neml2.models.model.Model` (an `nn.Module`), declared via a `HitSchema`, decorated with `@register_neml2_object("TypeName")`, and tested with a `.i` driver under `tests/models/<domain>/`. Trigger on any "add a Foo model", "scaffold a new yield function", "create an SR2-to-SR2 mapping", etc.
 ---
 
 # add-model
+
+## Wrapper discipline — read this before writing forward()
+
+The model leaves you author here are bound by the three hard rules in `CLAUDE.md`. The two that bite the hardest when writing `forward`:
+
+- **Stay in typed-wrapper algebra.** Inputs arrive as typed wrappers (`Scalar`, `SR2`, ...), and `forward` must return typed wrappers. Don't unwrap to raw `torch.Tensor` to do a "quick `torch.*` op" and then re-wrap — that drops `sub_batch_ndim`, `sub_batch_labels`, and state metadata, and the bug surfaces far downstream.
+- **Don't touch `.data`.** Outside `neml2/types/`, `.data` is forbidden. If you find yourself wanting it, you need a wrapper-level op that doesn't yet exist. The right action is to **add the op under `neml2/types/`** (a method on `Tensor` / `TensorWrapper`, or a function in `neml2/types/functions.py`) and call it from your leaf. Do not work around the missing op by reaching into the raw tensor — that's how the chain-rule label-drop cascade started.
+
+When in doubt, browse `neml2/types/functions.py` and the region-view APIs (`.batch`, `.sub_batch`, `.base` on `Tensor`) for the typed equivalent of the torch op you wanted.
+
+## Anatomy of a leaf
 
 A NEML2 model is a Python class with three load-bearing pieces:
 
@@ -26,9 +37,9 @@ A NEML2 model is a Python class with three load-bearing pieces:
 ```python
 # neml2/models/solid_mechanics/plasticity/MyHardening.py
 from neml2.factory import register_neml2_object
-from neml2.model import Model
+from neml2.models.model import Model
 from neml2.schema import HitSchema, input, output, parameter
-from neml2.chain_rule import ChainRuleDict
+from neml2.models.chain_rule import ChainRuleDict
 from neml2.types import Scalar
 
 
@@ -132,7 +143,7 @@ The driver checks forward values + auto-checks first-order JVPs against
 
 ## References
 
-- `neml2/model.py` — base class, `apply_chain_rule`,
+- `neml2/models/model.py` — base class, `apply_chain_rule`,
   `apply_chain_rule_2`, `propagate_tangents`, `_get_param`.
 - `neml2/types/functions.py` — typed free functions and JVP primitives.
 - `neml2/schema.py` — `HitSchema`, `input`, `output`, `parameter`,

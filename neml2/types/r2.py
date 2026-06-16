@@ -41,7 +41,7 @@ from typing import ClassVar
 
 import torch
 
-from neml2.types._base import align_sub_batch
+from neml2.types._base import align_k, align_sub_batch, combine_k_state, combine_sub_batch_state
 from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
 
@@ -52,6 +52,11 @@ class R2(PrimitiveTensor):
 
     data: torch.Tensor
     sub_batch_ndim: int = 0
+    sub_batch_state: tuple = ()
+    sub_batch_meta: tuple = ()
+    k_ndim: int = 0
+    k_state: tuple = ()
+    k_pairing: tuple = ()
     BASE_NDIM: ClassVar[int] = 2
     BASE_SHAPE: ClassVar[tuple[int, ...]] = (3, 3)
 
@@ -67,10 +72,31 @@ class R2(PrimitiveTensor):
         ``align_sub_batch`` pads the LHS/RHS so e.g. a global ``(B, 3, 3)`` and
         a per-crystal ``(B, 5, 3, 3)`` matmul aligns to ``(B, 1, 3, 3)`` vs
         ``(B, 5, 3, 3)`` and broadcasts to ``(B, 5, 3, 3)``.
+
+        Uses :func:`~neml2.types.functions.matmul_3x3` (hand-rolled
+        pointwise) rather than ``torch.matmul`` so the op fuses with
+        surrounding pointwise ops under Inductor lowering. cuBLAS / MKL
+        matmul kernels can't fuse with their neighbours, so each
+        ``a @ b`` would split a CP chain into separate kernels with
+        intermediate materialisations.
         """
         if isinstance(other, R2):
+            # Lazy import to avoid the cycle ``types -> functions -> types``.
+            from neml2.types.functions import matmul_3x3  # noqa: PLC0415
+
             [aa, bb], sb = align_sub_batch(self, other)
-            return R2(aa.data @ bb.data, sub_batch_ndim=sb)
+            state, meta = combine_sub_batch_state(aa, bb)
+            [aaK, bbK], _ = align_k(aa, bb)
+            k_state, k_pairing = combine_k_state(aaK, bbK)
+            return aaK._rewrap(
+                matmul_3x3(aaK.data, bbK.data),
+                sub_batch_ndim=sb,
+                sub_batch_state=state,
+                sub_batch_meta=meta,
+                k_ndim=len(k_state),
+                k_state=k_state,
+                k_pairing=k_pairing,
+            )
         return NotImplemented
 
 

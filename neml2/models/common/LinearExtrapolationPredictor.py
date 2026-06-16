@@ -30,7 +30,6 @@ from typing import cast
 
 import torch
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
 from ...schema import HitSchema, option
 from ...types import (
@@ -46,6 +45,7 @@ from ...types import (
     abs as wrap_abs,
 )
 from .._hit import _opt_list_str
+from ..chain_rule import ChainRuleDict
 from .ConstantExtrapolationPredictor import ConstantExtrapolationPredictor
 
 

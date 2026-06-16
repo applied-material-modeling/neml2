@@ -22,15 +22,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Pytest conftest for the native regression suite.
+"""Pytest conftest for the regression suite.
 
 Side-effect-imports the test-only ``_fixtures`` package so its
 ``@register_neml2_object``-decorated models (``TabulatedPolynomialModel``,
-``TorchScriptFlowRate``) are registered with the native factory before any
-scenario ``.i`` file is collected. The package lives alongside the regression
-tests under ``python/tests/native/_fixtures/`` rather than in
-``neml2.models`` because it is test infrastructure with no place in the
-production native package.
+``TorchScriptFlowRate``) are registered with the native factory before
+any scenario ``.i`` file is collected. The package lives next to this
+conftest at ``tests/regression/_fixtures/`` because it is regression-test
+infrastructure with no consumer outside the regression suite.
 """
 
 from __future__ import annotations
@@ -38,10 +37,10 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Put ``python/tests/native/`` on sys.path so ``import _fixtures`` works
+# Put ``tests/regression/`` on sys.path so ``import _fixtures`` resolves
 # regardless of pytest's rootdir / cwd, then trigger registration.
-_NATIVE_TESTS_DIR = Path(__file__).resolve().parent.parent
-if str(_NATIVE_TESTS_DIR) not in sys.path:
-    sys.path.insert(0, str(_NATIVE_TESTS_DIR))
+_REGRESSION_DIR = Path(__file__).resolve().parent
+if str(_REGRESSION_DIR) not in sys.path:
+    sys.path.insert(0, str(_REGRESSION_DIR))
 
 import _fixtures  # noqa: E402, F401  (side-effect: @register_neml2_object fires)

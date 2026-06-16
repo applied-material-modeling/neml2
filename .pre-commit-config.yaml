@@ -13,20 +13,35 @@ repos:
       - id: ruff
         args: [--fix]
         files: \.py$
-        exclude: ^(contrib|build|installed|notebooks)/
+        exclude: ^(contrib|build|installed)/
       - id: ruff-format
-        files: \.py$
-        exclude: ^(contrib|build|installed|notebooks)/
+        # Format ``.ipynb`` code cells too. Linting (``id: ruff`` above) stays
+        # ``.py``-only so per-cell scoping artifacts (unused-import in early
+        # cells re-imported later, etc.) don't bury notebook diffs in
+        # spurious autofixes.
+        files: \.(py|ipynb)$
+        exclude: ^(contrib|build|installed)/
   - repo: https://github.com/mwouts/jupytext
     # dependencies: jupytext.version
     rev: v1.19.1
     hooks:
       - id: jupytext
         args: [--sync]
-        files: ^notebooks/.*\.ipynb$
+        files: ^doc/content/tutorials/.*\.ipynb$
         pass_filenames: true
   - repo: local
     hooks:
+      - id: check-notebook-executed
+        name: check notebook cells are executed
+        # Sphinx renders the committed ``.ipynb`` outputs verbatim
+        # (``nb_execution_mode = "off"`` in ``doc/conf.py``), so any
+        # unexecuted code cell would render with an empty output region or
+        # a stale output that no longer matches its source. Mirrors v2's
+        # check at ``doc/scripts/examples.py``.
+        entry: doc/scripts/check_notebook_executed.py
+        language: script
+        files: ^doc/content/tutorials/.*\.ipynb$
+        pass_filenames: true
       - id: nmhit-format
         name: nmhit-format
         entry: nmhit-format
@@ -56,4 +71,13 @@ repos:
         entry: scripts/compat_matrix.py render --in-place doc/content/installation/compatibility.md
         language: script
         pass_filenames: false
-        files: ^(compatibility\.yaml|doc/content/installation/compatibility\.md|scripts/compat_matrix\.py)$
+        files: ^(doc/content/installation/compatibility\.(yaml|md)|scripts/compat_matrix\.py)$
+  - repo: https://github.com/rhysd/actionlint
+    # actionlint is pinned manually -- it's a hook-only release, not a Python
+    # package, so the dep_manager.py registry doesn't track it.
+    rev: v1.7.12
+    hooks:
+      - id: actionlint
+        # Workflow files only. Composite-action ``action.yaml`` files have a
+        # different schema that actionlint's workflow validator rejects.
+        files: ^\.github/workflows/.*\.ya?ml$

@@ -1,105 +1,100 @@
 # neml2
+[Settings]
+  example_batch_shape = '(${nbatch},)'
+[]
+
 [Tensors]
+  # HIT-substituted shim so the verbatim triple-quoted Python blocks below
+  # can reference nbatch as a bare identifier. ${...} substitution only
+  # works inside single-line single-quoted HIT strings; triple-quoted
+  # blocks are passed verbatim to the Python eval namespace.
+  [nbatch]
+    type = Python
+    expr = '${nbatch}'
+  []
+  # end_time = LinspaceScalar(1, 10, nbatch) -> shape (nbatch,)
   [end_time]
-    type = LinspaceScalar
-    start = 1
-    end = 10
-    nstep = ${nbatch}
+    type = Python
+    expr = '''
+      Scalar(torch.linspace(1.0, 10.0, nbatch, dtype=torch.float64))
+    '''
   []
+  # times = LinspaceScalar(0, end_time, 100) -> shape (100, nbatch)
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
+    type = Python
+    expr = '''
+      Scalar(
+          end_time.data.unsqueeze(0)
+          * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1)
+      )
+    '''
   []
-  [dxx]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0.1
-  []
-  [dyy]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = -0.05
-  []
-  [dzz]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = -0.05
-  []
+  # deformation_rate_single = FillSR2(dxx=0.1, dyy=-0.05, dzz=-0.05) batched (nbatch,)
   [deformation_rate_single]
-    type = FillSR2
-    values = 'dxx dyy dzz'
+    type = Python
+    expr = '''
+      SR2.fill(0.1, -0.05, -0.05, 0.0, 0.0, 0.0).dynamic_batch.expand(nbatch)
+    '''
   []
+  # deformation_rate = LinspaceSR2(d_single, d_single, 100) -> shape (100, nbatch, 6)
   [deformation_rate]
-    type = LinspaceSR2
-    start = deformation_rate_single
-    end = deformation_rate_single
-    nstep = 100
+    type = Python
+    expr = '''
+      SR2(deformation_rate_single.data.unsqueeze(0).expand(100, nbatch, 6).contiguous())
+    '''
   []
 
-  [w1]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0.1
-  []
-  [w2]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = -0.05
-  []
-  [w3]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = -0.05
-  []
+  # vorticity_single = FillWR2(w1=0.1, w2=-0.05, w3=-0.05) batched (nbatch,)
   [vorticity_single]
-    type = FillWR2
-    values = 'w1 w2 w3'
+    type = Python
+    expr = '''
+      WR2(torch.tensor([0.1, -0.05, -0.05], dtype=torch.float64).unsqueeze(0).expand(nbatch, 3).contiguous())
+    '''
   []
+  # vorticity = LinspaceWR2(w_single, w_single, 100) -> shape (100, nbatch, 3)
   [vorticity]
-    type = LinspaceWR2
-    start = vorticity_single
-    end = vorticity_single
-    nstep = 100
+    type = Python
+    expr = '''
+      WR2(vorticity_single.data.unsqueeze(0).expand(100, nbatch, 3).contiguous())
+    '''
   []
 
+  # Crystal geometry inputs: lattice parameter + slip direction + slip plane
   [a]
-    type = Scalar
-    values = '1.0'
+    type = Python
+    expr = '''
+      Scalar(torch.tensor([1.0], dtype=torch.float64))
+    '''
   []
   [sdirs]
-    type = MillerIndex
-    values = '1 1 0'
+    type = Python
+    expr = '''
+      MillerIndex(torch.tensor([1, 1, 0], dtype=torch.int64))
+    '''
   []
   [splanes]
-    type = MillerIndex
-    values = '1 1 1'
+    type = Python
+    expr = '''
+      MillerIndex(torch.tensor([1, 1, 1], dtype=torch.int64))
+    '''
   []
 
-  [R1]
-    type = LinspaceScalar
-    start = 0
-    end = 0.75
-    nstep = ${nbatch}
-  []
-  [R2]
-    type = LinspaceScalar
-    start = 0
-    end = -0.25
-    nstep = ${nbatch}
-  []
-  [R3]
-    type = LinspaceScalar
-    start = -0.1
-    end = 0.1
-    nstep = ${nbatch}
-  []
-
+  # Initial orientation = FillRot(R1, R2, R3, method='standard') with
+  #   R1 = linspace(0, 0.75, nbatch)
+  #   R2 = linspace(0, -0.25, nbatch)
+  #   R3 = linspace(-0.1, 0.1, nbatch)
+  # Convert standard Rodrigues r_std to modified-Rodrigues parameters via
+  # r = r_std / (sqrt(|r_std|^2 + 1) + 1). Shape (nbatch, 3).
   [initial_orientation]
-    type = FillRot
-    values = 'R1 R2 R3'
-    method = 'standard'
+    type = Python
+    expr = '''
+      r_std = torch.stack([
+          torch.linspace(0.0, 0.75, nbatch, dtype=torch.float64),
+          torch.linspace(0.0, -0.25, nbatch, dtype=torch.float64),
+          torch.linspace(-0.1, 0.1, nbatch, dtype=torch.float64),
+      ], dim=-1)
+      result = Rot(r_std / (torch.sqrt((r_std * r_std).sum(-1, keepdim=True) + 1.0) + 1.0))
+    '''
   []
 []
 
@@ -114,7 +109,6 @@
     force_WR2_values = 'vorticity'
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
-    device = ${device}
   []
 []
 
@@ -129,14 +123,18 @@
 
 [Models]
   ############################################################################
-  # Sub-system #1 for updating elastic strain and internal variables
+  # Sub-system #1: implicit update of elastic_strain + slip_hardening using
+  # LAGGED orientation (orientation~1). No cache block needed -- the history
+  # input syntax `orientation~1` directly references the previous step's
+  # value, mirroring
+  # tests/regression/.../single_crystal_decoupled_explicit_orientation/.
   ############################################################################
-  [euler_rodrigues_1]
+  [euler_rodrigues]
     type = RotationMatrix
-    from = 'tmp_orientation'
+    from = 'orientation~1'
     to = 'orientation_matrix'
   []
-  [elasticity_1]
+  [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.25'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
@@ -178,7 +176,7 @@
   []
   [implicit_rate_1]
     type = ComposedModel
-    models = 'euler_rodrigues_1 elasticity_1 resolved_shear
+    models = 'euler_rodrigues elasticity resolved_shear
               elastic_stretch plastic_deformation_rate
               sum_slip_rates slip_rule slip_strength voce_hardening
               integrate_slip_hardening integrate_elastic_strain'
@@ -187,30 +185,15 @@
 
 [Models]
   ############################################################################
-  # Sub-system #2 for updating orientation
+  # Sub-system #2: explicit orientation update using the freshly-updated
+  # elastic_strain from subsystem1. Both subsystems share `euler_rodrigues`
+  # (computed from orientation~1, the lagged orientation).
   ############################################################################
-  [euler_rodrigues_2]
-    type = RotationMatrix
-    from = 'orientation~1'
-    to = 'orientation_matrix'
-  []
-  [elasticity_2]
-    type = LinearIsotropicElasticity
-    coefficients = '1e5 0.25'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'tmp_elastic_strain'
-  []
   [orientation_rate]
     type = OrientationRate
-    elastic_strain = 'tmp_elastic_strain'
   []
   [plastic_spin]
     type = PlasticVorticity
-  []
-  [slip_strength_2]
-    type = SingleSlipStrengthMap
-    constant_strength = 50.0
-    slip_hardening = 'tmp_slip_hardening'
   []
   [integrate_orientation]
     type = WR2ExplicitExponentialTimeIntegration
@@ -258,46 +241,21 @@
   []
   [subsystem2]
     type = ComposedModel
-    models = 'euler_rodrigues_2 elasticity_2 resolved_shear
+    models = 'euler_rodrigues elasticity resolved_shear
               plastic_deformation_rate plastic_spin
-              slip_rule slip_strength_2 orientation_rate
+              slip_rule slip_strength orientation_rate
               integrate_orientation'
   []
 
   ############################################################################
-  # Cache information from sub-system #1
-  ############################################################################
-  [cache_elastic_strain]
-    type = CopySR2
-    from = 'elastic_strain'
-    to = 'tmp_elastic_strain'
-  []
-  [cache_slip_hardening]
-    type = CopyScalar
-    from = 'slip_hardening'
-    to = 'tmp_slip_hardening'
-  []
-  [cache1]
-    type = ComposedModel
-    models = 'cache_elastic_strain cache_slip_hardening'
-  []
-
-  ############################################################################
-  # Cache information from sub-system #2
-  ############################################################################
-  [cache2]
-    type = CopyRot
-    from = 'orientation'
-    to = 'tmp_orientation'
-  []
-
-  ############################################################################
-  # Sequentially update sub-system #1 and sub-system #2
+  # Sequentially update sub-system #1 and sub-system #2. subsystem1 uses
+  # orientation~1 (lagged); subsystem2 outputs the updated orientation.
+  # The dependency resolver runs subsystem1 first (subsystem2 depends on
+  # elastic_strain + slip_hardening), no priority needed.
   ############################################################################
   [model]
     type = ComposedModel
-    models = 'cache2 subsystem1 cache1 subsystem2'
-    priority = 'cache2 subsystem1 cache1 subsystem2'
+    models = 'subsystem1 subsystem2'
     additional_outputs = 'elastic_strain slip_hardening'
   []
 []

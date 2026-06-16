@@ -24,7 +24,7 @@
 
 """pyzag ↔ NEML2 interface.
 
-Wires NEML2's :mod:`neml2.equation_systems` runtime (``AxisLayout``,
+Wires NEML2's :mod:`neml2.es` runtime (``AxisLayout``,
 ``AssembledVector``, ``AssembledMatrix``) into the pyzag
 ``NonlinearRecursiveFunction`` protocol. The underlying NEML2 ``Model``
 is itself an :class:`torch.nn.Module`, so ``named_parameters()`` works
@@ -38,13 +38,22 @@ import math
 import torch
 from pyzag import nonlinear
 
-from neml2 import load_nonlinear_system  # noqa: F401 — re-export for users
-from neml2.equation_systems import (
+# NOTE: do not re-export ``neml2.load_nonlinear_system`` here. Eagerly
+# importing from the top-level ``neml2`` package would deadlock the
+# package's own initialization once ``neml2/__init__.py`` adds
+# ``from . import pyzag`` (which it does, so notebooks can write
+# ``neml2.pyzag.NEML2PyzagModel(...)`` without an explicit import) --
+# Python would be partway through evaluating ``neml2/__init__.py`` and
+# wouldn't have ``load_nonlinear_system`` on the namespace yet. The
+# re-export had no live consumers; users just call
+# ``neml2.load_nonlinear_system`` directly.
+from neml2.es import (
     AssembledMatrix,
     AssembledVector,
     AxisLayout,
     ModelNonlinearSystem,
 )
+from neml2.types import Tensor, TensorWrapper
 
 
 def lag_order(var: str) -> tuple[str, int]:
@@ -140,7 +149,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         if not isinstance(sys, ModelNonlinearSystem):
             raise TypeError(
-                f"sys should be a neml2.equation_systems.ModelNonlinearSystem, "
+                f"sys should be a neml2.es.ModelNonlinearSystem, "
                 f"instead got {type(sys)}. Use neml2.load_nonlinear_system "
                 "or load_input(path).get_equation_system(name) to obtain one."
             )
@@ -449,7 +458,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         # and steady forces (temperature) have a pyzag-side state/force
         # slot but no model-side ``~1`` input, so we'd KeyError if we tried
         # to push them.
-        g_state: dict[str, torch.Tensor] = {}
+        g_state: dict[str, TensorWrapper] = {}
         for sn_name, tensor in sn.items():
             sn_full = change_lag_order(sn_name, 1)
             if sn_full in self._sn_in_glayout:
@@ -465,24 +474,27 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         # trailing var_size dim). All inputs share this batch shape because
         # we just sliced state and forces alike.
         dyn_shape = tuple(state_now.shape[:-1])
-        self.sys.initialize(u=u, g=g_state, sub_batch_ndim=sub_batch_ndim, dyn_shape=dyn_shape)
+        u_sv, g_sv = self.sys.to_sparse(u, g_state, sub_batch_ndim)
+        self.sys.initialize(u=u_sv, g=g_sv, dyn_shape=dyn_shape)
 
     def _split_by_layout(
         self,
         flat: torch.Tensor,
         layout: AxisLayout,
         rename_to_lag: int | None = None,
-    ) -> dict[str, torch.Tensor]:
-        """Split a flat ``(*batch, nflat)`` tensor into a per-variable dict
-        keyed by the layout's variable names, optionally re-tagging each
-        name to a different lag order.
+    ) -> dict[str, TensorWrapper]:
+        """Split a flat ``(*batch, nflat)`` tensor into a per-variable
+        typed-wrapper dict keyed by the layout's variable names,
+        optionally re-tagging each name to a different lag order.
 
         Variable sizes come from ``layout.var_size(name)``; offsets are the
         running sum. Each per-variable slice is reshaped from ``(*batch,
-        var_size)`` back to ``(*batch, *BASE_SHAPE)`` so the typed wrappers
-        the model uses can read it without further shape gymnastics.
+        var_size)`` back to ``(*batch, *BASE_SHAPE)`` and wrapped in the
+        layout-declared :class:`~neml2.types.TensorWrapper` subclass --
+        this is the framework boundary where the raw pyzag tensors become
+        typed (rule 1).
         """
-        out: dict[str, torch.Tensor] = {}
+        out: dict[str, TensorWrapper] = {}
         offset = 0
         for name in layout.vars():
             type_cls = layout.type_of(name)
@@ -495,7 +507,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                 slab = slab.reshape(*slab.shape[:-1], *type_cls.BASE_SHAPE)
             # For BASE_NDIM == 1 the shape is already correct.
             out_name = change_lag_order(name, rename_to_lag) if rename_to_lag is not None else name
-            out[out_name] = slab
+            out[out_name] = type_cls(slab)
             offset += size
         return out
 
@@ -518,13 +530,19 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         correspond to the snlayout vars (via :meth:`AssembledMatrix.select_blocks`,
         which replaces the C++ SparseMatrix round-trip).
         """
-        r = -b.tensors[0]
-        J = A.tensors[0][0]
+        r = -b.tensors[0].data
+        J = A.tensors[0][0].data
 
         # Pull the per-(row, col) chain-rule blocks out of B and pick the
         # ones whose col_var matches a snlayout var (by g-name lookup).
-        B_blocks = B.disassemble()
-        picked: dict[str, dict[str, torch.Tensor]] = {}
+        # disassemble/select_blocks operate on typed neml2.types.Tensor
+        # wrappers; pyzag is an external framework boundary so we unwrap
+        # to raw torch.Tensor only at the very end (the torch.stack call
+        # below). ``.cells`` exposes the SparseMatrix's underlying
+        # row -> col -> Tensor dict-of-dict for the per-row iteration we
+        # need here.
+        B_blocks = B.disassemble().cells
+        picked: dict[str, dict[str, Tensor]] = {}
         for row_name, cols in B_blocks.items():
             picked[row_name] = {}
             for sn_name in self.snlayout.vars():
@@ -532,7 +550,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                 if g_name is not None and g_name in cols:
                     picked[row_name][sn_name] = cols[g_name]
 
-        Jn = AssembledMatrix.select_blocks(self.rlayout, self.snlayout, picked).tensors[0][0]
+        Jn = AssembledMatrix.select_blocks(self.rlayout, self.snlayout, picked).tensors[0][0].data
 
         # Broadcast both Jacobians to the residual's batch shape so pyzag's
         # downstream stack sees consistent leading dims.

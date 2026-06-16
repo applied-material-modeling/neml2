@@ -33,7 +33,7 @@ NEML2_WHEEL = "ON"
 [project]
 name = "neml2"
 # dependencies: neml2.version
-version = "3.0.2"
+version = "3.0.3"
 authors = [
   { name = "Mark Messner", email = "messner@anl.gov" },
   { name = "Gary Hu", email = "thu@anl.gov" },
@@ -52,7 +52,7 @@ dependencies = [
   # dependencies: pyzag.version
   "pyzag==1.1.1",
   # dependencies: nmhit.version_min
-  "nmhit>=0.2.2",
+  "nmhit>=0.3.2",
 ]
 
 [project.optional-dependencies]
@@ -60,6 +60,8 @@ dev = [
   # testing
   "pytest",
   "pytest-xdist",
+  "pytest-cov",
+  "coverage[toml]",
   "nbmake",
   # lint + format
   # dependencies: ruff.version
@@ -83,6 +85,17 @@ dev = [
   "sphinx-autobuild",
   "sphinx-copybutton",
   "sphinxcontrib-programoutput",
+  # Headless browser used by doc/scripts/check_doc_render.py to catch
+  # MathJax render errors and other client-side issues sphinx can't see
+  # at build time. Required for type-checking the doc scripts; the
+  # Chromium binary itself is fetched on first use via
+  # `playwright install chromium` (CI runs that step explicitly).
+  "playwright",
+  # Auto-generates the .pyi stubs for the pybind11 extensions; invoked
+  # via the `neml2-stub` console script after pip install completes.
+  # CI's typecheck workflow + scripts/repair_wheel.py both call it.
+  # dependencies: pybind11_stubgen.version_min
+  "pybind11-stubgen>=2.5.5",
   # git
   "pre-commit",
 ]
@@ -91,6 +104,7 @@ dev = [
 neml2-compile = "neml2.cli.aoti_compile:main"
 neml2-inspect = "neml2.cli.inspect:main"
 neml2-run = "neml2.cli.run:main"
+neml2-stub = "neml2.cli.stub:main"
 neml2-syntax = "neml2.cli.syntax:main"
 
 [tool.ruff]
@@ -121,16 +135,18 @@ ignore = ["E741"]
 "doc/content/tutorials/**/*.py" = ["B007"]
 
 [tool.pyright]
-# Default scope is everything outside the package itself, so contributors can
-# run pyright without first building a neml2 wheel. The CI `typecheck` job
-# additionally targets the installed wheel separately
-# (see .github/workflows/python.yml). doc/content/tutorials/ and the
-# benchmark/ inputs are intentionally excluded -- they target the retired
-# legacy C++ surface and will be rewritten as a follow-up.
-include = [
-  "scripts",
-  "doc",
-]
+# The neml2 package source, the benchmark harness, scripts, and docs are
+# all in scope. pybind11 extensions (currently ``neml2.aoti._aoti``) are
+# resolved via auto-generated ``.pyi`` stubs co-located with their
+# ``.so``. The ``neml2-stub`` console script (see
+# ``neml2/cli/stub.py``) runs ``pybind11-stubgen`` against the fully
+# installed package; CI invokes it between ``pip install`` and
+# ``pyright``, and ``scripts/repair_wheel.py`` invokes it during
+# cibuildwheel so the published wheels ship the stubs. Cross-module
+# ``import neml2.x`` resolves through whatever environment pyright sees;
+# a source file missing from ``wheel.packages`` surfaces as an
+# unresolved import.
+include = ["neml2", "tests", "benchmark", "scripts", "doc"]
 exclude = [
   # pyright's built-in defaults (specifying `exclude` replaces them, so they
   # must be repeated here to keep .git/, __pycache__/, dotfiles, etc. ignored)
@@ -142,6 +158,13 @@ exclude = [
   "build",
   "installed",
   "notebooks",
+  # Generated artifacts: ``benchmark/results/`` holds sweep CSVs and
+  # ``_aoti_cache/`` of Inductor-generated Python; ``doc/_build`` and
+  # ``doc/generated`` are sphinx output. Type-checking generated code
+  # is pure noise -- the IDE never opens these either.
+  "benchmark/results",
+  "doc/_build",
+  "doc/generated",
 ]
 # dependencies: python.version_min
 pythonVersion = "3.10"
@@ -149,6 +172,11 @@ pythonVersion = "3.10"
 # `float64`, ...) via __all__, so `from torch import X` floods this rule
 # with false positives. Qualified `torch.X` access still works as expected.
 reportPrivateImportUsage = "none"
+# `neml2.aoti._aoti` is a pybind11 module: binary .so at runtime, .pyi
+# stub for static analysis (neml2/aoti/_aoti.pyi). pyright resolves the
+# import via the stub but warns that no matching .py source exists --
+# which is intentional and permanent for binary modules.
+reportMissingModuleSource = "none"
 
 [tool.pytest.ini_options]
 # `importlib` import mode is load-bearing: the package source tree lives at
@@ -160,6 +188,43 @@ reportPrivateImportUsage = "none"
 # test actually runs. importlib mode leaves sys.path alone.
 addopts = "--import-mode=importlib"
 
+# Coverage. The ``coverage`` job in .github/workflows/python.yaml runs
+# ``pytest --cov`` over the fast lane (excluding tests/regression +
+# tests/verification, which pin gold outputs rather than exercise code
+# paths). ``parallel = true`` keeps the per-worker .coverage files
+# distinct so ``pytest -n auto --cov`` merges cleanly; ``branch`` adds
+# branch-taken coverage on top of line coverage.
+[tool.coverage.run]
+# Use source_pkgs (not source) so coverage resolves the package via
+# the import system rather than a cwd-relative path. The CI coverage
+# job installs non-editable into site-packages; source = ["neml2"]
+# would silently filter out every traced file there, producing the
+# "No data was collected" warning.
+source_pkgs = ["neml2"]
+branch = true
+parallel = true
+concurrency = ["multiprocessing", "thread"]
+omit = [
+  "neml2/lib/*",                                # bundled libneml2_aoti.so
+  "neml2/aoti/_aoti.pyi",                       # generated pybind11 stub
+  "neml2/version",                              # version file, not source
+]
+data_file = ".coverage"
+
+[tool.coverage.report]
+exclude_also = [
+  "raise NotImplementedError",
+  "if TYPE_CHECKING:",
+  "@overload",
+  "pragma: no cover",
+]
+show_missing = true
+skip_covered = false
+precision = 1
+# Starts at 0 so the first CI run establishes the baseline; raise to a
+# real floor in a follow-up PR once we see the actual number.
+fail_under = 0
+
 [tool.cibuildwheel]
 build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
 skip = "*win* *manylinux_i686 *manylinux_aarch64 *manylinux_ppc64le *manylinux_s390x *manylinux_armv7l *musllinux*"
@@ -169,7 +234,16 @@ build-verbosity = 1
 build-frontend = { name = "build", args = ["--no-isolation"] }
 
 before-all = ""
-before-build = "python -m pip install scikit-build-core ninja torch wheel"
+# Build-time only: scikit-build-core + ninja drive the build, torch
+# provides libtorch for the C++ extension to link against, wheel is
+# pack/unpack for repair_wheel.py, pybind11-stubgen backs neml2-stub.
+# Runtime deps (nmhit, pyzag) are NOT listed here -- repair_wheel.py
+# reads them out of the freshly-built wheel's metadata via
+# ``importlib.metadata`` after install, so this line stays
+# maintenance-free when pyproject.toml's ``project.dependencies``
+# changes.
+# dependencies: pybind11_stubgen.version_min
+before-build = "python -m pip install scikit-build-core ninja torch wheel pybind11-stubgen>=2.5.5"
 
 # dependencies: pyzag.version
 test-requires = "pytest torch pyzag==1.1.1"

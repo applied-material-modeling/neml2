@@ -199,7 +199,6 @@
   [flow]
     type = ComposedModel
     models = 'overstress vonmises yield_surface'
-    automatic_nonlinear_parameter = false
   []
   [normality]
     type = Normality

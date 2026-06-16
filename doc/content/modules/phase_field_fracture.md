@@ -38,13 +38,11 @@ $$
 The Karush–Kuhn–Tucker (KKT) conditions for irreversible phase-field
 evolution read
 
-```{math}
 \begin{align}
   f &= \eta\, \dot{d} + \frac{\partial \psi}{\partial d} \ge 0, \\
   \dot{d} &\ge 0, \\
   f\, \dot{d} &= 0,
 \end{align}
-```
 
 with viscous regularization $\eta \ge 0$. Following the standard
 phase-field treatment, the inequality complementarity is recast as a
@@ -62,9 +60,9 @@ $$
 $$
 
 NEML2 evaluates both derivatives ($\partial\psi/\partial d$ and
-$\partial\psi/\partial\mathbf{E}$) symbolically through the
-[](models-Normality) operator, so users never write them by hand — only the
-energy $\psi$ itself.
+$\partial\psi/\partial\mathbf{E}$) through the [](models-Normality)
+operator, so the wiring layer of the input file never needs to spell
+them out — only the energy $\psi$ itself.
 
 ### Crack geometric functions
 

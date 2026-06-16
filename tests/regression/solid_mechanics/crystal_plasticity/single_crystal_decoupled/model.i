@@ -242,7 +242,6 @@
   [model]
     type = ComposedModel
     models = 'subsystem1 subsystem2'
-    priority = 'subsystem1 subsystem2'
     additional_outputs = 'elastic_strain slip_hardening'
   []
 []

@@ -26,13 +26,12 @@
 
 from __future__ import annotations
 
-import torch
-
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, output, parameter
 from ...types import Scalar
+from ...types.functions import fullify
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("LinearlyInterpolateToCellEdges")
@@ -42,11 +41,6 @@ class LinearlyInterpolateToCellEdges(Model):
     ``cell_values`` has size $N$; ``cell_centers`` has size $N$;
     ``cell_edges`` has size ``N+1`` (interior + boundary edges); output has
     size ``M = N-1`` (interior edges only).
-
-    The KWN HIT wires ``cell_values`` from another model output (nl mode)
-    and keeps ``cell_centers`` / ``cell_edges`` as static ``[Tensors]``
-    references. Chain rule here is wired for ``cell_values`` only (other
-    pairs would require the nl-mode parameter chain-rule, follow-on work).
     """
 
     hit = HitSchema(
@@ -68,21 +62,20 @@ class LinearlyInterpolateToCellEdges(Model):
     cell_edges: Scalar
     _out_name: str
 
-    def __post_init__(self) -> None:
-        # __post_init__ runs after _store_schema_values' deferred-parameter
-        # pass, so _nl_params is populated. If cell_values resolved as an nl
-        # input (mode 3/4), the output depends densely on that promoted input.
-        cv_nl = self._nl_params.get("cell_values")
-        if cv_nl is not None:
-            self.list_deriv = {(self._out_name, cv_nl.input_name): "dense"}
+    def _weights(self) -> tuple[Scalar, Scalar]:
+        """Typed stencil weights ``w_left``, ``w_right`` over the M=N-1 interior edges.
 
-    def _weights(self) -> tuple[torch.Tensor, torch.Tensor]:
-        """Precompute ``w_left`` and ``w_right`` from the static positions."""
-        x = self.cell_centers.data  # (*, N)
-        xe = self.cell_edges.data  # (*, N+1)
-        x_left = x[..., :-1]
-        x_right = x[..., 1:]
-        xe_vec = xe[..., 1:-1]  # interior edges, size N-1
+        ``register_typed_parameter`` stores the raw tensor data, so
+        ``self.cell_centers`` / ``self.cell_edges`` arrive with
+        ``sub_batch_ndim=0``. Retag to expose the cell axis as
+        ``sub_batch`` so slicing along it is typed (and so the typed
+        arithmetic with ``cell_values`` below aligns on sub_batch).
+        """
+        centers = self.cell_centers.sub_batch.retag(1)
+        edges = self.cell_edges.sub_batch.retag(1)
+        x_left = centers.sub_batch[:-1]
+        x_right = centers.sub_batch[1:]
+        xe_vec = edges.sub_batch[1:-1]  # interior edges, size N-1
         inv = 1.0 / (x_right - x_left)
         w_left = (x_right - xe_vec) * inv
         w_right = (xe_vec - x_left) * inv
@@ -90,25 +83,27 @@ class LinearlyInterpolateToCellEdges(Model):
 
     def forward(self, *nl_params, v: ChainRuleDict | None = None):  # type: ignore[override]
         cv_wrap = self._get_param("cell_values", nl_params, Scalar)
-        q = cv_wrap.data  # (*B, N)
-        w_left, w_right = self._weights()  # (*, M) each
-        q_left = q[..., :-1]
-        q_right = q[..., 1:]
-        edge = w_left * q_left + w_right * q_right  # (*B, M)
-        out = Scalar(edge, sub_batch_ndim=cv_wrap.sub_batch_ndim)
+        w_left, w_right = self._weights()
+        q_left = cv_wrap.sub_batch[:-1]
+        q_right = cv_wrap.sub_batch[1:]
+        out = w_left * q_left + w_right * q_right
         if v is None:
             return out
 
         cv_nl = self._nl_params.get("cell_values")
         if cv_nl is None:
-            # cell_values is a static buffer — no chain rule to propagate.
+            # cell_values is a static buffer -- no chain rule to propagate.
             return out, self.apply_chain_rule(v, self._out_name, {}, output=out)
 
-        def cv_action(V: Scalar) -> Scalar:
-            d = V.data  # (K, *dyn, N)
-            return Scalar(
-                w_left * d[..., :-1] + w_right * d[..., 1:], sub_batch_ndim=V.sub_batch_ndim
-            )
+        def cv_action(V_in: Scalar) -> Scalar:
+            # Cross-cell stencil: fullify before slicing for the same
+            # reason as ``FiniteVolumeUpwindedAdvectiveFlux.u_action``
+            # (the K-paired broadcast eye assumption is broken when
+            # adjacent cell tangents are linearly combined).
+            V_full = fullify(V_in)
+            V_left = V_full.sub_batch[:-1]
+            V_right = V_full.sub_batch[1:]
+            return w_left * V_left + w_right * V_right
 
         return out, self.apply_chain_rule(
             v, self._out_name, {cv_nl.input_name: cv_action}, output=out

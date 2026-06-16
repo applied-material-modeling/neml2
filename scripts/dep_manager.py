@@ -48,7 +48,7 @@ except ImportError:
     sys.exit(1)
 
 REPO_ROOT = Path(__file__).parent.parent
-DEPS_FILE = REPO_ROOT / "dependencies.yaml"
+DEPS_FILE = Path(__file__).parent / "dependencies.yaml"
 
 # Keys in a dep entry that are not version fields
 _STRUCTURAL_KEYS = {"files"}

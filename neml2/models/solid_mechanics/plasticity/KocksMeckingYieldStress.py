@@ -26,11 +26,11 @@
 
 from __future__ import annotations
 
-from ....chain_rule import ChainRuleAction, ChainRuleDict, SecondOrderChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, output, parameter
 from ....types import Scalar, exp
+from ...chain_rule import ChainRuleAction, ChainRuleDict, SecondOrderChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("KocksMeckingYieldStress")

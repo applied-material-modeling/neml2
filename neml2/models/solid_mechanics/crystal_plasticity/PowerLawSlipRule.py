@@ -26,13 +26,13 @@
 
 from __future__ import annotations
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar
 from ....types import abs as tensor_abs
-from ....types import pow as tensor_pow
+from ....types import opaque_pow as tensor_pow
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("PowerLawSlipRule")
@@ -68,17 +68,33 @@ class PowerLawSlipRule(Model):
         nv = self._get_param("n", nl_params, Scalar)
         ratio = rss / tau
         abs_ratio = tensor_abs(ratio)
-        g = gamma0 * tensor_pow(abs_ratio, nv - 1.0) * ratio
+        # Factor the slip rate as ``g = f * ratio`` where ``f`` is the
+        # magnitude part. ``tensor_pow`` is opaque to Inductor (routed
+        # through ``neml2::opaque_pow``, see ``types/functions.py``), so
+        # the pow stays as a single per-(B, slip) compute rather than
+        # being inlined into the downstream K-batched per-slip reduction
+        # kernel and recomputed K × n_comp times redundantly.
+        f = gamma0 * tensor_pow(abs_ratio, nv - 1.0)
+        g = f * ratio
         if v is None:
             return g
 
-        # Per-slip closed-form derivatives, as typed Scalar coefficients:
-        #   ∂γ̇/∂τ = n γ0 |τ/τ̂|^(n−1) / τ̂
-        #   ∂γ̇/∂τ̂ = -n γ0 τ |τ|^(n−1) / τ̂^(n+1)
-        dg_drss = nv * gamma0 * tensor_pow(abs_ratio, nv - 1.0) / tau
-        dg_dtau = -(
-            nv * gamma0 * rss * tensor_pow(tensor_abs(rss), nv - 1.0) / tensor_pow(tau, nv + 1.0)
-        )
+        # Per-slip closed-form derivatives, in terms of ``f`` (no extra ``pow``):
+        #
+        #   ∂γ̇/∂τ   = n γ0 |τ/τ̂|^(n−1) / τ̂  = n · f / τ̂
+        #   ∂γ̇/∂τ̂  = −n γ0 τ |τ|^(n−1) / τ̂^(n+1) = −n · f · (τ/τ̂) / τ̂ = −n · g / τ̂
+        #
+        # Algebraically identical to the naive expressions and well-defined
+        # at ``τ → 0`` (no 0/0). Crucial under AOTI: Inductor fuses ``pow``
+        # into the downstream K-batched per-slip reduction kernel and
+        # computes it ~K × n_comp times redundantly (its inputs ``τ``,
+        # ``τ̂`` don't depend on K or n_comp). Hoisting ``pow`` out of the
+        # derivative expressions into the shared ``f`` lets the fused
+        # kernel reuse the materialised ``f`` value instead -- standalone
+        # microbench of the dominant scpcoup step kernel: 3.56 ms with
+        # inline pow vs 0.22 ms with precomputed factor (16x).
+        dg_drss = nv * f / tau
+        dg_dtau = -nv * g / tau
 
         def rss_action(V: Scalar, c: Scalar = dg_drss) -> Scalar:
             return c * V

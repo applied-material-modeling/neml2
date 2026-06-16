@@ -58,9 +58,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ....chain_rule import ChainRuleDict
-from ....model import Model
 from ....schema import HitSchema, option
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 if TYPE_CHECKING:
     pass

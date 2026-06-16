@@ -35,9 +35,7 @@ holds the forward/action logic; each registered variant only differs in the
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import BLOCK_NAME, HitSchema, output, parameter
 from ...types import (
     R2,
@@ -50,6 +48,8 @@ from ...types import (
     TensorWrapper,
     Vec,
 )
+from ..chain_rule import ChainRuleDict, SecondOrderChainRuleDict
+from ..model import Model
 
 
 class _ConstantParameter(Model):

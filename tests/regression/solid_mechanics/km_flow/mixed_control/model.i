@@ -131,7 +131,6 @@
   [flow]
     type = ComposedModel
     models = 'vonmises yield_surface'
-    automatic_nonlinear_parameter = false
   []
   [normality]
     type = Normality

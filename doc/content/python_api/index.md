@@ -15,11 +15,11 @@ subpackages below, so it has no page of its own.
 :caption: Core
 :maxdepth: 1
 
-neml2.model
 neml2.factory
 neml2.schema
-neml2.chain_rule
-neml2.resolver
+neml2.models.model
+neml2.models.chain_rule
+neml2.models.resolver
 ```
 
 ```{toctree}
@@ -35,7 +35,7 @@ neml2.types
 
 neml2.models
 neml2.solvers
-neml2.equation_systems
+neml2.es
 neml2.drivers
 neml2.data
 neml2.user_tensors
@@ -49,7 +49,7 @@ document the underlying Python classes.
 :caption: Compilation and AOTI
 :maxdepth: 1
 
-neml2.export
+neml2.models.export
 neml2.aoti
 ```
 

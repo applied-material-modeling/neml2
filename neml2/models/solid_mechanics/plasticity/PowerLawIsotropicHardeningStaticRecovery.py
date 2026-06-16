@@ -28,11 +28,11 @@ from __future__ import annotations
 
 import torch
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, derived_output, input, parameter
 from ....types import Scalar, abs, log, pow
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("PowerLawIsotropicHardeningStaticRecovery")
