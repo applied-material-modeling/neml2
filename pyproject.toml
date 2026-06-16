@@ -195,7 +195,12 @@ addopts = "--import-mode=importlib"
 # distinct so ``pytest -n auto --cov`` merges cleanly; ``branch`` adds
 # branch-taken coverage on top of line coverage.
 [tool.coverage.run]
-source = ["neml2"]
+# Use source_pkgs (not source) so coverage resolves the package via
+# the import system rather than a cwd-relative path. The CI coverage
+# job installs non-editable into site-packages; source = ["neml2"]
+# would silently filter out every traced file there, producing the
+# "No data was collected" warning.
+source_pkgs = ["neml2"]
 branch = true
 parallel = true
 concurrency = ["multiprocessing", "thread"]
