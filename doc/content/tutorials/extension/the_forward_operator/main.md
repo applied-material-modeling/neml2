@@ -145,7 +145,6 @@ was skipped, not that it failed silently.
   glue several models together so a dependency resolver wires their
   inputs and outputs and threads the chain rule for you.
 - For richer chain-rule examples (multiple inputs, non-linear leaves)
-  the source of
-  {class}`~neml2.models.common.LinearCombination._LinearCombination` and
-  {class}`~neml2.models.solid_mechanics.plasticity.YieldFunction.YieldFunction`
-  is a good read.
+  the leaves under `neml2/models/common/` (e.g. `LinearCombination`)
+  and `neml2/models/solid_mechanics/plasticity/` (e.g.
+  `YieldFunction`) are a good read.

@@ -116,8 +116,9 @@ the four [](models-ScalarLinearCombination) blocks (`binder_rate`,
 `char_rate`, `gas_rate`, `open_pore_rate`) implement conservation
 relations such as $\dot{\omega}_c = Y \, \dot{\alpha}$ (with $Y$ the
 char yield) and $\dot{\omega}_g = -\mu (\dot{\omega}_b + \dot{\omega}_c)$
-with $\mu$ the trapped-gas fraction, and the four `ScalarForwardEuler`
-integrators advance the mass / volume fractions in time. The
+with $\mu$ the trapped-gas fraction, and four
+[](models-ScalarForwardEulerTimeIntegration) blocks advance the mass /
+volume fractions in time. The
 [](models-ConstantExtrapolationPredictor) seeds the Newton iterate at
 each step.
 
@@ -133,9 +134,9 @@ prescribed `times` history. `additional_outputs = 'alpha'` keeps the
 implicit unknown in the result file even though it is not consumed
 downstream.
 
-The reactive-infiltration scenario at
-`tests/regression/chemical_reactions/reactive_infiltration/constant_liquid_concentration/model.i`
-follows a similar pattern but swaps in
+The companion reactive-infiltration regression scenario under
+`tests/regression/chemical_reactions/reactive_infiltration/` follows
+a similar pattern but swaps in
 [](models-CylindricalChannelGeometry) +
 [](models-DiffusionLimitedReaction), uses
 [](models-HermiteSmoothStep) to give the liquid and solid

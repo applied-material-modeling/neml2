@@ -45,7 +45,7 @@ set (`.pre-commit-config.yaml`):
   notebook code cells) — Python lint + formatter.
 - `nmhit-format` — formatter for HIT input files (`*.i`).
 - `jupytext --sync` — keeps notebook `*.ipynb` files and their paired
-  `*.md` mirrors in lockstep (currently `doc/content/tutorials/optimization/{deterministic,statistical}/main.{ipynb,md}`).
+  `*.md` mirrors in lockstep.
 - `check-notebook-executed` — fails if any code cell in a tracked
   `.ipynb` lacks an `execution_count`. Sphinx renders the committed
   outputs as-is, so re-run the notebook end-to-end before committing.
@@ -130,10 +130,7 @@ pyright neml2/types          # restrict to one subpath
 CI runs `pyright` against the editable install (the `typecheck` job in
 `.github/workflows/python.yaml`); the editable install resolves
 `import neml2.*` to the in-tree source, so pyright generally sees the
-same sources the test suite does. Layout changes — adding a new
-submodule, moving files between package and file — require a fresh
-`pip install -e ".[dev]"` for the editable shim's path snapshot to
-catch up.
+same sources the test suite does.
 
 ## Coverage
 
@@ -154,12 +151,8 @@ pytest -n auto --cov tests/unit tests/models tests/aoti  # parallel (xdist-safe)
 `tests/regression/` and `tests/verification/` are deliberately omitted
 — their end-to-end runs duplicate coverage the unit and model suites
 already provide while multiplying the run time. The `coverage` CI job in
-`.github/workflows/python.yaml` runs the same subset with `-n auto`
-and uploads the raw `coverage.xml` as a workflow artifact (30-day
-retention).
-
-The `fail_under` floor in `[tool.coverage.report]` starts at `0` -- a
-real floor will be set once the first CI run establishes the baseline.
+`.github/workflows/python.yaml` runs the same subset and uploads the
+raw report as a workflow artifact.
 
 (contributing-deps)=
 
@@ -212,10 +205,10 @@ The paired-text workflow keeps notebooks reviewable and reproducible:
 4. After modifying a notebook, run all cells before committing — the
    `check-notebook-executed` pre-commit hook blocks commits with
    unexecuted code cells. Sphinx renders notebooks into the docs with
-   pre-baked outputs (`nb_execution_mode = "off"` in `doc/conf.py`,
-   no re-execution at build time), so a notebook with stale outputs
-   ships stale outputs. The nightly `notebooks.yaml` workflow re-runs
-   every notebook end-to-end and catches drift between PRs.
+   pre-baked outputs (no re-execution at build time), so a notebook
+   with stale outputs ships stale outputs. The nightly `notebooks.yaml`
+   workflow re-runs every notebook end-to-end and catches drift between
+   PRs.
 
 ## Documentation
 
@@ -245,7 +238,7 @@ This serves at `http://127.0.0.1:8000/` and rebuilds whenever anything
 under `doc/` changes.
 
 The syntax catalog under `/generated/syntax/` is regenerated from
-`neml2-syntax --json` on every build — see `doc/_ext/neml2_syntax.py`.
+`neml2-syntax --json` on every build via a dedicated Sphinx extension.
 
 ## Submitting a pull request
 

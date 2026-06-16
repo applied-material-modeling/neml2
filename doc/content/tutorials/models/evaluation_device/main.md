@@ -106,12 +106,9 @@ model.to(device=target)
 ```
 
 `is_available()` returns `True` when a CUDA runtime and a visible GPU
-are both present, but doesn't promise the installed PyTorch wheel can
-actually run on that specific GPU — newer wheels sometimes drop older
-compute capabilities, and the failure only shows up at the first
-CUDA call. If you want to fall back gracefully, wrap the first
-forward in `try / except torch.AcceleratorError` and reload onto CPU
-in the handler.
+are both present. If you want to fall back gracefully when the first
+CUDA call fails, wrap the first forward in a `try / except` and
+reload onto CPU in the handler.
 
 ## Mixed-device errors
 

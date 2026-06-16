@@ -21,8 +21,8 @@ runtime is bundled inside the wheel:
 - [nlohmann/json](https://github.com/nlohmann/json) — JSON support
   (header-only; bundled under `<wheel>/include/nlohmann/`).
 - libtorch — bundled via the `torch` Python package's own `lib/`
-  directory; NEML2's `libneml2_aoti.so` is built with an
-  `$ORIGIN/../../torch/lib` rpath that finds it automatically.
+  directory; the NEML2 AOTI runtime is built with an rpath that finds
+  it automatically.
 
 ABI compatibility between the bundled libraries and your installed
 torch is verified for the version range listed in [](torch-compat).
@@ -66,6 +66,6 @@ Python package; point `CUDA_HOME` at its install root and add
 `bin/` to `PATH`. A system-wide CUDA toolkit (`apt install
 nvidia-cuda-toolkit`, conda's `cudatoolkit-dev`, …) works too if you
 already have one. CPU-only AOTI compile needs none of this. And if
-you do attempt a CUDA compile without `nvcc` on PATH, `compile_model`
+you do attempt a CUDA compile without `nvcc` on PATH, `neml2-compile`
 stops with a clear error message that includes the install recipe
-above — no cryptic failure deep in the Inductor pipeline.
+above.

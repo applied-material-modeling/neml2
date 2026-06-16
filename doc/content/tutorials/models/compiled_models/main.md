@@ -198,7 +198,7 @@ runs, large batch sweeps, the inner loop of a finite-element kernel.
 
 - [](tutorials-models-implicit-model) covers `ImplicitUpdate` models;
   the same compile flow handles them — each implicit segment produces
-  its own `_rhs.pt2` / `_step.pt2` artifacts and the runtime
+  its own residual and Newton-step artifacts and the runtime
   orchestrates the Newton solve internally.
 - [](tutorials-models-transient-driver) shows how a compiled model
   plugs straight into a `TransientDriver` — the driver doesn't care

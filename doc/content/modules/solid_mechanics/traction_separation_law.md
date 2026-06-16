@@ -25,7 +25,7 @@ following the same pattern as the existing primitives.
 
 The catalog is organized by role:
 
-**Kinematic helpers** (live in `models/common/`):
+**Kinematic helpers** (general-purpose primitives reused across modules):
 - [](models-VecComponents) — split the displacement-jump `Vec` into
   three named `Scalar` components.
 - [](models-MacaulaySplit) — split the normal jump into its positive

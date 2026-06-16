@@ -120,8 +120,8 @@ shape, so the system's per-variable `sub_batch_shape` is populated
 before the tracer runs.
 
 When no `example_batch_shape` is declared, the resolver falls back to
-`_DEFAULT_EXAMPLE_SHAPE` (a `(2,)` dyn / `()` sub default that's
-correct for the bulk-constitutive case).
+a small built-in default that's correct for the bulk-constitutive
+case.
 
 ## Step 6 — Partition into segments
 
@@ -154,27 +154,24 @@ compile_and_package`. The adapter handles three pieces of
 machinery the raw torch APIs don't:
 
 **Dynamic batch dim.** Every input gets axis 0 marked as a single
-shared `Dim("batch", min=1, max=2**20)` so the lowered kernel
-specializes once and serves any batch size from 1 to ~1M without
-recompilation. The cost is modest extra symbolic-shape machinery
-inside the kernel; the benefit is that a single artifact serves
-both single-point evaluation and large fan-out runs.
+shared dynamic `Dim` so the lowered kernel specializes once and
+serves any batch size in the supported range without recompilation.
+The cost is modest extra symbolic-shape machinery inside the kernel;
+the benefit is that a single artifact serves both single-point
+evaluation and large fan-out runs.
 
 **Pytree-structured signatures.** Typed wrappers (`Scalar`, `SR2`,
-`R2`, ...) are dataclasses registered with `torch.utils._pytree.
-register_dataclass(field_names=..., drop_field_names=...)`. The
-adapter walks each example input through `_dyn_spec`, mirroring
-the registered pytree structure so the dynamic-shape spec reaches
-the underlying `torch.Tensor` leaves. `drop_field_names` excludes
-static metadata (e.g. `sub_batch_ndim`) from the trace boundary.
+`R2`, ...) are pytree-registered dataclasses. The adapter mirrors
+their pytree structure when building the dynamic-shape spec so
+torch.export sees the right dynamism on the underlying tensor
+leaves, while static metadata (e.g. sub-batch widths) stays out of
+the trace boundary.
 
-**Forward-signature variants.** Leaves come in three shapes —
-pure `*inputs`, named positionals followed by `*nl_params`, or
-named positionals only — and torch.export collapses
-`VAR_POSITIONAL` packs into a single nested-tuple argument. The
-adapter splits the example list at the named-positional count and
-re-bundles the tail into the pack, so the `dynamic_shapes`
-structure matches what `torch.export` actually sees.
+**Forward-signature variants.** Different leaves use different
+forward signatures — pure `*inputs`, named positionals followed by
+`*nl_params`, or named positionals only — and the adapter normalizes
+the example list and dynamic-shape spec to whichever shape the
+target leaf expects.
 
 The lowered output is a `.pt2` package per graph. **Implicit
 segments** lower three graphs each (`rhs`, `step`, `ift`) plus an
@@ -192,8 +189,8 @@ structure is internal to the `.pt2`.
 
 ## After export: emit the HIT stub
 
-Once `_write_meta` has serialized the metadata JSON,
-`emit_aoti_stub` rewrites the source HIT file:
+Once the metadata JSON has been written, `emit_aoti_stub` rewrites
+the source HIT file:
 
 - parse the original with `nmhit`;
 - find the top-level `[Models]` block containing `model_name`

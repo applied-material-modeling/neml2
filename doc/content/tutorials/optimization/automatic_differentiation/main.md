@@ -85,7 +85,7 @@ stress = model(strain)
 stress
 ```
 
-Notice the `grad_fn=<AddBackward0>` on the underlying tensor — the
+Notice the `grad_fn=…` annotation on the underlying tensor — the
 forward call wired up the autograd graph that connects `stress` back to
 `model.E` and `model.nu`. Any scalar function of `stress` can now be
 back-propagated. As a stand-in for a real calibration objective, drop

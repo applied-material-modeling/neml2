@@ -274,14 +274,13 @@ A few patterns to recognize when calibrating real models:
 `torch.optim` provides several alternatives to Adam — SGD with
 momentum, RMSProp, and the line-search-based
 {py:class}`torch.optim.LBFGS`. LBFGS converges in many fewer steps on
-smooth, well-conditioned problems, but its closure-based API and the
-fact that LBFGS rejects parameter groups outright (so the
-per-parameter learning rates used above aren't available) make this
-the wrong tool until you've reparameterized to bring all parameters
-to similar scales. For two-parameter elastic calibration of the kind
-shown here, Adam is the simpler choice; for higher-dimensional
-calibration of smooth constitutive models, LBFGS is often the right
-tool once you've reparameterized to unit scale.
+smooth, well-conditioned problems, but doesn't support the
+per-parameter learning rates used above, so it's the wrong tool until
+you've reparameterized to bring all parameters to similar scales. For
+two-parameter elastic calibration of the kind shown here, Adam is the
+simpler choice; for higher-dimensional calibration of smooth
+constitutive models, LBFGS is often the right tool once you've
+reparameterized to unit scale.
 :::
 
 ## Where to go next

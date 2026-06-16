@@ -122,8 +122,7 @@ ends are configured by chaining the primitive twice, once per side.
 
 ## Example: combined advection-diffusion-reaction
 
-The following input file (under `tests/regression/finite_volume/combined/`)
-discretizes
+The following input file discretizes
 
 $$
 \partial_t u + \partial_x\!\left(v u - D\, \partial_x u\right)

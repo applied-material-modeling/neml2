@@ -118,18 +118,12 @@ time exceeds 30 s (absolute wall-time saturation), (c) CUDA OOM /
 host MemoryError, or (d) batch exceeds the `--max-batch` cap
 (default 65536).
 
-Each batch is compiled separately, with the scenario's own
-`[Settings]/[example_batch_shape]` block resolved at `nbatch=B`. For
-most scenarios that block is just `'(${nbatch},)'`, so the trace
-shape ends up `(B,)`; mxpc declares per-input shapes so its grain
-sub-batch stays distinct from the dynamic-batch axis. This matters:
-Inductor's per-kernel autotune block-size hint is seeded from the
-example shape and the optimal hint is workload-dependent. Reusing a
-single compile across batches mirrors the cost of an ahead-of-time
-deployment but can mis-report scaling behaviour at batches far from
-the example. Per-batch compile is the methodology a production user
-gets from `neml2-compile` invoked at the batch they actually intend
-to run.
+Each batch is compiled separately, with the scenario's example
+batch shape resolved at the measured batch size. Per-batch compile
+mirrors what a production user gets from `neml2-compile` invoked at
+the batch they actually intend to run; reusing one compile across
+batches would be cheaper but can mis-report scaling behaviour at
+batches far from the example.
 
 ### Output
 

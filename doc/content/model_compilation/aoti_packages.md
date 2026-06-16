@@ -237,18 +237,13 @@ equation-system wrappers.
 
 ## Dynamic batch dimension
 
-The leading batch dimension is compiled as a dynamic axis:
-
-```python
-batch = Dim("batch", min=1, max=2**20)
-```
-
-The same artifact handles any batch size from 1 to roughly a million
-without recompilation. The cost is modest extra symbolic-shape
-machinery inside the lowered kernel; the benefit is that a single
-artifact serves both single-point evaluation (a unit-cell stress
-update) and large fan-out runs (a finite-element kernel sweeping
-thousands of integration points) with no extra moving parts.
+The leading batch dimension is compiled as a dynamic axis. The same
+artifact handles any batch size from 1 to roughly a million without
+recompilation. The cost is modest extra symbolic-shape machinery
+inside the lowered kernel; the benefit is that a single artifact
+serves both single-point evaluation (a unit-cell stress update) and
+large fan-out runs (a finite-element kernel sweeping thousands of
+integration points) with no extra moving parts.
 
 Sub-batch axes — the structured per-site dimensions some models
 carry — are baked into the artifact at export time. To change them,
@@ -282,10 +277,8 @@ model.named_parameters().at("E").fill_(210000.0);
 
 The constructor takes a single filesystem path to the metadata JSON;
 the per-segment `.pt2` files are resolved relative to that path.
-There is no participation in the `NEML2Object` / `Factory` /
-`Registry` machinery — `neml2::aoti::Model` is a bare class, so
-HIT-input parsing is the *loader*'s responsibility. The class itself
-just consumes a metadata path.
+The class is a bare loader — it does not participate in HIT-input
+parsing, which is the caller's responsibility.
 
 The class is non-copyable and non-movable; hold it as a
 `std::unique_ptr` / `std::shared_ptr` or as an automatic on the

@@ -18,7 +18,7 @@ pip install -e ".[dev]" -v
 ```
 
 This drives [scikit-build-core](https://scikit-build-core.readthedocs.io/)
-through the `NEML2_WHEEL` CMake path and lays down an editable Python
+to build the bundled C++ runtime and lays down an editable Python
 install plus everything the dev workflow needs (pytest, pre-commit,
 sphinx, …).
 
@@ -70,10 +70,9 @@ before configuring:
 cmake --preset dev -Dtorch_ROOT=/path/to/libtorch -S .
 ```
 
-`TORCH_ROOT` (all-caps), `torch_ROOT` / `TORCH_ROOT` / `torch_DIR` /
-`TORCH_DIR` env vars, and the active Python's `torch` site-packages are
-also consulted in that order. See `cmake/Modules/Findtorch.cmake` for
-the full discovery procedure.
+Equivalent environment variables and the active Python's `torch`
+site-packages are also consulted; see the bundled `Findtorch.cmake`
+module for the full discovery procedure.
 
 ## Running the test suite
 

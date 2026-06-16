@@ -19,15 +19,13 @@ NEML2 splits the catalog along two axes:
   [](models-CubicElasticityTensor)) instead produce the fourth-order
   stiffness $\mathbb{C}$ itself, which other models consume.
 - **Material symmetry.** Isotropic leaves take two independent
-  constants. Which pairs of the enumeration
-  `{YOUNGS_MODULUS, POISSONS_RATIO, BULK_MODULUS, SHEAR_MODULUS, LAME_LAMBDA, P_WAVE_MODULUS}`
-  are currently wired up varies by leaf — see the per-type pages in
-  the syntax catalog for the accepted parameterizations. The cubic
-  leaf [](models-CubicElasticityTensor) takes three constants —
-  currently the (`SHEAR_MODULUS`, `YOUNGS_MODULUS`, `POISSONS_RATIO`)
-  triple. The fully anisotropic leaf
-  ([](models-GeneralElasticity)) accepts an arbitrary $\mathbb{C}$
-  and rotates it into the lab frame via a crystal orientation.
+  constants drawn from the standard elastic constants ($E$, $\nu$,
+  $K$, $G$, $\lambda$, $M$); which pairs each leaf accepts is
+  documented in the per-type pages of the syntax catalog. The cubic
+  leaf [](models-CubicElasticityTensor) takes three constants. The
+  fully anisotropic leaf ([](models-GeneralElasticity)) accepts an
+  arbitrary $\mathbb{C}$ and rotates it into the lab frame via a
+  crystal orientation.
 
 A standalone kinematics helper, [](models-GreenLagrangeStrain), is
 shipped here as well: it converts a deformation gradient

@@ -219,9 +219,8 @@ a single adjoint linear solve, rather than unrolling the Newton
 iterations. Because the IFT formula is exact, the returned gradients
 agree with finite differences to roughly machine precision regardless
 of how many Newton iterations the forward solve took. Picking a good
-predictor (the catalog currently offers
-`ConstantExtrapolationPredictor` and `LinearExtrapolationPredictor`)
-shortens the forward solve without changing the backward result.
+predictor shortens the forward solve without changing the backward
+result.
 :::
 
 ## Where to go next
