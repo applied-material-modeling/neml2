@@ -46,15 +46,14 @@ catalog instead of the full plasticity stack:
 
 \begin{align}
   \bar{a} &= I_1(\boldsymbol{a}), \\
-  \bar{b} &= \sigma_{vM}(\boldsymbol{b}), \\
+  \bar{b} &= \sqrt{\tfrac{3}{2}\,\operatorname{dev}(\boldsymbol{b}) : \operatorname{dev}(\boldsymbol{b})}, \\
   \dot{\boldsymbol{b}} &= \bar{b}\,\boldsymbol{a} + \bar{a}\,\boldsymbol{b}.
 \end{align}
 
-The first two are scalar invariants of symmetric tensors (the
-example wires the second one as the von Mises norm,
-`invariant_type = VONMISES`, which equals $\sqrt{3 J_2}$). Both are
-handled by [](models-SR2Invariant). The third is a linear
-combination of two `SR2` tensors with scalar weights — see
+The first two are scalar invariants of symmetric tensors, both
+handled by [](models-SR2Invariant) (the second one with
+`invariant_type = VONMISES`). The third is a linear combination of
+two `SR2` tensors with scalar weights — see
 [](models-SR2LinearCombination).
 
 ```{literalinclude} input.i

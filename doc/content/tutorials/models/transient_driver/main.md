@@ -179,13 +179,9 @@ print("entry count:", len(loaded))
 print("a few keys :", list(loaded)[:4])
 ```
 
-This is the same format used by the regression suite's
-[`TransientRegression`](drivers-TransientRegression) — the gold files
-under `tests/regression/.../gold/result.pt` are read back by
-[`TransientRegression`](drivers-TransientRegression) (which also
-accepts the legacy TorchScript format produced by the v2 C++
-pipeline). Reading it back from another script is just
-`torch.load(path, weights_only=True)`.
+This is the same format the regression suite's
+[`TransientRegression`](drivers-TransientRegression) consumes for
+its `gold/result.pt` references.
 
 ## Where to go next
 

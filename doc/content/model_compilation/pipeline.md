@@ -194,21 +194,16 @@ structure is internal to the `.pt2`.
 
 `compile_model` post-processes every `.so` inside each emitted
 `.pt2`: it walks the ELF program headers and clears the `PF_X`
-bit on the `PT_GNU_STACK` entry. Without this, the constants-folding
-assembler in the PyTorch version NEML2 pins against (see
-`scripts/dependencies.yaml` for the current pin) omits the
-`.note.GNU-stack` section,
+bit on the `PT_GNU_STACK` entry. Without this, the upstream
+constants-folding assembler omits the `.note.GNU-stack` section,
 and ld.bfd / lld respond by marking the resulting shared object's
-stack as executable. SELinux and modern hardened-kernel systems
-refuse to `dlopen()` such an object.
+stack as executable — which trips the C++ runtime's `dlopen` on
+systems that enforce a non-executable stack.
 
 The patch is one byte per `.so` and is reversible (the artifact
-loader doesn't depend on the bit), but without it the C++ runtime
-fails to `dlopen` the artifact on any system with strict W^X /
-`noexecstack` enforcement (common on SELinux-enabled and
-hardened-kernel distros). The dispatch lives behind a single helper so the
-day torch upstreams a fix, we delete the helper and the call
-site.
+loader doesn't depend on the bit). The dispatch lives behind a
+single helper so the day torch upstreams a fix, we delete the helper
+and the call site.
 
 ## After export: emit the HIT stub
 
