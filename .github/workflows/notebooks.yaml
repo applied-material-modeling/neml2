@@ -3,14 +3,16 @@ name: Notebook execution
 on:
   pull_request:
     branches: [main]
-    # PR-time trigger only when the actual notebooks, their paired markdown
-    # mirrors, or any HIT input file they consume change. The nightly cron
-    # below catches drift between PRs (e.g. an upstream torch release that
-    # re-renders an output).
+    # Each notebook is self-contained: its subfolder owns its .ipynb,
+    # paired .md, and every file it loads at runtime (including a
+    # symlink to any shared HIT input). Any change inside one of these
+    # subfolders re-executes that notebook on PR. The nightly cron
+    # re-executes all of them to catch drift from upstream (torch
+    # releases, NEML2 internals).
     paths:
-      - "doc/content/tutorials/**.ipynb"
-      - "doc/content/tutorials/**.md"
-      - "doc/content/tutorials/**.i"
+      - "doc/content/tutorials/**/main.ipynb"
+      - "doc/content/tutorials/**/main.md"
+      - "doc/content/tutorials/**/*.i"
       - ".github/workflows/notebooks.yaml"
   schedule:
     # Nightly at 06:00 UTC
@@ -28,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Need history for `git diff` against the PR base on pull_request runs.
+          # `git diff` against the PR base needs history.
           fetch-depth: 0
       - uses: ./.github/actions/neml2-ci
         with:
@@ -42,57 +44,26 @@ jobs:
         run: pip install ".[dev]" -v
       - name: Select notebooks to execute
         id: select
-        # On pull_request: re-execute only the notebooks whose own
-        # subfolder changed (their main.ipynb, paired main.md, or any
-        # sibling file). If a changed file lives outside any notebook
-        # subfolder -- a resource shared between several notebooks --
-        # fall back to the full sweep, since the diff alone can't tell
-        # which notebooks consume it.
-        # On schedule / workflow_dispatch / push: always full sweep.
+        # PR: re-run the notebook for every subfolder that has any
+        # changed file. Scheduled / manual / push: run all of them.
         run: |
           set -euo pipefail
-          full_sweep() {
-            git ls-files 'doc/content/tutorials/**.ipynb'
-          }
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE_SHA="${{ github.event.pull_request.base.sha }}"
             HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-            CHANGED="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- doc/content/tutorials)"
-            SELECTED=""
-            SHARED=0
-            while IFS= read -r path; do
-              [ -z "$path" ] && continue
-              dir="$(dirname "$path")"
-              nb="$dir/main.ipynb"
-              if [ -f "$nb" ]; then
-                # Lives next to (or is) a notebook -- re-run that one.
-                SELECTED="$SELECTED"$'\n'"$nb"
-              elif [ "${path##*.}" = "md" ]; then
-                # MyST-only tutorial .md (no paired .ipynb sibling).
-                # myst-nb renders these at sphinx-build time; nbmake
-                # has nothing to do with them.
-                echo "Skipping MyST-only doc change: $path"
-              else
-                # Non-md file outside any notebook subfolder -- a
-                # shared resource (e.g. demo_model.i). Can't tell from
-                # the diff which notebooks consume it, so be safe.
-                echo "Shared resource changed: $path"
-                SHARED=1
-              fi
-            done <<< "$CHANGED"
-            if [ "$SHARED" = "1" ]; then
-              echo "Selection mode: pull_request -> shared resource changed, full sweep"
-              NOTEBOOKS="$(full_sweep)"
-            else
-              echo "Selection mode: pull_request -> changed notebooks only"
-              NOTEBOOKS="$(echo "$SELECTED" | sort -u | sed '/^$/d')"
-            fi
+            NOTEBOOKS="$(
+              git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- doc/content/tutorials \
+                | xargs -I{} dirname {} \
+                | sort -u \
+                | while read -r dir; do
+                    nb="$dir/main.ipynb"
+                    [ -f "$nb" ] && echo "$nb"
+                  done
+            )"
           else
-            echo "Selection mode: full sweep (${{ github.event_name }})"
-            NOTEBOOKS="$(full_sweep)"
+            NOTEBOOKS="$(git ls-files 'doc/content/tutorials/**/main.ipynb')"
           fi
-          # Surface the selection on the workflow summary page so
-          # reviewers don't have to dig into the step log.
+          # Surface the selection on the workflow summary page.
           {
             echo "## Notebook execution"
             echo "**Trigger:** \`${{ github.event_name }}\`"
@@ -105,15 +76,9 @@ jobs:
               echo "$NOTEBOOKS" | sed 's/^/- /'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
-          if [ -z "$NOTEBOOKS" ]; then
-            echo "No notebooks selected; skipping execution."
-            echo "notebooks=" >> "$GITHUB_OUTPUT"
-          else
-            echo "Notebooks to execute:"
-            echo "$NOTEBOOKS"
-            # Emit as a single space-separated line for the next step.
-            echo "notebooks=$(echo $NOTEBOOKS | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
-          fi
+          echo "Notebooks to execute:"
+          echo "${NOTEBOOKS:-(none)}"
+          echo "notebooks=$(echo $NOTEBOOKS | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
       - name: Execute notebooks with nbmake
         if: steps.select.outputs.notebooks != ''
         run: pytest -v -s --nbmake --nbmake-timeout=14400 ${{ steps.select.outputs.notebooks }}

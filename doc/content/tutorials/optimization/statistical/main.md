@@ -179,7 +179,7 @@ class SolveStrain(torch.nn.Module):
 Load the NEML model from disk, wrap it in both the `pyzag` wrapper and our thin wrapper class above.  Exclude some of the model parameters we don't want to train.
 
 ```{code-cell} ipython3
-nmodel = neml2.load_nonlinear_system("../demo_model.i", "eq_sys")
+nmodel = neml2.load_nonlinear_system("demo_model.i", "eq_sys")
 nmodel.to(device=device)
 pmodel = neml2.pyzag.NEML2PyzagModel(
     nmodel,
