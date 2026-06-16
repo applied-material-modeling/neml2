@@ -31,7 +31,7 @@ with $l^p = R^e \bar{l}^p R^{eT}$ the plastic velocity gradient pushed forward i
 1. terms quadratic in the elastic stretch $\varepsilon$ are neglected;
 2. terms quadratic in the rate of elastic stretch $\dot{\varepsilon}$ are also neglected.
 
-The first holds well for metal plasticity; the second is more questionable at very high strain rates.
+The first holds well for metal plasticity; the second can break down at very high strain rates.
 
 Defining the current orientation as the composition of the initial lattice rotation $Q_0$ with the elastic rotation, $Q = R^e Q_0$, the elastic spin reduces to $\Omega^e = \dot{Q} Q^T$. Splitting the spatial velocity gradient into symmetric and skew parts ($l = d + w$, $l^p = d^p + w^p$) and rearranging yields the two governing rate equations integrated by this module:
 
@@ -46,7 +46,7 @@ $$
 \sigma = C : \varepsilon.
 $$
 
-A complete constitutive model must still supply $l^p$. The catalog adopts Asaro's slip-system decomposition,
+To close the system, the model also needs an expression for $l^p$. The catalog adopts Asaro's slip-system decomposition,
 
 $$
 l^p = \sum_{i=1}^{n_\mathrm{slip}} \dot{\gamma}_i \, Q \left(d_i \otimes n_i\right) Q^T,
@@ -102,7 +102,7 @@ The input is organized into the standard NEML2 blocks: `[Tensors]` builds the lo
 
 The `[EquationSystems]` block names the three unknowns (`elastic_strain slip_hardening orientation`) and their residuals, and [](solvers-NewtonWithLineSearch) drives them to zero with a [](solvers-DenseLU) inner solver.
 
-**Predictor.** Convergence of a fresh-from-elastic guess is fragile for crystal plasticity, so a two-stage predictor warms the unknowns: [](models-CrystalPlasticityStrainPredictor) seeds the elastic strain from a fraction (`scale = 0.1`) of the imposed strain increment, and [](models-ConstantExtrapolationPredictor) copies the previous-step values of `orientation` and `slip_hardening` forward. Wrapped in [](models-ImplicitUpdate), this becomes the per-step solve.
+**Predictor.** A fresh-from-elastic guess often struggles to converge for crystal plasticity, so a two-stage predictor warms the unknowns: [](models-CrystalPlasticityStrainPredictor) seeds the elastic strain from a fraction (`scale = 0.1`) of the imposed strain increment, and [](models-ConstantExtrapolationPredictor) copies the previous-step values of `orientation` and `slip_hardening` forward. Wrapped in [](models-ImplicitUpdate), this becomes the per-step solve.
 
 The final `model_with_stress` composes the implicit update with the elasticity model and an `additional_outputs = 'elastic_strain'` so the driver records both stress and strain over the load path.
 
@@ -115,6 +115,6 @@ If you need to *post-process* an orientation (e.g. wrap the modified-Rodrigues p
 - [](modules-solid-mechanics-elasticity) — anisotropic elasticity tensors to pair with the crystal kinematics here.
 - [](modules-solid-mechanics-plasticity) — the macroscopic (J2 / phenomenological) counterpart to per-slip hardening.
 - [](modules-solid-mechanics-kinematics) — finite-strain kinematic helpers (deformation-rate / vorticity definitions) that drive the example above.
-- [](tutorials-models-composition) — how `ComposedModel` resolves dependencies between the dozen primitives wired up here.
+- [](tutorials-models-composition) — how `ComposedModel` resolves dependencies between the many primitives wired up here.
 - [](tutorials-models-implicit-model) — the residual / `ImplicitUpdate` / `NonlinearSystem` pattern used to integrate the rate equations.
 - [](syntax-catalog) — the per-type option reference, auto-generated from each model's docstring.

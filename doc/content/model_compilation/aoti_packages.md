@@ -25,8 +25,10 @@ See [](cli-utilities) for the broader CLI surface.
 
 ## The four artifacts
 
-For a single-segment model (pure forward or pure implicit, the common
-case), `neml2-compile` emits exactly four files:
+For a forward single-segment model, `neml2-compile` typically emits
+four files (forward graph, optional JVP graph, metadata, HIT stub).
+Implicit single-segment models emit the per-segment set covered in
+the segment table below.
 
 | File                  | Contents                                                                    |
 | :-------------------- | :-------------------------------------------------------------------------- |
@@ -49,7 +51,9 @@ boundary into separate **segments**, each numbered `_seg{i}_`:
 | `<name>_seg{i}_predictor.pt2`   | Newton initial guess (only if the source had one).      |
 
 The `_seg0_` infix is dropped in the single-segment shortcut, so
-single-segment artifacts always look like the first table.
+single-segment forward artifacts use the names in the first table
+and single-segment implicit artifacts use the per-segment names from
+the second table without the `_seg0_` prefix.
 
 ### What's in the metadata JSON
 
@@ -153,8 +157,11 @@ import neml2
 model = neml2.load_model("elasticity_aoti.i", "elasticity")
 ```
 
-The runtime surface on the underlying `neml2.aoti.Model` binding is
-four operations:
+The runtime surface on the underlying `neml2.aoti.Model` binding
+centers on four call paths, backed by introspection properties
+(`input_names`, `output_names`, `device`, `dtype`, …) and a
+`set_parameter(name, tensor)` helper for replacing a promoted
+parameter wholesale:
 
 | Operation               | Returns                                             |
 | :---------------------- | :-------------------------------------------------- |
@@ -164,7 +171,7 @@ four operations:
 | `named_parameters()`    | Mutable dict of promoted parameters; empty if baked. |
 
 All three call paths take a dict keyed by the master input names
-returned by `input_names()`; missing keys throw.
+listed in `input_names`; missing keys throw.
 
 ```python
 binding = model._inner    # the bare neml2.aoti.Model runtime
@@ -221,11 +228,12 @@ effectively a frozen inference graph.
 
 ### Constraint: no parameters inside `ImplicitUpdate`
 
-Promotion of any parameter that lives inside an `ImplicitUpdate`'s
-`system.model` tree is **rejected up-front** with a clear
-`NotImplementedError`. Parameters in forward segments of a composed
-model promote normally; see [](model-compilation-pipeline) for the
-underlying constraint on the equation-system wrappers.
+Trying to promote a parameter that lives inside an `ImplicitUpdate`'s
+`system.model` tree raises a `NotImplementedError` at compile time,
+with a message pointing at the offending name. Parameters in forward
+segments of a composed model promote normally; see
+[](model-compilation-pipeline) for the underlying constraint on the
+equation-system wrappers.
 
 ## Dynamic batch dimension
 
@@ -248,13 +256,12 @@ re-compile.
 
 ## Device and dtype pinning
 
-The `.pt2` graphs are pinned to a specific device + dtype at export
-time. There is intentionally no `to()`: offering one would either
-be a misleading no-op (the graph stays put) or a contract-breaking
-half-move (parameters shift, graph doesn't). To retarget, re-run
-`neml2-compile` with a different `--device` / `--dtype`. Promoted
-parameter tensors are placed on the same device as the graph at load
-time.
+The `.pt2` graphs are pinned to the device and dtype they were
+exported with, so the artifact does not expose a runtime `to()`:
+any move would silently desync the graph from its parameters. To
+target a different device or dtype, re-run `neml2-compile` with the
+new `--device` / `--dtype`. Promoted parameter tensors are placed
+on the same device as the graph at load time.
 
 ## C++ runtime
 

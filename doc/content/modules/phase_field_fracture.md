@@ -60,9 +60,9 @@ $$
 $$
 
 NEML2 evaluates both derivatives ($\partial\psi/\partial d$ and
-$\partial\psi/\partial\mathbf{E}$) symbolically through the
-[](models-Normality) operator, so users never write them by hand — only the
-energy $\psi$ itself.
+$\partial\psi/\partial\mathbf{E}$) through the [](models-Normality)
+operator, so the wiring layer of the input file never needs to spell
+them out — only the energy $\psi$ itself.
 
 ### Crack geometric functions
 

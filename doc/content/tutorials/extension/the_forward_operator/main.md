@@ -26,10 +26,10 @@ positional arguments are the inputs in the order you declared them in
 the schema — each one is already a typed wrapper (`Vec`, `SR2`, …) the
 framework built for you. Return the outputs in schema order.
 
-A `v=None` keyword argument is also part of the signature. Ignore it
-for now — the pure-forward path is `v is None`, which is what nearly
-every caller hits. We'll come back to `v` further down when we add
-first derivatives.
+There's also a `v=None` keyword in the signature — that's the
+chain-rule hook for first derivatives, covered later on this page.
+Until you need derivatives, you can leave it alone; calls without
+`v` get back just the outputs.
 
 ## Implementation
 
@@ -53,12 +53,14 @@ The first line is the physics: `Vec - Scalar * Vec` gives back a `Vec`,
 batched or not. If `v is None` (the usual case) the method returns and
 you're done.
 
-The `else` branch is the chain-rule hook. `actions` maps each input to
-a closure that computes its contribution to the Jacobian-vector
-product. Here $\partial \boldsymbol{a}/\partial \boldsymbol{v} = -\mu
-I$, so the closure is just `lambda V: -self.mu * V`.
-`apply_chain_rule` does the rest. The closure is matrix-free — nothing
-ever materializes a Jacobian block.
+The `else` branch is the chain-rule hook. `actions` maps each input
+variable to a small function that takes an incoming tangent
+(something the same shape as that input) and returns its
+contribution to the output's tangent. For this model the math is
+simple: $\partial \boldsymbol{a}/\partial \boldsymbol{v} = -\mu I$,
+so the closure is `lambda V: -self.mu * V`. `apply_chain_rule` then
+sums the contribution against any tangents the caller seeded on
+`v`, without ever building the full Jacobian matrix in memory.
 
 ## Evaluation
 
@@ -133,7 +135,9 @@ report = ModelUnitTest.from_file("unit_test.i").run()
 print(f"value checks: {report.value_checks}, JVP checks: {report.jvp_checks}")
 ```
 
-Both passes succeed — values match, derivatives match autograd.
+If both counters are positive (and the cell didn't raise), every
+value and every JVP matched. A zero on either side means that check
+was skipped, not that it failed silently.
 
 ## Where to go next
 

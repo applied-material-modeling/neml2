@@ -7,10 +7,10 @@ The kinematics catalog supplies the small, composable primitives that
 encode *non-mechanical* contributions to a material's deformation —
 the strains or volumetric changes that arise from temperature
 excursions, phase transformations, density changes during sintering,
-or freezing/melting of a contained fluid. None of these models are
-constitutive on their own; they are the inputs that an elastic or
-inelastic constitutive model subtracts from the *total* kinematic
-measure to recover the mechanical part.
+or freezing/melting of a contained fluid. Pair them with an elastic
+or inelastic constitutive model, which subtracts the non-mechanical
+contribution from the total kinematic measure to recover the
+mechanical part.
 
 The catalog carves the space along two axes:
 
@@ -143,9 +143,9 @@ with `from = 'E plastic_strain eigenstrain'` and
 `weights = '1 -1 -1'`. The output `elastic_strain` is then the strain
 that the [](models-LinearIsotropicElasticity) block consumes — so by
 the time stress is evaluated the thermal contribution has already
-been peeled off. This is the canonical wiring pattern for *any*
-eigenstrain in NEML2: declare the eigenstrain model, then subtract
-its `eigenstrain` output from the total strain inside an
+been peeled off. This is the typical wiring pattern for eigenstrains
+in NEML2: declare the eigenstrain model, then subtract its
+`eigenstrain` output from the total strain inside an
 `SR2LinearCombination` whose result is consumed by elasticity.
 
 To extend this composition to additional eigenstrain sources — say
@@ -158,12 +158,12 @@ leaf in the catalog publishes the same `eigenstrain : SR2` surface.
 
 For finite-strain workflows the analogous pattern uses
 [](models-ThermalDeformationJacobian) or
-[](models-SwellingAndPhaseChangeDeformationJacobian) (and
-[](models-VolumeChangeEigenstrain) when a volume-change eigenstrain
-is needed on the small-strain side), multiplied together via a
-`ScalarLinearCombination`-style chain, then handed to
-[](models-VolumeAdjustDeformationGradient) to produce the mechanical
-deformation gradient that the elastic model consumes.
+[](models-SwellingAndPhaseChangeDeformationJacobian), multiplied
+together via a `ScalarLinearCombination`-style chain, then handed
+to [](models-VolumeAdjustDeformationGradient) to produce the
+mechanical deformation gradient that the elastic model consumes.
+On the small-strain side, [](models-VolumeChangeEigenstrain) plays
+the corresponding role when a volume-change eigenstrain is needed.
 
 :::{note}
 All eigenstrain leaves are *cumulative* — they return the total

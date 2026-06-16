@@ -72,11 +72,11 @@ Each line maps to one schema field:
 
 ## Loading and inspecting
 
-For `neml2.load_model` to find the type name, the module that defines
-it has to be imported first — that's what runs the
-`@register_neml2_object` decorator. In a normal script this is just
-an `import` line; here, `projectile.py` sits next to `input.i`, so we
-add the directory to `sys.path` and import it.
+`load_model` looks up the type name in a registry that's populated
+as a side effect of importing your module — so you need to import
+it first. In a normal script that's just an `import` line; here,
+`projectile.py` sits next to `input.i`, so we add the directory to
+`sys.path` and import it.
 
 ```{code-cell} ipython3
 import sys
@@ -111,13 +111,11 @@ model.mu
 If `load_model` raises a `KeyError` mentioning *"not registered in
 NativeRegistry"*, the module holding `@register_neml2_object` was
 almost certainly never imported. Fix the import (or reorder imports)
-so the decorator runs first. You can also peek at the registry
-directly:
+so the decorator runs first. To confirm a type is registered, ask
+`neml2-syntax`:
 
-```{code-cell} ipython3
-from neml2.factory import _registry
-
-"ProjectileAcceleration" in _registry, _registry["ProjectileAcceleration"]
+```bash
+neml2-syntax --load ./projectile.py --type ProjectileAcceleration
 ```
 
 ## Loading the extension from the CLI

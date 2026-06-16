@@ -14,8 +14,8 @@ exercised by NEML2's CI on each change.
 
 The bounds are asymmetric on purpose:
 
-- The **lower bound** is a hard `pyproject.toml` constraint. NEML2
-  uses some internal torch APIs that landed in 2.10.
+- The **lower bound** is a hard `pyproject.toml` constraint; older
+  torch versions have a known-incompatible ABI.
 - The **upper bound** is advisory. A newly-released torch may or may
   not work; rather than blocking users, `pip install neml2` accepts
   any newer torch. The upper bound documents which versions have

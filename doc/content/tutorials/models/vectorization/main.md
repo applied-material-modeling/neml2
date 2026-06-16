@@ -17,9 +17,10 @@ mystnb:
 
 You'll evaluate the elasticity model from
 [](tutorials-models-running-your-first-model) on a whole batch of
-strain states in one call, then time it against a Python `for`-loop to
-see how much the loop costs. The short version: don't loop — stack
-your inputs and call the model once.
+strain states in one call, then time it against a Python `for`-loop
+to see how much the loop costs. The short version: when you have
+many states, stack them into one batched input and let the model
+evaluate them in a single call.
 
 ## The input file
 
@@ -113,15 +114,18 @@ print(f"batched:     {t_batch*1e3:8.2f} ms")
 print(f"speedup:     {t_loop/t_batch:8.1f}x")
 ```
 
-Two orders of magnitude is typical even for this trivial model on
-CPU; on GPU the gap widens further. The loop pays a constant per-call
-overhead that the batched call amortizes across the whole batch.
+The cell prints the speedup — large even for a model this trivial
+on CPU, because the loop pays a constant per-call overhead that the
+batched call amortizes across the whole batch. On GPU, where each
+Python-level launch carries extra latency, the gap is usually wider
+still.
 
 ## Where to go next
 
-- [](tutorials-models-evaluation-device) — the same batched call runs
-  on CUDA the moment you move the model and the input there with
-  `.to(device)`, where the batched speedup is even larger.
+- [](tutorials-models-evaluation-device) — the same batched call
+  runs on CUDA once you move the model and the input there with
+  `.to(device)`; on GPU, the per-call overhead the batched form
+  avoids is usually even more pronounced.
 - [](tutorials-models-cross-referencing) and
   [](tutorials-models-composition) — once a model is composed of
   several pieces, the same batched-call semantics propagate through

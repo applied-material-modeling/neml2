@@ -32,11 +32,12 @@ viscoplastic model, for instance, threads together
   \dot{\boldsymbol{\varepsilon}}^p &= \dot{\gamma}\,\boldsymbol{N}.
 \end{align*}
 
-Each line on the right-hand side is its own `Model` in NEML2, and
-`ComposedModel` glues a chosen set together. That keeps each piece
-testable and swappable, and the Python-side overhead of stepping
-through many sub-models disappears once you export the composed graph
-through the compilation pipeline (see [](tutorials-models-compiled)).
+Each line on the right-hand side maps to a separate `Model` in
+NEML2's catalog, and `ComposedModel` glues a chosen set together.
+That keeps each piece testable and swappable, and the Python-side
+overhead of stepping through many sub-models drops out once you
+export the composed graph through the compilation pipeline (see
+[](tutorials-models-compiled)).
 
 ## A worked example
 
@@ -45,13 +46,15 @@ catalog instead of the full plasticity stack:
 
 \begin{align}
   \bar{a} &= I_1(\boldsymbol{a}), \\
-  \bar{b} &= J_2(\boldsymbol{b}), \\
+  \bar{b} &= \sigma_{vM}(\boldsymbol{b}), \\
   \dot{\boldsymbol{b}} &= \bar{b}\,\boldsymbol{a} + \bar{a}\,\boldsymbol{b}.
 \end{align}
 
-The first two equations are scalar invariants of symmetric tensors,
-handled by [](models-SR2Invariant). The third is a linear combination
-of two `SR2` tensors with scalar weights — see
+The first two are scalar invariants of symmetric tensors (the
+example wires the second one as the von Mises norm,
+`invariant_type = VONMISES`, which equals $\sqrt{3 J_2}$). Both are
+handled by [](models-SR2Invariant). The third is a linear
+combination of two `SR2` tensors with scalar weights — see
 [](models-SR2LinearCombination).
 
 ```{literalinclude} input.i
@@ -89,10 +92,9 @@ Three things to notice:
    `eq3.weight_1` are gone — replaced by the producer links from `eq2`
    and `eq1`. Only the literal `offset = 0` is still free.
 
-Running `neml2-inspect` after wiring a composed model is the fastest
-way to catch typos in variable names — a mismatch shows up as a
-dangling input or missing output, much easier to read than a shape
-error deep inside `__call__`.
+Running `neml2-inspect` right after wiring a composed model is the
+fastest way to catch typos: a missed name shows up as a dangling
+input or missing output, instead of a shape mismatch later on.
 
 ## Loading and evaluating the composed model
 
@@ -152,6 +154,9 @@ a_bar = eq1(a)
 b_bar = eq2(b)
 
 # 2. Manually wire the weights of eq3 to those intermediate values.
+# This is the only place the by-hand path reaches into `.data`; the
+# whole point of `ComposedModel` is to keep typed wrappers typed
+# end-to-end instead of having every caller do this.
 eq3.weight_0 = nn.Parameter(b_bar.data)
 eq3.weight_1 = nn.Parameter(a_bar.data)
 
@@ -165,8 +170,9 @@ Same answer, but you had to:
 - remember which weight slot maps to which invariant, and
 - copy the intermediate values into `eq3`'s parameters by hand.
 
-Three models is manageable. Three dozen isn't. `ComposedModel` does
-this bookkeeping once at load time, then gets out of the way.
+A handful is manageable. A realistic constitutive theory with
+dozens of small maps isn't. `ComposedModel` does this bookkeeping
+once at load time, then gets out of the way.
 
 :::{note}
 This works because `eq3`'s `weights` accepts a list of names that can

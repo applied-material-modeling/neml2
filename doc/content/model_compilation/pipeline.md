@@ -75,8 +75,9 @@ value before any rewriting. Those tensors land in
 
 ## Step 3 — Re-route promoted parameters through NLParam
 
-This is the deepest pipeline step. Each promoted name has to
-transition from "static field on the leaf" to "graph input the
+This step transitions each promoted name from a static field on the
+leaf to a graph input the caller supplies on every invocation. Each
+promoted name has to move from "static field on the leaf" to "graph input the
 caller supplies on every invocation". `_promote_to_nl_params`:
 
 - deletes the static slot from the leaf's `_parameters` dict;
@@ -110,22 +111,25 @@ batch axis (the `sub_batch_shape`). The implicit-update tracer
 needs that shape to build the right Schur/Block layout, but the
 shape is only knowable from the driver inputs in the HIT file.
 
-`_hit_driver_example_inputs` walks the `[Drivers]` section,
-materializes one example tensor per declared force/state variable,
-and `_seed_implicit_subbatch` propagates each tensor's
-sub-batch shape into the matching `ModelNonlinearSystem`'s
-per-variable spec.
+`_read_settings` parses `[Settings]/example_batch_shape` (uniform
+field or per-variable subsection); `_resolve_example_shapes` expands
+that into a `name → (dyn, sub)` map over the model's `input_spec`;
+`_seed_implicit_subbatch` then calls `system.initialize(...)` on every
+nested `ModelNonlinearSystem` with example inputs of the resolved
+shape, so the system's per-variable `sub_batch_shape` is populated
+before the tracer runs.
 
-The step is silently skipped when the HIT file has no `[Drivers]`
-section — the bulk-constitutive default of `sub_batch_shape = ()`
-is correct for that case.
+When no `example_batch_shape` is declared, the resolver falls back to
+`_DEFAULT_EXAMPLE_SHAPE` (a `(2,)` dyn / `()` sub default that's
+correct for the bulk-constitutive case).
 
 ## Step 6 — Partition into segments
 
-`torch.export` traces eager Python; a Newton loop's
-`while not converged` is not traceable. So every `ImplicitUpdate`
-must become its own segment, with the Newton iteration driven by
-the C++ orchestrator (one `.pt2` call per step until convergence).
+Every `ImplicitUpdate` becomes its own segment so the Newton loop
+can be driven from the C++ orchestrator (one `.pt2` call per step
+until convergence). `torch.export` traces eager Python and can't
+trace `while not converged`, so the data-dependent loop boundary is
+the natural split point.
 
 `_partition_into_segments` dispatches:
 
@@ -190,16 +194,19 @@ structure is internal to the `.pt2`.
 
 `compile_model` post-processes every `.so` inside each emitted
 `.pt2`: it walks the ELF program headers and clears the `PF_X`
-bit on the `PT_GNU_STACK` entry. Without this, PyTorch 2.12's
-constants-folding assembler omits the `.note.GNU-stack` section,
+bit on the `PT_GNU_STACK` entry. Without this, the constants-folding
+assembler in the PyTorch version NEML2 pins against (see
+`scripts/dependencies.yaml` for the current pin) omits the
+`.note.GNU-stack` section,
 and ld.bfd / lld respond by marking the resulting shared object's
 stack as executable. SELinux and modern hardened-kernel systems
 refuse to `dlopen()` such an object.
 
 The patch is one byte per `.so` and is reversible (the artifact
 loader doesn't depend on the bit), but without it the C++ runtime
-fails to open the artifact on roughly half of all production
-Linux installs. The dispatch lives behind a single helper so the
+fails to `dlopen` the artifact on any system with strict W^X /
+`noexecstack` enforcement (common on SELinux-enabled and
+hardened-kernel distros). The dispatch lives behind a single helper so the
 day torch upstreams a fix, we delete the helper and the call
 site.
 
@@ -232,7 +239,7 @@ correctly.
 | HIT-stub emission                    | `neml2/cli/aoti_compile.py::emit_aoti_stub`                      |
 | Top-level export                     | `neml2/cli/aoti_export.py::export_model_for_aoti`                |
 | Promote / freeze / re-route          | `_validate_promoted`, `_promote_to_nl_params`, `_freeze_remaining_parameters_to_buffers` |
-| Sub-batch propagation                | `_hit_driver_example_inputs`, `_seed_implicit_subbatch`          |
+| Example-shape resolution + sub-batch seeding | `_read_settings`, `_resolve_example_shapes`, `_seed_implicit_subbatch` |
 | Partitioning                         | `_partition_into_segments`, `_contains_implicit`, `_flatten_composed` |
 | Forward / implicit segment lowering  | `_compile_forward_segment`, `_compile_implicit_segment`          |
 | `torch.export` adapter               | `neml2/models/export.py::compile_model`                          |

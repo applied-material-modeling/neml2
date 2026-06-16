@@ -22,9 +22,10 @@ differentiate through the solve.
 
 Stiff viscoplastic flow is the canonical case: the plastic-strain
 increment depends on the stress *after* the increment, which in turn
-depends on the plastic strain — so the update has no closed form. The
-fix is to write a residual that vanishes at the right answer and let a
-solver find it.
+depends on the plastic strain — so the update has no closed form.
+The standard move is to write a residual that vanishes at the right
+answer and let a solver find it; in this tutorial the residual is
+assembled from leaves already in NEML2's catalog.
 
 ## The physics
 
@@ -106,7 +107,8 @@ residual_at_guess
 ```
 
 The residual is far from zero — the guess `ε^p = 0` is not a root.
-Finding the root is what `ImplicitUpdate` exists for.
+The next section wraps the same residual in an `ImplicitUpdate` so a
+Newton solver finds the root for us.
 
 ## Wrapping the residual in an `ImplicitUpdate`
 
@@ -211,16 +213,15 @@ the Perzyna reference stress) if you mark them with
 plug into this hook without changing the forward model.
 
 :::{note}
-`ImplicitUpdate` reuses the LU factorization of the system Jacobian
-at the converged state to apply the implicit function theorem. The
-backward pass is therefore $O(N_s^2)$ per item (one back-solve), not
-$O(N_s^3)$ (a full re-factor) — which matters once $N_s$ grows or the
-batch size does. Because the implicit-function formula is exact, the
-returned gradients agree with finite differences to roughly machine
-precision, regardless of how many Newton iterations the forward solve
-took. Picking a good predictor (e.g. an elastic-trial state for
-return mapping) shortens the forward solve without changing the
-backward result.
+`ImplicitUpdate` applies the implicit function theorem in backward:
+it re-assembles the system Jacobian at the converged state and runs
+a single adjoint linear solve, rather than unrolling the Newton
+iterations. Because the IFT formula is exact, the returned gradients
+agree with finite differences to roughly machine precision regardless
+of how many Newton iterations the forward solve took. Picking a good
+predictor (the catalog currently offers
+`ConstantExtrapolationPredictor` and `LinearExtrapolationPredictor`)
+shortens the forward solve without changing the backward result.
 :::
 
 ## Where to go next

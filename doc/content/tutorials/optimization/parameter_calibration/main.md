@@ -171,9 +171,10 @@ print(f"recovered  nu = {model.nu.data.item():.6f}  (true {nu_true})")
 ```
 
 Both parameters are recovered to within a small fraction of a percent.
-The residual error is set by the optimizer's tolerance, not by any
-physical or data limitation — the loss landscape has a unique global
-minimum at the true values, and the loss there is exactly zero.
+With noise-free synthetic data and many random strain directions, the
+loss landscape here has a unique global minimum at the true values
+where the loss is exactly zero; the residual error is set by the
+optimizer's tolerance rather than the data.
 
 ## Diagnostics
 
@@ -230,9 +231,11 @@ What to look for in each panel:
   gradient — either because the loss is genuinely insensitive to it
   (non-identifiability — see below) or because the learning rate for
   that param group is too small.
-- **Gradient norm.** Should decrease alongside the loss. A gradient
-  norm that flattens out while the loss keeps decreasing is a sign
-  that one parameter is converged but another is still moving.
+- **Gradient norm.** Should decrease alongside the loss. If the loss
+  keeps drifting down while the gradient norm plateaus, you are
+  usually watching one parameter that has nearly converged while the
+  other still has a noticeable gradient — the plateau is the small
+  parameter's contribution dominating the norm.
 
 ## Common failure modes
 
@@ -248,11 +251,14 @@ A few patterns to recognize when calibrating real models:
   information about a parameter, no amount of optimization will pin
   it down. The classic symptom is a parameter that doesn't move and a
   loss that's already nearly minimal at the (wrong) initial value.
-  For elasticity, pure hydrostatic loading is insensitive to $\nu$ if
-  $\nu$ enters only through $G$; the calibrator will then leave $\nu$
-  at its starting guess. *Fix:* add observations that probe the
-  insensitive direction, or fix the unidentifiable parameter from
-  prior knowledge.
+  For elasticity parameterized by bulk and shear moduli $(K, G)$,
+  pure hydrostatic loading carries no information about $G$, so a
+  calibrator given only volumetric data will leave $G$ at its
+  starting guess. (With the $E/\nu$ parameterization used above, $\nu$
+  enters both $K$ and $G$, so hydrostatic data still pins it down,
+  but the calibration is poorly conditioned.) *Fix:* add observations
+  that probe the insensitive direction, or fix the unidentifiable
+  parameter from prior knowledge.
 - **Local minima.** Non-convex loss landscapes (very common with
   rate-dependent or path-dependent models) can trap gradient descent
   in a basin that's not the global optimum. *Fixes:* multi-start
@@ -268,9 +274,11 @@ A few patterns to recognize when calibrating real models:
 `torch.optim` provides several alternatives to Adam — SGD with
 momentum, RMSProp, and the line-search-based
 {py:class}`torch.optim.LBFGS`. LBFGS converges in many fewer steps on
-smooth, well-conditioned problems, but its closure-based API and
-shared-learning-rate semantics make the per-parameter scaling story
-above more awkward. For two-parameter elastic calibration of the kind
+smooth, well-conditioned problems, but its closure-based API and the
+fact that LBFGS rejects parameter groups outright (so the
+per-parameter learning rates used above aren't available) make this
+the wrong tool until you've reparameterized to bring all parameters
+to similar scales. For two-parameter elastic calibration of the kind
 shown here, Adam is the simpler choice; for higher-dimensional
 calibration of smooth constitutive models, LBFGS is often the right
 tool once you've reparameterized to unit scale.

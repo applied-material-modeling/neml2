@@ -6,13 +6,12 @@
 The chemical-reactions module is a collection of objects that serve as
 building blocks for composing models of macroscale chemical reactions —
 pyrolysis, reactive infiltration, solidification, and similar
-control-mass processes. The models in this catalog do **not** attempt to
-derive reaction kinetics from first principles. Instead they provide
-empirical, homogenized expressions for the **reaction rate**
-$\dot{\alpha}$ as a function of the **conversion degree** $\alpha$, plus
-geometric/volumetric helpers that bridge the reaction's control mass
-into a control-volume picture that other physics modules
-(solid mechanics, porous flow, phase-field fracture) can consume.
+control-mass processes. The module provides empirical, homogenized
+expressions for the **reaction rate** $\dot{\alpha}$ as a function of
+the **conversion degree** $\alpha$, plus geometric/volumetric helpers
+that bridge the reaction's control mass into a control-volume picture
+other physics modules (solid mechanics, porous flow, phase-field
+fracture) can consume.
 
 The catalog carves the domain into two layers:
 
@@ -30,11 +29,11 @@ The catalog carves the domain into two layers:
   density contributions into the total composite volume so the
   reaction's control mass can be tied into a control-volume framework.
 
-Integration in time, predictors, Arrhenius temperature dependence,
-linear combinations, and the implicit Newton solve are all *not* part
-of this module — they come from `common/` and the solver and predictor
-infrastructure. The composition pattern below shows how the
-chemical-reactions primitives slot into that machinery.
+Time integration, predictors, Arrhenius temperature dependence,
+linear combinations, and the implicit Newton solve live under
+`common/` and the solver/predictor packages. The example below
+shows how the chemical-reactions primitives slot into that
+machinery.
 
 ## Math
 
@@ -111,7 +110,8 @@ contribution:
   that the Newton solver consumes via the `eq_sys`
   [](models-ImplicitUpdate) block.
 
-Everything downstream of `solve_reaction` is bookkeeping in `common/`:
+The remaining blocks downstream of `solve_reaction` are conservation
+relations and time integration from `common/`:
 the four [](models-ScalarLinearCombination) blocks (`binder_rate`,
 `char_rate`, `gas_rate`, `open_pore_rate`) implement conservation
 relations such as $\dot{\omega}_c = Y \, \dot{\alpha}$ (with $Y$ the
@@ -135,10 +135,10 @@ downstream.
 
 The reactive-infiltration scenario at
 `tests/regression/chemical_reactions/reactive_infiltration/constant_liquid_concentration/model.i`
-is structured identically: it swaps
+follows a similar pattern but swaps in
 [](models-CylindricalChannelGeometry) +
-[](models-DiffusionLimitedReaction) for the contracting-geometry leaf,
-uses [](models-HermiteSmoothStep) to give the liquid and solid
+[](models-DiffusionLimitedReaction), uses
+[](models-HermiteSmoothStep) to give the liquid and solid
 reactivities $R_l(\phi_L)$ and $R_s(\phi_S)$ a smooth on/off
 behaviour, and Newton-solves on the volume fractions
 $(\phi_P, \phi_S)$ instead of $\alpha$.

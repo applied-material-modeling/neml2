@@ -57,9 +57,10 @@ print("E  =", model.E)
 print("nu =", model.nu)
 ```
 
-The underlying `torch.nn.Parameter` lives at `.data`. Reach for it
+The underlying `torch.nn.Parameter` lives at `.data`. Use `.data`
 when you need the raw `torch.Tensor` — for example to pull out a
-numerical value:
+numerical value with `.item()`. (This is user-facing; library code
+stays on the typed wrappers.)
 
 ```{code-cell} ipython3
 print("E  =", model.E.data.item())
@@ -74,9 +75,11 @@ optimizer state attached to it) or replace it outright.
 
 ### In place, on `.data`
 
-In-place mutation keeps the same `nn.Parameter` object. PyTorch
-refuses in-place writes on a leaf tensor that requires grad, so wrap
-the mutation in `torch.no_grad()`:
+In-place mutation keeps the same `nn.Parameter` object. Leaf tensors
+that require grad can't be mutated in place directly — autograd would
+lose the history. Wrap the mutation in `torch.no_grad()` to tell
+PyTorch you're intentionally side-stepping the graph for this
+assignment:
 
 ```{code-cell} ipython3
 import torch
@@ -87,9 +90,10 @@ with torch.no_grad():
 print("E =", model.E.data.item())
 ```
 
-Use this inside an optimization loop — the optimizer already holds a
-reference to `model.E`, and in-place mutation leaves that reference
-valid.
+Use this inside an optimization loop — the optimizer holds a
+reference to the underlying `nn.Parameter` (the one
+`named_parameters()` returns), and in-place mutation through `.data`
+writes back to that same Parameter.
 
 ### Rebinding the attribute
 
@@ -101,10 +105,12 @@ print("nu =", model.nu.data.item())
 ```
 
 Reach for this when the new parameter has different properties — a
-different dtype, a different `requires_grad`, or a batched shape (see
-[](tutorials-models-vectorization)). Rebinding invalidates any
-optimizer that was tracking the old `nn.Parameter`, so re-create the
-optimizer afterwards if there was one.
+different dtype, a different `requires_grad`, or a batched shape
+(see [](tutorials-models-parameters-revisited) for batched parameter
+values, or [](tutorials-models-vectorization) for batched inputs).
+Rebinding invalidates any optimizer that was tracking the old
+`nn.Parameter`, so re-create the optimizer afterwards if there was
+one.
 
 ## Freezing a parameter
 

@@ -4,10 +4,11 @@
 NEML2 ships with a large collection of material models. They can be used
 on their own or composed into more complex models.
 
-Once NEML2 is installed (see [Basic installation](../../installation/install.md)),
-no additional Python or C++ code is needed to wire a model up — NEML2
-parses a text-based [input file](tutorials-models-input-file) into a
-runnable model at load time.
+Once NEML2 is installed (see [Installation](../../installation/install.md)),
+the wiring lives entirely in a text-based
+[input file](tutorials-models-input-file) — NEML2 parses it into a
+runnable model at load time, so you don't need to write Python or
+C++ glue to compose models.
 
 The tutorials in this section walk through the everyday workflow of
 using existing NEML2 models.

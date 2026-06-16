@@ -10,8 +10,8 @@ that comes up whenever a NEML2 user sizes a production run:
 > given device?*
 
 The same tooling is the substrate for tracking performance changes
-across NEML2 releases — every PR that touches the runtime is expected
-to leave the headline numbers at least as good as it found them.
+across NEML2 releases; runtime-touching PRs are expected to keep the
+headline numbers from regressing.
 
 ## Scenarios
 
@@ -69,13 +69,12 @@ Two limits of the model are intuitive:
 The fitted $(t_0,\, N^*)$ pair characterises the model+device pair
 in one of two useful ways:
 
-- **For a given device, smaller $t_0$ is better.** It is the lower
-  bound on what a vectorised call costs at all — every measurement
-  at $N \le N^*$ sits there.
-- **For a given model, larger $N^*$ is better.** It is the largest
-  batch you can throw at the device before scaling out of the free
-  region — equivalently, the largest batch where you still pay
-  $t_0$ and get $N$ material updates back.
+- On a fixed device, $t_0$ sets the floor on per-call cost — every
+  measurement at $N \le N^*$ sits there, so a smaller $t_0$ means a
+  cheaper baseline.
+- For a fixed model, $N^*$ is the largest batch that still pays only
+  $t_0$, so a larger $N^*$ means more useful work per call before the
+  device falls out of the free region.
 
 The **peak throughput** of a model+device pair is
 
@@ -119,14 +118,18 @@ time exceeds 30 s (absolute wall-time saturation), (c) CUDA OOM /
 host MemoryError, or (d) batch exceeds the `--max-batch` cap
 (default 65536).
 
-Each batch is compiled separately with `example_batch_shape=(B,)`.
-This matters: Inductor's per-kernel autotune block-size hint is
-seeded from the example shape and the optimal hint is
-workload-dependent. Reusing a single compile across batches mirrors
-the cost of an ahead-of-time deployment but can mis-report scaling
-behaviour at batches far from the example. Per-batch compile is the
-methodology a production user gets from `neml2-compile` invoked at
-the batch they actually intend to run.
+Each batch is compiled separately, with the scenario's own
+`[Settings]/[example_batch_shape]` block resolved at `nbatch=B`. For
+most scenarios that block is just `'(${nbatch},)'`, so the trace
+shape ends up `(B,)`; mxpc declares per-input shapes so its grain
+sub-batch stays distinct from the dynamic-batch axis. This matters:
+Inductor's per-kernel autotune block-size hint is seeded from the
+example shape and the optimal hint is workload-dependent. Reusing a
+single compile across batches mirrors the cost of an ahead-of-time
+deployment but can mis-report scaling behaviour at batches far from
+the example. Per-batch compile is the methodology a production user
+gets from `neml2-compile` invoked at the batch they actually intend
+to run.
 
 ### Output
 

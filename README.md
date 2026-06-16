@@ -9,7 +9,7 @@
 
 NEML2 is an offshoot of [NEML](https://github.com/Argonne-National-Laboratory/neml), an earlier material modeling code developed at Argonne National Laboratory.
 Like its predecessor, NEML2 provides a flexible, modular way to build material models from smaller blocks.
-Unlike its predecessor, NEML2 vectorizes the material update to efficiently run on GPUs. In addition, NEML2 models can use [PyTorch](https://pytorch.org/cppdocs/) as the backend to provide first-class support for automatic differentiation, operator fusion, lazy tensor evaluation, inference mode, etc.
+Unlike its predecessor, NEML2 vectorizes the material update on CPU and GPU using [PyTorch](https://pytorch.org/) as the tensor backend, with first-class support for automatic differentiation, operator fusion, lazy tensor evaluation, and inference mode.
 
 NEML2 is provided as open source software under a MIT [license](https://raw.githubusercontent.com/applied-material-modeling/neml2/main/LICENSE).
 
@@ -27,15 +27,15 @@ NEML2 is provided as open source software under a MIT [license](https://raw.gith
 pip install neml2
 ```
 
-**C++ library:** Clone the repository, configure with CMake, and build:
+The wheel ships everything a C++ consumer needs too — `libneml2_aoti.so`, the public headers, and the CMake config files all land under your `site-packages/neml2/`. See the [installation guide](https://applied-material-modeling.github.io/neml2/install.html) for finer control over the torch variant (CPU / CUDA / ROCm) and the C++ integration guide for `find_package(neml2)` wiring.
+
+**Developer source build** (only when contributing to the AOTI runtime under `neml2/csrc/`):
 
 ```shell
 git clone -b main https://github.com/applied-material-modeling/neml2.git
-cmake --preset release -S neml2
-cmake --build --preset release
+cd neml2
+pip install -e ".[dev]"          # editable install drives the cmake `dev` preset
 ```
-
-Refer to the [installation guide](https://applied-material-modeling.github.io/neml2/install.html) for more detailed instructions and finer control over various dependencies as well as other build customization.
 
 Once NEML2 is installed, refer to the [getting started](https://applied-material-modeling.github.io/neml2/tutorials-getting-started.html) guide for commonly used APIs.
 
@@ -54,27 +54,27 @@ The table below compares three approaches for solving the same problem: a crysta
 | NEML2 | GPU    | 68            | 1 NVIDIA RTX A5000 GPUs                  |
 |       |        | 34            | 2 NVIDIA RTX A5000 GPUs                  |
 
-NEML2 is more than 2x faster than NEML on CPU, owing to more comprehensive threading and vectorization as well as Just-In-Time compilation. In this case, GPUs further speed up the calculation by more than 400 times.
+NEML2 is more than 2x faster than NEML on CPU, owing to more comprehensive threading and vectorization, and (for compiled workloads) AOT-Inductor codegen via `neml2-compile`. In this case, GPUs further speed up the calculation by more than 400 times.
 
 #### Multiphysics coupling
 
-NEML2 is not tied to any underlying problem physics, e.g., solid mechanics, heat transfer, fluid dynamics, electromagnetics, etc. Current modules cover thermal and mechanical material models, but the framework *can* be used to implement a wider range of constitutive models. For coupled problems, NEML2 will return the exact, coupled Jacobian entries required to achieve optimal convergence. NEML2 can be used together with [MOOSE](https://mooseframework.inl.gov/), a Multiphysics finite element framework, to solve partial differential equations.
+NEML2 is not tied to any underlying problem physics. Current modules cover solid mechanics (including crystal plasticity), chemical reactions, phase-field fracture, porous flow, finite volume, and KWN-style precipitation kinetics, and the framework is set up to take on more. For coupled problems, NEML2 assembles the full Jacobian (via chain rule across composed models, or via automatic differentiation), which is what implicit solvers need to converge robustly. NEML2 can be used together with [MOOSE](https://mooseframework.inl.gov/), a Multiphysics finite element framework, to solve partial differential equations.
 
 #### Modularity and flexibility
 
-NEML2 material models are modular – they are built up from smaller pieces into a complete model. NEML2 offers an extremely flexible way of composing models. Each individual model only defines the forward operator (and optionally its derivative) with a given set of inputs and outputs. When a set of models are *composed* together to form a composite model, dependencies among different models are automatically detected, registered, and resolved. The user has *complete control* over how NEML2 evaluates a set of models.
+NEML2 material models are modular – they are built up from smaller pieces into a complete model. Each individual model only defines the forward operator (and optionally its derivative) with a given set of inputs and outputs. Users control how those models are composed and wired together; NEML2 detects the dependencies and resolves the evaluation order automatically.
 
 #### Extensibility
 
-The library is structured so that adding a new feature to an existing material model should be as simple as possible and require as little code as possible. In line with this philosophy, the library only requires new components to provide a few partial derivatives, and NEML2 uses this information to automatically assemble the overall Jacobian using chain rule and provide the algorithmic tangent needed to integrate the model into an implicit finite element framework.  Moreover, in NEML2, implementations can forgo providing these partial derivatives, and NEML2 will calculate them with automatic differentiation.
+Adding a new model usually means writing a small forward operator and (optionally) its partial derivatives. NEML2 composes these into the full Jacobian via chain rule across composed models, and falls back to automatic differentiation for any derivative you don't provide — so you can start with a minimal implementation and add hand-coded derivatives later for speed.
 
 #### Friendly user interfaces
 
-There are three general ways of interfacing with NEML2 material models: the compiled C++ library, the Python package, and the runner. In all interfaces, creation and archival of NEML2 models rely on input files written in the hierarchical [HIT](https://github.com/idaholab/moose/tree/master/framework/contrib/hit) format. NEML2 models created using the Python bindings are fully interoperable with PyTorch tensors and modules, meaning that NEML2 material models can seamlessly work with popular machine learning frameworks developed using PyTorch.
+NEML2 is used from Python (the primary API), through the bundled CLI tools (`neml2-run`, `neml2-inspect`, `neml2-syntax`, `neml2-compile`), or from C++ via the AOTI runtime bundled in the wheel. In every interface, models are described by input files in the hierarchical [HIT](https://github.com/applied-material-modeling/neml2-hit) format. NEML2 models created in Python are fully interoperable with PyTorch tensors and modules, so they slot into PyTorch-based machine learning workflows directly.
 
-#### Strict quality assurance
+#### Testing
 
-NEML2 is developed under a strict quality assurance program. Because the NEML2 distributions do not provide full, parameterized models for any actual materials, ensuring the quality of the library is a verification problem – testing to make sure that NEML2 is correctly implementing the mathematical models – rather than a validation problem of comparing the results of a model to an experiment. In NEML2, this verification is done with extensive unit testing. Additional regression tests are set up for each combination of material model to ensure result consistency across releases.
+NEML2 is verification-tested at three layers: unit tests for individual model leaves, regression tests that pin each scenario's output to a checked-in reference, and verification tests that compare against analytical or benchmark ground truth. The example models shipped in the library are for testing — they are not parameterized for any real material, so the project does not claim experimental validation.
 
 ### Citing NEML2
 

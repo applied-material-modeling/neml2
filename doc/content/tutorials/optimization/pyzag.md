@@ -1,19 +1,19 @@
 (tutorials-optimization-pyzag)=
 # Recurrent calibration with pyzag
 
-You'll learn why calibrating a model against time-history data is hard
-in plain PyTorch, and how the `pyzag` companion package makes it
-tractable.
+Time-history calibration multiplies the cost of plain PyTorch
+autograd in two ways at once. This page explains the bottlenecks and
+how the `pyzag` companion package addresses them.
 
 The [previous tutorial](tutorials-optimization-calibration) calibrates a
 model with a single forward call per loss evaluation. Real constitutive
 data is a **time history**: a loading path with $N$ steps, and the
-observable is the stress trajectory the material traces out. Recovering
-parameters from that data means backpropagating through $N$ coupled
-implicit solves, where the state at each step depends on the previous
-one.
+observable is the stress trajectory the material traces out.
+Recovering parameters from that data means backpropagating through
+$N$ coupled implicit solves — each step's state depends on the
+previous one, so the time loop becomes a long autograd chain.
 
-## What hurts about plain PyTorch here
+## Why plain PyTorch struggles at this scale
 
 Two things go wrong if you try to backpropagate through the full
 unrolled time loop with vanilla autograd:
@@ -33,7 +33,7 @@ problem size at "small enough to run on CPU."
 
 The [`pyzag`](https://github.com/applied-material-modeling/pyzag)
 companion package fixes both by changing the shape of the time loop.
-The key trick, from Messner & Hu
+The key trick, from Messner, Hu & Chen
 ([arXiv:2310.08649](https://arxiv.org/abs/2310.08649)), is to solve
 $n_\text{chunk}$ contiguous time steps together as a single
 block-bidiagonal nonlinear system. Two consequences follow:
@@ -41,7 +41,9 @@ block-bidiagonal nonlinear system. Two consequences follow:
 - **Vectorized time integration.** A full chunk's residual and Jacobian
   are assembled in one batched call to the constitutive model —
   `n_chunk` × `n_batch` instances at once. The paper reports >100×
-  wall-time speedups over sequential integration.
+  wall-time speedups over sequential integration on its ODE
+  benchmarks; the actual gain for a given NEML2 model depends on
+  `n_chunk`, batch size, and device.
 - **Chunked adjoint gradient.** The parameter gradient is computed by
   a *backward* recursion (the adjoint problem) over the same chunks.
   Peak memory scales with `n_chunk`, not $N$ — mathematically
@@ -62,8 +64,9 @@ rate-dependent viscoplastic model. Both ship with pre-baked outputs, so
 they're readable without re-execution:
 
 - [](deterministic/main) — point-estimate calibration with the
-  chunked adjoint, covering parameter rescaling, optimizer choice
-  (Adam vs LBFGS), and goodness-of-fit diagnostics.
+  chunked adjoint, covering parameter rescaling
+  (`reparametrization.RangeRescale`), an Adam optimization loop, and
+  stress–strain comparison plots against the synthetic data.
 - [](statistical/main) — extends the same setup to a hierarchical
   Bayesian fit with Stochastic Variational Inference via
   [`pyro`](https://pyro.ai/), so you get parameter posteriors instead

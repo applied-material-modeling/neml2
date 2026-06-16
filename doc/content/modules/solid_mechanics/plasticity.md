@@ -4,11 +4,11 @@
 ## Overview
 
 Plasticity models describe the (typically irreversible and dissipative)
-history-dependent deformation of solids. NEML2's macroscale plasticity catalog
-under `neml2/models/solid_mechanics/plasticity/` does not ship a single
-monolithic "plastic model"; instead, it provides the small composable
-ingredients you wire together with the [](syntax-catalog) primitives in
-`common/` to assemble a return-map step:
+history-dependent deformation of solids. NEML2's macroscale plasticity
+catalog under `neml2/models/solid_mechanics/plasticity/` provides small
+composable ingredients that you wire together with the
+[](syntax-catalog) primitives in `common/` to assemble a return-map
+step:
 
 - **Stress measures** — `IsotropicMandelStress`, `MandelStress`, and
   [](models-SR2Invariant) (from `common/`) project the Cauchy/Mandel stress
@@ -37,10 +37,14 @@ ingredients you wire together with the [](syntax-catalog) primitives in
   flow, [](models-PerzynaPlasticFlowRate) gives the consistency parameter
   itself as an explicit function of the yield function.
 
-These pieces are glued together by [](models-ComposedModel) and closed by
-either [](models-FBComplementarity) (consistent plasticity) or a Perzyna-style
-rate equation (viscoplasticity), then wrapped in [](models-ImplicitUpdate) for
-the implicit return map.
+These pieces are typically glued together by [](models-ComposedModel)
+and closed by either [](models-FBComplementarity) (consistent
+plasticity) or a Perzyna-style rate equation (viscoplasticity), then
+wrapped in [](models-ImplicitUpdate) for the implicit return map. A
+closed-form radial-return path is also available for the
+J2-elastic-perfectly-plastic case via
+[](models-LinearIsotropicElasticJ2TrialStressUpdate); see the
+`rate_independent_plasticity/radial_return/` regression scenario.
 
 ## Math
 
@@ -55,8 +59,9 @@ where $f^p$ is the yield function and $\gamma$ is the consistency parameter.
 
 ### Consistent (rate-independent) plasticity
 
-NEML2 enforces the KKT conditions exactly (to machine precision) by recasting
-them as the Fischer-Burmeister complementarity residual
+NEML2 enforces the KKT conditions by recasting them as the smooth
+Fischer-Burmeister complementarity residual, which the nonlinear
+solver drives to its convergence tolerance:
 
 $$
 r = \dot{\gamma} - f^p - \sqrt{\dot{\gamma}^{\,2} + {f^p}^{\,2}},
@@ -65,9 +70,10 @@ $$
 implemented by [](models-FBComplementarity) with `a_inequality = 'LE'`.
 
 :::{note}
-"Consistent" plasticity is sometimes called rate-*independent*, but that is a
-misnomer — rate sensitivity can still be baked into the yield function or
-hardening definitions in terms of internal-variable rates.
+"Consistent" plasticity is often called rate-*independent*. Rate
+sensitivity can still enter through the yield function or hardening
+laws expressed in terms of internal-variable rates, so the
+"consistent" label is the more precise one.
 :::
 
 ### Viscoplasticity
@@ -178,13 +184,11 @@ the Fischer-Burmeister consistency condition.
 
 ### Switching to viscoplasticity
 
-Replacing `[consistency]` with a direct evaluation of the consistency
-parameter turns this exact composition pattern into a Perzyna viscoplastic
-model. The reference recipe lives at
-`tests/regression/solid_mechanics/viscoplasticity/perfect/model.i`; the
-structural changes are dropping [](models-FBComplementarity), adding
-[](models-PerzynaPlasticFlowRate) as the `[flow_rate]` block, and integrating
-the *stress* (rate form) rather than the plastic strain.
+Swapping the FB closure for a direct Perzyna flow-rate evaluation is
+the basic move from rate-independent to viscoplastic; depending on
+the variation you may also integrate stress in rate form rather than
+plastic strain. The reference recipe lives at
+`tests/regression/solid_mechanics/viscoplasticity/perfect/model.i`.
 
 ### Variations shipped in the test tree
 

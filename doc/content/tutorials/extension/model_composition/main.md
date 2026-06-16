@@ -90,10 +90,10 @@ sys.path.insert(0, os.getcwd())
 
 import projectile  # registers ProjectileAcceleration with the native factory
 
-# `neml2-inspect` is the same tool you'd call from the shell, but a shell
-# subprocess wouldn't inherit our `import projectile` and the registry
-# lookup would fail. Calling the CLI's `main` in-process keeps the registry
-# warm and gives the identical output.
+# `neml2-inspect` is the same CLI you'd call from the shell (with
+# `--load projectile.py` to register the extension). We call the CLI's
+# `main` in-process here so the same `import projectile` above does
+# double duty and the output prints inline in the notebook.
 from neml2.cli.inspect import main as _inspect_main
 _inspect_main(["input.i", "residual"])
 ```
@@ -112,11 +112,11 @@ different launch velocities. That's 15 trajectories, all evaluated in
 a single batched Newton solve per step.
 
 The batching falls out of broadcasting in `[Tensors]`: the launch
-velocity is a `(5, 1, 3)` tensor (five launches, one placeholder
-viscosity slot, three components), and `mu` ships with shape `(3,)`.
-When they meet inside `eq1`, the placeholder axis fills in with the
-three viscosities for a `(5, 3, 3)` evaluation — one composed graph,
-one Newton iterate per step.
+velocity is a `Vec` whose dynamic-batch shape is `(5, 1)` (five
+launches, one placeholder viscosity slot), and `mu` is a `Scalar`
+with dynamic-batch shape `(3,)`. When they meet inside `eq1`, the
+size-1 slot broadcasts against the three viscosities for a `(5, 3)`
+evaluation — one composed graph, one Newton iterate per step.
 
 ```{code-cell} ipython3
 import neml2
@@ -174,17 +174,17 @@ plt.show()
 
 The lightly-damped bag ($\mu = 0.1$) sees the balls fly furthest;
 the heavily-damped bag ($\mu = 1$) drags them down within a few
-meters. NEML2 found all 15 trajectories in one solve per step
-without any per-(launch, viscosity) bookkeeping in the model code —
-the custom `ProjectileAcceleration` leaf does its share without
-knowing anything about the integrator sitting next to it or the
-batch dimensions threading through.
+meters. All 15 trajectories ran in one Newton solve per step: the
+`ProjectileAcceleration` leaf is written in terms of a single
+`(v, mu)` pair, and the `(5, 3)` batch grid threads through every
+piece without any per-(launch, viscosity) bookkeeping in the leaf
+code.
 
 ## Where to go next
 
 - [](tutorials-models-composition) covers composition more broadly —
   the producer/consumer matching rules, multi-step chains, and
   parameter binding via output names.
-- A composed model is itself a `Model`, so it can be exported,
-  compiled to AOT-Inductor, or dropped into a larger composed model
-  without any extra work.
+- A composed model is itself a `Model`, so the same export,
+  AOT-Inductor compilation, and outer composition paths apply to it
+  — see [](tutorials-models-compiled) for the round trip.

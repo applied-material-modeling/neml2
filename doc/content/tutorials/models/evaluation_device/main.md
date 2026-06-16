@@ -25,8 +25,8 @@ The runnable cells stay on CPU so the doc build is portable. Swap
 :::{note}
 A freshly loaded NEML2 model sits on CPU with `torch.float64`
 parameters. There is no separate "CUDA build" of NEML2 — the same
-wheel works on every device PyTorch supports; you opt in at runtime
-with `.to(...)`.
+wheel runs on whichever devices your PyTorch install supports; you
+opt in at runtime with `.to(...)`.
 :::
 
 ## The input file
@@ -93,7 +93,7 @@ print(f"stress (host copy): {stress_host}")
 
 If `target` had been `torch.device("cuda")`, `stress.device` would
 read `cuda:0` and the `.to(device="cpu")` call would copy the result
-across the PCIe bus.
+across the host-device boundary.
 
 ## Detecting CUDA at runtime
 
@@ -105,18 +105,19 @@ target = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 model.to(device=target)
 ```
 
-`is_available()` returns `True` whenever a CUDA runtime and a visible
-GPU are both present, but it does not guarantee that the installed
-PyTorch wheel can actually run kernels on that GPU — older compute
-capabilities can be silently dropped by newer wheels. Wrap the first
-forward in `try / except torch.AcceleratorError` if you need to
-survive that case.
+`is_available()` returns `True` when a CUDA runtime and a visible GPU
+are both present, but doesn't promise the installed PyTorch wheel can
+actually run on that specific GPU — newer wheels sometimes drop older
+compute capabilities, and the failure only shows up at the first
+CUDA call. If you want to fall back gracefully, wrap the first
+forward in `try / except torch.AcceleratorError` and reload onto CPU
+in the handler.
 
 ## Mixed-device errors
 
 If the model is on one device and the input is on another, PyTorch
-raises at the first op that touches both. The fix is always the
-same: move both ends to the same device.
+raises at the first op that touches both. The fix is the same in
+both directions: move both ends to the same device.
 
 On a CUDA-equipped machine, this would raise:
 
@@ -128,8 +129,8 @@ model(strain)                                        # RuntimeError
 
 ## Host-device transfer cost
 
-`.to(device=...)` is not free — it copies data over the PCIe bus. A
-few rules of thumb:
+`.to(device=...)` is not free — it copies data between host and
+device memory. A few rules of thumb:
 
 - **Move the model once, up front.** The parameters don't change
   between calls, so copying them every time wastes bandwidth.

@@ -17,8 +17,9 @@ mystnb:
 
 You'll take a model you can already run in Python, compile it ahead of
 time into a self-contained package, and call the compiled version from
-another process. The compiled form skips Python on every call, so it's
-the form to use once a model is locked in and you want it fast.
+another process. The compiled form runs the kernels in pre-compiled
+C++ instead of the eager PyTorch dispatcher, so it's the form to use
+once a model is locked in and you want it fast.
 
 ## The pipeline
 
@@ -52,8 +53,9 @@ invocation:
 !neml2-compile input.i --model elasticity
 ```
 
-Compilation takes a few seconds; loading the result later is instant.
-With no `--output-dir` the artifacts land in `aoti/<model>/`:
+Compilation is a one-time cost (Inductor + C++ compile, typically
+seconds); the resulting artifact loads quickly on every subsequent
+run. With no `--output-dir` the artifacts land in `aoti/<model>/`:
 
 ```{code-cell} ipython3
 !ls aoti/elasticity
@@ -144,9 +146,9 @@ Use `jvp` when you only need one direction of the gradient; use
 
 ## Promoting parameters
 
-By default every parameter is **baked** into the compiled graph as a
-constant — fastest, but the moduli are now frozen. To keep one
-mutable at runtime, promote it at compile time with `-p`:
+By default every parameter is baked into the compiled graph as a
+constant. That's fastest, but it also means you can't change them at
+runtime. To keep one mutable, promote it at compile time with `-p`:
 
 ```{code-cell} ipython3
 !neml2-compile input.i --model elasticity --output-dir aoti_promoted -p E
@@ -171,24 +173,25 @@ print("after   E=100e3 stress[0,0]:", stress1.data[0, 0].item())
 print("ratio (expect 0.5):         ", (stress1.data[0, 0] / stress0.data[0, 0]).item())
 ```
 
-Each promoted name adds a small per-call cost, but the speedup over
-eager is still substantial. Promotion doesn't work for parameters
-inside an `ImplicitUpdate` segment — the compiler will refuse them
-with a clear error.
+Each promoted name adds a small per-call cost (it becomes a graph
+input rather than a baked constant), but the compiled artifact is
+typically still much faster than eager. Promotion doesn't work for
+parameters inside an `ImplicitUpdate` segment — the compiler will
+refuse them with a clear error.
 
 ## Trade-offs vs eager
 
 |                       | Eager                                  | AOTI                                            |
 |---                    |---                                     |---                                              |
-| Per-call overhead     | Python + PyTorch dispatcher every call | One C++ call into pre-compiled kernels          |
+| Per-call overhead     | Python + PyTorch dispatcher per op     | Thin Python shim into pre-compiled C++ kernels  |
 | Build cost            | Zero                                   | Seconds (Inductor + C++ compile, once)          |
 | Parameter mutation    | Free — they're live attributes         | Only for `-p` names; rest are baked             |
 | Autograd              | Yes (full eager AD)                    | No (forward-only; `jvp` / `jacobian` sidecars)  |
 | Device/dtype          | Switchable at runtime via `.to(...)`   | Pinned at compile time (`--device`, `--dtype`)  |
 | Portability           | Needs the full Python source           | Needs only `.pt2` + metadata + the C++ runtime  |
 
-Rule of thumb: stay in eager mode while authoring or tuning a model;
-compile it once you're shipping it into a hot evaluation loop — Driver
+Rule of thumb: stay in eager mode while you're still iterating on a
+model. Compile it once you're ready to run it at scale — driver
 runs, large batch sweeps, the inner loop of a finite-element kernel.
 
 ## Where to go next

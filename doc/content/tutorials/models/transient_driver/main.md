@@ -15,11 +15,12 @@ mystnb:
 (tutorials-models-transient-driver)=
 # Transient driver
 
-You'll ramp a strain from zero to 5% over 50 steps, run a
-perfect-viscoplastic model through that history, and plot the resulting
-stress–strain curve. The loop that walks step-by-step is a
-[`TransientDriver`](drivers-TransientDriver), configured from the same
-kind of input file you've been using.
+A `TransientDriver` walks a constitutive model through a prescribed
+load history, feeding each step's converged state into the next
+step. In this tutorial you'll ramp a strain from zero to 5% over 50
+steps, run a perfect-viscoplastic model through that history, and
+plot the resulting stress–strain curve. The driver is configured
+from the same kind of input file you've been using.
 
 ## The recursive update
 
@@ -67,8 +68,8 @@ A few things worth pointing out:
 The `[Tensors]` block builds a 50-step time vector $t \in [0, 1]$ and a
 matching strain history that ramps linearly to a peak uniaxial strain
 of $\varepsilon_{xx} = 5\%$ with lateral contractions consistent with
-isochoric deformation. See [](tutorials-models-input-file) for the full
-`type = Python` syntax.
+isochoric deformation. See [](tutorials-models-cross-referencing) for
+more examples of the `type = Python` block.
 
 ## Building and running the driver
 
@@ -94,7 +95,7 @@ print("wrapped model =", type(driver.model).__name__)
 ```
 
 `driver.run()` executes the time loop, threading each step's converged
-state into the next step. It returns `True` on success:
+state into the next step:
 
 ```{code-cell} ipython3
 driver.run()
@@ -115,10 +116,10 @@ print("step 1  inputs:", [k for k in results if k.startswith("input.1.")])
 print("step 1  outputs:", [k for k in results if k.startswith("output.1.")])
 ```
 
-The `~k` suffix on a variable name denotes its value from `k` steps
-back — `E~1` is the previous step's strain, `t~1` the previous step's
-time. The model sees both `E` and `E~1` and computes a strain rate
-internally.
+(Aside on the `~k` syntax: a variable name ending in `~k` denotes
+its value from `k` steps back — `E~1` is the previous step's strain,
+`t~1` the previous step's time. The model sees both `E` and `E~1`
+and computes a strain rate internally.)
 
 Pulling per-step strain and stress out as 1-D tensors is a simple
 comprehension:
@@ -146,7 +147,7 @@ the $xx$ component.)
 
 With per-step `strain_xx` and `stress_xx` in hand, the curve is just a
 `matplotlib` call. `matplotlib` is available in the `[dev]` extras
-([](tutorials-models-input-file) installs it):
+(`pip install -e ".[dev]"`):
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -179,9 +180,11 @@ print("a few keys :", list(loaded)[:4])
 ```
 
 This is the same format used by the regression suite's
-[`TransientRegression`](drivers-TransientRegression) — the gold file
-checked into `tests/regression/.../gold/result.pt` is exactly what
-`save_gold` produces. Reading it back from another script is just
+[`TransientRegression`](drivers-TransientRegression) — the gold files
+under `tests/regression/.../gold/result.pt` are read back by
+[`TransientRegression`](drivers-TransientRegression) (which also
+accepts the legacy TorchScript format produced by the v2 C++
+pipeline). Reading it back from another script is just
 `torch.load(path, weights_only=True)`.
 
 ## Where to go next

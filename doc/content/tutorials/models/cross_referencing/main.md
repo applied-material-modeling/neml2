@@ -43,7 +43,8 @@ Two cross-references in one block: `model = 'elasticity'` names the
 `[Models]` entry to evaluate, and `input_SR2_values = 'strain_value'`
 names the `[Tensors]` entry that supplies the input. `input_SR2_names`
 and `input_SR2_values` are parallel lists — one entry per input — and
-every entry in `_values` is a `[Tensors]` reference.
+every entry in `_values` is either a `[Tensors]` reference or (for
+`Scalar` inputs) an inline number.
 
 Other drivers work the same way:
 
@@ -87,8 +88,9 @@ When a model field expects a tensor value, you can also point it at a
 []
 ```
 
-But for a simple literal, **NEML2 also accepts the literal in place**
-— no `[Tensors]` section needed:
+But for simple scalar literals, **many model fields accept the
+number directly** — no `[Tensors]` section needed. (Non-scalar
+tensor inputs still need a `[Tensors]` entry.)
 
 ```ini
 [Models]

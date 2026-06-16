@@ -3,20 +3,19 @@
 
 ## Overview
 
-The `porous_flow` module collects the constitutive ingredients that
-appear in (unsaturated) flow through a porous medium: the
-capillary-pressure correlations that close the two-phase
-pressure-saturation relationship, the porosity-permeability laws
-that close Darcy's law, the effective-saturation transformation
-that maps a flowing-phase volume fraction onto the normalized
-saturation those correlations expect, and a variational advective
-stress that ties a porous-flow problem back to a finite-deformation
-solid driven by the same Jacobian. The catalog is intentionally a
-set of small leaves — every type takes one or two `Scalar` inputs
-and returns a `Scalar`, so they snap together with
-[`ComposedModel`](models-ComposedModel) into the full
-pressure→saturation→permeability chain that a host code (or another
-NEML2 driver) needs.
+The `porous_flow` module collects the constitutive ingredients for
+(unsaturated) flow through a porous medium: capillary-pressure
+correlations, porosity-permeability laws, the effective-saturation
+transformation, and an advective stress that couples porous flow
+back to a finite-deformation solid.
+
+The catalog is intentionally a set of small leaves. Most leaves
+take one or two `Scalar` inputs and return a `Scalar`, so they
+snap together with [`ComposedModel`](models-ComposedModel) into
+the full pressure -> saturation -> permeability chain. The one
+exception is `AdvectiveStress`, which consumes the deformation
+gradient and PK1 stress (`R2`) to couple porous flow to a
+finite-deformation solid.
 
 ## Math
 
@@ -108,8 +107,8 @@ porosity-permeability leaves —
 [](models-PowerLawPermeability),
 [](models-ExponentialLawPermeability), and
 [](models-KozenyCarmanPermeability) — slot in independently against
-$\varphi$, since permeability is a property of the medium rather
-than the fluid state. The drop-in alternative for the capillary
+$\varphi$, since the three permeability leaves here depend only on
+porosity $\varphi$, not on the fluid state. The drop-in alternative for the capillary
 branch is [](models-VanGenuchtenCapillaryPressure), which has the
 same I/O signature with a different functional shape. For finite-deformation coupling,
 [](models-AdvectiveStress) consumes $(F, P)$ plus the optional

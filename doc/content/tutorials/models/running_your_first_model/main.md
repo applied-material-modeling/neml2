@@ -26,8 +26,9 @@ $$
 $$
 
 where $K$ is the bulk modulus and $G$ is the shear modulus. The focus
-of this tutorial is the workflow, not the material — same steps work
-for any model.
+of this tutorial is the workflow, not the material — the same
+`load_model` + call pattern carries over to every NEML2 model, even
+though the inputs and outputs will differ.
 
 ## The input file
 

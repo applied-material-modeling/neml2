@@ -2,7 +2,7 @@
 # Tensor types
 
 NEML2 evaluates constitutive models on batched tensor data. The tensor
-backend is PyTorch — every value in the system is a `torch.Tensor` at
+backend is PyTorch — every tensor in the system is a `torch.Tensor` at
 the storage level — but NEML2 wraps each tensor in a *typed wrapper*
 that carries a fixed mathematical structure (a scalar, a vector, a
 symmetric second-order tensor, …) and a small amount of batching
@@ -63,7 +63,7 @@ constants — plus any class-specific factories (e.g. `R2.identity`,
 
 | Type           | Base shape | Storage / convention                                                                                                  |
 | :------------- | :--------- | :-------------------------------------------------------------------------------------------------------------------- |
-| `Scalar`       | `()`       | A single number per batch entry. Wrapped (instead of being raw `torch.Tensor`) so reflected-operator dispatch like `Scalar * SR2 → SR2` is unambiguous. |
+| `Scalar`       | `()`       | A single number per batch entry. The wrapper exists so mixed operations like `Scalar * SR2` reliably return an `SR2`. |
 | `Vec`          | `(3,)`     | 3-vector.                                                                                                              |
 | `Rot`          | `(3,)`     | Rodrigues vector representing a 3D rotation.                                                                          |
 | `MillerIndex`  | `(3,)`     | Integer-coordinate crystallographic direction or plane normal, stored as float for differentiability.                 |
@@ -104,8 +104,9 @@ stress = model(strain_grid)
 ```
 
 Leading batch dims are completely free-form. A Python loop around a
-single-state model call is almost always a mistake — see
-[](tutorials-models-vectorization) for the cost.
+single-state model call leaves a lot of throughput on the table —
+pass the whole batch as one tensor whenever you can.
+[](tutorials-models-vectorization) shows the timing difference.
 
 ## Broadcasting
 
@@ -175,16 +176,20 @@ the dynamic per-state batch.
 Shape-manipulation methods live on four region-view properties so the
 intent of any reshape, broadcast, or reduction is unambiguous:
 
-- `t.batch` — the combined `dynamic_batch + sub_batch` region (read-only:
-  `.shape`, `.ndim`, `.cat`; shape-changing ops raise to keep the split
-  unambiguous).
+- `t.batch` — the combined `dynamic_batch + sub_batch` region.
+  Read-only `.shape` / `.ndim`; shape-changing ops raise so callers
+  pick `dynamic_batch` or `sub_batch` explicitly. The free function
+  `cat` in `neml2.types` accepts a batch view if you do need to
+  concatenate across the combined region.
 - `t.dynamic_batch` — dynamic batch only. Ops preserve `sub_batch_ndim`.
 - `t.sub_batch` — sub-batch only. Ops adjust `sub_batch_ndim`.
 - `t.base` — the base region. Read-only except for `transpose` on the
   square-base types (`R2`, `SSR4`).
 
 Every mutable view exposes the same surface: `.shape`, `.ndim`,
-`.unsqueeze(dim)`, `.squeeze(dim)`, `.expand(*shape)`, `.cat(others, dim)`.
+`.unsqueeze(dim)`, `.squeeze(dim)`, `.expand(*shape)`. Concatenation
+along a region axis goes through the free function `cat` in
+`neml2.types` (see below).
 The view methods return a fresh wrapper, so calls chain cleanly:
 
 ```python

@@ -5,9 +5,9 @@
 
 A PyPI wheel install pulls in three Python packages:
 
-<!-- dependencies: torch.version -->
-- [PyTorch](https://pytorch.org/get-started/locally/) ~= 2.12.0 — the
-  tensor / autograd backend.
+- [PyTorch](https://pytorch.org/get-started/locally/) — the tensor /
+  autograd backend (see [](torch-compat) for the verified version
+  range).
 <!-- dependencies: pyzag.version -->
 - [pyzag](https://github.com/applied-material-modeling/pyzag) — adapter
   that lets NEML2 models participate in PyTorch training loops.
@@ -29,7 +29,8 @@ torch is verified for the version range listed in [](torch-compat).
 
 ## Source-build dependencies
 
-Building NEML2 from source (rare; see [](build-customization)) adds:
+Building NEML2 from source — for contributors, or for build flavors
+the wheels don't ship; see [](build-customization) — adds:
 
 - A C++17 compiler.
 <!-- dependencies: cmake.version_min -->
@@ -47,11 +48,12 @@ under `contrib/` and pulled in automatically.
 
 ## GPU acceleration
 
-Accelerator support comes from torch, not from NEML2 directly. The torch
-that `pip install neml2` pulls in by default is whatever your platform's
-default PyPI index ships — already CUDA-enabled on Linux. If you need a
-different variant (specific CUDA runtime, ROCm, CPU-only, nightly, …),
-install that torch first using the selector at
+Accelerator support comes from torch, not from NEML2 directly. The
+torch that `pip install neml2` pulls in by default is whatever your
+platform's default PyPI index ships — currently the CUDA-enabled
+build on x86_64 Linux. If you're on a platform whose default wheel is
+CPU-only, or you need a different variant (specific CUDA runtime,
+ROCm, nightly, …), install that torch first using the selector at
 [pytorch.org/get-started](https://pytorch.org/get-started/locally/),
 then run `pip install neml2`. NEML2 transparently runs models on
 whichever device the input tensors live on.
@@ -63,6 +65,7 @@ CUDA runtime. `pip install nvidia-cuda-nvcc` ships it as a regular
 Python package; point `CUDA_HOME` at its install root and add
 `bin/` to `PATH`. A system-wide CUDA toolkit (`apt install
 nvidia-cuda-toolkit`, conda's `cudatoolkit-dev`, …) works too if you
-already have one. CPU-only AOTI compile needs none of this --
-`compile_model` raises an early error with the install recipe when it
-detects CUDA inputs without `nvcc`.
+already have one. CPU-only AOTI compile needs none of this. And if
+you do attempt a CUDA compile without `nvcc` on PATH, `compile_model`
+stops with a clear error message that includes the install recipe
+above — no cryptic failure deep in the Inductor pipeline.

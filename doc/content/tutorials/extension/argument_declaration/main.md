@@ -154,8 +154,10 @@ attribute it should be exposed under (`mu` here). Other useful options:
   model's output. See [](tutorials-extension-composition) for the
   details.
 
-Because `attr="mu"` is set, the parameter is a real
-`torch.nn.Parameter` you can train with PyTorch's optimizer:
+`attr="mu"` just renames the storage slot so the model body can write
+`self.mu` instead of `self.dynamic_viscosity` — handy when the math
+uses Greek-letter conventions. The parameter itself is a real
+`torch.nn.Parameter` and trains the same way either way:
 
 ```{code-cell} ipython3
 dict(m.named_parameters())
@@ -163,11 +165,6 @@ dict(m.named_parameters())
 
 ```{code-cell} ipython3
 m.mu
-```
-
-```{code-cell} ipython3
-# Leaf tensor with requires_grad=True, ready for a calibration loop
-m.mu.data.requires_grad
 ```
 
 The model is a `torch.nn.Module`, so the usual PyTorch idioms work

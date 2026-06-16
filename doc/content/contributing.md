@@ -41,20 +41,19 @@ From then on, every `git commit` runs the configured hooks. The full
 set (`.pre-commit-config.yaml`):
 
 - `clang-format` — C++ formatter for files under `neml2/csrc/`.
-- `ruff` (lint, `--fix`) and `ruff-format` — Python lint + formatter.
+- `ruff` (lint with `--fix`, Python only) and `ruff-format` (Python plus
+  notebook code cells) — Python lint + formatter.
 - `nmhit-format` — formatter for HIT input files (`*.i`).
 - `jupytext --sync` — keeps notebook `*.ipynb` files and their paired
   `*.md` mirrors in lockstep (currently `doc/content/tutorials/optimization/{deterministic,statistical}/main.{ipynb,md}`).
 - `check-notebook-executed` — fails if any code cell in a tracked
   `.ipynb` lacks an `execution_count`. Sphinx renders the committed
-  outputs verbatim, so unexecuted cells would surface as blanks (or
-  worse, stale outputs that no longer match the source). Re-run the
-  notebook end-to-end before committing.
+  outputs as-is, so re-run the notebook end-to-end before committing.
 - `check-copyright` — adds or refreshes the MIT copyright header on
   source files.
 - `check-dependencies` — verifies that every version string flagged
   with `# dependencies: <DEP>.<FIELD>` matches the canonical value in
-  `dependencies.yaml` (see [](contributing-deps)).
+  `scripts/dependencies.yaml` (see [](contributing-deps)).
 - `check-compat-matrix` / `render-compat-matrix` — keep the torch
   compatibility table in `doc/content/installation/compatibility.md`
   in sync with `compatibility.yaml`.
@@ -75,21 +74,22 @@ full suite:
 pytest -v tests/
 ```
 
-For a single file (the `tests/` tree has five top-level buckets:
-`unit/`, `models/`, `regression/`, `verification/`, `aoti/`):
+Run a single file directly:
 
 ```shell
 pytest -v tests/unit/test_factory.py
 ```
 
-The [pytest usage guide](https://docs.pytest.org/en/stable/how-to/usage.html)
+The `tests/` tree has five top-level buckets — `unit/`, `models/`,
+`regression/`, `verification/`, and `aoti/` — each documented further
+below. The [pytest usage guide](https://docs.pytest.org/en/stable/how-to/usage.html)
 documents the rich selector syntax (`-k expr`, `--lf`, parametrized
 test IDs, marker filters, …).
 
 The AOTI compile suite under `tests/aoti/` triggers an Inductor
-compile per scenario (minutes per test) and runs by default; deselect
-it with `pytest --deselect tests/aoti tests/` if you want the fast
-subset for an inner edit loop.
+compile per scenario (noticeably slower than the rest of the suite)
+and runs by default; skip it with `pytest --ignore=tests/aoti tests/`
+when you want the fast subset for an inner edit loop.
 
 VS Code users can drive the suite through the
 [Python extension](https://github.com/Microsoft/vscode-python); set
@@ -128,9 +128,12 @@ pyright neml2/types          # restrict to one subpath
 ```
 
 CI runs `pyright` against the editable install (the `typecheck` job in
-`.github/workflows/python.yaml`); the editable shim resolves `import
-neml2.*` to the in-tree source, so pyright always sees the same
-sources the test suite does.
+`.github/workflows/python.yaml`); the editable install resolves
+`import neml2.*` to the in-tree source, so pyright generally sees the
+same sources the test suite does. Layout changes — adding a new
+submodule, moving files between package and file — require a fresh
+`pip install -e ".[dev]"` for the editable shim's path snapshot to
+catch up.
 
 ## Coverage
 
@@ -149,9 +152,8 @@ pytest -n auto --cov tests/unit tests/models tests/aoti  # parallel (xdist-safe)
 ```
 
 `tests/regression/` and `tests/verification/` are deliberately omitted
--- they pin gold outputs rather than exercise code paths, so including
-them only inflates the coverage number with end-to-end exercises and
-multiplies the run time. The `coverage` CI job in
+— their end-to-end runs duplicate coverage the unit and model suites
+already provide while multiplying the run time. The `coverage` CI job in
 `.github/workflows/python.yaml` runs the same subset with `-n auto`
 and uploads the raw `coverage.xml` as a workflow artifact (30-day
 retention).
@@ -163,9 +165,10 @@ real floor will be set once the first CI run establishes the baseline.
 
 ## Dependency pinning
 
-Versions of third-party dependencies are tracked in `dependencies.yaml`
-and propagated into source files (`pyproject.toml`,
-`.github/workflows/*.yaml`, doc snippets, …) via inline annotations:
+Versions of third-party dependencies are tracked in
+`scripts/dependencies.yaml` and propagated into source files
+(`pyproject.toml`, `.github/workflows/*.yaml`, doc snippets, …) via
+inline annotations:
 
 ```python
 # dependencies: torch.version_min
@@ -173,8 +176,9 @@ and propagated into source files (`pyproject.toml`,
 ```
 
 The annotation line above the version literal tells the
-`scripts/dep_manager.py` tool which `dependencies.yaml` entry owns the
-value. Use the tool rather than editing version strings by hand:
+`scripts/dep_manager.py` tool which `scripts/dependencies.yaml` entry
+owns the value. Use the tool rather than editing version strings by
+hand:
 
 ```shell
 python scripts/dep_manager.py check                   # CI-equivalent verify
@@ -253,9 +257,9 @@ The syntax catalog under `/generated/syntax/` is regenerated from
    same lint + test + typecheck matrix you ran locally, plus the
    wheel-build / torch-compat matrix defined in `.github/workflows/`.
 5. Address review feedback by pushing new commits on top. Once a
-   reviewer has started looking at the PR, avoid force-pushing —
-   rewriting history makes it hard for them to see what changed
-   between rounds. Squash / rebase happen at merge time.
+   reviewer is in the PR, please don't force-push — it makes the
+   round-over-round diff hard to follow. The maintainer will squash
+   or rebase at merge time.
 
 ## Use of generative AI
 
@@ -278,9 +282,9 @@ generative-AI tools are welcome. Two ground rules:
    responsible for the merged change: that it is correct, that it
    follows project conventions, that the tests cover it, and that the
    license and provenance of any embedded snippets are clean. Treat
-   AI output as draft code from an enthusiastic but unaccountable
-   contributor: read it, test it, and rewrite the parts you wouldn't
-   defend in review.
+   AI output the way you'd treat any other draft you didn't write:
+   read it carefully, run the tests, and rewrite anything you'd want
+   changed in code review.
 
 This policy is intentionally permissive. If the volume or quality of
 AI-assisted PRs changes the calculus, we'll revisit.
