@@ -26,11 +26,11 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar
+from ..chain_rule import ChainRuleAction, ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("SFFKPrecipitationGrowthRate")
@@ -63,23 +63,14 @@ class SFFKPrecipitationGrowthRate(Model):
             allow_nonlinear=True,
         ),
     )
-    # ``radius`` is a per-bin (sub_batch_ndim=1) Scalar while the other
-    # parameters and the structural inputs may be scalar (sub_batch_ndim=0).
-    # The bin-broadcast made by ``align_sub_batch`` makes site-i of
-    # ``growth_rate`` depend on the single scalar value of any sub_batch_ndim=0
-    # input/promoted parameter -- a cross-bin (dense) coupling rather than the
-    # default per-site diagonal one. Declare every input pair as ``"dense"`` so
-    # the composed-model resolver picks the conservative (BLOCK -> DENSE
-    # fallback) sparsity flag. Per-bin inputs still produce a strictly
-    # bin-diagonal action; the flag is purely an upper bound used by the
-    # system assembler.
-    list_deriv = {
-        ("growth_rate", "projected_diffusivity_sum"): "dense",
-        ("growth_rate", "temperature"): "dense",
-        ("growth_rate", "radius"): "dense",
-        ("growth_rate", "gibbs_free_energy_difference"): "dense",
-        ("growth_rate", "gas_constant"): "dense",
-    }
+    # The output is per-bin (carries the ``"bin"`` label). Inputs may be
+    # per-bin (``radius``, ``projected_diffusivity_sum``) or scalar
+    # broadcast (``temperature``, ``gas_constant``, ...). Conservatively
+    # declare every edge as INTRODUCING the ``"bin"`` label on the
+    # output -- a no-op for per-bin inputs (union with existing "bin"
+    # in the upstream is idempotent), and an actual introduction for
+    # scalar inputs. The end-to-end propagator sees the same coarse
+    # "bin-touching" flag the old ``"dense"`` declaration produced.
 
     # ``from_hit`` auto-declares the three parameters (stored as R, dg, R_g).
     # Annotate so pyright sees the typed wrappers that ``Model.__getattr__``

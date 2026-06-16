@@ -38,13 +38,11 @@ $$
 The Karush–Kuhn–Tucker (KKT) conditions for irreversible phase-field
 evolution read
 
-```{math}
 \begin{align}
   f &= \eta\, \dot{d} + \frac{\partial \psi}{\partial d} \ge 0, \\
   \dot{d} &\ge 0, \\
   f\, \dot{d} &= 0,
 \end{align}
-```
 
 with viscous regularization $\eta \ge 0$. Following the standard
 phase-field treatment, the inequality complementarity is recast as a

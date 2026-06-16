@@ -34,10 +34,10 @@ from typing import TYPE_CHECKING
 import nmhit
 import torch
 
-from .._guard import allow_autograd
-from ..chain_rule import ChainRuleDict
 from ..factory import load_input, load_string
-from ..model import Model
+from ..models._guard import allow_autograd
+from ..models.chain_rule import ChainRuleDict
+from ..models.model import Model
 from ..types import R2, SR2, SSR4, WR2, MillerIndex, Rot, Scalar, TensorWrapper, Vec
 
 if TYPE_CHECKING:

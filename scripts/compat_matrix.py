@@ -59,8 +59,8 @@ except ImportError:
     sys.exit(1)
 
 REPO_ROOT = Path(__file__).parent.parent
-COMPAT_FILE = REPO_ROOT / "compatibility.yaml"
-DEPS_FILE = REPO_ROOT / "dependencies.yaml"
+COMPAT_FILE = REPO_ROOT / "doc/content/installation/compatibility.yaml"
+DEPS_FILE = Path(__file__).parent / "dependencies.yaml"
 
 # cibuildwheel build = "cp310-* cp311-* cp312-* cp313-* cp314-*" in pyproject.toml.
 # Keep these in sync with [tool.cibuildwheel] build.
@@ -177,7 +177,7 @@ def _write_compat(build_torch: str, combinations: list[dict]) -> None:
         "# `python` on `os`, installed alongside `torch == torch`, MUST pass the",
         "# Python test suite (tests).",
         "#",
-        "# CI (.github/workflows/compat.yml) enforces this on every PR and push",
+        "# CI (.github/workflows/compat.yaml) enforces this on every PR and push",
         "# to main. Adding a row tightens the supported set; removing one drops",
         "# support.",
         "#",

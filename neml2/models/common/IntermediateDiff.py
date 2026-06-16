@@ -26,14 +26,14 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, option, output
 from ...types import (
     SR2,
     diff,
 )
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("SR2IntermediateDiff")
@@ -44,10 +44,13 @@ class SR2IntermediateDiff(Model):
     difference along the selected sub-batch axis. The selected axis length
     shrinks by ``n``; ``sub_batch_ndim`` is preserved (this is a per-axis
     differencing operator, not a reduction).
+
+    The ``reduces`` HIT parameter names the sub-batch label of the
+    differencing axis -- the chain rule on that label is structurally
+    non-diagonal (each output site depends on several input sites
+    along the label).
     """
 
-    # ``intmd_diff`` couples every output site along the chosen sub-batch axis
-    # to the input sites it differences -- declare dense per D-049.
     hit = HitSchema(
         input("from", SR2, "Variable to reduce"),
         output("to", SR2, "The reduced variable"),
@@ -58,10 +61,11 @@ class SR2IntermediateDiff(Model):
             attr="_dim",
         ),
         option("n", int, "Order of the differentiation", default=1, attr="_n"),
+        option("reduces", str, "Sub-batch label of the differencing axis.", attr="_reduces"),
     )
     _dim: int
     _n: int
-    list_deriv = {("to", "from"): "dense"}
+    _reduces: str
 
     def forward(  # type: ignore[override]
         self,

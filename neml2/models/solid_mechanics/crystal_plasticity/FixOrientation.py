@@ -26,11 +26,11 @@
 
 from __future__ import annotations
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, input, option, output
 from ....types import Rot, inner, lt, where
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("FixOrientation")
@@ -46,7 +46,18 @@ class FixOrientation(Model):
 
     hit = HitSchema(
         input("input", Rot, "Name of input tensor of orientations to operate on."),
-        output("output", Rot, "Name of output tensor"),
+        output(
+            "output",
+            Rot,
+            "Name of output tensor",
+            # Declared ``priority="high"`` so composition with another
+            # producer of the same name (e.g. ``input='orientation'`` /
+            # ``output='orientation'`` paired with an ``ImplicitUpdate`` that
+            # also produces ``orientation``) lifts the duplicate-provider
+            # error and runs FixOrientation last -- its shadow-swapped value
+            # is the one the composed model returns.
+            priority="high",
+        ),
         option(
             "threshold",
             float,

@@ -26,9 +26,7 @@
 
 from __future__ import annotations
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import (
     SR2,
@@ -39,6 +37,8 @@ from ....types import (
     jvp_rotate,
     rotate,
 )
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("GeneralElasticity")

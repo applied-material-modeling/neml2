@@ -26,13 +26,12 @@
 
 from __future__ import annotations
 
-import torch
-
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, option, output, parameter
 from ...types import Scalar
+from ...types.functions import cat
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("FiniteVolumeAppendBoundaryCondition")
@@ -86,37 +85,46 @@ class FiniteVolumeAppendBoundaryCondition(Model):
         if self._output_name is None:
             suffix = "_with_bc_left" if self._side == "left" else "_with_bc_right"
             self._output_name = f"{self._input_name}{suffix}"
-        # Schema-side rename couldn't add the derived name to output_spec /
-        # list_deriv because we only just computed it; finish that here.
+        # Schema-side rename couldn't add the derived name to output_spec
+        # because we only just computed it; finish that here.
         self.input_spec = {self._input_name: Scalar}
         self.output_spec = {self._output_name: Scalar}
-        self.list_deriv = {(self._output_name, self._input_name): "dense"}
+
+    def _bc_tail(self, template: Scalar) -> Scalar:
+        """Typed (*template_dyn, 1) Scalar carrying the parameter ``bc_value``.
+
+        The tail mirrors ``template``'s dynamic batch (broadcast) plus a
+        single sub-batch slot at the boundary. ``sub_batch_zeros_like``
+        gives the zero baseline with the correct K layout; adding
+        ``self.bc_value`` (a typed Scalar parameter) lifts it to the
+        boundary value via typed arithmetic.
+        """
+        zero = Scalar.zeros_like(template, sub_batch_shape=(1,))
+        return zero + self.bc_value
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
         (u_wrap,) = inputs
-        u = u_wrap.data  # (*B, N)
-        bc = self.bc_value.data  # scalar, broadcasts
-        # Expand bc to match input's shape minus the trailing sub-batch axis,
-        # with a length-1 sub-batch axis for the concat.
-        bc_exp = bc.expand(*u.shape[:-1], 1) if bc.ndim < u.ndim else bc
+        # Value path: bc_tail carries the parameter value, then cat
+        # along the cell axis (sub-batch dim 0 for a Scalar with
+        # sub_batch_ndim=1).
+        bc_tail = self._bc_tail(u_wrap)
         if self._side == "left":
-            y = torch.cat([bc_exp, u], dim=-1)
+            out = cat([bc_tail.sub_batch, u_wrap.sub_batch], dim=0)
         else:
-            y = torch.cat([u, bc_exp], dim=-1)
-        out = Scalar(y, sub_batch_ndim=u_wrap.sub_batch_ndim)
+            out = cat([u_wrap.sub_batch, bc_tail.sub_batch], dim=0)
         if v is None:
             return out
 
-        # Leading-K: the cell axis is the trailing sub-batch axis of the
-        # Scalar tangent ``(K, *dyn, L_in)``. Pushforward = same concat with a
-        # zero row at the BC side, taking ``L_in → L_in + 1``.
         side = self._side
 
-        def input_action(V: Scalar) -> Scalar:
-            d = V.data
-            zero = d.new_zeros(*d.shape[:-1], 1)
-            new_d = torch.cat([zero, d], dim=-1) if side == "left" else torch.cat([d, zero], dim=-1)
-            return Scalar(new_d, sub_batch_ndim=V.sub_batch_ndim)
+        def input_action(V_in: Scalar) -> Scalar:
+            # The chain rule contribution appends a zero tail (the BC
+            # value is a parameter, not an unknown -- it doesn't
+            # contribute to ``d output / d input``).
+            zero_tail = Scalar.zeros_like(V_in, sub_batch_shape=(1,))
+            if side == "left":
+                return cat([zero_tail.sub_batch, V_in.sub_batch], dim=0)
+            return cat([V_in.sub_batch, zero_tail.sub_batch], dim=0)
 
         return out, self.apply_chain_rule(
             v, self._output_name, {self._input_name: input_action}, output=out

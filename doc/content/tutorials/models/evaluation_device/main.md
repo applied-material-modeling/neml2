@@ -15,29 +15,18 @@ mystnb:
 (tutorials-models-evaluation-device)=
 # Evaluation device
 
-NEML2 models are `torch.nn.Module` subclasses, so a model's *evaluation
-device* is just a `torch.device`. This tutorial walks through the
-mechanics of moving a model (plus its parameters and buffers) and its
-inputs onto a target device, what happens when devices don't match,
-and where the host-device transfer cost shows up.
+You'll move a model and its inputs onto a target device (CPU here, but
+the same calls work for CUDA or any other torch device) and run a
+forward pass.
 
-The runnable cells stay on CPU so the doc build is portable; the API
-they exercise (`.to(device=...)`, `device=` kwarg on constructors) is
-the same one you would use with a CUDA, MPS, XPU, or any other torch
-device — only the device string changes.
-
-## What "device" means here
-
-NEML2 inherits PyTorch's notion of a device. A device is identified
-by a *type* (`"cpu"`, `"cuda"`, …) and an optional *index*
-(`"cuda:0"`, `"cuda:1"`, …). CPU is the default; everything else is
-an opt-in via `.to(...)`.
+The runnable cells stay on CPU so the doc build is portable. Swap
+`"cpu"` for `"cuda"` to run on a GPU — nothing else changes.
 
 :::{note}
-By default, every freshly loaded NEML2 model sits on CPU with
-`torch.float64` parameters. There is no separate "CUDA build" of
-NEML2 — the same wheel works on every device PyTorch supports;
-you opt in at runtime with `.to(...)`.
+A freshly loaded NEML2 model sits on CPU with `torch.float64`
+parameters. There is no separate "CUDA build" of NEML2 — the same
+wheel works on every device PyTorch supports; you opt in at runtime
+with `.to(...)`.
 :::
 
 ## The input file
@@ -49,8 +38,7 @@ you opt in at runtime with `.to(...)`.
 
 ## Loading and inspecting placement
 
-A freshly loaded model owns its parameters as `torch.Tensor`s. We can
-ask them where they live:
+Load the model and check where its parameters live:
 
 ```{code-cell} ipython3
 import torch
@@ -67,16 +55,13 @@ for name, p in model.named_parameters():
 Two pieces have to land on the target device before you call
 `model(x)`:
 
-1. The **model** itself — `.to(device=...)` recurses through all
-   parameters and buffers (and through every child `Model` in a
-   composition).
-2. The **inputs** to the forward operator — the typed tensor wrappers
-   in `neml2.types` accept a `device=` keyword on their constructors
-   and on `.to(...)`.
+1. The **model** — `model.to(device=...)` moves its parameters and
+   buffers (recursively, for composed models).
+2. The **inputs** — types in `neml2.types` (like `SR2`) accept a
+   `device=` keyword in their constructors.
 
-The cell below demonstrates the API by targeting CPU. To target CUDA,
-substitute `torch.device("cuda")` (or any other supported torch
-device); nothing else in the code changes:
+The cell below targets CPU. To run on a GPU, swap in
+`torch.device("cuda")`:
 
 ```{code-cell} ipython3
 from neml2.types import SR2
@@ -95,10 +80,9 @@ print(f"strain.device = {strain.device}")
 
 ## Forward pass and bringing the result home
 
-Once everything is co-located the call site looks identical to the
-CPU case. The output lives on whichever device the forward ran on, so
-if you need the result back in NumPy / Matplotlib land you pull it
-back with `.to(device="cpu")`:
+With the model and input on the same device, the call looks just like
+the CPU case. The result lives on that same device, so pull it back
+with `.to(device="cpu")` if you need it for NumPy or Matplotlib:
 
 ```{code-cell} ipython3
 stress = model(strain)
@@ -130,13 +114,11 @@ survive that case.
 
 ## Mixed-device errors
 
-If the model's parameters live on one device and the input tensor on
-another, PyTorch raises at the first op that needs both operands.
-The error message is verbose but the root cause is always the same:
-one of the two ends forgot a `.to(device)`. The fix is to move *both*
-the model and the input to the same device before calling the model.
+If the model is on one device and the input is on another, PyTorch
+raises at the first op that touches both. The fix is always the
+same: move both ends to the same device.
 
-For example, on a CUDA-equipped machine the following would raise:
+On a CUDA-equipped machine, this would raise:
 
 ```python
 model = neml2.load_model("input.i", "elasticity")   # CPU
@@ -146,26 +128,20 @@ model(strain)                                        # RuntimeError
 
 ## Host-device transfer cost
 
-`.to(device=...)` is not free — it copies data over the PCIe bus (or
-NVLink, etc.). Three rules of thumb:
+`.to(device=...)` is not free — it copies data over the PCIe bus. A
+few rules of thumb:
 
-- **Move the model once, up front.** Parameters and buffers are
-  invariant across a batch sweep; copying them on every call wastes
-  bandwidth.
-- **Build inputs on the device, don't construct on CPU then copy.**
-  The `device=` keyword on `SR2.fill`, `Scalar(...)`, `R2(...)`, etc.
-  allocates directly on the target device.
-- **Pull only what you need back to CPU.** A common pattern is to
-  keep the entire integration loop on GPU and only `.cpu()` the
-  final history slice for post-processing or plotting.
+- **Move the model once, up front.** The parameters don't change
+  between calls, so copying them every time wastes bandwidth.
+- **Build inputs on the device.** Pass `device=` to the constructor
+  (e.g. `SR2.fill(..., device=target)`) instead of building on CPU
+  and copying.
+- **Pull only what you need back to CPU.** Keep the integration loop
+  on GPU and only `.cpu()` the final history slice for plotting.
 
 ## Where to go next
 
-- The forward operator scales naturally across batch dimensions —
-  see [](tutorials-models-vectorization) for how to feed large
-  batches through the same model evaluation we just ran on a single
-  sample.
-- Once you have model + inputs co-located on a device, the next
-  questions are usually about hooking parameters up to training
-  loops — [](tutorials-models-parameters) covers reading and
-  mutating parameters from Python.
+- The same model also runs on batched inputs — see
+  [](tutorials-models-vectorization).
+- To read or mutate the model's parameters from Python, see
+  [](tutorials-models-parameters).

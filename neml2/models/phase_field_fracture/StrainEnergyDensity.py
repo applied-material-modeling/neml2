@@ -44,10 +44,10 @@ surfaces immediately.
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
-from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import SR2, Scalar
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 class StrainEnergyDensity(Model):

@@ -80,6 +80,13 @@ class HitField:
     #: supplies an explicit ``rate = 'my_rate_var'`` they bypass the
     #: ``<variable>_rate`` derivation.
     override: str | None = None
+    #: For ``output`` fields: an explicit producer priority used by the
+    #: :class:`DependencyResolver` when more than one model provides the
+    #: same variable name. ``"high"`` = "my output supersedes any other
+    #: producer; run me last." ``"low"`` = "my output is overwritten by
+    #: any other producer; run me first." ``None`` (default) = "I'm the
+    #: sole producer — duplicate-provider error if not."
+    priority: str | None = None
 
     @property
     def ctor_name(self) -> str:
@@ -190,7 +197,44 @@ class HitSchema:
                 kwargs[field.ctor_name] = _read_derived_var_name(node, field, name_values)
                 continue
             kwargs[field.ctor_name] = _read_field(node, field)
+
         return kwargs
+
+    def reject_unknown_fields(self, node: nmhit.Node) -> None:
+        """Raise if *node* carries any HIT field not declared in the schema.
+
+        Mirrors the C++ parser's behaviour: an unrecognised option is a hard
+        error, not a silent skip. Silently ignored options are how stale
+        knobs (e.g. ``priority`` on a ``ComposedModel`` after the resolver
+        stopped supporting it) survive across refactors.
+
+        ``type`` is always allowed -- it's read by the factory before the
+        schema-driven kwargs pass to dispatch the registered class.
+        Override option names (an :func:`option`'s ``override=`` target) are
+        also allowed; they substitute for the primary option's value when
+        non-empty.
+        """
+        allowed: set[str] = {"type"}
+        for field in self.fields:
+            if field.kind in {"derived_input", "derived_output"}:
+                continue  # purely virtual; doesn't introduce a HIT field
+            allowed.add(field.name)
+            if field.override:
+                allowed.add(field.override)
+        import nmhit  # noqa: PLC0415
+
+        seen: list[str] = [c.path().rsplit("/", 1)[-1] for c in node.children(nmhit.NodeType.Field)]
+        unknown = sorted(set(seen) - allowed)
+        if not unknown:
+            return
+        type_name = node.param_optional_str("type", "?")
+        block_path = node.path()
+        accepted_str = ", ".join(sorted(allowed - {"type"})) or "<none>"
+        raise ValueError(
+            f"[{block_path}] (type={type_name!r}): unknown option(s) {unknown}. "
+            f"Accepted: {accepted_str}. Remove or rename the offending "
+            "entries -- silently ignored options have masked real bugs in the past."
+        )
 
 
 def input(  # noqa: A001
@@ -227,6 +271,7 @@ def output(
     *,
     default: Any = _MISSING,
     attr: str | None = None,
+    priority: str | None = None,
 ) -> HitField:
     """Declare an output variable.
 
@@ -235,8 +280,28 @@ def output(
     (the C++ ``Interpolation`` convention) or ``default=None`` for a derived
     default the leaf computes itself. For secondary names derived from another
     option, see :func:`derived_output`.
+
+    Set *priority* to disambiguate composition when multiple sibling models
+    provide the same variable name:
+
+    * ``"high"`` — "my output supersedes any other producer; run me last."
+      The composed model returns this leaf's value.
+    * ``"low"``  — "my output is overwritten by any other producer; run me
+      first." The composed model returns the other (default-priority) leaf's
+      value.
+    * ``None`` (default) — claim the name exclusively. Duplicate-provider
+      error if any sibling also provides it.
+
+    Used by post-processors like ``FixOrientation`` that mutate a sibling's
+    output in place (``input='orientation'`` / ``output='orientation'``).
     """
-    return HitField("output", name, type_cls, doc=doc, default=default, attr=attr)
+    if priority not in (None, "high", "low"):
+        raise ValueError(
+            f"output({name!r}): priority must be None, 'high', or 'low'; got {priority!r}."
+        )
+    return HitField(
+        "output", name, type_cls, doc=doc, default=default, attr=attr, priority=priority
+    )
 
 
 def derived_input(

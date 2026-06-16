@@ -1,69 +1,94 @@
 # neml2
+[Settings]
+  example_batch_shape = '(${nbatch},)'
+[]
+
 [Tensors]
+  # HIT-substituted shim so the verbatim triple-quoted Python blocks below
+  # can reference nbatch as a bare identifier. ${...} substitution only
+  # works inside single-line single-quoted HIT strings; triple-quoted
+  # blocks are passed verbatim to the Python eval namespace.
+  [nbatch]
+    type = Python
+    expr = '${nbatch}'
+  []
+  # end_time = LogspaceScalar(3, 3, nbatch) -> shape (nbatch,), constant 1e3
   [end_time]
-    type = LogspaceScalar
-    start = 3
-    end = 3
-    nstep = ${nbatch}
+    type = Python
+    expr = '''
+      Scalar(torch.logspace(3.0, 3.0, nbatch, dtype=torch.float64))
+    '''
   []
+  # times = LinspaceScalar(0, end_time, 100) -> shape (100, nbatch)
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
+    type = Python
+    expr = '''
+      Scalar(
+          end_time.data.unsqueeze(0)
+          * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1)
+      )
+    '''
   []
+  # start_temperature = LinspaceScalar(300, 300, nbatch) -> constant 300, (nbatch,)
   [start_temperature]
-    type = LinspaceScalar
-    start = 300
-    end = 300
-    nstep = ${nbatch}
+    type = Python
+    expr = '''
+      Scalar(torch.linspace(300.0, 300.0, nbatch, dtype=torch.float64))
+    '''
   []
+  # end_temperature = LinspaceScalar(1800, 1800, nbatch) -> constant 1800, (nbatch,)
   [end_temperature]
-    type = LinspaceScalar
-    start = 1800
-    end = 1800
-    nstep = ${nbatch}
+    type = Python
+    expr = '''
+      Scalar(torch.linspace(1800.0, 1800.0, nbatch, dtype=torch.float64))
+    '''
   []
+  # temperatures = LinspaceScalar(start_temperature, end_temperature, 100) -> (100, nbatch)
   [temperatures]
-    type = LinspaceScalar
-    start = start_temperature
-    end = end_temperature
-    nstep = 100
+    type = Python
+    expr = '''
+      Scalar(
+          start_temperature.data.unsqueeze(0)
+          + (end_temperature.data - start_temperature.data).unsqueeze(0)
+          * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1)
+      )
+    '''
   []
-  [exx]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0
-  []
-  [eyy]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0
-  []
-  [ezz]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0
-  []
+  # max_strain = FillSR2(exx=0, eyy=0, ezz=0) broadcast to (nbatch, 6) -- all zeros
   [max_strain]
-    type = FillSR2
-    values = 'exx eyy ezz'
+    type = Python
+    expr = '''
+      SR2.fill(0.0, 0.0, 0.0).dynamic_batch.expand(nbatch)
+    '''
   []
+  # strains = LinspaceSR2(0, max_strain, 100) -> shape (100, nbatch, 6)
   [strains]
-    type = LinspaceSR2
-    start = 0
-    end = max_strain
-    nstep = 100
+    type = Python
+    expr = '''
+      SR2(
+          max_strain.data.unsqueeze(0)
+          * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).reshape(100, 1, 1)
+      )
+    '''
   []
+  # f0 = Scalar(0.36)
   [f0]
-    type = Scalar
-    values = '0.36'
+    type = Python
+    expr = '''
+      Scalar(torch.tensor([0.36], dtype=torch.float64))
+    '''
   []
+  # gamma = surface_tension scalar. The v2 benchmark made this per-batch
+  # (`LinspaceScalar(0, 150, nbatch)`) to sweep surface tension across batch
+  # elements; that pattern bakes a rank-1 parameter and conflicts with the
+  # dynamic-batch artifact (see tests/aoti/static_batch_baked/ for the
+  # `dynamic_batch=false` counterpart that exercises it). Held scalar here
+  # so the benchmark stays cheap and batch-generalizable.
   [gamma]
-    type = LinspaceScalar
-    start = 0
-    end = 150
-    nstep = ${nbatch}
+    type = Python
+    expr = '''
+      Scalar(torch.tensor(75.0, dtype=torch.float64))
+    '''
   []
 []
 
@@ -78,7 +103,6 @@
     force_Scalar_values = 'temperatures'
     ic_Scalar_names = 'void_fraction'
     ic_Scalar_values = 'f0'
-    device = ${device}
   []
 []
 
@@ -139,7 +163,7 @@
     activation_energy = 5e4
     ideal_gas_constant = 8.314
   []
-  [yield]
+  [yield_surface]
     type = GTNYieldFunction
     yield_stress = 60.0
     q1 = 'q1'
@@ -149,8 +173,7 @@
   []
   [flow]
     type = ComposedModel
-    models = 'j2 sh sp yield'
-    automatic_nonlinear_parameter = false
+    models = 'j2 sh sp yield_surface'
   []
   [flow_rate]
     type = PerzynaPlasticFlowRate

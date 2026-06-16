@@ -42,7 +42,6 @@ A reaction mechanism is a constitutive relation between the conversion
 degree $\alpha \in [0, 1]$ and the reaction rate
 $\dot{\alpha} = f(\alpha)$. The three mechanisms in this module are
 
-$$
 \begin{align}
 \dot{\alpha} &= k \, (1 - \alpha)^n
   &&\text{(contracting geometry)} \\
@@ -52,7 +51,6 @@ $$
               \, \frac{r_o}{r_o - r_i + \delta}
   &&\text{(diffusion-limited)}
 \end{align}
-$$
 
 where $k$ is the reaction coefficient (typically Arrhenius,
 $k = k_0 \exp(-Q / R T)$), $n$ is the reaction order, $D$ is the

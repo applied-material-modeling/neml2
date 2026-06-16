@@ -109,16 +109,19 @@ suppress_warnings = [
     "docutils",
     "ref.python",
 ]
-# Jupytext keeps `.md` mirrors next to every `.ipynb` under `notebooks/` so
-# they round-trip cleanly through the jupytext pre-commit hook. Sphinx must
-# not pick those up — they would double-register against the notebooks and
-# the source-of-truth for the rendered output is the `.ipynb` (the only
-# one with cell metadata + persisted execution counts).
+# Jupytext keeps `.md` mirrors next to every executable `.ipynb` tutorial
+# so they round-trip cleanly through the jupytext pre-commit hook. Sphinx
+# must not pick those up — they would double-register against the
+# notebooks and the source-of-truth for the rendered output is the
+# `.ipynb` (the only one with cell metadata + persisted execution
+# counts). Add a new exclude entry whenever a new jupytext-paired
+# notebook tutorial lands.
 exclude_patterns = [
     "_build",
     "Thumbs.db",
     ".DS_Store",
-    "notebooks/*.md",
+    "content/tutorials/optimization/deterministic/main.md",
+    "content/tutorials/optimization/statistical/main.md",
 ]
 
 # ---------------------------------------------------------------------------
@@ -158,10 +161,11 @@ myst_enable_extensions = [
 ]
 myst_heading_anchors = 3
 
-# Default: don't re-execute notebooks at build time. The .ipynb files
-# under `notebooks/` are committed with pre-baked outputs, and the syntax-
-# catalog pages have no executable cells, so a global "off" makes the
-# usual rebuild instant.
+# Default: don't re-execute notebooks at build time. The executable
+# `.ipynb` tutorials are committed with pre-baked outputs (enforced by
+# the `check-notebook-executed` pre-commit hook), and the syntax-catalog
+# pages have no executable cells, so a global "off" makes the usual
+# rebuild instant.
 #
 # Tutorial pages that embed live `{code-cell}` directives opt in to
 # execution via per-page front-matter:

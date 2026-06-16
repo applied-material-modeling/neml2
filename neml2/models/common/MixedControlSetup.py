@@ -26,15 +26,15 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, option, output
 from ...types import (
     SR2,
     gt,
     where,
 )
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("MixedControlSetup")
@@ -104,22 +104,22 @@ class MixedControlSetup(Model):
             return y, z
 
         # Per-component selectors are diagonal in the Mandel axis: the
-        # pushforward weights each tangent component by the 0/1 pick mask
-        # (broadcasts over the leading K axis of the SR2 tangent).
-        above_mask = above.data.to(control.dtype)  # (*B, 6)
-        below_mask = (~above.data).to(control.dtype)  # (*B, 6)
-
+        # pushforward picks each tangent component by the boolean mask
+        # via the typed ``where``, which threads K-state through its
+        # operands. ``V - V`` is the typed zero with V's metadata; that
+        # lets ``where(above, V, zero_v)`` and ``where(above, zero_v, V)``
+        # preserve K layout via :func:`_combine_k_from_operands`.
         def y_above(V: SR2) -> SR2:
-            return SR2(above_mask * V.data, sub_batch_ndim=V.sub_batch_ndim)
+            return where(above, V, V - V)
 
         def y_below(V: SR2) -> SR2:
-            return SR2(below_mask * V.data, sub_batch_ndim=V.sub_batch_ndim)
+            return where(above, V - V, V)
 
         def z_above(V: SR2) -> SR2:
-            return SR2(below_mask * V.data, sub_batch_ndim=V.sub_batch_ndim)
+            return where(above, V - V, V)
 
         def z_below(V: SR2) -> SR2:
-            return SR2(above_mask * V.data, sub_batch_ndim=V.sub_batch_ndim)
+            return where(above, V, V - V)
 
         v_y = self.apply_chain_rule(
             v, self._y, {self._x_above: y_above, self._x_below: y_below}, output=y

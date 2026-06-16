@@ -63,8 +63,8 @@ exposes) and:
 
 - rejects any name that doesn't resolve;
 - rejects any name that lives inside an `ImplicitUpdate`'s
-  `system.model` tree — the dense/block equation-system wrappers
-  (`DenseRHS`, `DenseNewtonStep`, `DenseIFT`, ...) have fixed
+  `system.model` tree — the equation-system AOTI export wrappers
+  (`RHS`, `NewtonStep`, `IFT`) have fixed
   `(u_flat, g_flat)` forward signatures and can't yet accept a
   `*nl_params` tail.
 
@@ -144,7 +144,7 @@ contract to the loader.
 
 ## Step 7 — Trace, lower, package
 
-Each segment routes through `neml2.export.compile_model`, a thin
+Each segment routes through `neml2.models.export.compile_model`, a thin
 adapter around `torch.export.export` + `torch._inductor.aoti_
 compile_and_package`. The adapter handles three pieces of
 machinery the raw torch APIs don't:
@@ -175,19 +175,16 @@ structure matches what `torch.export` actually sees.
 The lowered output is a `.pt2` package per graph. **Implicit
 segments** lower three graphs each (`rhs`, `step`, `ift`) plus an
 optional `predictor`; **forward segments** lower one value graph
-plus an optional flat-Jacobian graph (`jvp`). Which implicit
-factorisation backs `step` and `ift` is dispatched on the source
-model's solver:
-
-- `solver.linear_solver` is `SchurComplement` → `BlockRHS`,
-  `BlockNewtonStep`, `BlockIFT` (handles sub-batch and mixed
-  `BLOCK + DENSE` 2-group factorisations);
-- otherwise → `DenseRHS`, `DenseNewtonStep`, `DenseIFT` (single-
-  group case).
+plus an optional flat-Jacobian graph (`jvp`). Implicit segments
+all route through the `RHS` / `NewtonStep` / `IFT` wrappers in
+`neml2.es.implicit`; `NewtonStep` and `IFT` forward
+to whichever `linear_solver` the source model is configured with
+(`DenseLU` for the common single-group case; `SchurComplement` for
+the `BLOCK + DENSE` 2-group factorisation).
 
 The C++ orchestrator sees the same flat `(u_flat, g_flat) →
-(u_new, b_new)` contract either way — the block-ness is internal
-to the `.pt2`.
+(u_new, b_new)` contract either way — the multi-group / sub-batch
+structure is internal to the `.pt2`.
 
 ### ELF GNU_STACK patch
 
@@ -238,8 +235,8 @@ correctly.
 | Sub-batch propagation                | `_hit_driver_example_inputs`, `_seed_implicit_subbatch`          |
 | Partitioning                         | `_partition_into_segments`, `_contains_implicit`, `_flatten_composed` |
 | Forward / implicit segment lowering  | `_compile_forward_segment`, `_compile_implicit_segment`          |
-| `torch.export` adapter               | `neml2/export.py::compile_model`                                 |
-| ELF GNU_STACK patch                  | `neml2/export.py::_clear_elf_execstack`                          |
+| `torch.export` adapter               | `neml2/models/export.py::compile_model`                          |
+| ELF GNU_STACK patch                  | `neml2/models/export.py::_clear_elf_execstack`                   |
 
 ## See also
 

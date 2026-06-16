@@ -43,10 +43,10 @@ inheriting from this base.
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
-from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import Scalar
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 class PorosityPermeabilityRelation(Model):

@@ -124,6 +124,26 @@ class AOTIModel(nn.Module):
             meta = json.load(f)
         self.input_spec = self._spec_from_meta(meta["inputs"])
         self.output_spec = self._spec_from_meta(meta["outputs"])
+        # Per-input sub-batch shape (empty tuple when the input has none).
+        # ``_broadcast_to_common_batch`` consults this to split each input's
+        # batch axes into (dyn, sub) and broadcast only the dyn portion --
+        # the sub-batch axis is part of the input's identity and must not
+        # be flattened against a global (no-sub-batch) sibling.
+        self.input_sub_batch: dict[str, tuple[int, ...]] = {
+            info["name"]: tuple(info.get("sub_batch_shape", ())) for info in meta["inputs"]
+        }
+        # Per-input / per-output sub-batch labels (empty tuple when the
+        # variable carries none). Persisted at export time via
+        # :func:`~neml2.cli.aoti_export._var_infos`; re-attached when
+        # wrapping AOTI raw outputs back into typed wrappers so the
+        # per-axis label dispatch (preserved-label storage, BLOCK-aware
+        # matmul) survives the export-and-load round-trip.
+        self.input_labels: dict[str, tuple[str, ...]] = {
+            info["name"]: tuple(info.get("sub_batch_labels", ())) for info in meta["inputs"]
+        }
+        self.output_labels: dict[str, tuple[str, ...]] = {
+            info["name"]: tuple(info.get("sub_batch_labels", ())) for info in meta["outputs"]
+        }
 
     @staticmethod
     def _spec_from_meta(infos: list[dict]) -> dict[str, type[TensorWrapper]]:
@@ -143,6 +163,46 @@ class AOTIModel(nn.Module):
                 )
             spec[name] = type_cls
         return spec
+
+    def _check_tensor(self, t: torch.Tensor, name: str, *, kind: str) -> None:
+        """Strict device + dtype check; raise TypeError on mismatch.
+
+        ``kind`` is ``'input'`` or ``'parameter'`` and shows up in the error
+        message so the caller can tell whether to fix the call site or the
+        parameter setter. Only floating-point dtype is checked -- bool /
+        integer tensors are passed through unchanged because their widths
+        are not part of the AOTI compile-pin.
+
+        The device comparison is index-aware. ``torch.device('cuda')`` and
+        ``torch.device('cuda:0')`` refer to the same physical GPU but
+        ``__eq__`` reports them unequal; we treat them as equal whenever
+        the target lacks an explicit index. Same-type + same-index (when
+        the target pins an index) is required.
+        """
+        target_device = self._inner.device
+        target_dtype = self._inner.dtype
+        device_ok = t.device.type == target_device.type and (
+            target_device.index is None or t.device.index == target_device.index
+        )
+        problems = []
+        if not device_ok:
+            problems.append(f"device={t.device} (expected {target_device})")
+        if t.is_floating_point() and t.dtype != target_dtype:
+            problems.append(f"dtype={t.dtype} (expected {target_dtype})")
+        if not problems:
+            return
+        raise TypeError(
+            f"AOTIModel {kind} {name!r}: {', '.join(problems)}. "
+            f"The .pt2 artifact is compile-pinned to "
+            f"(device={target_device}, dtype={target_dtype}) and the runtime "
+            f"refuses to silently coerce -- silent coercion would mask the "
+            f"silent-garbage / SEGV failure mode where a stride-based kernel "
+            f"reads off the end of a mistyped buffer. Cast the tensor "
+            f"explicitly with ``.to(device=..., dtype=...)`` at the call "
+            f"site, or set process-wide defaults (e.g. "
+            f"``torch.set_default_dtype(torch.float64)`` + "
+            f"``torch.set_default_device(...)``) before constructing inputs."
+        )
 
     def forward(self, *args: TensorWrapper, v=None, v2=None, vh=None):
         """Drive the AOTI graph.
@@ -173,17 +233,155 @@ class AOTIModel(nn.Module):
                 f"({list(self.input_spec)}), got {len(args)}."
             )
 
-        raw_inputs = {}
+        # Unwrap typed wrappers to raw torch.Tensors and strictly validate
+        # device + dtype against the artifact's pinned values. An AOTI .pt2
+        # is compile-pinned to a specific (device, dtype) and the kernel
+        # strides through input buffers assuming those exact widths; a wrong
+        # device dereferences a host pointer in a CUDA kernel (illegal
+        # access), and a wrong dtype reinterprets bytes (silent garbage at
+        # small batches, SEGV at larger ones once the wrong-stride read
+        # crosses past the mapped buffer end). We refuse to silently coerce
+        # because that hides bugs in caller code and makes NEML2-as-library
+        # surprising in larger pipelines -- the caller owns dtype/device
+        # placement, mirroring v2's [Settings]-gated dtype policy. Compare
+        # the v2 main()s (e.g. ``neml2-time.cxx`` calling
+        # ``set_default_dtype(kFloat64)``) -- end applications set defaults,
+        # the model boundary validates.
+        #
+        # Also record per-input ``sub_batch_ndim``: when the caller passes
+        # a TensorWrapper, read it off the instance (the export-time
+        # typed-wrapper trace baked the per-input split into the artifact,
+        # so the caller's sub_batch_ndim is the authoritative source);
+        # for raw torch.Tensor inputs, fall back to the metadata's
+        # ``sub_batch_shape`` (the legacy path).
+        raw_inputs: dict[str, torch.Tensor] = {}
+        per_input_sub_ndim: dict[str, int] = {}
         for name, arg in zip(self.input_spec, args, strict=True):
             if isinstance(arg, TensorWrapper):
-                raw_inputs[name] = arg.data
+                t = arg.data
+                per_input_sub_ndim[name] = arg.sub_batch_ndim
             elif isinstance(arg, torch.Tensor):
-                raw_inputs[name] = arg
+                t = arg
+                per_input_sub_ndim[name] = len(self.input_sub_batch.get(name, ()))
             else:
                 raise TypeError(
                     f"AOTIModel: input {name!r} must be a TensorWrapper or "
                     f"torch.Tensor, got {type(arg).__name__}."
                 )
+            self._check_tensor(t, name, kind="input")
+            raw_inputs[name] = t
+
+        # Also validate any promoted parameters the caller may have mutated
+        # in place via ``self._inner.named_parameters()``. The .pt2 stores
+        # them pinned to (target_device, target_dtype); if the user
+        # overwrote with a tensor on a different device/dtype, the kernel
+        # would silently dereference garbage.
+        for pname, ptensor in self._inner.named_parameters().items():
+            self._check_tensor(ptensor, pname, kind="parameter")
+
+        # Normalize batch shapes. The .pt2 was traced with every input
+        # carrying a single leading batch axis (``_example_inputs_for`` uses
+        # ``zeros(2, *BASE_SHAPE)``) and torch.export installs a *shared*
+        # dynamic Dim across all inputs -- they must agree on that dim at
+        # runtime. Eager NEML2 callers freely pass base-only defaults (e.g.
+        # ``TransientDriver._zero_for_step`` makes an SR2 input of shape
+        # ``(6,)`` for unset history slots) and rely on the leaves'
+        # TensorWrapper arithmetic to broadcast; the .pt2 graph has no such
+        # broadcasting layer. Broadcast everything to the common batch
+        # shape before crossing.
+        raw_inputs, common_dyn = self._broadcast_to_common_batch(raw_inputs, per_input_sub_ndim)
 
         raw_outs = self._inner.forward(raw_inputs)
-        return tuple(self.output_spec[name](raw_outs[name]) for name in self.output_spec)
+        # Wrap each output and recover ``sub_batch_ndim`` from the runtime
+        # tensor shape. This is the same arithmetic v2's ``neml2::Tensor``
+        # did at construction time:
+        #
+        #     out.shape == (*dyn, *sub, *base)
+        #     dyn = common_dyn (broadcast across all inputs; outputs share)
+        #     base = ``BASE_SHAPE`` from the typed wrapper class
+        #     sub = whatever's left in the middle
+        #
+        # Solving for ``sub_n = out.ndim - dyn_n - BASE_NDIM``. Not a
+        # heuristic -- there's exactly one structural decomposition that
+        # fits. Without this step the default ``sub_batch_ndim=0`` wrap
+        # mis-classifies a per-site axis as dyn, which breaks downstream
+        # consumers that feed the output back as input (e.g.
+        # ``TransientDriver.advance_step`` using step-N's per-crystal
+        # output as step-(N+1)'s ``~1`` history).
+        #
+        # The assumption that output dyn == input common_dyn holds for
+        # every shape-preserving forward operator NEML2 currently ships;
+        # if a future model collapses batch axes inside the AOTI graph
+        # (e.g. a reduction to a global summary), this would need to be
+        # superseded by per-output sub_batch_shape carried in the
+        # metadata. Cross that bridge when a model needs it.
+        out_wrappers = []
+        dyn_n = len(common_dyn)
+        for name, type_cls in self.output_spec.items():
+            raw = raw_outs[name]
+            sub_n = max(raw.ndim - dyn_n - type_cls.BASE_NDIM, 0)
+            # NOTE: sub_batch_labels are persisted in meta.json (see
+            # ``output_labels``) but the static-base ``TensorWrapper``
+            # subclasses do not accept a labels kwarg today, so the
+            # re-attachment is a no-op. The shim still loads the labels
+            # so that callers can introspect them (see
+            # ``test_aoti_grain_label_round_trip``). Once labels become
+            # load-bearing on static-base wrappers, set them here.
+            out_wrappers.append(type_cls(raw, sub_batch_ndim=sub_n))
+        return tuple(out_wrappers)
+
+    def _broadcast_to_common_batch(
+        self,
+        raw_inputs: dict[str, torch.Tensor],
+        per_input_sub_ndim: dict[str, int],
+    ) -> tuple[dict[str, torch.Tensor], torch.Size]:
+        """Bring every input tensor to its declared ``(*dyn, *sub, *base)`` shape,
+        with the dynamic-batch axes broadcast to a single common shape.
+
+        Each input has three trailing-axis regions:
+
+        * ``base`` -- ``BASE_SHAPE`` from the TensorWrapper class;
+        * ``sub`` -- the per-input ``sub_batch_ndim`` resolved from the
+          caller's typed wrapper instance (or the legacy metadata
+          ``sub_batch_shape`` when the caller passes a raw tensor);
+        * ``dyn`` -- everything in front, broadcast across all inputs
+          (callers freely pass base-only defaults / single-step slices and
+          rely on the runtime to lift them to the common dyn shape).
+
+        The (dyn, sub, base) split is per-input -- a global Scalar with
+        no sub-batch is reshaped to ``(*common_dyn, *base)`` while a
+        per-crystal SR2 with ``sub_batch_ndim=1`` is reshaped to
+        ``(*common_dyn, sub_size, *base)``. Without the per-input
+        sub-batch carve-out, a naive ``torch.broadcast_shapes`` over the
+        full batch region would collide the per-crystal axis against the
+        global input's dyn axis.
+        """
+        dyn_shapes: list[torch.Size] = []
+        for name, t in raw_inputs.items():
+            base_ndim = self.input_spec[name].BASE_NDIM
+            sub_ndim = per_input_sub_ndim[name]
+            trail = base_ndim + sub_ndim
+            dyn_shapes.append(t.shape if trail == 0 else t.shape[:-trail])
+        common_dyn = torch.broadcast_shapes(*dyn_shapes)
+
+        out: dict[str, torch.Tensor] = {}
+        for name, t in raw_inputs.items():
+            base_ndim = self.input_spec[name].BASE_NDIM
+            base_shape = tuple(self.input_spec[name].BASE_SHAPE)
+            sub_ndim = per_input_sub_ndim[name]
+            # Read the sub-batch shape from the input tensor's current
+            # trailing axes (the caller's wrapper already has the right
+            # sub_batch_ndim; the raw tensor's trailing-axis sizes are
+            # the sub-batch extents).
+            sub_shape = (
+                tuple(t.shape[len(t.shape) - base_ndim - sub_ndim : len(t.shape) - base_ndim])
+                if sub_ndim
+                else ()
+            )
+            target_shape = tuple(common_dyn) + sub_shape + base_shape
+            if tuple(t.shape) == target_shape:
+                out[name] = t
+                continue
+            view_shape = (1,) * (len(target_shape) - t.ndim) + tuple(t.shape)
+            out[name] = t.view(view_shape).expand(target_shape).contiguous()
+        return out, common_dyn

@@ -58,6 +58,7 @@ CLI
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from math import prod
 from pathlib import Path
 
@@ -75,14 +76,156 @@ from ..types import TensorWrapper
 #: can refuse mismatched caches with a clear "wipe and re-export" message
 #: rather than failing on a missing field deep in the parser.
 #:
-#: v2 (current): bake-by-default; promoted parameters listed under top-level
+#: v2: bake-by-default; promoted parameters listed under top-level
 #: ``parameters`` with per-segment ``param_inputs``. No ``buffers`` section.
 #: Adds top-level ``device`` + ``dtype`` keys.
-AOTI_META_SCHEMA_VERSION = 2
+#:
+#: v3: implicit-segment Newton step graph split into a step-direction
+#: artifact (cheap A + solve, no residual recompute) plus a C++-side
+#: backtracking line search using the existing rhs graph. Meta shape
+#: changed accordingly (per-segment ``step_direction`` artifact in place
+#: of the old ``newton_step`` artifact); v2 caches are rejected.
+#:
+#: v4: forward-segment per-input/output metadata collapses to
+#: ``{"name": ...}`` only.
+#:
+#: v5 (current): implicit-segment I/O moved from a single packed
+#: ``(*dyn, u_size)`` flat slab to per-variable tensors in their natural
+#: ``(*dyn, *sub_batch, *base)`` shape. Each unknown / given / residual
+#: is now an independent tensor at the AOTI graph boundary, matching
+#: v2's ``AssembledVector = std::vector<Tensor>`` contract and letting
+#: preserved-label per-group sub_batch storage stay heterogeneous-ndim
+#: across the C++ runtime. The implicit-segment metadata now records
+#: per-variable ``sub_batch_shape`` / ``sub_batch_labels`` /
+#: ``base_shape`` so the C++ side can reshape per-variable slots and so
+#: convergence-norm / line-search bookkeeping can sum per-variable
+#: contributions. ``u_size`` / ``g_size`` retained for the IFT
+#: composition (IFT output stays flat -- it runs once per converged
+#: solve, the fold cost is amortised). The unflattened-shape /
+#: var_size fields on unknowns/givens stay (Newton loop derives the
+#: per-batch dyn_ndim from them).
+# dependencies: aoti.schema_version
+AOTI_META_SCHEMA_VERSION = 3
 
 
 def _var_size(type_cls) -> int:
     return prod(type_cls.BASE_SHAPE) if type_cls.BASE_SHAPE else 1
+
+
+def _enumerate_groups_and_cells(system) -> dict:
+    """Canonical group + cell metadata for nonlinear-system segments.
+
+    Single source of truth for the iteration order in which group
+    tensors appear in RHS/NewtonStep/IFT forward signatures, and for
+    the row-major (rows outer, cols inner) order of IFT cells. The
+    matching reader side in :mod:`neml2.es.implicit` walks the same
+    order via :func:`~neml2.es.implicit.enumerate_group_var_names` for
+    the per-group tensors and via a nested
+    ``for row in row_groups: for col in col_groups`` loop for IFT
+    cells.
+
+    Returns a dict with:
+
+    - ``unknown_groups`` / ``given_groups`` / ``residual_groups``:
+      ``list[list[str]]`` of variable names per group.
+    - ``group_structures``: per-side list of ``"block"`` / ``"dense"``.
+    - ``unknown_group_infos`` / ``given_group_infos`` /
+      ``residual_group_infos``: per-group dicts with
+      ``structure``, ``sub_batch_shape``, ``var_names``, and
+      ``per_var_info`` (a list of per-variable
+      ``{name, var_size, base_shape, sub_batch_shape}`` dicts ordered
+      as in the group).
+    - ``ift_cells``: per-(row_group, col_group) list of dicts with
+      ``row_group_idx``, ``col_group_idx``, ``row_structure``,
+      ``col_structure``, ``sub_batch_shape`` (the cell tensor's own
+      sub axes), ``row_vars``, ``col_vars``.
+    """
+
+    def _var_info(layout, name):
+        type_cls = layout.specs[name]
+        sb = tuple(int(s) for s in layout.sub_batch_shape(name))
+        base = tuple(int(s) for s in type_cls.BASE_SHAPE)
+        sb_total = 1
+        for s in sb:
+            sb_total *= s
+        return {
+            "name": name,
+            "var_size": sb_total * _var_size(type_cls),
+            "sub_batch_shape": list(sb),
+            "base_shape": list(base),
+        }
+
+    def _group_infos(layout):
+        infos = []
+        for gi, group in enumerate(layout.groups):
+            structure = layout.structure[gi]
+            sb = list(int(s) for s in layout.sub_batch_shape(group[0])) if group else []
+            infos.append(
+                {
+                    "structure": structure,
+                    "sub_batch_shape": sb,
+                    "var_names": list(group),
+                    "per_var_info": [_var_info(layout, n) for n in group],
+                }
+            )
+        return infos
+
+    ulayout = system.ulayout
+    glayout = system.glayout
+    blayout = system.blayout
+
+    unknown_group_infos = _group_infos(ulayout)
+    given_group_infos = _group_infos(glayout)
+    residual_group_infos = _group_infos(blayout)
+
+    ift_cells: list[dict] = []
+    for i, ugroup in enumerate(ulayout.groups):
+        u_structure = ulayout.structure[i]
+        u_sb = list(int(s) for s in ulayout.sub_batch_shape(ugroup[0])) if ugroup else []
+        for j, ggroup in enumerate(glayout.groups):
+            g_structure = glayout.structure[j]
+            g_sb = list(int(s) for s in glayout.sub_batch_shape(ggroup[0])) if ggroup else []
+            # Cell sub_batch_shape: which sub axes survive on the cell
+            # tensor. Paired BLOCK+BLOCK with matching sub: single
+            # shared sub. Single-side BLOCK: that side's sub. Both
+            # DENSE: no sub.
+            if u_structure == "block" and g_structure == "block":
+                if u_sb == g_sb:
+                    cell_sb = list(u_sb)
+                else:
+                    cell_sb = list(u_sb) + list(g_sb)
+            elif u_structure == "block":
+                cell_sb = list(u_sb)
+            elif g_structure == "block":
+                cell_sb = list(g_sb)
+            else:
+                cell_sb = []
+            ift_cells.append(
+                {
+                    "row_group_idx": i,
+                    "col_group_idx": j,
+                    "row_structure": u_structure,
+                    "col_structure": g_structure,
+                    "sub_batch_shape": cell_sb,
+                    "row_vars": [_var_info(ulayout, n) for n in ugroup],
+                    "col_vars": [_var_info(glayout, n) for n in ggroup],
+                }
+            )
+
+    return {
+        "unknown_groups": [list(g) for g in ulayout.groups],
+        "given_groups": [list(g) for g in glayout.groups],
+        "residual_groups": [list(g) for g in blayout.groups],
+        "group_structures": {
+            "unknown": list(ulayout.structure),
+            "given": list(glayout.structure),
+            "residual": list(blayout.structure),
+        },
+        "unknown_group_infos": unknown_group_infos,
+        "given_group_infos": given_group_infos,
+        "residual_group_infos": residual_group_infos,
+        "ift_cells": ift_cells,
+    }
 
 
 def _leading_k_identity_seed(
@@ -115,13 +258,50 @@ def _leading_k_block_to_trailing_k(block: torch.Tensor | TensorWrapper) -> torch
     return moved.reshape(*moved.shape[: moved.ndim - 1 - base_ndim], -1, K)
 
 
+def _leading_k_block_to_per_pair(
+    block: torch.Tensor | TensorWrapper,
+    in_type_cls: type,
+) -> torch.Tensor:
+    """Convert a leading-K typed tangent block to per-(out_var, in_var) Jacobian.
+
+    Output shape: ``(*batch, *sub_batch, *out_base, *in_base)`` -- the
+    typed natural shape with K (= prod(in_base)) reshaped back into
+    the in_var's base axes at the trailing end. Sub_batch axes the
+    tangent threaded through are preserved.
+
+    Raw inputs (non-TensorWrapper) are returned unchanged -- they
+    already carry the same trailing-K shape that the JVP module's
+    zero-fill produces.
+    """
+    if not isinstance(block, TensorWrapper):
+        return block
+    # block.data: (K, *batch, *sub, *out_base)
+    moved = block.data.movedim(0, -1)  # (*batch, *sub, *out_base, K)
+    in_base = tuple(int(s) for s in in_type_cls.BASE_SHAPE)
+    if not in_base:
+        # Scalar in_var: K=1, drop trailing axis.
+        return moved.squeeze(-1)
+    return moved.reshape(*moved.shape[:-1], *in_base)
+
+
 def _var_infos(
     spec: dict,
     *,
     sub_batch_shapes: dict[str, tuple[int, ...]] | None = None,
-    sparsity: dict[str, dict[str, str]] | None = None,
 ) -> list[dict]:
-    """Build the per-variable metadata list.
+    """Build the master-level per-variable metadata list.
+
+    Emits ``name``, ``var_size``, ``var_type``, optional
+    ``sub_batch_shape``, and optional ``sub_batch_labels`` for each
+    entry. Used at the top-level ``meta["inputs"]`` /
+    ``meta["outputs"]`` -- the Python shim consumes ``var_type`` to
+    construct ``input_spec`` / ``output_spec``, reads
+    ``sub_batch_shape`` to size the dyn-vs-sub batch split for raw-
+    tensor inputs, and reads ``sub_batch_labels`` to thread per-axis
+    labels through the typed-wrapper re-wrap at the AOTI load
+    boundary. C++ consumes ``var_size`` to allocate the dstate
+    row-stack blocks. Per-segment metadata uses
+    :func:`_segment_var_infos` instead.
 
     Parameters
     ----------
@@ -131,174 +311,431 @@ def _var_infos(
     sub_batch_shapes:
         Optional ``{name: shape_tuple}`` map; absent entries default to ``()``
         and the field is omitted from the output dict to keep the JSON tight.
-    sparsity:
-        Optional ``{name: {other_name: "diagonal"|"dense"}}`` map. Only the
-        non-default ``"dense"`` entries need to appear (the C++ side treats
-        absent entries as ``"diagonal"``); however we still emit the full
-        per-pair dict when this argument is set so the metadata is
-        self-describing.
+    sub_batch_labels:
+        Optional ``{name: labels_tuple}`` map; absent / empty entries are
+        omitted. Mirrors ``sub_batch_shapes`` -- the labels are per-axis
+        strings naming each sub-batch axis (e.g. ``("grain",)``). The shim
+        re-attaches them when wrapping the AOTI raw outputs into typed
+        wrappers so the per-axis label dispatch survives the
+        export-and-load round-trip.
     """
     infos: list[dict] = []
     sub_batch_shapes = sub_batch_shapes or {}
-    sparsity = sparsity or {}
     for k, v in spec.items():
         info: dict = {"name": k, "var_size": _var_size(v), "var_type": v.__name__}
         sb = sub_batch_shapes.get(k, ())
         if sb:
             info["sub_batch_shape"] = list(sb)
-        if k in sparsity:
-            info["sparsity"] = dict(sparsity[k])
         infos.append(info)
     return infos
 
 
-def _sparsity_for_outputs(
-    model, output_names: tuple[str, ...] | list[str], input_names: tuple[str, ...] | list[str]
-) -> dict[str, dict[str, str]]:
-    """Project ``model.list_deriv`` to the per-output → input flag map.
+def _segment_var_infos(spec_or_infos) -> list[dict]:
+    """Build segment-level per-variable metadata.
 
-    Only outputs that have at least one declared (output, input) entry get an
-    entry in the result; outputs whose every (output, input) pair is the
-    default ``"diagonal"`` are absent — keeping the JSON quiet for the common
-    pre-sub-batch case.
+    Forward-segment + predictor metadata only needs the name; C++ routes
+    ``state[name]`` reads/writes by string key and derives per-output
+    flat sizes from the live AOTI tensor shape at runtime. ``var_type`` /
+    ``var_size`` / ``sub_batch_shape`` were carried for symmetry with the
+    master list but never read off the segment dict; v4 drops them.
+
+    Accepts either a ``{name: type_cls}`` spec mapping or a list of
+    already-built master-level info dicts; both are common in the
+    caller graph.
     """
-    if not getattr(model, "list_deriv", None):
-        return {}
-    per_out: dict[str, dict[str, str]] = {}
-    for (out_name, in_name), flag in model.list_deriv.items():
-        if out_name in output_names and in_name in input_names and flag == "dense":
-            per_out.setdefault(out_name, {})[in_name] = flag
-    return per_out
+    if isinstance(spec_or_infos, dict):
+        return [{"name": name} for name in spec_or_infos]
+    return [{"name": info["name"]} for info in spec_or_infos]
 
 
-def _example_inputs_for(model, device: str) -> tuple:
-    """Return a batch-2 example input tuple matching model.input_spec."""
-    return tuple(
-        torch.zeros(2, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device)
-        for type_cls in model.input_spec.values()
+#: Default per-input batch shape when nothing is declared in HIT [Settings] or
+#: on the CLI. ``(2,)`` for the dynamic-batch region, ``()`` for sub-batch.
+#:
+#: ``2`` is the smallest value that still gets ``torch.export`` to install
+#: a real dynamic ``Dim`` (a static ``1`` collapses to a constant). The
+#: dynamic-batch value seeds Inductor's per-kernel ``size_hints`` and
+#: biases the autotune search toward block sizes that match the example.
+#: There is no single "right" default: the autotune-optimal example
+#: shape is workload-dependent and not predictable from first principles.
+#: Measured on the same machine (idle GPU 1) at B=8192:
+#:
+#:   * scpcoup (low-K, per-slip-pointwise heavy)
+#:       example=2 -> 5253 ms      example=8192 -> 2097 ms      (large wins)
+#:   * chaboche6 (high-K=43, cuBLAS-LU heavy)
+#:       example=2 -> 6425 ms      example=8192 -> 8155 ms      (small wins)
+#:
+#: The opposite directions reflect different kernel families dominating
+#: each workload (Triton per-slip reductions vs cuBLAS-LU/trsm) and
+#: different autotune block-size sweet spots. ``(2,)`` is the historical
+#: safe default -- never optimal, but never wildly slow either, and easy
+#: to reason about. Users who know their production batch should
+#: override via ``example_batch_shape=`` on :func:`export_model_for_aoti`
+#: or ``--example-batch-shape`` on the CLI; the benchmark suite does
+#: this (see ``benchmark/run_benchmark.py``).
+_DEFAULT_EXAMPLE_SHAPE: tuple[tuple[int, ...], tuple[int, ...]] = ((2,), ())
+
+
+def _parse_example_batch_shape(
+    spec: str,
+) -> tuple[tuple[int, ...], tuple[int, ...]]:
+    """Parse a shape spec string like ``'(2; 100)'`` into ``(dyn, sub)``.
+
+    Grammar (semicolon delimits dynamic-batch from sub-batch axes):
+
+    * ``'(2,)'``           → ``((2,), ())``
+    * ``'(2; 100)'``       → ``((2,), (100,))``
+    * ``'(2, 3)'``         → ``((2, 3), ())``
+    * ``'(2; 100, 5)'``    → ``((2,), (100, 5))``
+    * ``'(; 100)'``        → ``((), (100,))``
+
+    V2P-9: the ``:label`` suffix syntax has been removed (chain rule no
+    longer dispatches on labels). A leftover ``:foo`` is rejected with
+    a clear error.
+
+    Trailing commas inside each region are tolerated. The outer
+    parentheses are required; whitespace is ignored.
+    """
+    s = spec.strip()
+    if not (s.startswith("(") and s.endswith(")")):
+        raise ValueError(
+            f"example_batch_shape spec {spec!r}: must be parenthesized, e.g. '(2,)' or '(2; 100)'."
+        )
+    body = s[1:-1].strip()
+    if ":" in body:
+        raise ValueError(
+            f"example_batch_shape spec {spec!r}: the ':label' suffix on sub-batch "
+            "extents was removed in v2-parity-chain-rule (V2P-9). Drop the suffix "
+            "and use positional ordering instead."
+        )
+
+    def _split_ints(region: str) -> tuple[int, ...]:
+        region = region.strip()
+        if not region:
+            return ()
+        parts = [p.strip() for p in region.split(",")]
+        return tuple(int(p) for p in parts if p)
+
+    if ";" in body:
+        dyn_str, sub_str = body.split(";", 1)
+        return _split_ints(dyn_str), _split_ints(sub_str)
+    return _split_ints(body), ()
+
+
+def _read_settings(factory) -> tuple[dict[str, str], bool]:
+    """Read the AOTI-relevant fields from the input file's ``[Settings]`` block.
+
+    Returns ``(example_batch_shape_map, dynamic_batch)`` where:
+
+    * ``example_batch_shape_map`` maps input variable name → spec string
+      (e.g. ``"strain" → "(2; 100)"``). Two HIT forms accepted:
+
+        [Settings]
+          example_batch_shape = '(2,)'         # uniform → key '*'
+
+        [Settings]
+          [example_batch_shape]                # per-variable → one key per entry
+            strain      = '(2; 100)'
+            temperature = '(2,)'
+          []
+
+    * ``dynamic_batch`` is the boolean ``[Settings]/dynamic_batch`` (default
+      ``True``).
+
+    Both default cleanly when no ``[Settings]`` block is present.
+    """
+    import nmhit  # noqa: PLC0415
+
+    example_shapes: dict[str, str] = {}
+    dynamic_batch = True
+
+    settings = None
+    for top in factory._root.children(nmhit.NodeType.Section):
+        if top.path() == "Settings":
+            settings = top
+            break
+    if settings is None:
+        return example_shapes, dynamic_batch
+
+    dyn_str = settings.param_optional_str("dynamic_batch", "")
+    if dyn_str:
+        if dyn_str.lower() in ("true", "1", "yes", "on"):
+            dynamic_batch = True
+        elif dyn_str.lower() in ("false", "0", "no", "off"):
+            dynamic_batch = False
+        else:
+            raise ValueError(
+                f"[Settings]/dynamic_batch={dyn_str!r}: expected boolean (true|false)."
+            )
+
+    # ``example_batch_shape`` can be either a Field (uniform) OR a Section
+    # (per-variable map). Probe by node type rather than calling
+    # ``param_optional_str`` unconditionally -- the latter throws "node has
+    # no value" on the Section case.
+    uniform = ""
+    ebs_node = settings.find("example_batch_shape")
+    if ebs_node is not None and ebs_node.type() == nmhit.NodeType.Field:
+        # Field form: example_batch_shape = '(2,)'  → uniform, key '*'.
+        uniform = settings.param_optional_str("example_batch_shape", "")
+        if uniform:
+            example_shapes["*"] = uniform
+
+    # Sub-section form: [Settings/example_batch_shape] [strain] [...]  → per-var.
+    for child in settings.children(nmhit.NodeType.Section):
+        if child.path().rsplit("/", 1)[-1] != "example_batch_shape":
+            continue
+        if uniform:
+            raise ValueError(
+                "[Settings]/example_batch_shape: cannot use both the field "
+                "(uniform) and sub-section (per-variable) forms in the same file."
+            )
+        for entry in child.children(nmhit.NodeType.Field):
+            var_name = entry.path().rsplit("/", 1)[-1]
+            example_shapes[var_name] = entry.param_str()
+
+    return example_shapes, dynamic_batch
+
+
+def _resolve_example_shapes(
+    input_spec: dict,
+    declared: dict[str, str],
+) -> dict[str, tuple[tuple[int, ...], tuple[int, ...]]]:
+    """Map each input name in *input_spec* to its ``(dyn, sub, labels)`` shape tuple.
+
+    Resolution order:
+
+    1. Per-variable entry in *declared* (e.g. ``declared["strain"]``).
+    2. Uniform entry in *declared* (key ``"*"``).
+    3. :data:`_DEFAULT_EXAMPLE_SHAPE`.
+
+    Unknown keys in *declared* (not in *input_spec*) raise — almost always a
+    typo (e.g. ``"stress"`` written instead of ``"strain"``); silently
+    ignoring them would mask the bug.
+    """
+    uniform_spec = declared.get("*")
+    extras = set(declared) - {"*"} - set(input_spec)
+    if extras:
+        raise ValueError(
+            f"example_batch_shape names not in model input_spec: {sorted(extras)}. "
+            f"Available: {sorted(input_spec)}."
+        )
+    resolved: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] = {}
+    for name in input_spec:
+        if name in declared:
+            resolved[name] = _parse_example_batch_shape(declared[name])
+        elif uniform_spec is not None:
+            resolved[name] = _parse_example_batch_shape(uniform_spec)
+        else:
+            resolved[name] = _DEFAULT_EXAMPLE_SHAPE
+    return resolved
+
+
+def _shared_dyn_shape(
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]],
+    relevant_names,
+) -> tuple[int, ...]:
+    """Return the single dynamic-batch shape shared by all *relevant_names*.
+
+    ``torch.export`` installs a single ``Dim("batch", ...)`` across all
+    structural inputs, so they must agree on the leading dynamic shape.
+    Per-variable mode allows different sub-batch dims (those are static,
+    each input keeps its own), but not different dyn dims. Raise with the
+    conflicting entries if they disagree; return ``_DEFAULT_EXAMPLE_SHAPE[0]``
+    when no relevant input has a declared shape.
+    """
+    seen: dict[tuple[int, ...], list[str]] = {}
+    for name in relevant_names:
+        if name not in shapes:
+            continue
+        dyn = shapes[name][0]
+        seen.setdefault(tuple(dyn), []).append(name)
+    if not seen:
+        return _DEFAULT_EXAMPLE_SHAPE[0]
+    if len(seen) == 1:
+        return next(iter(seen))
+    parts = [f"{shape}: {names}" for shape, names in sorted(seen.items())]
+    raise ValueError(
+        "example_batch_shape: inputs must share the same dynamic-batch shape "
+        "(torch.export uses a single Dim across all dynamic inputs). Conflict:\n"
+        + "\n".join(f"  {p}" for p in parts)
     )
+
+
+def _validate_baked_against_shapes(
+    model,
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]],
+    promoted_qnames: set[str],
+) -> None:
+    """Catch baked parameters whose shape would force ``torch.export`` to
+    specialize the dynamic batch dim, BEFORE the export runs.
+
+    Specialization happens when a baked tensor and a dynamic-shape input
+    participate in the same op with statically equal dims. The most common
+    pattern is a parameter whose full shape matches some input's full
+    declared shape — e.g. a ``(2,)`` Scalar parameter against a ``(2,)``
+    Scalar input. The user must either promote the param via ``-p``, make
+    it scalar, or fall back to ``dynamic_batch=false``.
+
+    Only applied when ``dynamic_batch=True`` — under static-batch export
+    every dim is pinned by design, so the check is moot.
+    """
+    # Build the set of "full input shapes" any baked rank-≥1 param would
+    # need to broadcast against. We index by `(*dyn, *sub)` so we catch
+    # collisions in the batch region — the base region is owned by the
+    # wrapper type and won't change at runtime.
+    input_leading_shapes = {tuple(dyn) + tuple(sub) for dyn, sub in shapes.values()}
+
+    conflicts: list[tuple[str, tuple[int, ...]]] = []
+    for qname, p in model.named_parameters(recurse=True):
+        if qname in promoted_qnames:
+            continue  # already a graph input — no baking
+        if p.ndim == 0:
+            continue  # scalar — broadcasts trivially against any shape
+        # Walk every declared input's (dyn, sub) prefix. If the param's
+        # shape equals (*declared_leading, *param_base_shape) for any input
+        # type sharing the same base, it'll specialize that input's dim.
+        for name, type_cls in model.input_spec.items():
+            if name not in shapes:
+                continue
+            dyn, sub = shapes[name]
+            expected_full = tuple(dyn) + tuple(sub) + tuple(type_cls.BASE_SHAPE)
+            if tuple(p.shape) == expected_full:
+                conflicts.append((qname, tuple(p.shape)))
+                break
+        else:
+            # Param doesn't match any input's full declared shape, but may
+            # still collide with the leading region alone. Flag too.
+            if tuple(p.shape) in input_leading_shapes:
+                conflicts.append((qname, tuple(p.shape)))
+
+    if not conflicts:
+        return
+
+    lines = [f"  - {qname}: shape={shape}" for qname, shape in conflicts]
+    raise ValueError(
+        "AOTI export: the following baked parameters have shapes that would "
+        "specialize the dynamic batch dim (torch.export would emit a "
+        '"marked batch as dynamic but specialized to constant N" error):\n'
+        + "\n".join(lines)
+        + "\n\nThree ways to resolve each:\n"
+        "  1. Promote the parameter to a runtime input via "
+        "`neml2-compile -p <qname>`. Its shape then participates in the "
+        "graph's dynamic-shape signature instead of being baked.\n"
+        "  2. Make the parameter scalar (rank-0) so it broadcasts against "
+        "any batch — change the [Tensors] expression that binds it.\n"
+        "  3. Compile with `--no-dynamic-batch` (or `[Settings] "
+        "dynamic_batch = false`). The artifact is then pinned at the "
+        "example batch shape; you compile one .pt2 per batch size.\n"
+        "\nNote: promotion of parameters inside an `ImplicitUpdate` segment "
+        "is not yet supported, so option (1) only works for parameters in "
+        "forward-only segments."
+    )
+
+
+def _example_inputs_for(
+    model,
+    device: str,
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
+) -> tuple:
+    """Return an example input tuple matching ``model.input_spec``.
+
+    Each entry is a :class:`TensorWrapper` instance of the spec's declared
+    class with ``data`` shape ``(*dyn, *sub, *type_cls.BASE_SHAPE)`` and
+    ``sub_batch_ndim = len(sub)``. The ``(dyn, sub)`` tuple comes from
+    *shapes* (defaulted via :func:`_resolve_example_shapes` when omitted).
+
+    Passing typed wrappers through ``torch.export`` records the wrapper
+    class in the resulting ``ExportedProgram``'s pytree call_spec, which is
+    preserved across the AOTI compile -> ``.pt2`` -> load round-trip. The
+    shim consumes typed wrappers at the call boundary and reads
+    ``sub_batch_ndim`` directly off the caller arg, eliminating one piece
+    of duplicated metadata.
+    """
+    if shapes is None:
+        shapes = _resolve_example_shapes(model.input_spec, {})
+    examples: list = []
+    for name, type_cls in model.input_spec.items():
+        dyn, sub = shapes[name]
+        raw = torch.zeros(*dyn, *sub, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device)
+        examples.append(type_cls(raw, sub_batch_ndim=len(sub)))
+    return tuple(examples)
 
 
 def _seed_implicit_subbatch(
     model,
-    driver_inputs: dict[str, torch.Tensor],
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]],
     device: str,
 ) -> None:
     """Call ``system.initialize(u=, g=)`` on every nested
-    :class:`~neml2.models.common.ImplicitUpdate` using *driver_inputs* as the
-    given-variable values and zero-shaped unknowns. ``initialize`` infers
+    :class:`~neml2.models.common.ImplicitUpdate` using zero-tensor stand-ins
+    sized at the user-declared ``(dyn, sub)`` shapes. ``initialize`` infers
     per-variable ``sub_batch_shape`` from the input tensor shapes and rebuilds
     the system layouts (D-052 path) without running the Newton solver — the
     cheap, side-effect-only path the Block export needs to know how to size
     its flat ``u_flat`` / ``g_flat`` buffers.
 
-    For each unknown whose matching ``<unknown>~1`` history input is present in
-    *driver_inputs*, the unknown is sized the same way; for unknowns without
-    such a mate (e.g. predictor-only ``deformation_rate``,
-    ``target_cauchy_stress``) the unknown is created with no sub-batch.
+    For each unknown whose matching ``<unknown>~1`` history input has a
+    declared shape, the unknown inherits that shape (state-at-end-of-step
+    has the same per-site structure as state-at-start-of-step). Otherwise
+    the unknown falls back to the ``_DEFAULT_EXAMPLE_SHAPE``.
     """
     from ..models.common import ImplicitUpdate  # noqa: PLC0415
 
+    def _zero_for(type_cls, dyn, sub):
+        # Wrap at construction (rule 1): the raw zeros buffer becomes a typed
+        # wrapper with the declared sub_batch_ndim right here, never handed
+        # raw across an internal neml2 boundary.
+        raw = torch.zeros(*dyn, *sub, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device)
+        return type_cls(raw, sub_batch_ndim=len(sub))
+
     seen: set[int] = set()
-    for sub in model.modules():
-        if not isinstance(sub, ImplicitUpdate):
+    for sub_module in model.modules():
+        if not isinstance(sub_module, ImplicitUpdate):
             continue
-        if id(sub) in seen:
+        if id(sub_module) in seen:
             continue
-        seen.add(id(sub))
-        system = sub.system
-        g_dict: dict[str, torch.Tensor] = {}
+        seen.add(id(sub_module))
+        system = sub_module.system
+        sbn: dict[str, int] = {}
+        g_dict: dict[str, TensorWrapper] = {}
         for name in system.given_names:
-            if name in driver_inputs:
-                g_dict[name] = driver_inputs[name]
-            else:
-                type_cls = system.model.input_spec[name]
-                g_dict[name] = torch.zeros(
-                    1, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device
-                )
-        u_dict: dict[str, torch.Tensor] = {}
+            type_cls = system.model.input_spec[name]
+            # ``given_names`` can include ``name~1`` history entries that
+            # don't appear in the outer-input ``shapes`` -- fall back to the
+            # bare-name shape so a caller-passed uniform shape applies
+            # consistently (see u_dict block below for the same fix).
+            bare = name.split("~", 1)[0]
+            dyn, sub = shapes.get(name, shapes.get(bare, _DEFAULT_EXAMPLE_SHAPE))
+            g_dict[name] = _zero_for(type_cls, dyn, sub)
+            sbn[name] = len(sub)
+        u_dict: dict[str, TensorWrapper] = {}
         for name in system.unknown_names:
             type_cls = system.model.input_spec[name]
+            # Unknowns are internal state -- the bare name (e.g.
+            # ``elastic_strain``) typically isn't in the outer input_spec,
+            # but its ``~1`` history (the IC) is. Mirror the IC's shape so
+            # state-at-end-of-step matches state-at-start-of-step
+            # structurally. Fall through to bare-name, then default.
+            #
+            # Without this lookup chain a caller-passed uniform
+            # ``example_batch_shape`` ends up applied to the IC inputs (via
+            # input_spec) but the unknowns silently use the library
+            # default, producing a symbolic-dim mismatch in the explicit-
+            # orientation subsystem at torch.export trace time.
             history_name = f"{name}~1"
-            if history_name in driver_inputs:
-                # Mirror the IC's sub-batch shape: state-at-end-of-step has the
-                # same per-site structure as state-at-start-of-step.
-                ref = driver_inputs[history_name]
-                u_dict[name] = torch.zeros_like(ref)
-            else:
-                u_dict[name] = torch.zeros(
-                    1, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device
-                )
+            dyn, sub = shapes.get(history_name, shapes.get(name, _DEFAULT_EXAMPLE_SHAPE))
+            u_dict[name] = _zero_for(type_cls, dyn, sub)
+            sbn[name] = len(sub)
+        # ``initialize`` needs typed :class:`SparseVector` inputs whose
+        # layouts pin the per-variable sub_batch_shape -- without that
+        # commitment the system layouts collapse the sub-batch axes into
+        # the dynamic batch and the downstream Block tracer assembles a
+        # shape-mismatched Jacobian (typical symptom: ``reshape '[*dyn,
+        # base, base]' is invalid for input of size *dyn*base`` inside
+        # ``_disassemble_flat``). ``to_sparse`` derives the per-variable
+        # sub_batch_shapes from each raw tensor's trailing batch dims.
         with torch.no_grad():
-            system.initialize(u=u_dict, g=g_dict)
-
-
-def _hit_driver_example_inputs(model, factory, device: str) -> dict[str, torch.Tensor]:
-    """Scan the HIT file's ``[Drivers]`` sections for ``TransientDriver``-style
-    ``ic_*_names``/``ic_*_values`` and ``force_*_names``/``force_*_values``
-    pairs. Map each entry to a per-input-name example tensor:
-
-    * ``ic_<type>_names[i]`` → ``<name>~1`` input, take the IC tensor as-is and
-      prepend a unit dynamic-batch dim (ICs are stored without ``*B``).
-    * ``force_<type>_names[i]`` → ``<name>`` input, slice the time-zeroth step
-      of the force-trajectory tensor (forces are ``(nstep, *B, *base)``).
-
-    The point isn't byte-perfect inputs — only correct *shape* (specifically
-    sub-batch dims) so the subsequent ``model.forward(*)`` populates
-    ``system._sub_batch_shapes`` on every inner ``ModelNonlinearSystem``.
-
-    Returns a dict ``input_name → torch.Tensor``. Inputs not covered by any
-    driver mapping are left out; the caller fills them with the standard
-    ``zeros(1, *base)`` no-sub-batch default.
-    """
-    import nmhit  # noqa: PLC0415
-
-    mapping: dict[str, tuple[str, str]] = {}  # input_name → (kind, tensor_name)
-    # kind ∈ {"ic", "force"} so we can pick the right slice/unsqueeze rule.
-    type_tags = ("Scalar", "SR2", "WR2", "Rot", "SSR4", "R2", "MillerIndex")
-    for top in factory._root.children(nmhit.NodeType.Section):
-        if top.path() != "Drivers":
-            continue
-        for drv in top.children(nmhit.NodeType.Section):
-            for tt in type_tags:
-                for kind, opt_pair in (
-                    ("ic", (f"ic_{tt}_names", f"ic_{tt}_values")),
-                    ("force", (f"force_{tt}_names", f"force_{tt}_values")),
-                ):
-                    names_opt, values_opt = opt_pair
-                    names_str = drv.param_optional_str(names_opt, "")
-                    values_str = drv.param_optional_str(values_opt, "")
-                    if not names_str or not values_str:
-                        continue
-                    names = names_str.split()
-                    values = values_str.split()
-                    for n, v in zip(names, values, strict=False):
-                        key = f"{n}~1" if kind == "ic" else n
-                        mapping[key] = (kind, v)
-
-    examples: dict[str, torch.Tensor] = {}
-    input_spec = model.input_spec
-    for input_name in input_spec:
-        if input_name not in mapping:
-            continue
-        kind, tname = mapping[input_name]
-        try:
-            tensor_or_wrapper = factory.get_tensor(tname)
-        except Exception:
-            continue
-        t = tensor_or_wrapper.data if hasattr(tensor_or_wrapper, "data") else tensor_or_wrapper
-        if not isinstance(t, torch.Tensor):
-            continue
-        if kind == "ic":
-            # IC has shape (*sub_batch, *base); prepend a unit dyn-batch axis.
-            t = t.unsqueeze(0)
-        else:  # kind == "force"
-            # Force trajectory has shape (nstep, *B, *base) or (nstep, *B,
-            # *sub_batch, *base); index step 0.
-            if t.ndim >= 1:
-                t = t.select(0, 0)
-        examples[input_name] = t.to(device=device, dtype=torch.float64)
-    return examples
+            u_sv, g_sv = system.to_sparse(u_dict, g_dict, sbn)
+            system.initialize(u=u_sv, g=g_sv)
 
 
 def _freeze_remaining_parameters_to_buffers(module: nn.Module) -> None:
@@ -364,7 +801,8 @@ def _validate_promoted(model: nn.Module, promoted: set[str]) -> tuple[list[str],
 
     # Build the set of submodule ids that live inside any ImplicitUpdate's
     # system.model. Promoting into one of these would require threading the
-    # NL-param tail through DenseRHS/Step/IFT/predictor; not yet implemented.
+    # NL-param tail through RHS/NewtonStep/IFT/predictor; not yet
+    # implemented.
     implicit_ids: set[int] = set()
     for sub in model.modules():
         if isinstance(sub, ImplicitUpdate):
@@ -380,7 +818,7 @@ def _validate_promoted(model: nn.Module, promoted: set[str]) -> tuple[list[str],
         raise NotImplementedError(
             f"Promotion of parameters inside an ImplicitUpdate segment is not "
             f"yet supported (would-be promoted: {sorted(in_implicit)}). The "
-            f"implicit segment's DenseRHS/Step/IFT wrappers have fixed "
+            f"implicit segment's RHS/NewtonStep/IFT wrappers have fixed "
             f"(u_flat, g_flat) signatures; a follow-up will thread *nl_params "
             f"through them. Compile without these --parameter flags, or move "
             f"the parameters out of the implicit region."
@@ -430,7 +868,7 @@ def _promote_to_nl_params(
     boundary. The leaf's existing ``self._get_param(local, nl_params,
     type_cls)`` call resolves to ``nl_params[tail_index]``.
     """
-    from ..model import NLParam  # noqa: PLC0415
+    from ..models.model import NLParam  # noqa: PLC0415
 
     info: dict[str, tuple[type, nn.Module, str]] = {}
     for qname in promoted_qnames:
@@ -527,21 +965,29 @@ def _write_meta(path: Path, meta: dict) -> None:
 
 
 class _ForwardJacobianModule(nn.Module):
-    """Wrap a ComposedModel to also emit a flat ``dout/din`` Jacobian.
+    """Wrap a ComposedModel to also emit per-(out_var, in_var) Jacobian blocks.
 
-    Forward signature ``(*inputs) -> (*outputs, J)`` where $J$ has shape
-    ``(*B, n_out_total, n_in_total)`` — block-stacked by output then input,
-    each block sized by the corresponding variable's storage size. The flat
-    layout is identical to the ``inputs``/``outputs`` order in the master's
-    input_spec/output_spec.
+    Forward signature ``(*inputs) -> (*outputs, *J_pairs)`` where each
+    ``J_pair`` is the typed Jacobian block for one ``(out_var, in_var)``
+    pair at its natural shape ``(*batch, *sub_batch, *out_base, *in_base)``.
+    Pairs are emitted in row-major order (outer: outputs in
+    ``output_spec`` order; inner: structural inputs in ``input_spec``
+    order, skipping promoted parameters which contribute structural
+    zero tangents).
 
     Built on the existing first-order chain-rule machinery: we seed a
-    leading-K typed identity tangent for each input (one leaf per input, name
-    == input name). The ComposedModel pushforward returns typed blocks with K as
-    the leftmost batch dim; this wrapper converts those blocks back to the
-    public trailing-K flat matrix layout at the export boundary.
+    leading-K typed identity tangent for each structural input (K =
+    in_var base size). The ComposedModel pushforward returns typed
+    blocks with K as the leftmost batch dim; this wrapper moves K to
+    the trailing end and reshapes it back into the in_var's base axes.
+    Sub_batch axes that the tangent threaded through are preserved on
+    each pair tensor (no fold to dense, no N² densification).
 
-    Used by :func:`_compile_forward_segment` to emit ``<basename>_jvp.pt2``.
+    Used by :func:`_compile_forward_segment` to emit
+    ``<basename>_jvp.pt2``. The C++ runtime consumes the per-pair
+    tensors via per-pair matmul against ``dstate[in_var]``,
+    accumulating into ``dseg_out[out_var]`` -- mirrors the IFT cell
+    consumer (`Model.cxx:_run_implicit_segment_jacobian`).
     """
 
     def __init__(self, model, promoted_qnames: set[str] | None = None) -> None:
@@ -556,57 +1002,56 @@ class _ForwardJacobianModule(nn.Module):
         self.out_sizes = tuple(_var_size(t) for t in self.out_types)
         self.in_ndims = tuple(t.BASE_NDIM for t in self.in_types)
         self.out_ndims = tuple(t.BASE_NDIM for t in self.out_types)
-        # Indices of inputs that are STRUCTURAL (i.e. user-facing, not
-        # promoted). J's columns correspond only to these; promoted inputs
-        # are present in the trace's input signature but contribute no
-        # tangent (they're treated as constants from J's perspective).
+        # Indices of inputs that are STRUCTURAL (not promoted). Only
+        # structural inputs get tangents and corresponding J_pairs.
         self.structural_idx = tuple(
             i for i, n in enumerate(self.input_names) if n not in self.promoted_qnames
         )
 
-    def forward(self, *inputs: torch.Tensor) -> tuple[torch.Tensor, ...]:
-        # Seed identity tangents only for structural inputs. Promoted-param
-        # inputs stay absent from the seed dict; the default chain rule's
-        # `v.get(name, {})` returns empty for them, so they contribute no
-        # block to J.
+    def forward(self, *inputs) -> tuple:
+        typed_inputs = tuple(
+            arg if isinstance(arg, type_cls) else type_cls(arg)
+            for type_cls, arg in zip(self.in_types, inputs, strict=True)
+        )
         seed = {}
         for i in self.structural_idx:
-            raw = inputs[i]
+            ti = typed_inputs[i]
             name = self.input_names[i]
-            type_cls = self.in_types[i]
-            in_ndim = self.in_ndims[i]
-            batch_shape = raw.shape if in_ndim == 0 else raw.shape[:-in_ndim]
             seed[name] = {
                 name: _leading_k_identity_seed(
-                    type_cls,
-                    batch_shape,
-                    dtype=raw.dtype,
-                    device=raw.device,
+                    self.in_types[i],
+                    ti.batch_shape,
+                    dtype=ti.dtype,
+                    device=ti.device,
                 )
             }
-        result = self.model(*inputs, v=seed)
+        result = self.model(*typed_inputs, v=seed)
         result_tuple = result if isinstance(result, tuple) else (result,)
-        *raw_outputs, v_out = result_tuple
-        # Determine batch shape from the first output.
-        first_out = raw_outputs[0]
-        out0_ndim = self.out_ndims[0]
-        batch_shape = first_out.shape if out0_ndim == 0 else first_out.shape[:-out0_ndim]
-        # Stack blocks: row index = output, col index = STRUCTURAL input.
-        # Promoted columns are omitted (J's columns are sum(structural_sizes)).
-        row_parts: list[torch.Tensor] = []
-        for out_name, out_size in zip(self.output_names, self.out_sizes, strict=True):
-            col_parts: list[torch.Tensor] = []
+        *typed_outputs, v_out = result_tuple
+        first_out = typed_outputs[0]
+        batch_shape = first_out.batch_shape
+        pairs: list[torch.Tensor] = []
+        for out_name, out_type in zip(self.output_names, self.out_types, strict=True):
+            out_base = tuple(int(s) for s in out_type.BASE_SHAPE)
             for i in self.structural_idx:
                 in_name = self.input_names[i]
-                in_size = self.in_sizes[i]
+                in_type = self.in_types[i]
+                in_base = tuple(int(s) for s in in_type.BASE_SHAPE)
                 block = v_out.get(out_name, {}).get(in_name)
                 if block is None:
-                    block = first_out.new_zeros(*batch_shape, out_size, in_size)
-                block = _leading_k_block_to_trailing_k(block)
-                col_parts.append(block)
-            row_parts.append(torch.cat(col_parts, dim=-1))
-        J = torch.cat(row_parts, dim=-2)
-        return (*raw_outputs, J)
+                    # Zero block at natural per-pair shape. No sub axes
+                    # since the tangent didn't survive to this pair.
+                    pair = torch.zeros(
+                        *batch_shape,
+                        *out_base,
+                        *in_base,
+                        dtype=first_out.dtype,
+                        device=first_out.device,
+                    )
+                else:
+                    pair = _leading_k_block_to_per_pair(block, in_type)
+                pairs.append(pair)
+        return (*typed_outputs, *pairs)
 
 
 def _structural_inputs(spec: dict, promoted_qnames: set[str]) -> dict:
@@ -633,23 +1078,76 @@ def _build_example_inputs(
     promoted_qnames: set[str],
     promoted_snapshots: dict[str, torch.Tensor],
     device: str,
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
 ) -> tuple:
     """Build the ordered example-input tuple for a segment's trace.
 
-    Structural inputs get the standard ``(2, *BASE_SHAPE)`` zero tensor (the
-    batch=2 forces a true dynamic dim). Promoted inputs use the live snapshot
-    at its natural shape -- typically ``()`` for a Scalar parameter -- which
-    AOTI then broadcasts against the structural batch at runtime.
+    Structural inputs get a zero tensor of shape ``(*dyn, *sub, *BASE_SHAPE)``
+    where ``(dyn, sub)`` comes from *shapes* (defaults to
+    :data:`_DEFAULT_EXAMPLE_SHAPE` when omitted). Promoted inputs use the
+    live snapshot at its natural shape -- typically ``()`` for a Scalar
+    parameter -- which AOTI then broadcasts against the structural batch at
+    runtime.
+
+    Critical detail: every example tensor in a segment must use the **same**
+    dynamic batch shape. ``torch.export`` installs a single ``Dim("batch")``
+    across all inputs and unifies their batch ``SymInt`` *only when the
+    example sizes agree at trace time*. If a downstream-state input falls
+    back to ``_DEFAULT_EXAMPLE_SHAPE = ((2,), ())`` while the user-supplied
+    structural inputs use ``((4,), ())``, pytorch sees two different sizes
+    and assigns independent ``SymInt``s. A later binary op that broadcasts
+    across them fires ``RuntimeError: tensor a (s21) must match tensor b
+    (s39) at non-singleton dimension 0``. So when ``shapes`` provides
+    *any* dyn shape, fall back to that shared dyn (via
+    :func:`_shared_dyn_shape`) instead of the library default — keeping
+    every segment input uniform on the batch axis.
     """
-    examples: list[torch.Tensor] = []
+    if shapes is None:
+        shapes = {}
+    fallback_dyn = (
+        _shared_dyn_shape(shapes, list(seg_spec.keys())) if shapes else _DEFAULT_EXAMPLE_SHAPE[0]
+    )
+    examples: list = []
     for name, type_cls in seg_spec.items():
         if name in promoted_qnames:
+            # Promoted parameters arrive as raw ``torch.Tensor`` snapshots;
+            # they're treated as constants by the trace (AOTI bakes them
+            # or routes them through the per-segment ``param_inputs`` tail).
+            # ``ComposedModel.forward`` auto-wraps via ``_coerce_to_input_type``
+            # so the leaf still sees a typed value when promoted parameters
+            # flow into it.
             snap = promoted_snapshots[name].to(device=device, dtype=torch.float64)
             examples.append(snap)
         else:
-            examples.append(
-                torch.zeros(2, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device)
+            # Segments can have names that the outer input_spec doesn't
+            # surface, in two flavours:
+            #
+            # * ``name~N`` history inputs (e.g. ``elastic_strain~1``) where
+            #   only the bare name ``elastic_strain`` is exposed -- strip
+            #   the suffix and try the bare key.
+            # * "downstream" state inputs (e.g. ``elastic_strain``) that
+            #   flow from an earlier subsystem and aren't outer inputs, but
+            #   whose lagged ``~1`` history IS in the outer input_spec --
+            #   add the ``~1`` suffix and try that key.
+            #
+            # Either direction lets a caller-passed uniform shape apply
+            # consistently; otherwise downstream segments end up using the
+            # library default and the trace sees a symbolic-dim mismatch
+            # against the structural inputs.
+            bare = name.split("~", 1)[0]
+            dyn, sub = shapes.get(
+                name,
+                shapes.get(
+                    bare,
+                    shapes.get(f"{bare}~1", (fallback_dyn, ())),
+                ),
             )
+            raw = torch.zeros(*dyn, *sub, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device)
+            # Wrap with the declared ``sub_batch_ndim`` so the exported
+            # graph sees a structurally-typed input -- the wrapper class
+            # and per-input sub_batch_ndim flow into the .pt2's TreeSpec
+            # call signature.
+            examples.append(type_cls(raw, sub_batch_ndim=len(sub)))
     return tuple(examples)
 
 
@@ -661,8 +1159,10 @@ def _compile_forward_segment(
     *,
     promoted_qnames: set[str] | None = None,
     promoted_snapshots: dict[str, torch.Tensor] | None = None,
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
+    dynamic_batch: bool = True,
     emit_jvp: bool = True,
-) -> tuple[str, list[dict], list[dict], str | None, list[str]]:
+) -> tuple[str, list[dict], list[dict], str | None, list[str], list[dict] | None]:
     """Compile a single forward-shape model to ``<pkg_basename>.pt2`` plus,
     when ``emit_jvp`` is True, ``<pkg_basename>_jvp.pt2`` carrying the flat
     ``dout/din`` Jacobian.
@@ -678,8 +1178,8 @@ def _compile_forward_segment(
     segment_param_inputs)`` -- the per-segment metadata fields the caller
     needs.
     """
-    from ..export import compile_model
     from ..models.common import ComposedModel
+    from ..models.export import compile_model
 
     promoted_qnames = promoted_qnames or set()
     promoted_snapshots = promoted_snapshots or {}
@@ -696,30 +1196,53 @@ def _compile_forward_segment(
 
     seg_spec = exportable.input_spec
     seg_param_inputs = _segment_param_inputs(seg_spec, promoted_qnames)
-    example_inputs = _build_example_inputs(seg_spec, promoted_qnames, promoted_snapshots, device)
+    example_inputs = _build_example_inputs(
+        seg_spec, promoted_qnames, promoted_snapshots, device, shapes=shapes
+    )
+    dynamic_dim = 0 if dynamic_batch else None
 
     pkg_name = f"{pkg_basename}.pt2"
-    compile_model(exportable, example_inputs, output_dir / pkg_name)
+    compile_model(exportable, example_inputs, output_dir / pkg_name, dynamic_batch_dim=dynamic_dim)
 
     jvp_pkg_name: str | None = None
+    jacobian_pairs: list[dict] | None = None
     if emit_jvp:
         # JVP wrapper differentiates along structural inputs only -- promoted
-        # inputs aren't seeded so they contribute structural zeros to J via
+        # inputs aren't seeded so they contribute structural zeros via
         # the default chain rule's ``v.get(name, {})`` empty fallback.
         jvp_module = _ForwardJacobianModule(exportable, promoted_qnames).to(device)
         jvp_pkg_name = f"{pkg_basename}_jvp.pt2"
-        compile_model(jvp_module, example_inputs, output_dir / jvp_pkg_name)
+        compile_model(
+            jvp_module, example_inputs, output_dir / jvp_pkg_name, dynamic_batch_dim=dynamic_dim
+        )
+        # Per-(out_var, in_var) pair metadata in the SAME order the JVP
+        # module emits trailing tensors: rows-outer (output_spec order),
+        # cols-inner (structural inputs in input_spec order).
+        structural_in_spec = _structural_inputs(model.input_spec, promoted_qnames)
+        shapes_local = shapes or {}
+        jacobian_pairs = []
+        for out_name, out_type in model.output_spec.items():
+            for in_name, in_type in structural_in_spec.items():
+                in_sub = shapes_local.get(in_name, ((), ()))[1]
+                jacobian_pairs.append(
+                    {
+                        "out_var": out_name,
+                        "in_var": in_name,
+                        "out_base_shape": [int(s) for s in out_type.BASE_SHAPE],
+                        "in_base_shape": [int(s) for s in in_type.BASE_SHAPE],
+                        "in_sub_batch_shape": [int(s) for s in in_sub],
+                    }
+                )
 
     structural_in = _structural_inputs(model.input_spec, promoted_qnames)
-    output_sparsity = _sparsity_for_outputs(
-        exportable, tuple(model.output_spec), tuple(structural_in)
-    )
+    in_sb = {n: sub for n, (_, sub) in (shapes or {}).items() if sub}
     return (
         pkg_name,
-        _var_infos(structural_in),
-        _var_infos(model.output_spec, sparsity=output_sparsity),
+        _var_infos(structural_in, sub_batch_shapes=in_sb),
+        _var_infos(model.output_spec),
         jvp_pkg_name,
         seg_param_inputs,
+        jacobian_pairs,
     )
 
 
@@ -731,25 +1254,37 @@ def _export_forward(
     *,
     promoted_qnames: set[str],
     promoted_snapshots: dict[str, torch.Tensor],
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
+    dynamic_batch: bool = True,
 ) -> dict:
     """Export a forward-shape model as a single-segment composed artifact."""
-    pkg_name, in_infos, out_infos, jvp_pkg_name, param_inputs = _compile_forward_segment(
+    (
+        pkg_name,
+        in_infos,
+        out_infos,
+        jvp_pkg_name,
+        param_inputs,
+        jacobian_pairs,
+    ) = _compile_forward_segment(
         model,
         model_name,
         output_dir,
         device,
         promoted_qnames=promoted_qnames,
         promoted_snapshots=promoted_snapshots,
+        shapes=shapes,
+        dynamic_batch=dynamic_batch,
     )
     seg = {
         "kind": "forward",
         "package": pkg_name,
-        "inputs": in_infos,
-        "outputs": out_infos,
+        "inputs": _segment_var_infos(in_infos),
+        "outputs": _segment_var_infos(out_infos),
         "param_inputs": param_inputs,
     }
     if jvp_pkg_name is not None:
         seg["jvp_package"] = jvp_pkg_name
+        seg["jacobian_pairs"] = jacobian_pairs
     return {
         "schema_version": AOTI_META_SCHEMA_VERSION,
         "type": "composed",
@@ -769,77 +1304,85 @@ def _compile_implicit_segment(
     pkg_basename: str,
     output_dir: Path,
     device: str,
+    *,
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
+    dynamic_batch: bool = True,
 ) -> dict:
     """Compile an ImplicitUpdate to ``<pkg_basename>_rhs.pt2`` + ``_step.pt2``
-    (+ optional ``_predictor.pt2``), returning the metadata dict (without the
-    outer ``"type"`` key — caller adds it).
+    + ``_ift.pt2`` (+ optional ``_predictor.pt2``), returning the metadata
+    dict (without the outer ``"type"`` key — caller adds it).
 
-    Promotion of parameters inside the implicit segment is rejected earlier
-    (in :func:`_validate_promoted`); any promoted-parameter machinery is
-    handled entirely in the forward path, so this function takes no
-    promoted_* kwargs.
+    Per-variable I/O at the AOTI graph boundary (v5+): each unknown,
+    given, and residual is its own positional tensor in the segment
+    signature. Preserved-label per-group sub_batch storage stays
+    heterogeneous-ndim end-to-end; no cross-group cat or fold-to-flat
+    inside the graph (except IFT's once-per-solve flat ``du/dg`` slab).
+
+    Promotion of parameters inside the implicit segment is rejected
+    earlier (in :func:`_validate_promoted`); any promoted-parameter
+    machinery is handled entirely in the forward path, so this function
+    takes no promoted_* kwargs.
     """
-    from ..equation_systems import (
-        BlockIFT,
-        BlockNewtonStep,
-        BlockRHS,
-        DenseIFT,
-        DenseNewtonStep,
-        DenseRHS,
-    )
-    from ..export import compile_model
+    from ..es import IFT, RHS, AssembledVector, NewtonStep
     from ..models.common import ComposedModel
-    from ..solvers import SchurComplement
+    from ..models.export import compile_model
 
     system = inner.system
     solver = inner.solver
 
-    # Solver-type dispatch: SchurComplement → multi-group Block path (handles
-    # sub-batch and mixed BLOCK+DENSE 2-group factorisation); anything else →
-    # single-group Dense path. The C++ orchestrator sees the same flat
-    # (u_flat, g_flat) → (u_new, b_new) contract either way — block-ness is
-    # internal to the .pt2.
-    use_block = isinstance(solver.linear_solver, SchurComplement)
+    rhs = RHS(system).to(device)
+    step = NewtonStep(system, solver.linear_solver).to(device)
+    ift = IFT(system, solver.linear_solver).to(device)
 
-    # nn.Module.to() moves registered parameters and buffers in place; since
-    # rhs, step, and ift all wrap the same `system.model`, moving one moves the
-    # underlying buffers for all three.
-    if use_block:
-        rhs = BlockRHS(system).to(device)
-        step = BlockNewtonStep(system, solver.linear_solver).to(device)
-        ift = BlockIFT(system, solver.linear_solver).to(device)
-    else:
-        rhs = DenseRHS(system).to(device)
-        step = DenseNewtonStep(system).to(device)
-        ift = DenseIFT(system).to(device)
+    # Build per-variable example inputs at the user-declared natural
+    # shapes first, then pack them into per-group tensors via
+    # AssembledVector.from_dict -- the same path the segment forwards
+    # use at runtime, so the export-time tracing shape matches the
+    # C++ runtime input shape exactly.
+    dyn_shape = _shared_dyn_shape(shapes or {}, system.given_names + system.unknown_names)
+    shapes = shapes or {}
 
-    u_size: int = rhs.u_size
-    g_size: int = rhs.g_size
+    def _example_for_unknown(name: str) -> torch.Tensor:
+        history_name = f"{name}~1"
+        dyn, sub = shapes.get(history_name, shapes.get(name, (dyn_shape, ())))
+        type_cls = system.model.input_spec[name]
+        return torch.zeros(*dyn, *sub, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device)
 
-    example_u = torch.zeros(2, u_size, dtype=torch.float64, device=device)
-    example_g = torch.zeros(2, g_size, dtype=torch.float64, device=device)
+    def _example_for_given(name: str) -> torch.Tensor:
+        bare = name.split("~", 1)[0]
+        dyn, sub = shapes.get(name, shapes.get(bare, (dyn_shape, ())))
+        type_cls = system.model.input_spec[name]
+        return torch.zeros(*dyn, *sub, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device)
+
+    def _per_group_examples(layout, example_for_var) -> list[torch.Tensor]:
+        typed_values: dict = {}
+        for group in layout.groups:
+            for name in group:
+                raw = example_for_var(name)
+                type_cls = layout.specs[name]
+                sb = layout.sub_batch_shape(name)
+                typed_values[name] = type_cls(raw, sub_batch_ndim=len(sb))
+        vec = AssembledVector.from_dict(layout, typed_values)
+        return [t.data for t in vec.tensors]  # noqa: data-ok AOTI
+
+    u_group_examples = _per_group_examples(system.ulayout, _example_for_unknown)
+    g_group_examples = _per_group_examples(system.glayout, _example_for_given)
+    example_inputs = tuple(u_group_examples) + tuple(g_group_examples)
 
     rhs_name = f"{pkg_basename}_rhs.pt2"
     step_name = f"{pkg_basename}_step.pt2"
     ift_name = f"{pkg_basename}_ift.pt2"
 
-    rhs_inputs = (example_u, example_g)
-    compile_model(rhs, rhs_inputs, output_dir / rhs_name)
-    compile_model(step, rhs_inputs, output_dir / step_name)
-    compile_model(ift, rhs_inputs, output_dir / ift_name)
+    dynamic_dim = 0 if dynamic_batch else None
+    compile_model(rhs, example_inputs, output_dir / rhs_name, dynamic_batch_dim=dynamic_dim)
+    compile_model(step, example_inputs, output_dir / step_name, dynamic_batch_dim=dynamic_dim)
+    compile_model(ift, example_inputs, output_dir / ift_name, dynamic_batch_dim=dynamic_dim)
 
-    # The system's unknown/given names ARE the external names — variable
-    # resolution happens at construction time inside _store_schema_values, so
-    # there is no separate internal/external split anymore.
-    ext_unknowns = list(system.unknown_names)
-    ext_givens = list(system.given_names)
-
-    def _var_info(layout, name: str, ext_name) -> dict:
-        """Per-variable slot info. ``var_size`` is the total flat storage
-        (``prod(sub_batch) * base_size``). ``unflattened_shape`` is the
-        ``(*sub_batch, *base)`` shape used to reshape the slot back to its
-        natural storage on unpack; empty list means a Scalar with no
-        trailing storage dim."""
+    # Per-variable infos retained at the segment level as the source of
+    # truth for the C++ runtime's per-variable state map (predictor
+    # routing, downstream forward composition). Per-group / per-cell
+    # metadata sits alongside via _enumerate_groups_and_cells.
+    def _var_info(layout, name: str) -> dict:
         type_cls = layout.type_of(name)
         sb = tuple(int(s) for s in layout.sub_batch_shape(name))
         base = tuple(int(s) for s in type_cls.BASE_SHAPE)
@@ -847,18 +1390,34 @@ def _compile_implicit_segment(
         for s in sb:
             sb_total *= s
         return {
-            "name": ext_name,
+            "name": name,
             "var_size": sb_total * _var_size(type_cls),
-            "var_type": type_cls.__name__,
-            "unflattened_shape": list(sb + base),
+            "sub_batch_shape": list(sb),
+            "base_shape": list(base),
         }
 
-    unknown_infos = [
-        _var_info(system.ulayout, n, ext_unknowns[i]) for i, n in enumerate(system.unknown_names)
-    ]
-    given_infos = [
-        _var_info(system.glayout, n, ext_givens[i]) for i, n in enumerate(system.given_names)
-    ]
+    unknown_infos = [_var_info(system.ulayout, n) for n in system.unknown_names]
+    given_infos = [_var_info(system.glayout, n) for n in system.given_names]
+    residual_infos = [_var_info(system.blayout, n) for n in system.residual_names]
+
+    group_meta = _enumerate_groups_and_cells(system)
+
+    # Line-search options. Only NewtonWithLineSearch populates these; the
+    # plain Newton path leaves the C++ runtime to use defaults
+    # (no line search: alpha=1 always, max_ls_iters=1).
+    from ..solvers import NewtonWithLineSearch  # noqa: PLC0415
+
+    if isinstance(solver, NewtonWithLineSearch):
+        ls_meta = {
+            "linesearch": {
+                "type": solver._ls_type,
+                "max_iters": solver._ls_miter,
+                "cutback": solver._ls_sigma,
+                "c": solver._ls_c,
+            },
+        }
+    else:
+        ls_meta = {}
 
     seg: dict = {
         "rhs_package": rhs_name,
@@ -866,14 +1425,26 @@ def _compile_implicit_segment(
         "ift_package": ift_name,
         "unknowns": unknown_infos,
         "givens": given_infos,
-        "u_size": u_size,
-        "g_size": g_size,
+        "residuals": residual_infos,
+        # v7 per-group / per-cell metadata. The C++ runtime consumes
+        # ``unknown_group_infos`` / ``given_group_infos`` /
+        # ``residual_group_infos`` for the per-group pack/unpack at
+        # solve start/end and for the per-group Newton loop arithmetic.
+        # ``ift_cells`` orders one entry per (row_group, col_group) cell
+        # of the IFT loader's output tuple, row-major (rows outer, cols
+        # inner) -- matches
+        # :func:`~neml2.es.implicit._matrix_to_per_cell_raws`.
+        "unknown_group_infos": group_meta["unknown_group_infos"],
+        "given_group_infos": group_meta["given_group_infos"],
+        "residual_group_infos": group_meta["residual_group_infos"],
+        "ift_cells": group_meta["ift_cells"],
         "atol": solver.atol,
         "rtol": solver.rtol,
         "miters": solver.miters,
         # Always empty under this iteration's constraint -- promotion inside
         # implicit segments is rejected above. Recorded for schema uniformity.
         "param_inputs": [],
+        **ls_meta,
     }
 
     # Predictor: compile as an extra graph if present. Promoted tail not
@@ -882,12 +1453,14 @@ def _compile_implicit_segment(
     if inner.predictor is not None:
         pred = inner.predictor.to(device)
         pred_exportable = ComposedModel([pred])
-        pred_inputs = _example_inputs_for(pred_exportable, device)
+        pred_inputs = _example_inputs_for(pred_exportable, device, shapes=shapes)
         pred_name = f"{pkg_basename}_predictor.pt2"
-        compile_model(pred_exportable, pred_inputs, output_dir / pred_name)
+        compile_model(
+            pred_exportable, pred_inputs, output_dir / pred_name, dynamic_batch_dim=dynamic_dim
+        )
         seg["predictor_package"] = pred_name
-        seg["predictor_inputs"] = _var_infos(pred.input_spec)
-        seg["predictor_outputs"] = _var_infos(pred.output_spec)
+        seg["predictor_inputs"] = _segment_var_infos(pred.input_spec)
+        seg["predictor_outputs"] = _segment_var_infos(pred.output_spec)
 
     return seg
 
@@ -900,6 +1473,8 @@ def _export_implicit(
     device: str,
     *,
     promoted_qnames: set[str],
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
+    dynamic_batch: bool = True,
 ) -> dict:
     """Export an ImplicitUpdate as a single-segment composed artifact.
 
@@ -908,12 +1483,17 @@ def _export_implicit(
     metadata's master ``inputs`` filter here -- the trace itself is identical
     to the no-promotion case.
     """
-    seg = _compile_implicit_segment(inner, model_name, output_dir, device)
+    seg = _compile_implicit_segment(
+        inner, model_name, output_dir, device, shapes=shapes, dynamic_batch=dynamic_batch
+    )
     structural_in = _structural_inputs(model.input_spec, promoted_qnames)
+    in_sb = {n: sub for n, (_, sub) in (shapes or {}).items() if sub}
+    # Output labels mirror unknowns' labels (each output is an unknown that
+    # inherits sub_batch_labels from its history input via _solve).
     return {
         "schema_version": AOTI_META_SCHEMA_VERSION,
         "type": "composed",
-        "inputs": _var_infos(structural_in),
+        "inputs": _var_infos(structural_in, sub_batch_shapes=in_sb),
         "outputs": _var_infos(model.output_spec),
         "segments": [{"kind": "implicit", **seg}],
     }
@@ -983,6 +1563,8 @@ def _export_composed(
     *,
     promoted_qnames: set[str],
     promoted_snapshots: dict[str, torch.Tensor],
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
+    dynamic_batch: bool = True,
 ) -> dict:
     """Export a ComposedModel containing ImplicitUpdate children as multiple
     .pt2 artifacts.
@@ -1036,42 +1618,55 @@ def _export_composed(
             needed = (master_outs | downstream_demands[i]) & seg_output_sets[i]
             extra = sorted(needed)
             seg_model = ComposedModel(payload, additional_outputs=extra).to(device)
-            pkg_name, in_infos, out_infos, jvp_pkg_name, param_inputs = _compile_forward_segment(
+            (
+                pkg_name,
+                in_infos,
+                out_infos,
+                jvp_pkg_name,
+                param_inputs,
+                jacobian_pairs,
+            ) = _compile_forward_segment(
                 seg_model,
                 basename,
                 output_dir,
                 device,
                 promoted_qnames=promoted_qnames,
                 promoted_snapshots=promoted_snapshots,
+                shapes=shapes,
+                dynamic_batch=dynamic_batch,
             )
             seg_entry = {
                 "kind": "forward",
                 "package": pkg_name,
-                "inputs": in_infos,
-                "outputs": out_infos,
+                "inputs": _segment_var_infos(in_infos),
+                "outputs": _segment_var_infos(out_infos),
                 "param_inputs": param_inputs,
             }
             if jvp_pkg_name is not None:
                 seg_entry["jvp_package"] = jvp_pkg_name
+                seg_entry["jacobian_pairs"] = jacobian_pairs
             seg_metas.append(seg_entry)
         else:
             # payload is the ImplicitUpdate leaf.
             impl_model = payload
             assert isinstance(impl_model, ImplicitUpdate)
-            seg = _compile_implicit_segment(impl_model, basename, output_dir, device)
+            seg = _compile_implicit_segment(
+                impl_model,
+                basename,
+                output_dir,
+                device,
+                shapes=shapes,
+                dynamic_batch=dynamic_batch,
+            )
             seg_metas.append({"kind": "implicit", **seg})
 
     structural_in = _structural_inputs(model.input_spec, promoted_qnames)
+    in_sb = {n: sub for n, (_, sub) in (shapes or {}).items() if sub}
     return {
         "schema_version": AOTI_META_SCHEMA_VERSION,
         "type": "composed",
-        "inputs": _var_infos(structural_in),
-        "outputs": _var_infos(
-            model.output_spec,
-            sparsity=_sparsity_for_outputs(
-                model, tuple(model.output_spec), tuple(model.input_spec)
-            ),
-        ),
+        "inputs": _var_infos(structural_in, sub_batch_shapes=in_sb),
+        "outputs": _var_infos(model.output_spec),
         "segments": seg_metas,
     }
 
@@ -1089,6 +1684,9 @@ def export_model_for_aoti(
     device: str = "cpu",
     dtype: str = "float64",
     promoted: set[str] | list[str] | tuple[str, ...] = (),
+    example_batch_shape: dict[str, str] | str | None = None,
+    dynamic_batch: bool | None = None,
+    pre: Sequence[str] = (),
     additional_args: tuple[str, ...] = (),
 ) -> dict:
     """Export a native NEML2 model to ``.pt2`` artifacts for AOTI C++ consumption.
@@ -1117,6 +1715,32 @@ def export_model_for_aoti(
         Set / iterable of fully-qualified parameter or buffer names (the same
         form ``model.named_parameters(recurse=True)`` emits) to promote to
         runtime-flexible status. Empty default = fully baked artifact.
+    example_batch_shape:
+        Override for the per-input example shape used at trace time. Accepts
+        either a single spec string (uniform across all inputs) or a dict
+        mapping input variable name to spec string (per-variable). Each spec
+        uses the ``(dyn; sub)`` grammar (see
+        :func:`_parse_example_batch_shape`). Overrides any
+        ``[Settings]/example_batch_shape`` in the HIT file. When ``None``
+        (default), the HIT setting -- or :data:`_DEFAULT_EXAMPLE_SHAPE` if
+        unset -- applies.
+    dynamic_batch:
+        Override for ``[Settings]/dynamic_batch``. ``True`` lets the leading
+        batch axis vary at runtime (the default); ``False`` produces a
+        static-batch artifact pinned at the example shape. Use ``False`` when
+        a baked parameter has a rank ≥ 1 shape that would specialize the
+        dynamic dim. When ``None`` (default), the HIT setting -- or ``True``
+        if unset -- applies.
+    pre:
+        HIT snippets prepended before parsing (same semantics as
+        ``nmhit.parse_file``'s ``pre`` arg). Use to bind ``${var}``
+        substitution variables that the input file expects -- e.g.
+        ``pre=["nbatch=2", "device=cpu"]``. Post-``:=`` overrides via
+        *additional_args* do NOT propagate into ``${...}`` substitution.
+    additional_args:
+        Trailing HIT override tokens appended to the parser's *post* list
+        (e.g. ``"Models/elasticity/E:=210000"``). Path-style overrides only;
+        for variable substitution use *pre*.
 
     Returns
     -------
@@ -1129,8 +1753,22 @@ def export_model_for_aoti(
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    factory = load_input(hit_path, additional_args=additional_args)
+    factory = load_input(hit_path, pre=pre, additional_args=additional_args)
     model = factory.get_model(model_name)
+
+    # Resolve example-batch-shape declarations: CLI/Python kwarg wins, then
+    # HIT [Settings], then the (2,)/uniform default. The full per-input map
+    # is what every downstream helper consumes.
+    settings_shapes, settings_dyn = _read_settings(factory)
+    if isinstance(example_batch_shape, str):
+        declared = {"*": example_batch_shape}
+    elif isinstance(example_batch_shape, dict):
+        declared = dict(example_batch_shape)
+    else:
+        declared = settings_shapes
+    if dynamic_batch is None:
+        dynamic_batch = settings_dyn
+    resolved_shapes = _resolve_example_shapes(model.input_spec, declared)
 
     # Validate / resolve promoted names against the live model BEFORE any
     # ComposedModel wrapping (which would shift the qualified-name namespace).
@@ -1155,13 +1793,18 @@ def export_model_for_aoti(
     # entries are already gone from _parameters so they're skipped naturally.
     _freeze_remaining_parameters_to_buffers(model)
 
+    # Catch baked-parameter shape conflicts before torch.export does — the
+    # NEML2-side message names the param, the conflicting input, and the
+    # three available resolutions; torch.export's "you marked batch as
+    # dynamic but specialized it to N" message names neither.
+    if dynamic_batch:
+        _validate_baked_against_shapes(model, resolved_shapes, promoted_qnames)
+
     # Populate per-variable ``sub_batch_shape`` on every inner
-    # ``ModelNonlinearSystem`` from HIT-driver-derived example tensors so the
+    # ``ModelNonlinearSystem`` from the resolved per-variable shapes so the
     # Schur/Block export path traces with the correct per-sub-batch-site
-    # layout. Skipped silently when the HIT file has no ``[Drivers]`` section.
-    driver_inputs = _hit_driver_example_inputs(model, factory, device)
-    if driver_inputs:
-        _seed_implicit_subbatch(model, driver_inputs, device)
+    # layout. The compile path no longer reaches into [Drivers] for this.
+    _seed_implicit_subbatch(model, resolved_shapes, device)
 
     inner = model
 
@@ -1173,6 +1816,8 @@ def export_model_for_aoti(
             output_dir,
             device,
             promoted_qnames=promoted_qnames,
+            shapes=resolved_shapes,
+            dynamic_batch=dynamic_batch,
         )
     elif _contains_implicit(inner):
         meta = _export_composed(
@@ -1182,6 +1827,8 @@ def export_model_for_aoti(
             device,
             promoted_qnames=promoted_qnames,
             promoted_snapshots=promoted_snapshots,
+            shapes=resolved_shapes,
+            dynamic_batch=dynamic_batch,
         )
     else:
         meta = _export_forward(
@@ -1191,6 +1838,8 @@ def export_model_for_aoti(
             device,
             promoted_qnames=promoted_qnames,
             promoted_snapshots=promoted_snapshots,
+            shapes=resolved_shapes,
+            dynamic_batch=dynamic_batch,
         )
 
     # v2 top-level additions: device + dtype are baked into the artifact;

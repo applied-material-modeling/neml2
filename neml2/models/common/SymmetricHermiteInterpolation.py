@@ -28,11 +28,11 @@ from __future__ import annotations
 
 import torch
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import BLOCK_NAME, HitSchema, input, output, parameter
 from ...types import Scalar, clamp, lt, where
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("SymmetricHermiteInterpolation")

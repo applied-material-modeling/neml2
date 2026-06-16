@@ -1,0 +1,47 @@
+name: Notebook execution
+
+on:
+  pull_request:
+    branches: [main]
+    # PR-time trigger only when the actual notebooks, their paired markdown
+    # mirrors, or any HIT input file they consume change. The nightly cron
+    # below catches drift between PRs (e.g. an upstream torch release that
+    # re-renders an output).
+    paths:
+      - "doc/content/tutorials/**.ipynb"
+      - "doc/content/tutorials/**.md"
+      - "doc/content/tutorials/**.i"
+      - ".github/workflows/notebooks.yaml"
+  schedule:
+    # Nightly at 06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+# Newer commits should cancel old runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  notebooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/neml2-ci
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.0"
+      - name: Install NEML2 and dev dependencies
+        run: pip install ".[dev]" -v
+      - name: Run all notebooks with nbmake
+        run: |
+          NOTEBOOKS="$(git ls-files '*.ipynb')"
+          if [ -z "$NOTEBOOKS" ]; then
+            echo "No tracked notebooks found."
+            exit 0
+          fi
+          pytest -v -s --nbmake --nbmake-timeout=14400 $NOTEBOOKS

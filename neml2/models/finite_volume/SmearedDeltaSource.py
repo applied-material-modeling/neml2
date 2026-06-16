@@ -28,12 +28,12 @@ from __future__ import annotations
 
 import math
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar
 from ...types.functions import exp
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("SmearedDeltaSource")
@@ -66,12 +66,9 @@ class SmearedDeltaSource(Model):
         parameter("cell_centers", Scalar, "Cell center locations.", allow_nonlinear=True),
     )
 
-    # magnitude/location are global Scalars (sub_batch=0); the output carries the
-    # cell sub-batch axis from cell_centers — that's a dense coupling.
-    list_deriv = {
-        ("smeared_source", "magnitude"): "dense",
-        ("smeared_source", "location"): "dense",
-    }
+    # magnitude/location are global Scalars (sub_batch=0); the output carries
+    # the per-cell sub-batch axis from cell_centers -- so the edge
+    # INTRODUCES the ``"cell"`` label on the output.
 
     width: Scalar
     cell_centers: Scalar

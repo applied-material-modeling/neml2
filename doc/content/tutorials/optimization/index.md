@@ -16,4 +16,6 @@ recurrent (time-stepped) calibration.
 automatic_differentiation/main
 parameter_calibration/main
 pyzag
+deterministic/main
+statistical/main
 ```

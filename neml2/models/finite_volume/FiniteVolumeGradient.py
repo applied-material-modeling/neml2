@@ -26,16 +26,25 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar
+from ...types.functions import fullify
+from ..chain_rule import ChainRuleAction, ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("FiniteVolumeGradient")
 class FiniteVolumeGradient(Model):
-    """Compute prefactor-weighted gradients at cell edges using first-order reconstruction."""
+    """Compute prefactor-weighted gradients at cell edges using first-order reconstruction.
+
+    .. math::
+
+        \\nabla u\\bigl|_e = -\\frac{\\text{prefactor}}{\\Delta x_e}\\,(u_{e^+} - u_{e^-})
+
+    The minus sign matches the C++ implementation and the surrounding
+    finite-volume conventions.
+    """
 
     hit = HitSchema(
         input("u", Scalar, "Cell-averaged field values.", attr="_u_name"),
@@ -46,12 +55,6 @@ class FiniteVolumeGradient(Model):
             attr="_out_name",
         ),
         parameter("dx", Scalar, "Cell center spacing between adjacent cells."),
-        # Default prefactor literal "1.0" makes declare_typed_parameter wrap it
-        # as Scalar(1.0); the scalar broadcasts across the M-sized output.
-        # ``allow_nonlinear=True`` lets HIT promote ``prefactor`` to a runtime
-        # input when wired to another model output (e.g. an edge diffusivity
-        # produced by ``LinearlyInterpolateToCellEdges``); the chain rule below
-        # picks up the corresponding pushforward only when the promotion fires.
         parameter(
             "prefactor",
             Scalar,
@@ -61,59 +64,50 @@ class FiniteVolumeGradient(Model):
         ),
     )
 
-    list_deriv = {("grad_u", "u"): "dense"}
-
     dx: Scalar
     prefactor: Scalar
     _u_name: str
     _out_name: str
 
-    def __post_init__(self) -> None:
-        # If ``prefactor`` was promoted to a runtime input (mode 3/4), the
-        # output also depends densely on that input — mirror the C++
-        # ``setup_input_derivative_storage`` pattern by extending list_deriv.
-        pf_nl = self._nl_params.get("prefactor")
-        if pf_nl is not None:
-            self.list_deriv = {
-                **self.list_deriv,
-                (self._out_name, pf_nl.input_name): "dense",
-            }
-
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
-        # Structural inputs come first, then any promoted parameters in the
-        # order ``_nl_params`` was registered (``prefactor`` is the only one
-        # here when it gets promoted).
         u_wrap = inputs[0]
         nl_params = inputs[1:]
-        u = u_wrap.data  # (*B, N)
-        dx = self.dx.data
         pf_wrap = self._get_param("prefactor", nl_params, Scalar)
-        prefactor = pf_wrap.data
-        inv_dx = 1.0 / dx
-        du = u[..., 1:] - u[..., :-1]  # (*B, M)
-        grad = -prefactor * du * inv_dx  # (*B, M)
-        out = Scalar(grad, sub_batch_ndim=u_wrap.sub_batch_ndim)
+        # All typed: ``inv_dx`` via Scalar.__rtruediv__, neighbour
+        # differences via sub_batch slicing on the cell axis. The chain
+        # rule path reuses ``coeff`` so the value and pushforward share
+        # the same materialised stencil weights.
+        inv_dx = 1.0 / self.dx
+        coeff = pf_wrap * inv_dx
+        u_left = u_wrap.sub_batch[:-1]
+        u_right = u_wrap.sub_batch[1:]
+        du = u_right - u_left
+        out = -(coeff * du)
         if v is None:
             return out
 
-        # Bidiagonal pushforward in u: d(grad[i]) = (prefactor/dx)·(dV[i] − dV[i+1]).
-        # The cell axis is the Scalar tangent's trailing axis (K, *dyn, N).
-        coeff = prefactor * inv_dx  # (*, M)
-
-        def u_action(V: Scalar) -> Scalar:
-            d = V.data
-            return Scalar(coeff * (d[..., :-1] - d[..., 1:]), sub_batch_ndim=V.sub_batch_ndim)
+        def u_action(V_in: Scalar) -> Scalar:
+            # Fullify before the stencil: ``V_left - V_right`` mixes
+            # adjacent cells, breaking the K-paired broadcast eye
+            # assumption (each output cell depends on two K directions).
+            # See ``FiniteVolumeUpwindedAdvectiveFlux.u_action`` for the
+            # full explanation; the same applies here.
+            V_full = fullify(V_in)
+            V_left = V_full.sub_batch[:-1]
+            V_right = V_full.sub_batch[1:]
+            return coeff * (V_left - V_right)
 
         actions: dict[str, ChainRuleAction] = {self._u_name: u_action}
 
-        # When prefactor was promoted (mode 3/4), its tangent multiplies the
-        # raw gradient ``-du/dx`` (the partial d(grad)/d(prefactor)).
         pf_nl = self._nl_params.get("prefactor")
         if pf_nl is not None:
-            scale = -du * inv_dx  # (*, M)
+            # d(grad)/d(prefactor) = -du / dx (the partial w.r.t. the
+            # prefactor scaling factor); the action multiplies the
+            # prefactor's tangent by that scalar weight.
+            scale = -du * inv_dx
 
-            def pf_action(V: Scalar, c=scale) -> Scalar:
-                return Scalar(c * V.data, sub_batch_ndim=V.sub_batch_ndim)
+            def pf_action(V_in: Scalar, c: Scalar = scale) -> Scalar:
+                return c * V_in
 
             actions[pf_nl.input_name] = pf_action
 

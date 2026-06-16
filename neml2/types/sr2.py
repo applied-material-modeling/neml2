@@ -50,6 +50,11 @@ class SR2(PrimitiveTensor):
 
     data: torch.Tensor
     sub_batch_ndim: int = 0
+    sub_batch_state: tuple = ()
+    sub_batch_meta: tuple = ()
+    k_ndim: int = 0
+    k_state: tuple = ()
+    k_pairing: tuple = ()
     BASE_NDIM: ClassVar[int] = 1
     BASE_SHAPE: ClassVar[tuple[int, ...]] = (6,)
 

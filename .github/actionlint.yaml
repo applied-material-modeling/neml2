@@ -1,0 +1,10 @@
+# actionlint configuration. See
+# https://github.com/rhysd/actionlint/blob/main/docs/config.md
+#
+# ``self-hosted`` runners are not in the built-in label list -- declaring
+# them here lets the linter accept ``runs-on: gpu_runner`` (our self-hosted
+# CUDA box used by the ``test`` matrix in ``python.yaml`` and the ``build``
+# matrix in ``cpp.yaml``).
+self-hosted-runner:
+  labels:
+    - gpu_runner

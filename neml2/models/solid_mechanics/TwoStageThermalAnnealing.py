@@ -32,11 +32,11 @@ registered variant only differs in the ``hit`` schema's wrapper type.
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import SR2, Scalar, TensorWrapper, lt, where
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 class _TwoStageThermalAnnealing(Model):

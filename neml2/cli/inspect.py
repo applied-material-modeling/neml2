@@ -42,7 +42,7 @@ from ..factory import load_input
 from ._extensions import add_load_argument, load_user_extensions
 
 if TYPE_CHECKING:
-    from ..model import Model
+    from ..models.model import Model
 
 
 def _model_to_dict(model: Model) -> dict[str, Any]:

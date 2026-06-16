@@ -26,15 +26,15 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, output, parameter, parameters, var_inputs
 from ...types import (
     SR2,
     Scalar,
     TensorWrapper,
 )
+from ..chain_rule import ChainRuleDict, SecondOrderChainRuleDict
+from ..model import Model
 
 
 class _LinearCombination(Model):

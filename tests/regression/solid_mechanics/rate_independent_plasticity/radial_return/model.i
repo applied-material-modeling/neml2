@@ -186,7 +186,6 @@
     a = 'yield_function'
     a_inequality = 'LE'
     b = 'flow_rate'
-    jit = false
   []
   [surface]
     type = ComposedModel

@@ -63,11 +63,25 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("input", metavar="INPUT.i", type=Path, help="HIT input file path.")
-    parser.add_argument(
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument(
         "--model",
-        required=True,
         metavar="NAME",
-        help="Model name in the input's [Models] section.",
+        help=(
+            "Compile the named [Models] block. The emitted stub contains only "
+            "the AOTIModel shim for this model -- no [Drivers] block. Pair with "
+            "a custom driver in a separate file when you want to run it."
+        ),
+    )
+    target.add_argument(
+        "--driver",
+        metavar="NAME",
+        help=(
+            "Compile whatever model the named [Drivers] block targets (via its "
+            "`model = '...'` field). The stub keeps the named driver so the "
+            "result is runnable as-is via `neml2-run`. Use this when you want "
+            "a self-contained, drop-in replacement for the original driver."
+        ),
     )
     parser.add_argument(
         "--output-dir",
@@ -101,8 +115,133 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "fully baked."
         ),
     )
+    parser.add_argument(
+        "--example-batch-shape",
+        action="append",
+        default=[],
+        metavar="SPEC",
+        help=(
+            "Example shape used when tracing. Two forms:\n"
+            "  --example-batch-shape '(2,)'          (uniform across all inputs)\n"
+            "  --example-batch-shape strain='(2;100)' --example-batch-shape temperature='(2,)'\n"
+            "                                        (per-variable; repeatable)\n"
+            "The semicolon delimits dynamic-batch from sub-batch axes -- '(2;100)' "
+            "means dyn=(2,), sub=(100,). Overrides [Settings]/example_batch_shape."
+        ),
+    )
+    parser.add_argument(
+        "--dynamic-batch",
+        dest="dynamic_batch",
+        action="store_true",
+        default=None,
+        help=(
+            "Compile a dynamic-batch artifact: the leading batch dim of the "
+            "example shape becomes a runtime-variable torch.export Dim. "
+            "Default unless overridden by [Settings]/dynamic_batch in the input."
+        ),
+    )
+    parser.add_argument(
+        "--no-dynamic-batch",
+        dest="dynamic_batch",
+        action="store_false",
+        help=(
+            "Pin the batch dim at the example shape. Required when a baked "
+            "parameter has rank>=1 and would specialize the dynamic dim."
+        ),
+    )
     add_load_argument(parser)
     return parser
+
+
+def compile_and_emit_stub(
+    input_path: Path,
+    output_dir: Path,
+    *,
+    driver: str | None = None,
+    model: str | None = None,
+    device: str = "cpu",
+    dtype: str = "float64",
+    promoted: set[str] | None = None,
+    example_batch_shape=None,
+    dynamic_batch: bool | None = None,
+    pre: tuple[str, ...] = (),
+    additional_args: tuple[str, ...] = (),
+) -> Path:
+    """Compile + emit stub in one call; return the stub path.
+
+    Picks the model to compile from either ``driver`` (look up the driver
+    block's ``model = '...'`` field) or ``model`` (compile that model
+    directly). Exactly one must be supplied. Mirrors the
+    ``neml2-compile`` CLI surface for callers who don't want to shell out
+    to a subprocess.
+
+    The intermediate ``model_name`` and the conventional
+    ``<model_name>_meta.json`` / ``<model_name>_aoti.i`` paths live
+    entirely inside this function -- callers don't need to know the
+    target model name.
+    """
+    # Local import keeps the module import-light when only the helpers
+    # below are needed.
+    from neml2.cli.aoti_export import export_model_for_aoti  # noqa: PLC0415
+
+    if (driver is None) == (model is None):
+        raise ValueError("compile_and_emit_stub: pass exactly one of `driver` or `model`")
+    model_name = driver_target_model(input_path, driver) if driver else model
+    assert model_name is not None  # for type narrowing
+
+    export_model_for_aoti(
+        input_path,
+        model_name,
+        output_dir,
+        device=device,
+        dtype=dtype,
+        promoted=promoted or set(),
+        example_batch_shape=example_batch_shape,
+        dynamic_batch=dynamic_batch,
+        pre=pre,
+        additional_args=additional_args,
+    )
+    stub_path = output_dir / f"{model_name}_aoti.i"
+    emit_aoti_stub(
+        input_path,
+        model_name,
+        output_dir / f"{model_name}_meta.json",
+        stub_path,
+        keep_drivers=(driver is not None),
+    )
+    return stub_path
+
+
+def driver_target_model(original_hit: Path, driver_name: str) -> str:
+    """Return the model name the ``[Drivers]/<driver_name>/model`` field points at.
+
+    Used by ``--driver Y`` mode to derive ``--model X`` automatically: the
+    driver block already declares the model it runs, so there's no need for
+    the caller (or a parallel registry like ``benchmark/sweep.py``'s
+    ``_MODEL_OVERRIDES``) to repeat the mapping.
+    """
+    import nmhit  # noqa: PLC0415
+
+    root = nmhit.parse_file(original_hit, [], [])
+    drivers_blocks = [
+        top for top in root.children(nmhit.NodeType.Section) if top.path() == "Drivers"
+    ]
+    available: list[str] = []
+    for block in drivers_blocks:
+        for child in block.children(nmhit.NodeType.Section):
+            available.append(child.path())
+            if child.path() == driver_name:
+                model_field = child.find("model")
+                if model_field is None:
+                    raise ValueError(
+                        f"{original_hit}: [Drivers/{driver_name}] has no `model` field; "
+                        f"cannot infer what to compile."
+                    )
+                return child.param_str("model")
+    raise ValueError(
+        f"{original_hit}: no [Drivers/{driver_name}] block. "
+        f"Available drivers: {sorted(set(available))}."
+    )
 
 
 def emit_aoti_stub(
@@ -110,82 +249,172 @@ def emit_aoti_stub(
     model_name: str,
     meta_path: Path,
     stub_path: Path,
+    *,
+    keep_drivers: bool = False,
 ) -> None:
-    """Read *original_hit*, replace the ``[Models]/<model_name>`` block with
-    an AOTIModel shim pointing at *meta_path*, write the result to *stub_path*.
+    """Write a minimal AOTI stub at *stub_path*.
 
-    The meta path is recorded relative to *stub_path*'s directory so the stub
-    is movable as a unit. Other top-level sections (``[Drivers]``,
-    ``[Settings]``, ``[Tensors]``, ``[Tensors]``, ...) are copied through
-    verbatim from the original.
+    The stub contains exactly what's needed to load the compiled artifact:
+
+    * a single ``[Models]`` block holding only the ``AOTIModel`` shim for
+      ``<model_name>``. All sibling entries (and any other top-level
+      ``[Models]`` blocks the original file may have had) are dropped --
+      they're unreachable from the shim at runtime, and keeping a
+      ``ComposedModel`` whose child is now an ``AOTIModel`` shim would
+      break ``ComposedModel``'s resolver at load time (the shim has no
+      ``provided_items``);
+    * ``[Settings]`` from the original (small + safe; ``aoti_*`` keys are
+      stripped since they're no longer valid for the v3 factory);
+    * ``[Tensors]`` from the original verbatim -- a driver, if kept, may
+      reference any entry and entries reference each other transitively;
+      pruning by reachability buys little and risks dropping something
+      needed;
+    * ``[Drivers]`` from the original verbatim when ``keep_drivers=True``
+      (``--driver`` mode); drivers can reference other drivers (e.g.
+      ``TransientRegression`` wrapping a ``TransientDriver``), so we
+      mirror the ``[Tensors]`` policy and keep them all. Dropped entirely
+      when ``keep_drivers=False`` (``--model`` mode).
+
+    ``[Data]``, ``[EquationSystems]``, and ``[Solvers]`` are dropped in
+    both modes. Their state was baked into the ``.pt2`` at compile time
+    (the implicit Newton system, the linear solver, any ``[Data]``-typed
+    constants), so the runtime stub has no reference to them.
+
+    The meta path is recorded relative to *stub_path*'s directory so the
+    stub directory is movable as a unit.
+
+    Implementation note: we build a fresh ``nmhit.Root`` and clone the
+    sections we want into it, rather than mutating the parsed input. nmhit
+    surfaces a Python wrapper around each node; calling ``remove_child``
+    on the original root invalidates any other wrapper that pointed at the
+    removed subtree, and any subsequent access crashes nanobind on GC.
+    Cloning sidesteps the lifetime entanglement entirely.
     """
     import nmhit  # noqa: PLC0415
 
-    root = nmhit.parse_file(original_hit, [], [])
+    DROPPED = {"Data", "EquationSystems", "Solvers"}
 
-    # HIT lets a section name (e.g. ``[Models]``) appear in multiple
-    # top-level blocks; nmhit doesn't auto-merge them. Walk every top-level
-    # ``[Models]`` block to find the one that holds ``model_name``.
-    # Existence check is by name only -- do NOT hold a Python reference to
-    # the original sub-block past the remove_child call below. nmhit's
-    # Python wrappers don't tolerate their underlying node being freed;
-    # a kept reference triggers a hard nanobind crash on GC.
-    models_blocks = [top for top in root.children(nmhit.NodeType.Section) if top.path() == "Models"]
-    if not models_blocks:
-        raise ValueError(f"{original_hit} has no [Models] section.")
-    models = None
-    all_names: list[str] = []
-    for block in models_blocks:
-        names = [c.path() for c in block.children(nmhit.NodeType.Section)]
-        all_names.extend(names)
-        if model_name in names:
-            models = block
-            break
-    if models is None:
+    src_root = nmhit.parse_file(original_hit, [], [])
+
+    # Discover which (single) [Models] block holds our target. We mutate
+    # nothing in src_root -- discovery is read-only -- and we don't hold
+    # any node references past this scan.
+    target_models_idx: int | None = None
+    available_in_block: list[list[str]] = []
+    models_seen = 0
+    for top in src_root.children(nmhit.NodeType.Section):
+        if top.path() != "Models":
+            continue
+        names = [c.path() for c in top.children(nmhit.NodeType.Section)]
+        available_in_block.append(names)
+        if model_name in names and target_models_idx is None:
+            target_models_idx = models_seen
+        models_seen += 1
+    if target_models_idx is None:
+        all_names = [n for block in available_in_block for n in block]
         raise ValueError(
             f"{original_hit} has no [Models/{model_name}] block. "
-            f"--model must name an existing top-level entry. "
             f"Available: {sorted(set(all_names))}"
         )
 
-    # Build the path the stub will refer to: relative to the stub's directory.
+    # Path the shim's meta field will point at -- relative to the stub so
+    # the artifact directory is movable as a unit.
     stub_dir = stub_path.parent.resolve()
     meta_abs = meta_path.resolve()
     try:
         rel = os.path.relpath(meta_abs, start=stub_dir)
     except ValueError:
-        # Different drives (Windows) or otherwise no common root -- fall back
-        # to the absolute path. The stub stays valid, just not movable.
         rel = str(meta_abs)
-    # HIT path strings live more naturally with an explicit "./" prefix when
-    # they're relative -- otherwise readers can mistake them for type names.
     if not (rel.startswith("./") or rel.startswith("../") or os.path.isabs(rel)):
         rel = "./" + rel
 
-    # Replace: remove the original block from [Models] by relpath (nmhit's
-    # remove_child takes a path string), then add the shim with the same name.
-    models.remove_child(model_name)
+    # Build the cleaned [Models] block once: one shim, no siblings.
+    cleaned_models = nmhit.Section("Models")
     shim = nmhit.Section(model_name)
     shim.add_child(nmhit.Field("type", "AOTIModel"))
     shim.add_child(nmhit.Field("meta", rel))
-    models.add_child(shim)
+    cleaned_models.add_child(shim)
 
-    # Best-effort cleanup: if the original input set [Settings] aoti_mode =
-    # true (no longer valid form), drop it. The stub is meant to
-    # parse cleanly under the new C++ Factory which doesn't know aoti_mode.
-    settings = root.find("Settings")
-    if settings is not None:
-        for key in ("aoti_mode", "aoti_cache_dir", "aoti_device"):
-            if settings.find(key) is not None:
-                settings.remove_child(key)
+    # Walk the source top-level children IN ORDER and clone each into the
+    # new root. Skip dropped sections; for [Models] only emit the cleaned
+    # block once (at the index of the original target so surrounding
+    # comments / blanks land near it).
+    new_root = nmhit.Root()
+    models_emitted = False
+    models_seen = 0
+    for top in src_root.children():
+        t = top.type()
+        # Preserve top-level comments + blank lines so the stub still
+        # reads like the original where it overlaps.
+        if t != nmhit.NodeType.Section:
+            new_root.add_child(top.clone())
+            continue
 
+        name = top.path()
+        if name in DROPPED:
+            continue
+        if name == "Drivers" and not keep_drivers:
+            continue
+        if name == "Models":
+            if models_seen == target_models_idx and not models_emitted:
+                new_root.add_child(cleaned_models)
+                models_emitted = True
+            # Any other [Models] block: drop entirely.
+            models_seen += 1
+            continue
+        if name == "Settings":
+            cloned = top.clone()
+            for key in ("aoti_mode", "aoti_cache_dir", "aoti_device"):
+                if cloned.find(key) is not None:
+                    cloned.remove_child(key)
+            new_root.add_child(cloned)
+            continue
+        # Default: [Tensors], [Drivers] when kept, anything else we don't
+        # explicitly know -- copy through.
+        new_root.add_child(top.clone())
+
+    mode_note = "driver-mode" if keep_drivers else "model-mode"
     header = (
-        f"# Auto-generated by neml2-compile from {original_hit.name}.\n"
+        f"# Auto-generated by neml2-compile from {original_hit.name} ({mode_note}).\n"
         f"# Drop-in replacement for the original [{model_name}] model.\n"
         f"# Do not edit; regenerate via `neml2-compile`.\n"
         f"\n"
     )
-    stub_path.write_text(header + root.render())
+    stub_path.write_text(header + new_root.render())
+
+
+def _parse_example_batch_shape_cli(entries: list[str]) -> dict[str, str] | str | None:
+    """Reduce ``--example-batch-shape`` CLI entries to the kwarg form
+    :func:`~neml2.cli.aoti_export.export_model_for_aoti` accepts.
+
+    A single uniform entry (``'(2,)'``) returns the string verbatim. One or
+    more per-variable entries (``'strain=(2;100)'``) return a dict. Mixing
+    forms is an error.
+    """
+    if not entries:
+        return None
+    uniform: list[str] = []
+    per_var: dict[str, str] = {}
+    for raw in entries:
+        if "=" in raw and not raw.lstrip().startswith("("):
+            name, _, spec = raw.partition("=")
+            name = name.strip()
+            spec = spec.strip()
+            if not name or not spec:
+                raise ValueError(
+                    f"--example-batch-shape {raw!r}: expected name=spec (e.g. strain='(2;100)')."
+                )
+            per_var[name] = spec
+        else:
+            uniform.append(raw)
+    if uniform and per_var:
+        raise ValueError("--example-batch-shape: cannot mix uniform and per-variable forms.")
+    if len(uniform) > 1:
+        raise ValueError(
+            "--example-batch-shape: uniform form accepts a single spec, got "
+            f"{len(uniform)}: {uniform}."
+        )
+    return uniform[0] if uniform else per_var
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -206,38 +435,66 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
-    output_dir: Path = (args.output_dir or Path.cwd() / "aoti" / args.model).resolve()
+    # Resolve the (model_name, keep_driver) pair from --model vs --driver.
+    # argparse mutual exclusion already guarantees exactly one is set.
+    if args.driver is not None:
+        try:
+            model_name = driver_target_model(input_path, args.driver)
+        except (ValueError, FileNotFoundError) as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+        keep_driver: str | None = args.driver
+    else:
+        model_name = args.model
+        keep_driver = None
+
+    output_dir: Path = (args.output_dir or Path.cwd() / "aoti" / model_name).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        example_batch_shape = _parse_example_batch_shape_cli(args.example_batch_shape)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
 
     try:
         meta = export_model_for_aoti(
             input_path,
-            args.model,
+            model_name,
             output_dir,
             device=args.device,
             dtype=args.dtype,
             promoted=set(args.parameter),
+            example_batch_shape=example_batch_shape,
+            dynamic_batch=args.dynamic_batch,
             additional_args=tuple(additional_args),
         )
     except Exception as exc:  # noqa: BLE001
-        print(f"Error compiling '{args.model}': {exc}", file=sys.stderr)
+        print(f"Error compiling '{model_name}': {exc}", file=sys.stderr)
         return 1
 
-    meta_path = output_dir / f"{args.model}_meta.json"
-    stub_path = output_dir / f"{args.model}_aoti.i"
+    meta_path = output_dir / f"{model_name}_meta.json"
+    stub_path = output_dir / f"{model_name}_aoti.i"
     try:
-        emit_aoti_stub(input_path, args.model, meta_path, stub_path)
+        emit_aoti_stub(
+            input_path,
+            model_name,
+            meta_path,
+            stub_path,
+            keep_drivers=(keep_driver is not None),
+        )
     except Exception as exc:  # noqa: BLE001
         print(f"Error emitting stub: {exc}", file=sys.stderr)
         return 1
 
     n_promoted = len(args.parameter)
     bake_note = "fully baked" if n_promoted == 0 else f"{n_promoted} promoted parameter(s)"
+    driver_note = f", driven by [{keep_driver}]" if keep_driver else ""
 
     def _rel(p: Path) -> Path:
         return p.relative_to(Path.cwd()) if p.is_relative_to(Path.cwd()) else p
 
-    print(f"Compiled '{args.model}' ({meta['type']}, {bake_note}) -> {output_dir}")
+    print(f"Compiled '{model_name}' ({meta['type']}, {bake_note}{driver_note}) -> {output_dir}")
     print(f"  metadata: {_rel(meta_path)}")
     print(f"  stub:     {_rel(stub_path)}")
     return 0
@@ -247,4 +504,4 @@ if __name__ == "__main__":
     raise SystemExit(main())
 
 
-__all__ = ["main", "emit_aoti_stub"]
+__all__ = ["main", "compile_and_emit_stub", "driver_target_model", "emit_aoti_stub"]

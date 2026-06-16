@@ -28,11 +28,11 @@ from __future__ import annotations
 
 import math
 
-from ....chain_rule import ChainRuleAction, ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, derived_input, input, output, parameter
 from ....types import Scalar, Vec, exp, gt, vec_from_scalars, where
+from ...chain_rule import ChainRuleAction, ChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("SalehaniIraniTraction")

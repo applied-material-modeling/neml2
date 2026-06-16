@@ -15,69 +15,40 @@ mystnb:
 (tutorials-extension-arguments)=
 # Declaring inputs, outputs, and parameters
 
-Every NEML2 model — whether it ships with the library or you wrote it
-yourself — can be written in the form
-
-$$
-  y = f(x;\, p, b),
-$$
-
-where
-
-- $x$ are the *input variables* the model consumes,
-- $y$ are the *output variables* it produces,
-- $p$ are *parameters* (trainable, calibration-tracked tensors that
-  travel with the model and participate in autograd), and
-- $b$ are *buffers* (non-trainable tensors that also travel with the
-  model — sent to GPU when the model is, baked into the AOTI graph
-  when exported).
-
-Writing your own model therefore breaks down into four steps:
-
-1. Declare the input variables $x$.
-2. Declare the output variables $y$.
-3. Declare the parameters $p$ and the buffers $b$.
-4. Define the forward operator $f$.
-
-This tutorial covers the first three — the *declarative surface* of a
-`Model` subclass. The forward operator is the subject of
-[](tutorials-extension-forward).
+This tutorial walks through how to declare the inputs, outputs, and
+parameters of a custom model. The next tutorial in the series
+([](tutorials-extension-forward)) shows how to fill in the actual
+computation.
 
 ## The running example
 
-The example we'll carry through this series is a viscous-projectile
-acceleration model. A projectile of velocity $\boldsymbol{v}$ in a
-viscous medium experiences
+A projectile of velocity $\boldsymbol{v}$ in a viscous medium feels
+gravity plus linear drag:
 
 $$
-  \boldsymbol{a} \;=\; \boldsymbol{g} \;-\; \mu \, \boldsymbol{v},
+  \boldsymbol{a} \;=\; \boldsymbol{g} \;-\; \mu \, \boldsymbol{v}.
 $$
 
-where $\boldsymbol{g}$ is the gravitational acceleration and $\mu$ is
-the dynamic viscosity of the medium. So the model has
+So the model needs:
 
-- one input variable $\boldsymbol{v}$ (`Vec`),
-- one output variable $\boldsymbol{a}$ (`Vec`),
-- one *parameter* $\mu$ (we want to calibrate it from data, so it has
-  to be a trainable scalar), and
-- one *buffer* $\boldsymbol{g}$ (a known constant of the environment;
-  we don't want autograd flowing through it).
+- an input — the velocity $\boldsymbol{v}$ (a `Vec`),
+- an output — the acceleration $\boldsymbol{a}$ (also a `Vec`),
+- a parameter — the drag coefficient $\mu$ (a `Scalar` we may want to
+  fit to data later, so it has to be calibratable), and
+- a buffer — the gravitational acceleration $\boldsymbol{g}$ (a known
+  constant of the environment).
 
 ## The schema
 
-Native NEML2 models declare their HIT-facing surface with a
-class-level `hit = HitSchema(...)` block. `HitSchema` is the
-Python-native counterpart of the C++ `expected_options()` static
-method, but smaller and declarative: each field is one call to a
-helper from `neml2.schema`.
-
-The minimum needed for our example:
+A model declares its inputs, outputs, parameters, and buffers in one
+class-level `hit = HitSchema(...)` block. Each line is a single call
+to a helper from `neml2.schema`:
 
 ```{code-cell} ipython3
 from __future__ import annotations
 
 from neml2.factory import register_neml2_object
-from neml2.model import Model
+from neml2.models.model import Model
 from neml2.schema import HitSchema, buffer, input, output, parameter
 from neml2.types import Scalar, Vec
 
@@ -102,24 +73,17 @@ class ProjectileAcceleration(Model):
         raise NotImplementedError
 ```
 
-A few things are happening above:
+A few notes on the schema:
 
-- `hit = HitSchema(...)` is a *class-level* attribute. The base class's
-  `__init_subclass__` reads it and derives the class-level
-  `input_spec` / `output_spec` dicts automatically — no boilerplate.
-- The strings `"velocity"`, `"acceleration"`, `"dynamic_viscosity"`
-  are the *HIT option names* the input file will use. They double as
-  the canonical variable names when no override is supplied.
-- The third positional argument on every field — `"Velocity of the
-  projectile"`, etc. — is the docstring. It flows into the
-  auto-generated syntax catalog (`neml2-syntax`); empty docstrings
-  are rejected at class-definition time.
-- `attr="mu"` on the parameter field tells the framework to expose the
-  registered parameter on the instance as `self.mu`, so the forward
-  operator can write `self.mu * velocity` without going through a
-  string lookup.
-- `buffer(name, type_cls, doc, default=...)` declares a typed *buffer*
-  — a non-trainable constant baked into the model.
+- The string in each declaration (`"velocity"`, `"dynamic_viscosity"`,
+  …) is the name the input file will use.
+- The third argument is the field's docstring — it shows up in the
+  auto-generated syntax catalog.
+- `attr="mu"` on the parameter exposes it on the instance as
+  `self.mu`, so the model body can write `self.mu * velocity`
+  directly.
+- A `buffer` is a constant that travels with the model (e.g., goes to
+  GPU when the model does) but isn't trainable.
 
 ## Variable declaration
 
@@ -127,27 +91,16 @@ A few things are happening above:
 input("velocity", Vec, "Velocity of the projectile")
 ```
 
-`input(name, type_cls, doc)` declares one input variable. The
-`type_cls` is one of the typed wrappers from `neml2.types`
-(`Scalar`, `Vec`, `R2`, `SR2`, `Rot`, `Quaternion`, `SSR4`, …); it
-both documents the tensor shape (a `Vec` has base shape `(3,)`, an
-`SR2` has base shape `(6,)` in Mandel packing, etc.) and gates the
-runtime tensor wrapping inside the framework.
+`input(name, type_cls, doc)` declares one input variable. `type_cls`
+is one of the typed wrappers from `neml2.types` — `Scalar`, `Vec`,
+`R2`, `SR2`, `Rot`, etc. — and tells the framework what shape and
+algebra to expect. `output(...)` works the same way; it declares an
+output instead.
 
-`output(name, type_cls, doc)` is exactly symmetric — same signature,
-declares an output variable instead.
-
-The string `"velocity"` plays two roles:
-
-1. It is the HIT option name. When the model is loaded from an input
-   file, the parser looks for `velocity = '...'` under the model
-   block to discover what *external* name the input variable goes by
-   inside the wider computation graph.
-2. It is the *default* canonical variable name. If the user doesn't
-   supply `velocity = '...'`, the input is exposed under the literal
-   name `"velocity"`.
-
-That's why a fresh instance reports `input_spec = {"velocity": Vec}`:
+The name string serves two purposes: it's both the HIT option name
+the user writes in the input file, AND the default variable name when
+no rename is supplied. So a fresh instance reports
+`input_spec = {"velocity": Vec}`:
 
 ```{code-cell} ipython3
 m = ProjectileAcceleration(dynamic_viscosity=0.001)
@@ -158,9 +111,8 @@ m.input_spec
 m.output_spec
 ```
 
-When the user *does* supply a rename, the resolved name shows up in
-the spec dict instead — both for direct Python construction and for
-HIT-file loading:
+If the user passes a rename, the new name shows up in the spec dict
+instead:
 
 ```{code-cell} ipython3
 m_renamed = ProjectileAcceleration(
@@ -171,17 +123,14 @@ m_renamed = ProjectileAcceleration(
 m_renamed.input_spec, m_renamed.output_spec
 ```
 
-This is what lets the same `ProjectileAcceleration` class slot into
-many different input files: each file picks the external variable
-names it wants, and the model self-rebuilds its `input_spec` /
-`output_spec` to match.
+That's what lets the same class slot into many different input files
+— each file picks the names it wants.
 
 :::{note}
-The order of `input(...)` calls in the schema **is** significant: it
-determines the order of positional arguments to `forward()`. The
-order of `output(...)` calls is likewise the order of the
-return-tuple. The next tutorial,
-[](tutorials-extension-forward), walks through this.
+The order of `input(...)` calls matters: it determines the order of
+positional arguments to `forward()`. Same for `output(...)` and the
+return tuple. The next tutorial,
+[](tutorials-extension-forward), shows how that works.
 :::
 
 ## Parameter declaration
@@ -195,30 +144,18 @@ parameter(
 )
 ```
 
-`parameter(name, type_cls, doc, *, attr=None, default=..., allow_nonlinear=False)`
-declares one trainable scalar/tensor parameter:
+A parameter declaration takes a name, a type, a docstring, and the
+attribute it should be exposed under (`mu` here). Other useful options:
 
-- `name` is the HIT option the input file uses to supply the value.
-- `type_cls` is the typed wrapper the parameter is wrapped in.
-- `doc` is the syntax-catalog docstring (same ASCII/required-string
-  rule as variables).
-- `attr` is the attribute the registered `torch.nn.Parameter` is
-  exposed under. The forward operator should reach for the value via
-  `self._get_param("mu", nl_params, Scalar)` rather than
-  `self.mu` directly — that helper transparently handles the case
-  where the parameter has been promoted to a runtime input (see
-  `allow_nonlinear` below).
-- `default` (optional) makes the parameter optional in the input
-  file; if omitted there, the schema default is used instead.
-- `allow_nonlinear=True` opts in to *parameter promotion* — the user
-  can name another model's output (or a bare variable) in the
-  parameter slot, and the framework will silently turn that
-  parameter into an additional runtime input. See
-  [](tutorials-extension-composition) for the composition story.
+- `default=...` makes the parameter optional in the input file — if
+  the user omits it, the schema default is used.
+- `allow_nonlinear=True` lets the parameter be promoted to a runtime
+  input — useful when you want to drive the parameter from another
+  model's output. See [](tutorials-extension-composition) for the
+  details.
 
-Because `attr="mu"` is set, the parameter is now a real
-`torch.nn.Parameter` registered on the module, surfaces in
-`named_parameters()`, and participates in autograd:
+Because `attr="mu"` is set, the parameter is a real
+`torch.nn.Parameter` you can train with PyTorch's optimizer:
 
 ```{code-cell} ipython3
 dict(m.named_parameters())
@@ -229,8 +166,7 @@ m.mu
 ```
 
 ```{code-cell} ipython3
-# It's a leaf tensor with requires_grad=True, so a loss built from it
-# can backprop into a calibration loop.
+# Leaf tensor with requires_grad=True, ready for a calibration loop
 m.mu.data.requires_grad
 ```
 
@@ -240,17 +176,14 @@ unchanged — `model.to(device)`, `model.state_dict()`,
 
 ## Inspecting the declared surface
 
-Once all the declarations are in place, the *structure* of the model
-is fully determined: the framework knows what tensors flow in, what
-tensors flow out, what parameters can be calibrated, and what
-buffers ride along. A quick `repr` already summarizes it:
+Once the declarations are in place, the model knows everything about
+its surface — `repr` shows a summary:
 
 ```{code-cell} ipython3
 m
 ```
 
-For programmatic introspection, all four surfaces are first-class
-attributes:
+The individual pieces are also available as attributes:
 
 ```{code-cell} ipython3
 print("input_spec :", m.input_spec)
@@ -259,9 +192,10 @@ print("parameters :", [name for name, _ in m.named_parameters()])
 print("buffers    :", [name for name, _ in m.named_buffers()])
 ```
 
-That's the whole declarative surface. The next tutorial,
-[](tutorials-extension-input-files), shows how this same class is
-wired into a HIT input file so a user can construct it without
-touching Python at all; after that,
-[](tutorials-extension-forward) fills in the `forward()` body that
-turns these declarations into actual computation.
+That's everything you need to declare the *shape* of a model. The
+next two tutorials cover the rest:
+
+- [](tutorials-extension-input-files) — how this class shows up in
+  a HIT input file so users construct it without touching Python.
+- [](tutorials-extension-forward) — the `forward()` body that turns
+  these declarations into actual computation.

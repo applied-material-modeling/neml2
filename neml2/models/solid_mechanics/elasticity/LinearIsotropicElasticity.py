@@ -38,11 +38,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, input, option, output
 from ....types import SR2, Scalar, dev, vol
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 if TYPE_CHECKING:
     import nmhit

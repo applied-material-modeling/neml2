@@ -28,11 +28,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, dependency, input, output
 from ....types import R2, SR2, Scalar, jvp_rotate, rotate, sum
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 if TYPE_CHECKING:
     from ....data import CrystalGeometry
@@ -60,7 +60,6 @@ class PlasticDeformationRate(Model):
             default="crystal_geometry",
         ),
     )
-    list_deriv = {("plastic_deformation_rate", "slip_rates"): "dense"}
 
     def __init__(self, *, crystal_geometry: CrystalGeometry) -> None:
         super().__init__()

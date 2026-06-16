@@ -34,9 +34,7 @@ analytical chain-rule slopes from
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import BLOCK_NAME, HitSchema, input, output, parameter
 from ...types import (
     SR2,
@@ -46,6 +44,8 @@ from ...types import (
     bilinear_interpolation,
     bilinear_interpolation_slopes,
 )
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 def _make_bilinear(type_name: str, ordinate_cls: type[TensorWrapper]) -> type[Model]:

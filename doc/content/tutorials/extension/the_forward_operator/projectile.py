@@ -14,9 +14,9 @@ acceleration (output), ``g`` is the gravitational acceleration vector
 
 from __future__ import annotations
 
-from neml2.chain_rule import ChainRuleDict
 from neml2.factory import register_neml2_object
-from neml2.model import Model
+from neml2.models.chain_rule import ChainRuleDict
+from neml2.models.model import Model
 from neml2.schema import HitSchema, buffer, input, output, parameter
 from neml2.types import Scalar, Vec
 

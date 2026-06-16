@@ -44,8 +44,10 @@ from neml2.types._base import TensorWrapper, align_sub_batch
 from neml2.types._primitive import PrimitiveTensor
 from neml2.types.functions import (
     abs,
+    allclose,
     bilinear_interpolation,
     bilinear_interpolation_slopes,
+    cat,
     clamp,
     compose,
     cosh,
@@ -55,6 +57,7 @@ from neml2.types.functions import (
     diff,
     drotate,
     drotate_self,
+    equal,
     euler_rodrigues,
     exp,
     exp_map,
@@ -74,6 +77,7 @@ from neml2.types.functions import (
     macaulay,
     mean,
     norm,
+    opaque_pow,
     outer,
     pow,
     r2_from_sr2,
@@ -84,7 +88,6 @@ from neml2.types.functions import (
     skew,
     sqrt,
     stack,
-    sub_batch_zeros_like,
     sum,
     sym,
     tanh,
@@ -101,10 +104,12 @@ from neml2.types.rot import Rot
 from neml2.types.scalar import Scalar
 from neml2.types.sr2 import SR2
 from neml2.types.ssr4 import SSR4
+from neml2.types.tensor import AxisKind, Tensor
 from neml2.types.vec import Vec
 from neml2.types.wr2 import WR2
 
 __all__ = [
+    "AxisKind",
     "MillerIndex",
     "PrimitiveTensor",
     "R2",
@@ -112,6 +117,7 @@ __all__ = [
     "SR2",
     "SSR4",
     "Scalar",
+    "Tensor",
     "TensorWrapper",
     "Vec",
     "WR2",
@@ -119,6 +125,7 @@ __all__ = [
     "align_sub_batch",
     "bilinear_interpolation",
     "bilinear_interpolation_slopes",
+    "cat",
     "clamp",
     "compose",
     "cosh",
@@ -147,6 +154,7 @@ __all__ = [
     "macaulay",
     "mean",
     "norm",
+    "opaque_pow",
     "outer",
     "pow",
     "r2_from_sr2",
@@ -157,7 +165,6 @@ __all__ = [
     "sign",
     "sqrt",
     "stack",
-    "sub_batch_zeros_like",
     "sum",
     "sym",
     "tanh",

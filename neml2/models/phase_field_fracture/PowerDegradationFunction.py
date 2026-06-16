@@ -26,12 +26,12 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict, SecondOrderChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, option, output, parameter
 from ...types import Scalar
 from ...types.functions import pow as type_pow
+from ..chain_rule import ChainRuleDict, SecondOrderChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("PowerDegradationFunction")

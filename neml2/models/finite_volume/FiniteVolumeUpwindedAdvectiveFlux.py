@@ -26,18 +26,35 @@
 
 from __future__ import annotations
 
-import torch
-
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import Scalar
+from ...types.functions import fullify, heaviside
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("FiniteVolumeUpwindedAdvectiveFlux")
 class FiniteVolumeUpwindedAdvectiveFlux(Model):
-    """Compute upwinded advective fluxes at cell edges."""
+    """Compute upwinded advective fluxes at cell edges.
+
+    .. math::
+
+        J_e = v_e \\, \\bigl(H(v_e) u_{e^-} + (1 - H(v_e)) u_{e^+}\\bigr)
+
+    where $v_e$ is the cell-edge advection velocity, $H$ is the Heaviside
+    step ($1$ when $v_e > 0$, $0$ when $v_e < 0$), and $u_{e^\\pm}$ are the
+    cell-averaged values on the left ($e^-$) and right ($e^+$) of edge $e$.
+    The Heaviside factor selects the upwind cell -- the cell from which
+    information propagates with the velocity sign.
+
+    The chain rule uses the same upwind coefficient::
+
+        dv_coeff = H u_left + (1 - H) u_right
+                 = u_right + H (u_left - u_right)
+
+    so ``J_e = v_e * dv_coeff`` and ``d J_e / d v_e = dv_coeff``.
+    """
 
     hit = HitSchema(
         input("u", Scalar, "Cell-averaged field values.", attr="_u_name"),
@@ -45,40 +62,46 @@ class FiniteVolumeUpwindedAdvectiveFlux(Model):
         output("flux", Scalar, "Cell-edge advective fluxes.", attr="_flux_name"),
     )
 
-    # v_edge is diagonal (default — absent from list_deriv); u is dense.
-    list_deriv = {("flux", "u"): "dense"}
-
     _u_name: str
     _v_edge_name: str
     _flux_name: str
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
         u_wrap, v_wrap = inputs
-        u = u_wrap.data  # (*B, N)
-        ve = v_wrap.data  # (*B, M)
-        v_abs = ve.abs()
-        v_plus = 0.5 * (ve + v_abs)
-        v_minus = 0.5 * (ve - v_abs)
-        u_left = u[..., :-1]
-        u_right = u[..., 1:]
-        flux = v_plus * u_left + v_minus * u_right
-        sb = max(u_wrap.sub_batch_ndim, v_wrap.sub_batch_ndim)
-        out = Scalar(flux, sub_batch_ndim=sb)
+        # Typed upwind coefficient: ``u_left`` and ``u_right`` are
+        # neighbouring cell values addressed by ``sub_batch`` slicing
+        # (the cell axis is the first sub-batch axis on Scalar with
+        # sub_batch_ndim=1). Going through typed ops preserves K
+        # metadata when this forward is called as part of the chain
+        # rule -- direct ``.data`` slicing would drop k_ndim and the
+        # leading K axis would silently become a phantom batch axis on
+        # the contribution, accumulating through the composed model.
+        u_left = u_wrap.sub_batch[:-1]
+        u_right = u_wrap.sub_batch[1:]
+        H = heaviside(v_wrap)
+        dv_coeff = u_right + H * (u_left - u_right)
+        out = v_wrap * dv_coeff
         if v is None:
             return out
 
-        s = torch.sign(ve)
-        # d(flux[i])/d(v_edge[i]) = 0.5(1+s)·u_left + 0.5(1-s)·u_right = dJ_dv
-        dv_coeff = 0.5 * (1.0 + s) * u_left + 0.5 * (1.0 - s) * u_right  # (*, M)
+        def u_action(V_in: Scalar) -> Scalar:
+            # The stencil mixes adjacent cells (``V_left`` and ``V_right``
+            # are sliced views of the same sub-batch axis at offsets 0
+            # and 1), which breaks the K-paired broadcast assumption
+            # (``V[k, i] = delta(i==k)``). The combined contribution is
+            # NON-diagonal in (K, sub) -- each output cell depends on
+            # two K directions. Fullify expands the broadcast K to its
+            # enumerated form so the stencil result is materialised
+            # explicitly per perturbation direction. Without it the
+            # off-diagonal sub-diagonal entries of the assembled
+            # Jacobian are silently dropped.
+            V_full = fullify(V_in)
+            V_left = V_full.sub_batch[:-1]
+            V_right = V_full.sub_batch[1:]
+            return v_wrap * (V_right + H * (V_left - V_right))
 
-        def u_action(V: Scalar) -> Scalar:
-            d = V.data  # (K, *dyn, N)
-            flux = v_plus * d[..., :-1] + v_minus * d[..., 1:]
-            return Scalar(flux, sub_batch_ndim=V.sub_batch_ndim)
-
-        def v_action(V: Scalar) -> Scalar:
-            # diagonal in the edge axis — element-wise weight passes through.
-            return Scalar(dv_coeff * V.data, sub_batch_ndim=V.sub_batch_ndim)
+        def v_action(V_in: Scalar) -> Scalar:
+            return dv_coeff * V_in
 
         actions = {self._u_name: u_action, self._v_edge_name: v_action}
         return out, self.apply_chain_rule(v, self._flux_name, actions, output=out)

@@ -50,19 +50,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import torch
+from torch import nn
 
-from ...chain_rule import (
-    ChainRuleDict,
-    ListDerivSpec,
-    SecondOrderChainRuleDict,
-    SparsityFlag,
-    combine_sparsity,
-)
 from ...factory import register_neml2_object
-from ...model import Model, NLParam, register_submodule
-from ...resolver import DependencyResolver
 from ...schema import HitSchema, option
 from ...types import TensorWrapper
+from ..chain_rule import (
+    ChainRuleDict,
+    SecondOrderChainRuleDict,
+)
+from ..model import Model, NLParam, register_submodule
+from ..resolver import DependencyResolver
 
 
 def _coerce_to_input_type(
@@ -93,6 +91,12 @@ def _coerce_to_input_type(
     if isinstance(state_val, type_cls):
         return state_val
     if isinstance(state_val, TensorWrapper):
+        labels = getattr(state_val, "sub_batch_labels", ())  # noqa: B009
+        if labels:
+            return type_cls(  # type: ignore[call-arg]
+                state_val.data,
+                sub_batch_ndim=state_val.sub_batch_ndim,
+            )
         return type_cls(state_val.data, sub_batch_ndim=state_val.sub_batch_ndim)  # type: ignore[call-arg]
     return type_cls(state_val)  # type: ignore[call-arg]
 
@@ -102,6 +106,32 @@ def _unwrap(val: TensorWrapper | torch.Tensor) -> torch.Tensor:
     return val.data if isinstance(val, TensorWrapper) else val
 
 
+def _check_leaf_outputs_typed(model: nn.Module, out_names, outputs: tuple) -> None:
+    """Refuse raw ``torch.Tensor`` outputs from a child leaf.
+
+    Every leaf's forward must return ``TensorWrapper`` instances so the
+    ``sub_batch_ndim`` hint survives across the leaf chain and downstream
+    consumers (the export-side JVP/IFT wrappers, ``ComposedModel`` itself)
+    can rely on a single uniform output type. A leaf returning a raw
+    ``torch.Tensor`` is a bug in the leaf -- wrap the return in the
+    declared output type before yielding.
+
+    This catches the leak at the producing leaf rather than several frames
+    downstream where a tuple of mixed wrappers/tensors trips a
+    ``no attribute 'batch_shape'`` or similar generic error.
+    """
+    for name, val in zip(out_names, outputs, strict=True):
+        if isinstance(val, TensorWrapper):
+            continue
+        raise TypeError(
+            f"{type(model).__name__}.forward returned a non-TensorWrapper for "
+            f"output {name!r}: got {type(val).__name__}. Every leaf forward "
+            "must return TensorWrapper instances (Scalar, SR2, ...) so "
+            "sub_batch_ndim is preserved across the leaf chain. Wrap the raw "
+            "tensor in the leaf's declared output type before returning."
+        )
+
+
 def _walk_nl_params(m: Model) -> dict[str, NLParam]:
     """Read ``_nl_params`` off a Model.
 
@@ -109,6 +139,73 @@ def _walk_nl_params(m: Model) -> dict[str, NLParam]:
     when it was built, so we don't recurse into it from the outer walk.
     """
     return dict(getattr(m, "_nl_params", {}))
+
+
+def _internal_models(m: Model) -> dict[int, Model]:
+    """Object-id → model map for every model transitively evaluated by m.
+
+    Empty for a leaf. For a ``ComposedModel``, the union of every plan
+    submodule plus its own internals, recursively.
+    """
+    if not hasattr(m, "_plan"):
+        return {}
+    inner: dict[int, Model] = {}
+    for attr, *_ in m._plan:  # type: ignore[attr-defined]
+        sub = getattr(m, attr)
+        inner[id(sub)] = sub
+        inner.update(_internal_models(sub))
+    return inner
+
+
+# v2-parity: EdgeInfo / per-label composition machinery removed. The chain
+# rule no longer dispatches on labels -- it uses positional K_pairing
+# metadata. The composed map is just inherited reachability now.
+
+
+def _check_no_redundant_nl_param_provider(ordered: list[Model]) -> None:
+    """Refuse compositions where the same nl-param provider would be
+    evaluated more than once per outer call.
+
+    The case caught: an outer ``ComposedModel`` lists provider ``P`` as a
+    direct child (explicitly or via auto-include) AND one of its other
+    children is itself a ``ComposedModel`` that also evaluates ``P``
+    internally (via *its* own auto-include of ``P`` from one of its
+    grandchildren's nl-params). The outer would then call ``P`` once as a
+    direct step and a second time through the inner -- silently wasted
+    work, and a sign that the composition wants restructuring (typically:
+    drop the explicit listing, or split ``P`` out so it's owned by exactly
+    one ancestor).
+
+    Detected by id() equality so a model that's deliberately registered as
+    a child of multiple ComposedModels (a legitimate sharing pattern when
+    each ComposedModel runs in isolation) is *not* flagged -- the check
+    only fires when the same instance appears at two different levels of
+    the SAME outer's evaluation tree.
+    """
+    direct_ids = {id(m): m for m in ordered}
+    for child in ordered:
+        inner_ids = _internal_models(child)
+        # Don't flag the child against itself.
+        inner_ids.pop(id(child), None)
+        overlap = set(direct_ids) & set(inner_ids)
+        if not overlap:
+            continue
+        dup_models = [direct_ids[i] for i in overlap]
+
+        def _name(m: Model) -> str:
+            hit = getattr(m, "_hit_name", None)
+            return repr(hit) if hit else type(m).__name__
+
+        dup_str = ", ".join(_name(m) for m in dup_models)
+        raise ValueError(
+            f"Redundant nl-param provider in ComposedModel: "
+            f"{dup_str} appears both as a direct child AND inside "
+            f"the child {_name(child)}. The provider would be evaluated "
+            "more than once per outer call. Resolve by either (a) removing "
+            "the explicit listing -- the inner composition's auto-include "
+            "already provides it -- or (b) restructuring so the provider "
+            "lives in exactly one ancestor."
+        )
 
 
 if TYPE_CHECKING:
@@ -172,42 +269,9 @@ class ComposedModel(Model):
         # works uniformly for leaves and composed models.
         self.SUPPORTS_SECOND_ORDER = all(self._child_supports_second_order)
 
-        # Propagate per-(output, input) sub-batch sparsity through the chain
-        # in topological order — see ``_propagate_list_deriv``.
-        self.list_deriv = self._propagate_list_deriv(order)
-
-    def _propagate_list_deriv(self, order: list[Model]) -> ListDerivSpec:
-        """Compose children's ``list_deriv`` into an end-to-end map.
-
-        Tracks, per variable in scope, the sparsity of its dependence on
-        each master input. The transitive rule (see
-        :func:`combine_sparsity`) is that ``"dense"`` is absorbing along
-        chains (``dense ∘ diagonal = dense``) and across parallel paths
-        (``dense + diagonal = dense``). Pairs without any dependence are
-        absent from the map (structural zeros are not represented).
-        """
-        # dep[var] = {master_in: SparsityFlag}
-        dep: dict[str, dict[str, SparsityFlag]] = {m: {m: "diagonal"} for m in self._in_names}
-
-        for m in order:
-            for out_var in m.output_spec:
-                acc: dict[str, SparsityFlag] = {}
-                for in_var in m.input_spec:
-                    edge_flag: SparsityFlag = m.list_deriv.get((out_var, in_var), "diagonal")
-                    upstream = dep.get(in_var, {})
-                    for src, src_flag in upstream.items():
-                        path_flag = combine_sparsity(edge_flag, src_flag)
-                        if src in acc:
-                            acc[src] = combine_sparsity(acc[src], path_flag)
-                        else:
-                            acc[src] = path_flag
-                dep[out_var] = acc
-
-        return {
-            (out_var, src): flag
-            for out_var in self._out_names
-            for src, flag in dep.get(out_var, {}).items()
-        }
+        # v2-parity: list_deriv propagation removed. The chain rule no longer
+        # tracks per-(output, input) label composition; K_pairing on tangents
+        # carries the per-axis dispatch directly.
 
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> ComposedModel:
@@ -230,6 +294,9 @@ class ComposedModel(Model):
                 ordered.append(nlp.provider)
                 seen_ids.add(id(nlp.provider))
                 queue.append(nlp.provider)
+
+        _check_no_redundant_nl_param_provider(ordered)
+
         ao_node = node.find("additional_outputs")
         additional_outputs = node.param_list_str("additional_outputs") if ao_node else None
         return cls(ordered, additional_outputs=additional_outputs)
@@ -306,6 +373,7 @@ class ComposedModel(Model):
                 result = model(*args)
                 if not isinstance(result, tuple):
                     result = (result,)
+                _check_leaf_outputs_typed(model, out_names, result)
                 for name, val in zip(out_names, result, strict=True):
                     state[name] = val  # preserve wrapper + sub_batch_ndim
             return tuple(state[n] for n in self._out_names)
@@ -381,6 +449,7 @@ class ComposedModel(Model):
                 sens.update(child_v_out)
                 sens2.update(child_v2_out)  # type: ignore[union-attr]
                 sens_h.update(child_vh_out)
+            _check_leaf_outputs_typed(model, out_names, child_outputs)
             for name, val in zip(out_names, child_outputs, strict=True):
                 state[name] = val  # preserve wrapper + sub_batch_ndim
 

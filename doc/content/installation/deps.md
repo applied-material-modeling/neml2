@@ -55,3 +55,14 @@ install that torch first using the selector at
 [pytorch.org/get-started](https://pytorch.org/get-started/locally/),
 then run `pip install neml2`. NEML2 transparently runs models on
 whichever device the input tensors live on.
+
+### CUDA AOTI export
+
+`neml2-compile` targeting CUDA needs `nvcc` on top of torch's bundled
+CUDA runtime. `pip install nvidia-cuda-nvcc` ships it as a regular
+Python package; point `CUDA_HOME` at its install root and add
+`bin/` to `PATH`. A system-wide CUDA toolkit (`apt install
+nvidia-cuda-toolkit`, conda's `cudatoolkit-dev`, …) works too if you
+already have one. CPU-only AOTI compile needs none of this --
+`compile_model` raises an early error with the install recipe when it
+detects CUDA inputs without `nvcc`.

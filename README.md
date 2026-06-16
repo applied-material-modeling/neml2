@@ -1,7 +1,7 @@
 <img src="doc/asset/logo_light.png#gh-light-mode-only" class="logo-light" alt="Logo" style="width: 35%">
 <img src="doc/asset/logo_dark.png#gh-dark-mode-only" class="logo-dark" alt="Logo" style="width: 35%">
 
-[![Documentation](https://github.com/applied-material-modeling/neml2/actions/workflows/docs.yml/badge.svg?branch=main)](https://applied-material-modeling.github.io/neml2/) [![C++ backend testing](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yml) [![Python package testing](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yml) [![PyPI](https://img.shields.io/pypi/v/neml2)](https://pypi.org/project/neml2/)
+[![Documentation](https://github.com/applied-material-modeling/neml2/actions/workflows/docs.yaml/badge.svg?branch=main)](https://applied-material-modeling.github.io/neml2/) [![C++ backend testing](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yaml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yaml) [![Python package testing](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yaml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yaml) [![codecov](https://codecov.io/github/applied-material-modeling/neml2/graph/badge.svg?token=255X5XDISB)](https://codecov.io/github/applied-material-modeling/neml2) [![PyPI](https://img.shields.io/pypi/v/neml2)](https://pypi.org/project/neml2/)
 
 ## Overview
 

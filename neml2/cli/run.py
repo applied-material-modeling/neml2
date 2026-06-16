@@ -43,6 +43,27 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("input", help="path to the input file")
     parser.add_argument("driver", help="name of the driver in the input file")
+    parser.add_argument(
+        "--device",
+        default="cpu",
+        choices=["cpu", "cuda"],
+        help=(
+            "Set torch's default device before loading. Tensors built by "
+            "[Tensors] Python expressions inherit this. Default: cpu."
+        ),
+    )
+    parser.add_argument(
+        "--dtype",
+        default="float64",
+        choices=["float64", "float32"],
+        help=(
+            "Set torch's default dtype before loading. NEML2 models are "
+            "uniformly float64 by convention; AOTI artifacts compile-pin "
+            "their dtype and the runtime rejects silent coercion, so "
+            "float64 is the safe default. Override only if you know the "
+            "artifact was compiled with float32."
+        ),
+    )
     add_load_argument(parser)
     return parser
 
@@ -52,6 +73,18 @@ def main(argv: list[str] | None = None) -> int:
     # trailing HIT-override tokens. Using REMAINDER would greedily capture
     # subsequent flags too.
     args, additional_args = _build_parser().parse_known_args(argv)
+
+    # Set process-wide torch defaults BEFORE load_input. [Tensors] Python
+    # expressions (``torch.tensor([...])``, ``torch.linspace(...)``, ...)
+    # build their initial conditions on the active dtype/device. Without
+    # this, a fresh process's default float32 would mismatch an AOTI
+    # artifact compiled as float64 -- and the runtime correctly refuses
+    # to silently coerce, surfacing a confusing dtype error.
+    import torch  # noqa: PLC0415
+
+    torch.set_default_dtype(getattr(torch, args.dtype))
+    torch.set_default_device(args.device)
+
     try:
         load_user_extensions(args.load)
         factory = load_input(args.input, additional_args=additional_args)

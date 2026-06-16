@@ -7,3 +7,19 @@
 .yue .math-wrapper {
   overflow-x: visible;
 }
+
+/* Color in-prose links so they're distinguishable from body text in
+   bullet lists. Shibuya's default sets the link color to
+   var(--yue-c-link-1) which resolves to var(--sy-c-text) -- the same
+   color as the surrounding body text. The only visual cue is a 1px
+   bottom border in the accent color, which gets visually swallowed
+   when line-spacing and a bullet glyph compete for the eye. Coloring
+   the link text to match the existing accent underline makes the link
+   visible at a glance; hover strengthens it via the existing rule
+   (border-bottom-width: 2px + var(--yue-c-link-2)). */
+.yue a {
+  color: var(--sy-c-link);
+}
+.yue a:hover {
+  color: var(--sy-c-link-hover);
+}

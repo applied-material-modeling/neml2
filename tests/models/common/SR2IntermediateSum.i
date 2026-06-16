@@ -45,5 +45,6 @@
     type = SR2IntermediateSum
     from = 'S'
     to = 'S_sum'
+    reduces = ''  # unlabelled sub-batch in this fixture
   []
 []

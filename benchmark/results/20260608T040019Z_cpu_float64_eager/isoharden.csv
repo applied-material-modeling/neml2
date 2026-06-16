@@ -1,0 +1,16 @@
+scenario,nbatch,n_warmup,n_runs,median_ms,mean_ms,std_ms,min_ms,max_ms,p10_ms,p90_ms,cpu_rss_mb,cuda_peak_mb
+isoharden,1,5,20,106.8,106.8,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,2,5,20,117.9,117.9,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,4,5,20,122.65,122.65,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,8,5,20,124.4,124.4,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,16,5,20,128.8,128.8,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,32,5,20,138.1,138.1,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,64,5,20,154.4,154.4,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,128,5,20,199.6,199.6,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,256,5,20,225.25,225.25,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,512,5,20,272.4,272.4,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,1024,5,20,380.9,380.9,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,2048,5,20,464.9,464.9,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,4096,5,20,655.25,655.25,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,8192,5,20,9333.35,9333.35,nan,nan,nan,nan,nan,1445.94921875,nan
+isoharden,16384,5,20,6933.65,6933.65,nan,nan,nan,nan,nan,1445.94921875,nan

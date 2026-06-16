@@ -28,11 +28,11 @@ from __future__ import annotations
 
 import torch
 
-from ....chain_rule import ChainRuleAction, ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, input, output, parameter
 from ....types import Scalar, gt, sqrt, where
+from ...chain_rule import ChainRuleAction, ChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("CamanhoDavilaCriticalSeparation")

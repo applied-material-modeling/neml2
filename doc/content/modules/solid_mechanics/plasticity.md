@@ -88,14 +88,12 @@ $\langle \cdot \rangle$ denotes the Macaulay bracket. This is the role of
 For classical $J_2$ plasticity the effective stress is the von Mises norm of
 the deviatoric (over-)stress,
 
-$$
 \begin{align}
   \bar{\sigma} &= \sqrt{3 J_2},                                                \\
   J_2          &= \tfrac{1}{2}\,\mathrm{dev}\,\boldsymbol{\Xi}\,:\,
                   \mathrm{dev}\,\boldsymbol{\Xi},                              \\
   \boldsymbol{\Xi} &= \boldsymbol{\sigma} - \sum_i \boldsymbol{X}_i.
 \end{align}
-$$
 
 The yield function combines the effective stress with the yield strength
 $\sigma_y$, isotropic hardening $k(\bar{\varepsilon}^p)$, and (implicitly,
@@ -110,7 +108,6 @@ $$
 Associative flow rules derive the rates of the plastic strain and internal
 variables from the maximum-dissipation principle,
 
-$$
 \begin{align}
   \dot{\boldsymbol{\varepsilon}}^p &= \dot{\gamma}\,
         \frac{\partial f^p}{\partial \boldsymbol{\sigma}},                     \\
@@ -119,7 +116,6 @@ $$
   \dot{\boldsymbol{K}}^p           &= \dot{\gamma}\,
         \frac{\partial f^p}{\partial \boldsymbol{X}}.
 \end{align}
-$$
 
 [](models-Normality) computes these gradients by symbolically differentiating
 a sub-model (the yield function) with respect to a list of input variables;

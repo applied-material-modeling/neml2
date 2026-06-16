@@ -28,11 +28,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ...chain_rule import ChainRuleAction, ChainRuleDict, SecondOrderChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, option, output, parameter, var_inputs
 from ...types import Scalar
+from ..chain_rule import ChainRuleAction, ChainRuleDict, SecondOrderChainRuleDict
+from ..model import Model
 
 if TYPE_CHECKING:
     import nmhit

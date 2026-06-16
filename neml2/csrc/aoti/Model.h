@@ -78,8 +78,9 @@ namespace neml2::aoti
  * be a misleading no-op (graph stays put) or a contract-breaking half-move
  * (params shift, graph doesn't). To retarget, re-run `neml2-compile`.
  *
- * See `python/neml2/native/AOTI_PACKAGES.md` for the schema_version=2
- * metadata spec.
+ * See `doc/content/model_compilation/aoti_packages.md` for the current
+ * schema metadata spec (kept in sync with the loader via
+ * `kSupportedSchemaVersion`).
  */
 class Model
 {
@@ -165,28 +166,100 @@ private:
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> fwd_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> jvp_loader;
     std::vector<std::string> fwd_inputs;
-    std::vector<int> fwd_input_sizes;
     std::vector<std::string> fwd_outputs;
-    std::vector<int> fwd_output_sizes;
 
     // Implicit-segment-only.
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> rhs_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> step_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> ift_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> predictor_loader;
-    std::vector<std::string> givens;
-    std::vector<int> given_sizes;
-    std::vector<std::vector<int64_t>> given_unflattened_shapes;
-    std::vector<std::string> unknowns;
-    std::vector<int> unknown_sizes;
-    std::vector<std::vector<int64_t>> unknown_unflattened_shapes;
+
+    /// Per-variable metadata. The natural ``(*B, *sub_batch, *base)``
+    /// shape is what the AOTI graph was traced with; the C++ side
+    /// packs per-variable tensors into the segment loader's positional
+    /// input list in this declared order. Each ``var_size = prod(sub) *
+    /// prod(base)``; ``base_ndim = base_shape.size()`` and
+    /// ``sub_batch_ndim = sub_batch_shape.size()`` together with the
+    /// runtime tensor's ``dim()`` give the per-segment dynamic-batch
+    /// ndim (used by the convergence-norm reduction).
+    struct VarInfo
+    {
+      std::string name;
+      int64_t var_size = 0;
+      std::vector<int64_t> sub_batch_shape;
+      std::vector<int64_t> base_shape;
+    };
+    std::vector<VarInfo> unknowns;
+    std::vector<VarInfo> givens;
+    std::vector<VarInfo> residuals;
+
+    /// Per-group metadata for the implicit-segment per-group I/O contract
+    /// (v7+). The Newton inner loop runs entirely per-group; per-variable
+    /// ↔ per-group conversion happens twice per solve, at the boundaries.
+    /// ``structure`` is "block" (preserve sub_batch axes) or "dense" (sub
+    /// folded into base). ``per_var_info`` lists the variables in this
+    /// group in their canonical order (matches the per-variable slot at
+    /// the source ``unknowns``/``givens``/``residuals`` vector).
+    struct GroupInfo
+    {
+      std::string structure;
+      std::vector<int64_t> sub_batch_shape;
+      std::vector<VarInfo> per_var_info;
+    };
+    std::vector<GroupInfo> unknown_groups;
+    std::vector<GroupInfo> given_groups;
+    std::vector<GroupInfo> residual_groups;
+
+    /// Per-(row_group, col_group) cell metadata for the IFT loader's
+    /// output tuple. ``ift_cells[k]`` corresponds to ``ift_outs[k]`` --
+    /// row-major (rows outer, cols inner) over ``unknown_groups`` ×
+    /// ``given_groups``. Each cell carries the row/col group indices,
+    /// the per-side structure ("block" / "dense"), the cell's own
+    /// sub_batch_shape (paired or single-side), and the per-(rvar, cvar)
+    /// VarInfo lists for slicing sub-cells out of the cell tensor.
+    struct CellInfo
+    {
+      int64_t row_group_idx = 0;
+      int64_t col_group_idx = 0;
+      std::string row_structure;
+      std::string col_structure;
+      std::vector<int64_t> sub_batch_shape;
+      std::vector<VarInfo> row_vars;
+      std::vector<VarInfo> col_vars;
+    };
+    std::vector<CellInfo> ift_cells;
+
+    /// Per-(out_var, in_var) Jacobian-pair metadata for the
+    /// forward-segment Jacobian loader output tuple. Ordered row-major
+    /// (outputs outer, structural inputs inner). The C++ Jacobian
+    /// consumer iterates these in step with the trailing entries of the
+    /// JVP loader's output tuple (after ``fwd_outputs.size()`` value
+    /// tensors).
+    struct PairInfo
+    {
+      std::string out_var;
+      std::string in_var;
+      std::vector<int64_t> out_base_shape;
+      std::vector<int64_t> in_base_shape;
+      std::vector<int64_t> in_sub_batch_shape;
+    };
+    std::vector<PairInfo> jacobian_pairs;
+
     std::vector<std::string> predictor_inputs;
     std::vector<std::string> predictor_outputs;
-    int64_t u_size = 0;
-    int64_t g_size = 0;
+
     double atol = 0.0;
     double rtol = 0.0;
     std::size_t miters = 0;
+
+    // Line-search options. ls_max_iters == 1 means "no line search" (just
+    // accept the full Newton step). Anything > 1 enables backtracking with
+    // the given cutback factor and Armijo-style stopping criterion.
+    // ls_type values: "BACKTRACKING" or "STRONG_WOLFE".
+    std::string ls_type = "BACKTRACKING";
+    std::size_t ls_max_iters = 1;
+    double ls_cutback = 2.0;
+    double ls_c = 1.0e-3;
 
     /// Names of the promoted parameters this segment's graphs consume, in
     /// graph-call order. Looked up in the owning Model's `_named_parameters`
@@ -212,15 +285,34 @@ private:
   /// promoted-parameter tail), write outputs back to `state`.
   void _run_forward_segment(const Segment & seg, std::map<std::string, at::Tensor> & state) const;
 
-  /// Run an implicit segment: pull givens (and optional predictor inputs)
-  /// from `state`, run the predictor (if loaded) + Newton loop, write the
-  /// converged unknowns to `state`. Out-params hand the converged `u_solved`
-  /// and packed `g_flat` to the caller so the IFT loader can run on the same
-  /// tensors without re-packing.
+  /// Run an implicit segment: pack per-group ``u_groups``/``g_groups``
+  /// from per-variable ``state`` (one ``at::cat`` per group along the
+  /// last base axis), optionally run the predictor, run the Newton loop
+  /// fully per-group, unpack the converged ``u_groups`` back to
+  /// per-variable ``state`` for downstream forward consumers. Out-params
+  /// hand the converged per-group ``u_groups`` and per-group ``g_groups``
+  /// to the caller so the IFT loader can run on the same tensors without
+  /// re-packing.
   void _run_implicit_segment(const Segment & seg,
                              std::map<std::string, at::Tensor> & state,
-                             at::Tensor & u_solved,
-                             at::Tensor & g_flat) const;
+                             std::vector<at::Tensor> & u_solved_groups,
+                             std::vector<at::Tensor> & g_groups) const;
+
+  /// Pack per-variable ``state`` entries into per-group tensors via the
+  /// AssembledVector convention: BLOCK groups cat per-var contributions
+  /// along the last base axis preserving sub_batch axes; DENSE groups
+  /// fold each var's sub_batch into base, then cat. Used at solve start
+  /// to build ``u_groups`` / ``g_groups`` once per solve.
+  std::vector<at::Tensor> _pack_groups(const std::map<std::string, at::Tensor> & state,
+                                       const std::vector<Segment::GroupInfo> & groups) const;
+
+  /// Unpack per-group tensors back into per-variable ``state`` entries.
+  /// Inverse of :meth:`_pack_groups`. Called once at solve end to write
+  /// the converged ``u_groups`` back to ``state[u.name]`` for downstream
+  /// forward composition.
+  void _unpack_groups(const std::vector<at::Tensor> & group_tensors,
+                      const std::vector<Segment::GroupInfo> & groups,
+                      std::map<std::string, at::Tensor> & state) const;
 
   /// Run a forward segment's JVP loader and compose its Jacobian into
   /// `dstate`. Replaces the value-loader call: the JVP loader returns
@@ -232,13 +324,16 @@ private:
                                      std::map<std::string, at::Tensor> & dstate) const;
 
   /// Compose an implicit segment's IFT into `dstate`: run the IFT loader on
-  /// `(u_solved, g_flat)`, row-stack `dstate` blocks for `seg.givens`,
-  /// batched-matmul, split into per-unknown blocks written to
-  /// `dstate[seg.unknowns[i]]`. Predictor-only inputs (not in `givens`) carry
-  /// structurally-zero columns automatically (Newton converges from any u0).
+  /// the converged per-group ``u_solved_groups`` + per-group ``g_groups``,
+  /// receive one tensor per ``(row_group, col_group)`` cell of
+  /// ``-du_dg`` (in row-major order matching ``seg.ift_cells``), and
+  /// accumulate per-cell matmul contributions into per-unknown
+  /// ``du_dmaster`` slots. Each cell's matmul kind is dispatched by
+  /// ``(row_structure, col_structure)``; per-grain BLOCK + BLOCK cells
+  /// stay compact throughout, no N² dense materialisation.
   void _run_implicit_segment_jacobian(const Segment & seg,
-                                      const at::Tensor & u_solved,
-                                      const at::Tensor & g_flat,
+                                      const std::vector<at::Tensor> & u_solved_groups,
+                                      const std::vector<at::Tensor> & g_groups,
                                       std::map<std::string, at::Tensor> & dstate) const;
 
   /// Initialize `dstate` with identity columns for each master input.
@@ -248,25 +343,39 @@ private:
                     at::IntArrayRef batch_shape,
                     std::map<std::string, at::Tensor> & dstate) const;
 
-  /// Fused two-graph Newton loop. Loads `rhs` once for the baseline residual,
-  /// then iterates `step` (which fuses assemble + solve + update + residual)
-  /// up to `miters` times or until `||b|| < atol` or `||b||/||b0|| < rtol`.
-  /// Promoted-parameter tail is threaded into both loaders.
-  at::Tensor
-  _solve_newton(const Segment & seg, const at::Tensor & u0, const at::Tensor & g_flat) const;
+  /// Per-group Newton loop (v7+). Loads `rhs` once for the baseline
+  /// residual, then iterates `step` (which fuses assemble + solve +
+  /// per-unknown-group step direction + per-residual-group b) up to
+  /// `miters` times or until convergence. Each per-residual-group `b`
+  /// and per-unknown-group `du` is one tensor at natural
+  /// `(*B, *group_sub, group_folded_base)` shape (BLOCK group: sub
+  /// preserved; DENSE group: sub folded into base). Line-search updates
+  /// `u_groups[i] = u_groups[i] + alpha * du_groups[i]` per-group; trial
+  /// residuals come from the cheap `rhs` loader on the per-group trial
+  /// tensors. Returns the converged per-unknown-group vector.
+  std::vector<at::Tensor> _solve_newton(const Segment & seg,
+                                        const std::vector<at::Tensor> & u0_groups,
+                                        const std::vector<at::Tensor> & g_groups) const;
 
-  /// Reshape `(*B, *unflattened_shape)` → `(*B, var_size)` flat slot the
-  /// implicit graphs expect. Handles the Scalar edge case (`unflattened_shape`
-  /// empty, `var_size == 1`) by adding a trailing length-1 axis.
-  static at::Tensor _reshape_to_flat_slot(const at::Tensor & t,
-                                          int64_t var_size,
-                                          const std::vector<int64_t> & unflattened_shape);
+  /// Per-group b sum-of-squares reduction across all residual groups,
+  /// summing over each group's sub_batch + 1 base axis (the
+  /// group_folded_base axis), leaving only the dynamic-batch leading
+  /// axes. Used for convergence norm and the Armijo `b · du`
+  /// Strong-Wolfe scalar.
+  static at::Tensor _pergroup_norm_sq(const std::vector<at::Tensor> & group_tensors,
+                                      const std::vector<Segment::GroupInfo> & groups);
 
-  /// Inverse of `_reshape_to_flat_slot`: `(*B, var_size)` →
-  /// `(*B, *unflattened_shape)`. Drops the size-1 trailing axis for Scalar.
-  static at::Tensor _reshape_from_flat_slot(const at::Tensor & slice,
-                                            int64_t var_size,
-                                            const std::vector<int64_t> & unflattened_shape);
+  /// Pairwise sum: ``sum_k sum_{non-batch}(a_groups[k] * b_groups[k])``.
+  /// Both vectors must be the same length with shape-matching entries.
+  /// Used for the Armijo line-search ``b · du`` criterion.
+  static at::Tensor _pergroup_dot(const std::vector<at::Tensor> & a_groups,
+                                  const std::vector<at::Tensor> & b_groups,
+                                  const std::vector<Segment::GroupInfo> & groups);
+
+  /// Reshape `(*B,)` alpha-per-batch to broadcast against a per-group
+  /// tensor of shape `(*B, *group_sub, group_folded_base)`. Adds
+  /// `group_sub.size() + 1` trailing size-1 axes.
+  static at::Tensor _alpha_for_group(const at::Tensor & alpha, const Segment::GroupInfo & group);
 
   // Per-segment runtime state, in declared order.
   std::vector<Segment> _segments;

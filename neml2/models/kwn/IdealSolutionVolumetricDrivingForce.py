@@ -26,11 +26,11 @@
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output, parameter, parameters, var_inputs
 from ...types import Scalar, log
+from ..chain_rule import ChainRuleAction, ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("IdealSolutionVolumetricDrivingForce")

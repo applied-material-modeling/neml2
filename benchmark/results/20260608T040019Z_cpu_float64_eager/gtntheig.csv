@@ -1,0 +1,10 @@
+scenario,nbatch,n_warmup,n_runs,median_ms,mean_ms,std_ms,min_ms,max_ms,p10_ms,p90_ms,cpu_rss_mb,cuda_peak_mb
+gtntheig,1,5,20,203.6,203.6,nan,nan,nan,nan,nan,7910.20703125,nan
+gtntheig,2,5,20,560.0,560.0,nan,nan,nan,nan,nan,7910.20703125,nan
+gtntheig,4,5,20,569.65,569.65,nan,nan,nan,nan,nan,7910.20703125,nan
+gtntheig,8,5,20,580.6,580.6,nan,nan,nan,nan,nan,7910.20703125,nan
+gtntheig,16,5,20,596.25,596.25,nan,nan,nan,nan,nan,7910.20703125,nan
+gtntheig,32,5,20,635.65,635.65,nan,nan,nan,nan,nan,7910.20703125,nan
+gtntheig,64,5,20,679.25,679.25,nan,nan,nan,nan,nan,7910.20703125,nan
+gtntheig,128,5,20,5898.35,5898.35,nan,nan,nan,nan,nan,7910.20703125,nan
+gtntheig,256,5,20,8817.75,8817.75,nan,nan,nan,nan,nan,7910.20703125,nan

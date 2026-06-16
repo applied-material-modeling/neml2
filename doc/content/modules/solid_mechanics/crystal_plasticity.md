@@ -35,12 +35,10 @@ The first holds well for metal plasticity; the second is more questionable at ve
 
 Defining the current orientation as the composition of the initial lattice rotation $Q_0$ with the elastic rotation, $Q = R^e Q_0$, the elastic spin reduces to $\Omega^e = \dot{Q} Q^T$. Splitting the spatial velocity gradient into symmetric and skew parts ($l = d + w$, $l^p = d^p + w^p$) and rearranging yields the two governing rate equations integrated by this module:
 
-```{math}
 \begin{align}
   \dot{\varepsilon} &= d - d^p - \varepsilon w + w \varepsilon \\
   \dot{Q} &= \left(w - w^p - \varepsilon d^p + d^p \varepsilon\right) Q.
 \end{align}
-```
 
 The Cauchy stress closes the system via an (in general anisotropic) elastic relation rotated into the current configuration,
 

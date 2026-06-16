@@ -42,7 +42,7 @@ from typing import ClassVar
 
 import torch
 
-from neml2.types._base import align_sub_batch
+from neml2.types._base import align_sub_batch, combine_sub_batch_state
 from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
 from neml2.types.sr2 import SR2
@@ -54,6 +54,11 @@ class SSR4(PrimitiveTensor):
 
     data: torch.Tensor
     sub_batch_ndim: int = 0
+    sub_batch_state: tuple = ()
+    sub_batch_meta: tuple = ()
+    k_ndim: int = 0
+    k_state: tuple = ()
+    k_pairing: tuple = ()
     BASE_NDIM: ClassVar[int] = 2
     BASE_SHAPE: ClassVar[tuple[int, ...]] = (6, 6)
 
@@ -146,19 +151,37 @@ class SSR4(PrimitiveTensor):
 
     def __matmul__(self, other):
         """SSR4 @ SR2 → SR2 (contraction ``C : A``) or SSR4 @ SSR4 → SSR4."""
+        from neml2.types._base import align_k, combine_k_state  # noqa: PLC0415
+
         if isinstance(other, SR2):
             [aa, bb], sb = align_sub_batch(self, other)
+            state, meta = combine_sub_batch_state(aa, bb)
+            [aaK, bbK], k_ndim = align_k(aa, bb)
+            k_state, k_pairing = combine_k_state(aaK, bbK)
             # ``"...ij,...j->...i"`` is a 6×6 · 6 matvec — explicit matmul (no einsum).
             return SR2(
-                (aa.data @ bb.data.unsqueeze(-1)).squeeze(-1),
+                (aaK.data @ bbK.data.unsqueeze(-1)).squeeze(-1),
                 sub_batch_ndim=sb,
+                sub_batch_state=state,
+                sub_batch_meta=meta,
+                k_ndim=k_ndim,
+                k_state=k_state,
+                k_pairing=k_pairing,
             )
         if isinstance(other, SSR4):
             [aa, bb], sb = align_sub_batch(self, other)
+            state, meta = combine_sub_batch_state(aa, bb)
+            [aaK, bbK], k_ndim = align_k(aa, bb)
+            k_state, k_pairing = combine_k_state(aaK, bbK)
             # ``"...ij,...jk->...ik"`` is a 6×6 · 6×6 matmul.
-            return SSR4(
-                aa.data @ bb.data,
+            return aaK._rewrap(
+                aaK.data @ bbK.data,
                 sub_batch_ndim=sb,
+                sub_batch_state=state,
+                sub_batch_meta=meta,
+                k_ndim=k_ndim,
+                k_state=k_state,
+                k_pairing=k_pairing,
             )
         return NotImplemented
 

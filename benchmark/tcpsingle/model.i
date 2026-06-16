@@ -1,84 +1,116 @@
 # neml2
+[Settings]
+  example_batch_shape = '(${nbatch},)'
+[]
+
 [Tensors]
+  # HIT-substituted shim so the verbatim triple-quoted Python blocks below
+  # can reference nbatch as a bare identifier. ${...} substitution only
+  # works inside single-line single-quoted HIT strings; triple-quoted
+  # blocks are passed verbatim to the Python eval namespace.
+  [nbatch]
+    type = Python
+    expr = '${nbatch}'
+  []
+  # end_time = FullScalar(5000) batched (nbatch,) -> shape (nbatch,)
   [end_time]
-    type = FullScalar
-    value = 5000
-    batch_shape = '(${nbatch})'
+    type = Python
+    expr = '''
+      Scalar(torch.full((nbatch,), 5000.0, dtype=torch.float64))
+    '''
   []
+  # times = LinspaceScalar(0, end_time, 100) -> shape (100, nbatch)
   [times]
-    type = LinspaceScalar
-    start = 0
-    end = end_time
-    nstep = 100
+    type = Python
+    expr = '''
+      Scalar(
+          end_time.data.unsqueeze(0)
+          * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1)
+      )
+    '''
   []
-  [dxx]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0.0
-  []
-  [dyy]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0.0001
-  []
-  [dzz]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = -0.0001
-  []
+  # deformation_rate_single = FillSR2(dxx=0.0, dyy=0.0001, dzz=-0.0001) batched (nbatch,)
   [deformation_rate_single]
-    type = FillSR2
-    values = 'dxx dyy dzz'
+    type = Python
+    expr = '''
+      SR2.fill(0.0, 0.0001, -0.0001, 0.0, 0.0, 0.0).dynamic_batch.expand(nbatch)
+    '''
   []
+  # deformation_rate = LinspaceSR2(d_single, d_single, 100) -> shape (100, nbatch, 6)
   [deformation_rate]
-    type = LinspaceSR2
-    start = deformation_rate_single
-    end = deformation_rate_single
-    nstep = 100
+    type = Python
+    expr = '''
+      SR2(deformation_rate_single.data.unsqueeze(0).expand(100, nbatch, 6).contiguous())
+    '''
   []
 
-  [w1]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0.0
-  []
-  [w2]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0.0
-  []
-  [w3]
-    type = FullScalar
-    batch_shape = '(${nbatch})'
-    value = 0.0
-  []
+  # vorticity_single = FillWR2(0, 0, 0) batched (nbatch,)
   [vorticity_single]
-    type = FillWR2
-    values = 'w1 w2 w3'
+    type = Python
+    expr = '''
+      WR2(torch.zeros(nbatch, 3, dtype=torch.float64))
+    '''
   []
+  # vorticity = LinspaceWR2(w_single, w_single, 100) -> shape (100, nbatch, 3)
   [vorticity]
-    type = LinspaceWR2
-    start = vorticity_single
-    end = vorticity_single
-    nstep = 100
+    type = Python
+    expr = '''
+      WR2(vorticity_single.data.unsqueeze(0).expand(100, nbatch, 3).contiguous())
+    '''
   []
+
+  # Crystal geometry inputs: lattice parameter + slip direction + slip plane
   [a]
-    type = Scalar
-    values = '1.0'
+    type = Python
+    expr = '''
+      Scalar(torch.tensor([1.0], dtype=torch.float64))
+    '''
   []
   [sdirs]
-    type = MillerIndex
-    values = '1 1 0'
+    type = Python
+    expr = '''
+      MillerIndex(torch.tensor([1, 1, 0], dtype=torch.int64))
+    '''
   []
   [splanes]
-    type = MillerIndex
-    values = '1 1 1'
+    type = Python
+    expr = '''
+      MillerIndex(torch.tensor([1, 1, 1], dtype=torch.int64))
+    '''
   []
+  # initial_orientation = Orientation(input_type='euler_angles', angle_convention='kocks',
+  #                                   angle_type='degrees', values='30 60 45',
+  #                                   quantity=nbatch, normalize=True)
+  # Replicates v2 Rot::fill_euler_angles (Kocks convention) followed by
+  # the ``normalize=True`` shadow swap that pushes any |r|>=1 MRP into its
+  # shadow ``-r / |r|^2`` (the same rotation, smaller MRP).
+  # The result is a single (3,) Rot expanded to (nbatch, 3).
   [initial_orientation]
-    type = Orientation
-    quantity = ${nbatch}
-    values = '30 60 45'
-    normalize = true
+    type = Python
+    expr = '''
+      angles = torch.tensor([30.0, 60.0, 45.0], dtype=torch.float64) * (torch.pi / 180.0)
+      a_e, b_e, c_e = angles[0], angles[1], angles[2]
+      sa, ca = torch.sin(a_e), torch.cos(a_e)
+      sb, cb = torch.sin(b_e), torch.cos(b_e)
+      sc, cc = torch.sin(c_e), torch.cos(c_e)
+      M = torch.stack([
+          torch.stack([-sc * sa - cc * ca * cb,  sc * ca - cc * sa * cb,  cc * sb]),
+          torch.stack([ cc * sa - sc * ca * cb, -cc * ca - sc * sa * cb,  sc * sb]),
+          torch.stack([ ca * sb,                 sa * sb,                 cb       ]),
+      ])
+      trace = M[0, 0] + M[1, 1] + M[2, 2]
+      theta = torch.acos(torch.clamp((trace - 1.0) / 2.0, -1.0, 1.0))
+      scale = torch.where(theta == 0, torch.zeros_like(theta), torch.tan(theta / 2.0) / (2.0 * torch.sin(theta)))
+      rx = (M[2, 1] - M[1, 2]) * scale
+      ry = (M[0, 2] - M[2, 0]) * scale
+      rz = (M[1, 0] - M[0, 1]) * scale
+      ns = rx * rx + ry * ry + rz * rz
+      f = torch.sqrt(ns + 1.0) + 1.0
+      r_single = torch.stack([rx / f, ry / f, rz / f])
+      r_ns = (r_single * r_single).sum(-1, keepdim=True)
+      r_norm = torch.where(r_ns < 1.0, r_single, -r_single / r_ns)
+      result = Rot(r_norm.unsqueeze(0).expand(nbatch, 3).contiguous())
+    '''
   []
 []
 
@@ -93,7 +125,6 @@
     force_WR2_values = 'vorticity'
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
-    device = ${device}
   []
 []
 

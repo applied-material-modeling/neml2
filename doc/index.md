@@ -22,6 +22,7 @@ content/migration/index
 content/contributing
 content/model_compilation/index
 content/tensor_types
+content/benchmark
 ```
 
 ```{toctree}

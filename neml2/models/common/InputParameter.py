@@ -43,9 +43,7 @@ input as a "parameter" output rather than a generic "to" copy.
 
 from __future__ import annotations
 
-from ...chain_rule import ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output
 from ...types import (
     R2,
@@ -58,6 +56,8 @@ from ...types import (
     TensorWrapper,
     Vec,
 )
+from ..chain_rule import ChainRuleDict
+from ..model import Model
 
 
 class _InputParameter(Model):

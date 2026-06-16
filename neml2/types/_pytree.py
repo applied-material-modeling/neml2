@@ -31,13 +31,26 @@ public `torch.export.register_dataclass` is a thin alias for this — calling
 either is equivalent, but we go through the private path because it accepts
 ``field_names`` which the public alias does not.
 
-The wrappers carry a second non-leaf field, ``sub_batch_ndim``, which tracks
-the number of trailing batch axes that act as a structured "sub-batch"
-region (the Python-native analogue of C++ `intmd_dim`). It is excluded from
-the pytree via ``drop_field_names`` so the only flat leaf is ``data``;
-roundtrips through `torch.export`'s flatten/unflatten reset it to the
-dataclass default of ``0`` — which is fine because the exported graph
-operates on raw tensors whose shapes already encode the sub-batch axes.
+The wrappers carry six non-leaf metadata fields:
+
+- ``sub_batch_ndim`` -- count of trailing batch axes that act as a
+  structured "sub-batch" region (the Python-native analogue of C++
+  ``intmd_dim``).
+- ``sub_batch_state`` -- per-axis ``"full"`` / ``"broadcast"`` storage
+  mode (see :mod:`neml2.chain_rule`).
+- ``sub_batch_meta`` -- per-axis logical extent, consulted only when
+  the axis is in broadcast mode.
+- ``k_ndim`` -- count of leading K (seed-direction) axes carried by a
+  chain-rule tangent; ``0`` for primals.
+- ``k_state`` -- per-K-axis ``"full"`` / ``"broadcast"`` storage mode.
+- ``k_pairing`` -- per-K-axis sub-batch pairing (``int`` paired with a
+  sub_batch axis, ``None`` for an unpaired base-direction enumerator).
+
+All six are excluded from the pytree via ``drop_field_names`` so the
+only flat leaf is ``data``; roundtrips through `torch.export`'s
+flatten/unflatten reset them to the dataclass defaults -- which is fine
+because the exported graph operates on raw tensors whose shapes already
+encode the sub-batch axes (including the size-1 broadcast positions).
 
 All `torch._inductor` / `torch.utils._pytree` internal-API drift is contained
 to this one file per RISK.md R-001.
@@ -62,6 +75,16 @@ def register(cls: type, *extra_drop_fields: str) -> None:
     _torch_pytree.register_dataclass(
         cls,
         field_names=["data"],
-        drop_field_names=["sub_batch_ndim", *extra_drop_fields],
+        drop_field_names=[
+            "sub_batch_ndim",
+            "sub_batch_state",
+            "sub_batch_meta",
+            "k_ndim",
+            "k_state",
+            "k_pairing",
+            *extra_drop_fields,
+        ],
+        # Note: dynamic-base `Tensor` registers separately in tensor.py
+        # with the same field set (drop integer/tuple metadata).
         serialized_type_name=f"neml2.types.{cls.__name__}",
     )

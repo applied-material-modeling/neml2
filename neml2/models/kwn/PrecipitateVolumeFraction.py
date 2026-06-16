@@ -28,11 +28,11 @@ from __future__ import annotations
 
 import math
 
-from ...chain_rule import ChainRuleAction, ChainRuleDict
 from ...factory import register_neml2_object
-from ...model import Model
 from ...schema import HitSchema, input, output, parameter
 from ...types import Scalar, pow, sum
+from ..chain_rule import ChainRuleAction, ChainRuleDict
+from ..model import Model
 
 
 @register_neml2_object("PrecipitateVolumeFraction")
@@ -60,10 +60,9 @@ class PrecipitateVolumeFraction(Model):
             allow_nonlinear=True,
         ),
     )
-    # The reduction sums across the trailing sub-batch (size-bin) axis, so the
-    # ``volume_fraction``-vs-``number_density`` block is dense across that axis
-    # rather than diagonal.
-    list_deriv = {("volume_fraction", "number_density"): "dense"}
+    # The reduction sums across the trailing sub-batch (size-bin) axis, so
+    # the ``volume_fraction``-vs-``number_density`` edge reduces the ``"bin"``
+    # label rather than passing it through diagonally.
 
     # ``from_hit`` auto-declares the ``radius`` parameter (stored as ``R``).
     # Annotate so pyright sees the typed wrapper that ``Model.__getattr__``
@@ -84,7 +83,7 @@ class PrecipitateVolumeFraction(Model):
         # the per-bin layout of ``n`` so the bin-wise product and the trailing
         # sub-batch sum line up. A true scalar radius (no per-bin axis) has
         # data shape ``()`` and falls through unchanged — broadcast handles it.
-        if n.sub_batch_ndim > R.sub_batch_ndim and R.data.ndim >= n.sub_batch_ndim:
+        if n.sub_batch_ndim > R.sub_batch_ndim and R.ndim >= n.sub_batch_ndim:
             R = R.sub_batch.retag(n.sub_batch_ndim)
 
         # Forward: f = sum_i (4/3) π R_i^3 n_i. Typed Scalar algebra; both R

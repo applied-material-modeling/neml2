@@ -26,13 +26,13 @@
 
 from __future__ import annotations
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, input, output
 from ....types import Scalar, sum
 from ....types import abs as tensor_abs
 from ....types import sign as tensor_sign
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 
 @register_neml2_object("SumSlipRates")
@@ -45,7 +45,6 @@ class SumSlipRates(Model):
         input("slip_rates", Scalar, "The name of individual slip rates"),
         output("sum_slip_rates", Scalar, "The output name for the scalar sum of the slip rates"),
     )
-    list_deriv = {("sum_slip_rates", "slip_rates"): "dense"}
 
     def forward(  # type: ignore[override]
         self,

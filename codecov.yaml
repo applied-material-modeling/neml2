@@ -1,0 +1,35 @@
+# Codecov configuration. See https://docs.codecov.com/docs/codecov-yaml
+#
+# Upload is tokenless -- the org's "no upload tokens required" policy
+# combined with codecov-action@v5's GitHub-OIDC verification keeps the
+# CI step trivial. See the ``coverage`` job in
+# .github/workflows/python.yaml.
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto                # main branch can't drop overall coverage
+        threshold: 0.5%             # allow 0.5% wiggle for rounding
+    patch:
+      default:
+        target: 80%                 # new code in a PR must hit 80% coverage
+        threshold: 0%               # no slack on new code
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: true             # only comment when coverage changed
+  require_base: false
+  require_head: true
+
+# Mirror what ``[tool.coverage.run] source = ["neml2"]`` in pyproject.toml
+# already enforces -- defense in depth so a misconfigured collection run
+# doesn't accidentally count non-product code.
+ignore:
+  - "tests/**"
+  - "doc/**"
+  - "benchmark/**"
+  - "scripts/**"
+  - "contrib/**"
+  - "neml2/aoti/_aoti.pyi"

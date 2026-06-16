@@ -28,11 +28,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ....chain_rule import ChainRuleDict
 from ....factory import register_neml2_object
-from ....model import Model
 from ....schema import HitSchema, dependency, input, output, parameter
 from ....types import Scalar
+from ...chain_rule import ChainRuleDict
+from ...model import Model
 
 if TYPE_CHECKING:
     from ....data import CrystalGeometry
@@ -62,8 +62,9 @@ class SingleSlipStrengthMap(Model):
             default="crystal_geometry",
         ),
     )
-    # Per-slip output from per-crystal input — fan-out is "dense" by D-049.
-    list_deriv = {("slip_strengths", "slip_hardening"): "dense"}
+    # Per-slip output from per-crystal input -- the leaf INTRODUCES a
+    # "slip" labelled axis on the output (each grain's hardening fan-out
+    # to every slip system within that grain).
 
     # ``from_hit`` auto-declares ``constant_strength`` and stores the resolved
     # ``crystal_geometry`` Data object as ``self._cg`` — no __init__ needed.
