@@ -190,21 +190,6 @@ The C++ orchestrator sees the same flat `(u_flat, g_flat) →
 (u_new, b_new)` contract either way — the multi-group / sub-batch
 structure is internal to the `.pt2`.
 
-### ELF GNU_STACK patch
-
-`compile_model` post-processes every `.so` inside each emitted
-`.pt2`: it walks the ELF program headers and clears the `PF_X`
-bit on the `PT_GNU_STACK` entry. Without this, the upstream
-constants-folding assembler omits the `.note.GNU-stack` section,
-and ld.bfd / lld respond by marking the resulting shared object's
-stack as executable — which trips the C++ runtime's `dlopen` on
-systems that enforce a non-executable stack.
-
-The patch is one byte per `.so` and is reversible (the artifact
-loader doesn't depend on the bit). The dispatch lives behind a
-single helper so the day torch upstreams a fix, we delete the helper
-and the call site.
-
 ## After export: emit the HIT stub
 
 Once `_write_meta` has serialized the metadata JSON,
@@ -238,7 +223,6 @@ correctly.
 | Partitioning                         | `_partition_into_segments`, `_contains_implicit`, `_flatten_composed` |
 | Forward / implicit segment lowering  | `_compile_forward_segment`, `_compile_implicit_segment`          |
 | `torch.export` adapter               | `neml2/models/export.py::compile_model`                          |
-| ELF GNU_STACK patch                  | `neml2/models/export.py::_clear_elf_execstack`                   |
 
 ## See also
 
