@@ -1,9 +1,8 @@
 # Codecov configuration. See https://docs.codecov.com/docs/codecov-yaml
 #
-# Upload is tokenless -- the org's "no upload tokens required" policy
-# combined with codecov-action@v5's GitHub-OIDC verification keeps the
-# CI step trivial. See the ``coverage`` job in
-# .github/workflows/python.yaml.
+# Uploads pass ``CODECOV_TOKEN`` (a repository secret) because Codecov
+# rejects tokenless OIDC uploads on protected branches. See the
+# ``coverage`` job in .github/workflows/python.yaml.
 
 coverage:
   status:
@@ -19,7 +18,7 @@ coverage:
 comment:
   layout: "reach, diff, flags, files"
   behavior: default
-  require_changes: true             # only comment when coverage changed
+  require_changes: false            # comment on every PR, not only when coverage moves
   require_base: false
   require_head: true
 
