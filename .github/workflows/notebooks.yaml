@@ -27,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Need history for `git diff` against the PR base on pull_request runs.
+          fetch-depth: 0
       - uses: ./.github/actions/neml2-ci
         with:
           # dependencies: python.version_min
@@ -37,11 +40,80 @@ jobs:
           torch-version: "2.12.0"
       - name: Install NEML2 and dev dependencies
         run: pip install ".[dev]" -v
-      - name: Run all notebooks with nbmake
+      - name: Select notebooks to execute
+        id: select
+        # On pull_request: re-execute only the notebooks whose own
+        # subfolder changed (their main.ipynb, paired main.md, or any
+        # sibling file). If a changed file lives outside any notebook
+        # subfolder -- a resource shared between several notebooks --
+        # fall back to the full sweep, since the diff alone can't tell
+        # which notebooks consume it.
+        # On schedule / workflow_dispatch / push: always full sweep.
         run: |
-          NOTEBOOKS="$(git ls-files '*.ipynb')"
-          if [ -z "$NOTEBOOKS" ]; then
-            echo "No tracked notebooks found."
-            exit 0
+          set -euo pipefail
+          full_sweep() {
+            git ls-files 'doc/content/tutorials/**.ipynb'
+          }
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            CHANGED="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- doc/content/tutorials)"
+            SELECTED=""
+            SHARED=0
+            while IFS= read -r path; do
+              [ -z "$path" ] && continue
+              dir="$(dirname "$path")"
+              nb="$dir/main.ipynb"
+              if [ -f "$nb" ]; then
+                # Lives next to (or is) a notebook -- re-run that one.
+                SELECTED="$SELECTED"$'\n'"$nb"
+              elif [ "${path##*.}" = "md" ]; then
+                # MyST-only tutorial .md (no paired .ipynb sibling).
+                # myst-nb renders these at sphinx-build time; nbmake
+                # has nothing to do with them.
+                echo "Skipping MyST-only doc change: $path"
+              else
+                # Non-md file outside any notebook subfolder -- a
+                # shared resource (e.g. demo_model.i). Can't tell from
+                # the diff which notebooks consume it, so be safe.
+                echo "Shared resource changed: $path"
+                SHARED=1
+              fi
+            done <<< "$CHANGED"
+            if [ "$SHARED" = "1" ]; then
+              echo "Selection mode: pull_request -> shared resource changed, full sweep"
+              NOTEBOOKS="$(full_sweep)"
+            else
+              echo "Selection mode: pull_request -> changed notebooks only"
+              NOTEBOOKS="$(echo "$SELECTED" | sort -u | sed '/^$/d')"
+            fi
+          else
+            echo "Selection mode: full sweep (${{ github.event_name }})"
+            NOTEBOOKS="$(full_sweep)"
           fi
-          pytest -v -s --nbmake --nbmake-timeout=14400 $NOTEBOOKS
+          # Surface the selection on the workflow summary page so
+          # reviewers don't have to dig into the step log.
+          {
+            echo "## Notebook execution"
+            echo "**Trigger:** \`${{ github.event_name }}\`"
+            if [ -z "$NOTEBOOKS" ]; then
+              echo "**Selection:** no notebooks to execute."
+            else
+              count="$(echo "$NOTEBOOKS" | wc -l | tr -d ' ')"
+              echo "**Selection:** $count notebook(s)"
+              echo ""
+              echo "$NOTEBOOKS" | sed 's/^/- /'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$NOTEBOOKS" ]; then
+            echo "No notebooks selected; skipping execution."
+            echo "notebooks=" >> "$GITHUB_OUTPUT"
+          else
+            echo "Notebooks to execute:"
+            echo "$NOTEBOOKS"
+            # Emit as a single space-separated line for the next step.
+            echo "notebooks=$(echo $NOTEBOOKS | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Execute notebooks with nbmake
+        if: steps.select.outputs.notebooks != ''
+        run: pytest -v -s --nbmake --nbmake-timeout=14400 ${{ steps.select.outputs.notebooks }}
