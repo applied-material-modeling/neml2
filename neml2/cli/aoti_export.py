@@ -987,7 +987,7 @@ class _ForwardJacobianModule(nn.Module):
     ``<basename>_jvp.pt2``. The C++ runtime consumes the per-pair
     tensors via per-pair matmul against ``dstate[in_var]``,
     accumulating into ``dseg_out[out_var]`` -- mirrors the IFT cell
-    consumer (`Model.cxx:_run_implicit_segment_jacobian`).
+    consumer (`jacobian.cpp:_run_implicit_segment_jacobian`).
     """
 
     def __init__(self, model, promoted_qnames: set[str] | None = None) -> None:

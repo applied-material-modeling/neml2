@@ -183,9 +183,34 @@ endif()
 # Python side can execute .pt2 artifacts produced by torch._inductor.aoti_compile_and_package
 # from C++. Source tree lives at neml2/csrc/aoti/, intentionally co-located with
 # the Python package so the C++ and Python sides of NEML2 stay in one tree.
+# The single Model class is split across four translation units (construction,
+# public ops, the value/Newton path, the Jacobian/IFT path); the internals live
+# behind a PImpl `Model::Impl` declared in the non-shipped internal.h.
 add_library(aoti SHARED
-      neml2/csrc/aoti/Model.cxx
+      neml2/csrc/aoti/Model.cpp
+      neml2/csrc/aoti/ops.cpp
+      neml2/csrc/aoti/solve.cpp
+      neml2/csrc/aoti/jacobian.cpp
 )
+
+# API visibility control: hide everything by default and export only the symbols
+# explicitly tagged with the generated AOTI_EXPORT macro (i.e. the public `Model`
+# surface). This keeps the shipped ABI matched to the shipped header -- the
+# PImpl internals + anonymous-namespace helpers stay out of the export table.
+# Mirrors the hidden-visibility preset already used for the pybind module.
+# Emit into a DEDICATED generated-include root (.../include), never the build-dir
+# root: ${NEML2_BINARY_DIR} also holds stray files like `version`/`hash`, and
+# putting it on the include path would shadow the C++ standard <version> header.
+include(GenerateExportHeader)
+generate_export_header(aoti
+      BASE_NAME aoti
+      EXPORT_FILE_NAME ${NEML2_BINARY_DIR}/include/neml2/csrc/aoti/aoti_export.h
+)
+set_target_properties(aoti PROPERTIES
+      CXX_VISIBILITY_PRESET hidden
+      VISIBILITY_INLINES_HIDDEN ON
+)
+
 # BASE_DIRS at the project root means:
 #  - sources include with `#include "neml2/csrc/aoti/Model.h"` (the file
 #    location relative to the root); the BUILD_INTERFACE include dir is
@@ -202,6 +227,13 @@ target_sources(aoti
       FILES
       ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/Model.h
 )
+# The generated aoti_export.h lives under the build tree's dedicated include
+# root. Add it as a build-interface include so `#include
+# "neml2/csrc/aoti/aoti_export.h"` resolves while compiling the lib + the pyaoti
+# binding (which links aoti and inherits this). On install it is shipped beside
+# Model.h (see the install() below), and the install-interface `include` dir
+# already on the target covers it.
+target_include_directories(aoti PUBLIC $<BUILD_INTERFACE:${NEML2_BINARY_DIR}/include>)
 set_target_properties(aoti PROPERTIES OUTPUT_NAME "neml2_aoti$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 target_compile_options(aoti PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(aoti PUBLIC torch::core nlohmann_json::nlohmann_json)
@@ -225,6 +257,12 @@ if(NOT SKBUILD_STATE STREQUAL "editable")
       install(TARGETS aoti
             EXPORT neml2targets
             FILE_SET HEADERS DESTINATION include
+            COMPONENT libneml2
+      )
+      # Ship the generated export header alongside Model.h. Editable installs
+      # don't ship headers and resolve it via the build-tree include dir above.
+      install(FILES ${NEML2_BINARY_DIR}/include/neml2/csrc/aoti/aoti_export.h
+            DESTINATION include/neml2/csrc/aoti
             COMPONENT libneml2
       )
 endif()
@@ -301,7 +339,7 @@ if(NEML2_WHEEL)
       # ----------------------------------------------------------------------
       # add_native_extension(<target> <subpath> [LIBS lib1 lib2 ...])
       # ----------------------------------------------------------------------
-      # Builds a pybind11 module from neml2/csrc/<subpath>/_<basename>.cxx
+      # Builds a pybind11 module from neml2/csrc/<subpath>/_<basename>.cpp
       # and outputs it at neml2/<subpath>/_<basename>.<soabi>.so so it's
       # importable as `neml2.<subpath>._<basename>`. <basename> = the last
       # component of <subpath>. Set ``LIBS`` to the C++ neml2 libraries the
@@ -313,7 +351,7 @@ if(NEML2_WHEEL)
             cmake_parse_arguments(NX "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 
             string(REGEX REPLACE "^.*/" "" _basename "${subpath}")
-            set(_src "${NEML2_SOURCE_DIR}/neml2/csrc/${subpath}/_${_basename}.cxx")
+            set(_src "${NEML2_SOURCE_DIR}/neml2/csrc/${subpath}/_${_basename}.cpp")
             set(_outdir "neml2/${subpath}")
 
             # rpath hops from the .so to its dependency libraries. Both

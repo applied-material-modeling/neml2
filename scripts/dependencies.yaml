@@ -97,7 +97,7 @@ neml2:
 
 # ---- AOTI artifact metadata schema ----
 # Bumped on any breaking change to the layout of ``<model>_meta.json``
-# (the manifest the C++ loader at ``neml2/csrc/aoti/Model.cxx`` reads).
+# (the manifest the C++ loader at ``neml2/csrc/aoti/Model.cpp`` reads).
 # The Python emitter (``neml2/cli/aoti_export.py``) and the C++ loader
 # must agree, so both are tracked here alongside the documentation page
 # that describes the schema. The example artifacts under
@@ -107,5 +107,5 @@ aoti:
   schema_version: "3"
   files:
     - neml2/cli/aoti_export.py
-    - neml2/csrc/aoti/Model.cxx
+    - neml2/csrc/aoti/Model.cpp
     - doc/content/model_compilation/aoti_packages.md

@@ -26,7 +26,7 @@
 
 Pins the structural contract between the Python writer
 (``neml2.cli.aoti_export``) and the C++ loader
-(``neml2/csrc/aoti/Model.cxx``):
+(``neml2/csrc/aoti/Model.cpp``):
 
 * ``schema_version`` is the boundary the C++ side strictly checks at load
   time -- any breaking change to the JSON shape bumps this constant on
