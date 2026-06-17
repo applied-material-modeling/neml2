@@ -27,7 +27,7 @@ NEML2 is provided as open source software under a MIT [license](https://raw.gith
 pip install neml2
 ```
 
-The wheel ships everything a C++ consumer needs too — `libneml2_aoti.so`, the public headers, and the CMake config files all land under your `site-packages/neml2/`. See the [installation guide](https://applied-material-modeling.github.io/neml2/install.html) for finer control over the torch variant (CPU / CUDA / ROCm) and the C++ integration guide for `find_package(neml2)` wiring.
+The wheel ships everything a C++ consumer needs too — `libneml2_aoti.so`, the public headers, and the CMake config files all land under your `site-packages/neml2/`. See the [installation guide](https://applied-material-modeling.github.io/neml2/content/installation/install.html) for finer control over the torch variant (CPU / CUDA / ROCm) and the C++ integration guide for `find_package(neml2)` wiring.
 
 **Developer source build** (only when contributing to the bundled C++ AOTI runtime):
 
@@ -37,7 +37,7 @@ cd neml2
 pip install -e ".[dev]"
 ```
 
-Once NEML2 is installed, refer to the [getting started](https://applied-material-modeling.github.io/neml2/tutorials-getting-started.html) guide for commonly used APIs.
+Once NEML2 is installed, refer to the [getting started](https://applied-material-modeling.github.io/neml2/content/getting_started.html) guide for commonly used APIs.
 
 ### Features and design philosophy
 
