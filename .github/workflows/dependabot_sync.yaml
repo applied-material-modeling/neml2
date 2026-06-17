@@ -41,7 +41,7 @@ jobs:
           # ``GITHUB_TOKEN``, which still corrects the branch; you then re-run
           # the deps check (or push an empty commit) to turn the PR green.
           token: ${{ secrets.DEPENDABOT_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           # dependencies: python.version_min
           python-version: "3.10"
