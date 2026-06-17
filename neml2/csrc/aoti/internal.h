@@ -279,39 +279,9 @@ struct Model::Impl
                     at::IntArrayRef batch_shape,
                     std::map<std::string, at::Tensor> & dstate) const;
 
-  /// Per-group Newton loop (v7+). Loads `rhs` once for the baseline
-  /// residual, then iterates `step` (which fuses assemble + solve +
-  /// per-unknown-group step direction + per-residual-group b) up to
-  /// `miters` times or until convergence. Each per-residual-group `b`
-  /// and per-unknown-group `du` is one tensor at natural
-  /// `(*B, *group_sub, group_folded_base)` shape (BLOCK group: sub
-  /// preserved; DENSE group: sub folded into base). Line-search updates
-  /// `u_groups[i] = u_groups[i] + alpha * du_groups[i]` per-group; trial
-  /// residuals come from the cheap `rhs` loader on the per-group trial
-  /// tensors. Returns the converged per-unknown-group vector.
-  std::vector<at::Tensor> _solve_newton(const Segment & seg,
-                                        const std::vector<at::Tensor> & u0_groups,
-                                        const std::vector<at::Tensor> & g_groups) const;
-
-  /// Per-group b sum-of-squares reduction across all residual groups,
-  /// summing over each group's sub_batch + 1 base axis (the
-  /// group_folded_base axis), leaving only the dynamic-batch leading
-  /// axes. Used for convergence norm and the Armijo `b · du`
-  /// Strong-Wolfe scalar.
-  static at::Tensor _pergroup_norm_sq(const std::vector<at::Tensor> & group_tensors,
-                                      const std::vector<Segment::GroupInfo> & groups);
-
-  /// Pairwise sum: ``sum_k sum_{non-batch}(a_groups[k] * b_groups[k])``.
-  /// Both vectors must be the same length with shape-matching entries.
-  /// Used for the Armijo line-search ``b · du`` criterion.
-  static at::Tensor _pergroup_dot(const std::vector<at::Tensor> & a_groups,
-                                  const std::vector<at::Tensor> & b_groups,
-                                  const std::vector<Segment::GroupInfo> & groups);
-
-  /// Reshape `(*B,)` alpha-per-batch to broadcast against a per-group
-  /// tensor of shape `(*B, *group_sub, group_folded_base)`. Adds
-  /// `group_sub.size() + 1` trailing size-1 axes.
-  static at::Tensor _alpha_for_group(const at::Tensor & alpha, const Segment::GroupInfo & group);
+  // The per-group Newton iteration + line-search reductions now live in
+  // newton.{h,cpp} (driven through the NonlinearSystem abstraction);
+  // `_run_implicit_segment` builds an AOTINonlinearSystem and calls Newton.
 
   // Per-segment runtime state, in declared order.
   std::vector<Segment> _segments;

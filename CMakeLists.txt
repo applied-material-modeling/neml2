@@ -191,6 +191,8 @@ add_library(aoti SHARED
       neml2/csrc/aoti/ops.cpp
       neml2/csrc/aoti/solve.cpp
       neml2/csrc/aoti/jacobian.cpp
+      neml2/csrc/aoti/newton.cpp
+      neml2/csrc/aoti/nonlinear_system_aoti.cpp
 )
 
 # API visibility control: hide everything by default and export only the symbols
