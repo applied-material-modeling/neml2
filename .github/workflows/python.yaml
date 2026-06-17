@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           # dependencies: python.version_min
           python-version: "3.10"
@@ -222,7 +222,7 @@ jobs:
         env:
           CIBW_BUILD: ${{ github.event_name == 'release' && 'cp310-* cp311-* cp312-* cp313-* cp314-*' || 'cp310-* cp314-*' }}
       - name: Set up Python for wheel smoke test
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           # dependencies: python.version_min  (matches cp310 in CIBW_BUILD)
           python-version: "3.10"
