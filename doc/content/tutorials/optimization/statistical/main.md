@@ -35,7 +35,6 @@ import torch.distributions as dist
 import neml2
 from pyzag import nonlinear, reparametrization, chunktime, stochastic
 import matplotlib.pyplot as plt
-import tqdm
 
 import pyro
 from pyro.infer import SVI, Trace_ELBO, Predictive
@@ -178,6 +177,8 @@ class SolveStrain(torch.nn.Module):
 
 Load the NEML model from disk, wrap it in both the `pyzag` wrapper and our thin wrapper class above.  Exclude some of the model parameters we don't want to train.
 
+We also call `neml2.compile` on the `pyzag`-wrapped model. This JIT-compiles the residual/Jacobian evaluation with `torch.compile` in-process (no AOT export or C++ round-trip), so each Newton and adjoint step in the SVI training loop runs a fused compiled graph instead of eager Python. It is a transparent, in-place acceleration — the model is used exactly as before, and gradients still flow for SVI.
+
 ```{code-cell} ipython3
 nmodel = neml2.load_nonlinear_system("demo_model.i", "eq_sys")
 nmodel.to(device=device)
@@ -205,6 +206,16 @@ pmodel = neml2.pyzag.NEML2PyzagModel(
         "Eerate_offset",
     ],
 )
+
+# Accelerate the residual + Jacobian evaluation with in-process torch.compile
+# (no AOTI artifact / C++ round-trip). pyzag owns the Newton solve and the
+# adjoint; neml2.compile JIT-compiles the feed-forward residual model so every
+# solve and adjoint step runs a fused compiled graph. Compilation happens on the
+# first call and is reused across iterations, which speeds up the SVI training
+# loop below. Autograd flows through the compiled graph, so SVI's gradient
+# estimates are unaffected.
+neml2.compile(pmodel)
+
 model = SolveStrain(pmodel)
 ```
 
@@ -438,16 +449,18 @@ svi = SVI(hsmodel, guide, optimizer, loss=loss)
 ## Run the training loop
 
 ```{code-cell} ipython3
-titer = tqdm.tqdm(
-    range(niter),
-    bar_format="{desc}{percentage:3.0f}%|{bar}|{n_fmt}/{total_fmt}{postfix}",
-)
-titer.set_description("Loss:")
+# Print a status line every ``print_every`` iterations (plus the first and the
+# last) instead of a live progress bar. A tqdm-style bar redraws itself in place
+# with carriage returns, which a non-interactive execution (nbconvert / the docs
+# build) captures as hundreds of repeated frames; periodic prints keep the
+# committed notebook output clean and readable.
+print_every = 20
 loss_history = []
-for i in titer:
+for i in range(niter):
     closs = svi.step(time, temperature, loading, results=data)
     loss_history.append(closs)
-    titer.set_description("Loss: %3.2e" % closs)
+    if i % print_every == 0 or i == niter - 1:
+        print(f"Iteration {i + 1:4d}/{niter}    ELBO loss = {closs:.3e}")
 
 plt.figure()
 plt.plot(loss_history, label="Training")

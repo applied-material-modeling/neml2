@@ -43,6 +43,13 @@ from .models._guard import (  # noqa: F401 (also installs the forward guard)
 )
 from .models.chain_rule import ChainRuleAction, ChainRuleDict, TangentAction
 
+# ``compile`` intentionally shadows the builtin *in this module's namespace only*
+# so the public surface reads ``neml2.compile(model)``. It is the in-process
+# ``torch.compile`` accelerator (native-Python counterpart to the AOTI
+# ``export_model_for_aoti`` / ``compile_model`` path), not a replacement for the
+# builtin anywhere else.
+from .models.compile import compile  # noqa: A004
+
 # AOTI subpackage is gated on the optional NEML2_AOTI build (the pybind
 # _aoti.so isn't present otherwise). Import for side effects so the HIT shim
 # registers "AOTIModel" with the factory; silently skip when the binding
@@ -205,6 +212,7 @@ __all__ = [
     "load_model",
     "load_nonlinear_system",
     "export_model_for_aoti",
+    "compile",
     "ModelUnitTest",
     "ModelUnitTestReport",
     "HitSchema",

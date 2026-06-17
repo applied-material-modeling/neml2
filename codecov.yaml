@@ -6,14 +6,21 @@
 
 coverage:
   status:
+    # Both statuses are hard gates (``informational: false``): when the target
+    # isn't met Codecov posts a FAILING ``codecov/project`` / ``codecov/patch``
+    # check on the PR. To actually block merging, add those two checks to the
+    # branch protection rule for ``main`` (Settings -> Branches -> Require status
+    # checks) -- that part lives in the GitHub repo settings, not this file.
     project:
       default:
-        target: auto                # main branch can't drop overall coverage
+        target: auto                # overall coverage can't drop vs the base
         threshold: 0.5%             # allow 0.5% wiggle for rounding
+        informational: false        # fail the PR status if overall coverage drops
     patch:
       default:
-        target: 80%                 # new code in a PR must hit 80% coverage
-        threshold: 0%               # no slack on new code
+        target: 90%                 # new code in a PR must hit 90% coverage
+        threshold: 1%               # 1% tolerance below target (passes at >= 89%)
+        informational: false        # fail the PR status if patch coverage misses
 
 comment:
   layout: "reach, diff, flags, files"
