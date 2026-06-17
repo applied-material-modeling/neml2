@@ -130,6 +130,44 @@ def _iter_html_pages(build_dir: Path):
         yield str(rel).replace(os.sep, "/"), p
 
 
+# Console-error substrings that only ever arise from a *cross-origin*
+# (external) resource load -- a CDN fetch blocked by CORS or failing at the
+# network layer. These carry their detail in the message text rather than in
+# a structured location, so we match on the text.
+_EXTERNAL_NET_ERROR_NEEDLES = (
+    "blocked by CORS policy",
+    "Access-Control-Allow-Origin",
+    "net::ERR_",
+    "Access to font",
+    "Access to fetch",
+    "Access to script",
+    "Access to stylesheet",
+    "Access to image",
+)
+
+
+def _is_external_network_error(msg) -> bool:
+    """True if a console error is external-network noise, not a docs-pipeline bug.
+
+    The pages load MathJax (and its web-fonts) from a public CDN. When one of
+    those cross-origin requests is slow or blocked in the CI sandbox, Chromium
+    logs a console error (``net::ERR_FAILED`` / ``blocked by CORS policy``).
+    That is exactly the "network noise" the ``requestfailed`` handler already
+    filters out by ignoring non-``file://`` URLs -- the console handler has to
+    apply the same policy or the same flaky load fails the build twice over.
+
+    Misses on assets we ship locally (``file://``) are *not* filtered here:
+    they're real pipeline bugs and stay caught (also independently by
+    ``on_request_failed``).
+    """
+    loc = msg.location or {}
+    url = loc.get("url") or ""
+    if url:
+        # Error tied to a concrete resource: only external resources are noise.
+        return not url.startswith("file://")
+    return any(needle in (msg.text or "") for needle in _EXTERNAL_NET_ERROR_NEEDLES)
+
+
 async def _check_one(context, abs_path: Path, rel: str) -> PageReport:
     """Load one page, attach event hooks, collect all failure categories."""
     report = PageReport(rel=rel)
@@ -137,8 +175,10 @@ async def _check_one(context, abs_path: Path, rel: str) -> PageReport:
 
     def on_console(msg):
         # Only severe console messages fail the build. MathJax + shibuya
-        # together emit a fair amount of warning/info noise on every page.
-        if msg.type == "error":
+        # together emit a fair amount of warning/info noise on every page, and
+        # external-CDN load failures (see _is_external_network_error) are
+        # network noise rather than a docs-pipeline bug.
+        if msg.type == "error" and not _is_external_network_error(msg):
             report.console_errors.append(msg.text)
 
     def on_page_error(exc):

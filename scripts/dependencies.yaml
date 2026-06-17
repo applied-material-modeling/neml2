@@ -80,6 +80,7 @@ python:
   files:
     - .github/actions/neml2-ci/action.yaml
     - .github/workflows/deps.yaml
+    - .github/workflows/dependabot_sync.yaml
     - .github/workflows/copyright.yaml
     - .github/workflows/cpp.yaml
     - .github/workflows/python.yaml

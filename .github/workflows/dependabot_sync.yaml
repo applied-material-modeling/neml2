@@ -1,0 +1,61 @@
+name: Dependabot sync
+
+# Dependabot edits a single version pin in ``pyproject.toml`` without knowing
+# that ``scripts/dependencies.yaml`` is the source of truth, so its pip PRs
+# fail the "Dependency consistency" / "Torch compatibility" checks (and can
+# leave ``pyproject.toml`` internally inconsistent where a dep is pinned in
+# more than one place). This workflow runs on Dependabot PRs, propagates the
+# bump into ``dependencies.yaml`` and every mirror site via
+# ``scripts/dep_manager.py sync``, and pushes the result back to the PR branch
+# so the consistency checks pass.
+
+on:
+  pull_request:
+    branches: [main]
+
+# Newer commits should cancel old runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    # Only Dependabot's own branches, and only when they live in this repo:
+    # Dependabot branches are never forks, and a fork head can't be pushed to.
+    if: >-
+      github.actor == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          # A PAT stored as a *Dependabot* secret (Settings -> Secrets and
+          # variables -> Dependabot) named ``DEPENDABOT_SYNC_TOKEN`` lets the
+          # pushed commit re-trigger the required deps/compat checks -- commits
+          # pushed with the default ``GITHUB_TOKEN`` deliberately do not start
+          # new workflow runs. Without the PAT this falls back to
+          # ``GITHUB_TOKEN``, which still corrects the branch; you then re-run
+          # the deps check (or push an empty commit) to turn the PR green.
+          token: ${{ secrets.DEPENDABOT_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+      - name: Install PyYAML
+        run: pip install pyyaml
+      - name: Propagate the version bump into dependencies.yaml + mirrors
+        run: python scripts/dep_manager.py sync
+      - name: Commit and push if the sync changed anything
+        run: |
+          if git diff --quiet; then
+            echo "Already in sync -- nothing to commit."
+            exit 0
+          fi
+          git config user.name "dependabot[bot]"
+          git config user.email "49699333+dependabot[bot]@users.noreply.github.com"
+          git commit -am "Sync dependencies.yaml + mirrors with Dependabot bump"
+          git push

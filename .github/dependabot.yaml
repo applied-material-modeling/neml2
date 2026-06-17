@@ -1,11 +1,19 @@
 # Dependabot config. See:
 # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 #
-# Both ecosystems open PRs against ``main``. The torch pin is held in
-# ``scripts/dependencies.yaml`` and propagated to pyproject.toml via
-# ``scripts/dep_manager.py``, so a Dependabot PR that bumps torch in
-# pyproject.toml will fail the ``deps`` workflow until the YAML is
-# re-bumped in lockstep -- by design.
+# Both ecosystems open PRs against ``main``. Pinned versions are held in
+# ``scripts/dependencies.yaml`` (the source of truth) and propagated to
+# pyproject.toml and other mirror files via ``scripts/dep_manager.py``.
+# Dependabot only edits pyproject.toml, which on its own would fail the
+# ``deps`` / ``compat`` consistency checks. The ``Dependabot sync`` workflow
+# (.github/workflows/dependabot_sync.yaml) closes that gap: on every
+# Dependabot PR it runs ``dep_manager.py sync`` to propagate the bump back
+# into dependencies.yaml and the mirrors, then pushes the fix to the PR
+# branch. See that workflow for the one-time PAT setup needed to make the
+# synced commit re-run the required checks automatically.
+#
+# The ``dependencies`` and ``github-actions`` labels below must exist in the
+# repo (created via the API/UI) -- Dependabot will not create them itself.
 version: 2
 updates:
   - package-ecosystem: pip
