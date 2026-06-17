@@ -23,7 +23,7 @@ jobs:
           git commit -m 'Remove preview for PR #${{ github.event.number }}'
           git push origin gh-pages
       - name: Comment on the pull request
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: preview-link
           message: |
