@@ -85,7 +85,15 @@ def _combine_k_from_operands(
     against operands with larger k_ndim via torch's right-aligned rules
     (the leading K axes of the larger operand stay leading after the op).
     """
-    kmax = max((w.k_ndim for w in wrappers), default=0)
+    # Explicit loop rather than ``max((w.k_ndim for w in wrappers), default=0)``:
+    # ``k_ndim`` is always >= 0 so starting at 0 is equivalent to ``default=0``,
+    # and the loop form is traceable by ``torch.compile`` (Dynamo has no handler
+    # for the builtin ``max``'s ``default=`` kwarg, which otherwise graph-breaks
+    # this on every typed-tensor binary op in the chain-rule JVP path).
+    kmax = 0
+    for w in wrappers:
+        if w.k_ndim > kmax:
+            kmax = w.k_ndim
     if kmax == 0:
         return 0, (), ()
     # Take the K_state / K_pairing of the operand with the max k_ndim.
