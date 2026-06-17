@@ -35,7 +35,7 @@ jobs:
       # PR preview
       - name: Deploy preview to GitHub Pages
         if: github.event.workflow_run.event == 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        uses: JamesIves/github-pages-deploy-action@v4.8.0
         with:
           branch: gh-pages
           folder: site/html
@@ -52,7 +52,7 @@ jobs:
       # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         if: github.event.workflow_run.event == 'push'
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        uses: JamesIves/github-pages-deploy-action@v4.8.0
         with:
           branch: gh-pages
           folder: site/html
