@@ -155,7 +155,7 @@ jobs:
         # live -- a self-hosted fallback in case the Codecov upload
         # silently breaks. Drop this step once Codecov is reliably
         # picking up uploads.
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-xml
           path: coverage.xml
@@ -241,7 +241,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install wheelhouse/*cp310*.whl
           python -c "import neml2; print(f'neml2 {neml2.__version__} loads from {neml2.__file__}')"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
           name: packages-wheels-${{ matrix.os }}
@@ -254,7 +254,7 @@ jobs:
       - name: Build SDist
         run: pipx run build --sdist
       - name: Upload SDist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
           name: package-sdist
