@@ -9,11 +9,16 @@ on:
     # subfolders re-executes that notebook on PR. The nightly cron
     # re-executes all of them to catch drift from upstream (torch
     # releases, NEML2 internals).
+    #
+    # This workflow file is deliberately NOT a trigger path: an unrelated
+    # edit here (e.g. a Dependabot ``actions/*`` version bump) is not a
+    # notebook-content change and must not kick off a multi-hour execution.
+    # Changes to the selection/execution logic itself are validated by the
+    # nightly cron and ``workflow_dispatch``.
     paths:
       - "doc/content/tutorials/**/main.ipynb"
       - "doc/content/tutorials/**/main.md"
       - "doc/content/tutorials/**/*.i"
-      - ".github/workflows/notebooks.yaml"
   schedule:
     # Nightly at 06:00 UTC
     - cron: "0 6 * * *"
@@ -78,7 +83,20 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           echo "Notebooks to execute:"
           echo "${NOTEBOOKS:-(none)}"
-          echo "notebooks=$(echo $NOTEBOOKS | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+          # Collapse the newline-separated list into one space-separated line.
+          # An empty selection MUST stay empty: `echo $EMPTY | tr '\n' ' '`
+          # yields a single space, which is `!= ''`, so the guarded execute
+          # step below would run `pytest --nbmake` with no path argument and
+          # collect the *entire* repository (all notebooks + the test suite).
+          if [ -n "$NOTEBOOKS" ]; then
+            joined="$(echo "$NOTEBOOKS" | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+          else
+            joined=""
+          fi
+          echo "notebooks=$joined" >> "$GITHUB_OUTPUT"
       - name: Execute notebooks with nbmake
+        # Guard: only runs when one or more notebooks were selected. Combined
+        # with the empty-stays-empty handling above, a no-selection run skips
+        # this step rather than executing everything.
         if: steps.select.outputs.notebooks != ''
         run: pytest -v -s --nbmake --nbmake-timeout=14400 ${{ steps.select.outputs.notebooks }}
