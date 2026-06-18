@@ -8,9 +8,6 @@
 # main (and on manual dispatch); pull requests run a lean subset (torch x
 # python extremes per OS) for a fast, low-noise signal. Adding a row tightens
 # the supported set; removing one drops support.
-#
-# To regenerate the seeded list from PyPI:
-#   python scripts/compat_matrix.py seed
 
 # The torch version the wheels are compiled against. Mirrors
 # torch.version in dependencies.yaml; CI fails if they drift.
