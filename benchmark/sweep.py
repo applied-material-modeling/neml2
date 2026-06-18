@@ -154,14 +154,20 @@ def init_folder(
     repeats: int,
     max_batch: int,
     max_seconds: float,
+    batches: list[int] | None = None,
 ) -> dict[str, Any]:
     """Create ``out_dir`` and write a fresh ``metadata.json``.
 
     Captures the host environment, records the sweep config (warmup,
-    repeats, max-batch, max-seconds) so subsequent ``run`` invocations
-    inherit identical stop conditions, and stamps ``started_utc``.
-    Refuses to overwrite an existing ``metadata.json`` -- use ``run`` to
-    add scenarios or ``summarize`` to refresh derived fields.
+    repeats, max-batch, max-seconds, and an optional explicit ``batches``
+    list) so subsequent ``run`` invocations inherit identical settings, and
+    stamps ``started_utc``. Refuses to overwrite an existing
+    ``metadata.json`` -- use ``run`` to add scenarios or ``summarize`` to
+    refresh derived fields.
+
+    When ``batches`` is given, every scenario is measured at exactly those
+    sizes and the adaptive ``max_batch`` / ``max_seconds`` / slope stop
+    conditions are inert.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     meta_path = out_dir / "metadata.json"
@@ -180,6 +186,8 @@ def init_folder(
         "repeats": repeats,
         "max_batch": max_batch,
         "max_seconds": max_seconds,
+        # Explicit batch list (null = adaptive doubling sweep).
+        "batches": list(batches) if batches is not None else None,
         "linear_slope_threshold": LINEAR_SLOPE_THRESHOLD,
         "linear_streak_required": LINEAR_STREAK_REQUIRED,
         "slope_window": SLOPE_WINDOW,
@@ -188,7 +196,8 @@ def init_folder(
         "failed_scenarios": [],
     }
     meta_path.write_text(json.dumps(meta, indent=2, sort_keys=True))
-    print(f"Initialised {out_dir} (device={device}, warmup={warmup}, repeats={repeats}).")
+    mode = f"batches={batches}" if batches is not None else "adaptive"
+    print(f"Initialised {out_dir} (device={device}, warmup={warmup}, repeats={repeats}, {mode}).")
     return meta
 
 
@@ -221,8 +230,16 @@ def sweep_scenario(
     out_dir: Path,
     max_batch: int,
     max_seconds: float,
+    batches: list[int] | None = None,
 ) -> list[dict[str, Any]]:
-    """Run an adaptive batch sweep on one scenario; write per-scenario CSVs."""
+    """Measure one scenario; write per-scenario CSVs.
+
+    With ``batches=None`` (default) this runs the adaptive doubling sweep
+    (start at 1, double until a stop condition trips). With an explicit
+    ``batches`` list it measures exactly those sizes, in order, with no
+    adaptive stopping -- the caller picked the points deliberately (e.g. a
+    fixed-point regression check at B=8 and B=4096).
+    """
     from neml2 import load_input  # noqa: PLC0415
     from neml2.cli.aoti_compile import compile_and_emit_stub  # noqa: PLC0415
 
@@ -233,12 +250,16 @@ def sweep_scenario(
     rows: list[dict[str, Any]] = []
     raw_runs: list[tuple[int, list[float]]] = []
     medians: list[float] = []
-    batches: list[int] = []
-    linear_streak = 0
-    B = 1
+    batch_hist: list[int] = []
     scenario_csv = out_dir / f"{scenario}.csv"
     runs_csv = out_dir / f"{scenario}.runs.csv"
-    while B <= max_batch:
+
+    def _measure_batch(B: int) -> dict[str, float | int] | None:
+        """Compile + measure at batch ``B``; append the row + flush CSVs.
+
+        Returns the stats dict, or ``None`` on CUDA OOM / host MemoryError
+        (the caller stops the scenario).
+        """
         # Compile per batch -- the per-input ``example_batch_shape`` declared
         # in each scenario's ``[Settings]`` block governs the trace shapes,
         # parameterised by ``${nbatch}``. The autotune block-size hint is
@@ -246,14 +267,11 @@ def sweep_scenario(
         # dependent in ways that aren't predictable from first principles
         # (measured: scpcoup at B=8192 takes 12.6 s when compiled with
         # example=2 vs 2.1 s with example=8192 -- a 6x difference from the
-        # autotune choice alone). The earlier ``TRACE_BATCH=2`` shared compile
-        # was unfair to CP scenarios at large batch; passing ``nbatch=B`` per
-        # iter lets each scenario's ``[Settings]`` resolve correctly. NEVER
-        # pass ``example_batch_shape=`` here -- as a CLI string it becomes a
-        # UNIFORM override that wipes per-input declarations (e.g. mxpc's
-        # ``elastic_strain~1 = '(2; ${nbatch}:grain)'`` would silently
-        # collapse to ``(B,)`` for every input, treating the per-grain sub-
-        # batch as dynamic batch).
+        # autotune choice alone). NEVER pass ``example_batch_shape=`` here --
+        # as a CLI string it becomes a UNIFORM override that wipes per-input
+        # declarations (e.g. mxpc's ``elastic_strain~1 = '(2; ${nbatch}:grain)'``
+        # would silently collapse to ``(B,)`` for every input, treating the
+        # per-grain sub-batch as dynamic batch).
         pre = (f"nbatch={B}", f"device={device}")
         try:
             t0 = time.perf_counter()
@@ -278,21 +296,41 @@ def sweep_scenario(
         except (RuntimeError, MemoryError) as exc:
             # CUDA OOM and host-OOM both end the sweep for this scenario.
             print(f"[{scenario}] B={B}: aborted ({type(exc).__name__}: {exc!s})", flush=True)
-            break
+            return None
         stats = compute_stats(times)
-        row = {"scenario": scenario, "nbatch": B, "n_warmup": warmup, **stats, **mem}
-        rows.append(row)
+        rows.append({"scenario": scenario, "nbatch": B, "n_warmup": warmup, **stats, **mem})
         raw_runs.append((B, [float(t * 1000.0) for t in times]))
         medians.append(stats["median_ms"])
-        batches.append(B)
-
+        batch_hist.append(B)
         # Flush per-batch so a torch C++ crash on a later batch doesn't take
         # the whole scenario's data with it. The full file is overwritten on
         # every successful batch.
         _write_scenario_csv(scenario_csv, rows)
         _write_runs_csv(runs_csv, raw_runs)
+        return stats
 
-        slope = loglog_slope(batches[-SLOPE_WINDOW:], medians[-SLOPE_WINDOW:])
+    # Explicit batch list: measure exactly the requested sizes, no adaptive
+    # stopping. --max-batch / --max-seconds / slope detection do not apply.
+    if batches is not None:
+        for B in batches:
+            stats = _measure_batch(B)
+            if stats is None:
+                break
+            print(
+                f"[{scenario}] B={B:6d}  median={stats['median_ms']:9.2f} ms  "
+                f"std={stats['std_ms']:8.2f}",
+                flush=True,
+            )
+        return rows
+
+    # Adaptive doubling sweep (default).
+    linear_streak = 0
+    B = 1
+    while B <= max_batch:
+        stats = _measure_batch(B)
+        if stats is None:
+            break
+        slope = loglog_slope(batch_hist[-SLOPE_WINDOW:], medians[-SLOPE_WINDOW:])
         slope_str = "n/a" if slope != slope else f"{slope:+.2f}"
         print(
             f"[{scenario}] B={B:6d}  median={stats['median_ms']:9.2f} ms  "
@@ -355,6 +393,8 @@ def run_scenarios(
     sweep_cfg = meta.setdefault("sweep", {})
     device = sweep_cfg["device"]
     dtype = sweep_cfg["dtype"]
+    # Explicit batch list (older folders predate the key -> adaptive).
+    batches = sweep_cfg.get("batches")
 
     import torch  # noqa: PLC0415
 
@@ -402,6 +442,7 @@ def run_scenarios(
                     out_dir=out_dir,
                     max_batch=sweep_cfg["max_batch"],
                     max_seconds=sweep_cfg["max_seconds"],
+                    batches=batches,
                 )
                 n_ran += 1
             except Exception as exc:  # noqa: BLE001
@@ -590,14 +631,35 @@ def _add_init_args(p: argparse.ArgumentParser) -> None:
     p.add_argument(
         "--max-batch",
         type=int,
-        default=65536,
-        help="Hard cap on the largest batch tried per scenario.",
+        default=None,
+        help=(
+            "Hard cap on the largest batch tried per scenario (adaptive mode "
+            "only; default 65536). Mutually exclusive with --batches."
+        ),
     )
     p.add_argument(
         "--max-seconds",
         type=float,
-        default=30.0,
-        help="Stop a scenario sweep when median call time exceeds this.",
+        default=None,
+        help=(
+            "Stop a scenario sweep when median call time exceeds this (adaptive "
+            "mode only; default 30). Mutually exclusive with --batches."
+        ),
+    )
+    p.add_argument(
+        "--batches",
+        type=int,
+        nargs="+",
+        default=None,
+        metavar="N",
+        help=(
+            "Explicit batch sizes to measure (e.g. --batches 8 4096). When set, "
+            "the adaptive doubling sweep is replaced by exactly these sizes, run "
+            "in order; the adaptive stop conditions (--max-batch / --max-seconds "
+            "/ slope detection) do not apply and may not be combined with it. "
+            "Useful for fixed-point regression checks (e.g. comparing two builds "
+            "at the same batches)."
+        ),
     )
     p.add_argument(
         "--output-dir",
@@ -693,18 +755,49 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _resolve_sweep_limits(args: argparse.Namespace, parser: argparse.ArgumentParser) -> tuple:
+    """Validate the adaptive limits against ``--batches`` and resolve defaults.
+
+    ``--max-batch`` / ``--max-seconds`` only bound the adaptive doubling
+    sweep, so combining either with an explicit ``--batches`` list is a
+    contradiction -- error out rather than silently ignore them. Their
+    argparse defaults are ``None`` so an explicit value is distinguishable
+    from the unset default; returns the concrete (max_batch, max_seconds)
+    with the adaptive defaults filled in.
+    """
+    if args.batches is not None:
+        conflicting = [
+            name
+            for name, val in (("--max-batch", args.max_batch), ("--max-seconds", args.max_seconds))
+            if val is not None
+        ]
+        if conflicting:
+            parser.error(
+                f"argument --batches: not allowed with {' / '.join(conflicting)} "
+                "(those only bound the adaptive doubling sweep, which --batches replaces)."
+            )
+        if any(b <= 0 for b in args.batches):
+            parser.error(f"argument --batches: sizes must be positive, got {args.batches}.")
+    max_batch = args.max_batch if args.max_batch is not None else 65536
+    max_seconds = args.max_seconds if args.max_seconds is not None else 30.0
+    return max_batch, max_seconds
+
+
 def main(argv: list[str] | None = None) -> int:
-    args = _build_parser().parse_args(argv)
+    parser = _build_parser()
+    args = parser.parse_args(argv)
 
     if args.cmd == "init":
+        max_batch, max_seconds = _resolve_sweep_limits(args, parser)
         out_dir = args.output_dir or _autoname_output_dir(args.device)
         init_folder(
             out_dir,
             device=args.device,
             warmup=args.warmup,
             repeats=args.repeats,
-            max_batch=args.max_batch,
-            max_seconds=args.max_seconds,
+            max_batch=max_batch,
+            max_seconds=max_seconds,
+            batches=args.batches,
         )
         # Echo the resolved path so callers can capture it.
         print(out_dir)
@@ -723,14 +816,16 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "all":
+        max_batch, max_seconds = _resolve_sweep_limits(args, parser)
         out_dir = args.output_dir or _autoname_output_dir(args.device)
         init_folder(
             out_dir,
             device=args.device,
             warmup=args.warmup,
             repeats=args.repeats,
-            max_batch=args.max_batch,
-            max_seconds=args.max_seconds,
+            max_batch=max_batch,
+            max_seconds=max_seconds,
+            batches=args.batches,
         )
         run_scenarios(out_dir, args.scenarios, force=False)
         summarize(out_dir)

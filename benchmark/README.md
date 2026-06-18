@@ -34,14 +34,35 @@ python -m benchmark.sweep run       --output-dir benchmark/results/myrun/ --scen
 python -m benchmark.sweep summarize --output-dir benchmark/results/myrun/
 ```
 
+### Fixed batch sizes (regression / A-B checks)
+
+By default the sweep adaptively doubles the batch size until saturation.
+Pass `--batches` to measure an explicit set instead — the same
+warmup + repeats + median machinery, but only at the sizes you name (no
+adaptive stopping). This is what you want for a fixed-point comparison of
+two builds, e.g. checking a refactor didn't drift the runtime:
+
+```bash
+# Measure radret + scpdecoup at exactly B=8 and B=4096 on GPU 1.
+# CUDA_VISIBLE_DEVICES pins the physical GPU; --device cuda then sees it as cuda:0.
+CUDA_VISIBLE_DEVICES=1 python -m benchmark.sweep all \
+    --device cuda --batches 8 4096 \
+    --scenarios radret scpdecoup \
+    --output-dir benchmark/results/check_a/
+```
+
+Run the same command against the other build (e.g. after `git checkout` +
+rebuild) into a second folder, then join the two `summary.csv` files on
+`(scenario, nbatch)` and compare `median_ms`.
+
 ### Subcommand reference
 
 | Subcommand | What it does | Required | Optional |
 |---|---|---|---|
-| `init` | Create folder; write `metadata.json` with host env + sweep config (warmup, repeats, max-batch, max-seconds, neml2-source). Refuses to overwrite an existing `metadata.json`. | `--device {cpu,cuda}` | `--output-dir`, `--warmup` (5), `--repeats` (20), `--max-batch` (65536), `--max-seconds` (30), `--neml2-source` (`v3-HEAD`) |
+| `init` | Create folder; write `metadata.json` with host env + sweep config (warmup, repeats, max-batch, max-seconds, batches, neml2-source). Refuses to overwrite an existing `metadata.json`. | `--device {cpu,cuda}` | `--output-dir`, `--warmup` (5), `--repeats` (20), `--max-batch` (65536), `--max-seconds` (30), `--batches` (none → adaptive), `--neml2-source` (`v3-HEAD`) |
 | `run` | Run scenarios into a folder previously created by `init`. Skips scenarios with an existing `<scenario>.csv` unless `--force`. Reads warmup/repeats/max-batch/max-seconds from the folder's metadata. | `--output-dir` | `--scenarios elasticity isoharden ...` (default: all 12), `--force` |
 | `summarize` | Rebuild `summary.csv` and `metadata.json:sweep.batch_ranges` from the per-scenario CSVs currently on disk. Read-only on per-scenario files. | `--output-dir` | — |
-| `all` | Convenience wrapper: `init` + `run --scenarios <all>` + `summarize`. Same args as `init`, plus `--scenarios`. | `--device {cpu,cuda}` | same as `init`, plus `--scenarios` |
+| `all` | Convenience wrapper: `init` + `run --scenarios <all>` + `summarize`. Same args as `init`, plus `--scenarios`. | `--device {cpu,cuda}` | same as `init`, plus `--scenarios`, `--batches` |
 
 When `--output-dir` is omitted from `init` or `all`, the folder name is
 auto-generated as
@@ -90,7 +111,7 @@ field-by-field against any other run on the same machine.
 | `cpu` | model, vendor, cores (logical/physical), governor, min/max/base freq, NUMA nodes, affinity mask |
 | `memory` | total_gb, available_gb |
 | `cuda` (cuda only) | device_name, compute_capability, total_memory_gb, driver_version, cuda_runtime_version, nvcc_version, `nvidia-smi` snapshot (compute_mode, persistence_mode, power, clocks, temp, ECC) |
-| `sweep` | neml2_source, device, dtype, mode (`"aoti"`), warmup, repeats, max_batch, max_seconds, linear_slope_threshold/streak/window, trace_batch, `batch_ranges` per scenario, `failed_scenarios`, `last_run_wall_seconds` |
+| `sweep` | neml2_source, device, dtype, mode (`"aoti"`), warmup, repeats, max_batch, max_seconds, `batches` (null = adaptive), linear_slope_threshold/streak/window, trace_batch, `batch_ranges` per scenario, `failed_scenarios`, `last_run_wall_seconds` |
 
 What's intentionally NOT recorded:
 * `pip freeze` — exposes the user's full Python install; not needed for
