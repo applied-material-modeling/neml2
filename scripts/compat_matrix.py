@@ -35,8 +35,9 @@ Usage:
         verify compatibility.yaml internal consistency and sync with
         dependencies.yaml
 
-  compat_matrix.py expand --kind {test|wheel}
+  compat_matrix.py expand --kind {test|wheel} [--mode {full|pr}]
         print the matrix as JSON for use in a GitHub Actions strategy.matrix
+        (--mode pr emits the lean torch x python extremes subset for PRs)
 
   compat_matrix.py render [--in-place FILE] [--check]
         render the matrix as a Markdown table; with --in-place, splice it into
@@ -177,9 +178,10 @@ def _write_compat(build_torch: str, combinations: list[dict]) -> None:
         "# `python` on `os`, installed alongside `torch == torch`, MUST pass the",
         "# Python test suite (tests).",
         "#",
-        "# CI (.github/workflows/compat.yaml) enforces this on every PR and push",
-        "# to main. Adding a row tightens the supported set; removing one drops",
-        "# support.",
+        "# CI (.github/workflows/compat.yaml) runs the FULL matrix on every push to",
+        "# main (and on manual dispatch); pull requests run a lean subset (torch x",
+        "# python extremes per OS) for a fast, low-noise signal. Adding a row tightens",
+        "# the supported set; removing one drops support.",
         "#",
         "# To regenerate the seeded list from PyPI:",
         "#   python scripts/compat_matrix.py seed",
@@ -317,17 +319,35 @@ def cmd_check(_args) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _subset(combinations: list[dict]) -> list[dict]:
+    """The PR-time subset: torch and python *extremes* only, all OS kept.
+
+    Keeps rows whose torch is the min or max torch AND whose python is the min
+    or max python present in the matrix -- the four corners per OS, where
+    breakage is most likely. The full matrix (run on push to main) covers the
+    interior, so PRs get a fast, low-noise signal without losing the boundary
+    coverage.
+    """
+    torches = sorted({r["torch"] for r in combinations}, key=_ver_tuple)
+    pys = sorted({r["python"] for r in combinations}, key=_ver_tuple)
+    keep_t = {torches[0], torches[-1]}
+    keep_p = {pys[0], pys[-1]}
+    return [r for r in combinations if r["torch"] in keep_t and r["python"] in keep_p]
+
+
 def cmd_expand(args) -> None:
     data = load_compat()
+    combinations = data["combinations"]
+    if args.mode == "pr":
+        combinations = _subset(combinations)
     if args.kind == "test":
         include = [
-            {"torch": r["torch"], "python": r["python"], "os": r["os"]}
-            for r in data["combinations"]
+            {"torch": r["torch"], "python": r["python"], "os": r["os"]} for r in combinations
         ]
     elif args.kind == "wheel":
         seen: set[tuple[str, str]] = set()
         include = []
-        for r in data["combinations"]:
+        for r in combinations:
             key = (r["python"], r["os"])
             if key in seen:
                 continue
@@ -438,6 +458,15 @@ def main() -> None:
 
     expand_p = subs.add_parser("expand", help="emit JSON matrix for GitHub Actions")
     expand_p.add_argument("--kind", choices=["test", "wheel"], required=True)
+    expand_p.add_argument(
+        "--mode",
+        choices=["full", "pr"],
+        default="full",
+        help=(
+            "full = every combination (push to main / workflow_dispatch); "
+            "pr = torch & python extremes per OS (the lean PR subset)."
+        ),
+    )
 
     render_p = subs.add_parser("render", help="render the matrix as a Markdown table")
     render_p.add_argument(
