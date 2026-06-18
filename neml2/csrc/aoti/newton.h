@@ -36,6 +36,8 @@
 
 #include <ATen/core/Tensor.h>
 
+#include "neml2/csrc/aoti/aoti_export.h"
+
 namespace neml2::aoti
 {
 class NonlinearSystem;
@@ -54,20 +56,32 @@ struct SolverConfig
   double ls_c = 1.0e-3;
 };
 
+/// Outcome of a Newton solve: the (converged or last) per-unknown-group
+/// iterate, whether it converged within ``miters``, and the iteration count.
+struct NewtonResult
+{
+  std::vector<at::Tensor> u;
+  bool converged = false;
+  std::size_t iterations = 0;
+};
+
 /// Per-group Newton-Raphson solver with optional backtracking line search.
 /// Convergence is the elementwise ``||b|| < atol OR ||b||/||b0|| < rtol``
 /// all-reduce; divergence (non-finite residual) throws. On max-iterations it
-/// returns the last iterate (matching the NEML2 Newton convention).
-class Newton
+/// returns the last iterate (``converged=false``), matching the NEML2 Newton
+/// convention.
+///
+/// AOTI_EXPORT: this class is part of the shared library's public ABI so the
+/// pybind layer (a separate module) can construct + drive it for the eager path.
+class AOTI_EXPORT Newton
 {
 public:
   explicit Newton(SolverConfig cfg);
 
-  /// Solve ``r(u) = 0`` starting from ``u0`` (per unknown group). Returns the
-  /// converged per-unknown-group vector. Set ``NEML2_AOTI_TRACE_NEWTON=1`` (or
-  /// ``2`` for per-iteration detail) to trace to stderr.
-  std::vector<at::Tensor> solve(const NonlinearSystem & sys,
-                                const std::vector<at::Tensor> & u0) const;
+  /// Solve ``r(u) = 0`` starting from ``u0`` (per unknown group). Set
+  /// ``NEML2_AOTI_TRACE_NEWTON=1`` (or ``2`` for per-iteration detail) to trace
+  /// to stderr.
+  NewtonResult solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) const;
 
 private:
   SolverConfig _cfg;

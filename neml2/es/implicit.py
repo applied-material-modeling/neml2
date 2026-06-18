@@ -59,7 +59,7 @@ from neml2.models.chain_rule import ChainRuleDict
 from neml2.types import TensorWrapper
 
 from ._helpers import _expanded_identity_seed, _flatten_base
-from .assembled import AssembledMatrix, AssembledVector, _build_block_matrix
+from .assembled import AssembledMatrix, AssembledVector, _build_block_matrix, wrap_group_raw
 from .axis_layout import AxisLayout
 from .system import ModelNonlinearSystem
 
@@ -127,47 +127,18 @@ class _SystemModule(nn.Module):
         u_group_raws = args[:n_u]
         g_group_raws = args[n_u:]
         # AssembledVector takes a list of typed dynamic-base ``Tensor``
-        # wrappers, one per group. The raws coming in here are already
-        # the group tensor data; wrap with the right
-        # batch_ndim / sub_batch_ndim for each group so disassemble
-        # interprets them correctly.
-        from .assembled import Tensor as _DynTensor  # noqa: PLC0415
-
-        def _wrap_group(raw, group_names, structure, layout):
-            # Determine batch_ndim and sub_batch_ndim for the group's
-            # natural tensor shape.
-            if not group_names:
-                # Empty group -- pass through (will yield no vars on
-                # disassemble).
-                return _DynTensor(raw, batch_ndim=raw.ndim, sub_batch_ndim=0)
-            first_name = group_names[0]
-            sb = layout.sub_batch_shape(first_name)
-            type_cls = layout.specs[first_name]
-            if structure == "block":
-                # Shape: (*dyn, *sb, sum_of_per_var_base).
-                sub_ndim = len(sb)
-                total_ndim = raw.ndim
-                # base_ndim = 1 here (group_base axis), dyn_ndim = total - sub - 1.
-                batch_ndim = total_ndim - sub_ndim - 1
-                return _DynTensor(raw, batch_ndim=batch_ndim, sub_batch_ndim=sub_ndim)
-            else:
-                # DENSE: shape (*dyn, sum_of_per_var_var_size). sub
-                # folded into base; sub_batch_ndim=0 on the group
-                # tensor.
-                total_ndim = raw.ndim
-                batch_ndim = total_ndim - 1
-                # base check (only used for shape consistency comments).
-                _ = type_cls
-                return _DynTensor(raw, batch_ndim=batch_ndim, sub_batch_ndim=0)
-
+        # wrappers, one per group. The raws coming in here are already the
+        # group tensor data; :func:`wrap_group_raw` re-attaches the right
+        # batch_ndim / sub_batch_ndim per group so disassemble interprets
+        # them correctly.
         u_tensors = [
-            _wrap_group(raw, gnames, structure, self.ulayout)
+            wrap_group_raw(raw, gnames, structure, self.ulayout)
             for raw, gnames, structure in zip(
                 u_group_raws, self.unknown_groups, self.ulayout.structure, strict=True
             )
         ]
         g_tensors = [
-            _wrap_group(raw, gnames, structure, self.glayout)
+            wrap_group_raw(raw, gnames, structure, self.glayout)
             for raw, gnames, structure in zip(
                 g_group_raws, self.given_groups, self.glayout.structure, strict=True
             )

@@ -279,7 +279,9 @@ Model::Impl::_run_implicit_segment(const Segment & seg,
   cfg.ls_max_iters = seg.ls_max_iters;
   cfg.ls_cutback = seg.ls_cutback;
   cfg.ls_c = seg.ls_c;
-  u_solved_groups = Newton(cfg).solve(sys, u0_groups);
+  // The AOTI path ignores the converged flag (returns the last iterate on
+  // max-iterations, matching the pre-unification behavior).
+  u_solved_groups = Newton(cfg).solve(sys, u0_groups).u;
 
   // Unpack converged per-group unknowns back to per-variable state for
   // downstream forward segments / master outputs to read by name.

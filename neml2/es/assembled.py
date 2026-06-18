@@ -219,6 +219,33 @@ class AssembledVector:
         return AssembledVector(self.layout.sub_layout(index), [self.tensors[index]])
 
 
+def wrap_group_raw(
+    raw: torch.Tensor,
+    group_names: tuple[str, ...],
+    structure: str,
+    layout: AxisLayout,
+) -> Tensor:
+    """Wrap a per-group raw tensor into a typed dynamic-base :class:`Tensor`.
+
+    Inverse of the per-group ``.data`` extraction at the solver / AOTI
+    framework boundary: it infers ``batch_ndim`` / ``sub_batch_ndim`` from the
+    group's declared :data:`SubBatchStructure` so the result drops straight
+    into an :class:`AssembledVector` and round-trips through
+    :meth:`AssembledVector.disassemble`. Used wherever per-group raw tensors
+    re-enter the typed world (the eager Newton boundary, the AOTI export
+    segment inputs).
+    """
+    if not group_names:
+        return Tensor(raw, batch_ndim=raw.ndim, sub_batch_ndim=0)
+    first_name = group_names[0]
+    if structure == "block":
+        # (*dyn, *sub_batch, group_base_total): base_ndim=1.
+        sub_ndim = len(layout.sub_batch_shape(first_name))
+        return Tensor(raw, batch_ndim=raw.ndim - sub_ndim - 1, sub_batch_ndim=sub_ndim)
+    # DENSE: (*dyn, group_total); sub_batch folded into base.
+    return Tensor(raw, batch_ndim=raw.ndim - 1, sub_batch_ndim=0)
+
+
 # ---------------------------------------------------------------------------
 # AssembledMatrix
 # ---------------------------------------------------------------------------
@@ -1055,5 +1082,6 @@ __all__ = [
     "AssembledMatrix",
     "norm",
     "norm_sq",
+    "wrap_group_raw",
     "_build_block_matrix",
 ]

@@ -161,7 +161,7 @@ Newton::Newton(SolverConfig cfg)
 {
 }
 
-std::vector<at::Tensor>
+NewtonResult
 Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) const
 {
   const auto & unknown_layout = sys.unknown_layout();
@@ -206,7 +206,7 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
     if (trace)
       std::cerr << "[aoti newton]iters=0 (converged at predictor) "
                 << "b0_norm=" << b0_norm.max().item<double>() << std::endl;
-    return u;
+    return {std::move(u), /*converged=*/true, /*iterations=*/0};
   }
   std::size_t reached = _cfg.miters;
   if (verbose)
@@ -305,7 +305,7 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
         std::cerr << "[aoti newton]iters=" << i << " (converged) "
                   << "b0_norm=" << b0_norm.max().item<double>()
                   << " b_norm=" << b_norm.max().item<double>() << std::endl;
-      return u;
+      return {std::move(u), /*converged=*/true, /*iterations=*/i};
     }
   }
 
@@ -319,6 +319,6 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
 
   // Maxed out without converging. Match the NEML2 Newton solver convention:
   // return the last iterate rather than throwing so callers can inspect it.
-  return u;
+  return {std::move(u), /*converged=*/false, /*iterations=*/reached};
 }
 } // namespace neml2::aoti

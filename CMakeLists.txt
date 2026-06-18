@@ -403,6 +403,12 @@ if(NEML2_WHEEL)
       endmacro()
 
       add_native_extension(pyaoti aoti LIBS aoti)
+      # The eager-path bridge uses pybind/py::object, so it lives in the module
+      # (which links Python), not the free-standing aoti library. It drives the
+      # exported C++ Newton/NonlinearSystem from the lib.
+      target_sources(pyaoti PRIVATE
+            ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/nonlinear_system_eager.cpp
+      )
 endif()
 
 # ----------------------------------------------------------------------------

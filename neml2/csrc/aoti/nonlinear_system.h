@@ -38,6 +38,8 @@
 
 #include <ATen/core/Tensor.h>
 
+#include "neml2/csrc/aoti/aoti_export.h"
+
 namespace neml2::aoti
 {
 /// Light per-group layout descriptor consumed by the Newton convergence /
@@ -55,7 +57,11 @@ struct GroupLayout
 /// Abstract residual/step provider. All tensors are per-group, following the
 /// AssembledVector convention: BLOCK groups are ``(*B, *sub_batch, base_total)``
 /// and DENSE groups are ``(*B, group_total)``.
-class NonlinearSystem
+///
+/// AOTI_EXPORT: part of the shared library's public ABI -- the pybind layer (a
+/// separate module) subclasses this for the eager path, so the vtable anchor
+/// (the out-of-line dtor) must be exported.
+class AOTI_EXPORT NonlinearSystem
 {
 public:
   virtual ~NonlinearSystem();

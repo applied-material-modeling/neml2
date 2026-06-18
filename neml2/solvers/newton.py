@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING
 
 import torch
 
-from neml2.es import AssembledVector, NonlinearSystem, norm
 from neml2.factory import register_neml2_object
 from neml2.schema import HitSchema, dependency, option
 
@@ -41,7 +40,21 @@ from .schur_complement import SchurComplement
 if TYPE_CHECKING:
     import nmhit
 
+    from neml2.es import AxisLayout, ModelNonlinearSystem
     from neml2.factory import _NativeInputFile
+
+
+def _group_layout_descriptor(layout: AxisLayout) -> list[tuple[str, list[int]]]:
+    """Per-group ``(structure, sub_batch_shape)`` descriptors for the C++ solver.
+
+    The shared C++ Newton loop needs only each group's ``SubBatchStructure``
+    and ``sub_batch_shape`` to compute its per-group reductions -- it is
+    deliberately independent of the Python ``AxisLayout``.
+    """
+    return [
+        (layout.structure[gi], [int(s) for s in layout.group_sub_batch_shape(gi)])
+        for gi in range(layout.ngroup)
+    ]
 
 
 @register_neml2_object("Newton")
@@ -92,44 +105,74 @@ class Newton:
         self.miters = miters
         self.verbose = verbose
 
-    def converged(self, itr: int, nb: torch.Tensor, nb0: torch.Tensor) -> bool:
-        if self.verbose:
-            print(
-                f"ITERATION {itr:3d}, |R| = {torch.max(nb).item():.6e}, "
-                f"|R0| = {torch.max(nb0).item():.6e}"
-            )
-        rel = nb / torch.clamp(nb0, min=torch.finfo(nb.dtype).tiny)
-        return bool(torch.all(torch.logical_or(nb < self.atol, rel < self.rtol)).item())
+    def _solver_config(self) -> dict:
+        """Per-group Newton config forwarded to the C++ solver.
 
-    def solve(self, system: NonlinearSystem) -> NonlinearResult:
-        b = system.b()
-        nb = norm(b)
-        nb0 = nb.clone()
-
-        if self.converged(0, nb, nb0):
-            return NonlinearResult(RetCode.SUCCESS, 0)
-
-        for itr in range(1, self.miters):
-            self.update(system)
-            b = system.b()
-            nb = norm(b)
-            if self.converged(itr, nb, nb0):
-                return NonlinearResult(RetCode.SUCCESS, itr)
-
-        return NonlinearResult(RetCode.MAXITER, self.miters)
-
-    def update(self, system: NonlinearSystem) -> None:
-        """Apply one Newton step: solve ``A du = b`` and update ``u``.
-
-        Extracted so :class:`NewtonWithLineSearch` can override the
-        per-iter update without re-implementing the convergence loop.
-        Mirrors the C++ ``Newton::update`` / ``NewtonWithLineSearch::update``
-        split.
+        Base ``Newton`` takes the full step (``ls_max_iters=1`` disables line
+        search). :class:`NewtonWithLineSearch` overrides this with its
+        line-search options.
         """
-        A, b = system.A_and_b()
-        du = self.linear_solver.solve(A, b)
-        assert isinstance(du, AssembledVector)
-        system.set_u(system.u() + du)
+        return {
+            "atol": self.atol,
+            "rtol": self.rtol,
+            "miters": self.miters,
+            "ls_type": "BACKTRACKING",
+            "ls_max_iters": 1,
+            "ls_cutback": 2.0,
+            "ls_c": 1.0e-3,
+        }
+
+    def solve(self, system: ModelNonlinearSystem) -> NonlinearResult:
+        """Solve the nonlinear system via the shared C++ Newton solver.
+
+        The iteration control (convergence test, line search) lives in C++ and
+        is shared with the AOTI runtime; this wrapper supplies the residual /
+        Newton-step callbacks (the ``RHS`` / ``NewtonStep`` export modules, run
+        eagerly) plus the per-group layouts, then commits the converged iterate
+        back into the system.
+        """
+        # Local imports: the compiled extension + the per-group raw boundary
+        # helper, kept off the package import path so a partial build can still
+        # import solvers.
+        from neml2.aoti._aoti import newton_solve_eager  # noqa: PLC0415
+        from neml2.es.implicit import _vector_to_per_group_raws  # noqa: PLC0415
+
+        # The Newton iterates are a fixed-point solve: gradients flow through
+        # the converged state via the IFT (see ImplicitUpdate), never through
+        # the iterations, so the solve runs detached.
+        with torch.no_grad():
+            u0_raws = list(_vector_to_per_group_raws(system.u()))
+
+            # residual / step delegate to the system's native assemble (the same
+            # path the old eager Newton.update used) -- only the per-group raw
+            # marshalling is new. The C++ loop owns convergence + line search.
+            def residual_fn(u_raws: list[torch.Tensor]) -> list[torch.Tensor]:
+                system.set_u_from_group_raws(u_raws)
+                return list(_vector_to_per_group_raws(system.b()))
+
+            def step_fn(
+                u_raws: list[torch.Tensor],
+            ) -> tuple[list[torch.Tensor], list[torch.Tensor]]:
+                system.set_u_from_group_raws(u_raws)
+                A, b = system.A_and_b()
+                du = self.linear_solver.solve(A, b)
+                return (
+                    list(_vector_to_per_group_raws(du)),
+                    list(_vector_to_per_group_raws(b)),
+                )
+
+            u_star, converged, iterations = newton_solve_eager(
+                residual_fn=residual_fn,
+                step_fn=step_fn,
+                unknown_layout=_group_layout_descriptor(system.ulayout),
+                residual_layout=_group_layout_descriptor(system.blayout),
+                u0=u0_raws,
+                **self._solver_config(),
+            )
+            system.set_u_from_group_raws(u_star)
+
+        ret = RetCode.SUCCESS if converged else RetCode.MAXITER
+        return NonlinearResult(ret, iterations)
 
 
 __all__ = ["Newton"]

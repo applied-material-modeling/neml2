@@ -43,7 +43,7 @@ from ._helpers import (
     _expanded_identity_seed,
     _flatten_base,
 )
-from .assembled import AssembledMatrix, AssembledVector, _build_block_matrix
+from .assembled import AssembledMatrix, AssembledVector, _build_block_matrix, wrap_group_raw
 from .axis_layout import AxisLayout, SubBatchStructure
 from .sparse import SparseVector
 
@@ -356,6 +356,21 @@ class ModelNonlinearSystem(NonlinearSystem):
         if isinstance(u, SparseVector):
             u = u.assemble()
         self._state.update(u.disassemble().values)
+
+    def set_u_from_group_raws(self, u_raws: list[torch.Tensor]) -> None:
+        """Commit per-group raw unknown tensors (the solver boundary).
+
+        Inverse of ``_vector_to_per_group_raws(self.u())``: each per-group raw
+        is re-typed via :func:`~neml2.es.assembled.wrap_group_raw` using the
+        unknown layout's structure, then committed through :meth:`set_u`. Used
+        by the C++-backed Newton solver to write the converged iterate back
+        into the system state.
+        """
+        tensors = [
+            wrap_group_raw(raw, self.ulayout.groups[gi], self.ulayout.structure[gi], self.ulayout)
+            for gi, raw in enumerate(u_raws)
+        ]
+        self.set_u(AssembledVector(self.ulayout, tensors))
 
     def set_g(self, g: AssembledVector | SparseVector) -> None:
         if isinstance(g, SparseVector):

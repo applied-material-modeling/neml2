@@ -28,16 +28,20 @@
 // (loader helpers, drivers) and stays isolated from the legacy bindings in
 // python/src/, which will eventually be retired.
 
+#include <cstddef>
 #include <filesystem>
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <torch/csrc/utils/pybind.h>
 
 #include "neml2/csrc/aoti/Model.h"
+#include "neml2/csrc/aoti/newton.h"
+#include "neml2/csrc/aoti/nonlinear_system_eager.h"
 
 namespace py = pybind11;
 using neml2::aoti::Model;
@@ -175,4 +179,60 @@ Empty when the model was compiled with no ``--parameter`` flags.
           py::arg("name"),
           py::arg("value"),
           "Replace a promoted parameter's tensor (the C++-side slot is updated).");
+
+  // Eager-path entry point: the same C++ Newton solver the AOTI runtime uses,
+  // driven over Python-supplied residual/step callables (RHS / NewtonStep).
+  // This is what unifies the eager solve with the compiled one -- a single
+  // iteration-control implementation.
+  m.def(
+      "newton_solve_eager",
+      [](py::object residual_fn,
+         py::object step_fn,
+         std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
+         std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
+         std::vector<at::Tensor> u0,
+         double atol,
+         double rtol,
+         std::size_t miters,
+         const std::string & ls_type,
+         std::size_t ls_max_iters,
+         double ls_cutback,
+         double ls_c)
+      {
+        neml2::aoti::SolverConfig cfg;
+        cfg.atol = atol;
+        cfg.rtol = rtol;
+        cfg.miters = miters;
+        cfg.ls_type = ls_type;
+        cfg.ls_max_iters = ls_max_iters;
+        cfg.ls_cutback = ls_cutback;
+        cfg.ls_c = ls_c;
+        return neml2::aoti::run_eager_newton(cfg,
+                                             std::move(residual_fn),
+                                             std::move(step_fn),
+                                             std::move(unknown_layout),
+                                             std::move(residual_layout),
+                                             std::move(u0));
+      },
+      py::arg("residual_fn"),
+      py::arg("step_fn"),
+      py::arg("unknown_layout"),
+      py::arg("residual_layout"),
+      py::arg("u0"),
+      py::arg("atol"),
+      py::arg("rtol"),
+      py::arg("miters"),
+      py::arg("ls_type"),
+      py::arg("ls_max_iters"),
+      py::arg("ls_cutback"),
+      py::arg("ls_c"),
+      R"(
+Run the shared C++ Newton solver over an eager (Python-delegating) system.
+
+``residual_fn(list[Tensor]) -> list[Tensor]`` and ``step_fn(list[Tensor]) ->
+(list[Tensor], list[Tensor])`` supply the per-group residual and Newton step
+(they bind the givens + linear solver, e.g. ``RHS`` / ``NewtonStep``).
+``unknown_layout`` / ``residual_layout`` are ``(structure, sub_batch_shape)``
+per group. Returns ``(u_solved, converged, iterations)``.
+)");
 }
