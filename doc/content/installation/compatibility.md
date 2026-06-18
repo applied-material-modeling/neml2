@@ -31,17 +31,17 @@ regression-tested. If you need an additional combination, please
 <!-- BEGIN_COMPAT_MATRIX -- regenerate with: python scripts/compat_matrix.py render --in-place FILE -->
 ### linux
 
-- Python 3.10: torch 2.10.0, 2.11.0, 2.12.0
-- Python 3.11: torch 2.10.0, 2.11.0, 2.12.0
-- Python 3.12: torch 2.10.0, 2.11.0, 2.12.0
-- Python 3.13: torch 2.10.0, 2.11.0, 2.12.0
-- Python 3.14: torch 2.10.0, 2.11.0, 2.12.0
+- Python 3.10: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
+- Python 3.11: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
+- Python 3.12: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
+- Python 3.13: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
+- Python 3.14: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
 
 ### macOS
 
-- Python 3.10: torch 2.10.0, 2.11.0, 2.12.0
-- Python 3.11: torch 2.10.0, 2.11.0, 2.12.0
-- Python 3.12: torch 2.10.0, 2.11.0, 2.12.0
-- Python 3.13: torch 2.10.0, 2.11.0, 2.12.0
-- Python 3.14: torch 2.10.0, 2.11.0, 2.12.0
+- Python 3.10: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
+- Python 3.11: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
+- Python 3.12: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
+- Python 3.13: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
+- Python 3.14: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
 <!-- END_COMPAT_MATRIX -->

@@ -51,7 +51,7 @@ jobs:
           # dependencies: cmake.version_min
           cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: "2.12.0"
+          torch-version: "2.12.1"
           cpu-torch: true
       - name: Install (editable)
         # Editable install is load-bearing for this job: pyright type-checks
@@ -91,7 +91,7 @@ jobs:
           # dependencies: cmake.version_min
           cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: "2.12.0"
+          torch-version: "2.12.1"
           cpu-torch: true
       - name: Install
         run: pip install ".[dev]" -v
@@ -127,7 +127,7 @@ jobs:
           # dependencies: cmake.version_min
           cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: "2.12.0"
+          torch-version: "2.12.1"
           cpu-torch: true
       - name: Install
         run: pip install ".[dev]" -v
@@ -178,7 +178,7 @@ jobs:
           # dependencies: cmake.version_min
           cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: "2.12.0"
+          torch-version: "2.12.1"
           cpu-torch: ${{ matrix.runner != 'gpu_runner' }}
       - name: Install
         run: pip install ".[dev]" -v

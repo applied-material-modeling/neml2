@@ -36,7 +36,7 @@ jobs:
           # dependencies: cmake.version_min
           cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: "2.12.0"
+          torch-version: "2.12.1"
       - name: Install NEML2 + dev extras (sphinx, shibuya, myst-nb, ...)
         run: pip install ".[dev]" -v
       - name: Build documentation (strict — warnings are errors)
