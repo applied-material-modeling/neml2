@@ -153,11 +153,11 @@ Because the surface is identical, anything that consumes a model
 through the normal HIT machinery (e.g. a `TransientDriver`) works
 without modification.
 
-For a model with an implicit (`ImplicitUpdate`) segment, the original
-`[Solvers]` block is **carried through** and the shim gains a `solver`
-field pointing at it (schema v4+). At load the `AOTIModel` shim reads that
-solver's convergence / line-search settings and forwards them to the C++
-runtime, so they can be tuned by editing the stub without recompiling:
+For a model with an implicit (`ImplicitUpdate`) segment, a **minimal**
+`[Solvers]` block is carried and the shim gains a `solver` field pointing
+at it (schema v4+). At load the `AOTIModel` shim reads that solver's
+convergence / line-search settings and forwards them to the C++ runtime,
+so they can be tuned by editing the stub without recompiling:
 
 ```ini
 [Solvers]
@@ -166,10 +166,6 @@ runtime, so they can be tuned by editing the stub without recompiling:
     abs_tol = 1e-12
     rel_tol = 1e-10
     max_its = 25
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
   []
 []
 
@@ -182,9 +178,10 @@ runtime, so they can be tuned by editing the stub without recompiling:
 []
 ```
 
-The linear solver (`lu` here) is still baked into the compiled
-`_step.pt2` / `_ift.pt2`; it is re-instantiated at load only so the
-`Newton` block can resolve, and otherwise has no runtime effect.
+Only the knobs that take effect are carried. The `linear_solver` field is
+**deliberately omitted**: the linear solver is baked into the compiled
+`_step.pt2` / `_ift.pt2` at compile time, so editing it in the stub would
+have no effect — leaving it out keeps the stub free of inert controls.
 `[EquationSystems]` and `[Data]` are dropped — their state was baked in.
 
 ## Loading from Python

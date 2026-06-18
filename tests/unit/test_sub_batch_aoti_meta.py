@@ -48,13 +48,14 @@ from neml2.types import Scalar
 
 
 def test_schema_version_constant_is_int_four():
-    """v4 de-bakes solver/predictor configuration from the metadata: the
-    implicit-segment ``atol``/``rtol``/``miters``/``linesearch`` keys and the
-    separate ``_predictor.pt2`` artifact are gone (the stub's ``[Solvers]``
-    block + an in-graph predictor forward segment replace them). The C++ loader
-    mirrors this constant and refuses any other value, so a stale v3 cache
-    surfaces immediately with a clear ``regenerate via neml2-compile`` message
-    instead of a cryptic missing-field error deep in the runtime."""
+    """v4 de-bakes the solver convergence / line-search configuration from the
+    metadata: the implicit-segment ``atol``/``rtol``/``miters``/``linesearch``
+    keys are gone, replaced by a ``[Solvers]`` block carried in the stub ``.i``
+    and forwarded to the C++ runtime at load. (The predictor is unchanged --
+    it still lowers to its own ``_predictor.pt2``.) The C++ loader mirrors this
+    constant and refuses any other value, so a stale v3 cache surfaces
+    immediately with a clear ``regenerate via neml2-compile`` message instead
+    of a cryptic missing-field error deep in the runtime."""
     assert AOTI_META_SCHEMA_VERSION == 4
 
 

@@ -277,12 +277,13 @@ def emit_aoti_stub(
 
     ``[Data]`` and ``[EquationSystems]`` are dropped in both modes -- their
     state was baked into the ``.pt2`` at compile time (the implicit Newton
-    system, any ``[Data]``-typed constants). ``[Solvers]`` is CARRIED (schema
-    v4+): the solver's convergence / line-search settings are no longer baked
-    into the artifact, so the shim references the implicit model's solver via a
-    ``solver = <name>`` field and the ``AOTIModel`` shim forwards it to the C++
-    runtime at load. The linear solver inside that block is still baked into the
-    compiled step/IFT graphs and is only (harmlessly) re-instantiated at load.
+    system, any ``[Data]``-typed constants). For an implicit model a MINIMAL
+    ``[Solvers]`` block is carried (schema v4+): just the implicit model's
+    solver, and only its honored convergence / line-search knobs. The shim
+    references it via a ``solver = <name>`` field and forwards those settings to
+    the C++ runtime at load. The ``linear_solver`` field is dropped on purpose
+    -- it is baked into the compiled step/IFT graphs, so editing it in the stub
+    would have no effect; omitting it keeps the stub free of inert knobs.
 
     The meta path is recorded relative to *stub_path*'s directory so the
     stub directory is movable as a unit.
@@ -361,7 +362,8 @@ def emit_aoti_stub(
     shim.add_child(nmhit.Field("type", "AOTIModel"))
     shim.add_child(nmhit.Field("meta", rel))
     if solver_name:
-        # Carried [Solvers] block configures the implicit Newton solve at load.
+        # The carried (minimal) [Solvers] block configures the implicit Newton
+        # solve at load -- convergence / line-search knobs only.
         shim.add_child(nmhit.Field("solver", solver_name))
     cleaned_models.add_child(shim)
 
@@ -384,6 +386,24 @@ def emit_aoti_stub(
         if name in DROPPED:
             continue
         if name == "Drivers" and not keep_drivers:
+            continue
+        if name == "Solvers":
+            # Carry a MINIMAL block: only the implicit model's solver, and only
+            # its honored knobs. The linear solver is baked into the compiled
+            # step/IFT graphs, so editing it here would be a silent no-op --
+            # drop the `linear_solver` field (and the sub-solver blocks it would
+            # reference) so the stub exposes only settings that take effect.
+            if not solver_name:
+                continue  # forward-only model: no solver to carry
+            min_solvers = nmhit.Section("Solvers")
+            for c in top.children(nmhit.NodeType.Section):
+                if c.path() != solver_name:
+                    continue
+                cloned = c.clone()
+                if cloned.find("linear_solver") is not None:
+                    cloned.remove_child("linear_solver")
+                min_solvers.add_child(cloned)
+            new_root.add_child(min_solvers)
             continue
         if name == "Models":
             if models_seen == target_models_idx and not models_emitted:

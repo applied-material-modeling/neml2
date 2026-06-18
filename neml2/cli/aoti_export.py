@@ -89,14 +89,15 @@ from ..types import TensorWrapper
 #: shape (per-variable ``sub_batch_shape`` / ``sub_batch_labels`` /
 #: ``base_shape`` recorded so the C++ side can reshape per-variable slots).
 #:
-#: v4 (current): solver/predictor configuration is no longer baked into the
-#: metadata. The implicit-segment ``atol`` / ``rtol`` / ``miters`` /
-#: ``linesearch`` keys are gone -- the generated stub ``.i`` carries a
-#: ``[Solvers]`` block and the ``AOTIModel`` shim forwards it to the C++
-#: runtime at load time. The separate ``_predictor.pt2`` artifact (and its
-#: ``predictor_package`` / ``predictor_inputs`` / ``predictor_outputs``
-#: keys) is gone too: a predictor now compiles into the model graph as an
-#: ordinary forward segment that seeds the implicit segment's unknowns.
+#: v4 (current): solver convergence / line-search configuration is no longer
+#: baked into the metadata. The implicit-segment ``atol`` / ``rtol`` /
+#: ``miters`` / ``linesearch`` keys are gone -- the generated stub ``.i``
+#: carries a minimal ``[Solvers]`` block (the honored knobs only; the linear
+#: solver, which is baked into the step/IFT graphs, is omitted) and the
+#: ``AOTIModel`` shim forwards it to the C++ runtime at load time. The
+#: predictor is unchanged: it still lowers to its own ``_predictor.pt2``
+#: graph with ``predictor_package`` / ``predictor_inputs`` /
+#: ``predictor_outputs`` metadata.
 # dependencies: aoti.schema_version
 AOTI_META_SCHEMA_VERSION = 4
 
