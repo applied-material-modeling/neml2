@@ -93,3 +93,22 @@ def test_opaque_pow_autograd_matches_torch_pow():
 
     assert torch.allclose(g_base, base_ref.grad)
     assert torch.allclose(g_expo, expo_ref.grad)
+
+
+def test_opaque_pow_autograd_one_sided_inputs():
+    """Backward must handle each input independently requiring grad -- exercising
+    both ``ctx.needs_input_grad`` branches (the common case has a constant
+    exponent, so only the base needs a gradient)."""
+    # Only the base requires grad -> needs_input_grad == (True, False).
+    base = (torch.rand(4, dtype=torch.float64) + 0.1).requires_grad_(True)
+    expo = torch.tensor(5.0, dtype=torch.float64)  # constant, no grad
+    torch.ops.neml2.opaque_pow(base, expo).sum().backward()
+    assert base.grad is not None
+    assert torch.allclose(base.grad, 5.0 * torch.pow(base.detach(), 4.0))
+
+    # Only the exponent requires grad -> needs_input_grad == (False, True).
+    base2 = torch.rand(4, dtype=torch.float64) + 0.1  # no grad
+    expo2 = torch.tensor(5.0, dtype=torch.float64, requires_grad=True)
+    torch.ops.neml2.opaque_pow(base2, expo2).sum().backward()
+    assert expo2.grad is not None
+    assert torch.allclose(expo2.grad, (torch.pow(base2, 5.0) * torch.log(base2)).sum())
