@@ -43,7 +43,7 @@ jobs:
           # dependencies: cmake.version_min
           cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: "2.12.0"
+          torch-version: "2.12.1"
           cpu-torch: ${{ matrix.runner != 'gpu_runner' && 'true' || 'false' }}
       - name: Configure
         if: matrix.btype == 'Release'
@@ -73,7 +73,7 @@ jobs:
           # dependencies: cmake.version_min
           cmake-version: "3.26.1"
           # dependencies: torch.version
-          torch-version: "2.12.0"
+          torch-version: "2.12.1"
           cpu-torch: true
       - name: Install neml2 (editable)
         run: pip install -e ".[dev]" -v

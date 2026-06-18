@@ -14,9 +14,9 @@
 
 # ---- Python packages ----
 torch:
-  version: "2.12.0"
+  version: "2.12.1"
   version_min: "2.10.0"
-  version_max: "2.12.0"
+  version_max: "2.12.1"
   files:
     - .github/actions/neml2-ci/action.yaml
     - .github/workflows/cpp.yaml
