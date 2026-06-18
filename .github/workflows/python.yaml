@@ -194,23 +194,28 @@ jobs:
           action_fail: true
           comment_mode: off
 
-  # Python versions to build wheels for, emitted as a JSON list so `wheels` can
-  # fan out one (os, python) cell per wheel. Full set on a release; just the
-  # min+max python on PRs/pushes (a packaging smoke -- the full set is for the
-  # published artifacts).
+  # cibuildwheel build identifiers (cp310, ...) to build wheels for, sourced
+  # from compatibility.yaml so the wheel matrix tracks the supported-python set
+  # automatically. Full set on a release; just the min+max python on PRs/pushes
+  # (a packaging smoke -- the full set is for the published artifacts). Emitted
+  # as a JSON list so `wheels` fans out one (os, python) cell per wheel.
   wheel-matrix:
     needs: lint
     runs-on: ubuntu-latest
     outputs:
-      pythons: ${{ steps.set.outputs.pythons }}
+      cibw: ${{ steps.set.outputs.cibw }}
     steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+      - run: pip install pyyaml
       - id: set
+        env:
+          MODE: ${{ github.event_name == 'release' && 'full' || 'pr' }}
         run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            echo 'pythons=["3.10","3.11","3.12","3.13","3.14"]' >> "$GITHUB_OUTPUT"
-          else
-            echo 'pythons=["3.10","3.14"]' >> "$GITHUB_OUTPUT"
-          fi
+          echo "cibw=$(python scripts/compat_matrix.py expand --kind cibuildwheel --mode "$MODE")" >> "$GITHUB_OUTPUT"
 
   wheels:
     needs: [lint, wheel-matrix]
@@ -218,7 +223,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python: ${{ fromJson(needs.wheel-matrix.outputs.pythons) }}
+        python: ${{ fromJson(needs.wheel-matrix.outputs.cibw) }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -237,22 +242,25 @@ jobs:
       - name: Install cibuildwheel
         run: pip install cibuildwheel
       - name: Build wheel
-        # One python per matrix cell so the per-python builds run in PARALLEL
-        # instead of serially within an OS job. Each cibuildwheel wheel
-        # reinstalls the build-time torch inside the manylinux container
-        # (~24 min/wheel on Linux), so the serial build was the dominant CI
-        # cost; wall time now caps at one wheel regardless of python count.
-        shell: bash
-        run: |
-          set -euo pipefail
-          export CIBW_BUILD="cp${PYVER//./}-*"
-          cibuildwheel --output-dir wheelhouse
+        # One python per matrix cell (matrix.python is a cibuildwheel build tag
+        # like cp310) so the per-python builds run in PARALLEL instead of
+        # serially within an OS job. Each cibuildwheel wheel reinstalls the
+        # build-time torch inside the manylinux container (~24 min/wheel on
+        # Linux), so the serial build was the dominant CI cost; wall time now
+        # caps at one wheel regardless of python count.
+        run: cibuildwheel --output-dir wheelhouse
         env:
-          PYVER: ${{ matrix.python }}
+          CIBW_BUILD: ${{ matrix.python }}-*
+      - name: Resolve python version for the smoke test
+        id: pyver
+        shell: bash
+        run: echo "version=3.${TAG#cp3}" >> "$GITHUB_OUTPUT"  # cp310 -> 3.10
+        env:
+          TAG: ${{ matrix.python }}
       - name: Set up Python for the wheel smoke test
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ steps.pyver.outputs.version }}
       - name: Smoke-test the built wheel
         # Install + import the wheel this cell just built. cibuildwheel's own
         # test-command only runs on tag releases, so this gives every
@@ -267,7 +275,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
-          name: packages-wheels-${{ matrix.os }}-py${{ matrix.python }}
+          name: packages-wheels-${{ matrix.os }}-${{ matrix.python }}
           path: wheelhouse/*.whl
 
   sdist:

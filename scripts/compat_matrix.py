@@ -31,9 +31,11 @@ Usage:
         verify compatibility.yaml internal consistency and sync with
         dependencies.yaml
 
-  compat_matrix.py expand --kind {test|wheel} [--mode {full|pr}]
+  compat_matrix.py expand --kind {test|wheel|cibuildwheel} [--mode {full|pr}]
         print the matrix as JSON for use in a GitHub Actions strategy.matrix
-        (--mode pr emits the lean torch x python extremes subset for PRs)
+        (test/wheel emit {"include": [...]}; cibuildwheel emits a flat list of
+        cp tags, e.g. ["cp310","cp314"]; --mode pr emits the lean torch x
+        python extremes subset for PRs)
 
   compat_matrix.py render [--in-place FILE] [--check]
         render the matrix as a Markdown table; with --in-place, splice it into
@@ -196,6 +198,12 @@ def cmd_expand(args) -> None:
     combinations = data["combinations"]
     if args.mode == "pr":
         combinations = _subset(combinations)
+    if args.kind == "cibuildwheel":
+        # Distinct python versions in cibuildwheel build-identifier form
+        # (3.10 -> cp310), as a flat JSON list for a GitHub Actions matrix axis.
+        pys = sorted({r["python"] for r in combinations}, key=_ver_tuple)
+        print(json.dumps(["cp" + p.replace(".", "") for p in pys], separators=(",", ":")))
+        return
     if args.kind == "test":
         include = [
             {"torch": r["torch"], "python": r["python"], "os": r["os"]} for r in combinations
@@ -305,7 +313,7 @@ def main() -> None:
     subs.add_parser("check", help="validate compatibility.yaml")
 
     expand_p = subs.add_parser("expand", help="emit JSON matrix for GitHub Actions")
-    expand_p.add_argument("--kind", choices=["test", "wheel"], required=True)
+    expand_p.add_argument("--kind", choices=["test", "wheel", "cibuildwheel"], required=True)
     expand_p.add_argument(
         "--mode",
         choices=["full", "pr"],
