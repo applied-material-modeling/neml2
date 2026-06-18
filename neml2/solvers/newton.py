@@ -131,35 +131,39 @@ class Newton:
         eagerly) plus the per-group layouts, then commits the converged iterate
         back into the system.
         """
-        # Local imports: the compiled extension + the per-group raw boundary
-        # helper, kept off the package import path so a partial build can still
+        # Local imports: the compiled extension + the residual/step export
+        # modules, kept off the package import path so a partial build can still
         # import solvers.
         from neml2.aoti._aoti import newton_solve_eager  # noqa: PLC0415
-        from neml2.es.implicit import _vector_to_per_group_raws  # noqa: PLC0415
+        from neml2.es.implicit import (  # noqa: PLC0415
+            RHS,
+            NewtonStep,
+            _vector_to_per_group_raws,
+        )
+
+        # The eager path runs the *same* residual/step modules the AOTI runtime
+        # compiles (RHS / NewtonStep), so the two cannot diverge -- only the
+        # iteration control differs (here C++, there C++ too). The givens are
+        # bound once; the C++ loop drives the unknowns.
+        rhs = RHS(system)
+        step = NewtonStep(system, self.linear_solver)
+        n_u = system.ulayout.ngroup
 
         # The Newton iterates are a fixed-point solve: gradients flow through
         # the converged state via the IFT (see ImplicitUpdate), never through
         # the iterations, so the solve runs detached.
         with torch.no_grad():
+            g_raws = list(_vector_to_per_group_raws(system.g()))
             u0_raws = list(_vector_to_per_group_raws(system.u()))
 
-            # residual / step delegate to the system's native assemble (the same
-            # path the old eager Newton.update used) -- only the per-group raw
-            # marshalling is new. The C++ loop owns convergence + line search.
             def residual_fn(u_raws: list[torch.Tensor]) -> list[torch.Tensor]:
-                system.set_u_from_group_raws(u_raws)
-                return list(_vector_to_per_group_raws(system.b()))
+                return list(rhs(*u_raws, *g_raws))
 
             def step_fn(
                 u_raws: list[torch.Tensor],
             ) -> tuple[list[torch.Tensor], list[torch.Tensor]]:
-                system.set_u_from_group_raws(u_raws)
-                A, b = system.A_and_b()
-                du = self.linear_solver.solve(A, b)
-                return (
-                    list(_vector_to_per_group_raws(du)),
-                    list(_vector_to_per_group_raws(b)),
-                )
+                out = step(*u_raws, *g_raws)
+                return list(out[:n_u]), list(out[n_u:])
 
             u_star, converged, iterations = newton_solve_eager(
                 residual_fn=residual_fn,

@@ -58,7 +58,7 @@ from torch import nn
 from neml2.models.chain_rule import ChainRuleDict
 from neml2.types import TensorWrapper
 
-from ._helpers import _expanded_identity_seed, _flatten_base
+from ._helpers import _flatten_base, build_identity_seed
 from .assembled import AssembledMatrix, AssembledVector, _build_block_matrix, wrap_group_raw
 from .axis_layout import AxisLayout
 from .system import ModelNonlinearSystem
@@ -156,19 +156,20 @@ class _SystemModule(nn.Module):
         seed_names: tuple[str, ...],
     ) -> tuple[dict[str, TensorWrapper], ChainRuleDict]:
         """Build chain-rule seed (if any) and call the model on the typed state."""
-        seed: ChainRuleDict | None
-        if seed_names:
-            # V2P-5 canonical seed: one per (input, residual_group), built
-            # from the primal wrapper.
-            seed = {}
-            for name in seed_names:
-                wrapper = state[name]
-                group_seeds: dict[str, TensorWrapper] = {}
-                for gi, _rgroup in enumerate(self.residual_groups):
-                    group_seeds[f"{name}:rgroup{gi}"] = _expanded_identity_seed(wrapper)
-                seed[name] = group_seeds
-        else:
-            seed = None
+        # Shared seed builder (same one ModelNonlinearSystem uses) so the
+        # exported graph and the native eager assembly cannot drift -- notably
+        # the dynamic-batch left-padding that this wrapper previously omitted.
+        seed: ChainRuleDict | None = (
+            build_identity_seed(
+                state,
+                seed_names,
+                len(self.residual_groups),
+                self.model.input_spec,
+                self.sub_batch_shapes,
+            )
+            if seed_names
+            else None
+        )
 
         args = tuple(state[name] for name in self.input_names)
         result = self.model(*args, v=seed) if seed is not None else self.model(*args)

@@ -26,6 +26,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from math import prod
 
 import torch
@@ -198,6 +199,60 @@ def _expanded_identity_seed(primal: TensorWrapper) -> TensorWrapper:
     )
 
 
+def build_identity_seed(
+    state: Mapping[str, TensorWrapper],
+    seed_names: Sequence[str],
+    n_residual_groups: int,
+    input_spec: Mapping[str, type[TensorWrapper]],
+    sub_batch_shapes: Mapping[str, torch.Size],
+) -> dict[str, dict[str, TensorWrapper]]:
+    """Per-(input, residual_group) expanded identity seeds for the chain rule.
+
+    Single source of truth shared by the native eager assembly
+    (``ModelNonlinearSystem._identity_seed``) and the AOTI export wrappers
+    (``neml2.es.implicit._SystemModule``) -- previously these had divergent
+    copies, and the wrapper copy was missing the dynamic-batch padding below
+    (it only worked under the uniform-batch shapes used at trace time).
+
+    For each ``(name, residual_group)`` the seed leaf is
+    :func:`_expanded_identity_seed` of the primal. Seeds for variables whose
+    state value has fewer dynamic-batch axes than the system-wide maximum are
+    LEFT-padded with size-1 placeholders so the leading-K tangent contract
+    ``(K, *dyn, *sub, *base)`` lines up position-wise across all variables --
+    without the pad, a base-only unknown's ``(K, base)`` tangent collides
+    positionally with a batched given primal's ``(dyn, base)`` and torch's
+    right-aligned broadcast misaligns K with dyn.
+
+    Leaf keys use the ``"{name}:rgroup{gi}"`` format that
+    ``_build_block_matrix`` reads.
+    """
+    max_dyn_ndim = 0
+    for name, value in state.items():
+        type_cls = input_spec[name]
+        declared_sbn = len(sub_batch_shapes.get(name, ()))
+        v_dyn_ndim = max(value.data.ndim - type_cls.BASE_NDIM - declared_sbn, 0)
+        max_dyn_ndim = max(max_dyn_ndim, v_dyn_ndim)
+
+    seed: dict[str, dict[str, TensorWrapper]] = {}
+    for name in seed_names:
+        value = state[name]
+        type_cls = input_spec[name]
+        declared_sbn = len(sub_batch_shapes.get(name, ()))
+        v_dyn_ndim = max(value.data.ndim - type_cls.BASE_NDIM - declared_sbn, 0)
+        # Left-pad the dyn region with size-1 axes (the sub_batch axes are
+        # re-attached via the kwarg, so the pad slots in front of the existing
+        # dyn axes).
+        new_data = value.data
+        for _ in range(max_dyn_ndim - v_dyn_ndim):
+            new_data = new_data.unsqueeze(0)
+        seed_value = type_cls(new_data, sub_batch_ndim=declared_sbn)
+        seed[name] = {
+            f"{name}:rgroup{gi}": _expanded_identity_seed(seed_value)
+            for gi in range(n_residual_groups)
+        }
+    return seed
+
+
 def _tangent_block_to_trailing_k(block: TensorWrapper) -> Tensor:
     """Convert a leading-K typed tangent block to trailing-K ``Tensor``.
 
@@ -268,5 +323,6 @@ __all__ = [
     "_batch_shape",
     "_flatten_base",
     "_expanded_identity_seed",
+    "build_identity_seed",
     "_tangent_block_to_trailing_k",
 ]

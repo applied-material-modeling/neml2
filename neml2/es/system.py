@@ -40,8 +40,8 @@ from neml2.types import Tensor, TensorWrapper
 
 from ._helpers import (
     _batch_shape,
-    _expanded_identity_seed,
     _flatten_base,
+    build_identity_seed,
 )
 from .assembled import AssembledMatrix, AssembledVector, _build_block_matrix, wrap_group_raw
 from .axis_layout import AxisLayout, SubBatchStructure
@@ -586,50 +586,16 @@ class ModelNonlinearSystem(NonlinearSystem):
         -- torch's right-aligned broadcast would then misalign K with
         dyn.
         """
-        # V2P-5 canonical seed: one per (input, residual_group), built from
-        # the primal value's metadata. No compact/perturb dial; the seed
-        # gen emits broadcast K_paired for sub axes + full K_base for base.
-        #
-        # The state's typed wrappers may carry stale sub_batch_ndim from
-        # earlier roundtrips (default 0 when re-wrapped without the kwarg).
-        # Re-wrap with the declared sub_batch_ndim from _sub_batch_shapes
-        # so _expanded_identity_seed sees the right per-variable sub axis
-        # count -- otherwise the seed loses K_paired entirely.
-        # Compute the system's max dynamic-batch shape across ALL state
-        # variables (not just the seed names) so per-variable seeds get
-        # LEFT-padded to that ndim with size-1 placeholders. Without the
-        # pad, a seed for a base-only unknown (e.g. viscous_strain shape
-        # (6,) in maxwell) has no dyn axis and collides with a given
-        # primal-with-dyn (strain shape (10, 6)) during the chain-rule's
-        # torch.broadcast.
-        max_dyn_ndim = 0
-        for state_name in self._state:
-            value = self._state[state_name]
-            type_cls = self.model.input_spec[state_name]
-            declared_sbn = len(self._sub_batch_shapes.get(state_name, ()))
-            v_dyn_ndim = max(value.data.ndim - type_cls.BASE_NDIM - declared_sbn, 0)
-            if v_dyn_ndim > max_dyn_ndim:
-                max_dyn_ndim = v_dyn_ndim
-
-        seed: ChainRuleDict = {}
-        for name in names:
-            value = self._state[name]
-            type_cls = self.model.input_spec[name]
-            declared_sbn = len(self._sub_batch_shapes.get(name, ()))
-            v_dyn_ndim = max(value.data.ndim - type_cls.BASE_NDIM - declared_sbn, 0)
-            pad = max_dyn_ndim - v_dyn_ndim
-            # Insert size-1 axes at the front of the dyn region (between
-            # the sub_batch axes -- which are absent here -- and the
-            # existing dyn axes).
-            new_data = value.data
-            for _ in range(pad):
-                new_data = new_data.unsqueeze(0)
-            seed_value = type_cls(new_data, sub_batch_ndim=declared_sbn)
-            group_seeds: dict[str, TensorWrapper] = {}
-            for gi, _rgroup in enumerate(self.residual_groups):
-                group_seeds[f"{name}:rgroup{gi}"] = _expanded_identity_seed(seed_value)
-            seed[name] = group_seeds
-        return seed
+        # V2P-5 canonical seed, delegated to the shared builder so the native
+        # eager path and the AOTI export wrappers cannot drift (the padding +
+        # per-(input, residual_group) expansion live in one place now).
+        return build_identity_seed(
+            self._state,
+            names,
+            len(self.residual_groups),
+            self.model.input_spec,
+            self._sub_batch_shapes,
+        )
 
     def _assemble_matrix(
         self,
