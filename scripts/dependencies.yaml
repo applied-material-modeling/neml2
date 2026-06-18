@@ -20,6 +20,7 @@ torch:
   files:
     - .github/actions/neml2-ci/action.yaml
     - .github/workflows/cpp.yaml
+    - .github/workflows/compat.yaml
     - .github/workflows/python.yaml
     - .github/workflows/notebooks.yaml
     - .github/workflows/docs.yaml
