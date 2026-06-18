@@ -82,30 +82,24 @@ from ..types import TensorWrapper
 #:
 #: v3: implicit-segment Newton step graph split into a step-direction
 #: artifact (cheap A + solve, no residual recompute) plus a C++-side
-#: backtracking line search using the existing rhs graph. Meta shape
-#: changed accordingly (per-segment ``step_direction`` artifact in place
-#: of the old ``newton_step`` artifact); v2 caches are rejected.
+#: backtracking line search using the existing rhs graph; forward-segment
+#: per-input/output metadata collapsed to ``{"name": ...}``; and
+#: implicit-segment I/O moved from a single packed ``(*dyn, u_size)`` slab
+#: to per-variable tensors at their natural ``(*dyn, *sub_batch, *base)``
+#: shape (per-variable ``sub_batch_shape`` / ``sub_batch_labels`` /
+#: ``base_shape`` recorded so the C++ side can reshape per-variable slots).
 #:
-#: v4: forward-segment per-input/output metadata collapses to
-#: ``{"name": ...}`` only.
-#:
-#: v5 (current): implicit-segment I/O moved from a single packed
-#: ``(*dyn, u_size)`` flat slab to per-variable tensors in their natural
-#: ``(*dyn, *sub_batch, *base)`` shape. Each unknown / given / residual
-#: is now an independent tensor at the AOTI graph boundary, matching
-#: v2's ``AssembledVector = std::vector<Tensor>`` contract and letting
-#: preserved-label per-group sub_batch storage stay heterogeneous-ndim
-#: across the C++ runtime. The implicit-segment metadata now records
-#: per-variable ``sub_batch_shape`` / ``sub_batch_labels`` /
-#: ``base_shape`` so the C++ side can reshape per-variable slots and so
-#: convergence-norm / line-search bookkeeping can sum per-variable
-#: contributions. ``u_size`` / ``g_size`` retained for the IFT
-#: composition (IFT output stays flat -- it runs once per converged
-#: solve, the fold cost is amortised). The unflattened-shape /
-#: var_size fields on unknowns/givens stay (Newton loop derives the
-#: per-batch dyn_ndim from them).
+#: v4 (current): solver convergence / line-search configuration is no longer
+#: baked into the metadata. The implicit-segment ``atol`` / ``rtol`` /
+#: ``miters`` / ``linesearch`` keys are gone -- the generated stub ``.i``
+#: carries a minimal ``[Solvers]`` block (the honored knobs only; the linear
+#: solver, which is baked into the step/IFT graphs, is omitted) and the
+#: ``AOTIModel`` shim forwards it to the C++ runtime at load time. The
+#: predictor is unchanged: it still lowers to its own ``_predictor.pt2``
+#: graph with ``predictor_package`` / ``predictor_inputs`` /
+#: ``predictor_outputs`` metadata.
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 3
+AOTI_META_SCHEMA_VERSION = 4
 
 
 def _var_size(type_cls) -> int:
@@ -987,7 +981,7 @@ class _ForwardJacobianModule(nn.Module):
     ``<basename>_jvp.pt2``. The C++ runtime consumes the per-pair
     tensors via per-pair matmul against ``dstate[in_var]``,
     accumulating into ``dseg_out[out_var]`` -- mirrors the IFT cell
-    consumer (`Model.cxx:_run_implicit_segment_jacobian`).
+    consumer (`jacobian.cpp:_run_implicit_segment_jacobian`).
     """
 
     def __init__(self, model, promoted_qnames: set[str] | None = None) -> None:
@@ -1402,23 +1396,11 @@ def _compile_implicit_segment(
 
     group_meta = _enumerate_groups_and_cells(system)
 
-    # Line-search options. Only NewtonWithLineSearch populates these; the
-    # plain Newton path leaves the C++ runtime to use defaults
-    # (no line search: alpha=1 always, max_ls_iters=1).
-    from ..solvers import NewtonWithLineSearch  # noqa: PLC0415
-
-    if isinstance(solver, NewtonWithLineSearch):
-        ls_meta = {
-            "linesearch": {
-                "type": solver._ls_type,
-                "max_iters": solver._ls_miter,
-                "cutback": solver._ls_sigma,
-                "c": solver._ls_c,
-            },
-        }
-    else:
-        ls_meta = {}
-
+    # NB: solver convergence / line-search configuration (atol / rtol / miters /
+    # linesearch) is NOT baked here (schema v4). The generated stub `.i` carries
+    # a [Solvers] block and the AOTIModel shim forwards it to the C++ runtime at
+    # load time. Only the linear solver is baked -- it lives inside the compiled
+    # step/ift graphs above.
     seg: dict = {
         "rhs_package": rhs_name,
         "step_package": step_name,
@@ -1438,13 +1420,9 @@ def _compile_implicit_segment(
         "given_group_infos": group_meta["given_group_infos"],
         "residual_group_infos": group_meta["residual_group_infos"],
         "ift_cells": group_meta["ift_cells"],
-        "atol": solver.atol,
-        "rtol": solver.rtol,
-        "miters": solver.miters,
         # Always empty under this iteration's constraint -- promotion inside
         # implicit segments is rejected above. Recorded for schema uniformity.
         "param_inputs": [],
-        **ls_meta,
     }
 
     # Predictor: compile as an extra graph if present. Promoted tail not

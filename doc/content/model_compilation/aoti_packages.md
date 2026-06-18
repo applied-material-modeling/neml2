@@ -66,7 +66,7 @@ schema is documented in code rather than mirrored here:
 
 - The emitter at `neml2/cli/aoti_export.py` is the authoritative
   Python-side definition of what the file contains.
-- The loader at `neml2/csrc/aoti/Model.cxx` is the authoritative
+- The loader at `neml2/csrc/aoti/Model.cpp` is the authoritative
   C++-side reader.
 
 Both share an integer `schema_version` field bumped on any breaking
@@ -75,7 +75,7 @@ a clear "regenerate via `neml2-compile`" message; the only
 remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `3`.
+The current schema version is `4`.
 
 At the top level the metadata records:
 
@@ -106,6 +106,12 @@ Two segment kinds appear inside `segments`:
   `Predictor`. The Newton loop body is one loader call per iteration
   plus a convergence sync; the IFT graph is consumed by `jacobian()`
   and `jvp()`.
+
+  The Newton solve's convergence tolerances, iteration cap, and line-search
+  settings are **not** baked into the metadata (schema v4+). They are carried
+  by the HIT stub's `[Solvers]` block and forwarded to the C++ runtime at load
+  time (see [The HIT stub](#the-hit-stub) below). Only the linear solver is
+  baked — it lives inside the compiled `_step.pt2` / `_ift.pt2` graphs.
 
 Each segment declares its inputs / outputs / promoted-parameter inputs
 in the same per-variable structure as the top-level layout; see the
@@ -146,6 +152,37 @@ to the compiled `.pt2` instead of executing the Python `forward`.
 Because the surface is identical, anything that consumes a model
 through the normal HIT machinery (e.g. a `TransientDriver`) works
 without modification.
+
+For a model with an implicit (`ImplicitUpdate`) segment, a **minimal**
+`[Solvers]` block is carried and the shim gains a `solver` field pointing
+at it (schema v4+). At load the `AOTIModel` shim reads that solver's
+convergence / line-search settings and forwards them to the C++ runtime,
+so they can be tuned by editing the stub without recompiling:
+
+```ini
+[Solvers]
+  [newton]
+    type = Newton
+    abs_tol = 1e-12
+    rel_tol = 1e-10
+    max_its = 25
+  []
+[]
+
+[Models]
+  [model]
+    type = AOTIModel
+    meta = ./model_meta.json
+    solver = 'newton'
+  []
+[]
+```
+
+Only the knobs that take effect are carried. The `linear_solver` field is
+**deliberately omitted**: the linear solver is baked into the compiled
+`_step.pt2` / `_ift.pt2` at compile time, so editing it in the stub would
+have no effect — leaving it out keeps the stub free of inert controls.
+`[EquationSystems]` and `[Data]` are dropped — their state was baked in.
 
 ## Loading from Python
 

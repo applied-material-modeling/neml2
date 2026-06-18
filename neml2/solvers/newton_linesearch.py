@@ -28,13 +28,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import torch
-
-from neml2.es import AssembledVector, NonlinearSystem, norm_sq
 from neml2.factory import register_neml2_object
 from neml2.schema import HitSchema, option
 
-from ._helpers import _dot, _scale_assembled
 from .dense_lu import DenseLU
 from .newton import Newton
 from .schur_complement import SchurComplement
@@ -144,44 +140,24 @@ class NewtonWithLineSearch(Newton):
         self._ls_c = float(linesearch_stopping_criteria)
         self._check_crit = bool(check_negative_criterion)
 
-    def update(self, system: NonlinearSystem) -> None:
-        A, b = system.A_and_b()
-        du = self.linear_solver.solve(A, b)
-        assert isinstance(du, AssembledVector)
+    def _solver_config(self) -> dict:
+        """Forward the line-search options to the shared C++ Newton solver.
 
-        u = system.u()
-        b0 = system.b()
-        nb0_sq = norm_sq(b0)  # (*B,)
-        b0_dot_du = _dot(b0, du)
-
-        # Per-element alpha -- broadcast over all assembled vector groups.
-        alpha = torch.ones_like(nb0_sq)
-        for _ in range(1, self._ls_miter):
-            up = u + _scale_assembled(du, alpha)
-            system.set_u(up)
-            b_curr = system.b()
-            nb_sq = norm_sq(b_curr)
-
-            if self._ls_type == "BACKTRACKING":
-                crit = nb0_sq - 2.0 * self._ls_c * alpha * b0_dot_du
-            else:  # STRONG_WOLFE
-                crit = (1.0 - self._ls_c * alpha) * nb0_sq
-
-            if self._check_crit and bool((crit < 0).any().item()):
-                import warnings  # noqa: PLC0415
-
-                warnings.warn(
-                    "NewtonWithLineSearch: negative stopping criterion encountered; "
-                    "consider increasing linesearch_cutback or lowering "
-                    "linesearch_stopping_criteria.",
-                    stacklevel=2,
-                )
-
-            stop = (nb_sq <= crit) | (nb_sq <= self.atol * self.atol)
-            if bool(stop.all().item()):
-                break
-            # Halve alpha (by cutback factor) for elements that still fail.
-            alpha = torch.where(stop, alpha, alpha / self._ls_sigma)
+        The iteration + backtracking loop itself lives in C++ (shared with the
+        AOTI runtime); this only differs from the base ``Newton`` by the
+        line-search config it sends. Note: ``check_negative_criterion`` is a
+        diagnostic-only option and is currently not honored by the C++ loop.
+        """
+        cfg = super()._solver_config()
+        cfg.update(
+            {
+                "ls_type": self._ls_type,
+                "ls_max_iters": self._ls_miter,
+                "ls_cutback": self._ls_sigma,
+                "ls_c": self._ls_c,
+            }
+        )
+        return cfg
 
 
 __all__ = ["NewtonWithLineSearch"]

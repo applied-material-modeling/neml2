@@ -29,7 +29,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-extensions = {".h": "//", ".cxx": "//", ".py": "#", ".sh": "#", ".js": "//"}
+extensions = {".h": "//", ".cxx": "//", ".cpp": "//", ".py": "#", ".sh": "#", ".js": "//"}
 additional_files = {}
 
 exclude_dirs = [

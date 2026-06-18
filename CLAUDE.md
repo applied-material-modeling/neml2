@@ -149,10 +149,10 @@ The Python package layout under `neml2/`:
 - `data/` — `CubicCrystal`, `CrystalGeometry` and related crystallography data classes.
 - `user_tensors/` — registered `[Tensors]` block types other than `Python` (currently the `CSV<Type>` family).
 - `cli/aoti_compile.py`, `cli/aoti_export.py` — the `neml2-compile` orchestration and the per-segment export path; see [](doc/content/model_compilation/pipeline.md).
-- `aoti/` — Python-side `AOTIModel` shim that loads a `_meta.json` + per-segment `.pt2` files and exposes `forward` / `jvp` / `jacobian`. Backed by the pybind module `aoti/_aoti.cxx` (which links `libneml2_aoti.so`).
+- `aoti/` — Python-side `AOTIModel` shim that loads a `_meta.json` + per-segment `.pt2` files and exposes `forward` / `jvp` / `jacobian`. Backed by the pybind module `aoti/_aoti.cpp` (which links `libneml2_aoti.so`).
 - `pyzag/` — `NEML2PyzagModel` adapter that exposes a NEML2 `Model` as a `torch.nn.Module` consumable by the pyzag training library.
 - `cli/` — backing modules for the four console scripts above.
-- `csrc/aoti/` — C++ runtime: `neml2::aoti::Model` wraps `torch::inductor::AOTIModelPackageLoader`. Built into `neml2/lib/libneml2_aoti.so` and surfaced through the pybind binding.
+- `csrc/aoti/` — C++ runtime: `neml2::aoti::Model` wraps `torch::inductor::AOTIModelPackageLoader`. The public class is a PImpl facade (`Model.h`, the only shipped header); its internals live behind `Model::Impl` in the non-shipped `internal.h` (+ `assertions.h`), and the implementation is split across `Model.cpp` (construction), `ops.cpp` (forward/jvp/jacobian), `solve.cpp` (value/Newton path), and `jacobian.cpp` (Jacobian/IFT path). Built into `neml2/lib/libneml2_aoti.so` (hidden visibility; only the `AOTI_EXPORT`-tagged `Model` API is exported) and surfaced through the pybind binding.
 
 ### Factory / Registry pattern
 

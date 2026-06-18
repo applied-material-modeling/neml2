@@ -26,7 +26,7 @@
 
 Pins the structural contract between the Python writer
 (``neml2.cli.aoti_export``) and the C++ loader
-(``neml2/csrc/aoti/Model.cxx``):
+(``neml2/csrc/aoti/Model.cpp``):
 
 * ``schema_version`` is the boundary the C++ side strictly checks at load
   time -- any breaking change to the JSON shape bumps this constant on
@@ -47,16 +47,16 @@ from neml2.types import Scalar
 # ---------- schema_version constant ----------
 
 
-def test_schema_version_constant_is_int_three():
-    """v3 bumps from v2 (the version on ``main`` pre-v3-rewrite). The
-    Python-native rewrite landed an accumulating set of layout changes
-    (per-group I/O on the nonlinear-system segments, per-(out_var,
-    in_var) Forward-Jacobian split, per-cell IFT, ...); all of them
-    ship as one v3 break. The C++ loader mirrors this constant and
-    refuses any other value, so a stale v2 cache surfaces immediately
-    with a clear ``regenerate via neml2-compile`` message instead of
-    a cryptic shape error deep in the runtime."""
-    assert AOTI_META_SCHEMA_VERSION == 3
+def test_schema_version_constant_is_int_four():
+    """v4 de-bakes the solver convergence / line-search configuration from the
+    metadata: the implicit-segment ``atol``/``rtol``/``miters``/``linesearch``
+    keys are gone, replaced by a ``[Solvers]`` block carried in the stub ``.i``
+    and forwarded to the C++ runtime at load. (The predictor is unchanged --
+    it still lowers to its own ``_predictor.pt2``.) The C++ loader mirrors this
+    constant and refuses any other value, so a stale v3 cache surfaces
+    immediately with a clear ``regenerate via neml2-compile`` message instead
+    of a cryptic missing-field error deep in the runtime."""
+    assert AOTI_META_SCHEMA_VERSION == 4
 
 
 # ---------- _var_infos default behaviour (no sub-batch) ----------

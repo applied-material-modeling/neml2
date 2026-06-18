@@ -16,7 +16,7 @@
     {
       "name": "cc",
       "displayName": "Compile commands",
-      "description": "Export compile commands of the C++ backend (drives clangd / LSP). Builds the wheel-side pybind extensions too so the index covers _aoti.cxx as well.",
+      "description": "Export compile commands of the C++ backend (drives clangd / LSP). Builds the wheel-side pybind extensions too so the index covers _aoti.cpp as well.",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "installDir": "${sourceDir}/installed/${presetName}",
       "cacheVariables": {
