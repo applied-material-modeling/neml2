@@ -143,22 +143,46 @@ def _opaque_pow_meta(base: torch.Tensor, exponent: torch.Tensor) -> torch.Tensor
     return torch.empty_like(base)
 
 
-def _opaque_pow_autograd(base: torch.Tensor, exponent: torch.Tensor) -> torch.Tensor:
-    # Delegate to ``torch.pow`` on the Autograd key so eager-autograd paths
-    # (pyzag adjoint training, in-process Jacobian via ``.backward()``) get
-    # the standard ``d(x^n)/dx = n*x^(n-1)`` / ``d(x^n)/dn = x^n*ln(x)``
-    # backward for free. Without an Autograd-key impl, autograd silently
-    # zeros the gradient through ``opaque_pow`` -- PyTorch warns about this
-    # behaviour and will hard-error in a future release. The fusion barrier
-    # is preserved for the AOTI / explicit-Jacobian path because those use
-    # the ``CompositeExplicitAutograd`` impl, where Inductor still sees the
-    # ``neml2::opaque_pow`` call as an opaque node.
-    return torch.pow(base, exponent)
+def _opaque_pow_setup_context(ctx, inputs, output) -> None:
+    base, exponent = inputs
+    ctx.save_for_backward(base, exponent)
+
+
+def _opaque_pow_backward(ctx, grad):
+    # Explicit backward for the eager-autograd paths (pyzag adjoint training,
+    # in-process ``torch.compile`` Jacobian). Standard power-rule gradients
+    # ``d(b^e)/db = e*b^(e-1)`` and ``d(b^e)/de = b^e*ln(b)``, computed only
+    # for the inputs that require grad.
+    base, exponent = ctx.saved_tensors
+    grad_base = grad_exponent = None
+    if ctx.needs_input_grad[0]:
+        grad_base = grad * exponent * torch.pow(base, exponent - 1.0)
+    if ctx.needs_input_grad[1]:
+        grad_exponent = grad * torch.pow(base, exponent) * torch.log(base)
+    return grad_base, grad_exponent
 
 
 _NEML2_LIB.impl("opaque_pow", _opaque_pow_impl, "CompositeExplicitAutograd")
-_NEML2_LIB.impl("opaque_pow", _opaque_pow_meta, "Meta")
-_NEML2_LIB.impl("opaque_pow", _opaque_pow_autograd, "Autograd")
+# Mark ``neml2::opaque_pow`` as a proper opaque custom op via ``register_fake``
+# (abstract impl) + ``register_autograd`` (explicit backward). Two subtleties,
+# each load-bearing for keeping the op OPAQUE through ``torch.export`` /
+# ``run_decompositions()`` (the AOTI lowering path):
+#
+#   * a bare ``lib.impl(..., "Meta")`` does NOT mark the op as preservable, so
+#     export decomposes it back into its ``CompositeExplicitAutograd`` body
+#     (``torch.pow``); ``register_fake`` does mark it.
+#   * registering the *forward* on the ``Autograd`` key (the old approach) is
+#     itself a decomposition -- export inlines the Autograd-key body to
+#     ``aten.pow``; ``register_autograd`` supplies a backward while leaving the
+#     forward opaque.
+#
+# When the op decomposes, Inductor inlines the pow into the downstream
+# K-batched per-slip reduction and recomputes it K x n_slip times -- the exact
+# regression this op exists to prevent (~2x on the crystal-plasticity suite).
+torch.library.register_fake("neml2::opaque_pow", _opaque_pow_meta)
+torch.library.register_autograd(
+    "neml2::opaque_pow", _opaque_pow_backward, setup_context=_opaque_pow_setup_context
+)
 
 
 # ---- SR2 invariants / decompositions ----
