@@ -271,17 +271,10 @@ Model::Impl::_run_implicit_segment(const Segment & seg,
                           to_layouts(seg.residual_groups),
                           g_groups,
                           _gather_params(seg.param_inputs));
-  SolverConfig cfg;
-  cfg.atol = seg.atol;
-  cfg.rtol = seg.rtol;
-  cfg.miters = seg.miters;
-  cfg.ls_type = seg.ls_type;
-  cfg.ls_max_iters = seg.ls_max_iters;
-  cfg.ls_cutback = seg.ls_cutback;
-  cfg.ls_c = seg.ls_c;
-  // The AOTI path ignores the converged flag (returns the last iterate on
-  // max-iterations, matching the pre-unification behavior).
-  u_solved_groups = Newton(cfg).solve(sys, u0_groups).u;
+  // Solver config comes from the loader (set from the stub's [Solvers] block),
+  // not baked metadata. The AOTI path ignores the converged flag (returns the
+  // last iterate on max-iterations, matching the pre-unification behavior).
+  u_solved_groups = Newton(_solver_config).solve(sys, u0_groups).u;
 
   // Unpack converged per-group unknowns back to per-variable state for
   // downstream forward segments / master outputs to read by name.

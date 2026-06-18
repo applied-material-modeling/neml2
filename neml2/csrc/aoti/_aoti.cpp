@@ -178,7 +178,37 @@ Empty when the model was compiled with no ``--parameter`` flags.
           },
           py::arg("name"),
           py::arg("value"),
-          "Replace a promoted parameter's tensor (the C++-side slot is updated).");
+          "Replace a promoted parameter's tensor (the C++-side slot is updated).")
+      .def(
+          "set_solver_config",
+          [](Model & self,
+             double atol,
+             double rtol,
+             std::size_t miters,
+             const std::string & ls_type,
+             std::size_t ls_max_iters,
+             double ls_cutback,
+             double ls_c)
+          {
+            neml2::aoti::SolverConfig cfg;
+            cfg.atol = atol;
+            cfg.rtol = rtol;
+            cfg.miters = miters;
+            cfg.ls_type = ls_type;
+            cfg.ls_max_iters = ls_max_iters;
+            cfg.ls_cutback = ls_cutback;
+            cfg.ls_c = ls_c;
+            self.set_solver_config(cfg);
+          },
+          py::arg("atol"),
+          py::arg("rtol"),
+          py::arg("miters"),
+          py::arg("ls_type"),
+          py::arg("ls_max_iters"),
+          py::arg("ls_cutback"),
+          py::arg("ls_c"),
+          "Configure the implicit-segment Newton solve (from the stub's "
+          "[Solvers] block). Schema v4+ no longer bakes these into the artifact.");
 
   // Eager-path entry point: the same C++ Newton solver the AOTI runtime uses,
   // driven over Python-supplied residual/step callables (RHS / NewtonStep).

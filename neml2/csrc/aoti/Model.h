@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <filesystem>
 #include <map>
 #include <memory>
@@ -39,6 +40,22 @@
 
 namespace neml2::aoti
 {
+/// Tunables for the implicit-segment Newton solve. Supplied at load time
+/// (schema v4+ no longer bakes these into the artifact) -- the stub `.i`'s
+/// `[Solvers]` block is parsed by the loader and forwarded via
+/// `Model::set_solver_config`. Line search is enabled iff `ls_max_iters > 1`;
+/// `ls_type` is "BACKTRACKING" or "STRONG_WOLFE".
+struct SolverConfig
+{
+  double atol = 1.0e-10;
+  double rtol = 1.0e-8;
+  std::size_t miters = 25;
+  std::string ls_type = "BACKTRACKING";
+  std::size_t ls_max_iters = 1;
+  double ls_cutback = 2.0;
+  double ls_c = 1.0e-3;
+};
+
 /**
  * @brief Thin, self-contained runtime for AOTI-exported NEML2 models.
  *
@@ -153,6 +170,12 @@ public:
   /// time, immutable for the life of this object.
   at::Device device() const noexcept;
   at::ScalarType dtype() const noexcept;
+
+  /// Configure the implicit-segment Newton solve (convergence tolerances,
+  /// iteration cap, line search). Schema v4+ no longer bakes these into the
+  /// artifact; the loader parses the stub's `[Solvers]` block and forwards it
+  /// here. If never called, sensible defaults apply (see `SolverConfig`).
+  void set_solver_config(const SolverConfig & config);
 
 private:
   // Opaque implementation. Defined in the internal (non-shipped) internal.h

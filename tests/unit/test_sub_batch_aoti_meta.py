@@ -47,16 +47,15 @@ from neml2.types import Scalar
 # ---------- schema_version constant ----------
 
 
-def test_schema_version_constant_is_int_three():
-    """v3 bumps from v2 (the version on ``main`` pre-v3-rewrite). The
-    Python-native rewrite landed an accumulating set of layout changes
-    (per-group I/O on the nonlinear-system segments, per-(out_var,
-    in_var) Forward-Jacobian split, per-cell IFT, ...); all of them
-    ship as one v3 break. The C++ loader mirrors this constant and
-    refuses any other value, so a stale v2 cache surfaces immediately
-    with a clear ``regenerate via neml2-compile`` message instead of
-    a cryptic shape error deep in the runtime."""
-    assert AOTI_META_SCHEMA_VERSION == 3
+def test_schema_version_constant_is_int_four():
+    """v4 de-bakes solver/predictor configuration from the metadata: the
+    implicit-segment ``atol``/``rtol``/``miters``/``linesearch`` keys and the
+    separate ``_predictor.pt2`` artifact are gone (the stub's ``[Solvers]``
+    block + an in-graph predictor forward segment replace them). The C++ loader
+    mirrors this constant and refuses any other value, so a stale v3 cache
+    surfaces immediately with a clear ``regenerate via neml2-compile`` message
+    instead of a cryptic missing-field error deep in the runtime."""
+    assert AOTI_META_SCHEMA_VERSION == 4
 
 
 # ---------- _var_infos default behaviour (no sub-batch) ----------

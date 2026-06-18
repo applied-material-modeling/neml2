@@ -282,9 +282,13 @@ def test_export_implicit_model_metadata(implicit_export):
     given_sizes = [g["var_size"] for g in seg["givens"]]
     assert sum(given_sizes) == 15
 
-    assert seg["atol"] == pytest.approx(1e-12)
-    assert seg["rtol"] == pytest.approx(1e-12)
-    assert seg["miters"] == 25
+    # Schema v4+: solver convergence / line-search configuration is no longer
+    # baked into the metadata -- it is carried by the stub's [Solvers] block and
+    # forwarded to the C++ runtime at load via Model.set_solver_config.
+    assert "atol" not in seg
+    assert "rtol" not in seg
+    assert "miters" not in seg
+    assert "linesearch" not in seg
 
 
 def test_export_implicit_rhs_output_matches_eager(implicit_export):

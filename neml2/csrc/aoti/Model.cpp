@@ -98,7 +98,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path)
   // Older caches must be regenerated; we fail loudly instead of
   // silently misinterpreting them.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 3;
+  static constexpr int kSupportedSchemaVersion = 4;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -306,20 +306,9 @@ Model::Impl::Impl(const std::filesystem::path & meta_path)
           seg.ift_cells.push_back(std::move(ci));
         }
       }
-      seg.atol = seg_meta["atol"].get<double>();
-      seg.rtol = seg_meta["rtol"].get<double>();
-      seg.miters = static_cast<std::size_t>(seg_meta["miters"].get<int>());
-
-      // Optional linesearch block. Absent for plain Newton; present and
-      // populated for NewtonWithLineSearch.
-      if (seg_meta.contains("linesearch"))
-      {
-        const auto & ls = seg_meta["linesearch"];
-        seg.ls_type = ls.value("type", std::string("BACKTRACKING"));
-        seg.ls_max_iters = static_cast<std::size_t>(ls.value("max_iters", 1));
-        seg.ls_cutback = ls.value("cutback", 2.0);
-        seg.ls_c = ls.value("c", 1.0e-3);
-      }
+      // Solver convergence / line-search configuration is no longer baked into
+      // the metadata (schema v4). It is supplied at load time via
+      // Model::set_solver_config (driven from the stub's [Solvers] block).
       _assert(!seg.unknowns.empty(),
               "aoti::Model: implicit segment ",
               i,
@@ -445,6 +434,12 @@ at::ScalarType
 Model::dtype() const noexcept
 {
   return _impl->dtype();
+}
+
+void
+Model::set_solver_config(const SolverConfig & config)
+{
+  _impl->_solver_config = config;
 }
 
 } // namespace neml2::aoti

@@ -275,10 +275,14 @@ def emit_aoti_stub(
       mirror the ``[Tensors]`` policy and keep them all. Dropped entirely
       when ``keep_drivers=False`` (``--model`` mode).
 
-    ``[Data]``, ``[EquationSystems]``, and ``[Solvers]`` are dropped in
-    both modes. Their state was baked into the ``.pt2`` at compile time
-    (the implicit Newton system, the linear solver, any ``[Data]``-typed
-    constants), so the runtime stub has no reference to them.
+    ``[Data]`` and ``[EquationSystems]`` are dropped in both modes -- their
+    state was baked into the ``.pt2`` at compile time (the implicit Newton
+    system, any ``[Data]``-typed constants). ``[Solvers]`` is CARRIED (schema
+    v4+): the solver's convergence / line-search settings are no longer baked
+    into the artifact, so the shim references the implicit model's solver via a
+    ``solver = <name>`` field and the ``AOTIModel`` shim forwards it to the C++
+    runtime at load. The linear solver inside that block is still baked into the
+    compiled step/IFT graphs and is only (harmlessly) re-instantiated at load.
 
     The meta path is recorded relative to *stub_path*'s directory so the
     stub directory is movable as a unit.
@@ -292,24 +296,47 @@ def emit_aoti_stub(
     """
     import nmhit  # noqa: PLC0415
 
-    DROPPED = {"Data", "EquationSystems", "Solvers"}
+    DROPPED = {"Data", "EquationSystems"}
 
     src_root = nmhit.parse_file(original_hit, [], [])
 
-    # Discover which (single) [Models] block holds our target. We mutate
-    # nothing in src_root -- discovery is read-only -- and we don't hold
-    # any node references past this scan.
+    # Discover which (single) [Models] block holds our target, and which solver
+    # the implicit Newton solve should be configured with (schema v4+: solver
+    # config is carried in the stub, not baked). We mutate nothing in src_root
+    # -- discovery is read-only -- and we don't hold any node references past
+    # this scan.
     target_models_idx: int | None = None
     available_in_block: list[list[str]] = []
+    target_solver = ""
+    implicit_solvers: list[str] = []
     models_seen = 0
     for top in src_root.children(nmhit.NodeType.Section):
         if top.path() != "Models":
             continue
-        names = [c.path() for c in top.children(nmhit.NodeType.Section)]
+        names: list[str] = []
+        for c in top.children(nmhit.NodeType.Section):
+            names.append(c.path())
+            csolver = c.param_optional_str("solver", "")
+            if c.param_optional_str("type", "") == "ImplicitUpdate" and csolver:
+                if csolver not in implicit_solvers:
+                    implicit_solvers.append(csolver)
+            if c.path() == model_name and csolver:
+                target_solver = csolver
         available_in_block.append(names)
         if model_name in names and target_models_idx is None:
             target_models_idx = models_seen
         models_seen += 1
+    # Prefer the compiled model's own solver (direct ImplicitUpdate); fall back
+    # to the first implicit solver in the graph (composed model). Forward-only
+    # models leave this empty -> the shim applies the C++ defaults.
+    solver_name = target_solver or (implicit_solvers[0] if implicit_solvers else "")
+    if len({*implicit_solvers}) > 1 and not target_solver:
+        print(
+            f"neml2-compile: multiple implicit solvers {implicit_solvers} found; "
+            f"the AOTI stub configures the runtime with {solver_name!r} for all "
+            "implicit segments.",
+            file=sys.stderr,
+        )
     if target_models_idx is None:
         all_names = [n for block in available_in_block for n in block]
         raise ValueError(
@@ -333,6 +360,9 @@ def emit_aoti_stub(
     shim = nmhit.Section(model_name)
     shim.add_child(nmhit.Field("type", "AOTIModel"))
     shim.add_child(nmhit.Field("meta", rel))
+    if solver_name:
+        # Carried [Solvers] block configures the implicit Newton solve at load.
+        shim.add_child(nmhit.Field("solver", solver_name))
     cleaned_models.add_child(shim)
 
     # Walk the source top-level children IN ORDER and clone each into the

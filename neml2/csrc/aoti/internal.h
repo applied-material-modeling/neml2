@@ -184,18 +184,9 @@ struct Model::Impl
     std::vector<std::string> predictor_inputs;
     std::vector<std::string> predictor_outputs;
 
-    double atol = 0.0;
-    double rtol = 0.0;
-    std::size_t miters = 0;
-
-    // Line-search options. ls_max_iters == 1 means "no line search" (just
-    // accept the full Newton step). Anything > 1 enables backtracking with
-    // the given cutback factor and Armijo-style stopping criterion.
-    // ls_type values: "BACKTRACKING" or "STRONG_WOLFE".
-    std::string ls_type = "BACKTRACKING";
-    std::size_t ls_max_iters = 1;
-    double ls_cutback = 2.0;
-    double ls_c = 1.0e-3;
+    // Solver convergence / line-search configuration is no longer per-segment
+    // metadata (schema v4); it lives in the owning Impl's `_solver_config`,
+    // set at load time from the stub's [Solvers] block.
 
     /// Names of the promoted parameters this segment's graphs consume, in
     /// graph-call order. Looked up in the owning Model's `_named_parameters`
@@ -302,5 +293,9 @@ struct Model::Impl
   // Device + dtype baked into the artifact at export time.
   at::Device _device = at::kCPU;
   at::ScalarType _dtype = at::kDouble;
+
+  // Implicit-segment Newton configuration, supplied at load time via
+  // Model::set_solver_config (schema v4+; defaults if never set).
+  SolverConfig _solver_config;
 };
 } // namespace neml2::aoti

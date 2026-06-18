@@ -55,7 +55,7 @@ from torch import nn
 
 from .. import types as _types
 from ..factory import register_neml2_object
-from ..schema import HitSchema, option
+from ..schema import HitSchema, dependency, option
 from ..types import TensorWrapper
 from ._aoti import Model as _BoundModel
 
@@ -96,6 +96,15 @@ class AOTIModel(nn.Module):
             "Path to the AOTI metadata JSON produced by ``neml2-compile``. Resolved "
             "relative to the input file's directory when not absolute.",
         ),
+        dependency(
+            "solver",
+            "get_solver",
+            "Solver whose convergence / line-search settings configure the implicit "
+            "Newton solve. Schema v4+ no longer bakes these into the artifact; the "
+            "stub ``.i`` carries the ``[Solvers]`` block and it is forwarded to the "
+            "C++ runtime at load. Defaults apply for forward-only models.",
+            default=None,
+        ),
     )
 
     @classmethod
@@ -110,7 +119,20 @@ class AOTIModel(nn.Module):
                 f"{meta_path} (HIT entry: meta={meta_rel!r}, resolved "
                 f"relative to {factory._path})."
             )
-        return cls(meta_path)
+        model = cls(meta_path)
+        solver_name = node.param_optional_str("solver", "")
+        if solver_name:
+            model._apply_solver_config(factory.get_solver(solver_name))
+        return model
+
+    def _apply_solver_config(self, solver) -> None:
+        """Forward a Python solver's config to the C++ runtime.
+
+        Reuses the solver wrapper's own ``_solver_config()`` -- the exact dict
+        the eager path passes to ``newton_solve_eager`` -- so the compiled and
+        eager solves are configured from a single source of truth.
+        """
+        self._inner.set_solver_config(**solver._solver_config())
 
     def __init__(self, meta_path: str | Path) -> None:
         super().__init__()

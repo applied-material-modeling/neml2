@@ -31,30 +31,19 @@
 // (eventually) eager paths.
 
 #include <cstddef>
-#include <string>
 #include <vector>
 
 #include <ATen/core/Tensor.h>
 
+#include "neml2/csrc/aoti/Model.h"
 #include "neml2/csrc/aoti/aoti_export.h"
 
 namespace neml2::aoti
 {
 class NonlinearSystem;
 
-/// Tunables for the Newton iteration. Mirrors the HIT `Newton` /
-/// `NewtonWithLineSearch` options; line search is enabled iff
-/// ``ls_max_iters > 1``. ``ls_type`` is "BACKTRACKING" or "STRONG_WOLFE".
-struct SolverConfig
-{
-  double atol = 1.0e-10;
-  double rtol = 1.0e-8;
-  std::size_t miters = 25;
-  std::string ls_type = "BACKTRACKING";
-  std::size_t ls_max_iters = 1;
-  double ls_cutback = 2.0;
-  double ls_c = 1.0e-3;
-};
+// SolverConfig (the Newton tunables) is the public type declared in Model.h --
+// it is also the argument to Model::set_solver_config.
 
 /// Outcome of a Newton solve: the (converged or last) per-unknown-group
 /// iterate, whether it converged within ``miters``, and the iteration count.
