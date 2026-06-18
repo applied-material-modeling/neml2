@@ -80,4 +80,8 @@ jobs:
       - name: Configure dev preset
         run: cmake --preset dev -GNinja -S .
       - name: Run benchmark smoke tests
-        run: ctest --test-dir build/dev -L benchmark --output-on-failure
+        # Parallel across scenarios: each has its own Inductor cache dir, and
+        # heavy scenarios carry PROCESSORS=2 (set in benchmark/CMakeLists.txt)
+        # so ctest's --parallel budget doesn't pile too many AOTI compiles onto
+        # the runner at once. -j 4 matches the ubuntu-latest vCPU count.
+        run: ctest --test-dir build/dev -L benchmark --output-on-failure --parallel 4

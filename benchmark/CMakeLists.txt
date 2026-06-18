@@ -25,8 +25,12 @@
 # wrapper (e.g. crystal-plasticity's `model_with_stress`).
 #
 # Compiled .pt2 artifacts land in ${CMAKE_BINARY_DIR}/benchmark/<scenario>/.
-# The shared TORCHINDUCTOR_CACHE_DIR is build-tree-local so re-runs of
-# ctest hit a warm AOTI cache instead of recompiling every scenario.
+# Each scenario gets its OWN build-tree-local TORCHINDUCTOR_CACHE_DIR so the
+# tests can run concurrently under ``ctest --parallel`` without racing on a
+# shared cache; the per-scenario cache still persists across re-runs, so a
+# repeated single-scenario run stays warm. Heavy scenarios declare
+# ``PROCESSORS 2`` so ``ctest -j`` doesn't pack too many AOTI compiles (each
+# spawns a multi-threaded C++ build) onto the runner at once.
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
@@ -66,14 +70,17 @@ foreach(bench_input ${BENCH_INPUTS})
 
       if(${scenario} IN_LIST BENCH_HEAVY)
             set(_t 1800)
+            set(_procs 2)
       else()
             set(_t 600)
+            set(_procs 1)
       endif()
 
       set_tests_properties(benchmark_${scenario} PROPERTIES
             LABELS "benchmark"
             TIMEOUT ${_t}
+            PROCESSORS ${_procs}
             SKIP_RETURN_CODE 77
-            ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${CMAKE_BINARY_DIR}/aoti-cache"
+            ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${work_dir}/aoti-cache"
       )
 endforeach()
