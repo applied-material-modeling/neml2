@@ -105,6 +105,22 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Where to write .pt2 + meta + stub. Defaults to a fresh tmpdir.",
     )
+    parser.add_argument(
+        "--profile",
+        action="store_true",
+        help=(
+            "Instead of a single timed run, warm up then capture the driver run "
+            "under torch.profiler (CPU+CUDA) and print the per-kernel breakdown "
+            "(flat + grouped by input shape)."
+        ),
+    )
+    parser.add_argument(
+        "--profile-runs",
+        type=int,
+        default=3,
+        metavar="N",
+        help="Number of driver runs to capture under the profiler (default 3).",
+    )
     return parser
 
 
@@ -165,6 +181,78 @@ def run_one(
     return t_compile, t_run
 
 
+def profile_one(
+    scenario: str,
+    batch: int,
+    device: str,
+    output_dir: Path,
+    driver_name: str = "driver",
+    warmup: int = 3,
+    profile_runs: int = 3,
+) -> None:
+    """Compile + load one scenario, then ``torch.profiler`` the driver run.
+
+    Reuses the same compile/load path as :func:`run_one` (so the device /
+    dtype defaults and the AOTI stub flow are identical), but instead of a
+    single timed run it warms up, then captures ``profile_runs`` driver runs
+    under the CPU+CUDA profiler and prints the per-kernel breakdown -- both a
+    flat ``self_cuda_time_total`` ranking and one grouped by input shape, so
+    a blow-up along a sub-batch axis (e.g. 12 slip systems materialised where
+    a size-1 broadcast would do) shows up directly in the shape column.
+    """
+    import time
+
+    import torch
+    from torch.profiler import ProfilerActivity, profile
+
+    from neml2 import load_input
+    from neml2.cli.aoti_compile import compile_and_emit_stub
+
+    model_i = _BENCHMARK_DIR / scenario / "model.i"
+    if not model_i.exists():
+        raise FileNotFoundError(f"no model.i under benchmark/{scenario}/")
+
+    pre = (f"nbatch={batch}", f"device={device}")
+    t0 = time.perf_counter()
+    stub_path = compile_and_emit_stub(
+        model_i, output_dir, driver=driver_name, device=device, pre=pre
+    )
+    print(f"[{scenario}] compile: {time.perf_counter() - t0:.1f}s", flush=True)
+
+    driver = load_input(stub_path, pre=pre).get_driver(driver_name)
+
+    for _ in range(warmup):
+        driver.run()
+    if device == "cuda":
+        torch.cuda.synchronize()
+
+    t0 = time.perf_counter()
+    for _ in range(profile_runs):
+        driver.run()
+    if device == "cuda":
+        torch.cuda.synchronize()
+    print(
+        f"[{scenario}] batch={batch} device={device} "
+        f"avg run: {(time.perf_counter() - t0) / profile_runs * 1000:.1f} ms",
+        flush=True,
+    )
+
+    activities = [ProfilerActivity.CPU]
+    if device == "cuda":
+        activities.append(ProfilerActivity.CUDA)
+    sort_key = "self_cuda_time_total" if device == "cuda" else "self_cpu_time_total"
+    with profile(activities=activities, record_shapes=True) as prof:
+        for _ in range(profile_runs):
+            driver.run()
+        if device == "cuda":
+            torch.cuda.synchronize()
+
+    print(f"\n================ TOP KERNELS by {sort_key} ================")
+    print(prof.key_averages().table(sort_by=sort_key, row_limit=25))
+    print(f"\n================ TOP by {sort_key}, GROUPED BY INPUT SHAPE ================")
+    print(prof.key_averages(group_by_input_shape=True).table(sort_by=sort_key, row_limit=25))
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
 
@@ -191,6 +279,16 @@ def main(argv: list[str] | None = None) -> int:
         out_dir.mkdir(parents=True, exist_ok=True)
 
     try:
+        if args.profile:
+            profile_one(
+                args.scenario,
+                args.batch,
+                args.device,
+                out_dir,
+                driver_name=args.driver,
+                profile_runs=args.profile_runs,
+            )
+            return 0
         t_compile, t_run = run_one(
             args.scenario,
             args.batch,
