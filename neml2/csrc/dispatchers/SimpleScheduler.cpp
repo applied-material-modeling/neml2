@@ -22,41 +22,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include <cstddef>
-#include <string>
-
-#include "neml2/csrc/aoti/WorkScheduler.h"
+#include "neml2/csrc/dispatchers/SimpleScheduler.h"
 
 namespace neml2::aoti
 {
-/**
- * @brief Dispatch the whole workload to a single device, chunked.
- *
- * The simplest scheduler: every batch chunk goes to one device. Use it to
- * process a batch that does not fit in device memory in fixed-size pieces, to
- * empirically tune the per-call batch size, or as the per-rank scheduler when a
- * host pins one device per process by hand.
- */
-class AOTI_EXPORT SimpleScheduler : public WorkScheduler
+SimpleScheduler::SimpleScheduler(const Config & config)
+  // at::Device(std::string) parses "cpu" / "cuda" / "cuda:N" and throws a
+  // c10::Error on an unrecognised string.
+  : _device(config.device),
+    _batch_size(config.batch_size)
 {
-public:
-  struct Config
-  {
-    /// Torch device string, e.g. "cpu", "cuda", or "cuda:1".
-    std::string device = "cpu";
-    /// Chunk size along the leading batch axis; 0 runs the whole batch at once.
-    std::size_t batch_size = 0;
-  };
-
-  explicit SimpleScheduler(const Config & config);
-
-  at::Device device() const override { return _device; }
-  std::size_t batch_size() const override { return _batch_size; }
-
-private:
-  at::Device _device;
-  std::size_t _batch_size;
-};
+}
 } // namespace neml2::aoti

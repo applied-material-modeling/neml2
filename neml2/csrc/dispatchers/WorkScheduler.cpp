@@ -22,15 +22,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/csrc/aoti/SimpleScheduler.h"
+#include "neml2/csrc/dispatchers/WorkScheduler.h"
 
 namespace neml2::aoti
 {
-SimpleScheduler::SimpleScheduler(const Config & config)
-  // at::Device(std::string) parses "cpu" / "cuda" / "cuda:N" and throws a
-  // c10::Error on an unrecognised string.
-  : _device(config.device),
-    _batch_size(config.batch_size)
-{
-}
+// Anchors the WorkScheduler vtable / typeinfo in libneml2_aoti.so.
+WorkScheduler::~WorkScheduler() = default;
 } // namespace neml2::aoti

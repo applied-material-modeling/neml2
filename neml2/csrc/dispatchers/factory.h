@@ -28,8 +28,8 @@
 #include <memory>
 #include <string>
 
-#include "neml2/csrc/aoti/DispatchedModel.h"
-#include "neml2/csrc/aoti/WorkScheduler.h"
+#include "neml2/csrc/dispatchers/DispatchedModel.h"
+#include "neml2/csrc/dispatchers/WorkScheduler.h"
 #include "neml2/csrc/aoti/aoti_export.h"
 
 namespace neml2::aoti

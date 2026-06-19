@@ -22,8 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/csrc/aoti/MPIScheduler.h"
-#include "neml2/csrc/aoti/SimpleScheduler.h"
+#include "neml2/csrc/dispatchers/MPISimpleScheduler.h"
+#include "neml2/csrc/dispatchers/SimpleScheduler.h"
 
 #include "test_util.h"
 
@@ -55,15 +55,15 @@ main()
     NEML2_CHECK(s.batch_size() == 0);
   }
 
-  // MPIScheduler always exists, but constructing it outside an MPI runtime must
+  // MPISimpleScheduler always exists, but constructing it outside an MPI runtime must
   // throw -- either "rebuild with -DNEML2_MPI=ON" (flag off) or "MPI has not
   // been initialized" (flag on, no MPI_Init in this plain test process). Either
   // way: a clean exception, no crash.
   {
-    MPIScheduler::Config cfg;
+    MPISimpleScheduler::Config cfg;
     cfg.devices = {"cuda:0"};
     cfg.batch_sizes = {16};
-    NEML2_CHECK_THROWS(MPIScheduler{cfg});
+    NEML2_CHECK_THROWS(MPISimpleScheduler{cfg});
   }
 
   return 0;

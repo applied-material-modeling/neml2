@@ -28,7 +28,7 @@
 
 #include <ATen/ATen.h>
 
-#include "neml2/csrc/aoti/batch_chunk.h"
+#include "neml2/csrc/dispatchers/batch_chunk.h"
 
 #include "test_util.h"
 

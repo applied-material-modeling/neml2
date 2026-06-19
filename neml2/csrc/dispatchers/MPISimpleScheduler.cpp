@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/csrc/aoti/MPIScheduler.h"
+#include "neml2/csrc/dispatchers/MPISimpleScheduler.h"
 #include "neml2/csrc/aoti/assertions.h"
 
 #ifdef NEML2_MPI
@@ -36,10 +36,10 @@ namespace neml2::aoti
 {
 #ifndef NEML2_MPI
 
-MPIScheduler::MPIScheduler(const Config & /*config*/)
+MPISimpleScheduler::MPISimpleScheduler(const Config & /*config*/)
 {
   _assert(false,
-          "MPIScheduler requires NEML2 to be built with -DNEML2_MPI=ON. "
+          "MPISimpleScheduler requires NEML2 to be built with -DNEML2_MPI=ON. "
           "Rebuild with MPI support to use this scheduler.");
 }
 
@@ -73,7 +73,7 @@ determine_device_index(std::size_t ndevices)
 
   const auto idx = static_cast<std::size_t>(local_rank);
   _assert(idx < ndevices,
-          "MPIScheduler: local MPI rank ",
+          "MPISimpleScheduler: local MPI rank ",
           idx,
           " on this node exceeds the ",
           ndevices,
@@ -82,13 +82,13 @@ determine_device_index(std::size_t ndevices)
 }
 } // namespace
 
-MPIScheduler::MPIScheduler(const Config & config)
+MPISimpleScheduler::MPISimpleScheduler(const Config & config)
   : _batch_sizes(config.batch_sizes)
 {
-  _assert(!config.devices.empty(), "MPIScheduler: `devices` must be non-empty.");
-  _assert(!_batch_sizes.empty(), "MPIScheduler: `batch_sizes` must be non-empty.");
+  _assert(!config.devices.empty(), "MPISimpleScheduler: `devices` must be non-empty.");
+  _assert(!_batch_sizes.empty(), "MPISimpleScheduler: `batch_sizes` must be non-empty.");
   _assert(_batch_sizes.size() == 1 || _batch_sizes.size() == config.devices.size(),
-          "MPIScheduler: `batch_sizes` must have length 1 (broadcast) or match `devices` (",
+          "MPISimpleScheduler: `batch_sizes` must have length 1 (broadcast) or match `devices` (",
           config.devices.size(),
           "); got ",
           _batch_sizes.size(),
@@ -99,7 +99,7 @@ MPIScheduler::MPIScheduler(const Config & config)
   {
     at::Device dev(d);
     _assert(dev.is_cuda(),
-            "MPIScheduler: device '",
+            "MPISimpleScheduler: device '",
             d,
             "' is not a CUDA device. The MPI scheduler assigns one GPU per rank; "
             "use SimpleScheduler for CPU dispatch.");
@@ -110,7 +110,7 @@ MPIScheduler::MPIScheduler(const Config & config)
   int inited = 0;
   MPI_Initialized(&inited);
   _assert(inited,
-          "MPIScheduler: MPI has not been initialized. The host application must call "
+          "MPISimpleScheduler: MPI has not been initialized. The host application must call "
           "MPI_Init before constructing the scheduler.");
 
   _device_index = determine_device_index(_devices.size());

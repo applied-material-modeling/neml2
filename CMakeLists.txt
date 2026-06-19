@@ -51,7 +51,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(NEML2_CONTRIB_PREFIX ${NEML2_SOURCE_DIR}/contrib CACHE PATH "NEML2 contrib prefix for downloaded dependencies")
 set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is supposed to be set by setup.py and not by the user.")
 
-# MPI is optional and OFF by default: it powers only the MPIScheduler (one GPU
+# MPI is optional and OFF by default: it powers only the MPISimpleScheduler (one GPU
 # per rank). With the flag OFF the scheduler's constructor throws a clear
 # "rebuild with -DNEML2_MPI=ON" error, so the class is always present.
 option(NEML2_MPI "Build the MPI work scheduler (links against MPI)" OFF)
@@ -209,11 +209,11 @@ add_library(aoti SHARED
       neml2/csrc/aoti/jacobian.cpp
       neml2/csrc/aoti/newton.cpp
       neml2/csrc/aoti/nonlinear_system_aoti.cpp
-      neml2/csrc/aoti/WorkScheduler.cpp
-      neml2/csrc/aoti/SimpleScheduler.cpp
-      neml2/csrc/aoti/MPIScheduler.cpp
-      neml2/csrc/aoti/DispatchedModel.cpp
-      neml2/csrc/aoti/factory.cpp
+      neml2/csrc/dispatchers/WorkScheduler.cpp
+      neml2/csrc/dispatchers/SimpleScheduler.cpp
+      neml2/csrc/dispatchers/MPISimpleScheduler.cpp
+      neml2/csrc/dispatchers/DispatchedModel.cpp
+      neml2/csrc/dispatchers/factory.cpp
 )
 
 # API visibility control: hide everything by default and export only the symbols
@@ -249,11 +249,11 @@ target_sources(aoti
       BASE_DIRS ${NEML2_SOURCE_DIR}
       FILES
       ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/Model.h
-      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/WorkScheduler.h
-      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/SimpleScheduler.h
-      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/MPIScheduler.h
-      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/DispatchedModel.h
-      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/factory.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/WorkScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/SimpleScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/MPISimpleScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/DispatchedModel.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/factory.h
 )
 # The generated aoti_export.h lives under the build tree's dedicated include
 # root. Add it as a build-interface include so `#include
@@ -272,12 +272,12 @@ endif()
 
 # MPI scheduler: link MPI and define NEML2_MPI for the aoti TUs only. The public
 # headers are MPI-type-free, so consumers need neither the flag nor mpi.h; the
-# MPIScheduler constructor throws when the flag is OFF.
+# MPISimpleScheduler constructor throws when the flag is OFF.
 if(NEML2_MPI)
       find_package(MPI REQUIRED COMPONENTS CXX)
       target_link_libraries(aoti PUBLIC MPI::MPI_CXX)
       target_compile_definitions(aoti PRIVATE NEML2_MPI)
-      message(STATUS "NEML2_MPI=ON: MPIScheduler enabled (linking ${MPI_CXX_COMPILER})")
+      message(STATUS "NEML2_MPI=ON: MPISimpleScheduler enabled (linking ${MPI_CXX_COMPILER})")
 endif()
 
 # rpath: only the torch hop is needed (no sibling neml2_*.so libraries to

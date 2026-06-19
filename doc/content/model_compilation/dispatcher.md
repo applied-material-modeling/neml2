@@ -14,7 +14,7 @@ your own per-device loop.
 
 :::{note}
 Only CPU and CUDA devices are supported. This release ships the **synchronous**
-path: `SimpleScheduler` (one device) and `MPIScheduler` (one GPU per MPI rank).
+path: `SimpleScheduler` (one device) and `MPISimpleScheduler` (one GPU per MPI rank).
 The asynchronous thread-per-device pool and the multi-device-in-one-instance
 hybrid scheduler are planned follow-ups.
 :::
@@ -57,8 +57,8 @@ scheduler (below).
 is supplied in C++ source, never from the `.i`.
 
 ```cpp
-#include "neml2/csrc/aoti/factory.h"
-#include "neml2/csrc/aoti/SimpleScheduler.h"
+#include "neml2/csrc/dispatchers/factory.h"
+#include "neml2/csrc/dispatchers/SimpleScheduler.h"
 
 using namespace neml2::aoti;
 
@@ -94,7 +94,7 @@ it to:
 - empirically tune the per-call batch size for a model + device; or
 - drive one device per process when a host pins devices by hand.
 
-### `MPIScheduler`
+### `MPISimpleScheduler`
 
 For MPI jobs running one rank per GPU. `Config{devices, batch_sizes}` lists the
 CUDA devices to choose from; each rank is assigned one based on its rank *within

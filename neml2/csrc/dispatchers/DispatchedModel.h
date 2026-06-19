@@ -36,7 +36,7 @@
 #include <c10/core/ScalarType.h>
 
 #include "neml2/csrc/aoti/Model.h"
-#include "neml2/csrc/aoti/WorkScheduler.h"
+#include "neml2/csrc/dispatchers/WorkScheduler.h"
 #include "neml2/csrc/aoti/aoti_export.h"
 
 namespace neml2::aoti

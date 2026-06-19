@@ -25,8 +25,8 @@
 #include <filesystem>
 #include <utility>
 
-#include "neml2/csrc/aoti/DispatchedModel.h"
-#include "neml2/csrc/aoti/batch_chunk.h"
+#include "neml2/csrc/dispatchers/DispatchedModel.h"
+#include "neml2/csrc/dispatchers/batch_chunk.h"
 
 namespace neml2::aoti
 {

@@ -35,8 +35,8 @@
 #include <ATen/ATen.h>
 
 #include "neml2/csrc/aoti/Model.h"
-#include "neml2/csrc/aoti/SimpleScheduler.h"
-#include "neml2/csrc/aoti/factory.h"
+#include "neml2/csrc/dispatchers/SimpleScheduler.h"
+#include "neml2/csrc/dispatchers/factory.h"
 
 #include "test_util.h"
 

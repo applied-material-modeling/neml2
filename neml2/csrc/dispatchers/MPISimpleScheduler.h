@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-#include "neml2/csrc/aoti/WorkScheduler.h"
+#include "neml2/csrc/dispatchers/WorkScheduler.h"
 
 namespace neml2::aoti
 {
@@ -46,7 +46,7 @@ namespace neml2::aoti
  * lives in the translation unit. The host application owns `MPI_Init`/
  * `MPI_Finalize`; the communicator used is `MPI_COMM_WORLD`.
  */
-class AOTI_EXPORT MPIScheduler : public WorkScheduler
+class AOTI_EXPORT MPISimpleScheduler : public WorkScheduler
 {
 public:
   struct Config
@@ -59,7 +59,7 @@ public:
     std::vector<std::size_t> batch_sizes;
   };
 
-  explicit MPIScheduler(const Config & config);
+  explicit MPISimpleScheduler(const Config & config);
 
   at::Device device() const override { return _devices.at(_device_index); }
   std::size_t batch_size() const override
