@@ -38,7 +38,7 @@ config dir via `neml2_DIR`) and use `find_package`:
 ```cmake
 find_package(neml2 CONFIG REQUIRED)
 
-add_executable(foo main.cxx)
+add_executable(foo main.cpp)
 target_link_libraries(foo PRIVATE neml2::aoti)
 ```
 
@@ -73,14 +73,14 @@ export PKG_CONFIG_PATH=$NEML2_ROOT/share/pkgconfig:$PKG_CONFIG_PATH
 pkg-config --cflags --libs neml2
 ```
 
-A minimal Makefile that compiles `foo` from `main.cxx`:
+A minimal Makefile that compiles `foo` from `main.cpp`:
 
 ```make
 CXX ?= c++
 PKG_CONFIG ?= pkg-config
 
 TARGET := foo
-SOURCES := main.cxx
+SOURCES := main.cpp
 comma := ,
 
 CXXFLAGS += $(shell $(PKG_CONFIG) --cflags neml2)

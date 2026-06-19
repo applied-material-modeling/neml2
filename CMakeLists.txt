@@ -156,7 +156,7 @@ endif()
 if(NOT SKBUILD_STATE STREQUAL "editable")
       install(FILES
             ${NEML2_SOURCE_DIR}/cmake/Modules/Findtorch.cmake
-            ${NEML2_SOURCE_DIR}/cmake/Modules/DetectTorchCXXABI.cxx
+            ${NEML2_SOURCE_DIR}/cmake/Modules/DetectTorchCXXABI.cpp
             ${NEML2_SOURCE_DIR}/cmake/Modules/Findnmhit.cmake
             DESTINATION share/cmake/neml2/Modules
             COMPONENT libneml2
