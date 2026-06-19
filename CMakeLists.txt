@@ -359,9 +359,14 @@ endif()
 # preset (for the C++ test) and the wheel (shipped beside libneml2.so), so the
 # add_library is top-level rather than gated on NEML2_WHEEL.
 #
-# Embedding the interpreter needs the full libpython (Development.Embed), not
-# just Development.Module (the extension-only component the pybind modules use).
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Embed)
+# Link against Development.Module (headers + module link flags), NOT
+# Development.Embed (libpython). A shared library may leave the CPython API
+# symbols undefined and resolve them at load time from whatever libpython the
+# host process already has -- the Python interpreter when loaded under Python, or
+# the libpython a pure-C++ host links to embed the interpreter. This mirrors the
+# pybind extension modules and, crucially, removes any build-time dependency on a
+# *shared* libpython, which the manylinux wheel images do not reliably provide.
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 
 add_library(eager SHARED
       neml2/csrc/eager/Model.cpp
@@ -394,25 +399,24 @@ target_include_directories(eager PRIVATE ${Python3_INCLUDE_DIRS})
 set_target_properties(eager PROPERTIES OUTPUT_NAME "neml2_eager$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 target_compile_options(eager PRIVATE -Wall -Wextra -pedantic)
 # PUBLIC: aoti (reuse the Exception ABI + headers) + torch::core. PRIVATE:
-# torch::python (libtorch_python -> the pybind tensor caster) + Python3::Python
-# (libpython, for embedding). pybind11 headers come transitively via torch.
+# torch::python (libtorch_python -> the pybind tensor caster) + Python3::Module
+# (CPython headers; on macOS also `-undefined dynamic_lookup`). The CPython API
+# symbols are left undefined and resolved from the host's libpython at load time.
+# pybind11 headers come transitively via torch.
 target_link_libraries(eager PUBLIC aoti torch::core)
-target_link_libraries(eager PRIVATE torch::python Python3::Python)
+target_link_libraries(eager PRIVATE torch::python Python3::Module)
 target_compile_definitions(eager PRIVATE "PYBIND11_DETAILED_ERROR_MESSAGES")
 if(TARGET torch::cuda)
       target_link_libraries(eager PUBLIC torch::cuda)
 endif()
 
-# rpath: reach torch/lib (libtorch + libtorch_python). libpython is the host
-# process's at runtime; in a relocatable (manylinux) wheel we must NOT bundle or
-# pin it, so the shipped lib gets only the torch hop and the host supplies
-# libpython. The dev/editable build additionally points at the discovered
-# python lib dir so the pure-C++ test exe resolves libpython.
-get_filename_component(_py_libdir "${Python3_LIBRARIES}" DIRECTORY)
+# rpath: only the torch hop is needed (libtorch + libtorch_python). libpython is
+# NOT linked into this lib (see Python3::Module above) -- the host process
+# supplies it -- so there is nothing to point an rpath at for it.
 if(NEML2_WHEEL AND NOT SKBUILD_STATE STREQUAL "editable")
       set_target_properties(eager PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH}/../../torch/lib")
 else()
-      set_target_properties(eager PROPERTIES INSTALL_RPATH "${torch_LINK_DIR};${_py_libdir}")
+      set_target_properties(eager PROPERTIES INSTALL_RPATH "${torch_LINK_DIR}")
 endif()
 
 install(TARGETS eager

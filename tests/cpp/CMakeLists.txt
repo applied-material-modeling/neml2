@@ -9,7 +9,11 @@
 # Built only under the dev (non-wheel) gate from the top-level CMakeLists, so
 # wheel builds never compile or run these.
 
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
+# Interpreter: drives the AOTI compile fixtures (neml2-compile). Development.Embed
+# (libpython): linked into the pure-C++ test_eager exe so it can host the embedded
+# interpreter -- libneml2_eager itself only links Python3::Module (see the top-level
+# CMakeLists), leaving the CPython symbols to be supplied by whatever embeds it.
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Embed)
 
 # --- Pure-logic tests: schedulers + batch slice/cat helpers + exceptions -----
 foreach(t test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions)
@@ -84,10 +88,12 @@ set_tests_properties(test_dispatcher test_load_model PROPERTIES
 # runs a model straight from the original .i (no compile fixture needed). New
 # "eager" label so it runs independently of the AOTI dispatcher tests.
 add_executable(test_eager test_eager.cpp)
-target_link_libraries(test_eager PRIVATE eager aoti)
+# This pure-C++ exe supplies libpython (Python3::Python) for the interpreter that
+# libneml2_eager embeds; libneml2_eager itself links only Python3::Module.
+target_link_libraries(test_eager PRIVATE eager aoti Python3::Python)
 target_compile_options(test_eager PRIVATE -Wall -Wextra)
-# The embedded interpreter loads libpython (NEEDED by libneml2_eager.so);
-# RUNPATH is not transitive, so the test exe's own rpath must reach it + torch.
+# RUNPATH is not transitive, so the test exe's own rpath must reach libneml2 +
+# torch + libpython.
 get_filename_component(_py_bindir "${Python3_EXECUTABLE}" DIRECTORY)
 get_filename_component(_py_home "${_py_bindir}" DIRECTORY)
 set(_py_libdir "${_py_home}/lib")

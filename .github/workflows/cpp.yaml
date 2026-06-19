@@ -120,13 +120,19 @@ jobs:
         run: pip install -e ".[dev]" -v
       - name: Configure dev preset
         run: cmake --preset dev -GNinja -S .
-      - name: Build C++ dispatcher tests
+      - name: Build C++ dispatcher + eager tests
+        # `eager` / `test_eager` exercise the embedded-Python runtime
+        # (libneml2_eager): test_eager embeds CPython and runs a model straight
+        # from its .i. The editable install above makes `neml2` importable for
+        # that embedded interpreter.
         run: |
           cmake --build build/dev --target aoti \
             test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions \
-            test_dispatcher test_load_model -j 4
+            test_dispatcher test_load_model eager test_eager -j 4
       - name: Run C++ dispatcher tests
         run: ctest --test-dir build/dev -L dispatcher --output-on-failure --parallel 4
+      - name: Run C++ eager test
+        run: ctest --test-dir build/dev -L eager --output-on-failure
 
   # C++ source-based coverage (clang). Builds the runtime + tests with
   # -DCMAKE_BUILD_TYPE=Coverage, runs the dispatcher ctests under instrumentation,

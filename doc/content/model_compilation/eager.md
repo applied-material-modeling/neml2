@@ -17,10 +17,15 @@ fast-to-start tests; use the compiled / dispatched path ([](model-dispatch)) for
 production.
 
 :::{note}
-This runtime lives in a **separate** shared library, `libneml2_eager.so`, which
-links libpython and `libtorch_python`. The main `libneml2.so` (the AOTI runtime +
-dispatcher) stays Python-free so it can embed in pure-C++ hosts; link
-`libneml2_eager` only where you want the eager fallback.
+This runtime lives in a **separate** shared library, `libneml2_eager.so`. The
+main `libneml2.so` (the AOTI runtime + dispatcher) stays Python-free so it can
+embed in pure-C++ hosts; link `libneml2_eager` only where you want the eager
+fallback. `libneml2_eager` itself does **not** link libpython — like a CPython
+extension module, it leaves the Python C-API symbols undefined and resolves them
+at load time from the host's interpreter. A pure-C++ host must therefore link
+libpython itself (e.g. CMake `Python3::Python` from
+`find_package(Python3 COMPONENTS Development.Embed)`); a host that already runs
+Python supplies it automatically.
 :::
 
 ## Load and run from C++
