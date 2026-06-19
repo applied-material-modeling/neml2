@@ -40,7 +40,38 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
       set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+      "Debug" "Release" "MinSizeRel" "RelWithDebInfo" "Coverage" "ThreadSanitizer")
+
+# Instrumentation build types (opt in with -DCMAKE_BUILD_TYPE=<name>; clang or
+# gcc). Selecting the build type *is* the opt-in -- they add no flags to a normal
+# Debug/Release build and are off the wheel path (the wheel always builds
+# Release), so shipped artifacts are never instrumented.
+#   Coverage        -- clang source-based coverage. Drive it with
+#                      scripts/cpp_coverage.sh (run tests -> profdata -> llvm-cov).
+#   ThreadSanitizer -- data-race detector for the async dispatch pool. Run the
+#                      C++ tests with the tests/cpp/tsan_suppressions.txt below.
+set(CMAKE_C_FLAGS_COVERAGE "-O0 -g -fprofile-instr-generate -fcoverage-mapping"
+      CACHE STRING "Flags used by the C compiler for Coverage builds" FORCE)
+set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -g -fprofile-instr-generate -fcoverage-mapping"
+      CACHE STRING "Flags used by the C++ compiler for Coverage builds" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "-fprofile-instr-generate"
+      CACHE STRING "Linker flags for executables in Coverage builds" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE "-fprofile-instr-generate"
+      CACHE STRING "Linker flags for shared libraries in Coverage builds" FORCE)
+set(CMAKE_C_FLAGS_THREADSANITIZER "-O1 -g -fsanitize=thread"
+      CACHE STRING "Flags used by the C compiler for ThreadSanitizer builds" FORCE)
+set(CMAKE_CXX_FLAGS_THREADSANITIZER "-O1 -g -fsanitize=thread"
+      CACHE STRING "Flags used by the C++ compiler for ThreadSanitizer builds" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_THREADSANITIZER "-fsanitize=thread"
+      CACHE STRING "Linker flags for executables in ThreadSanitizer builds" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS_THREADSANITIZER "-fsanitize=thread"
+      CACHE STRING "Linker flags for shared libraries in ThreadSanitizer builds" FORCE)
+mark_as_advanced(
+      CMAKE_C_FLAGS_COVERAGE CMAKE_CXX_FLAGS_COVERAGE
+      CMAKE_EXE_LINKER_FLAGS_COVERAGE CMAKE_SHARED_LINKER_FLAGS_COVERAGE
+      CMAKE_C_FLAGS_THREADSANITIZER CMAKE_CXX_FLAGS_THREADSANITIZER
+      CMAKE_EXE_LINKER_FLAGS_THREADSANITIZER CMAKE_SHARED_LINKER_FLAGS_THREADSANITIZER)
 
 # ----------------------------------------------------------------------------
 # Project-level settings, options, and flags

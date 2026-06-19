@@ -1,0 +1,25 @@
+# ThreadSanitizer suppressions for the neml2 C++ tests.
+#
+# The pip libtorch is NOT TSan-instrumented, so TSan cannot observe torch's
+# internal synchronization and reports spurious races inside torch and its
+# OpenMP thread pool. Silence anything originating in those libraries; our own
+# code (neml2::aoti -- the dispatch pool, schedulers, Newton solve) is still
+# fully checked, since its race reports have stacks entirely in libneml2 +
+# libstdc++ and do not match these patterns.
+#
+# Point TSan at this file via
+#   TSAN_OPTIONS="suppressions=tests/cpp/tsan_suppressions.txt"
+# Pairing it with OMP_NUM_THREADS=1 cuts the torch intra-op noise further.
+
+# Reports whose stack passes through an uninstrumented torch / OpenMP library.
+called_from_lib:libtorch_cpu.so
+called_from_lib:libtorch.so
+called_from_lib:libc10.so
+called_from_lib:libgomp.so
+called_from_lib:libomp.so
+
+# Reports whose top frame is inside torch / the OpenMP runtime.
+race:^at::
+race:^c10::
+race:^torch::
+race:^omp_

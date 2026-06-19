@@ -61,6 +61,23 @@ cmake --preset cc                # configure-only; exports compile_commands.json
 
 Only two presets exist: `dev` (build) and `cc` (compile-commands-only, no `cmake --build`). The wheel build that `pip install` drives uses `cmake.build-type = "Release"` internally — there is no developer-facing `release` preset.
 
+Two instrumentation build types extend the `dev` preset for the C++ test suite (clang or gcc; selecting the type is the opt-in, and both are off the wheel path):
+
+```bash
+# Coverage (clang source-based): build, then run the dispatcher tests + report
+CC=clang CXX=clang++ cmake --preset dev -DCMAKE_BUILD_TYPE=Coverage -S .
+cmake --build build/dev --target aoti test_dispatcher ...   # + the other test_* targets
+scripts/cpp_coverage.sh build/dev                            # -> build/dev/coverage/coverage.lcov
+
+# ThreadSanitizer (guards the async dispatch pool)
+CC=clang CXX=clang++ cmake --preset dev -DCMAKE_BUILD_TYPE=ThreadSanitizer -S .
+cmake --build build/dev --target aoti test_dispatcher ...
+OMP_NUM_THREADS=1 TSAN_OPTIONS="suppressions=tests/cpp/tsan_suppressions.txt ignore_noninstrumented_modules=1" \
+  ctest --test-dir build/dev -L dispatcher
+```
+
+The pip `libtorch` is not TSan-instrumented, so `ignore_noninstrumented_modules=1` + `tests/cpp/tsan_suppressions.txt` silence torch's own reports; neml2's code is still checked. CI runs both on ubuntu+clang (the `coverage` and `tsan` jobs in `.github/workflows/cpp.yaml`); C++ coverage uploads to Codecov under the informational `cpp` flag.
+
 ## Tests
 
 All tests are pytest. Test layout under `tests/` is fixed at five top-level
