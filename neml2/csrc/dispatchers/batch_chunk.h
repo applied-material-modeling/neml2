@@ -26,7 +26,7 @@
 
 // Internal header -- NOT shipped. Inline batch-axis slice/concat helpers shared
 // by DispatchedModel and the C++ tests. Header-only so neither needs to link an
-// exported symbol (keeps the libneml2_aoti.so ABI surface limited to the public
+// exported symbol (keeps the libneml2.so ABI surface limited to the public
 // Model / scheduler / DispatchedModel classes).
 //
 // Contract: a value map is keyed by variable name with each tensor shaped

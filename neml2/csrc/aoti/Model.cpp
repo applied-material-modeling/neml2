@@ -424,23 +424,28 @@ Model::output_sizes() const noexcept
   return _impl->output_sizes();
 }
 
+// The three ops run through `_guarded` so every exception leaving the public
+// surface is a neml2 Exception with a meaningful `recoverable()`: a recoverable
+// ConvergenceError from the Newton solve passes through, while a foreign torch
+// error (e.g. a shape / device mismatch raised inside a compiled graph) is
+// normalized to a non-recoverable FatalError.
 std::map<std::string, at::Tensor>
 Model::forward(const std::map<std::string, at::Tensor> & inputs) const
 {
-  return _impl->forward(inputs);
+  return _guarded([&] { return _impl->forward(inputs); });
 }
 
 std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
 Model::jvp(const std::map<std::string, at::Tensor> & inputs,
            const std::map<std::string, at::Tensor> & tangents) const
 {
-  return _impl->jvp(inputs, tangents);
+  return _guarded([&] { return _impl->jvp(inputs, tangents); });
 }
 
 std::pair<std::map<std::string, at::Tensor>, at::Tensor>
 Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
 {
-  return _impl->jacobian(inputs);
+  return _guarded([&] { return _impl->jacobian(inputs); });
 }
 
 std::map<std::string, at::Tensor> &

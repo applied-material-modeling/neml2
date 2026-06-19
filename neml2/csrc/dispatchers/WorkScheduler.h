@@ -25,6 +25,8 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
+#include <vector>
 
 #include <c10/core/Device.h>
 
@@ -33,18 +35,14 @@
 namespace neml2::aoti
 {
 /**
- * @brief Decides where work runs and how it is chunked.
+ * @brief Base for all dispatch schedulers.
  *
- * A scheduler answers two questions for the @ref DispatchedModel that owns it:
- * which device a workload is placed on, and how large each batch chunk is. This
- * is the synchronous, single-device-per-instance contract -- one scheduler
- * instance maps to exactly one device.
- *
- * The richer asynchronous load-balancing surface from the v2 dispatcher
- * (`schedule_work` / `dispatched_work` / `completed_work` / `wait_for_completion`
- * plus a multi-device hybrid policy) is intentionally **not** reproduced here;
- * it belongs to the deferred asynchronous thread-pool phase and would only add
- * dead interface in the synchronous path.
+ * The one thing every @ref DispatchedModel needs uniformly is the *set* of
+ * devices to load a `Model` for: a single device for the synchronous schedulers
+ * (@ref SyncScheduler), the whole pool for the asynchronous hybrid scheduler
+ * (@ref AsyncScheduler). The two families otherwise have genuinely different
+ * surfaces, so this base stays small -- it carries only `devices()`, the shared
+ * device-string parser, and the vtable anchor.
  */
 class AOTI_EXPORT WorkScheduler
 {
@@ -62,11 +60,33 @@ public:
   WorkScheduler & operator=(const WorkScheduler &) = delete;
   WorkScheduler & operator=(WorkScheduler &&) = delete;
 
+  /// Every device this scheduler may dispatch to. `DispatchedModel` loads one
+  /// `Model` per entry. Size 1 for the synchronous schedulers.
+  virtual std::vector<at::Device> devices() const = 0;
+
+protected:
+  /// Parse a torch device string ("cpu", "cuda", "cuda:1"); throws a c10::Error
+  /// on an unrecognised string. Shared by the concrete schedulers.
+  static at::Device parse_device(const std::string & s);
+};
+
+/**
+ * @brief Synchronous, single-device schedulers.
+ *
+ * One scheduler instance maps to exactly one device; @ref DispatchedModel runs
+ * it on the calling thread, chunk by chunk. `SimpleScheduler` and
+ * `MPISimpleScheduler` derive from this.
+ */
+class AOTI_EXPORT SyncScheduler : public WorkScheduler
+{
+public:
   /// The concrete device this scheduler dispatches to.
   virtual at::Device device() const = 0;
 
   /// Number of batch elements per chunk along the leading (dim-0) batch axis.
   /// A value of 0 means "no chunking" -- run the whole batch in a single call.
   virtual std::size_t batch_size() const = 0;
+
+  std::vector<at::Device> devices() const final { return {device()}; }
 };
 } // namespace neml2::aoti

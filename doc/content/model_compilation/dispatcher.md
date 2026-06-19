@@ -13,10 +13,10 @@ hot loop runs without Python. The Python authoring path (`neml2.load_model`,
 your own per-device loop.
 
 :::{note}
-Only CPU and CUDA devices are supported. This release ships the **synchronous**
-path: `SimpleScheduler` (one device) and `MPISimpleScheduler` (one GPU per MPI rank).
-The asynchronous thread-per-device pool and the multi-device-in-one-instance
-hybrid scheduler are planned follow-ups.
+Only CPU and CUDA devices are supported. Two scheduling modes are available:
+**synchronous** single-device (`SimpleScheduler`, `MPISimpleScheduler`) and
+**asynchronous** multi-device (`StaticHybridScheduler`, which runs CPU + GPU(s)
+concurrently via a thread-per-device pool).
 :::
 
 ## Compile one artifact per device
@@ -81,8 +81,12 @@ no-dispatch case carries no slicing or transfer cost.
 
 ## Schedulers
 
-A scheduler decides which device a workload runs on and how large each
+A scheduler decides which device(s) a workload runs on and how large each
 sub-batch chunk is. All are plain C++ objects configured by a `Config` struct.
+`DispatchedModel` picks its execution mode from the scheduler's type: a
+**synchronous** scheduler (`SimpleScheduler`, `MPISimpleScheduler`) runs the
+chunk loop on the calling thread; an **asynchronous** one
+(`StaticHybridScheduler`) drives a thread-per-device pool.
 
 ### `SimpleScheduler`
 
@@ -102,6 +106,82 @@ its node* (ranks are grouped by hostname, then the local rank indexes into the
 list), after which it chunks exactly like `SimpleScheduler`. Requires NEML2 built
 with `-DNEML2_MPI=ON` and at least one device per rank per node; otherwise the
 constructor throws.
+
+### `StaticHybridScheduler`
+
+Spreads one batch across several devices **concurrently** — a single
+`DispatchedModel` runs CPU + GPU(s) at once via a thread-per-device pool.
+`Config{devices, batch_sizes, capacities, priorities}` (the last two optional;
+each broadcasts from length 1). Assignment is greedy: each chunk goes to the
+highest-`priority` device that still has spare `capacity`
+(`load + batch_size <= capacity`), so faster devices stay filled; `capacity`
+controls how many chunks may be in flight per device (overlapping the next
+chunk's host→device copy with the current chunk's compute).
+
+```cpp
+#include "neml2/csrc/dispatchers/StaticHybridScheduler.h"
+
+StaticHybridScheduler::Config cfg;
+cfg.devices     = {"cpu", "cuda:0", "cuda:1"};
+cfg.batch_sizes = {512, 4096, 4096};   // tune per device, e.g. via SimpleScheduler
+auto m = load_model("aoti/model_aoti.i", "model",
+                    std::make_shared<StaticHybridScheduler>(cfg));
+auto out = m.forward(inputs);          // dispatched across all three, gathered back
+```
+
+A hybrid pool admits **at most one CPU** plus distinct GPUs: each device's AOTI
+graph already saturates torch's intra-op (OpenMP) thread pool, so two CPU
+workers would only oversubscribe the same cores.
+
+**Promoted parameters under hybrid.** `named_parameters()` is a single *master*
+map; mutating it in place is broadcast to every device copy before the next
+dispatch, so the usual single-device idiom keeps working:
+
+```cpp
+m.named_parameters().at("E").fill_(150e3);  // reflected on every device next call
+```
+
+## Error handling
+
+Every exception that leaves `forward` / `jvp` / `jacobian` — on both the
+synchronous and asynchronous paths — is a `neml2::aoti::Exception` (itself a
+`std::runtime_error`) carrying a `recoverable()` flag. That flag is the contract
+a downstream consumer branches on:
+
+- **`ConvergenceError`** (`recoverable() == true`) — the nonlinear solve
+  diverged or hit its iteration cap. A time-stepping consumer can cut the step
+  and retry.
+- **`FatalError`** (`recoverable() == false`) — a shape / device mismatch, a
+  missing input, a malformed artifact. A retry would fail identically, so it
+  must hard-fail. Foreign errors (a torch `c10::Error`, `std::bad_alloc`, ...)
+  are normalized to this at the boundary, so a single `catch` covers everything.
+
+```cpp
+try
+{
+  auto out = m.forward(inputs);
+}
+catch (const neml2::aoti::Exception & e)
+{
+  if (e.recoverable()) { /* e.g. dt *= 0.5; retry */ }
+  else                 { throw; } // fatal: give up
+}
+```
+
+Under asynchronous dispatch this stays well-defined even when several chunks run
+at once. A failing chunk is caught inside its worker (a C++ exception escaping a
+`std::thread` would call `std::terminate`), the scheduler is still drained so the
+pool can never deadlock, and only then does the dispatcher decide what to throw:
+
+- one failure → it is re-thrown verbatim (its dynamic type, e.g.
+  `ConvergenceError`, is preserved);
+- several at once → an **`AggregateError`** carrying them all. It reports
+  `recoverable()` only if *every* sub-error is recoverable, so a lone fatal among
+  otherwise-recoverable failures still forces a hard stop. The individual errors
+  are available via `AggregateError::errors()`.
+
+Either way the `DispatchedModel` and its scheduler are left clean and reusable
+for the next call.
 
 ## See also
 

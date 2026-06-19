@@ -27,7 +27,7 @@ build.targets = ["aoti", "pyneml2"]
 wheel.install-dir = "neml2"
 wheel.packages = ["neml2"]
 # The C++ runtime sources under neml2/csrc/ are build inputs, not runtime
-# artifacts: the wheel imports the compiled neml2/lib/libneml2_aoti.so +
+# artifacts: the wheel imports the compiled neml2/lib/libneml2.so +
 # neml2/aoti/_aoti*.so, and C++ consumers read the *installed* public headers
 # from neml2/include/ (via the bundled pkg-config / cmake config). Excluding
 # the raw source tree keeps the PImpl internals (internal.h / assertions.h) out
@@ -212,7 +212,7 @@ branch = true
 parallel = true
 concurrency = ["multiprocessing", "thread"]
 omit = [
-  "neml2/lib/*",                                # bundled libneml2_aoti.so
+  "neml2/lib/*",                                # bundled libneml2.so
   "neml2/aoti/_aoti.pyi",                       # generated pybind11 stub
   "neml2/version",                              # version file, not source
 ]
@@ -244,7 +244,7 @@ before-all = ""
 # Build-time deps: scikit-build-core + ninja drive the build; torch provides
 # libtorch and nmhit provides libnmhit (+ headers) for the C++ extension to link
 # against; wheel is pack/unpack for repair_wheel.py; pybind11-stubgen backs
-# neml2-stub. nmhit is both a runtime AND a build-time dep now (libneml2_aoti
+# neml2-stub. nmhit is both a runtime AND a build-time dep now (libneml2
 # links its static lib via Findnmhit), so -- unlike the pure-runtime pyzag -- it
 # must be installed before the build. pyzag stays out: repair_wheel.py reads the
 # pure-runtime deps from the freshly-built wheel's metadata after install.

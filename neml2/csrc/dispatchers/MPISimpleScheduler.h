@@ -46,7 +46,7 @@ namespace neml2::aoti
  * lives in the translation unit. The host application owns `MPI_Init`/
  * `MPI_Finalize`; the communicator used is `MPI_COMM_WORLD`.
  */
-class AOTI_EXPORT MPISimpleScheduler : public WorkScheduler
+class AOTI_EXPORT MPISimpleScheduler : public SyncScheduler
 {
 public:
   struct Config

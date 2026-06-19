@@ -39,7 +39,7 @@ namespace neml2::aoti
  * empirically tune the per-call batch size, or as the per-rank scheduler when a
  * host pins one device per process by hand.
  */
-class AOTI_EXPORT SimpleScheduler : public WorkScheduler
+class AOTI_EXPORT SimpleScheduler : public SyncScheduler
 {
 public:
   struct Config

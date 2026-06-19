@@ -107,9 +107,9 @@ runs:
       run: |
         pip install torch==${{ inputs.torch-version }}
 
-    - name: Install nmhit (C++ headers + static lib for the libneml2_aoti build)
+    - name: Install nmhit (C++ headers + static lib for the libneml2 build)
       # nmhit's wheel ships its public headers + libnmhit under
-      # site-packages/nmhit/{include,lib}; libneml2_aoti links it at build time
+      # site-packages/nmhit/{include,lib}; libneml2 links it at build time
       # (Findnmhit discovers it there), so it must be present *before* the build
       # -- the same build-time role torch plays above.
       # dependencies: nmhit.version_min

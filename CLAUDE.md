@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 NEML2 is a Python-native material modeling library that vectorizes constitutive model evaluation on CPU/GPU using PyTorch as the tensor backend. Models are plain `torch.nn.Module` subclasses composed from small reusable pieces, the framework auto-resolves dependencies between them, and most users interact via HIT input files (the same format used by MOOSE) plus either the Python API or the `neml2-run` / `neml2-compile` CLIs.
 
-The legacy C++ tower from v2.x was retired in the v3 migration. The only C++ that remains is `neml2/csrc/aoti/`, a thin runtime that loads the AOT-Inductor `.pt2` packages produced by `neml2-compile`; the runtime is built once into `neml2/lib/libneml2_aoti.so` as part of the wheel and is invisible to most contributors. See [](doc/content/migration/212_300.md) for the v2 → v3 rewrite summary.
+The legacy C++ tower from v2.x was retired in the v3 migration. The C++ that remains lives under `neml2/csrc/`: the AOT-Inductor runtime (`neml2/csrc/aoti/`) that loads the `.pt2` packages produced by `neml2-compile`, plus the work scheduler / dispatcher (`neml2/csrc/dispatchers/`) that spreads a batched evaluation across CPU/GPU(s). Both compile into a single shared library, `neml2/lib/libneml2.so`, built once as part of the wheel and invisible to most contributors. See [](doc/content/migration/212_300.md) for the v2 → v3 rewrite summary.
 
 ## Hard rules — these supersede convenience
 
@@ -55,7 +55,7 @@ Package versions and pinned deps live in `dependencies.yaml` — use `python scr
 
 ```bash
 cmake --preset dev               # configure (Debug)
-cmake --build --preset dev       # build libneml2_aoti
+cmake --build --preset dev       # build libneml2
 cmake --preset cc                # configure-only; exports compile_commands.json for clangd
 ```
 
@@ -149,10 +149,11 @@ The Python package layout under `neml2/`:
 - `data/` — `CubicCrystal`, `CrystalGeometry` and related crystallography data classes.
 - `user_tensors/` — registered `[Tensors]` block types other than `Python` (currently the `CSV<Type>` family).
 - `cli/aoti_compile.py`, `cli/aoti_export.py` — the `neml2-compile` orchestration and the per-segment export path; see [](doc/content/model_compilation/pipeline.md).
-- `aoti/` — Python-side `AOTIModel` shim that loads a `_meta.json` + per-segment `.pt2` files and exposes `forward` / `jvp` / `jacobian`. Backed by the pybind module `aoti/_aoti.cpp` (which links `libneml2_aoti.so`).
+- `aoti/` — Python-side `AOTIModel` shim that loads a `_meta.json` + per-segment `.pt2` files and exposes `forward` / `jvp` / `jacobian`. Backed by the pybind module `aoti/_aoti.cpp` (which links `libneml2.so`).
 - `pyzag/` — `NEML2PyzagModel` adapter that exposes a NEML2 `Model` as a `torch.nn.Module` consumable by the pyzag training library.
 - `cli/` — backing modules for the four console scripts above.
-- `csrc/aoti/` — C++ runtime: `neml2::aoti::Model` wraps `torch::inductor::AOTIModelPackageLoader`. The public class is a PImpl facade (`Model.h`, the only shipped header); its internals live behind `Model::Impl` in the non-shipped `internal.h` (+ `assertions.h`), and the implementation is split across `Model.cpp` (construction), `ops.cpp` (forward/jvp/jacobian), `solve.cpp` (value/Newton path), and `jacobian.cpp` (Jacobian/IFT path). Built into `neml2/lib/libneml2_aoti.so` (hidden visibility; only the `AOTI_EXPORT`-tagged `Model` API is exported) and surfaced through the pybind binding.
+- `csrc/aoti/` — C++ runtime: `neml2::aoti::Model` wraps `torch::inductor::AOTIModelPackageLoader`. The public class is a PImpl facade (`Model.h`); its internals live behind `Model::Impl` in the non-shipped `internal.h` (+ `assertions.h`), and the implementation is split across `Model.cpp` (construction), `ops.cpp` (forward/jvp/jacobian), `solve.cpp` (value/Newton path), `jacobian.cpp` (Jacobian/IFT path), and the shared `newton.{h,cpp}` / `nonlinear_system*.{h,cpp}` solver. `Exception.h` (shipped) is the public exception taxonomy — `Exception` base with a `recoverable()` predicate, `ConvergenceError` (recoverable: a Newton divergence / max-iters, so a consumer can cut the time step and retry), `FatalError` (non-recoverable: shape/device/config; what `_assert` throws), and `AggregateError` (concurrent dispatch failures). Public ops run through `_guarded` so foreign torch errors are normalized to `FatalError`. Built into `neml2/lib/libneml2.so` (hidden visibility; only the `AOTI_EXPORT`-tagged API is exported) and surfaced through the pybind binding.
+- `csrc/dispatchers/` — C++ work scheduler / dispatcher (serves the compiled path embedded in a host app; no Python). `DispatchedModel` is a `Model`-shaped handle owning one pinned `aoti::Model` per device + an injected `WorkScheduler`; it chunks a batched call across devices and stitches results back. Schedulers split into `SyncScheduler` (`SimpleScheduler`, `MPISimpleScheduler` — single-device chunk loop on the calling thread) and `AsyncScheduler` (`StaticHybridScheduler` — concurrent CPU+GPU(s) via a thread-per-device pool, load-tracked). `factory.cpp` is the `load_model(stub, name[, scheduler])` entry point; `batch_chunk.h` holds the slice/cat helpers. See [](doc/content/model_compilation/dispatcher.md).
 
 ### Factory / Registry pattern
 

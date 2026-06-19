@@ -20,7 +20,7 @@ jobs:
         with:
           extra_args: clang-format --all-files --show-diff-on-failure -v
 
-  # The C++ artifact shipped from this repo is the libneml2_aoti shared
+  # The C++ artifact shipped from this repo is the libneml2 shared
   # library. The matrix below verifies it configures and builds cleanly in
   # Debug and Release on every supported runner. Behavioral coverage of the
   # Python runtime lives in tests/ and is exercised by the `Python` workflow.
@@ -51,7 +51,7 @@ jobs:
       - name: Configure (Werror)
         if: matrix.btype != 'Release'
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -DCMAKE_CXX_FLAGS="-Werror" -S .
-      - name: Build libneml2_aoti
+      - name: Build libneml2
         run: cmake --build --preset dev
 
   # Benchmark smoke tests. Each scenario under benchmark/<name>/model.i is
@@ -86,16 +86,21 @@ jobs:
         # the runner at once. -j 4 matches the ubuntu-latest vCPU count.
         run: ctest --test-dir build/dev -L benchmark --output-on-failure --parallel 4
 
-  # C++ dispatcher tests (tests/cpp): schedulers, batch slice/cat, and the
-  # load_model / DispatchedModel end-to-end against a compiled fixture. They live
-  # under the dev preset's tests/cpp targets, so the `build` job above (which
-  # only builds libneml2_aoti) doesn't cover them. Single Linux/CPU runner: the
-  # cross-device GPU assertion is runtime-gated (at::hasCUDA) and skipped here,
-  # and MPIScheduler runs in the default no-MPI build (its ctor throws -> the
-  # test asserts exactly that).
+  # C++ dispatcher tests (tests/cpp): schedulers, batch slice/cat, async pool,
+  # and the load_model / DispatchedModel end-to-end against a compiled fixture.
+  # They live under the dev preset's tests/cpp targets, so the `build` job above
+  # (which only builds libneml2) doesn't cover them. Runs on both ubuntu
+  # (cpu) and the gpu_runner: the real CPU+GPU hybrid + write-through assertions
+  # are runtime-gated on at::hasCUDA(), so they only fire on the GPU cell; the
+  # cpu cell still covers single-device + async correctness, and MPISimpleScheduler
+  # (no-MPI build) asserting its constructor throws.
   dispatcher:
     needs: clang-format
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, gpu_runner]
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -108,7 +113,7 @@ jobs:
           cmake-version: "3.26.1"
           # dependencies: torch.version
           torch-version: "2.12.1"
-          cpu-torch: true
+          cpu-torch: ${{ matrix.runner != 'gpu_runner' && 'true' || 'false' }}
       - name: Install neml2 (editable)
         # Makes `neml2` importable for the ctest fixture
         # (`python -m neml2.cli.aoti_compile`).
@@ -118,6 +123,7 @@ jobs:
       - name: Build C++ dispatcher tests
         run: |
           cmake --build build/dev --target aoti \
-            test_scheduler test_batch_chunk test_dispatcher test_load_model -j 4
+            test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions \
+            test_dispatcher test_load_model -j 4
       - name: Run C++ dispatcher tests
         run: ctest --test-dir build/dev -L dispatcher --output-on-failure --parallel 4

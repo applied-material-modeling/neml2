@@ -48,34 +48,43 @@ namespace neml2::aoti
  * Owns the pre-loaded per-device `Model`(s) produced by `neml2-compile` and an
  * injected @ref WorkScheduler, and re-exposes the exact `forward` / `jvp` /
  * `jacobian` surface of @ref Model. Each call slices the input batch along its
- * leading axis into scheduler-sized chunks, moves each chunk to the compute
- * device, runs the device's `Model`, moves the result back to the device the
- * inputs were provided on, and concatenates -- all transparently. When the
- * scheduler's device equals the input device and the batch fits in one chunk,
- * the behaviour is identical to calling `Model` directly.
+ * leading axis into scheduler-sized chunks, moves each chunk to its compute
+ * device, runs that device's `Model`, moves the result back to the device the
+ * inputs were provided on, and concatenates -- all transparently.
+ *
+ * Sync vs. async is chosen from the scheduler's type:
+ * - a @ref SyncScheduler (`SimpleScheduler`, `MPISimpleScheduler`) runs the
+ *   chunk loop on the calling thread, one device. When that device equals the
+ *   input device and the batch fits in one chunk, it short-circuits to a direct
+ *   `Model` call (zero overhead).
+ * - an @ref AsyncScheduler (`StaticHybridScheduler`) drives a thread-per-device
+ *   pool: the calling thread asks the scheduler for the next `(device, chunk)`
+ *   and enqueues it; one worker per device runs its `Model` concurrently;
+ *   results are reassembled in dispatch order.
  *
  * This is a *distinct, same-shaped* type, **not** a subclass of `Model` (whose
- * methods are non-virtual by design) and not behind an abstract interface:
- * substitute it for `Model` at the source level, e.g. via a template. The
- * scheduler is held by composition so the policy stays swappable.
+ * methods are non-virtual by design): substitute it for `Model` at the source
+ * level. The scheduler is held by composition so the policy stays swappable.
  *
  * Artifact layout. `artifact_root` is the directory `neml2-compile --device
- * <...>` writes, holding one subfolder per device named by device type
- * (`cpu/`, `cuda/`), each with a complete `*_meta.json` + `.pt2` segments. The
- * subfolder matching the scheduler's device type is loaded, pinned to the
- * scheduler's concrete device index.
+ * <...>` writes, holding one subfolder per device type (`cpu/`, `cuda/`), each
+ * with a complete `*_meta.json` + `.pt2` segments. One `Model` is loaded per
+ * `scheduler->devices()` entry from the matching subfolder, pinned to that
+ * device's concrete index.
  *
- * Single-device scope. In this synchronous phase a scheduler maps to exactly
- * one device, so the wrapper holds one `Model`; `device()` / `dtype()` /
- * `named_parameters()` forward to it. Multi-device storage and the matching
- * multi-valued semantics are a later (asynchronous / hybrid) concern.
+ * Multi-device semantics. `input_names()` / `output_names()` / `*_sizes()` /
+ * `dtype()` are identical across the per-device copies and forward to the
+ * primary (`scheduler->devices().front()`); `device()` reports that primary.
+ * `named_parameters()` is the single *master* promoted-parameter map: mutating
+ * it in place is broadcast to every device copy before the next dispatch (so the
+ * single-device mutation idiom keeps working under hybrid).
  */
 class AOTI_EXPORT DispatchedModel
 {
 public:
-  /// Load the per-device artifact under `artifact_root` matching `scheduler`'s
-  /// device, and dispatch through `scheduler`. Throws if the subfolder or its
-  /// metadata is missing.
+  /// Load one per-device artifact under `artifact_root` for each
+  /// `scheduler->devices()` entry, and dispatch through `scheduler`. Throws if a
+  /// device's subfolder or its metadata is missing.
   DispatchedModel(const std::filesystem::path & artifact_root,
                   std::shared_ptr<WorkScheduler> scheduler);
 
@@ -112,8 +121,9 @@ public:
   /// Configure the implicit-segment Newton solve (forwarded to every Model).
   void set_solver_config(const SolverConfig & config);
 
-  /// @name Metadata + parameter forwarders.
-  /// Valid while single-device (this phase); multi-valued once >1 Model is held.
+  /// @name Metadata + parameter surface.
+  /// Metadata forwards to the primary device copy (all copies agree);
+  /// named_parameters() is the master map broadcast to all copies per dispatch.
   ///@{
   const std::vector<std::string> & input_names() const noexcept;
   const std::vector<std::string> & output_names() const noexcept;

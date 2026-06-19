@@ -37,6 +37,7 @@
 #include <c10/core/Device.h>
 #include <c10/core/ScalarType.h>
 
+#include "neml2/csrc/aoti/Exception.h"
 #include "neml2/csrc/aoti/aoti_export.h"
 
 namespace neml2::aoti

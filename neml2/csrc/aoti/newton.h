@@ -45,8 +45,10 @@ class NonlinearSystem;
 // SolverConfig (the Newton tunables) is the public type declared in Model.h --
 // it is also the argument to Model::set_solver_config.
 
-/// Outcome of a Newton solve: the (converged or last) per-unknown-group
-/// iterate, whether it converged within ``miters``, and the iteration count.
+/// Outcome of a *successful* Newton solve: the converged per-unknown-group
+/// iterate and the iteration count. ``converged`` is always ``true`` here --
+/// failure (divergence or hitting ``miters``) throws ``ConvergenceError`` rather
+/// than returning, so a returned result is by construction converged.
 struct NewtonResult
 {
   std::vector<at::Tensor> u;
@@ -56,9 +58,10 @@ struct NewtonResult
 
 /// Per-group Newton-Raphson solver with optional backtracking line search.
 /// Convergence is the elementwise ``||b|| < atol OR ||b||/||b0|| < rtol``
-/// all-reduce; divergence (non-finite residual) throws. On max-iterations it
-/// returns the last iterate (``converged=false``), matching the NEML2 Newton
-/// convention.
+/// all-reduce. Both failure modes -- divergence (non-finite residual) and
+/// exhausting ``miters`` without converging -- throw ``ConvergenceError`` (a
+/// *recoverable* error: a time-stepping consumer can cut its step and retry).
+/// The all-reduce means a solve fails if *any* batch member is unconverged.
 ///
 /// AOTI_EXPORT: this class is part of the shared library's public ABI so the
 /// pybind layer (a separate module) can construct + drive it for the eager path.

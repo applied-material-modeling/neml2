@@ -192,7 +192,7 @@ endif()
 find_package(nmhit MODULE REQUIRED)
 
 # ----------------------------------------------------------------------------
-# libneml2_aoti — the only C++ artifact NEML2 ships
+# libneml2 — the only C++ artifact NEML2 ships (aoti runtime + dispatchers)
 # ----------------------------------------------------------------------------
 # Free-standing: links only against torch::core (+ torch::cuda when available)
 # and nlohmann_json. Wraps torch::inductor::AOTIModelPackageLoader so the
@@ -203,6 +203,7 @@ find_package(nmhit MODULE REQUIRED)
 # public ops, the value/Newton path, the Jacobian/IFT path); the internals live
 # behind a PImpl `Model::Impl` declared in the non-shipped internal.h.
 add_library(aoti SHARED
+      neml2/csrc/aoti/Exception.cpp
       neml2/csrc/aoti/Model.cpp
       neml2/csrc/aoti/ops.cpp
       neml2/csrc/aoti/solve.cpp
@@ -212,6 +213,8 @@ add_library(aoti SHARED
       neml2/csrc/dispatchers/WorkScheduler.cpp
       neml2/csrc/dispatchers/SimpleScheduler.cpp
       neml2/csrc/dispatchers/MPISimpleScheduler.cpp
+      neml2/csrc/dispatchers/AsyncScheduler.cpp
+      neml2/csrc/dispatchers/StaticHybridScheduler.cpp
       neml2/csrc/dispatchers/DispatchedModel.cpp
       neml2/csrc/dispatchers/factory.cpp
 )
@@ -248,10 +251,13 @@ target_sources(aoti
       FILE_SET HEADERS
       BASE_DIRS ${NEML2_SOURCE_DIR}
       FILES
+      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/Exception.h
       ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/Model.h
       ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/WorkScheduler.h
       ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/SimpleScheduler.h
       ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/MPISimpleScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/AsyncScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/StaticHybridScheduler.h
       ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/DispatchedModel.h
       ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/factory.h
 )
@@ -262,10 +268,13 @@ target_sources(aoti
 # Model.h (see the install() below), and the install-interface `include` dir
 # already on the target covers it.
 target_include_directories(aoti PUBLIC $<BUILD_INTERFACE:${NEML2_BINARY_DIR}/include>)
-set_target_properties(aoti PROPERTIES OUTPUT_NAME "neml2_aoti$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
+set_target_properties(aoti PROPERTIES OUTPUT_NAME "neml2$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 target_compile_options(aoti PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(aoti PUBLIC torch::core nlohmann_json::nlohmann_json)
 target_link_libraries(aoti PRIVATE nmhit::nmhit)
+# The async dispatch pool (StaticHybridScheduler path) spawns std::thread workers.
+find_package(Threads REQUIRED)
+target_link_libraries(aoti PRIVATE Threads::Threads)
 if(TARGET torch::cuda)
       target_link_libraries(aoti PUBLIC torch::cuda)
 endif()

@@ -22,18 +22,43 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/csrc/dispatchers/WorkScheduler.h"
+#include "neml2/csrc/dispatchers/AsyncScheduler.h"
 
 namespace neml2::aoti
 {
-// Anchors the WorkScheduler vtable / typeinfo in libneml2.so.
-WorkScheduler::~WorkScheduler() = default;
-
-at::Device
-WorkScheduler::parse_device(const std::string & s)
+void
+AsyncScheduler::schedule_work(at::Device & dev, std::size_t & n)
 {
-  // at::Device(std::string) parses "cpu" / "cuda" / "cuda:N" and throws a
-  // c10::Error on an unrecognised string.
-  return at::Device(s);
+  std::unique_lock<std::mutex> lock(_mutex);
+  _cv.wait(lock, [&] { return schedule_work_impl(dev, n); });
+}
+
+void
+AsyncScheduler::dispatched_work(at::Device dev, std::size_t n)
+{
+  {
+    std::lock_guard<std::mutex> lock(_mutex);
+    dispatched_work_impl(dev, n);
+  }
+  _cv.notify_all();
+}
+
+void
+AsyncScheduler::completed_work(at::Device dev, std::size_t n)
+{
+  {
+    std::lock_guard<std::mutex> lock(_mutex);
+    completed_work_impl(dev, n);
+  }
+  // Frees capacity (wakes schedule_work) and may drain the last load (wakes
+  // wait_for_completion).
+  _cv.notify_all();
+}
+
+void
+AsyncScheduler::wait_for_completion()
+{
+  std::unique_lock<std::mutex> lock(_mutex);
+  _cv.wait(lock, [&] { return all_work_completed(); });
 }
 } // namespace neml2::aoti

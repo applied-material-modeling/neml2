@@ -4,7 +4,7 @@ libdir=@NEML2_PKGCONFIG_LIBDIR@
 includedir=${prefix}/include
 
 Name: neml2-core
-Description: NEML2 core library (libneml2_aoti, no dependency flags)
+Description: NEML2 core library (libneml2, no dependency flags)
 Version: @PROJECT_VERSION@
 Libs: @NEML2_PKGCONFIG_LIBS@
 Cflags: -I${includedir}

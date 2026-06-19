@@ -35,9 +35,11 @@
 
 #include <ATen/ATen.h>
 
-#include "neml2/csrc/dispatchers/DispatchedModel.h"
+#include "neml2/csrc/aoti/Exception.h"
 #include "neml2/csrc/aoti/Model.h"
+#include "neml2/csrc/dispatchers/DispatchedModel.h"
 #include "neml2/csrc/dispatchers/SimpleScheduler.h"
+#include "neml2/csrc/dispatchers/StaticHybridScheduler.h"
 
 #include "test_util.h"
 
@@ -105,6 +107,65 @@ main(int argc, char ** argv)
       NEML2_CHECK(at::allclose(jout.at(name), std::get<0>(ref_jac).at(name), 1e-8, 1e-10));
   }
 
+  // Async correctness: a single-CPU StaticHybridScheduler drives the
+  // thread-per-device pool (schedule -> dispatch -> worker -> reduce) with one
+  // worker; the order-preserving result must equal the synchronous single shot.
+  {
+    StaticHybridScheduler::Config cfg;
+    cfg.devices = {"cpu"};
+    cfg.batch_sizes = {3}; // chunks of 3 over b=10
+    DispatchedModel disp(artifact_root, std::make_shared<StaticHybridScheduler>(cfg));
+
+    auto out = disp.forward(inputs);
+    for (const auto & name : ref.output_names())
+      NEML2_CHECK(at::allclose(out.at(name), ref_out.at(name), 1e-8, 1e-10));
+
+    auto [jout, j] = disp.jacobian(inputs);
+    NEML2_CHECK(at::allclose(j, std::get<1>(ref_jac), 1e-8, 1e-10));
+  }
+
+  // Async error propagation: a chunk that throws inside a worker thread must not
+  // call std::terminate, must not deadlock wait_for_completion, and must surface
+  // the exception on the calling thread. Trigger it by supplying the input under
+  // a bogus name: the map is non-empty (so batch-size inference + slicing run on
+  // the main thread), but the model's "missing required input" assertion fires
+  // once the *worker* runs the model -- a non-recoverable FatalError. (AOTI
+  // kernels trust their static shapes, so a wrong-shaped tensor is read by
+  // stride rather than rejected; a missing input is the reliable trigger.) The
+  // same handle must stay usable afterwards, proving the scheduler load drained
+  // and the worker pool is still alive (a stranded load would hang this test).
+  {
+    StaticHybridScheduler::Config cfg;
+    cfg.devices = {"cpu"};
+    cfg.batch_sizes = {3}; // several chunks over b=10
+    DispatchedModel disp(artifact_root, std::make_shared<StaticHybridScheduler>(cfg));
+
+    std::map<std::string, at::Tensor> bad;
+    bad.emplace("__nonexistent_input__", inputs.begin()->second);
+
+    // Catch the consumer-facing base type: the failure may surface as a lone
+    // FatalError or (if several chunks were in flight) an AggregateError, but
+    // either way it must be non-recoverable -- a missing input is a hard stop.
+    bool threw = false;
+    bool recoverable = true;
+    try
+    {
+      (void)disp.forward(bad);
+    }
+    catch (const neml2::aoti::Exception & e)
+    {
+      threw = true;
+      recoverable = e.recoverable();
+    }
+    NEML2_CHECK(threw);        // surfaced, not terminate / hang
+    NEML2_CHECK(!recoverable); // a missing input is a hard stop, not a retry
+
+    // Reusable after the failure: a valid call still matches the single shot.
+    auto out = disp.forward(inputs);
+    for (const auto & name : ref.output_names())
+      NEML2_CHECK(at::allclose(out.at(name), ref_out.at(name), 1e-8, 1e-10));
+  }
+
   // Cross-device dispatch: when a GPU and a cuda artifact are both present,
   // dispatch the CPU-resident inputs onto the GPU and verify the results --
   // returned on the input (CPU) device -- match the CPU single-shot reference.
@@ -122,6 +183,47 @@ main(int argc, char ** argv)
     {
       NEML2_CHECK(out.at(name).device().is_cpu()); // returned on the input device
       NEML2_CHECK(at::allclose(out.at(name), ref_out.at(name), /*rtol=*/1e-6, /*atol=*/1e-8));
+    }
+
+    // Real CPU+GPU hybrid: concurrent dispatch across both devices must still
+    // reproduce the single shot (results gathered back on the CPU input device).
+    {
+      StaticHybridScheduler::Config cfg;
+      cfg.devices = {"cpu", "cuda"};
+      cfg.batch_sizes = {3, 4};
+      DispatchedModel disp_h(artifact_root, std::make_shared<StaticHybridScheduler>(cfg));
+      auto out_h = disp_h.forward(inputs);
+      for (const auto & name : ref.output_names())
+      {
+        NEML2_CHECK(out_h.at(name).device().is_cpu());
+        NEML2_CHECK(at::allclose(out_h.at(name), ref_out.at(name), 1e-6, 1e-8));
+      }
+    }
+
+    // Write-through promoted parameters: mutating the master must reach the GPU
+    // copy too. Perturb a parameter on a fresh single-shot reference and on the
+    // hybrid handle by the same amount; the hybrid result (whose chunks split
+    // across cpu + cuda) must match -- which it only can if the cuda copy saw
+    // the mutation.
+    {
+      Model ref_mut(meta_path);
+      auto & rp = ref_mut.named_parameters();
+      NEML2_CHECK(!rp.empty()); // forward_promoted exposes E + nu
+      const std::string pkey = rp.begin()->first;
+      rp.at(pkey).mul_(1.1);
+      const auto ref_mut_out = ref_mut.forward(inputs);
+      // Sanity: the parameter actually moves the output.
+      const auto & first = ref.output_names().front();
+      NEML2_CHECK(!at::allclose(ref_mut_out.at(first), ref_out.at(first)));
+
+      StaticHybridScheduler::Config cfg;
+      cfg.devices = {"cpu", "cuda"};
+      cfg.batch_sizes = {3, 4};
+      DispatchedModel disp_w(artifact_root, std::make_shared<StaticHybridScheduler>(cfg));
+      disp_w.named_parameters().at(pkey).mul_(1.1); // master -> broadcast before dispatch
+      auto out_w = disp_w.forward(inputs);
+      for (const auto & name : ref.output_names())
+        NEML2_CHECK(at::allclose(out_w.at(name), ref_mut_out.at(name), 1e-6, 1e-8));
     }
   }
 

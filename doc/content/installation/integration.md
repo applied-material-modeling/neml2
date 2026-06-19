@@ -85,7 +85,7 @@ comma := ,
 
 CXXFLAGS += $(shell $(PKG_CONFIG) --cflags neml2)
 # Add an rpath entry for every -L the .pc file emitted so the resulting
-# binary can find the bundled libneml2_aoti.so + libtorch at runtime
+# binary can find the bundled libneml2.so + libtorch at runtime
 # without LD_LIBRARY_PATH.
 LDFLAGS  += $(foreach libdir,$(shell $(PKG_CONFIG) --libs-only-L neml2),$(patsubst -L%,-Wl$(comma)-rpath$(comma)%,$(libdir)))
 LDLIBS   += $(shell $(PKG_CONFIG) --libs neml2)
@@ -110,7 +110,7 @@ The pkg-config files NEML2 ships are:
 - `neml2.pc` — meta entry. `pkg-config --cflags --libs neml2` pulls in
   everything (core, torch, nlohmann_json). Use this unless you have a
   specific reason not to.
-- `neml2-core.pc` — just `libneml2_aoti` and its public headers. Useful
+- `neml2-core.pc` — just `libneml2` and its public headers. Useful
   if your build system already manages torch / nlohmann_json
   independently.
 - `neml2-torch.pc`, `neml2-nlohmann-json.pc` — the bundled dependency
@@ -130,7 +130,7 @@ same source compiles whether NEML2 was discovered via CMake's
 
 ## Runtime library lookup
 
-The bundled `libneml2_aoti.so` lives under `<site-packages>/neml2/lib/`
+The bundled `libneml2.so` lives under `<site-packages>/neml2/lib/`
 and links against the libtorch shipped in the sibling `torch` wheel at
 `<site-packages>/torch/lib/`, reached via an `$ORIGIN/../../torch/lib`
 rpath baked into NEML2's library. If you set rpath at link time (CMake
