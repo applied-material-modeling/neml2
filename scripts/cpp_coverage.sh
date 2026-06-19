@@ -67,8 +67,11 @@ for o in "${OBJECTS[@]:1}"; do OBJ_ARGS+=(-object "$o"); done
 # out torch headers, the generated aoti_export.h, and the tests themselves).
 "$LLVM_COV" report "${OBJ_ARGS[@]}" \
   -instr-profile="$OUT_DIR/merged.profdata" "$SRC/neml2/csrc"
+# Rewrite the absolute SF: paths to repo-relative so Codecov can merge uploads
+# from different runners (ubuntu vs gpu_runner have different workspace prefixes;
+# mismatched paths would otherwise be treated as distinct files and not unioned).
 "$LLVM_COV" export "${OBJ_ARGS[@]}" \
   -instr-profile="$OUT_DIR/merged.profdata" -format=lcov "$SRC/neml2/csrc" \
-  >"$OUT_DIR/coverage.lcov"
+  | sed "s|SF:${SRC}/|SF:|" >"$OUT_DIR/coverage.lcov"
 
 echo "cpp_coverage: lcov written to $OUT_DIR/coverage.lcov"

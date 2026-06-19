@@ -117,6 +117,46 @@ main(int argc, char ** argv)
     }
   }
 
+  // Public API surface: the (Model, scheduler) constructor, move semantics, and
+  // the trivial accessors -- kept exercised so they don't silently rot.
+  {
+    DispatchedModel m(std::make_unique<Model>(meta_path),
+                      std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cpu", 0}));
+    NEML2_CHECK(m.input_names() == ref.input_names());
+    NEML2_CHECK(m.output_names() == ref.output_names());
+    NEML2_CHECK(m.input_sizes() == ref.input_sizes());
+    NEML2_CHECK(m.output_sizes() == ref.output_sizes());
+    NEML2_CHECK(m.dtype() == ref.dtype());
+    NEML2_CHECK(!m.named_parameters().empty()); // non-const overload
+    NEML2_CHECK(!static_cast<const DispatchedModel &>(m).named_parameters().empty()); // const
+    const auto & first = ref.output_names().front();
+    NEML2_CHECK(at::allclose(m.forward(inputs).at(first), ref_out.at(first), 1e-8, 1e-10));
+
+    DispatchedModel moved(std::move(m)); // move ctor
+    NEML2_CHECK(moved.input_names() == ref.input_names());
+    DispatchedModel m2(std::make_unique<Model>(meta_path),
+                       std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cpu", 0}));
+    m2 = std::move(moved); // move assignment
+    NEML2_CHECK(at::allclose(m2.forward(inputs).at(first), ref_out.at(first), 1e-8, 1e-10));
+  }
+
+  // A foreign (torch) error raised inside Model itself is normalized to a
+  // non-recoverable FatalError by its _guarded facade (undefined input tensor).
+  {
+    std::map<std::string, at::Tensor> undef;
+    undef.emplace(ref.input_names().front(), at::Tensor{});
+    bool fatal = false;
+    try
+    {
+      (void)ref.forward(undef);
+    }
+    catch (const FatalError & e)
+    {
+      fatal = !e.recoverable();
+    }
+    NEML2_CHECK(fatal);
+  }
+
   // Async correctness: a single-CPU StaticHybridScheduler drives the
   // thread-per-device pool (schedule -> dispatch -> worker -> reduce) with one
   // worker; the order-preserving result must equal the synchronous single shot.
