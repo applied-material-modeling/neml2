@@ -410,13 +410,21 @@ if(TARGET torch::cuda)
       target_link_libraries(eager PUBLIC torch::cuda)
 endif()
 
-# rpath: only the torch hop is needed (libtorch + libtorch_python). libpython is
-# NOT linked into this lib (see Python3::Module above) -- the host process
-# supplies it -- so there is nothing to point an rpath at for it.
+# rpath:
+#  - ${INSTALL_REL_PATH} (the lib's OWN dir): libneml2_eager.so links the sibling
+#    libneml2.so (the `aoti` target), which sits next to it in neml2/lib. Without
+#    this hop the loader -- and auditwheel during wheel repair -- cannot locate
+#    libneml2.so ("Cannot repair wheel, because required library libneml2.so
+#    could not be located").
+#  - the torch hop (libtorch + libtorch_python).
+# libpython is NOT linked into this lib (see Python3::Module above) -- the host
+# process supplies it -- so there is nothing to point an rpath at for it.
 if(NEML2_WHEEL AND NOT SKBUILD_STATE STREQUAL "editable")
-      set_target_properties(eager PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH}/../../torch/lib")
+      set_target_properties(eager PROPERTIES
+            INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/../../torch/lib")
 else()
-      set_target_properties(eager PROPERTIES INSTALL_RPATH "${torch_LINK_DIR}")
+      set_target_properties(eager PROPERTIES
+            INSTALL_RPATH "${INSTALL_REL_PATH};${torch_LINK_DIR}")
 endif()
 
 install(TARGETS eager
