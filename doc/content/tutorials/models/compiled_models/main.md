@@ -211,5 +211,3 @@ runs, large batch sweeps, the inner loop of a finite-element kernel.
 - [](tutorials-models-evaluation-device) covers the device choice
   itself; with AOTI the device is baked at compile time, so pick
   carefully.
-- [](model-dispatch) shows how to compile for several devices at once
-  and dispatch a batched evaluation across them from the C++ runtime.

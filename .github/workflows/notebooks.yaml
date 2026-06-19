@@ -62,7 +62,12 @@ jobs:
                 | sort -u \
                 | while read -r dir; do
                     nb="$dir/main.ipynb"
-                    [ -f "$nb" ] && echo "$nb"
+                    # `if` (not `[ -f ] && echo`): a false test as the loop's
+                    # last command makes the while -- and the whole pipeline
+                    # under `set -o pipefail` -- exit 1, which `set -e` then
+                    # treats as a failure. This bites whenever the last changed
+                    # tutorial dir is .md-only (no paired .ipynb).
+                    if [ -f "$nb" ]; then echo "$nb"; fi
                   done
             )"
           else
