@@ -38,10 +38,12 @@ from pathlib import Path
 
 import pytest
 import torch
+from torch import nn
 
 import neml2
+from neml2._eager_boundary import broadcast_to_common_batch, check_tensor
 from neml2.cli.aoti_export import _var_infos
-from neml2.eager import _EagerModel
+from neml2.eager import _EagerModel, _infer_device_dtype
 from neml2.types import SR2
 
 # tests/unit/test_eager.py -> repo root -> the forward-only fixture .i.
@@ -121,3 +123,43 @@ def test_device_override():
     assert m.device.type == "cpu"
     strain = torch.zeros(2, 6, dtype=m.dtype, device=m.device)
     assert m.forward({"strain": strain})["stress"].device.type == "cpu"
+
+
+# --- Direct unit tests of the shared boundary helpers + device/dtype inference.
+# These cover the fallback/validation branches a single-input forward never
+# reaches (device mismatch, no-hint message, batch broadcast, tensor-less or
+# non-float models).
+
+
+def test_infer_device_dtype_fallbacks():
+    # First tensor is non-floating: device is taken from it, dtype falls back to
+    # the torch default.
+    m_int = nn.Module()
+    m_int.register_buffer("ints", torch.zeros(3, dtype=torch.int64))
+    dev, dt = _infer_device_dtype(m_int, None)
+    assert dev.type == "cpu"
+    assert dt == torch.get_default_dtype()
+
+    # No tensors at all: both device and dtype fall back to the torch defaults.
+    dev2, dt2 = _infer_device_dtype(nn.Module(), None)
+    assert dev2 == torch.get_default_device()
+    assert dt2 == torch.get_default_dtype()
+
+
+def test_check_tensor_device_mismatch_without_hint():
+    # A wrong-device tensor (meta vs cpu) hits the device branch; an empty hint
+    # exercises the no-hint message path.
+    bad = torch.zeros(6, device="meta")
+    with pytest.raises(TypeError, match="device="):
+        check_tensor(
+            bad, "x", torch.device("cpu"), torch.float64, kind="input", context="T", hint=""
+        )
+
+
+def test_broadcast_expands_lower_rank_input():
+    # 'a' is base-only (6,) and must broadcast up to the common (4,) dyn batch.
+    raw = {"a": torch.zeros(6), "b": torch.zeros(4, 6)}
+    out, common_dyn = broadcast_to_common_batch(raw, {"a": SR2, "b": SR2}, {"a": 0, "b": 0})
+    assert tuple(common_dyn) == (4,)
+    assert out["a"].shape == (4, 6)
+    assert out["b"].shape == (4, 6)
