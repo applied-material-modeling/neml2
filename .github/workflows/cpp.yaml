@@ -85,3 +85,39 @@ jobs:
         # so ctest's --parallel budget doesn't pile too many AOTI compiles onto
         # the runner at once. -j 4 matches the ubuntu-latest vCPU count.
         run: ctest --test-dir build/dev -L benchmark --output-on-failure --parallel 4
+
+  # C++ dispatcher tests (tests/cpp): schedulers, batch slice/cat, and the
+  # load_model / DispatchedModel end-to-end against a compiled fixture. They live
+  # under the dev preset's tests/cpp targets, so the `build` job above (which
+  # only builds libneml2_aoti) doesn't cover them. Single Linux/CPU runner: the
+  # cross-device GPU assertion is runtime-gated (at::hasCUDA) and skipped here,
+  # and MPIScheduler runs in the default no-MPI build (its ctor throws -> the
+  # test asserts exactly that).
+  dispatcher:
+    needs: clang-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: ./.github/actions/neml2-ci
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.1"
+          cpu-torch: true
+      - name: Install neml2 (editable)
+        # Makes `neml2` importable for the ctest fixture
+        # (`python -m neml2.cli.aoti_compile`).
+        run: pip install -e ".[dev]" -v
+      - name: Configure dev preset
+        run: cmake --preset dev -GNinja -S .
+      - name: Build C++ dispatcher tests
+        run: |
+          cmake --build build/dev --target aoti \
+            test_scheduler test_batch_chunk test_dispatcher test_load_model -j 4
+      - name: Run C++ dispatcher tests
+        run: ctest --test-dir build/dev -L dispatcher --output-on-failure --parallel 4

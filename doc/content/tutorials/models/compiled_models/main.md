@@ -24,18 +24,22 @@ once a model is locked in and you want it fast.
 ## The pipeline
 
 ```
-input.i ──► neml2-compile ──► elasticity.pt2          (AOTI-compiled kernels)
-                              elasticity_jvp.pt2      (flat dout/din graph)
-                              elasticity_meta.json    (variable layout, dtype, device)
-                              elasticity_aoti.i       (drop-in HIT stub)
+input.i ──► neml2-compile ──► elasticity_aoti.i             (standalone drop-in stub)
+                              elasticity/
+                                cpu/  elasticity_meta.json   (variable layout, dtype, device)
+                                      elasticity.pt2         (AOTI-compiled kernels)
+                                      elasticity_jvp.pt2     (flat dout/din graph)
 ```
 
-`neml2-compile` emits all four files into the output directory. The
-`elasticity_aoti.i` stub is a copy of the original input with the
-`[Models]/elasticity` block replaced by an `AOTIModel` shim pointing at
-the metadata — everything else (drivers, settings, tensors) is copied
-through verbatim, so the stub is a drop-in replacement anywhere a
-`Driver` consumes a model by name.
+`neml2-compile` emits one artifact folder per device (`elasticity/<device>/`)
+plus a single standalone `elasticity_aoti.i` stub next to it. The stub is a
+copy of the original input with the `[Models]/elasticity` block replaced by an
+`AOTIModel` shim that points at the artifact folder via an absolute
+`artifact_path` — everything else (drivers, settings, tensors) is copied through
+verbatim, so the stub is a drop-in replacement anywhere a `Driver` consumes a
+model by name. Compiling for several devices at once (`--device cpu cuda`) adds
+more `<device>/` subfolders; the loader picks the one matching the device it
+runs on.
 
 ## The input file
 
@@ -55,10 +59,11 @@ invocation:
 
 Compilation is a one-time cost (Inductor + C++ compile, typically
 seconds); the resulting artifact loads quickly on every subsequent
-run. With no `--output-dir` the artifacts land in `aoti/<model>/`:
+run. With no `--output-dir` the output lands in `aoti/` — the standalone
+`aoti/<model>_aoti.i` stub next to the per-device folder `aoti/<model>/<device>/`:
 
 ```{code-cell} ipython3
-!ls aoti/elasticity
+!ls aoti aoti/elasticity aoti/elasticity/cpu
 ```
 
 ## Loading the compiled model
@@ -69,7 +74,7 @@ loads it the usual way:
 ```{code-cell} ipython3
 import neml2
 
-compiled = neml2.load_model("aoti/elasticity/elasticity_aoti.i", "elasticity")
+compiled = neml2.load_model("aoti/elasticity_aoti.i", "elasticity")
 compiled
 ```
 
@@ -206,3 +211,5 @@ runs, large batch sweeps, the inner loop of a finite-element kernel.
 - [](tutorials-models-evaluation-device) covers the device choice
   itself; with AOTI the device is baked at compile time, so pick
   carefully.
+- [](model-dispatch) shows how to compile for several devices at once
+  and dispatch a batched evaluation across them from the C++ runtime.

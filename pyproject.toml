@@ -241,16 +241,15 @@ build-verbosity = 1
 build-frontend = { name = "build", args = ["--no-isolation"] }
 
 before-all = ""
-# Build-time only: scikit-build-core + ninja drive the build, torch
-# provides libtorch for the C++ extension to link against, wheel is
-# pack/unpack for repair_wheel.py, pybind11-stubgen backs neml2-stub.
-# Runtime deps (nmhit, pyzag) are NOT listed here -- repair_wheel.py
-# reads them out of the freshly-built wheel's metadata via
-# ``importlib.metadata`` after install, so this line stays
-# maintenance-free when pyproject.toml's ``project.dependencies``
-# changes.
+# Build-time deps: scikit-build-core + ninja drive the build; torch provides
+# libtorch and nmhit provides libnmhit (+ headers) for the C++ extension to link
+# against; wheel is pack/unpack for repair_wheel.py; pybind11-stubgen backs
+# neml2-stub. nmhit is both a runtime AND a build-time dep now (libneml2_aoti
+# links its static lib via Findnmhit), so -- unlike the pure-runtime pyzag -- it
+# must be installed before the build. pyzag stays out: repair_wheel.py reads the
+# pure-runtime deps from the freshly-built wheel's metadata after install.
 # dependencies: pybind11_stubgen.version_min
-before-build = "python -m pip install scikit-build-core ninja torch wheel pybind11-stubgen>=2.5.5"
+before-build = "python -m pip install scikit-build-core ninja torch 'nmhit>=0.3.3' wheel pybind11-stubgen>=2.5.5"
 
 # dependencies: pyzag.version
 test-requires = "pytest torch pyzag==1.1.1"

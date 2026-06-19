@@ -17,13 +17,15 @@ NEML2 ships two ways to evaluate a model:
 ```
 
 This section covers the second path, split into the developer-facing
-*how it's built* and the consumer-facing *what's on disk*:
+*how it's built*, the consumer-facing *what's on disk*, and *how to
+dispatch* a compiled model across devices:
 
 ```{toctree}
 :maxdepth: 1
 
 pipeline
 aoti_packages
+dispatcher
 ```
 
 If you only want to compile and load a model, the end-to-end how-to
