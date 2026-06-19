@@ -98,6 +98,14 @@ main(int argc, char ** argv)
     NEML2_CHECK(at::allclose(m2.forward(inputs).at("stress"), out.at("stress")));
   }
 
+  // Explicit device override (the 3-arg ctor): pins the model to a device. "cpu"
+  // keeps the test runnable everywhere; result must match the default-device run.
+  {
+    Model m_cpu(input_file, "model", at::Device(at::kCPU));
+    NEML2_CHECK(m_cpu.device().is_cpu());
+    NEML2_CHECK(at::allclose(m_cpu.forward(inputs).at("stress"), out.at("stress")));
+  }
+
   // Error paths -- unknown model name, missing file.
   NEML2_CHECK_THROWS(load_model(input_file, "does_not_exist"));
   NEML2_CHECK_THROWS(load_model("/no/such/file.i", "model"));

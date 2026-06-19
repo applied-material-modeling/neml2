@@ -44,30 +44,24 @@ namespace
 // Run a Python-touching operation under the GIL and normalize any failure to
 // neml2::aoti::FatalError -- mirroring the aoti runtime's `_guarded` policy of
 // presenting foreign torch/python errors through the NEML2 exception taxonomy.
-// The Python error message is read while the GIL is still held (the inner
-// catch), so it is safe to format here.
+// The GIL is held for the whole call (including the catch), so reading a Python
+// exception's message is safe.
 template <class F>
 auto
 guarded(const char * op, F && f) -> decltype(f())
 {
+  py::gil_scoped_acquire gil;
   try
   {
-    py::gil_scoped_acquire gil;
-    try
-    {
-      return f();
-    }
-    catch (const py::error_already_set & e)
-    {
-      throw neml2::aoti::FatalError(std::string("neml2::eager::Model::") + op + ": " + e.what());
-    }
-  }
-  catch (const neml2::aoti::Exception &)
-  {
-    throw; // already a NEML2 exception -- pass through unchanged
+    return f();
   }
   catch (const std::exception & e)
   {
+    // py::error_already_set derives from std::exception, so Python failures land
+    // here; e.what() is safe -- this function's gil_scoped_acquire outlives the
+    // catch. Forward-only has no recoverable errors, so everything maps to
+    // FatalError; once jvp/implicit lands, add a `catch (neml2::aoti::Exception
+    // &) { throw; }` ahead of this to preserve ConvergenceError's recoverable().
     throw neml2::aoti::FatalError(std::string("neml2::eager::Model::") + op + ": " + e.what());
   }
 }
@@ -92,17 +86,9 @@ Model::Model(const std::filesystem::path & input_file,
 {
   // Construct the Impl first -- this brings up the embedded interpreter via the
   // InterpreterGuard member (no GIL required yet). Kept outside `guarded`
-  // because acquiring the GIL before the interpreter exists is invalid.
-  try
-  {
-    _impl = std::make_unique<Impl>();
-  }
-  catch (const std::exception & e)
-  {
-    throw neml2::aoti::FatalError(
-        std::string("neml2::eager::Model: failed to start the embedded Python interpreter: ") +
-        e.what());
-  }
+  // because acquiring the GIL before the interpreter exists is invalid. A
+  // failure here (interpreter bootstrap) is catastrophic and propagates as-is.
+  _impl = std::make_unique<Impl>();
 
   guarded(
       "Model",
