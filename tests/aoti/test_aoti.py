@@ -191,13 +191,18 @@ def test_aoti_stub_loads_through_native_factory(scenario: Path, tmp_path: Path):
     promoted = _load_promoted(scenario)
     hit_path = scenario / "model.i"
 
+    # New layout: <out>/model/<device>/ artifacts + a standalone <out>/model_aoti.i
+    # stub that points at the artifact folder. The shim picks the subfolder for
+    # the current default device, so compile for exactly that device.
     out_dir = tmp_path / scenario.name
-    export_model_for_aoti(hit_path, "model", out_dir, promoted=promoted)
+    dev = torch.get_default_device().type
+    artifact_dir = out_dir / "model"
+    export_model_for_aoti(hit_path, "model", artifact_dir / dev, device=dev, promoted=promoted)
     # `export_model_for_aoti` only writes the .pt2 segments + metadata; the
     # `.i` stub is `neml2-compile`'s additional step. Drive it directly so
     # this test stays a single in-process call.
     stub_path = out_dir / "model_aoti.i"
-    emit_aoti_stub(hit_path, "model", out_dir / "model_meta.json", stub_path)
+    emit_aoti_stub(hit_path, "model", artifact_dir, stub_path)
     assert stub_path.exists()
 
     # Load the stub through the same path neml2-run / TransientDriver use.

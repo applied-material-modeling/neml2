@@ -40,7 +40,7 @@ different purpose:
 `cc` — a configure-only preset for tooling
 : Configures with `CMAKE_EXPORT_COMPILE_COMMANDS=ON` and
   `NEML2_WHEEL=ON` so the resulting `compile_commands.json` covers
-  both `libneml2_aoti` sources and the pybind extension `.cxx` files.
+  both `libneml2` sources and the pybind extension `.cpp` files.
   A `compile_commands.json` symlink is dropped into the repo root for
   clangd / clang-tidy / other static-analysis tools to pick up. Use
   `dev` if you also need to compile from a `cc`-configured build dir.

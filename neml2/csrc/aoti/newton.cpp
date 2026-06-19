@@ -24,6 +24,7 @@
 
 #include "neml2/csrc/aoti/newton.h"
 #include "neml2/csrc/aoti/nonlinear_system.h"
+#include "neml2/csrc/aoti/Exception.h"
 #include "neml2/csrc/aoti/assertions.h"
 
 #include <cstdlib>
@@ -295,9 +296,9 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
                 << b0_norm.max().item<double>() << std::endl;
     const auto status = check_stop(b_norm, b0_norm, _cfg.atol, _cfg.rtol);
     if (status == StopStatus::Diverged)
-      throw std::runtime_error("AOTI Newton diverged at iter " + std::to_string(i) +
-                               " (non-finite residual). Consider tightening the predictor, "
-                               "increasing max_linesearch_iterations, or reducing the time step.");
+      throw ConvergenceError("AOTI Newton diverged at iter " + std::to_string(i) +
+                             " (non-finite residual). Consider tightening the predictor, "
+                             "increasing max_linesearch_iterations, or reducing the time step.");
     if (status == StopStatus::Converged)
     {
       reached = i;
@@ -309,16 +310,22 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
     }
   }
 
+  const auto final_norm = pergroup_norm_sq(b_outs, residual_layout).sqrt();
   if (trace)
-  {
-    const auto final_norm = pergroup_norm_sq(b_outs, residual_layout).sqrt();
     std::cerr << "[aoti newton]iters=" << reached
               << " (MAXITERS HIT) b0_norm=" << b0_norm.max().item<double>()
               << " b_norm=" << final_norm.max().item<double>() << std::endl;
-  }
 
-  // Maxed out without converging. Match the NEML2 Newton solver convention:
-  // return the last iterate rather than throwing so callers can inspect it.
-  return {std::move(u), /*converged=*/false, /*iterations=*/reached};
+  // Maxed out without converging. A non-converged iterate is not a usable
+  // solution, so this is a *recoverable* failure (ConvergenceError): a
+  // time-stepping consumer can cut the step and retry. Convergence is an
+  // all-reduce over the batch, so this fires if *any* batch member is still
+  // unconverged. (Divergence above throws the same type for the same reason.)
+  throw ConvergenceError(
+      "AOTI Newton failed to converge in " + std::to_string(_cfg.miters) +
+      " iterations (max |R| = " + std::to_string(final_norm.max().item<double>()) +
+      ", |R0| = " + std::to_string(b0_norm.max().item<double>()) +
+      ", atol = " + std::to_string(_cfg.atol) + ", rtol = " + std::to_string(_cfg.rtol) +
+      "). Consider reducing the time step or raising max_iterations.");
 }
 } // namespace neml2::aoti

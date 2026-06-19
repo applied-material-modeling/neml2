@@ -20,7 +20,7 @@ jobs:
         with:
           extra_args: clang-format --all-files --show-diff-on-failure -v
 
-  # The C++ artifact shipped from this repo is the libneml2_aoti shared
+  # The C++ artifact shipped from this repo is the libneml2 shared
   # library. The matrix below verifies it configures and builds cleanly in
   # Debug and Release on every supported runner. Behavioral coverage of the
   # Python runtime lives in tests/ and is exercised by the `Python` workflow.
@@ -51,7 +51,7 @@ jobs:
       - name: Configure (Werror)
         if: matrix.btype != 'Release'
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -DCMAKE_CXX_FLAGS="-Werror" -S .
-      - name: Build libneml2_aoti
+      - name: Build libneml2
         run: cmake --build --preset dev
 
   # Benchmark smoke tests. Each scenario under benchmark/<name>/model.i is
@@ -85,3 +85,150 @@ jobs:
         # so ctest's --parallel budget doesn't pile too many AOTI compiles onto
         # the runner at once. -j 4 matches the ubuntu-latest vCPU count.
         run: ctest --test-dir build/dev -L benchmark --output-on-failure --parallel 4
+
+  # C++ dispatcher tests (tests/cpp): schedulers, batch slice/cat, async pool,
+  # and the load_model / DispatchedModel end-to-end against a compiled fixture.
+  # They live under the dev preset's tests/cpp targets, so the `build` job above
+  # (which only builds libneml2) doesn't cover them. Runs on both ubuntu
+  # (cpu) and the gpu_runner: the real CPU+GPU hybrid + write-through assertions
+  # are runtime-gated on at::hasCUDA(), so they only fire on the GPU cell; the
+  # cpu cell still covers single-device + async correctness, and MPISimpleScheduler
+  # (no-MPI build) asserting its constructor throws.
+  dispatcher:
+    needs: clang-format
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, gpu_runner]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: ./.github/actions/neml2-ci
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.1"
+          cpu-torch: ${{ matrix.runner != 'gpu_runner' && 'true' || 'false' }}
+      - name: Install neml2 (editable)
+        # Makes `neml2` importable for the ctest fixture
+        # (`python -m neml2.cli.aoti_compile`).
+        run: pip install -e ".[dev]" -v
+      - name: Configure dev preset
+        run: cmake --preset dev -GNinja -S .
+      - name: Build C++ dispatcher tests
+        run: |
+          cmake --build build/dev --target aoti \
+            test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions \
+            test_dispatcher test_load_model -j 4
+      - name: Run C++ dispatcher tests
+        run: ctest --test-dir build/dev -L dispatcher --output-on-failure --parallel 4
+
+  # C++ source-based coverage (clang). Builds the runtime + tests with
+  # -DCMAKE_BUILD_TYPE=Coverage, runs the dispatcher ctests under instrumentation,
+  # and uploads to Codecov under the `cpp` flag. Runs on both ubuntu (cpu paths)
+  # and the gpu_runner (the at::hasCUDA() cross-device / hybrid / write-through
+  # branches; CUDA runs fine under coverage, unlike TSan). Codecov merges the two
+  # uploads by flag, so the combined report covers both. Named cpp-coverage (not
+  # coverage) to avoid colliding with the Python `coverage` job in python.yaml.
+  cpp-coverage:
+    needs: clang-format
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, gpu_runner]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - name: Install clang + llvm
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm
+          ver=$(clang --version | grep -oP 'clang version \K[0-9]+' | head -1)
+          echo "LLVM_PROFDATA=llvm-profdata-$ver" >> "$GITHUB_ENV"
+          echo "LLVM_COV=llvm-cov-$ver" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/neml2-ci
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.1"
+          cpu-torch: ${{ matrix.runner != 'gpu_runner' && 'true' || 'false' }}
+      - name: Install neml2 (editable)
+        # Makes `neml2` importable for the ctest fixture (neml2-compile).
+        run: pip install -e ".[dev]" -v
+      - name: Configure (Coverage, clang)
+        env:
+          CC: clang
+          CXX: clang++
+        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=Coverage -S .
+      - name: Build C++ tests
+        run: |
+          cmake --build build/dev --target aoti \
+            test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions \
+            test_dispatcher test_load_model -j 4
+      - name: Run coverage
+        run: scripts/cpp_coverage.sh build/dev
+      - name: Upload C++ coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: build/dev/coverage/coverage.lcov
+          disable_search: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false            # Codecov outage shouldn't break PRs
+          flags: cpp
+
+  # ThreadSanitizer build (clang). The async dispatch pool spawns worker threads,
+  # so this guards its synchronization (results/errors/load bookkeeping, the task
+  # queue, the scheduler mutex/cv). The pip libtorch is not TSan-instrumented, so
+  # torch noise is silenced via tests/cpp/tsan_suppressions.txt + OMP_NUM_THREADS=1;
+  # races in neml2's own code still fail the job.
+  tsan:
+    needs: clang-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - name: Install clang
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang
+      - uses: ./.github/actions/neml2-ci
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+          # dependencies: cmake.version_min
+          cmake-version: "3.26.1"
+          # dependencies: torch.version
+          torch-version: "2.12.1"
+          cpu-torch: true
+      - name: Install neml2 (editable)
+        run: pip install -e ".[dev]" -v
+      - name: Configure (ThreadSanitizer, clang)
+        env:
+          CC: clang
+          CXX: clang++
+        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=ThreadSanitizer -S .
+      - name: Build C++ tests
+        run: |
+          cmake --build build/dev --target aoti \
+            test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions \
+            test_dispatcher test_load_model -j 4
+      - name: Run C++ tests under ThreadSanitizer
+        # cpu-torch means at::hasCUDA() is false, so test_dispatcher's GPU block
+        # is skipped (CUDA cannot run under TSan anyway). ignore_noninstrumented_modules
+        # drops races whose accesses live entirely in the uninstrumented torch;
+        # the suppressions file covers the rest. neml2's own races still fail.
+        env:
+          OMP_NUM_THREADS: "1"
+          TSAN_OPTIONS: "suppressions=${{ github.workspace }}/tests/cpp/tsan_suppressions.txt ignore_noninstrumented_modules=1"
+        run: ctest --test-dir build/dev -L dispatcher --output-on-failure

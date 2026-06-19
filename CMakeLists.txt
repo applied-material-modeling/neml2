@@ -40,7 +40,38 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
       set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+      "Debug" "Release" "MinSizeRel" "RelWithDebInfo" "Coverage" "ThreadSanitizer")
+
+# Instrumentation build types (opt in with -DCMAKE_BUILD_TYPE=<name>; clang or
+# gcc). Selecting the build type *is* the opt-in -- they add no flags to a normal
+# Debug/Release build and are off the wheel path (the wheel always builds
+# Release), so shipped artifacts are never instrumented.
+#   Coverage        -- clang source-based coverage. Drive it with
+#                      scripts/cpp_coverage.sh (run tests -> profdata -> llvm-cov).
+#   ThreadSanitizer -- data-race detector for the async dispatch pool. Run the
+#                      C++ tests with the tests/cpp/tsan_suppressions.txt below.
+set(CMAKE_C_FLAGS_COVERAGE "-O0 -g -fprofile-instr-generate -fcoverage-mapping"
+      CACHE STRING "Flags used by the C compiler for Coverage builds" FORCE)
+set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -g -fprofile-instr-generate -fcoverage-mapping"
+      CACHE STRING "Flags used by the C++ compiler for Coverage builds" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "-fprofile-instr-generate"
+      CACHE STRING "Linker flags for executables in Coverage builds" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE "-fprofile-instr-generate"
+      CACHE STRING "Linker flags for shared libraries in Coverage builds" FORCE)
+set(CMAKE_C_FLAGS_THREADSANITIZER "-O1 -g -fsanitize=thread"
+      CACHE STRING "Flags used by the C compiler for ThreadSanitizer builds" FORCE)
+set(CMAKE_CXX_FLAGS_THREADSANITIZER "-O1 -g -fsanitize=thread"
+      CACHE STRING "Flags used by the C++ compiler for ThreadSanitizer builds" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_THREADSANITIZER "-fsanitize=thread"
+      CACHE STRING "Linker flags for executables in ThreadSanitizer builds" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS_THREADSANITIZER "-fsanitize=thread"
+      CACHE STRING "Linker flags for shared libraries in ThreadSanitizer builds" FORCE)
+mark_as_advanced(
+      CMAKE_C_FLAGS_COVERAGE CMAKE_CXX_FLAGS_COVERAGE
+      CMAKE_EXE_LINKER_FLAGS_COVERAGE CMAKE_SHARED_LINKER_FLAGS_COVERAGE
+      CMAKE_C_FLAGS_THREADSANITIZER CMAKE_CXX_FLAGS_THREADSANITIZER
+      CMAKE_EXE_LINKER_FLAGS_THREADSANITIZER CMAKE_SHARED_LINKER_FLAGS_THREADSANITIZER)
 
 # ----------------------------------------------------------------------------
 # Project-level settings, options, and flags
@@ -50,6 +81,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(NEML2_CONTRIB_PREFIX ${NEML2_SOURCE_DIR}/contrib CACHE PATH "NEML2 contrib prefix for downloaded dependencies")
 set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is supposed to be set by setup.py and not by the user.")
+
+# MPI is optional and OFF by default: it powers only the MPISimpleScheduler (one GPU
+# per rank). With the flag OFF the scheduler's constructor throws a clear
+# "rebuild with -DNEML2_MPI=ON" error, so the class is always present.
+option(NEML2_MPI "Build the MPI work scheduler (links against MPI)" OFF)
 
 # ----------------------------------------------------------------------------
 # Dependencies and 3rd party packages
@@ -120,7 +156,8 @@ endif()
 if(NOT SKBUILD_STATE STREQUAL "editable")
       install(FILES
             ${NEML2_SOURCE_DIR}/cmake/Modules/Findtorch.cmake
-            ${NEML2_SOURCE_DIR}/cmake/Modules/DetectTorchCXXABI.cxx
+            ${NEML2_SOURCE_DIR}/cmake/Modules/DetectTorchCXXABI.cpp
+            ${NEML2_SOURCE_DIR}/cmake/Modules/Findnmhit.cmake
             DESTINATION share/cmake/neml2/Modules
             COMPONENT libneml2
       )
@@ -176,7 +213,17 @@ if(NOT SKBUILD_STATE STREQUAL "editable")
 endif()
 
 # ----------------------------------------------------------------------------
-# libneml2_aoti — the only C++ artifact NEML2 ships
+# nmhit (C++ HIT parser)
+# ----------------------------------------------------------------------------
+# Discovered from the Python site-packages the current interpreter sees (same
+# strategy as Findtorch); the nmhit wheel ships its static lib + headers under
+# <site-packages>/nmhit/{lib,include}. Linked PRIVATE into aoti -- nmhit is an
+# implementation detail of the C++ loader (factory.cpp parses the stub `.i`) and
+# appears in no shipped header, so it stays out of the public ABI.
+find_package(nmhit MODULE REQUIRED)
+
+# ----------------------------------------------------------------------------
+# libneml2 — the only C++ artifact NEML2 ships (aoti runtime + dispatchers)
 # ----------------------------------------------------------------------------
 # Free-standing: links only against torch::core (+ torch::cuda when available)
 # and nlohmann_json. Wraps torch::inductor::AOTIModelPackageLoader so the
@@ -187,12 +234,20 @@ endif()
 # public ops, the value/Newton path, the Jacobian/IFT path); the internals live
 # behind a PImpl `Model::Impl` declared in the non-shipped internal.h.
 add_library(aoti SHARED
+      neml2/csrc/aoti/Exception.cpp
       neml2/csrc/aoti/Model.cpp
       neml2/csrc/aoti/ops.cpp
       neml2/csrc/aoti/solve.cpp
       neml2/csrc/aoti/jacobian.cpp
       neml2/csrc/aoti/newton.cpp
       neml2/csrc/aoti/nonlinear_system_aoti.cpp
+      neml2/csrc/dispatchers/WorkScheduler.cpp
+      neml2/csrc/dispatchers/SimpleScheduler.cpp
+      neml2/csrc/dispatchers/MPISimpleScheduler.cpp
+      neml2/csrc/dispatchers/AsyncScheduler.cpp
+      neml2/csrc/dispatchers/StaticHybridScheduler.cpp
+      neml2/csrc/dispatchers/DispatchedModel.cpp
+      neml2/csrc/dispatchers/factory.cpp
 )
 
 # API visibility control: hide everything by default and export only the symbols
@@ -227,7 +282,15 @@ target_sources(aoti
       FILE_SET HEADERS
       BASE_DIRS ${NEML2_SOURCE_DIR}
       FILES
+      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/Exception.h
       ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/Model.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/WorkScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/SimpleScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/MPISimpleScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/AsyncScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/StaticHybridScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/DispatchedModel.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/factory.h
 )
 # The generated aoti_export.h lives under the build tree's dedicated include
 # root. Add it as a build-interface include so `#include
@@ -236,11 +299,25 @@ target_sources(aoti
 # Model.h (see the install() below), and the install-interface `include` dir
 # already on the target covers it.
 target_include_directories(aoti PUBLIC $<BUILD_INTERFACE:${NEML2_BINARY_DIR}/include>)
-set_target_properties(aoti PROPERTIES OUTPUT_NAME "neml2_aoti$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
+set_target_properties(aoti PROPERTIES OUTPUT_NAME "neml2$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 target_compile_options(aoti PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(aoti PUBLIC torch::core nlohmann_json::nlohmann_json)
+target_link_libraries(aoti PRIVATE nmhit::nmhit)
+# The async dispatch pool (StaticHybridScheduler path) spawns std::thread workers.
+find_package(Threads REQUIRED)
+target_link_libraries(aoti PRIVATE Threads::Threads)
 if(TARGET torch::cuda)
       target_link_libraries(aoti PUBLIC torch::cuda)
+endif()
+
+# MPI scheduler: link MPI and define NEML2_MPI for the aoti TUs only. The public
+# headers are MPI-type-free, so consumers need neither the flag nor mpi.h; the
+# MPISimpleScheduler constructor throws when the flag is OFF.
+if(NEML2_MPI)
+      find_package(MPI REQUIRED COMPONENTS CXX)
+      target_link_libraries(aoti PUBLIC MPI::MPI_CXX)
+      target_compile_definitions(aoti PRIVATE NEML2_MPI)
+      message(STATUS "NEML2_MPI=ON: MPISimpleScheduler enabled (linking ${MPI_CXX_COMPILER})")
 endif()
 
 # rpath: only the torch hop is needed (no sibling neml2_*.so libraries to
@@ -419,6 +496,7 @@ endif()
 # is the consumer.
 if(BUILD_TESTING AND NOT NEML2_WHEEL)
       add_subdirectory(benchmark)
+      add_subdirectory(tests/cpp)
 endif()
 
 # ----------------------------------------------------------------------------

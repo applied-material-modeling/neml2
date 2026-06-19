@@ -27,7 +27,7 @@ build.targets = ["aoti", "pyneml2"]
 wheel.install-dir = "neml2"
 wheel.packages = ["neml2"]
 # The C++ runtime sources under neml2/csrc/ are build inputs, not runtime
-# artifacts: the wheel imports the compiled neml2/lib/libneml2_aoti.so +
+# artifacts: the wheel imports the compiled neml2/lib/libneml2.so +
 # neml2/aoti/_aoti*.so, and C++ consumers read the *installed* public headers
 # from neml2/include/ (via the bundled pkg-config / cmake config). Excluding
 # the raw source tree keeps the PImpl internals (internal.h / assertions.h) out
@@ -59,7 +59,7 @@ dependencies = [
   # dependencies: pyzag.version
   "pyzag==1.1.1",
   # dependencies: nmhit.version_min
-  "nmhit>=0.3.2",
+  "nmhit>=0.3.3",
 ]
 
 [project.optional-dependencies]
@@ -212,7 +212,7 @@ branch = true
 parallel = true
 concurrency = ["multiprocessing", "thread"]
 omit = [
-  "neml2/lib/*",                                # bundled libneml2_aoti.so
+  "neml2/lib/*",                                # bundled libneml2.so
   "neml2/aoti/_aoti.pyi",                       # generated pybind11 stub
   "neml2/version",                              # version file, not source
 ]
@@ -241,16 +241,15 @@ build-verbosity = 1
 build-frontend = { name = "build", args = ["--no-isolation"] }
 
 before-all = ""
-# Build-time only: scikit-build-core + ninja drive the build, torch
-# provides libtorch for the C++ extension to link against, wheel is
-# pack/unpack for repair_wheel.py, pybind11-stubgen backs neml2-stub.
-# Runtime deps (nmhit, pyzag) are NOT listed here -- repair_wheel.py
-# reads them out of the freshly-built wheel's metadata via
-# ``importlib.metadata`` after install, so this line stays
-# maintenance-free when pyproject.toml's ``project.dependencies``
-# changes.
+# Build-time deps: scikit-build-core + ninja drive the build; torch provides
+# libtorch and nmhit provides libnmhit (+ headers) for the C++ extension to link
+# against; wheel is pack/unpack for repair_wheel.py; pybind11-stubgen backs
+# neml2-stub. nmhit is both a runtime AND a build-time dep now (libneml2
+# links its static lib via Findnmhit), so -- unlike the pure-runtime pyzag -- it
+# must be installed before the build. pyzag stays out: repair_wheel.py reads the
+# pure-runtime deps from the freshly-built wheel's metadata after install.
 # dependencies: pybind11_stubgen.version_min
-before-build = "python -m pip install scikit-build-core ninja torch wheel pybind11-stubgen>=2.5.5"
+before-build = "python -m pip install scikit-build-core ninja torch 'nmhit>=0.3.3' wheel pybind11-stubgen>=2.5.5"
 
 # dependencies: pyzag.version
 test-requires = "pytest torch pyzag==1.1.1"

@@ -38,8 +38,10 @@ file(GLOB BENCH_INPUTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_CURRENT_SOURCE_DIR}/*/model.i)
 
 # Heavy scenarios: AOTI compile + driver run can take several minutes at
-# small batch because the compile dominates wall time. Cheap scenarios
-# complete in under a minute.
+# small batch because the compile dominates wall time. Even "cheap" scenarios
+# run multiple minutes under `ctest --parallel 4` (4 concurrent Inductor
+# compiles contend for the runner), so the timeouts below carry generous
+# headroom rather than tracking the no-contention wall time.
 set(BENCH_HEAVY chaboche6 scpcoup scpcoupmult scpdecoup scpdecoupexp tcprandom tcpsingle)
 
 # Scenarios where ${nbatch} drives a static sub-batch axis (not the
@@ -69,10 +71,13 @@ foreach(bench_input ${BENCH_INPUTS})
       )
 
       if(${scenario} IN_LIST BENCH_HEAVY)
-            set(_t 1800)
+            set(_t 2400)
             set(_procs 2)
       else()
-            set(_t 600)
+            # 1200s, not 600s: under --parallel 4 a "cheap" scenario's Inductor
+            # compile contends with three others and has been observed to exceed
+            # 600s on CI (e.g. chaboche4).
+            set(_t 1200)
             set(_procs 1)
       endif()
 

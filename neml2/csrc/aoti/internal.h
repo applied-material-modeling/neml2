@@ -62,8 +62,9 @@ namespace neml2::aoti
 struct Model::Impl
 {
   /// See `Model::Model`. Parses `_meta.json`, loads every `.pt2` segment, and
-  /// materialises the promoted-parameter surface.
-  explicit Impl(const std::filesystem::path & meta_path);
+  /// materialises the promoted-parameter surface. `device_override` refines the
+  /// concrete device index (its type must match the compiled device type).
+  explicit Impl(const std::filesystem::path & meta_path, std::optional<at::Device> device_override);
 
   // --- Public ops (forwarded from Model) -----------------------------------
   std::map<std::string, at::Tensor> forward(const std::map<std::string, at::Tensor> & inputs) const;

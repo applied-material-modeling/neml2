@@ -96,7 +96,7 @@ if(NOT TARGET torch::core)
       try_compile(
         torch_GLIBCXX_USE_CXX11_ABI
         SOURCES
-        ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cxx
+        ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cpp
         CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${torch_INCLUDE_DIR}
         COMPILE_DEFINITIONS -D_GLIBCXX_USE_CXX11_ABI=1
         LINK_OPTIONS -L${torch_LINK_DIR}
@@ -106,7 +106,7 @@ if(NOT TARGET torch::core)
       try_compile(
         torch_GLIBCXX_USE_PRE_CXX11_ABI
         SOURCES
-        ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cxx
+        ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cpp
         CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${torch_INCLUDE_DIR}
         COMPILE_DEFINITIONS -D_GLIBCXX_USE_CXX11_ABI=0
         LINK_OPTIONS -L${torch_LINK_DIR}

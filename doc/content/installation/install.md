@@ -35,7 +35,7 @@ The wheel installs into your site-packages under `neml2/`:
 ├── __init__.py              # `import neml2` entry point
 ├── aoti/, models/, ...      # the Python package
 ├── lib/
-│   └── libneml2_aoti.so     # the C++ runtime library
+│   └── libneml2.so          # the C++ runtime library
 ├── include/
 │   └── neml2/csrc/          # C++ public headers
 ├── share/

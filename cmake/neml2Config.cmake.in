@@ -13,7 +13,7 @@ else()
   find_dependency(torch MODULE REQUIRED COMPONENTS core)
 endif()
 
-# json (required by libneml2_aoti, the only consumer)
+# json (required by libneml2, the only consumer)
 if(@nlohmann_json_CONTRIB@ OR @NEML2_WHEEL@)
   find_dependency(nlohmann_json CONFIG REQUIRED PATHS ${PACKAGE_PREFIX_DIR} NO_DEFAULT_PATH)
 else()

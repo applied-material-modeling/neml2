@@ -336,5 +336,5 @@ For build-system wiring — `find_package(neml2)`, pkg-config,
 - [](cli-neml2-inspect) — inspect a compiled stub the same way you
   inspect any other model.
 - [](external-project-integration) — CMake / pkg-config wiring for
-  C++ projects that consume the bundled `libneml2_aoti.so` from the
+  C++ projects that consume the bundled `libneml2.so` from the
   wheel.

@@ -46,15 +46,17 @@ namespace
 {
 // TU-local helpers used only by the metadata-parsing constructor below.
 // Build a loader with the consistent constructor args used across all AOTI
-// artifacts produced by neml2-compile.
+// artifacts produced by neml2-compile. `device_index` is -1 for cpu artifacts
+// and cuda artifacts that target the current device; a concrete index pins a
+// cuda artifact onto a specific GPU (used by the multi-device dispatcher).
 std::unique_ptr<torch::inductor::AOTIModelPackageLoader>
-make_loader(const std::filesystem::path & path)
+make_loader(const std::filesystem::path & path, int device_index = -1)
 {
   return std::make_unique<torch::inductor::AOTIModelPackageLoader>(path.string(),
                                                                    /*model_name=*/"model",
                                                                    /*run_single_threaded=*/false,
                                                                    /*num_runners=*/1,
-                                                                   /*device_index=*/-1);
+                                                                   device_index);
 }
 
 at::Device
@@ -80,7 +82,8 @@ parse_dtype(const std::string & s)
 }
 } // namespace
 
-Model::Impl::Impl(const std::filesystem::path & meta_path)
+Model::Impl::Impl(const std::filesystem::path & meta_path,
+                  std::optional<at::Device> device_override)
 {
   std::ifstream meta_f(meta_path);
   _assert(static_cast<bool>(meta_f),
@@ -121,6 +124,28 @@ Model::Impl::Impl(const std::filesystem::path & meta_path)
   _device = parse_device(meta.value("device", std::string("cpu")));
   _dtype = parse_dtype(meta.value("dtype", std::string("float64")));
 
+  // A device override refines the concrete device index (e.g. cuda:1) but may
+  // not change the device *type* -- the AOTI graphs are compiled for cpu xor
+  // cuda kernels and cannot be reinterpreted across that boundary.
+  if (device_override.has_value())
+  {
+    _assert(device_override->type() == _device.type(),
+            "aoti::Model: device_override type '",
+            c10::DeviceTypeName(device_override->type()),
+            "' does not match the artifact's compiled device type '",
+            c10::DeviceTypeName(_device.type()),
+            "' in '",
+            meta_path.string(),
+            "'. A cpu artifact cannot be loaded onto cuda (or vice versa); "
+            "recompile for the target device.");
+    _device = *device_override;
+  }
+
+  // Concrete loader index: -1 lets the loader use the current device (cpu, or
+  // the ambient cuda device); a concrete cuda index pins this Model to a GPU.
+  const int dev_idx =
+      (_device.is_cuda() && _device.has_index()) ? static_cast<int>(_device.index()) : -1;
+
   // .pt2 basenames are resolved against the directory holding the metadata
   // file itself.
   const auto cache_dir = meta_path.parent_path();
@@ -154,8 +179,11 @@ Model::Impl::Impl(const std::filesystem::path & meta_path)
       const auto name = p["name"].get<std::string>();
       const auto dtype = parse_dtype(p.value("dtype", std::string("float64")));
       const auto shape = p["shape"].get<std::vector<int64_t>>();
-      const auto device =
-          p.contains("device") ? parse_device(p["device"].get<std::string>()) : _device;
+      auto device = p.contains("device") ? parse_device(p["device"].get<std::string>()) : _device;
+      // Promoted params must land on the same concrete GPU as the graphs: when
+      // the model device carries an index (override-aware), inherit it.
+      if (device.is_cuda() && _device.is_cuda() && _device.has_index())
+        device.set_index(_device.index());
       const auto opts = at::TensorOptions().dtype(dtype).device(device);
 
       // Inline values vs. spilled state-dict reference.
@@ -214,9 +242,10 @@ Model::Impl::Impl(const std::filesystem::path & meta_path)
     if (seg_kind == "forward")
     {
       seg.kind = SegmentKind::Forward;
-      seg.fwd_loader = make_loader(cache_dir / seg_meta["package"].get<std::string>());
+      seg.fwd_loader = make_loader(cache_dir / seg_meta["package"].get<std::string>(), dev_idx);
       if (seg_meta.contains("jvp_package"))
-        seg.jvp_loader = make_loader(cache_dir / seg_meta["jvp_package"].get<std::string>());
+        seg.jvp_loader =
+            make_loader(cache_dir / seg_meta["jvp_package"].get<std::string>(), dev_idx);
       for (const auto & v : seg_meta["inputs"])
         seg.fwd_inputs.push_back(v["name"].get<std::string>());
       for (const auto & v : seg_meta["outputs"])
@@ -245,10 +274,12 @@ Model::Impl::Impl(const std::filesystem::path & meta_path)
     else if (seg_kind == "implicit")
     {
       seg.kind = SegmentKind::Implicit;
-      seg.rhs_loader = make_loader(cache_dir / seg_meta["rhs_package"].get<std::string>());
-      seg.step_loader = make_loader(cache_dir / seg_meta["step_package"].get<std::string>());
+      seg.rhs_loader = make_loader(cache_dir / seg_meta["rhs_package"].get<std::string>(), dev_idx);
+      seg.step_loader =
+          make_loader(cache_dir / seg_meta["step_package"].get<std::string>(), dev_idx);
       if (seg_meta.contains("ift_package"))
-        seg.ift_loader = make_loader(cache_dir / seg_meta["ift_package"].get<std::string>());
+        seg.ift_loader =
+            make_loader(cache_dir / seg_meta["ift_package"].get<std::string>(), dev_idx);
 
       for (const auto & v : seg_meta["unknowns"])
         seg.unknowns.push_back(parse_var_info(v));
@@ -318,7 +349,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path)
       if (seg_meta.contains("predictor_package"))
       {
         seg.predictor_loader =
-            make_loader(cache_dir / seg_meta["predictor_package"].get<std::string>());
+            make_loader(cache_dir / seg_meta["predictor_package"].get<std::string>(), dev_idx);
         for (const auto & v : seg_meta["predictor_inputs"])
           seg.predictor_inputs.push_back(v["name"].get<std::string>());
         for (const auto & v : seg_meta["predictor_outputs"])
@@ -362,8 +393,8 @@ Model::Impl::_gather_params(const std::vector<std::string> & names) const
 // Public facade: forward every call onto the opaque Impl.
 // ----------------------------------------------------------------------------
 
-Model::Model(const std::filesystem::path & meta_path)
-  : _impl(std::make_unique<Impl>(meta_path))
+Model::Model(const std::filesystem::path & meta_path, std::optional<at::Device> device_override)
+  : _impl(std::make_unique<Impl>(meta_path, device_override))
 {
 }
 
@@ -393,23 +424,28 @@ Model::output_sizes() const noexcept
   return _impl->output_sizes();
 }
 
+// The three ops run through `_guarded` so every exception leaving the public
+// surface is a neml2 Exception with a meaningful `recoverable()`: a recoverable
+// ConvergenceError from the Newton solve passes through, while a foreign torch
+// error (e.g. a shape / device mismatch raised inside a compiled graph) is
+// normalized to a non-recoverable FatalError.
 std::map<std::string, at::Tensor>
 Model::forward(const std::map<std::string, at::Tensor> & inputs) const
 {
-  return _impl->forward(inputs);
+  return _guarded([&] { return _impl->forward(inputs); });
 }
 
 std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
 Model::jvp(const std::map<std::string, at::Tensor> & inputs,
            const std::map<std::string, at::Tensor> & tangents) const
 {
-  return _impl->jvp(inputs, tangents);
+  return _guarded([&] { return _impl->jvp(inputs, tangents); });
 }
 
 std::pair<std::map<std::string, at::Tensor>, at::Tensor>
 Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
 {
-  return _impl->jacobian(inputs);
+  return _guarded([&] { return _impl->jacobian(inputs); });
 }
 
 std::map<std::string, at::Tensor> &

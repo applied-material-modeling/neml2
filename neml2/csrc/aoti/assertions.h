@@ -25,7 +25,8 @@
 #pragma once
 
 #include <sstream>
-#include <stdexcept>
+
+#include "neml2/csrc/aoti/Exception.h"
 
 // Internal header -- NOT shipped. Holds the check-and-throw helpers shared
 // across the aoti runtime's translation units.
@@ -36,6 +37,12 @@
 // the C++ object tower. They are function templates, so a header definition is
 // ODR-safe across the TUs that include it. The streaming-args ergonomics match
 // the `neml_assert` style at the call sites.
+//
+// `_assert` / `_throw` raise a `FatalError`: an assertion firing means a
+// shape / device / configuration / metadata invariant was violated, which a
+// retry cannot fix. Numerical failures that a consumer *can* recover from (e.g.
+// nonlinear-solve non-convergence) throw `ConvergenceError` at their own sites
+// instead -- never through `_assert`.
 namespace neml2::aoti
 {
 template <typename... Args>
@@ -44,7 +51,7 @@ _throw(const Args &... args)
 {
   std::ostringstream oss;
   ((oss << args), ...);
-  throw std::runtime_error(oss.str());
+  throw FatalError(oss.str());
 }
 
 template <typename... Args>
@@ -53,5 +60,35 @@ _assert(bool cond, const Args &... args)
 {
   if (!cond)
     _throw(args...);
+}
+
+/// Run @p fn at a public API boundary, normalizing whatever escapes into the
+/// neml2 exception taxonomy so a consumer has a single catch surface:
+///   - a neml2 `Exception` (incl. the recoverable `ConvergenceError`) passes
+///     through untouched -- its dynamic type and `recoverable()` are preserved;
+///   - a foreign exception (a torch `c10::Error` from a shape / device mismatch
+///     inside a compiled graph, `std::bad_alloc`, ...) becomes a `FatalError`,
+///     i.e. non-recoverable -- a caller that retries on `recoverable()` will
+///     never retry one of these.
+template <typename Fn>
+auto
+_guarded(Fn && fn) -> decltype(fn())
+{
+  try
+  {
+    return fn();
+  }
+  catch (const Exception &)
+  {
+    throw;
+  }
+  catch (const std::exception & e)
+  {
+    throw FatalError(std::string("aoti: ") + e.what());
+  }
+  catch (...)
+  {
+    throw FatalError("aoti: unknown (non-std) exception");
+  }
 }
 } // namespace neml2::aoti

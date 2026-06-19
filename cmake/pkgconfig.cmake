@@ -5,7 +5,7 @@
 #
 #   neml2.pc        — meta entry. `pkg-config --cflags --libs neml2` pulls
 #                     in neml2-core plus every external dep neml2 needs.
-#   neml2-core.pc   — just `-L${libdir} -lneml2_aoti` and `-I${includedir}`.
+#   neml2-core.pc   — just `-L${libdir} -lneml2` and `-I${includedir}`.
 #                     For callers that already manage their own torch /
 #                     nlohmann_json discovery.
 #   neml2-torch.pc  — torch include + link flags (always external; libtorch

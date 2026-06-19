@@ -94,3 +94,8 @@ benchmark/results/_aoti_cache/
 # four-way comparison (v2/v3 x CPU/CUDA)
 !benchmark/plot_throughput.json
 .claude/
+# codegraph index cache (local tooling)
+.codegraph/
+
+# llvm coverage raw profiles
+*.profraw

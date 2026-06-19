@@ -272,8 +272,10 @@ Model::Impl::_run_implicit_segment(const Segment & seg,
                           g_groups,
                           _gather_params(seg.param_inputs));
   // Solver config comes from the loader (set from the stub's [Solvers] block),
-  // not baked metadata. The AOTI path ignores the converged flag (returns the
-  // last iterate on max-iterations, matching the pre-unification behavior).
+  // not baked metadata. A failed solve (divergence or max-iterations) throws
+  // ConvergenceError out of solve(), so reaching `.u` means it converged -- the
+  // recoverable error propagates up through Model::forward/jacobian to the
+  // caller, who can cut the time step and retry.
   u_solved_groups = Newton(_solver_config).solve(sys, u0_groups).u;
 
   // Unpack converged per-group unknowns back to per-variable state for
