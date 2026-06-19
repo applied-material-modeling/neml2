@@ -79,3 +79,28 @@ set_tests_properties(test_dispatcher test_load_model PROPERTIES
       TIMEOUT 300
       ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
 )
+
+# --- Eager embed test: links libneml2_eager, embeds a CPython interpreter, and
+# runs a model straight from the original .i (no compile fixture needed). New
+# "eager" label so it runs independently of the AOTI dispatcher tests.
+add_executable(test_eager test_eager.cpp)
+target_link_libraries(test_eager PRIVATE eager aoti)
+target_compile_options(test_eager PRIVATE -Wall -Wextra)
+# The embedded interpreter loads libpython (NEEDED by libneml2_eager.so);
+# RUNPATH is not transitive, so the test exe's own rpath must reach it + torch.
+get_filename_component(_py_bindir "${Python3_EXECUTABLE}" DIRECTORY)
+get_filename_component(_py_home "${_py_bindir}" DIRECTORY)
+set(_py_libdir "${_py_home}/lib")
+set_target_properties(test_eager PROPERTIES
+      BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR};${_py_libdir}")
+add_test(NAME test_eager
+      COMMAND test_eager ${NEML2_SOURCE_DIR}/tests/aoti/forward_single/model.i)
+# The embedded interpreter must find the stdlib (PYTHONHOME) + the neml2 source
+# package (PYTHONPATH); torch/lib stays on LD_LIBRARY_PATH for the transitive
+# libtorch resolution the existing tests also rely on.
+set_tests_properties(test_eager PROPERTIES
+      LABELS "eager"
+      TIMEOUT 300
+      ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
+      ENVIRONMENT "PYTHONHOME=${_py_home};PYTHONPATH=${NEML2_SOURCE_DIR}"
+)
