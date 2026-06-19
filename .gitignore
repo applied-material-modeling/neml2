@@ -96,3 +96,6 @@ benchmark/results/_aoti_cache/
 .claude/
 # codegraph index cache (local tooling)
 .codegraph/
+
+# llvm coverage raw profiles
+*.profraw
