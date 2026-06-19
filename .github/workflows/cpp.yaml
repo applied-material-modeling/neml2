@@ -129,15 +129,19 @@ jobs:
         run: ctest --test-dir build/dev -L dispatcher --output-on-failure --parallel 4
 
   # C++ source-based coverage (clang). Builds the runtime + tests with
-  # -DCMAKE_BUILD_TYPE=Coverage, runs the dispatcher ctests under
-  # instrumentation, and uploads to Codecov under the informational `cpp` flag.
-  # ubuntu+clang (not macOS) keeps llvm tooling cheap; CPU-only, so the GPU-gated
-  # dispatcher branches stay uncovered -- hence the flag is report-only.
-  # Named cpp-coverage (not coverage) to avoid colliding with the Python
-  # `coverage` job in python.yaml.
+  # -DCMAKE_BUILD_TYPE=Coverage, runs the dispatcher ctests under instrumentation,
+  # and uploads to Codecov under the `cpp` flag. Runs on both ubuntu (cpu paths)
+  # and the gpu_runner (the at::hasCUDA() cross-device / hybrid / write-through
+  # branches; CUDA runs fine under coverage, unlike TSan). Codecov merges the two
+  # uploads by flag, so the combined report covers both. Named cpp-coverage (not
+  # coverage) to avoid colliding with the Python `coverage` job in python.yaml.
   cpp-coverage:
     needs: clang-format
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, gpu_runner]
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -157,7 +161,7 @@ jobs:
           cmake-version: "3.26.1"
           # dependencies: torch.version
           torch-version: "2.12.1"
-          cpu-torch: true
+          cpu-torch: ${{ matrix.runner != 'gpu_runner' && 'true' || 'false' }}
       - name: Install neml2 (editable)
         # Makes `neml2` importable for the ctest fixture (neml2-compile).
         run: pip install -e ".[dev]" -v

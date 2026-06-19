@@ -78,6 +78,8 @@ main(int argc, char ** argv)
   const auto inputs = make_inputs(ref, b);
   const auto ref_out = ref.forward(inputs);
   const auto ref_jac = ref.jacobian(inputs);
+  const auto tangents = make_inputs(ref, b); // distinct random tangents for jvp
+  const auto ref_jvp = ref.jvp(inputs, tangents);
 
   // Chunked dispatch must match for every chunk size, including ones that do
   // not evenly divide the batch, the exact-batch case, and the no-chunk
@@ -105,6 +107,14 @@ main(int argc, char ** argv)
     NEML2_CHECK(at::allclose(j, std::get<1>(ref_jac), /*rtol=*/1e-8, /*atol=*/1e-10));
     for (const auto & name : ref.output_names())
       NEML2_CHECK(at::allclose(jout.at(name), std::get<0>(ref_jac).at(name), 1e-8, 1e-10));
+
+    // jvp (outputs + directional derivative along `tangents`)
+    auto [vout, vdot] = disp.jvp(inputs, tangents);
+    for (const auto & name : ref.output_names())
+    {
+      NEML2_CHECK(at::allclose(vout.at(name), std::get<0>(ref_jvp).at(name), 1e-8, 1e-10));
+      NEML2_CHECK(at::allclose(vdot.at(name), std::get<1>(ref_jvp).at(name), 1e-8, 1e-10));
+    }
   }
 
   // Async correctness: a single-CPU StaticHybridScheduler drives the
@@ -122,6 +132,10 @@ main(int argc, char ** argv)
 
     auto [jout, j] = disp.jacobian(inputs);
     NEML2_CHECK(at::allclose(j, std::get<1>(ref_jac), 1e-8, 1e-10));
+
+    auto [vout, vdot] = disp.jvp(inputs, tangents); // async run_async<Pair> path
+    for (const auto & name : ref.output_names())
+      NEML2_CHECK(at::allclose(vdot.at(name), std::get<1>(ref_jvp).at(name), 1e-8, 1e-10));
   }
 
   // Async error propagation: a chunk that throws inside a worker thread must not
@@ -160,7 +174,25 @@ main(int argc, char ** argv)
     NEML2_CHECK(threw);        // surfaced, not terminate / hang
     NEML2_CHECK(!recoverable); // a missing input is a hard stop, not a retry
 
-    // Reusable after the failure: a valid call still matches the single shot.
+    // A foreign (torch) error is normalized to FatalError at the boundary too:
+    // an undefined input tensor makes torch throw inside the dispatch, before any
+    // neml2 check -- the guard wraps it as a non-recoverable FatalError.
+    std::map<std::string, at::Tensor> undef;
+    undef.emplace(inputs.begin()->first, at::Tensor{});
+    bool fthrew = false, frecoverable = true;
+    try
+    {
+      (void)disp.forward(undef);
+    }
+    catch (const FatalError & e)
+    {
+      fthrew = true;
+      frecoverable = e.recoverable();
+    }
+    NEML2_CHECK(fthrew);
+    NEML2_CHECK(!frecoverable);
+
+    // Reusable after the failures: a valid call still matches the single shot.
     auto out = disp.forward(inputs);
     for (const auto & name : ref.output_names())
       NEML2_CHECK(at::allclose(out.at(name), ref_out.at(name), 1e-8, 1e-10));

@@ -28,6 +28,7 @@
 // fixture (collection) dir.
 
 #include <filesystem>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <string>
@@ -105,6 +106,66 @@ main(int argc, char ** argv)
 
   // Unknown model name -> clean error.
   NEML2_CHECK_THROWS(load_model(stub, "does_not_exist"));
+
+  // --- factory.cpp branches via hand-written stubs (no extra artifact needed) ---
+  // They point at the existing explicit cpu artifact; the [Solvers] config is
+  // parsed + applied even though an explicit model never runs a Newton solve.
+  namespace fs = std::filesystem;
+  // Absolute, since the stubs below live in a temp dir: a relative artifact_path
+  // would resolve against that temp dir, not the fixture.
+  const std::string artifact = fs::absolute(fs::path(fixture_dir) / "model").string();
+  const auto tmp = fs::temp_directory_path() / "neml2_load_model_test";
+  fs::remove_all(tmp);
+  fs::create_directories(tmp);
+  auto write_stub = [&](const std::string & name, const std::string & body)
+  {
+    const auto p = (tmp / name).string();
+    std::ofstream(p) << body;
+    return p;
+  };
+
+  // [Solvers] with NewtonWithLineSearch -> parse_solver_config, line-search branch.
+  {
+    const auto s = write_stub(
+        "ls.i",
+        "[Models]\n  [model]\n    type = AOTIModel\n    artifact_path = " + artifact +
+            "\n    solver = newton\n  []\n[]\n"
+            "[Solvers]\n  [newton]\n    type = NewtonWithLineSearch\n    abs_tol = 1e-12\n"
+            "    rel_tol = 1e-10\n    max_its = 42\n    max_linesearch_iterations = 7\n"
+            "    linesearch_type = BACKTRACKING\n    linesearch_cutback = 3.0\n"
+            "    linesearch_stopping_criteria = 1e-4\n  []\n[]\n");
+    NEML2_CHECK(matches(load_model(s, "model").forward(inputs), ref_out, 1e-8, 1e-10));
+  }
+  // Plain Newton -> the non-line-search branch.
+  {
+    const auto s =
+        write_stub("newton.i",
+                   "[Models]\n  [model]\n    type = AOTIModel\n    artifact_path = " + artifact +
+                       "\n    solver = newton\n  []\n[]\n"
+                       "[Solvers]\n  [newton]\n    type = Newton\n    max_its = 30\n  []\n[]\n");
+    NEML2_CHECK(matches(load_model(s, "model").forward(inputs), ref_out, 1e-8, 1e-10));
+  }
+  // Relative artifact_path -> resolved against the stub's own directory, so the
+  // stub must sit next to the `model` folder (i.e. in fixture_dir).
+  {
+    const auto s = (fs::path(fixture_dir) / "rel_stub.i").string();
+    std::ofstream(s)
+        << "[Models]\n  [model]\n    type = AOTIModel\n    artifact_path = model\n  []\n[]\n";
+    NEML2_CHECK(matches(load_model(s, "model").forward(inputs), ref_out, 1e-8, 1e-10));
+    fs::remove(s);
+  }
+  // Error branches: parse failure, wrong type, missing artifact_path, dangling solver.
+  NEML2_CHECK_THROWS(load_model("/no/such/stub.i", "model"));
+  NEML2_CHECK_THROWS(load_model(
+      write_stub("wrongtype.i", "[Models]\n  [model]\n    type = NotAOTI\n  []\n[]\n"), "model"));
+  NEML2_CHECK_THROWS(load_model(
+      write_stub("noart.i", "[Models]\n  [model]\n    type = AOTIModel\n  []\n[]\n"), "model"));
+  NEML2_CHECK_THROWS(load_model(
+      write_stub("badsolver.i",
+                 "[Models]\n  [model]\n    type = AOTIModel\n    artifact_path = " + artifact +
+                     "\n    solver = missing\n  []\n[]\n"),
+      "model"));
+  fs::remove_all(tmp);
 
   // Cross-device: dispatch cpu inputs onto the GPU when a cuda artifact exists.
   const std::string cuda_meta = fixture_dir + "/model/cuda/model_meta.json";
