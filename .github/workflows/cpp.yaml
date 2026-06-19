@@ -133,7 +133,9 @@ jobs:
   # instrumentation, and uploads to Codecov under the informational `cpp` flag.
   # ubuntu+clang (not macOS) keeps llvm tooling cheap; CPU-only, so the GPU-gated
   # dispatcher branches stay uncovered -- hence the flag is report-only.
-  coverage:
+  # Named cpp-coverage (not coverage) to avoid colliding with the Python
+  # `coverage` job in python.yaml.
+  cpp-coverage:
     needs: clang-format
     runs-on: ubuntu-latest
     steps:

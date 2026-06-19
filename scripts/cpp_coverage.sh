@@ -26,6 +26,10 @@ set -euo pipefail
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${1:-$SRC/build/dev}"
+# Resolve to an absolute path: ctest chdir's into the build tree, and the
+# instrumented binaries resolve LLVM_PROFILE_FILE relative to *their* working
+# directory -- a relative path would scatter the .profraw files out of reach.
+BUILD_DIR="$(cd "$BUILD_DIR" && pwd)"
 OUT_DIR="${2:-$BUILD_DIR/coverage}"
 LLVM_PROFDATA="${LLVM_PROFDATA:-llvm-profdata}"
 LLVM_COV="${LLVM_COV:-llvm-cov}"
@@ -33,9 +37,11 @@ LLVM_COV="${LLVM_COV:-llvm-cov}"
 RAW="$OUT_DIR/raw"
 rm -rf "$OUT_DIR"
 mkdir -p "$RAW"
+OUT_DIR="$(cd "$OUT_DIR" && pwd)"
+RAW="$OUT_DIR/raw"
 
-# Each test process writes its own raw profile (%p = pid). The fixture-compile
-# step is a separate Python process and simply writes nothing.
+# Each test process writes its own raw profile (%p = pid), to the absolute RAW
+# dir. The fixture-compile step is a separate Python process and writes nothing.
 export LLVM_PROFILE_FILE="$RAW/%p.profraw"
 
 ctest --test-dir "$BUILD_DIR" -L dispatcher --output-on-failure
