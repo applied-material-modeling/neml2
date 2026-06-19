@@ -112,3 +112,12 @@ def test_device_and_dtype_reported():
     # NEML2 builds typed parameters at float64 regardless of the torch default.
     assert m.dtype == torch.float64
     assert m.device.type == "cpu"
+
+
+def test_device_override():
+    # Exercises the device-override path (model.to + _infer_device_dtype override
+    # branch). "cpu" keeps the test runnable on any machine.
+    m = _EagerModel(str(_INPUT), "model", device="cpu")
+    assert m.device.type == "cpu"
+    strain = torch.zeros(2, 6, dtype=m.dtype, device=m.device)
+    assert m.forward({"strain": strain})["stress"].device.type == "cpu"

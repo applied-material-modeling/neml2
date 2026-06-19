@@ -177,10 +177,13 @@ jobs:
           CXX: clang++
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=Coverage -S .
       - name: Build C++ tests
+        # `eager`/`test_eager` so the embedded-Python runtime sources
+        # (neml2/csrc/eager) are exercised under coverage -- cpp_coverage.sh runs
+        # the `eager` label alongside `dispatcher`.
         run: |
           cmake --build build/dev --target aoti \
             test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions \
-            test_dispatcher test_load_model -j 4
+            test_dispatcher test_load_model eager test_eager -j 4
       - name: Run coverage
         run: scripts/cpp_coverage.sh build/dev
       - name: Upload C++ coverage to Codecov

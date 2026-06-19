@@ -65,10 +65,10 @@ Only two presets exist: `dev` (build) and `cc` (compile-commands-only, no `cmake
 Two instrumentation build types extend the `dev` preset for the C++ test suite (clang or gcc; selecting the type is the opt-in, and both are off the wheel path):
 
 ```bash
-# Coverage (clang source-based): build, then run the dispatcher tests + report
+# Coverage (clang source-based): build, then run the dispatcher + eager tests + report
 CC=clang CXX=clang++ cmake --preset dev -DCMAKE_BUILD_TYPE=Coverage -S .
-cmake --build build/dev --target aoti test_dispatcher ...   # + the other test_* targets
-scripts/cpp_coverage.sh build/dev                            # -> build/dev/coverage/coverage.lcov
+cmake --build build/dev --target aoti test_dispatcher eager test_eager ...   # + the other test_* targets
+scripts/cpp_coverage.sh build/dev                            # runs the `dispatcher|eager` labels -> coverage.lcov
 
 # ThreadSanitizer (guards the async dispatch pool)
 CC=clang CXX=clang++ cmake --preset dev -DCMAKE_BUILD_TYPE=ThreadSanitizer -S .
