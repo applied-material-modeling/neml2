@@ -51,6 +51,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(NEML2_CONTRIB_PREFIX ${NEML2_SOURCE_DIR}/contrib CACHE PATH "NEML2 contrib prefix for downloaded dependencies")
 set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is supposed to be set by setup.py and not by the user.")
 
+# MPI is optional and OFF by default: it powers only the MPIScheduler (one GPU
+# per rank). With the flag OFF the scheduler's constructor throws a clear
+# "rebuild with -DNEML2_MPI=ON" error, so the class is always present.
+option(NEML2_MPI "Build the MPI work scheduler (links against MPI)" OFF)
+
 # ----------------------------------------------------------------------------
 # Dependencies and 3rd party packages
 # ----------------------------------------------------------------------------
@@ -121,6 +126,7 @@ if(NOT SKBUILD_STATE STREQUAL "editable")
       install(FILES
             ${NEML2_SOURCE_DIR}/cmake/Modules/Findtorch.cmake
             ${NEML2_SOURCE_DIR}/cmake/Modules/DetectTorchCXXABI.cxx
+            ${NEML2_SOURCE_DIR}/cmake/Modules/Findnmhit.cmake
             DESTINATION share/cmake/neml2/Modules
             COMPONENT libneml2
       )
@@ -176,6 +182,16 @@ if(NOT SKBUILD_STATE STREQUAL "editable")
 endif()
 
 # ----------------------------------------------------------------------------
+# nmhit (C++ HIT parser)
+# ----------------------------------------------------------------------------
+# Discovered from the Python site-packages the current interpreter sees (same
+# strategy as Findtorch); the nmhit wheel ships its static lib + headers under
+# <site-packages>/nmhit/{lib,include}. Linked PRIVATE into aoti -- nmhit is an
+# implementation detail of the C++ loader (factory.cpp parses the stub `.i`) and
+# appears in no shipped header, so it stays out of the public ABI.
+find_package(nmhit MODULE REQUIRED)
+
+# ----------------------------------------------------------------------------
 # libneml2_aoti — the only C++ artifact NEML2 ships
 # ----------------------------------------------------------------------------
 # Free-standing: links only against torch::core (+ torch::cuda when available)
@@ -193,6 +209,11 @@ add_library(aoti SHARED
       neml2/csrc/aoti/jacobian.cpp
       neml2/csrc/aoti/newton.cpp
       neml2/csrc/aoti/nonlinear_system_aoti.cpp
+      neml2/csrc/aoti/WorkScheduler.cpp
+      neml2/csrc/aoti/SimpleScheduler.cpp
+      neml2/csrc/aoti/MPIScheduler.cpp
+      neml2/csrc/aoti/DispatchedModel.cpp
+      neml2/csrc/aoti/factory.cpp
 )
 
 # API visibility control: hide everything by default and export only the symbols
@@ -228,6 +249,11 @@ target_sources(aoti
       BASE_DIRS ${NEML2_SOURCE_DIR}
       FILES
       ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/Model.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/WorkScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/SimpleScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/MPIScheduler.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/DispatchedModel.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/factory.h
 )
 # The generated aoti_export.h lives under the build tree's dedicated include
 # root. Add it as a build-interface include so `#include
@@ -239,8 +265,19 @@ target_include_directories(aoti PUBLIC $<BUILD_INTERFACE:${NEML2_BINARY_DIR}/inc
 set_target_properties(aoti PROPERTIES OUTPUT_NAME "neml2_aoti$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 target_compile_options(aoti PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(aoti PUBLIC torch::core nlohmann_json::nlohmann_json)
+target_link_libraries(aoti PRIVATE nmhit::nmhit)
 if(TARGET torch::cuda)
       target_link_libraries(aoti PUBLIC torch::cuda)
+endif()
+
+# MPI scheduler: link MPI and define NEML2_MPI for the aoti TUs only. The public
+# headers are MPI-type-free, so consumers need neither the flag nor mpi.h; the
+# MPIScheduler constructor throws when the flag is OFF.
+if(NEML2_MPI)
+      find_package(MPI REQUIRED COMPONENTS CXX)
+      target_link_libraries(aoti PUBLIC MPI::MPI_CXX)
+      target_compile_definitions(aoti PRIVATE NEML2_MPI)
+      message(STATUS "NEML2_MPI=ON: MPIScheduler enabled (linking ${MPI_CXX_COMPILER})")
 endif()
 
 # rpath: only the torch hop is needed (no sibling neml2_*.so libraries to
@@ -419,6 +456,7 @@ endif()
 # is the consumer.
 if(BUILD_TESTING AND NOT NEML2_WHEEL)
       add_subdirectory(benchmark)
+      add_subdirectory(tests/cpp)
 endif()
 
 # ----------------------------------------------------------------------------

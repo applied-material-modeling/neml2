@@ -55,9 +55,9 @@ def _emit(tmp_path: Path, hit: str, model: str):
     """Write *hit*, run ``emit_aoti_stub``, return the re-parsed stub sections."""
     src = tmp_path / "in.i"
     src.write_text(hit)
-    meta = tmp_path / "model_meta.json"
+    artifact_dir = tmp_path / model
     stub = tmp_path / "stub.i"
-    emit_aoti_stub(src, model, meta, stub)
+    emit_aoti_stub(src, model, artifact_dir, stub)
     root = nmhit.parse_file(stub, [], [])
     return {s.path(): s for s in root.children(nmhit.NodeType.Section)}
 
@@ -218,3 +218,14 @@ def test_shared_solver_across_segments_deduplicated(tmp_path, capsys):
 def test_unknown_model_name_raises(tmp_path):
     with pytest.raises(ValueError, match="no \\[Models/nope\\] block"):
         _emit(tmp_path, _DIRECT_IMPLICIT, "nope")
+
+
+def test_shim_records_absolute_artifact_path(tmp_path):
+    """The shim points at the artifact folder via an absolute ``artifact_path``;
+    the old per-device ``meta`` field is gone."""
+    sections = _emit(tmp_path, _FORWARD_ONLY, "model")
+    shim = _shim(sections, "model")
+    ap = shim.param_optional_str("artifact_path", "")
+    assert ap and Path(ap).is_absolute()
+    assert ap.endswith("/model")  # the per-model artifact folder
+    assert shim.find("meta") is None  # superseded by artifact_path

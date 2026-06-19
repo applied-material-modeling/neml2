@@ -34,8 +34,11 @@ Usage:
 
     neml2-compile <input.i> --model <name>
                             [--output-dir <dir>]
-                            [--device cpu|cuda] [--dtype float64|float32]
+                            [--device cpu|cuda [cpu|cuda ...]] [--dtype float64|float32]
                             [-p|--parameter NAME ...]
+
+When more than one ``--device`` is given, a complete artifact is emitted per
+device into a device-named subfolder (``<output-dir>/cpu/``, ``.../cuda/``).
 
 By default every parameter and buffer in the source model is folded into the
 exported graph as a constant. Each ``--parameter NAME`` flag promotes one
@@ -46,7 +49,6 @@ attribute to be a graph input -- mutable at runtime through
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 from pathlib import Path
 
@@ -88,13 +90,25 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         metavar="DIR",
-        help="Directory for the compiled artifacts (default: ./aoti/<NAME>/).",
+        help=(
+            "Collection dir for the compiled artifacts (default: ./aoti/). Each "
+            "model lands in <DIR>/<NAME>/<device>/ with a standalone "
+            "<DIR>/<NAME>_aoti.i stub next to it."
+        ),
     )
     parser.add_argument(
         "--device",
-        default="cpu",
+        nargs="+",
+        default=["cpu"],
         choices=["cpu", "cuda"],
-        help="Target device for the artifact (baked at export time).",
+        metavar="DEVICE",
+        help=(
+            "Target device(s) for the artifact, baked at export time. Accepts "
+            "more than one (e.g. --device cpu cuda): one complete artifact is "
+            "emitted per device into a subfolder named by the device "
+            "(<output-dir>/cpu/, <output-dir>/cuda/), ready for a multi-device "
+            "dispatcher to load."
+        ),
     )
     parser.add_argument(
         "--dtype",
@@ -175,10 +189,9 @@ def compile_and_emit_stub(
     ``neml2-compile`` CLI surface for callers who don't want to shell out
     to a subprocess.
 
-    The intermediate ``model_name`` and the conventional
-    ``<model_name>_meta.json`` / ``<model_name>_aoti.i`` paths live
-    entirely inside this function -- callers don't need to know the
-    target model name.
+    The intermediate ``model_name`` and the layout (``<output_dir>/<model>/<device>/``
+    artifacts + a standalone ``<output_dir>/<model>_aoti.i`` stub) live entirely
+    inside this function -- callers just run the returned stub path.
     """
     # Local import keeps the module import-light when only the helpers
     # below are needed.
@@ -189,10 +202,13 @@ def compile_and_emit_stub(
     model_name = driver_target_model(input_path, driver) if driver else model
     assert model_name is not None  # for type narrowing
 
+    artifact_dir = output_dir / model_name
+    device_dir = artifact_dir / device
+    device_dir.mkdir(parents=True, exist_ok=True)
     export_model_for_aoti(
         input_path,
         model_name,
-        output_dir,
+        device_dir,
         device=device,
         dtype=dtype,
         promoted=promoted or set(),
@@ -205,7 +221,7 @@ def compile_and_emit_stub(
     emit_aoti_stub(
         input_path,
         model_name,
-        output_dir / f"{model_name}_meta.json",
+        artifact_dir,
         stub_path,
         keep_drivers=(driver is not None),
     )
@@ -247,12 +263,18 @@ def driver_target_model(original_hit: Path, driver_name: str) -> str:
 def emit_aoti_stub(
     original_hit: Path,
     model_name: str,
-    meta_path: Path,
+    artifact_dir: Path,
     stub_path: Path,
     *,
     keep_drivers: bool = False,
 ) -> None:
     """Write a minimal AOTI stub at *stub_path*.
+
+    The stub is a standalone file that sits next to (not inside) the
+    *artifact_dir* -- the per-device artifact folder holding one ``<device>/``
+    subfolder per compiled device. The shim points at it via an absolute
+    ``artifact_path``; the loader (Python shim or C++ ``load_model``) resolves
+    ``<artifact_path>/<device>/<model>_meta.json`` for the device it runs on.
 
     The stub contains exactly what's needed to load the compiled artifact:
 
@@ -285,8 +307,8 @@ def emit_aoti_stub(
     -- it is baked into the compiled step/IFT graphs, so editing it in the stub
     would have no effect; omitting it keeps the stub free of inert knobs.
 
-    The meta path is recorded relative to *stub_path*'s directory so the
-    stub directory is movable as a unit.
+    The artifact folder is recorded as an absolute ``artifact_path`` -- the
+    stub is standalone, so the artifacts are not relocatable without a recompile.
 
     Implementation note: we build a fresh ``nmhit.Root`` and clone the
     sections we want into it, rather than mutating the parsed input. nmhit
@@ -346,21 +368,16 @@ def emit_aoti_stub(
         )
 
     # Path the shim's meta field will point at -- relative to the stub so
-    # the artifact directory is movable as a unit.
-    stub_dir = stub_path.parent.resolve()
-    meta_abs = meta_path.resolve()
-    try:
-        rel = os.path.relpath(meta_abs, start=stub_dir)
-    except ValueError:
-        rel = str(meta_abs)
-    if not (rel.startswith("./") or rel.startswith("../") or os.path.isabs(rel)):
-        rel = "./" + rel
+    # Absolute pointer at the per-device artifact folder. Absolute (not
+    # relative) by design: the stub is standalone and lives outside the folder,
+    # so moving the artifacts requires recompiling or editing this path.
+    artifact_abs = str(Path(artifact_dir).resolve())
 
     # Build the cleaned [Models] block once: one shim, no siblings.
     cleaned_models = nmhit.Section("Models")
     shim = nmhit.Section(model_name)
     shim.add_child(nmhit.Field("type", "AOTIModel"))
-    shim.add_child(nmhit.Field("meta", rel))
+    shim.add_child(nmhit.Field("artifact_path", artifact_abs))
     if solver_name:
         # The carried (minimal) [Solvers] block configures the implicit Newton
         # solve at load -- convergence / line-search knobs only.
@@ -498,8 +515,12 @@ def main(argv: list[str] | None = None) -> int:
         model_name = args.model
         keep_driver = None
 
-    output_dir: Path = (args.output_dir or Path.cwd() / "aoti" / model_name).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # `--output-dir` is the collection dir (default ./aoti). Each model lands in
+    # <output-dir>/<model>/<device>/ with one standalone stub next to it at
+    # <output-dir>/<model>_aoti.i.
+    output_dir: Path = (args.output_dir or Path.cwd() / "aoti").resolve()
+    artifact_dir = output_dir / model_name
+    artifact_dir.mkdir(parents=True, exist_ok=True)
 
     try:
         example_batch_shape = _parse_example_batch_shape_cli(args.example_batch_shape)
@@ -507,29 +528,39 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
-    try:
-        meta = export_model_for_aoti(
-            input_path,
-            model_name,
-            output_dir,
-            device=args.device,
-            dtype=args.dtype,
-            promoted=set(args.parameter),
-            example_batch_shape=example_batch_shape,
-            dynamic_batch=args.dynamic_batch,
-            additional_args=tuple(additional_args),
-        )
-    except Exception as exc:  # noqa: BLE001
-        print(f"Error compiling '{model_name}': {exc}", file=sys.stderr)
-        return 1
+    # One complete artifact per device, each in its own device-named subfolder
+    # (<model>/cpu/, <model>/cuda/). De-dupe while preserving order so
+    # `--device cpu cpu` doesn't compile twice.
+    devices = list(dict.fromkeys(args.device))
+    compiled: list[tuple[str, Path]] = []
+    meta: dict = {}
+    for device in devices:
+        device_dir = artifact_dir / device
+        device_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            meta = export_model_for_aoti(
+                input_path,
+                model_name,
+                device_dir,
+                device=device,
+                dtype=args.dtype,
+                promoted=set(args.parameter),
+                example_batch_shape=example_batch_shape,
+                dynamic_batch=args.dynamic_batch,
+                additional_args=tuple(additional_args),
+            )
+        except Exception as exc:  # noqa: BLE001
+            print(f"Error compiling '{model_name}' for {device}: {exc}", file=sys.stderr)
+            return 1
+        compiled.append((device, device_dir / f"{model_name}_meta.json"))
 
-    meta_path = output_dir / f"{model_name}_meta.json"
+    # One standalone stub next to the artifact folder, pointing at it.
     stub_path = output_dir / f"{model_name}_aoti.i"
     try:
         emit_aoti_stub(
             input_path,
             model_name,
-            meta_path,
+            artifact_dir,
             stub_path,
             keep_drivers=(keep_driver is not None),
         )
@@ -544,9 +575,14 @@ def main(argv: list[str] | None = None) -> int:
     def _rel(p: Path) -> Path:
         return p.relative_to(Path.cwd()) if p.is_relative_to(Path.cwd()) else p
 
-    print(f"Compiled '{model_name}' ({meta['type']}, {bake_note}{driver_note}) -> {output_dir}")
-    print(f"  metadata: {_rel(meta_path)}")
-    print(f"  stub:     {_rel(stub_path)}")
+    dev_list = ", ".join(device for device, _ in compiled)
+    print(
+        f"Compiled '{model_name}' ({meta['type']}, {bake_note}{driver_note}) "
+        f"for [{dev_list}] -> {_rel(artifact_dir)}"
+    )
+    print(f"  stub: {_rel(stub_path)}")
+    for device, meta_path in compiled:
+        print(f"  {device}: {_rel(meta_path)}")
     return 0
 
 

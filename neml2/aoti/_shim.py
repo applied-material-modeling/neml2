@@ -29,7 +29,7 @@ Registers ``AOTIModel`` with the native factory so that an HIT block like
     [Models]
       [my_model]
         type = AOTIModel
-        meta = './my_model_meta.json'
+        artifact_path = '/abs/path/to/aoti/my_model'
       []
     []
 
@@ -69,9 +69,12 @@ if TYPE_CHECKING:
 class AOTIModel(nn.Module):
     """HIT-loadable wrapper around :class:`neml2.aoti.Model`.
 
-    Constructed from a HIT ``[Models]`` block with a single ``meta`` option
-    pointing at the metadata JSON produced by ``neml2-compile``. The path is
-    resolved relative to the input file's directory.
+    Constructed from a HIT ``[Models]`` block with an ``artifact_path`` option
+    pointing at the per-device artifact folder produced by ``neml2-compile``
+    (the folder holding one ``<device>/`` subfolder per compiled device). The
+    subfolder for the current ``torch.get_default_device()`` is loaded -- so
+    ``neml2-run --device cuda`` (which sets the default device) picks ``cuda/``.
+    Eager and single-device: no dispatch happens here.
 
     Plays the native-Model role: ``input_spec`` and ``output_spec`` are
     populated from the metadata's ``var_type`` fields; ``__call__`` takes
@@ -91,10 +94,11 @@ class AOTIModel(nn.Module):
 
     hit = HitSchema(
         option(
-            "meta",
+            "artifact_path",
             str,
-            "Path to the AOTI metadata JSON produced by ``neml2-compile``. Resolved "
-            "relative to the input file's directory when not absolute.",
+            "Absolute path to the per-device artifact folder produced by "
+            "``neml2-compile`` (contains one ``<device>/`` subfolder per compiled "
+            "device). The subfolder matching ``torch.get_default_device()`` is loaded.",
         ),
         dependency(
             "solver",
@@ -109,17 +113,32 @@ class AOTIModel(nn.Module):
 
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> AOTIModel:
-        meta_rel = node.param_str("meta")
-        # The meta path is HIT-style relative to the input file's directory
-        # (mirrors how `neml2-compile` writes the stub: `./<name>_meta.json`).
-        meta_path = (factory._path.parent / meta_rel).resolve()
-        if not meta_path.exists():
+        artifact_str = node.param_str("artifact_path")
+        # Absolute per `neml2-compile`; tolerate a relative path by resolving it
+        # against the input file's directory.
+        artifact_path = Path(artifact_str)
+        if not artifact_path.is_absolute():
+            artifact_path = factory._path.parent / artifact_path
+        artifact_path = artifact_path.resolve()
+
+        # Load the subfolder for the current default device (cpu / cuda).
+        device = torch.get_default_device()
+        device_dir = artifact_path / device.type
+        metas = sorted(device_dir.glob("*_meta.json")) if device_dir.is_dir() else []
+        if not metas:
             raise FileNotFoundError(
-                f"AOTIModel({node.path()!r}): metadata file not found at "
-                f"{meta_path} (HIT entry: meta={meta_rel!r}, resolved "
-                f"relative to {factory._path})."
+                f"AOTIModel({node.path()!r}): no artifact compiled for device "
+                f"{device.type!r} under {artifact_path} (looked in {device_dir}). "
+                f"Recompile with `neml2-compile --device {device.type}` or change the "
+                f"default device."
             )
-        model = cls(meta_path)
+        if len(metas) > 1:
+            raise RuntimeError(
+                f"AOTIModel({node.path()!r}): multiple '*_meta.json' files in "
+                f"{device_dir}; expected exactly one compiled model."
+            )
+
+        model = cls(metas[0])
         solver_name = node.param_optional_str("solver", "")
         if solver_name:
             model._apply_solver_config(factory.get_solver(solver_name))

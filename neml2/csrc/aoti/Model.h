@@ -28,6 +28,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -113,7 +114,15 @@ public:
   /// Promoted-parameter tensors are placed on the device + dtype recorded in
   /// the metadata (set by `neml2-compile --device/--dtype`). The AOTI graphs
   /// are pinned to that same device at export time.
-  explicit Model(const std::filesystem::path & meta_path);
+  ///
+  /// `device_override` refines *which* concrete device the artifact is loaded
+  /// onto. Its device *type* must match the compiled type recorded in the
+  /// metadata (a `cpu` artifact cannot be loaded onto cuda, or vice versa);
+  /// only the index is honoured. This is how one `cuda` artifact is
+  /// instantiated on `cuda:0`, `cuda:1`, … by a multi-device dispatcher. When
+  /// omitted, the metadata device (default cuda index) is used unchanged.
+  explicit Model(const std::filesystem::path & meta_path,
+                 std::optional<at::Device> device_override = std::nullopt);
 
   /// Declared (not defaulted) here and defined out-of-line where `Impl` is a
   /// complete type, as the PImpl idiom requires.
