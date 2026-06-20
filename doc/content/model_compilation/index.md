@@ -18,7 +18,9 @@ NEML2 ships two ways to evaluate a model:
 
 This section covers the second path, split into the developer-facing
 *how it's built*, the consumer-facing *what's on disk*, and *how to
-dispatch* a compiled model across devices:
+dispatch* a compiled model across devices. It closes with a third
+runtime — [](model-eager-cpp) — that embeds Python to run a model from
+its `.i` with no compile, for fast downstream C++ unit tests:
 
 ```{toctree}
 :maxdepth: 1
@@ -26,6 +28,7 @@ dispatch* a compiled model across devices:
 pipeline
 aoti_packages
 dispatcher
+eager
 ```
 
 If you only want to compile and load a model, the end-to-end how-to

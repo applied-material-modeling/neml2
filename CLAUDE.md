@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 NEML2 is a Python-native material modeling library that vectorizes constitutive model evaluation on CPU/GPU using PyTorch as the tensor backend. Models are plain `torch.nn.Module` subclasses composed from small reusable pieces, the framework auto-resolves dependencies between them, and most users interact via HIT input files (the same format used by MOOSE) plus either the Python API or the `neml2-run` / `neml2-compile` CLIs.
 
-The legacy C++ tower from v2.x was retired in the v3 migration. The C++ that remains lives under `neml2/csrc/`: the AOT-Inductor runtime (`neml2/csrc/aoti/`) that loads the `.pt2` packages produced by `neml2-compile`, plus the work scheduler / dispatcher (`neml2/csrc/dispatchers/`) that spreads a batched evaluation across CPU/GPU(s). Both compile into a single shared library, `neml2/lib/libneml2.so`, built once as part of the wheel and invisible to most contributors. See [](doc/content/migration/212_300.md) for the v2 → v3 rewrite summary.
+The legacy C++ tower from v2.x was retired in the v3 migration. The C++ that remains lives under `neml2/csrc/`: the AOT-Inductor runtime (`neml2/csrc/aoti/`) that loads the `.pt2` packages produced by `neml2-compile`, plus the work scheduler / dispatcher (`neml2/csrc/dispatchers/`) that spreads a batched evaluation across CPU/GPU(s). Both compile into a single shared library, `neml2/lib/libneml2.so`, built once as part of the wheel and invisible to most contributors. A second, **separate** library `neml2/lib/libneml2_eager.so` (`neml2/csrc/eager/`) embeds a CPython interpreter to run a model straight from its `.i` with no compile step — the fast-to-start path for downstream C++ unit tests; it is kept separate precisely so `libneml2.so` stays Python-free. See [](doc/content/migration/212_300.md) for the v2 → v3 rewrite summary.
 
 ## Hard rules — these supersede convenience
 
@@ -16,10 +16,11 @@ These three rules are non-negotiable across the codebase. They exist because vio
 
 Every internal neml2 function, method, leaf, helper, and chain-rule operator returns a typed wrapper (`Scalar`, `SR2`, `Tensor`, ...) with correct `sub_batch_ndim` and `sub_batch_labels`. Internal callers should never have to re-attach metadata; the producer always returns typed.
 
-The only legitimate raw-tensor surfaces are the two framework-imposed boundaries:
+The only legitimate raw-tensor surfaces are the framework-imposed boundaries:
 
 - **AOTI shim** (`neml2/aoti/`, `neml2/cli/aoti_*.py`): `torch.export` and `torch._inductor` operate on raw tensors and pytrees by contract. Metadata is persisted at export and re-attached on load.
 - **`torch.autograd.Function`** (e.g. `_ImplicitUpdateFn`): PyTorch's autograd machinery requires raw at the `forward`/`backward` signatures. The wrap-back happens immediately on exit from the enclosing typed method.
+- **Eager embed bridge** (`neml2/eager.py`, `neml2/_eager_boundary.py`): the C++ `neml2::eager::Model` marshals raw `at::Tensor`s across the embedded-Python boundary via torch's pybind casters. Raw tensors appear only in `forward`'s argument / return dicts; inputs are wrapped to typed immediately on entry and outputs are unwrapped only at the return dict (in `_eager_boundary.unwrap_outputs`).
 
 Everywhere else, returning raw is a bug.
 
@@ -31,7 +32,7 @@ A `.data` access elsewhere means one of:
 - The caller is about to do raw `torch.*` arithmetic and rewrap, dropping labels/state/meta and reconstructing them by guess. This is the root cause of metadata-loss bugs.
 - A wrapper primitive is missing. Add it.
 
-Same two framework boundaries (AOTI shim, `torch.autograd.Function`) are the only exceptions, and even there the unwrap is encapsulated in a helper inside `neml2/types/`, not done ad hoc at the call site. Genuine framework-boundary unwraps in those exception files bear a `# noqa: data-ok` marker explaining why.
+The same framework boundaries (AOTI shim, `torch.autograd.Function`, eager embed bridge) are the only exceptions, and even there the unwrap is encapsulated in a helper (inside `neml2/types/`, or `neml2/_eager_boundary.py` for the embed bridge), not done ad hoc at the call site. Genuine framework-boundary unwraps in those exception files bear a `# noqa: data-ok` marker explaining why.
 
 ### 3. Fix the root cause; never patch the call site
 
@@ -64,10 +65,10 @@ Only two presets exist: `dev` (build) and `cc` (compile-commands-only, no `cmake
 Two instrumentation build types extend the `dev` preset for the C++ test suite (clang or gcc; selecting the type is the opt-in, and both are off the wheel path):
 
 ```bash
-# Coverage (clang source-based): build, then run the dispatcher tests + report
+# Coverage (clang source-based): build, then run the dispatcher + eager tests + report
 CC=clang CXX=clang++ cmake --preset dev -DCMAKE_BUILD_TYPE=Coverage -S .
-cmake --build build/dev --target aoti test_dispatcher ...   # + the other test_* targets
-scripts/cpp_coverage.sh build/dev                            # -> build/dev/coverage/coverage.lcov
+cmake --build build/dev --target aoti test_dispatcher eager test_eager ...   # + the other test_* targets
+scripts/cpp_coverage.sh build/dev                            # runs the `dispatcher|eager` labels -> coverage.lcov
 
 # ThreadSanitizer (guards the async dispatch pool)
 CC=clang CXX=clang++ cmake --preset dev -DCMAKE_BUILD_TYPE=ThreadSanitizer -S .
@@ -167,10 +168,12 @@ The Python package layout under `neml2/`:
 - `user_tensors/` — registered `[Tensors]` block types other than `Python` (currently the `CSV<Type>` family).
 - `cli/aoti_compile.py`, `cli/aoti_export.py` — the `neml2-compile` orchestration and the per-segment export path; see [](doc/content/model_compilation/pipeline.md).
 - `aoti/` — Python-side `AOTIModel` shim that loads a `_meta.json` + per-segment `.pt2` files and exposes `forward` / `jvp` / `jacobian`. Backed by the pybind module `aoti/_aoti.cpp` (which links `libneml2.so`).
+- `eager.py` + `_eager_boundary.py` — the Python adapter the C++ embedded-Python eager runtime imports. `_EagerModel` wraps a `factory.load_model` native model and presents the raw-tensor, name-keyed `forward(dict)->dict` + `input_names`/`sizes`/`device`/`dtype` surface the C++ `neml2::eager::Model` consumes; `_eager_boundary.py` holds the device/dtype check + batch-broadcast + output-unwrap helpers it shares with the AOTI shim (the third raw-tensor framework boundary; see Rule 1).
 - `pyzag/` — `NEML2PyzagModel` adapter that exposes a NEML2 `Model` as a `torch.nn.Module` consumable by the pyzag training library.
 - `cli/` — backing modules for the four console scripts above.
 - `csrc/aoti/` — C++ runtime: `neml2::aoti::Model` wraps `torch::inductor::AOTIModelPackageLoader`. The public class is a PImpl facade (`Model.h`); its internals live behind `Model::Impl` in the non-shipped `internal.h` (+ `assertions.h`), and the implementation is split across `Model.cpp` (construction), `ops.cpp` (forward/jvp/jacobian), `solve.cpp` (value/Newton path), `jacobian.cpp` (Jacobian/IFT path), and the shared `newton.{h,cpp}` / `nonlinear_system*.{h,cpp}` solver. `Exception.h` (shipped) is the public exception taxonomy — `Exception` base with a `recoverable()` predicate, `ConvergenceError` (recoverable: a Newton divergence / max-iters, so a consumer can cut the time step and retry), `FatalError` (non-recoverable: shape/device/config; what `_assert` throws), and `AggregateError` (concurrent dispatch failures). Public ops run through `_guarded` so foreign torch errors are normalized to `FatalError`. Built into `neml2/lib/libneml2.so` (hidden visibility; only the `AOTI_EXPORT`-tagged API is exported) and surfaced through the pybind binding.
 - `csrc/dispatchers/` — C++ work scheduler / dispatcher (serves the compiled path embedded in a host app; no Python). `DispatchedModel` is a `Model`-shaped handle owning one pinned `aoti::Model` per device + an injected `WorkScheduler`; it chunks a batched call across devices and stitches results back. Schedulers split into `SyncScheduler` (`SimpleScheduler`, `MPISimpleScheduler` — single-device chunk loop on the calling thread) and `AsyncScheduler` (`StaticHybridScheduler` — concurrent CPU+GPU(s) via a thread-per-device pool, load-tracked). `factory.cpp` is the `load_model(stub, name[, scheduler])` entry point; `batch_chunk.h` holds the slice/cat helpers. See [](doc/content/model_compilation/dispatcher.md).
+- `csrc/eager/` — C++ embedded-Python eager runtime, compiled into the **separate** `neml2/lib/libneml2_eager.so` (the only NEML2 C++ artifact that links `torch_python`; `libneml2.so` stays Python-free). It links `Python3::Module` (not libpython) and leaves the CPython API symbols undefined — resolved at load from the host's libpython (the running interpreter, or the libpython a pure-C++ host links to embed it); this keeps the wheel build off any *shared* libpython dependency. `neml2::eager::Model` is a PImpl facade (`Model.h`) mirroring `aoti::Model`'s `forward` + metadata surface, but constructed from the *original* `.i` (no compile): it embeds a CPython interpreter (one-time bootstrap in `interpreter.{h,cpp}`, never finalized — torch can't be re-imported after `Py_Finalize`), imports the `neml2.eager._EagerModel` Python adapter, and marshals `at::Tensor`s across the boundary with torch's pybind casters (`Model.cpp`). `load_model(input_file, name)` (`load_model.cpp`) is the entry point; Python failures are normalized to `neml2::aoti::FatalError`. The fast-to-start, slow-to-run counterpart of the AOTI path, for downstream C++ unit tests. See [](doc/content/model_compilation/eager.md).
 
 ### Factory / Registry pattern
 

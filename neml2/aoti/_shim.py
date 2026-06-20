@@ -54,6 +54,7 @@ import torch
 from torch import nn
 
 from .. import types as _types
+from .._eager_boundary import broadcast_to_common_batch, check_tensor
 from ..factory import register_neml2_object
 from ..schema import HitSchema, dependency, option
 from ..types import TensorWrapper
@@ -208,32 +209,15 @@ class AOTIModel(nn.Module):
     def _check_tensor(self, t: torch.Tensor, name: str, *, kind: str) -> None:
         """Strict device + dtype check; raise TypeError on mismatch.
 
-        ``kind`` is ``'input'`` or ``'parameter'`` and shows up in the error
-        message so the caller can tell whether to fix the call site or the
-        parameter setter. Only floating-point dtype is checked -- bool /
-        integer tensors are passed through unchanged because their widths
-        are not part of the AOTI compile-pin.
-
-        The device comparison is index-aware. ``torch.device('cuda')`` and
-        ``torch.device('cuda:0')`` refer to the same physical GPU but
-        ``__eq__`` reports them unequal; we treat them as equal whenever
-        the target lacks an explicit index. Same-type + same-index (when
-        the target pins an index) is required.
+        Thin wrapper over the shared
+        :func:`neml2._eager_boundary.check_tensor` (the device/dtype
+        validation is identical across the AOTI + eager boundaries). ``kind``
+        is ``'input'`` or ``'parameter'``; the AOTI-specific remediation
+        guidance is supplied here as the ``hint``.
         """
         target_device = self._inner.device
         target_dtype = self._inner.dtype
-        device_ok = t.device.type == target_device.type and (
-            target_device.index is None or t.device.index == target_device.index
-        )
-        problems = []
-        if not device_ok:
-            problems.append(f"device={t.device} (expected {target_device})")
-        if t.is_floating_point() and t.dtype != target_dtype:
-            problems.append(f"dtype={t.dtype} (expected {target_dtype})")
-        if not problems:
-            return
-        raise TypeError(
-            f"AOTIModel {kind} {name!r}: {', '.join(problems)}. "
+        hint = (
             f"The .pt2 artifact is compile-pinned to "
             f"(device={target_device}, dtype={target_dtype}) and the runtime "
             f"refuses to silently coerce -- silent coercion would mask the "
@@ -243,6 +227,9 @@ class AOTIModel(nn.Module):
             f"site, or set process-wide defaults (e.g. "
             f"``torch.set_default_dtype(torch.float64)`` + "
             f"``torch.set_default_device(...)``) before constructing inputs."
+        )
+        check_tensor(
+            t, name, target_device, target_dtype, kind=kind, context="AOTIModel", hint=hint
         )
 
     def forward(self, *args: TensorWrapper, v=None, v2=None, vh=None):
@@ -379,50 +366,11 @@ class AOTIModel(nn.Module):
         """Bring every input tensor to its declared ``(*dyn, *sub, *base)`` shape,
         with the dynamic-batch axes broadcast to a single common shape.
 
-        Each input has three trailing-axis regions:
-
-        * ``base`` -- ``BASE_SHAPE`` from the TensorWrapper class;
-        * ``sub`` -- the per-input ``sub_batch_ndim`` resolved from the
-          caller's typed wrapper instance (or the legacy metadata
-          ``sub_batch_shape`` when the caller passes a raw tensor);
-        * ``dyn`` -- everything in front, broadcast across all inputs
-          (callers freely pass base-only defaults / single-step slices and
-          rely on the runtime to lift them to the common dyn shape).
-
-        The (dyn, sub, base) split is per-input -- a global Scalar with
-        no sub-batch is reshaped to ``(*common_dyn, *base)`` while a
-        per-crystal SR2 with ``sub_batch_ndim=1`` is reshaped to
-        ``(*common_dyn, sub_size, *base)``. Without the per-input
-        sub-batch carve-out, a naive ``torch.broadcast_shapes`` over the
-        full batch region would collide the per-crystal axis against the
-        global input's dyn axis.
+        Thin wrapper over the shared
+        :func:`neml2._eager_boundary.broadcast_to_common_batch`; see there for
+        the (dyn, sub, base) per-input split rationale. The per-input
+        ``sub_batch_ndim`` is resolved from the caller's typed wrapper instance
+        (or the legacy metadata ``sub_batch_shape`` when the caller passes a
+        raw tensor) before this call.
         """
-        dyn_shapes: list[torch.Size] = []
-        for name, t in raw_inputs.items():
-            base_ndim = self.input_spec[name].BASE_NDIM
-            sub_ndim = per_input_sub_ndim[name]
-            trail = base_ndim + sub_ndim
-            dyn_shapes.append(t.shape if trail == 0 else t.shape[:-trail])
-        common_dyn = torch.broadcast_shapes(*dyn_shapes)
-
-        out: dict[str, torch.Tensor] = {}
-        for name, t in raw_inputs.items():
-            base_ndim = self.input_spec[name].BASE_NDIM
-            base_shape = tuple(self.input_spec[name].BASE_SHAPE)
-            sub_ndim = per_input_sub_ndim[name]
-            # Read the sub-batch shape from the input tensor's current
-            # trailing axes (the caller's wrapper already has the right
-            # sub_batch_ndim; the raw tensor's trailing-axis sizes are
-            # the sub-batch extents).
-            sub_shape = (
-                tuple(t.shape[len(t.shape) - base_ndim - sub_ndim : len(t.shape) - base_ndim])
-                if sub_ndim
-                else ()
-            )
-            target_shape = tuple(common_dyn) + sub_shape + base_shape
-            if tuple(t.shape) == target_shape:
-                out[name] = t
-                continue
-            view_shape = (1,) * (len(target_shape) - t.ndim) + tuple(t.shape)
-            out[name] = t.view(view_shape).expand(target_shape).contiguous()
-        return out, common_dyn
+        return broadcast_to_common_batch(raw_inputs, self.input_spec, per_input_sub_ndim)

@@ -347,6 +347,103 @@ if(NOT SKBUILD_STATE STREQUAL "editable")
 endif()
 
 # ----------------------------------------------------------------------------
+# libneml2_eager — the embedded-Python eager runtime (separate from libneml2)
+# ----------------------------------------------------------------------------
+# A second shared library that embeds a CPython interpreter and runs a NEML2
+# model eagerly from C++ via `neml2.factory.load_model` -- skipping the AOTI
+# compile entirely (for fast downstream C++ unit tests, where a minutes-long
+# `neml2-compile` is untenable). It is deliberately KEPT SEPARATE from
+# `libneml2.so` (the `aoti` target above): that library links only torch::core
+# and stays Python-free so the AOTI runtime can embed in pure-C++ hosts.
+# `eager` is the one place the Python dependency lives. Built in both the dev
+# preset (for the C++ test) and the wheel (shipped beside libneml2.so), so the
+# add_library is top-level rather than gated on NEML2_WHEEL.
+#
+# Link against Development.Module (headers + module link flags), NOT
+# Development.Embed (libpython). A shared library may leave the CPython API
+# symbols undefined and resolve them at load time from whatever libpython the
+# host process already has -- the Python interpreter when loaded under Python, or
+# the libpython a pure-C++ host links to embed the interpreter. This mirrors the
+# pybind extension modules and, crucially, removes any build-time dependency on a
+# *shared* libpython, which the manylinux wheel images do not reliably provide.
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+
+add_library(eager SHARED
+      neml2/csrc/eager/Model.cpp
+      neml2/csrc/eager/load_model.cpp
+      neml2/csrc/eager/interpreter.cpp
+)
+
+# Dedicated EAGER_EXPORT visibility macro (mirrors the aoti pattern); emit into
+# the same dedicated generated-include root.
+generate_export_header(eager
+      BASE_NAME eager
+      EXPORT_FILE_NAME ${NEML2_BINARY_DIR}/include/neml2/csrc/eager/eager_export.h
+)
+set_target_properties(eager PROPERTIES
+      CXX_VISIBILITY_PRESET hidden
+      VISIBILITY_INLINES_HIDDEN ON
+)
+# Ship only the public, Python-free headers (Model.h + load_model.h). The
+# internal.h / interpreter.h (pybind-carrying) stay out of the install.
+target_sources(eager
+      PUBLIC
+      FILE_SET HEADERS
+      BASE_DIRS ${NEML2_SOURCE_DIR}
+      FILES
+      ${NEML2_SOURCE_DIR}/neml2/csrc/eager/Model.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/eager/load_model.h
+)
+target_include_directories(eager PUBLIC $<BUILD_INTERFACE:${NEML2_BINARY_DIR}/include>)
+target_include_directories(eager PRIVATE ${Python3_INCLUDE_DIRS})
+set_target_properties(eager PROPERTIES OUTPUT_NAME "neml2_eager$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
+target_compile_options(eager PRIVATE -Wall -Wextra -pedantic)
+# PUBLIC: aoti (reuse the Exception ABI + headers) + torch::core. PRIVATE:
+# torch::python (libtorch_python -> the pybind tensor caster) + Python3::Module
+# (CPython headers; on macOS also `-undefined dynamic_lookup`). The CPython API
+# symbols are left undefined and resolved from the host's libpython at load time.
+# pybind11 headers come transitively via torch.
+target_link_libraries(eager PUBLIC aoti torch::core)
+target_link_libraries(eager PRIVATE torch::python Python3::Module)
+target_compile_definitions(eager PRIVATE "PYBIND11_DETAILED_ERROR_MESSAGES")
+if(TARGET torch::cuda)
+      target_link_libraries(eager PUBLIC torch::cuda)
+endif()
+
+# rpath:
+#  - ${INSTALL_REL_PATH} (the lib's OWN dir): libneml2_eager.so links the sibling
+#    libneml2.so (the `aoti` target), which sits next to it in neml2/lib. Without
+#    this hop the loader -- and auditwheel during wheel repair -- cannot locate
+#    libneml2.so ("Cannot repair wheel, because required library libneml2.so
+#    could not be located").
+#  - the torch hop (libtorch + libtorch_python).
+# libpython is NOT linked into this lib (see Python3::Module above) -- the host
+# process supplies it -- so there is nothing to point an rpath at for it.
+if(NEML2_WHEEL AND NOT SKBUILD_STATE STREQUAL "editable")
+      set_target_properties(eager PROPERTIES
+            INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/../../torch/lib")
+else()
+      set_target_properties(eager PROPERTIES
+            INSTALL_RPATH "${INSTALL_REL_PATH};${torch_LINK_DIR}")
+endif()
+
+install(TARGETS eager
+      LIBRARY DESTINATION ${INSTALL_LIBDIR}
+      COMPONENT libneml2
+)
+if(NOT SKBUILD_STATE STREQUAL "editable")
+      install(TARGETS eager
+            EXPORT neml2targets
+            FILE_SET HEADERS DESTINATION include
+            COMPONENT libneml2
+      )
+      install(FILES ${NEML2_BINARY_DIR}/include/neml2/csrc/eager/eager_export.h
+            DESTINATION include/neml2/csrc/eager
+            COMPONENT libneml2
+      )
+endif()
+
+# ----------------------------------------------------------------------------
 # Version / hash
 # ----------------------------------------------------------------------------
 find_package(Git)

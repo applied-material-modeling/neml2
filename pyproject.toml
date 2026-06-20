@@ -23,7 +23,7 @@ sdist.exclude = [
   "tests",
 ]
 build-dir = "build/{wheel_tag}"
-build.targets = ["aoti", "pyneml2"]
+build.targets = ["aoti", "eager", "pyneml2"]
 wheel.install-dir = "neml2"
 wheel.packages = ["neml2"]
 # The C++ runtime sources under neml2/csrc/ are build inputs, not runtime

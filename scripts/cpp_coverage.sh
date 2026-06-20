@@ -44,7 +44,9 @@ RAW="$OUT_DIR/raw"
 # dir. The fixture-compile step is a separate Python process and writes nothing.
 export LLVM_PROFILE_FILE="$RAW/%p.profraw"
 
-ctest --test-dir "$BUILD_DIR" -L dispatcher --output-on-failure
+# `dispatcher` (AOTI runtime + schedulers) and `eager` (embedded-Python runtime)
+# -- both label groups instrument neml2/csrc sources, so cover them together.
+ctest --test-dir "$BUILD_DIR" -L 'dispatcher|eager' --output-on-failure
 
 # Instrumented objects: the shared library (carries the neml2/csrc mapping) plus
 # every test executable (carries the header-only template instantiations --

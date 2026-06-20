@@ -1,0 +1,170 @@
+# Copyright 2024, UChicago Argonne, LLC
+# All Rights Reserved
+# Software Name: NEML2 -- the New Engineering material Model Library, version 2
+# By: Argonne National Laboratory
+# OPEN SOURCE LICENSE (MIT)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+"""Shared raw-tensor ⇄ typed-wrapper boundary helpers.
+
+Both of NEML2's C++-facing runtimes accept *raw* ``torch.Tensor`` inputs keyed
+by variable name and must normalize them before handing them to typed code:
+
+* the **AOTI shim** (:mod:`neml2.aoti._shim`) -- inputs cross from the C++
+  ``neml2::aoti::Model`` pybind binding;
+* the **eager embed bridge** (:mod:`neml2.eager`) -- inputs cross from the C++
+  ``neml2::eager::Model`` via the embedded interpreter.
+
+The two pieces of normalization both runtimes need are pure functions of
+``(tensor, spec, device, dtype)``, so they live here as a single source of
+truth (CLAUDE.md rule 3): a fix to the device/dtype validation or the batch
+broadcasting lands once, not twice.
+
+This module sits at a framework boundary -- it is one of the few places that
+legitimately handles raw ``torch.Tensor`` (see CLAUDE.md "Hard rules / Rule
+1"). The raw tensors here are inbound from a C++ boundary; callers re-wrap them
+into typed wrappers immediately after these helpers run.
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import torch
+
+if TYPE_CHECKING:
+    from .types import TensorWrapper
+
+
+def check_tensor(
+    t: torch.Tensor,
+    name: str,
+    target_device: torch.device,
+    target_dtype: torch.dtype,
+    *,
+    kind: str,
+    context: str,
+    hint: str = "",
+) -> None:
+    """Strict device + dtype check; raise ``TypeError`` on mismatch.
+
+    ``kind`` is ``'input'`` or ``'parameter'`` and shows up in the error
+    message so the caller can tell whether to fix the call site or the
+    parameter setter. ``context`` is the runtime label (``'AOTIModel'`` /
+    ``'EagerModel'``) that prefixes the message; ``hint`` is appended verbatim
+    so each runtime can give its own remediation guidance.
+
+    Only floating-point dtype is checked -- bool / integer tensors are passed
+    through unchanged because their widths are not part of the contract.
+
+    The device comparison is index-aware. ``torch.device('cuda')`` and
+    ``torch.device('cuda:0')`` refer to the same physical GPU but ``__eq__``
+    reports them unequal; we treat them as equal whenever the target lacks an
+    explicit index. Same-type + same-index (when the target pins an index) is
+    required.
+    """
+    device_ok = t.device.type == target_device.type and (
+        target_device.index is None or t.device.index == target_device.index
+    )
+    problems = []
+    if not device_ok:
+        problems.append(f"device={t.device} (expected {target_device})")
+    if t.is_floating_point() and t.dtype != target_dtype:
+        problems.append(f"dtype={t.dtype} (expected {target_dtype})")
+    if not problems:
+        return
+    msg = f"{context} {kind} {name!r}: {', '.join(problems)}."
+    if hint:
+        msg += " " + hint
+    raise TypeError(msg)
+
+
+def broadcast_to_common_batch(
+    raw_inputs: dict[str, torch.Tensor],
+    input_spec: dict[str, type],
+    per_input_sub_ndim: dict[str, int],
+) -> tuple[dict[str, torch.Tensor], torch.Size]:
+    """Bring every input tensor to its declared ``(*dyn, *sub, *base)`` shape,
+    with the dynamic-batch axes broadcast to a single common shape.
+
+    Each input has three trailing-axis regions:
+
+    * ``base`` -- ``BASE_SHAPE`` from the TensorWrapper class
+      (``input_spec[name]``);
+    * ``sub`` -- the per-input ``sub_batch_ndim`` resolved by the caller
+      (``per_input_sub_ndim[name]``);
+    * ``dyn`` -- everything in front, broadcast across all inputs (callers
+      freely pass base-only defaults / single-step slices and rely on the
+      runtime to lift them to the common dyn shape).
+
+    The (dyn, sub, base) split is per-input -- a global Scalar with no
+    sub-batch is reshaped to ``(*common_dyn, *base)`` while a per-crystal SR2
+    with ``sub_batch_ndim=1`` is reshaped to ``(*common_dyn, sub_size,
+    *base)``. Without the per-input sub-batch carve-out, a naive
+    ``torch.broadcast_shapes`` over the full batch region would collide the
+    per-crystal axis against the global input's dyn axis.
+    """
+    dyn_shapes: list[torch.Size] = []
+    for name, t in raw_inputs.items():
+        base_ndim = input_spec[name].BASE_NDIM
+        sub_ndim = per_input_sub_ndim[name]
+        trail = base_ndim + sub_ndim
+        dyn_shapes.append(t.shape if trail == 0 else t.shape[:-trail])
+    common_dyn = torch.broadcast_shapes(*dyn_shapes)
+
+    out: dict[str, torch.Tensor] = {}
+    for name, t in raw_inputs.items():
+        base_ndim = input_spec[name].BASE_NDIM
+        base_shape = tuple(input_spec[name].BASE_SHAPE)
+        sub_ndim = per_input_sub_ndim[name]
+        # Read the sub-batch shape from the input tensor's current trailing
+        # axes (the caller's wrapper already has the right sub_batch_ndim; the
+        # raw tensor's trailing-axis sizes are the sub-batch extents).
+        sub_shape = (
+            tuple(t.shape[len(t.shape) - base_ndim - sub_ndim : len(t.shape) - base_ndim])
+            if sub_ndim
+            else ()
+        )
+        target_shape = tuple(common_dyn) + sub_shape + base_shape
+        if tuple(t.shape) == target_shape:
+            out[name] = t
+            continue
+        view_shape = (1,) * (len(target_shape) - t.ndim) + tuple(t.shape)
+        out[name] = t.view(view_shape).expand(target_shape).contiguous()
+    return out, common_dyn
+
+
+def unwrap_outputs(
+    typed_outs: tuple[TensorWrapper, ...],
+    output_names: list[str],
+) -> dict[str, torch.Tensor]:
+    """Unwrap a native model's typed output tuple to a raw ``{name: Tensor}`` dict.
+
+    ``typed_outs`` is the tuple of :class:`~neml2.types.TensorWrapper` instances
+    a native model returns, in ``output_spec`` order; ``output_names`` is the
+    matching list of names. This is the *outbound* half of the eager embed
+    boundary -- the raw tensors leave for the C++ ``neml2::eager::Model`` here,
+    so this is the one place that legitimately reads ``.data`` (see the module
+    docstring + CLAUDE.md "Hard rules / Rule 1").
+    """
+    return {
+        name: wrapper.data  # noqa: data-ok eager embed boundary
+        for name, wrapper in zip(output_names, typed_outs, strict=True)
+    }
