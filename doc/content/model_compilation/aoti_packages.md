@@ -202,9 +202,9 @@ parameter wholesale:
 
 | Operation               | Returns                                             |
 | :---------------------- | :-------------------------------------------------- |
-| `forward(inputs)`       | One tensor per output name.                         |
-| `jvp(inputs, tangents)` | `(outputs, J @ v)`. Missing tangent keys → zero.    |
-| `jacobian(inputs)`      | `(outputs, J)` with `J` of shape `(*B, n_out, n_in)`. |
+| `forward(inputs)`       | One tensor per output name, at `(*B, *out_base)`.   |
+| `jvp(inputs, tangents)` | `(outputs, J @ v)`, each at `(*B, *out_base)`. Missing tangent keys → zero. |
+| `jacobian(inputs)`      | `(outputs, J)` with `J[out][in]` the block `(*B, *out_base, *in_base)`. |
 | `named_parameters()`    | Mutable dict of promoted parameters; empty if baked. |
 
 All three call paths take a dict keyed by the master input names
@@ -308,7 +308,8 @@ exposed by a single header in the wheel:
 neml2::aoti::Model model("path/to/elasticity_meta.json");
 
 auto outputs = model.forward({{"strain", strain_tensor}});
-auto [outs, J]  = model.jacobian({{"strain", strain_tensor}});
+// J is nested: J["stress"]["strain"] is the (*B, *out_base, *in_base) block.
+auto [outs, J] = model.jacobian({{"strain", strain_tensor}});
 
 // Promoted parameters are mutable in place.
 model.named_parameters().at("E").fill_(210000.0);
