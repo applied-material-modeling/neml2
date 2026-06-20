@@ -124,10 +124,14 @@ batch size from 1 to roughly a million without recompilation.
 
 Alongside `forward`, the compiled artifact also exposes `jvp` (outputs
 plus a directional derivative `J @ v`) and `jacobian` (outputs plus the
-per-variable Jacobian blocks). Both live on the underlying C++ binding,
-reachable through the shim's inner attribute:
+per-variable Jacobian blocks). Both live on the underlying C++ binding
+(`neml2.aoti.Model`). The HIT-loaded shim stores that binding on its
+`_inner` attribute — this attribute is **not stable public API** and may
+be renamed in a future release, but it is the only way to reach the
+binding today:
 
 ```{code-cell} ipython3
+# NOTE: _inner is an implementation detail, not stable public API.
 binding = compiled._inner          # the bare ``neml2.aoti.Model`` runtime
 
 # Tangent on the input — same shape as the input itself.
@@ -174,6 +178,8 @@ m = neml2.load_model("aoti_promoted/elasticity_aoti.i", "elasticity")
 (stress0,) = m(strain)
 
 # Mutate E in place on the underlying binding. The next call sees it.
+# NOTE: _inner is not stable public API; it is the only way to reach
+# the parameter surface from a HIT-loaded shim today.
 m._inner.named_parameters()["E"].fill_(100e3)
 (stress1,) = m(strain)
 

@@ -16,16 +16,11 @@ A PyPI wheel install pulls in three Python packages:
   input-file parser.
 
 Pip handles all three automatically. Every other library NEML2 needs at
-runtime is bundled inside the wheel:
+runtime is bundled inside the wheel or resolved from the installed `torch`
+package automatically.
 
-- [nlohmann/json](https://github.com/nlohmann/json) — JSON support
-  (header-only; bundled under `<wheel>/include/nlohmann/`).
-- libtorch — bundled via the `torch` Python package's own `lib/`
-  directory; the NEML2 AOTI runtime is built with an rpath that finds
-  it automatically.
-
-ABI compatibility between the bundled libraries and your installed
-torch is verified for the version range listed in [](torch-compat).
+ABI compatibility between the wheel and your installed torch is verified
+for the version range listed in [](torch-compat).
 
 ## Source-build dependencies
 

@@ -153,9 +153,8 @@ a_bar = eq1(a)
 b_bar = eq2(b)
 
 # 2. Manually wire the weights of eq3 to those intermediate values.
-# This is the only place the by-hand path reaches into `.data`; the
-# whole point of `ComposedModel` is to keep typed wrappers typed
-# end-to-end instead of having every caller do this.
+# weight_0 is the first `from` variable (a), weight_1 is the second (b),
+# so b_bar (the von Mises norm of b) goes to weight_0 and vice-versa.
 eq3.weight_0 = nn.Parameter(b_bar.data)
 eq3.weight_1 = nn.Parameter(a_bar.data)
 

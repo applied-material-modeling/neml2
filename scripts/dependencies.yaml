@@ -109,4 +109,4 @@ aoti:
   files:
     - neml2/cli/aoti_export.py
     - neml2/csrc/aoti/Model.cpp
-    - doc/content/model_compilation/aoti_packages.md
+    - doc/content/deployment/aoti_packages.md

@@ -33,13 +33,26 @@ NEML2_ROOT=$(python -c "import neml2, os; print(os.path.dirname(neml2.__file__))
 
 NEML2 ships a CMake config package. After installing the wheel, point
 CMake at the wheel root via `CMAKE_PREFIX_PATH` (or directly at the
-config dir via `neml2_DIR`) and use `find_package`:
+config dir via `neml2_DIR`) and use `find_package`. Two targets are
+exported:
+
+- **`neml2::aoti`** — the compiled (AOT-Inductor) runtime and the work
+  dispatcher. Use this to load `.pt2` artifacts produced by
+  `neml2-compile`. It propagates include directories, `libneml2.so`,
+  and its torch / nlohmann_json dependencies.
+- **`neml2::eager`** — the embedded-Python eager runtime. Use this for
+  downstream C++ unit tests that need to run a model from its original
+  `.i` without a compile step. It links `libneml2_eager.so` and
+  depends on `neml2::aoti` for the shared exception types.
 
 ```cmake
 find_package(neml2 CONFIG REQUIRED)
 
 add_executable(foo main.cpp)
+# For the compiled (AOTI) path:
 target_link_libraries(foo PRIVATE neml2::aoti)
+# For the eager (uncompiled) path:
+# target_link_libraries(foo PRIVATE neml2::eager)
 ```
 
 Build it with either of:
@@ -56,11 +69,9 @@ cmake -B build -Dneml2_DIR=$NEML2_ROOT/share/cmake/neml2 -S .
 cmake --build build -j$(nproc)
 ```
 
-The `neml2::aoti` target carries the NEML2 runtime library and
-propagates its include directories and link flags. Torch is not bundled
-into the NEML2 install — it comes from the `torch` wheel pip installs
-alongside neml2, and is discovered transitively via the exported
-config.
+Torch is not bundled into the NEML2 install — it comes from the
+`torch` wheel pip installs alongside neml2, and is discovered
+transitively via the exported config.
 
 ## pkg-config
 
@@ -118,23 +129,46 @@ The pkg-config files NEML2 ships are:
 
 ## Header includes
 
-C++ source includes are namespaced under `neml2/csrc/`:
+C++ source includes are namespaced under `neml2/csrc/`. Public shipped
+headers for the compiled path:
 
 ```cpp
-#include "neml2/csrc/aoti/Model.h"
+#include "neml2/csrc/aoti/Model.h"      // neml2::aoti::Model, SolverConfig, VariablePairJacobian
+#include "neml2/csrc/aoti/Exception.h"  // neml2::aoti::Exception, FatalError, ConvergenceError, AggregateError
 ```
 
-This mirrors the layout under `<site-packages>/neml2/include/`, so the
-same source compiles whether NEML2 was discovered via CMake's
+For the dispatcher (multi-device / scheduled evaluation):
+
+```cpp
+#include "neml2/csrc/dispatchers/factory.h"           // neml2::aoti::load_model (dispatched overload)
+#include "neml2/csrc/dispatchers/DispatchedModel.h"   // neml2::aoti::DispatchedModel
+#include "neml2/csrc/dispatchers/SimpleScheduler.h"   // neml2::aoti::SimpleScheduler
+#include "neml2/csrc/dispatchers/StaticHybridScheduler.h"  // neml2::aoti::StaticHybridScheduler
+```
+
+For the eager (uncompiled) path — only available when linking
+`neml2::eager`:
+
+```cpp
+#include "neml2/csrc/eager/Model.h"      // neml2::eager::Model
+#include "neml2/csrc/eager/load_model.h" // neml2::eager::load_model
+```
+
+These paths mirror the layout under `<site-packages>/neml2/include/`,
+so the same source compiles whether NEML2 was discovered via CMake's
 `find_package` or via `pkg-config --cflags`.
 
 ## Runtime library lookup
 
-The bundled `libneml2.so` lives under `<site-packages>/neml2/lib/`
-and links against the libtorch shipped in the sibling `torch` wheel at
-`<site-packages>/torch/lib/`, reached via an `$ORIGIN/../../torch/lib`
-rpath baked into NEML2's library. If you set rpath at link time (CMake
-does this by default; the Makefile snippet above does it explicitly)
-the resulting binary runs out of the box. If you opt out of rpath, set
+Both `libneml2.so` and `libneml2_eager.so` live under
+`<site-packages>/neml2/lib/`. Each links against the libtorch shipped in
+the sibling `torch` wheel at `<site-packages>/torch/lib/`, reached via an
+`$ORIGIN/../../torch/lib` rpath baked into the libraries.
+`libneml2_eager.so` also records an `$ORIGIN` rpath hop so the dynamic
+linker can find the sibling `libneml2.so` it depends on.
+
+If you set rpath at link time (CMake does this by default; the Makefile
+snippet above does it explicitly) the resulting binary runs out of the box.
+If you opt out of rpath, set
 `LD_LIBRARY_PATH=$NEML2_ROOT/lib:$NEML2_ROOT/../torch/lib` (Linux) or
 `DYLD_LIBRARY_PATH` (macOS) before running.

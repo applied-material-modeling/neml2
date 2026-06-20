@@ -1,7 +1,7 @@
 (model-eager-cpp)=
 # Eager evaluation from C++
 
-The compiled path ([](model-compilation)) is the right way to run a NEML2 model
+The compiled path ([](aoti-packages)) is the right way to run a NEML2 model
 from C++ in production: it is fast and needs no Python at the hot loop. But
 `neml2-compile` runs an AOT-Inductor compile that takes **minutes** — too slow to
 sit in a downstream C++ project's unit tests, where you just want to load a model

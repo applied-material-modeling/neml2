@@ -55,13 +55,13 @@ branch (Standard Linear Solid):
 \dot{\boldsymbol{\varepsilon}}_v &= \frac{E_M}{\eta_M} (\boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_v).
 \end{align}
 
-For [](models-WiechertElement) — an equilibrium spring in parallel with $N$
+For [](models-WiechertElement) — an equilibrium spring in parallel with two
 Maxwell branches (generalized Maxwell), one viscous strain
-$\boldsymbol{\varepsilon}_v^{(i)}$ per branch:
+$\boldsymbol{\varepsilon}_{v,i}$ per branch:
 
 \begin{align}
-\boldsymbol{\sigma} &= E_\infty \boldsymbol{\varepsilon} + \sum_{i=1}^N E_M^{(i)} \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_v^{(i)} \right), \\
-\dot{\boldsymbol{\varepsilon}}_v^{(i)} &= \frac{E_M^{(i)}}{\eta_M^{(i)}} \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_v^{(i)} \right), \quad i = 1, \dots, N.
+\boldsymbol{\sigma} &= E_\infty \boldsymbol{\varepsilon} + \sum_{i=1}^{2} E_i \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_{v,i} \right), \\
+\dot{\boldsymbol{\varepsilon}}_{v,i} &= \frac{E_i}{\eta_i} \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_{v,i} \right), \quad i = 1, 2.
 \end{align}
 
 For [](models-BurgersElement) — a Maxwell branch in series with a Kelvin-Voigt

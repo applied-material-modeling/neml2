@@ -53,14 +53,18 @@ Other drivers work the same way:
   [run]
     type  = TransientDriver
     model = 'chaboche_voce_perzyna'                   # ← name of the [Models] entry
-    prescribed_time   = 'times'
-    prescribed_strain = 'strains'
+    prescribed_time  = 'times'                        # ← name of a [Tensors] entry
+    force_SR2_names  = 'E'
+    force_SR2_values = 'strains'                      # ← name of a [Tensors] entry
   []
 []
 ```
 
 `prescribed_time = 'times'` is itself a cross-reference — `times` is
-the name of a `[Tensors]` entry, covered next.
+the name of a `[Tensors]` entry. Driving forces are supplied as
+parallel `force_<Type>_names` / `force_<Type>_values` lists, where
+each value token is again a `[Tensors]` name (or an inline literal for
+`Scalar`).
 
 ## Referring to a tensor from a model
 

@@ -53,7 +53,7 @@ neml2.models.export
 neml2.aoti
 ```
 
-See also: [](model-compilation).
+See also: [](aoti-packages).
 
 ```{toctree}
 :caption: Adapters
@@ -70,5 +70,5 @@ neml2.cli
 ```
 
 These modules back the `neml2-run` / `neml2-inspect` / `neml2-syntax`
-/ `neml2-compile` console scripts; end-user docs live in
+/ `neml2-compile` / `neml2-stub` console scripts; end-user docs live in
 [](cli-utilities).

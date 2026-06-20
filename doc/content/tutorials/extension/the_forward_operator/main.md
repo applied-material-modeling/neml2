@@ -144,7 +144,3 @@ was skipped, not that it failed silently.
 - The next tutorial, [](tutorials-extension-composition), shows how to
   glue several models together so a dependency resolver wires their
   inputs and outputs and threads the chain rule for you.
-- For richer chain-rule examples (multiple inputs, non-linear leaves)
-  the leaves under `neml2/models/common/` (e.g. `LinearCombination`)
-  and `neml2/models/solid_mechanics/plasticity/` (e.g.
-  `YieldFunction`) are a good read.

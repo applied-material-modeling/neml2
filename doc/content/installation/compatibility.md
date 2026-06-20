@@ -10,7 +10,7 @@ exercised by NEML2's CI on each change.
 
 <!-- dependencies: torch.version_min -->
 <!-- dependencies: torch.version_max -->
-**`torch >= 2.10.0, <= 2.12.0`**
+**`torch >= 2.10.0, <= 2.12.1`**
 
 The bounds are asymmetric on purpose:
 

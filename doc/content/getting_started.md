@@ -76,12 +76,17 @@ Python dependency:
 neml2-compile input.i --model elasticity
 ```
 
-This drops `elasticity.pt2`, `elasticity_jvp.pt2`, `elasticity_meta.json`,
-and a drop-in HIT stub `elasticity_aoti.i` under `aoti/elasticity/`. The
-end-to-end round trip — loading the artifact, runtime parameter
-promotion, the trade-offs against eager mode — is covered in
-[](tutorials-models-compiled). Background on the package format itself
-lives in [](aoti-packages).
+This writes compiled graphs and a metadata file into
+`aoti/elasticity/cpu/` (one subfolder per target device), and drops a
+standalone HIT stub `aoti/elasticity_aoti.i` next to that folder. The
+stub records an absolute path to the artifact directory; moving the
+artifacts without recompiling breaks the stub. To target multiple
+devices in one pass, pass `--device cpu cuda` — the artifacts land in
+`aoti/elasticity/cpu/` and `aoti/elasticity/cuda/` respectively, and a
+single stub covers both. The end-to-end round trip — loading the
+artifact, runtime parameter promotion, the trade-offs against eager
+mode — is covered in [](tutorials-models-compiled). Background on the
+package format itself lives in [](aoti-packages).
 
 ## Where to go next
 

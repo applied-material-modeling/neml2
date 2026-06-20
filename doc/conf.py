@@ -215,8 +215,8 @@ html_title = f"NEML2 {release}"
 
 # Sphinx serves anything in html_static_path under /_static/. We mount the
 # existing convention dirs (doc/asset, doc/js) verbatim so paths in source
-# markdown can read `../../_static/asset/...` or so the per-page raw-HTML
-# in scheduler.md keeps working unchanged.
+# markdown can read `../../_static/asset/...` and so the per-page raw-HTML
+# mounts in deployment/dispatcher.md (the `.scheduler-demo` divs) keep working.
 html_static_path = ["asset", "js"]
 
 # CSS overrides loaded on every page; same is-it-needed logic as html_js_files
@@ -225,14 +225,14 @@ html_css_files = [
     "css/custom.css",
 ]
 
-# Custom JS components, loaded on every page. They are inert until a div
-# with the matching class exists in the rendered HTML, so the cost of
-# loading them globally is zero on pages that don't use them.
+# Custom JS, loaded on every page. It is inert until a `.scheduler-demo` div
+# exists in the rendered HTML, so the cost of loading it globally is zero on
+# pages that don't use it. Self-contained (no jQuery, no anime.js; animates via
+# the Web Animations API) and a *classic* script wrapped in an IIFE -- NOT an ES
+# module, because the doc-render validator (check_doc_render.py) opens pages over
+# file://, where browsers block module loading under the CORS null-origin rule.
 html_js_files = [
-    "components/work-dispatcher.js",
-    "components/static-hybrid-scheduler.js",
-    "components/simple-scheduler-demo.js",
-    "components/static-hybrid-scheduler-demo.js",
+    "components/scheduler-demos.js",
 ]
 
 html_logo = "asset/logo_light.png"

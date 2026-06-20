@@ -98,6 +98,15 @@ it to:
 - empirically tune the per-call batch size for a model + device; or
 - drive one device per process when a host pins devices by hand.
 
+```{raw} html
+<div class="scheduler-demo" data-demo="simple"></div>
+```
+
+:::{note}
+Illustrative schematic: the batch is split into fixed-size chunks and fed to
+one device, a new chunk dispatched as in-flight ones finish and free capacity.
+:::
+
 ### `MPISimpleScheduler`
 
 For MPI jobs running one rank per GPU. `Config{devices, batch_sizes}` lists the
@@ -128,6 +137,16 @@ auto m = load_model("aoti/model_aoti.i", "model",
                     std::make_shared<StaticHybridScheduler>(cfg));
 auto out = m.forward(inputs);          // dispatched across all three, gathered back
 ```
+
+```{raw} html
+<div class="scheduler-demo" data-demo="hybrid"></div>
+```
+
+:::{note}
+Illustrative schematic: each chunk goes to the highest-`priority` device that
+still has spare `capacity`, so faster devices stay filled; chunks process
+concurrently across devices and are gathered back as they finish.
+:::
 
 A hybrid pool admits **at most one CPU** plus distinct GPUs: each device's AOTI
 graph already saturates torch's intra-op (OpenMP) thread pool, so two CPU
@@ -186,5 +205,5 @@ for the next call.
 ## See also
 
 - [](aoti-packages) — the per-device artifact + metadata layout.
-- [](model-compilation) — the compile pipeline overview.
+- [](model-compilation-pipeline) — what `neml2-compile` does internally.
 - [](tutorials-models-compiled) — the end-to-end compile-and-load how-to.
