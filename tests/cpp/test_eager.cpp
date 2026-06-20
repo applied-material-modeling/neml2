@@ -92,6 +92,32 @@ main(int argc, char ** argv)
   const auto out2 = m.forward(inputs);
   NEML2_CHECK(at::allclose(out.at("stress"), out2.at("stress")));
 
+  // jacobian: assembled (B, sum(out), sum(in)) = (B, 6, 6); value half matches
+  // forward. (Value-for-value parity vs autograd is checked in tests/unit.)
+  {
+    const auto [jout, J] = m.jacobian(inputs);
+    NEML2_CHECK(J.dim() == 3);
+    NEML2_CHECK(J.size(0) == b);
+    NEML2_CHECK(J.size(1) == 6);
+    NEML2_CHECK(J.size(2) == 6);
+    NEML2_CHECK(at::isfinite(J).all().item<bool>());
+    NEML2_CHECK(at::allclose(jout.at("stress"), out.at("stress")));
+
+    // jvp(inputs, tangents) == J @ tangents, and the value half matches forward.
+    std::map<std::string, at::Tensor> tang;
+    tang.emplace("strain", at::randn({b, 6}, at::TensorOptions().dtype(m.dtype())));
+    const auto [vout, jvp] = m.jvp(inputs, tang);
+    NEML2_CHECK(at::allclose(vout.at("stress"), out.at("stress")));
+    NEML2_CHECK(jvp.at("stress").size(0) == b);
+    NEML2_CHECK(jvp.at("stress").size(1) == 6);
+    const auto jv = at::einsum("bij,bj->bi", {J, tang.at("strain")});
+    NEML2_CHECK(at::allclose(jvp.at("stress"), jv));
+
+    // A missing tangent defaults to zero -> zero directional derivative.
+    const auto [_, jvp0] = m.jvp(inputs, {});
+    NEML2_CHECK(at::allclose(jvp0.at("stress"), at::zeros_like(jvp0.at("stress"))));
+  }
+
   // A second handle shares the embedded interpreter and agrees value-for-value.
   {
     auto m2 = load_model(input_file, "model");
@@ -140,6 +166,45 @@ main(int argc, char ** argv)
     {
     }
     NEML2_CHECK(got_fatal);
+  }
+
+  // #4: device-override to CUDA, gated on availability so the cpu cell skips it
+  // and the gpu_runner cell exercises the py::cast(*device_override) -> .to(cuda)
+  // path end to end (forward + jacobian land on the GPU).
+  if (at::hasCUDA())
+  {
+    Model m_cuda(input_file, "model", at::Device(at::kCUDA));
+    NEML2_CHECK(m_cuda.device().is_cuda());
+    const auto cuda_inputs = make_inputs(m_cuda, b);
+    const auto cout = m_cuda.forward(cuda_inputs);
+    NEML2_CHECK(cout.at("stress").device().is_cuda());
+    NEML2_CHECK(at::isfinite(cout.at("stress")).all().item<bool>());
+    const auto [jc, Jc] = m_cuda.jacobian(cuda_inputs);
+    (void)jc;
+    NEML2_CHECK(Jc.device().is_cuda());
+  }
+
+  // #3: a non-converging implicit model surfaces a *recoverable* ConvergenceError
+  // across the .so boundary. It originates as neml2::aoti::ConvergenceError in
+  // libneml2.so's Newton, round-trips through the embedded interpreter as the
+  // registered neml2.aoti._aoti.ConvergenceError, and the eager runtime re-raises
+  // it as the typed C++ exception (NOT a plain FatalError). argv[2] is the
+  // max_its=0 fixture (tests/cpp/fixtures/implicit_diverge.i).
+  if (argc >= 3)
+  {
+    auto md = load_model(argv[2], "model");
+    const auto bad_inputs = make_inputs(md, b);
+    bool got_conv = false;
+    try
+    {
+      md.forward(bad_inputs);
+    }
+    catch (const neml2::aoti::ConvergenceError & e)
+    {
+      got_conv = true;
+      NEML2_CHECK(e.recoverable()); // recoverable: a host can cut dt and retry
+    }
+    NEML2_CHECK(got_conv);
   }
 
   return 0;

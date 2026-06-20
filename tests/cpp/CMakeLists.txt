@@ -99,8 +99,13 @@ get_filename_component(_py_home "${_py_bindir}" DIRECTORY)
 set(_py_libdir "${_py_home}/lib")
 set_target_properties(test_eager PROPERTIES
       BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR};${_py_libdir}")
+# argv[1]: the forward fixture (forward / jvp / jacobian / device-override).
+# argv[2]: a max_its=0 implicit fixture driving the recoverable ConvergenceError
+# path (kept under tests/cpp so the AOTI compile sweep never drives it).
 add_test(NAME test_eager
-      COMMAND test_eager ${NEML2_SOURCE_DIR}/tests/aoti/forward_single/model.i)
+      COMMAND test_eager
+            ${NEML2_SOURCE_DIR}/tests/aoti/forward_single/model.i
+            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/implicit_diverge.i)
 # The embedded interpreter must find the stdlib (PYTHONHOME) + the neml2 source
 # package (PYTHONPATH); torch/lib stays on LD_LIBRARY_PATH for the transitive
 # libtorch resolution the existing tests also rely on.

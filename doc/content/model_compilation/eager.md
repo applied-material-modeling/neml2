@@ -31,11 +31,11 @@ Python supplies it automatically.
 ## Load and run from C++
 
 `neml2::eager::load_model(input_file, model_name)` mirrors Python's
-`load_model(path, name)` and returns a `neml2::eager::Model` whose `forward` and
-metadata accessors (`input_names` / `output_names` / `input_sizes` /
-`output_sizes` / `device` / `dtype`) have the **same signatures** as
-`neml2::aoti::Model`. So test code switches between the eager and compiled
-runtimes by changing only the load call and the header.
+`load_model(path, name)` and returns a `neml2::eager::Model` whose operations
+(`forward` / `jvp` / `jacobian`) and metadata accessors (`input_names` /
+`output_names` / `input_sizes` / `output_sizes` / `device` / `dtype`) have the
+**same signatures** as `neml2::aoti::Model`. So test code switches between the
+eager and compiled runtimes by changing only the load call and the header.
 
 ```{literalinclude} ../../../tests/aoti/forward_single/model.i
 :language: ini
@@ -64,15 +64,52 @@ the same helper the AOTI metadata uses, so an eager model and its compiled twin
 agree on the boundary contract — making `neml2::eager::Model` a true drop-in for
 `neml2::aoti::Model`.
 
-The first cut implements `forward` only (no `jvp` / `jacobian`).
+## Sensitivities: `jvp` and `jacobian`
+
+`jvp` and `jacobian` mirror `neml2::aoti::Model` and are computed on the native
+model's chain rule (the same `v=` machinery the AOTI export traces), so they work
+for forward and implicit (Newton) models alike:
+
+```cpp
+// Jacobian-vector product: jvp_out[name] is the total directional derivative,
+// flattened to (*batch, output_size).
+auto [out, jvp_out] = m.jvp(inputs, tangents);   // tangents keyed like inputs;
+                                                 // a missing key defaults to zero.
+
+// Full Jacobian: J is (*batch, sum(output_sizes), sum(input_sizes)), rows in
+// output_names() order, cols in input_names() order.
+auto [out2, J] = m.jacobian(inputs);
+```
+
+:::{warning}
+**Plain-batch only.** The raw-tensor `forward(map)` boundary has no slot to
+declare per-input *sub-batch* shapes (in NEML2 those are caller-declared at
+compile time), so the eager runtime supports only plain-batch models. A model
+that carries BLOCK-aware / labelled sub-batch axes (e.g. crystal-plasticity
+geometry) is **rejected** with a `neml2::aoti::FatalError` rather than silently
+mishandled — use the compiled / dispatched path ([](model-dispatch)) for those.
+:::
 
 ## Errors
 
-Any Python-side failure — a parse error, an unknown model name, a wrong-dtype
-input — is normalized to `neml2::aoti::FatalError` (the same taxonomy the AOTI
-runtime uses; see [](aoti-packages)). The exception type is exported from
-`libneml2.so`, so a `catch (const neml2::aoti::Exception &)` works across the two
-libraries.
+A Python-side failure — a parse error, an unknown model name, a wrong-dtype
+input, a sub-batch model — is normalized to `neml2::aoti::FatalError` (the same
+taxonomy the AOTI runtime uses; see [](aoti-packages)). The one exception is a
+**solver divergence / max-iterations**, which is re-raised as the *recoverable*
+`neml2::aoti::ConvergenceError` (it originates as that type inside `libneml2.so`
+and round-trips faithfully through the embedded interpreter), so a host can cut
+the time step and retry:
+
+```cpp
+try { auto out = m.forward(inputs); }
+catch (const neml2::aoti::Exception & e) {
+  if (e.recoverable()) { /* cut dt, retry */ }
+  else throw;
+}
+```
+
+The exception types are exported from `libneml2.so`, so a
+`catch (const neml2::aoti::Exception &)` works across the two libraries.
 
 ## Requirements
 

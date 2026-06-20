@@ -168,3 +168,87 @@ def unwrap_outputs(
         name: wrapper.data  # noqa: data-ok eager embed boundary
         for name, wrapper in zip(output_names, typed_outs, strict=True)
     }
+
+
+def assemble_jvp_outputs(
+    v_out: dict,
+    typed_outputs: tuple[TensorWrapper, ...],
+    output_names: list[str],
+    output_sizes: list[int],
+) -> dict[str, torch.Tensor]:
+    """Sum directional chain-rule contributions into raw, flat JVP outputs.
+
+    Outbound JVP half of the eager embed boundary. ``v_out`` is the native
+    ``ComposedModel`` chain-rule result ``{out_name: {seed_name: block}}`` from a
+    K=1 directional seed; each block's data is ``(1, *batch, *out_base)``. For
+    each output the K axis is squeezed, the base axes flattened to the variable's
+    flat ``var_size``, and the per-input contributions summed -- matching the C++
+    ``neml2::aoti::Model::jvp`` contract ``jvp_outputs[name] == (*batch,
+    out_size)``. An output with no dependence on any seeded input is an explicit
+    zero block.
+
+    Reads ``.data`` -- one of the few legitimate raw-tensor sites (see the module
+    docstring + CLAUDE.md "Hard rules / Rule 1").
+    """
+    out: dict[str, torch.Tensor] = {}
+    for typed_out, name, osize in zip(typed_outputs, output_names, output_sizes, strict=True):
+        base_ndim = type(typed_out).BASE_NDIM
+        contribs = v_out.get(name, {})
+        if not contribs:
+            out[name] = torch.zeros(
+                *typed_out.batch_shape, osize, dtype=typed_out.dtype, device=typed_out.device
+            )
+            continue
+        flats: list[torch.Tensor] = []
+        for block in contribs.values():
+            d = block.data.squeeze(0)  # noqa: data-ok eager embed boundary
+            # (1, *batch, *out_base) -> (*batch, out_size).
+            flats.append(d.reshape(*d.shape[: d.ndim - base_ndim], osize))
+        out[name] = flats[0] if len(flats) == 1 else torch.stack(flats, 0).sum(0)
+    return out
+
+
+def assemble_jacobian(
+    v_out: dict,
+    typed_outputs: tuple[TensorWrapper, ...],
+    output_names: list[str],
+    output_sizes: list[int],
+    input_names: list[str],
+    input_sizes: list[int],
+    input_spec: dict[str, type[TensorWrapper]],
+) -> torch.Tensor:
+    """Assemble per-(out, in) chain-rule blocks into the flat dense Jacobian.
+
+    Outbound Jacobian half of the eager embed boundary. ``v_out`` is the native
+    ``ComposedModel`` chain-rule result from a leading-K identity seed per input
+    (``{out_name: {in_name: block}}``). The returned tensor matches the C++
+    ``neml2::aoti::Model::jacobian`` contract: shape ``(*batch, sum(out_sizes),
+    sum(in_sizes))``, block-stacked with rows in ``output_spec`` order and cols
+    in ``input_spec`` order. A constant ``(out, in)`` pair (absent from
+    ``v_out``) leaves the pre-zeroed slab.
+
+    Reuses :func:`neml2.cli.aoti_export._leading_k_block_to_per_pair` (the AOTI
+    export's own block-to-pair converter, lazily imported to avoid import-time
+    CLI coupling); the ``.data`` read happens inside that boundary helper. The
+    column-then-row ``cat`` mirrors the C++ assembly in
+    ``neml2/csrc/aoti/ops.cpp`` (``at::cat(blocks, -1)`` then ``at::cat(rows, -2)``).
+    """
+    from .cli.aoti_export import _leading_k_block_to_per_pair
+
+    first = typed_outputs[0]
+    batch_shape = tuple(first.batch_shape)
+    opts = {"dtype": first.dtype, "device": first.device}
+    rows: list[torch.Tensor] = []
+    for o_name, o_size in zip(output_names, output_sizes, strict=True):
+        cols: list[torch.Tensor] = []
+        for i_name, i_size in zip(input_names, input_sizes, strict=True):
+            block = v_out.get(o_name, {}).get(i_name)
+            if block is None:
+                # Constant (out, in) pair: a structural zero slab.
+                cols.append(torch.zeros(*batch_shape, o_size, i_size, **opts))
+            else:
+                # (*batch, *out_base, *in_base) -> (*batch, o_size, i_size).
+                pair = _leading_k_block_to_per_pair(block, input_spec[i_name])
+                cols.append(pair.reshape(*batch_shape, o_size, i_size))
+        rows.append(torch.cat(cols, dim=-1))
+    return torch.cat(rows, dim=-2)

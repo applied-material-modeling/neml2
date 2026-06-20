@@ -368,6 +368,22 @@ endif()
 # *shared* libpython, which the manylinux wheel images do not reliably provide.
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 
+# `eager` is an unconditional target, so it links `torch::python` (libtorch_python
+# -> the pybind tensor caster) on every configure. That is intentional and does
+# NOT compromise libneml2.so's Python-free promise -- the Python dependency lives
+# only in this separate libneml2_eager. But it does require a Python-enabled
+# torch: a bare C++ libtorch with no libtorch_python cannot build the eager
+# runtime. Fail here with a clear message instead of a cryptic "target
+# torch::python not found" deep in the link step.
+if(NOT TARGET torch::python)
+      message(FATAL_ERROR
+            "libneml2_eager (the embedded-Python eager runtime) requires a "
+            "Python-enabled torch providing libtorch_python, but torch::python "
+            "was not found. The pip `torch` wheel ships it; a bare C++ libtorch "
+            "does not. Install a Python torch, or drop the `eager` target (it is "
+            "independent of the Python-free libneml2.so).")
+endif()
+
 add_library(eager SHARED
       neml2/csrc/eager/Model.cpp
       neml2/csrc/eager/load_model.cpp

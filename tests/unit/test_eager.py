@@ -46,8 +46,26 @@ from neml2.cli.aoti_export import _var_infos
 from neml2.eager import _EagerModel, _infer_device_dtype
 from neml2.types import SR2
 
+_REPO = Path(__file__).resolve().parents[2]
 # tests/unit/test_eager.py -> repo root -> the forward-only fixture .i.
-_INPUT = Path(__file__).resolve().parents[2] / "tests" / "aoti" / "forward_single" / "model.i"
+_INPUT = _REPO / "tests" / "aoti" / "forward_single" / "model.i"
+# A two-leaf ComposedModel (strain -> stress -> mandel_stress): multi-output.
+_COMPOSED = _REPO / "tests" / "aoti" / "forward_composed" / "model.i"
+# A minimal ImplicitUpdate (Newton solve) -- used to exercise the convergence path.
+_IMPLICIT = _REPO / "tests" / "aoti" / "implicit_simple" / "model.i"
+# A crystal-plasticity leaf whose CrystalGeometry introduces a per-slip sub-batch
+# axis internally -- the eager runtime must reject it (plain-batch only).
+_SUB_BATCH = (
+    _REPO / "tests" / "models" / "solid_mechanics" / "crystal_plasticity" / "ResolvedShear.i"
+)
+
+
+def _rand_inputs(m, b):
+    """Random plain-batch inputs sized from the model's flat input metadata."""
+    return {
+        n: torch.randn(b, s, dtype=m.dtype, device=m.device)
+        for n, s in zip(m.input_names, m.input_sizes, strict=True)
+    }
 
 
 def test_metadata_parity_with_var_infos():
@@ -163,3 +181,100 @@ def test_broadcast_expands_lower_rank_input():
     assert tuple(common_dyn) == (4,)
     assert out["a"].shape == (4, 6)
     assert out["b"].shape == (4, 6)
+
+
+# --- jvp / jacobian -----------------------------------------------------------
+
+
+def test_jacobian_matches_autograd():
+    """The assembled J matches torch.autograd's per-batch Jacobian of the model."""
+    m = _EagerModel(str(_INPUT), "model")
+    torch.manual_seed(0)
+    x = torch.randn(4, 6, dtype=m.dtype, device=m.device)
+
+    outputs, jac = m.jacobian({"strain": x})
+    assert jac.shape == (4, 6, 6)
+    # The value half matches a plain forward.
+    assert torch.allclose(outputs["stress"], m.forward({"strain": x})["stress"])
+
+    native = neml2.load_model(str(_INPUT), "model")
+
+    def f(t):
+        r = native(SR2(t))
+        return (r.data if hasattr(r, "data") else r[0].data).sum(0)  # (6,)
+
+    # d sum_b stress_k / d strain_{b,j} -> (6, 4, 6); permute to per-batch (4,6,6).
+    ref = torch.autograd.functional.jacobian(f, x).permute(1, 0, 2)
+    assert torch.allclose(jac, ref, atol=1e-10)
+
+
+def test_jvp_equals_jacobian_times_tangent():
+    m = _EagerModel(str(_INPUT), "model")
+    torch.manual_seed(0)
+    x = torch.randn(3, 6, dtype=m.dtype, device=m.device)
+    v = torch.randn(3, 6, dtype=m.dtype, device=m.device)
+
+    _, jvp_out = m.jvp({"strain": x}, {"strain": v})
+    _, jac = m.jacobian({"strain": x})
+
+    assert jvp_out["stress"].shape == (3, 6)
+    assert torch.allclose(jvp_out["stress"], torch.einsum("bij,bj->bi", jac, v), atol=1e-12)
+
+
+def test_jvp_missing_tangent_is_zero():
+    """A missing tangent contributes nothing -> zero directional derivative."""
+    m = _EagerModel(str(_INPUT), "model")
+    x = torch.ones(2, 6, dtype=m.dtype, device=m.device)
+    _, jvp_out = m.jvp({"strain": x}, {})  # no tangent seeded
+    assert torch.count_nonzero(jvp_out["stress"]) == 0
+
+
+def test_jvp_jacobian_composed_multi_output():
+    """jvp/jacobian on a 2-leaf ComposedModel: shapes + jvp==J@v consistency."""
+    m = _EagerModel(str(_COMPOSED), "model")
+    torch.manual_seed(0)
+    b = 5
+    ins = _rand_inputs(m, b)
+    tang = _rand_inputs(m, b)
+
+    outputs, jac = m.jacobian(ins)
+    assert jac.shape == (b, sum(m.output_sizes), sum(m.input_sizes))
+    assert set(outputs) == set(m.output_names)
+
+    _, jvp_out = m.jvp(ins, tang)
+    # Stack J @ v over the col blocks and compare to the per-output jvp slices.
+    v_stack = torch.cat([tang[n] for n in m.input_names], dim=-1)  # (b, sum_in)
+    jv = torch.einsum("boi,bi->bo", jac, v_stack)  # (b, sum_out)
+    off = 0
+    for name, sz in zip(m.output_names, m.output_sizes, strict=True):
+        assert torch.allclose(jvp_out[name], jv[..., off : off + sz], atol=1e-10)
+        off += sz
+
+
+# --- #2 plain-batch guard: reject sub-batch (crystal-plasticity) models -------
+
+
+def test_sub_batch_model_rejected():
+    m = _EagerModel(str(_SUB_BATCH), "model")
+    with pytest.raises(NotImplementedError, match="sub_batch"):
+        m.forward(_rand_inputs(m, 3))
+
+
+# --- #3 convergence failure surfaces as the recoverable typed exception -------
+
+
+def test_convergence_failure_raises_typed():
+    from neml2.aoti import ConvergenceError  # registered RuntimeError subclass
+    from neml2.models.common import ImplicitUpdate
+
+    m = _EagerModel(str(_IMPLICIT), "model")
+    # Force a guaranteed non-convergence: zero Newton iterations against the
+    # (random, hence non-zero) initial residual.
+    iu = next(s for s in m._model.modules() if isinstance(s, ImplicitUpdate))
+    iu.solver.miters = 0
+
+    torch.manual_seed(0)
+    with pytest.raises(ConvergenceError):
+        m.forward(_rand_inputs(m, 2))
+    # Backward-compatible: still a RuntimeError.
+    assert issubclass(ConvergenceError, RuntimeError)

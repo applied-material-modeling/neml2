@@ -39,6 +39,7 @@
 #include <pybind11/stl.h>
 #include <torch/csrc/utils/pybind.h>
 
+#include "neml2/csrc/aoti/Exception.h"
 #include "neml2/csrc/aoti/Model.h"
 #include "neml2/csrc/aoti/newton.h"
 #include "neml2/csrc/aoti/nonlinear_system_eager.h"
@@ -56,6 +57,16 @@ PYBIND11_MODULE(_aoti, m)
 
   // Force PyTorch's pybind tensor caster initialization.
   py::module_::import("torch");
+
+  // Surface the recoverable ConvergenceError as a dedicated Python type so the
+  // recoverable/fatal split survives the C++ -> Python translation. Subclasses
+  // RuntimeError, so existing ``except RuntimeError`` handlers keep working;
+  // code that needs the distinction (e.g. the eager runtime re-raising a
+  // recoverable neml2::aoti::ConvergenceError after the C++ -> Python -> C++
+  // round trip; see neml2/csrc/eager/Model.cpp) can match it precisely. Without
+  // this, pybind's default translator collapses every neml2::aoti::Exception
+  // (a std::runtime_error) to a bare RuntimeError, losing recoverable().
+  py::register_exception<neml2::aoti::ConvergenceError>(m, "ConvergenceError", PyExc_RuntimeError);
 
   py::class_<Model>(m, "Model", R"(
 Thin C++ runtime for an AOTI-exported NEML2 model.
