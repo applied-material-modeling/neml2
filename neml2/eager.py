@@ -36,8 +36,8 @@ an ordinary Python-native model loaded via :func:`neml2.factory.load_model`
 from the *original* ``.i`` file. It is not HIT-registered; it exists only to
 present a raw-tensor, name-keyed surface to the C++ embed bridge that mirrors
 the C++ ``neml2::aoti::Model`` pybind binding (``input_names`` / ``output_names``
-/ ``input_sizes`` / ``output_sizes`` / ``device`` / ``dtype`` /
-``forward(dict) -> dict``).
+/ ``input_base_shapes`` / ``output_base_shapes`` / ``device`` / ``dtype`` /
+``forward`` / ``jvp`` / ``jacobian``).
 
 Framework boundary (CLAUDE.md "Hard rules / Rule 1"): together with
 :mod:`neml2._eager_boundary`, this module is the third legitimate raw-tensor
@@ -135,18 +135,18 @@ class _EagerModel:
             self._model = self._model.to(torch.device(device))
         self._device, self._dtype = _infer_device_dtype(self._model, device)
 
-        # input/output names + flat sizes via the SAME helper the AOTI metadata
+        # input/output names + base shapes via the SAME helper the AOTI metadata
         # path uses (_var_infos). This is the parity guarantee: an eager model
-        # reports byte-identical names/sizes to its AOTI-compiled twin, so the
-        # C++ neml2::eager::Model is a true drop-in for neml2::aoti::Model.
+        # reports byte-identical names/base-shapes to its AOTI-compiled twin, so
+        # the C++ neml2::eager::Model is a true drop-in for neml2::aoti::Model.
         self.input_spec = self._model.input_spec
         self.output_spec = self._model.output_spec
         in_infos = _var_infos(self.input_spec)
         out_infos = _var_infos(self.output_spec)
         self.input_names: list[str] = [i["name"] for i in in_infos]
         self.output_names: list[str] = [i["name"] for i in out_infos]
-        self.input_sizes: list[int] = [int(i["var_size"]) for i in in_infos]
-        self.output_sizes: list[int] = [int(i["var_size"]) for i in out_infos]
+        self.input_base_shapes: list[list[int]] = [list(i["base_shape"]) for i in in_infos]
+        self.output_base_shapes: list[list[int]] = [list(i["base_shape"]) for i in out_infos]
 
     @property
     def device(self) -> torch.device:
@@ -163,6 +163,21 @@ class _EagerModel:
             f"Cast the tensor explicitly with ``.to(device=..., dtype=...)`` at "
             f"the call site before evaluating."
         )
+
+    def _check_canonical(self, name: str, t: torch.Tensor, *, kind: str) -> None:
+        """Reject a non-canonical tensor: its trailing axes must equal the
+        variable's declared base shape, so an input/tangent is `(*B, *base)`
+        (e.g. an SR2 is `(*B, 6)`, never `(*B, 1)` or `(*B, 3, 2)`). A Scalar has
+        an empty base shape, so any leading shape is a valid batch.
+        """
+        base = tuple(self.input_spec[name].BASE_SHAPE)
+        bn = len(base)
+        trailing = tuple(t.shape[t.ndim - bn :]) if bn else ()
+        if t.ndim < bn or trailing != base:
+            raise ValueError(
+                f"EagerModel {kind} {name!r}: non-canonical shape {tuple(t.shape)}; "
+                f"expected trailing base shape {base} (canonical shape is (*B, *base))."
+            )
 
     def _typed_args(self, inputs: dict[str, torch.Tensor]) -> tuple:
         """Validate + wrap the raw input dict into typed wrappers in input order.
@@ -190,6 +205,7 @@ class _EagerModel:
                 context="EagerModel",
                 hint=self._device_hint,
             )
+            self._check_canonical(name, t, kind="input")
             raw[name] = t
         raw, _ = broadcast_to_common_batch(raw, self.input_spec, per_input_sub_ndim)
         return tuple(self.input_spec[name](raw[name]) for name in self.input_names)
@@ -252,11 +268,12 @@ class _EagerModel:
     ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
         """Evaluate the model and its Jacobian-vector product.
 
-        ``inputs`` is keyed by ``input_names``; ``tangents`` shares those keys,
-        and a missing tangent defaults to zero (no contribution). Returns
-        ``(outputs, jvp_outputs)`` -- both keyed by ``output_names``, mirroring
-        the C++ ``neml2::aoti::Model::jvp`` contract; ``jvp_outputs[name]`` is the
-        total directional derivative at flat ``var_size`` (``(*batch, out_size)``).
+        ``inputs`` is keyed by ``input_names``; ``tangents`` shares those keys +
+        ``(*B, *in_base)`` shapes, and a missing tangent defaults to zero (no
+        contribution). Returns ``(outputs, jvp_outputs)`` -- both keyed by
+        ``output_names``, mirroring the C++ ``neml2::aoti::Model::jvp`` contract;
+        ``jvp_outputs[name]`` is the directional derivative at the output's
+        natural ``(*batch, *out_base)``.
 
         Implemented on the native chain rule: each tangent is seeded as a single
         leading-K (K=1) direction; the per-input contributions to each output are
@@ -279,6 +296,7 @@ class _EagerModel:
                 context="EagerModel",
                 hint=self._device_hint,
             )
+            self._check_canonical(name, td, kind="tangent")
             base_shape = tuple(self.input_spec[name].BASE_SHAPE)
             td = torch.broadcast_to(td, (*common_batch, *base_shape))
             # Leading K=1 axis -> a single directional seed (see apply_chain_rule).
@@ -286,23 +304,21 @@ class _EagerModel:
         typed_outputs, v_out = self._eval(typed_args, v=seed)
         outputs = unwrap_outputs(typed_outputs, self.output_names)
         assert v_out is not None
-        jvp_outputs = assemble_jvp_outputs(
-            v_out, typed_outputs, self.output_names, self.output_sizes
-        )
+        jvp_outputs = assemble_jvp_outputs(v_out, typed_outputs, self.output_names)
         return outputs, jvp_outputs
 
     def jacobian(
         self,
         inputs: dict[str, torch.Tensor],
-    ) -> tuple[dict[str, torch.Tensor], torch.Tensor]:
-        """Evaluate the model and its full Jacobian.
+    ) -> tuple[dict[str, torch.Tensor], dict[str, dict[str, torch.Tensor]]]:
+        """Evaluate the model and its full Jacobian as variable-pair blocks.
 
         Returns ``(outputs, J)`` -- ``outputs`` keyed by ``output_names`` and ``J``
-        the assembled ``(*batch, sum(output_sizes), sum(input_sizes))`` block tensor,
-        rows in ``output_spec`` order and cols in ``input_spec`` order, matching
-        the C++ ``neml2::aoti::Model::jacobian`` contract. Built on the native
-        chain rule via a leading-K identity seed per input (reusing the AOTI
-        export's ``_leading_k_identity_seed``).
+        the nested ``{out_name: {in_name: (*batch, *out_base, *in_base)}}`` block
+        dict (rows in ``output_spec`` order, cols in ``input_spec`` order),
+        matching the C++ ``neml2::aoti::Model::jacobian`` contract. Built on the
+        native chain rule via a leading-K identity seed per input (reusing the
+        AOTI export's ``_leading_k_identity_seed``).
         """
         from .cli.aoti_export import _leading_k_identity_seed
 
@@ -325,9 +341,8 @@ class _EagerModel:
             v_out,
             typed_outputs,
             self.output_names,
-            self.output_sizes,
+            self.output_spec,
             self.input_names,
-            self.input_sizes,
             self.input_spec,
         )
         return outputs, jac

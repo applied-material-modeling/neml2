@@ -139,8 +139,10 @@ Model::Model(const std::filesystem::path & input_file,
         // Cache metadata once, under the GIL, so the accessors are GIL-free.
         _impl->input_names = _impl->adapter.attr("input_names").cast<std::vector<std::string>>();
         _impl->output_names = _impl->adapter.attr("output_names").cast<std::vector<std::string>>();
-        _impl->input_sizes = _impl->adapter.attr("input_sizes").cast<std::vector<int>>();
-        _impl->output_sizes = _impl->adapter.attr("output_sizes").cast<std::vector<int>>();
+        _impl->input_base_shapes =
+            _impl->adapter.attr("input_base_shapes").cast<std::vector<std::vector<int64_t>>>();
+        _impl->output_base_shapes =
+            _impl->adapter.attr("output_base_shapes").cast<std::vector<std::vector<int64_t>>>();
         _impl->device = _impl->adapter.attr("device").cast<at::Device>();
         _impl->dtype = _impl->adapter.attr("dtype").cast<at::ScalarType>();
       });
@@ -160,16 +162,16 @@ Model::output_names() const noexcept
   return _impl->output_names;
 }
 
-const std::vector<int> &
-Model::input_sizes() const noexcept
+const std::vector<std::vector<int64_t>> &
+Model::input_base_shapes() const noexcept
 {
-  return _impl->input_sizes;
+  return _impl->input_base_shapes;
 }
 
-const std::vector<int> &
-Model::output_sizes() const noexcept
+const std::vector<std::vector<int64_t>> &
+Model::output_base_shapes() const noexcept
 {
-  return _impl->output_sizes;
+  return _impl->output_base_shapes;
 }
 
 // NOTE on tensor lifetime: the tensors returned by forward / jvp / jacobian
@@ -207,15 +209,16 @@ Model::jvp(const std::map<std::string, at::Tensor> & inputs,
                  });
 }
 
-std::pair<std::map<std::string, at::Tensor>, at::Tensor>
+std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
 Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
 {
-  using Ret = std::pair<std::map<std::string, at::Tensor>, at::Tensor>;
+  using Ret = std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>;
   return guarded("jacobian",
                  [&]() -> Ret
                  {
                    // The adapter returns (outputs, J) -- a dict[str, Tensor] and
-                   // the assembled (*B, sum(out), sum(in)) Jacobian tensor.
+                   // the nested dict[str, dict[str, Tensor]] of variable-pair
+                   // blocks (*B, *out_base, *in_base).
                    py::object out = _impl->adapter.attr("jacobian")(inputs);
                    return out.cast<Ret>();
                  });

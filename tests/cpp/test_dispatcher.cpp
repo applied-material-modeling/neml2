@@ -47,18 +47,21 @@ using namespace neml2::aoti;
 
 namespace
 {
-// Build shape-correct random inputs at batch `b` from the model's declared
-// names + flat var sizes. The fixture leaf has a single 1-D-base input
-// (strain, var_size 6), so (b, var_size) matches the traced (dyn, base) rank.
+// Build canonical random inputs at batch `b` from the model's declared names +
+// base shapes: each input is (b, *base_shape).
 std::map<std::string, at::Tensor>
 make_inputs(const Model & model, int64_t b)
 {
   const auto & names = model.input_names();
-  const auto & sizes = model.input_sizes();
+  const auto & bases = model.input_base_shapes();
   const auto opts = at::TensorOptions().dtype(model.dtype()).device(model.device());
   std::map<std::string, at::Tensor> inputs;
   for (std::size_t i = 0; i < names.size(); ++i)
-    inputs.emplace(names[i], at::randn({b, sizes[i]}, opts));
+  {
+    std::vector<int64_t> shape{b};
+    shape.insert(shape.end(), bases[i].begin(), bases[i].end());
+    inputs.emplace(names[i], at::randn(shape, opts));
+  }
   return inputs;
 }
 } // namespace
@@ -101,12 +104,17 @@ main(int argc, char ** argv)
       NEML2_CHECK(at::allclose(out.at(name), ref_out.at(name), /*rtol=*/1e-8, /*atol=*/1e-10));
     }
 
-    // jacobian (outputs + assembled J)
+    // jacobian (outputs + nested variable-pair blocks)
     auto [jout, j] = disp.jacobian(inputs);
-    NEML2_CHECK(j.size(0) == b);
-    NEML2_CHECK(at::allclose(j, std::get<1>(ref_jac), /*rtol=*/1e-8, /*atol=*/1e-10));
-    for (const auto & name : ref.output_names())
-      NEML2_CHECK(at::allclose(jout.at(name), std::get<0>(ref_jac).at(name), 1e-8, 1e-10));
+    for (const auto & o : ref.output_names())
+    {
+      NEML2_CHECK(at::allclose(jout.at(o), std::get<0>(ref_jac).at(o), 1e-8, 1e-10));
+      for (const auto & i : ref.input_names())
+      {
+        NEML2_CHECK(j.at(o).at(i).size(0) == b);
+        NEML2_CHECK(at::allclose(j.at(o).at(i), std::get<1>(ref_jac).at(o).at(i), 1e-8, 1e-10));
+      }
+    }
 
     // jvp (outputs + directional derivative along `tangents`)
     auto [vout, vdot] = disp.jvp(inputs, tangents);
@@ -124,8 +132,8 @@ main(int argc, char ** argv)
                       std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cpu", 0}));
     NEML2_CHECK(m.input_names() == ref.input_names());
     NEML2_CHECK(m.output_names() == ref.output_names());
-    NEML2_CHECK(m.input_sizes() == ref.input_sizes());
-    NEML2_CHECK(m.output_sizes() == ref.output_sizes());
+    NEML2_CHECK(m.input_base_shapes() == ref.input_base_shapes());
+    NEML2_CHECK(m.output_base_shapes() == ref.output_base_shapes());
     NEML2_CHECK(m.dtype() == ref.dtype());
     NEML2_CHECK(!m.named_parameters().empty()); // non-const overload
     NEML2_CHECK(!static_cast<const DispatchedModel &>(m).named_parameters().empty()); // const
@@ -171,7 +179,9 @@ main(int argc, char ** argv)
       NEML2_CHECK(at::allclose(out.at(name), ref_out.at(name), 1e-8, 1e-10));
 
     auto [jout, j] = disp.jacobian(inputs);
-    NEML2_CHECK(at::allclose(j, std::get<1>(ref_jac), 1e-8, 1e-10));
+    for (const auto & o : ref.output_names())
+      for (const auto & i : ref.input_names())
+        NEML2_CHECK(at::allclose(j.at(o).at(i), std::get<1>(ref_jac).at(o).at(i), 1e-8, 1e-10));
 
     auto [vout, vdot] = disp.jvp(inputs, tangents); // async run_async<Pair> path
     for (const auto & name : ref.output_names())

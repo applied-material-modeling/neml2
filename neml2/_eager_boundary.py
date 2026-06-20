@@ -174,37 +174,30 @@ def assemble_jvp_outputs(
     v_out: dict,
     typed_outputs: tuple[TensorWrapper, ...],
     output_names: list[str],
-    output_sizes: list[int],
 ) -> dict[str, torch.Tensor]:
-    """Sum directional chain-rule contributions into raw, flat JVP outputs.
+    """Sum directional chain-rule contributions into raw, base-shaped JVP outputs.
 
     Outbound JVP half of the eager embed boundary. ``v_out`` is the native
     ``ComposedModel`` chain-rule result ``{out_name: {seed_name: block}}`` from a
     K=1 directional seed; each block's data is ``(1, *batch, *out_base)``. For
-    each output the K axis is squeezed, the base axes flattened to the variable's
-    flat ``var_size``, and the per-input contributions summed -- matching the C++
-    ``neml2::aoti::Model::jvp`` contract ``jvp_outputs[name] == (*batch,
-    out_size)``. An output with no dependence on any seeded input is an explicit
-    zero block.
+    each output the K axis is squeezed and the per-input contributions summed,
+    giving the unflattened ``(*batch, *out_base)`` -- matching the C++
+    ``neml2::aoti::Model::jvp`` contract. An output with no dependence on any
+    seeded input is an explicit zero block.
 
     Reads ``.data`` -- one of the few legitimate raw-tensor sites (see the module
     docstring + CLAUDE.md "Hard rules / Rule 1").
     """
     out: dict[str, torch.Tensor] = {}
-    for typed_out, name, osize in zip(typed_outputs, output_names, output_sizes, strict=True):
-        base_ndim = type(typed_out).BASE_NDIM
+    for typed_out, name in zip(typed_outputs, output_names, strict=True):
         contribs = v_out.get(name, {})
         if not contribs:
-            out[name] = torch.zeros(
-                *typed_out.batch_shape, osize, dtype=typed_out.dtype, device=typed_out.device
-            )
+            # Same (*batch, *out_base) shape as the value output, all zeros.
+            out[name] = torch.zeros_like(typed_out.data)  # noqa: data-ok eager embed boundary
             continue
-        flats: list[torch.Tensor] = []
-        for block in contribs.values():
-            d = block.data.squeeze(0)  # noqa: data-ok eager embed boundary
-            # (1, *batch, *out_base) -> (*batch, out_size).
-            flats.append(d.reshape(*d.shape[: d.ndim - base_ndim], osize))
-        out[name] = flats[0] if len(flats) == 1 else torch.stack(flats, 0).sum(0)
+        # (1, *batch, *out_base) -> (*batch, *out_base), summed over seeded inputs.
+        blocks = [b.data.squeeze(0) for b in contribs.values()]  # noqa: data-ok eager embed boundary
+        out[name] = blocks[0] if len(blocks) == 1 else torch.stack(blocks, 0).sum(0)
     return out
 
 
@@ -212,43 +205,41 @@ def assemble_jacobian(
     v_out: dict,
     typed_outputs: tuple[TensorWrapper, ...],
     output_names: list[str],
-    output_sizes: list[int],
+    output_spec: dict[str, type[TensorWrapper]],
     input_names: list[str],
-    input_sizes: list[int],
     input_spec: dict[str, type[TensorWrapper]],
-) -> torch.Tensor:
-    """Assemble per-(out, in) chain-rule blocks into the flat dense Jacobian.
+) -> dict[str, dict[str, torch.Tensor]]:
+    """Assemble per-(out, in) chain-rule blocks into the nested variable-pair Jacobian.
 
     Outbound Jacobian half of the eager embed boundary. ``v_out`` is the native
     ``ComposedModel`` chain-rule result from a leading-K identity seed per input
-    (``{out_name: {in_name: block}}``). The returned tensor matches the C++
-    ``neml2::aoti::Model::jacobian`` contract: shape ``(*batch, sum(out_sizes),
-    sum(in_sizes))``, block-stacked with rows in ``output_spec`` order and cols
-    in ``input_spec`` order. A constant ``(out, in)`` pair (absent from
-    ``v_out``) leaves the pre-zeroed slab.
+    (``{out_name: {in_name: block}}``). Returns the nested
+    ``{out_name: {in_name: (*batch, *out_base, *in_base)}}`` matching the C++
+    ``neml2::aoti::Model::jacobian`` contract (rows in ``output_spec`` order, cols
+    in ``input_spec`` order). A constant ``(out, in)`` pair (absent from
+    ``v_out``) is an explicit zero block.
 
     Reuses :func:`neml2.cli.aoti_export._leading_k_block_to_per_pair` (the AOTI
     export's own block-to-pair converter, lazily imported to avoid import-time
-    CLI coupling); the ``.data`` read happens inside that boundary helper. The
-    column-then-row ``cat`` mirrors the C++ assembly in
-    ``neml2/csrc/aoti/ops.cpp`` (``at::cat(blocks, -1)`` then ``at::cat(rows, -2)``).
+    CLI coupling); the ``.data`` read happens inside that boundary helper.
     """
     from .cli.aoti_export import _leading_k_block_to_per_pair
 
     first = typed_outputs[0]
     batch_shape = tuple(first.batch_shape)
     opts = {"dtype": first.dtype, "device": first.device}
-    rows: list[torch.Tensor] = []
-    for o_name, o_size in zip(output_names, output_sizes, strict=True):
-        cols: list[torch.Tensor] = []
-        for i_name, i_size in zip(input_names, input_sizes, strict=True):
+    jac: dict[str, dict[str, torch.Tensor]] = {}
+    for o_name in output_names:
+        o_base = tuple(output_spec[o_name].BASE_SHAPE)
+        row: dict[str, torch.Tensor] = {}
+        for i_name in input_names:
+            i_base = tuple(input_spec[i_name].BASE_SHAPE)
             block = v_out.get(o_name, {}).get(i_name)
             if block is None:
-                # Constant (out, in) pair: a structural zero slab.
-                cols.append(torch.zeros(*batch_shape, o_size, i_size, **opts))
+                # Constant (out, in) pair: a structural zero block.
+                row[i_name] = torch.zeros(*batch_shape, *o_base, *i_base, **opts)
             else:
-                # (*batch, *out_base, *in_base) -> (*batch, o_size, i_size).
-                pair = _leading_k_block_to_per_pair(block, input_spec[i_name])
-                cols.append(pair.reshape(*batch_shape, o_size, i_size))
-        rows.append(torch.cat(cols, dim=-1))
-    return torch.cat(rows, dim=-2)
+                # (*batch, *out_base, *in_base).
+                row[i_name] = _leading_k_block_to_per_pair(block, input_spec[i_name]).contiguous()
+        jac[o_name] = row
+    return jac

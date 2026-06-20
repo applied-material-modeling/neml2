@@ -71,14 +71,20 @@ struct Model::Impl
   std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
   jvp(const std::map<std::string, at::Tensor> & inputs,
       const std::map<std::string, at::Tensor> & tangents) const;
-  std::pair<std::map<std::string, at::Tensor>, at::Tensor>
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
   jacobian(const std::map<std::string, at::Tensor> & inputs) const;
 
   // --- Accessors (forwarded from Model) ------------------------------------
   const std::vector<std::string> & input_names() const noexcept { return _input_names; }
   const std::vector<std::string> & output_names() const noexcept { return _output_names; }
-  const std::vector<int> & input_sizes() const noexcept { return _input_sizes; }
-  const std::vector<int> & output_sizes() const noexcept { return _output_sizes; }
+  const std::vector<std::vector<int64_t>> & input_base_shapes() const noexcept
+  {
+    return _input_base_shapes;
+  }
+  const std::vector<std::vector<int64_t>> & output_base_shapes() const noexcept
+  {
+    return _output_base_shapes;
+  }
   std::map<std::string, at::Tensor> & named_parameters() noexcept { return _named_parameters; }
   const std::map<std::string, at::Tensor> & named_parameters() const noexcept
   {
@@ -271,6 +277,23 @@ struct Model::Impl
                     at::IntArrayRef batch_shape,
                     std::map<std::string, at::Tensor> & dstate) const;
 
+  /// Reject a non-canonical input: the tensor's trailing axes must equal the
+  /// declared `base_shape` for `name` (so a Scalar is `(*B,)`, an SR2 `(*B,6)`).
+  /// Throws FatalError otherwise. `idx` is the index of `name` in `_input_names`.
+  void _validate_input_shape(std::size_t idx, const at::Tensor & t) const;
+
+  /// Split a canonical input tensor into its leading batch shape (everything
+  /// before the trailing `base_shape` axes). Assumes `_validate_input_shape`
+  /// has already passed for this input.
+  std::vector<int64_t> _batch_shape_of(std::size_t idx, const at::Tensor & t) const;
+
+  /// Internal flat Jacobian: outputs + the assembled dense `(*B, Σout, Σin)`
+  /// matrix (rows in `_output_names` order, cols in `_input_names` order). The
+  /// public `jacobian()` reshapes this into unflattened variable-pair blocks;
+  /// `jvp()` contracts it directly as `J @ v`.
+  std::pair<std::map<std::string, at::Tensor>, at::Tensor>
+  _jacobian_flat(const std::map<std::string, at::Tensor> & inputs) const;
+
   // The per-group Newton iteration + line-search reductions now live in
   // newton.{h,cpp} (driven through the NonlinearSystem abstraction);
   // `_run_implicit_segment` builds an AOTINonlinearSystem and calls Newton.
@@ -278,12 +301,17 @@ struct Model::Impl
   // Per-segment runtime state, in declared order.
   std::vector<Segment> _segments;
 
-  // Master IO (in graph-call order).
+  // Master IO (in graph-call order). The public surface is the per-variable
+  // base shapes; the flat _input_sizes / _output_sizes / _input_offsets /
+  // _input_total_size (== prod(base_shape) and its prefix sums) stay private,
+  // driving the internal flat dstate / J assembly math.
   std::vector<std::string> _input_names;
+  std::vector<std::vector<int64_t>> _input_base_shapes;
   std::vector<int> _input_sizes;
   std::vector<int64_t> _input_offsets;
   int64_t _input_total_size = 0;
   std::vector<std::string> _output_names;
+  std::vector<std::vector<int64_t>> _output_base_shapes;
   std::vector<int> _output_sizes;
 
   // Owned state -- only the runtime-flexible (promoted) parameters live here.

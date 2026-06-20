@@ -47,11 +47,17 @@ std::map<std::string, at::Tensor>
 make_inputs(const Model & model, int64_t b)
 {
   const auto & names = model.input_names();
-  const auto & sizes = model.input_sizes();
+  const auto & bases = model.input_base_shapes();
   const auto opts = at::TensorOptions().dtype(model.dtype()).device(model.device());
   std::map<std::string, at::Tensor> inputs;
   for (std::size_t i = 0; i < names.size(); ++i)
-    inputs.emplace(names[i], at::randn({b, sizes[i]}, opts));
+  {
+    // Canonical input shape: (b, *base_shape). For a Scalar (empty base) this is
+    // just (b,); for SR2 it is (b, 6).
+    std::vector<int64_t> shape{b};
+    shape.insert(shape.end(), bases[i].begin(), bases[i].end());
+    inputs.emplace(names[i], at::randn(shape, opts));
+  }
   return inputs;
 }
 } // namespace
@@ -67,12 +73,12 @@ main(int argc, char ** argv)
   auto m = load_model(input_file, "model");
 
   // Metadata parity with the model declared in the .i (LinearIsotropicElasticity:
-  // SR2 strain -> SR2 stress, base size 6). These are the same names/sizes the
-  // AOTI metadata path reports for this model, so eager is a drop-in.
+  // SR2 strain -> SR2 stress, base shape {6}). These are the same names/base-shapes
+  // the AOTI metadata path reports for this model, so eager is a drop-in.
   NEML2_CHECK(m.input_names() == std::vector<std::string>{"strain"});
   NEML2_CHECK(m.output_names() == std::vector<std::string>{"stress"});
-  NEML2_CHECK(m.input_sizes() == std::vector<int>{6});
-  NEML2_CHECK(m.output_sizes() == std::vector<int>{6});
+  NEML2_CHECK(m.input_base_shapes() == std::vector<std::vector<int64_t>>{{6}});
+  NEML2_CHECK(m.output_base_shapes() == std::vector<std::vector<int64_t>>{{6}});
   NEML2_CHECK(m.device().is_cpu());
   NEML2_CHECK(m.dtype() == at::kDouble);
 
@@ -92,25 +98,27 @@ main(int argc, char ** argv)
   const auto out2 = m.forward(inputs);
   NEML2_CHECK(at::allclose(out.at("stress"), out2.at("stress")));
 
-  // jacobian: assembled (B, sum(out), sum(in)) = (B, 6, 6); value half matches
-  // forward. (Value-for-value parity vs autograd is checked in tests/unit.)
+  // jacobian: unflattened variable-pair block J["stress"]["strain"] = (b, 6, 6);
+  // value half matches forward. (Value parity vs autograd is checked in tests/unit.)
   {
     const auto [jout, J] = m.jacobian(inputs);
-    NEML2_CHECK(J.dim() == 3);
-    NEML2_CHECK(J.size(0) == b);
-    NEML2_CHECK(J.size(1) == 6);
-    NEML2_CHECK(J.size(2) == 6);
-    NEML2_CHECK(at::isfinite(J).all().item<bool>());
+    const auto & block = J.at("stress").at("strain");
+    NEML2_CHECK(block.dim() == 3);
+    NEML2_CHECK(block.size(0) == b);
+    NEML2_CHECK(block.size(1) == 6);
+    NEML2_CHECK(block.size(2) == 6);
+    NEML2_CHECK(at::isfinite(block).all().item<bool>());
     NEML2_CHECK(at::allclose(jout.at("stress"), out.at("stress")));
 
-    // jvp(inputs, tangents) == J @ tangents, and the value half matches forward.
+    // jvp output is base-shaped (b, 6) and equals block @ tangent; value half
+    // matches forward.
     std::map<std::string, at::Tensor> tang;
     tang.emplace("strain", at::randn({b, 6}, at::TensorOptions().dtype(m.dtype())));
     const auto [vout, jvp] = m.jvp(inputs, tang);
     NEML2_CHECK(at::allclose(vout.at("stress"), out.at("stress")));
     NEML2_CHECK(jvp.at("stress").size(0) == b);
     NEML2_CHECK(jvp.at("stress").size(1) == 6);
-    const auto jv = at::einsum("bij,bj->bi", {J, tang.at("strain")});
+    const auto jv = at::einsum("bij,bj->bi", {block, tang.at("strain")});
     NEML2_CHECK(at::allclose(jvp.at("stress"), jv));
 
     // A missing tangent defaults to zero -> zero directional derivative.
@@ -141,6 +149,14 @@ main(int argc, char ** argv)
   {
     auto bad = inputs;
     bad.at("strain") = bad.at("strain").to(at::kFloat);
+    NEML2_CHECK_THROWS(m.forward(bad));
+  }
+
+  // Non-canonical input shape: an SR2 strain passed as (b, 1) instead of (b, 6)
+  // is rejected (its trailing axes don't match the declared base shape {6}).
+  {
+    auto bad = inputs;
+    bad.at("strain") = at::randn({b, 1}, at::TensorOptions().dtype(m.dtype()));
     NEML2_CHECK_THROWS(m.forward(bad));
   }
 
@@ -181,7 +197,7 @@ main(int argc, char ** argv)
     NEML2_CHECK(at::isfinite(cout.at("stress")).all().item<bool>());
     const auto [jc, Jc] = m_cuda.jacobian(cuda_inputs);
     (void)jc;
-    NEML2_CHECK(Jc.device().is_cuda());
+    NEML2_CHECK(Jc.at("stress").at("strain").device().is_cuda());
   }
 
   // #3: a non-converging implicit model surfaces a *recoverable* ConvergenceError

@@ -99,7 +99,7 @@ from ..types import TensorWrapper
 #: graph with ``predictor_package`` / ``predictor_inputs`` /
 #: ``predictor_outputs`` metadata.
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 4
+AOTI_META_SCHEMA_VERSION = 5
 
 
 def _var_size(type_cls) -> int:
@@ -316,7 +316,17 @@ def _var_infos(
     infos: list[dict] = []
     sub_batch_shapes = sub_batch_shapes or {}
     for k, v in spec.items():
-        info: dict = {"name": k, "var_size": _var_size(v), "var_type": v.__name__}
+        info: dict = {
+            "name": k,
+            "var_size": _var_size(v),
+            "var_type": v.__name__,
+            # Full base shape (e.g. Scalar -> [], SR2 -> [6], R2 -> [3, 3]). The
+            # C++ runtime reads this to report input_base_shapes()/
+            # output_base_shapes(), validate canonical (*B, *base) inputs, and
+            # unflatten jvp/jacobian outputs into variable-pair blocks. var_size
+            # is kept (== prod(base_shape)) for the internal flat offset math.
+            "base_shape": [int(s) for s in v.BASE_SHAPE],
+        }
         sb = sub_batch_shapes.get(k, ())
         if sb:
             info["sub_batch_shape"] = list(sb)

@@ -58,8 +58,8 @@ struct Model::Impl
   // Metadata cached once at load (under the GIL) so the accessors are GIL-free.
   std::vector<std::string> input_names;
   std::vector<std::string> output_names;
-  std::vector<int> input_sizes;
-  std::vector<int> output_sizes;
+  std::vector<std::vector<int64_t>> input_base_shapes;
+  std::vector<std::vector<int64_t>> output_base_shapes;
   at::Device device{at::kCPU};
   at::ScalarType dtype{at::kDouble};
 };

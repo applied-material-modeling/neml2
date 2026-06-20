@@ -100,13 +100,14 @@ Everything else is baked into the graph as a constant.
           "input_names", &Model::input_names, "Master input names in graph-call order.")
       .def_property_readonly(
           "output_names", &Model::output_names, "Master output names in graph-call order.")
-      .def_property_readonly("input_sizes",
-                             &Model::input_sizes,
-                             "Per-input flat sizes (product of declared base shape; 1 for Scalar).")
       .def_property_readonly(
-          "output_sizes",
-          &Model::output_sizes,
-          "Per-output flat sizes (product of declared base shape; 1 for Scalar).")
+          "input_base_shapes",
+          &Model::input_base_shapes,
+          "Per-input base shape (Scalar -> [], SR2 -> [6], R2 -> [3, 3]). Inputs "
+          "must be passed at their canonical (*B, *base_shape) shape.")
+      .def_property_readonly("output_base_shapes",
+                             &Model::output_base_shapes,
+                             "Per-output base shape (Scalar -> [], SR2 -> [6], R2 -> [3, 3]).")
       .def_property_readonly(
           "device",
           [](const Model & m) { return m.device(); },
@@ -144,20 +145,23 @@ preserving declaration order.
            R"(
 Evaluate + JVP.
 
-``tangents`` shares its keys with ``inputs``; missing keys default to
-zero. Returns a 2-tuple ``(outputs, jvp_outputs)`` -- both ``dict[str,
-Tensor]`` keyed by ``output_names``.
+``inputs`` and ``tangents`` are keyed by ``input_names`` and shaped
+``(*B, *base_shape)``; a missing tangent key defaults to zero. Returns a
+2-tuple ``(outputs, jvp_outputs)`` -- both ``dict[str, Tensor]`` keyed by
+``output_names``; ``jvp_outputs[name]`` is the directional derivative at the
+output's natural ``(*B, *out_base_shape)``.
 )")
       .def("jacobian",
            &Model::jacobian,
            py::arg("inputs"),
            R"(
-Evaluate + full Jacobian.
+Evaluate + full Jacobian as unflattened variable-pair blocks.
 
-Returns a 2-tuple ``(outputs, J)`` where ``J`` is the assembled
-``(*B, sum(output_sizes), sum(input_sizes))`` block-stacked Jacobian
-over the **structural** inputs (promoted-parameter inputs are not
-exposed in J).
+Returns a 2-tuple ``(outputs, J)`` where ``J`` is a nested
+``dict[str, dict[str, Tensor]]``: ``J[out_name][in_name]`` is the block
+``(*B, *out_base_shape, *in_base_shape)`` (e.g. SR2->SR2 -> (*B, 6, 6);
+Scalar->SR2 -> (*B, 6)) over the **structural** inputs (promoted-parameter
+inputs are not exposed in J).
 )")
       .def(
           "named_parameters",
