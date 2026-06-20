@@ -122,4 +122,53 @@ to_device(const std::map<std::string, at::Tensor> & m, at::Device device)
     out.emplace(name, t.device() == device ? t : t.to(device));
   return out;
 }
+
+/// Move every leaf block of a nested variable-pair Jacobian
+/// (``{out_name: {in_name: block}}``) onto ``device``.
+inline std::map<std::string, std::map<std::string, at::Tensor>>
+to_device_nested(const std::map<std::string, std::map<std::string, at::Tensor>> & j,
+                 at::Device device)
+{
+  std::map<std::string, std::map<std::string, at::Tensor>> out;
+  for (const auto & [o, row] : j)
+    for (const auto & [i, t] : row)
+      out[o].emplace(i, t.device() == device ? t : t.to(device));
+  return out;
+}
+
+/// Concatenate per-chunk nested variable-pair Jacobians block by block along
+/// dim 0. Keyed by the first chunk's (out, in) structure; every chunk must
+/// carry the same blocks.
+inline std::map<std::string, std::map<std::string, at::Tensor>>
+cat_batch_nested(
+    const std::vector<std::map<std::string, std::map<std::string, at::Tensor>>> & chunks)
+{
+  _assert(!chunks.empty(), "cat_batch_nested: no chunks to concatenate.");
+  if (chunks.size() == 1)
+    return chunks.front();
+
+  std::map<std::string, std::map<std::string, at::Tensor>> out;
+  for (const auto & [o, row] : chunks.front())
+    for (const auto & [i, first] : row)
+    {
+      (void)first;
+      std::vector<at::Tensor> parts;
+      parts.reserve(chunks.size());
+      for (const auto & c : chunks)
+      {
+        auto oit = c.find(o);
+        _assert(oit != c.end(), "cat_batch_nested: output '", o, "' missing from a chunk.");
+        auto iit = oit->second.find(i);
+        _assert(iit != oit->second.end(),
+                "cat_batch_nested: block ('",
+                o,
+                "', '",
+                i,
+                "') missing from a chunk.");
+        parts.push_back(iit->second);
+      }
+      out[o].emplace(i, at::cat(parts, /*dim=*/0));
+    }
+  return out;
+}
 } // namespace neml2::aoti

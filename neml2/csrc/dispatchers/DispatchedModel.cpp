@@ -202,7 +202,7 @@ struct DispatchedModel::Impl
     return {cat_batch(outs), cat_batch(jouts)};
   }
 
-  std::pair<std::map<std::string, at::Tensor>, at::Tensor>
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
   jacobian(const std::map<std::string, at::Tensor> & inputs)
   {
     _assert(!inputs.empty(), "DispatchedModel::jacobian: inputs are empty.");
@@ -210,12 +210,12 @@ struct DispatchedModel::Impl
     const auto in_device = inputs.begin()->second.device();
     const int64_t b = infer_batch_size(inputs);
 
-    using Pair = std::pair<std::map<std::string, at::Tensor>, at::Tensor>;
+    using Pair = std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>;
     auto chunk_fn = [&](at::Device d, int64_t s, int64_t cnt) -> Pair
     {
       auto in = to_device(slice_batch(inputs, s, cnt), d);
       auto [out, j] = _models.at(d.str())->jacobian(in);
-      return {to_device(out, in_device), j.device() == in_device ? j : j.to(in_device)};
+      return {to_device(out, in_device), to_device_nested(j, in_device)};
     };
 
     std::vector<Pair> chunks;
@@ -231,7 +231,7 @@ struct DispatchedModel::Impl
     }
 
     std::vector<std::map<std::string, at::Tensor>> outs;
-    std::vector<at::Tensor> jparts;
+    std::vector<VariablePairJacobian> jparts;
     outs.reserve(chunks.size());
     jparts.reserve(chunks.size());
     for (auto & c : chunks)
@@ -239,7 +239,7 @@ struct DispatchedModel::Impl
       outs.push_back(std::move(c.first));
       jparts.push_back(std::move(c.second));
     }
-    return {cat_batch(outs), cat_batch_tensor(jparts)};
+    return {cat_batch(outs), cat_batch_nested(jparts)};
   }
 
   void set_solver_config(const SolverConfig & config)
@@ -564,7 +564,7 @@ DispatchedModel::jvp(const std::map<std::string, at::Tensor> & inputs,
   return _guarded([&] { return _impl->jvp(inputs, tangents); });
 }
 
-std::pair<std::map<std::string, at::Tensor>, at::Tensor>
+std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
 DispatchedModel::jacobian(const std::map<std::string, at::Tensor> & inputs) const
 {
   return _guarded([&] { return _impl->jacobian(inputs); });
@@ -588,16 +588,16 @@ DispatchedModel::output_names() const noexcept
   return _impl->active()->output_names();
 }
 
-const std::vector<int> &
-DispatchedModel::input_sizes() const noexcept
+const std::vector<std::vector<int64_t>> &
+DispatchedModel::input_base_shapes() const noexcept
 {
-  return _impl->active()->input_sizes();
+  return _impl->active()->input_base_shapes();
 }
 
-const std::vector<int> &
-DispatchedModel::output_sizes() const noexcept
+const std::vector<std::vector<int64_t>> &
+DispatchedModel::output_base_shapes() const noexcept
 {
-  return _impl->active()->output_sizes();
+  return _impl->active()->output_base_shapes();
 }
 
 std::map<std::string, at::Tensor> &

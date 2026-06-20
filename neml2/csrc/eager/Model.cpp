@@ -24,6 +24,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <pybind11/gil.h>
@@ -41,28 +42,62 @@ namespace neml2::eager
 {
 namespace
 {
-// Run a Python-touching operation under the GIL and normalize any failure to
-// neml2::aoti::FatalError -- mirroring the aoti runtime's `_guarded` policy of
-// presenting foreign torch/python errors through the NEML2 exception taxonomy.
-// The GIL is held for the whole call (including the catch), so reading a Python
-// exception's message is safe.
+// True if the Python exception `e` is (or derives from) the
+// `neml2.aoti._aoti.ConvergenceError` registered by the aoti pybind module --
+// the Python face of a solver divergence / max-iters thrown in libneml2.so. The
+// import is a fast sys.modules lookup (neml2 is already imported by the time any
+// op runs); guarded so a failed lookup degrades to "not a convergence error"
+// rather than throwing while an exception is in flight. GIL must be held.
+bool
+is_convergence_error(const py::error_already_set & e)
+{
+  try
+  {
+    return e.matches(py::module_::import("neml2.aoti._aoti").attr("ConvergenceError"));
+  }
+  catch (...)
+  {
+    return false;
+  }
+}
+
+// Run a Python-touching operation under the GIL and normalize any failure to the
+// NEML2 exception taxonomy -- mirroring the aoti runtime's `_guarded` policy of
+// presenting foreign torch/python errors through that taxonomy. The GIL is held
+// for the whole call (including the catches), so reading a Python exception's
+// message + type is safe.
 template <class F>
 auto
 guarded(const char * op, F && f) -> decltype(f())
 {
+  const std::string prefix = std::string("neml2::eager::Model::") + op + ": ";
   py::gil_scoped_acquire gil;
   try
   {
     return f();
   }
+  catch (const neml2::aoti::Exception &)
+  {
+    // A NEML2 C++ exception thrown directly on this side -- pass it through
+    // unchanged so its recoverable() bit survives. (Not reachable on the pure
+    // Python-marshalling path today, but cheap insurance against a future op
+    // that calls into libneml2 C++ directly.)
+    throw;
+  }
+  catch (const py::error_already_set & e)
+  {
+    // A Python exception crossed the embedded boundary. A solver divergence /
+    // max-iters originates as neml2::aoti::ConvergenceError in libneml2.so and
+    // surfaces here as the registered neml2.aoti._aoti.ConvergenceError; re-raise
+    // it as the recoverable C++ type so a host can cut the step and retry.
+    // Everything else is a fatal config / shape / dtype error.
+    if (is_convergence_error(e))
+      throw neml2::aoti::ConvergenceError(prefix + e.what());
+    throw neml2::aoti::FatalError(prefix + e.what());
+  }
   catch (const std::exception & e)
   {
-    // py::error_already_set derives from std::exception, so Python failures land
-    // here; e.what() is safe -- this function's gil_scoped_acquire outlives the
-    // catch. Forward-only has no recoverable errors, so everything maps to
-    // FatalError; once jvp/implicit lands, add a `catch (neml2::aoti::Exception
-    // &) { throw; }` ahead of this to preserve ConvergenceError's recoverable().
-    throw neml2::aoti::FatalError(std::string("neml2::eager::Model::") + op + ": " + e.what());
+    throw neml2::aoti::FatalError(prefix + e.what());
   }
 }
 } // namespace
@@ -104,8 +139,10 @@ Model::Model(const std::filesystem::path & input_file,
         // Cache metadata once, under the GIL, so the accessors are GIL-free.
         _impl->input_names = _impl->adapter.attr("input_names").cast<std::vector<std::string>>();
         _impl->output_names = _impl->adapter.attr("output_names").cast<std::vector<std::string>>();
-        _impl->input_sizes = _impl->adapter.attr("input_sizes").cast<std::vector<int>>();
-        _impl->output_sizes = _impl->adapter.attr("output_sizes").cast<std::vector<int>>();
+        _impl->input_base_shapes =
+            _impl->adapter.attr("input_base_shapes").cast<std::vector<std::vector<int64_t>>>();
+        _impl->output_base_shapes =
+            _impl->adapter.attr("output_base_shapes").cast<std::vector<std::vector<int64_t>>>();
         _impl->device = _impl->adapter.attr("device").cast<at::Device>();
         _impl->dtype = _impl->adapter.attr("dtype").cast<at::ScalarType>();
       });
@@ -125,17 +162,24 @@ Model::output_names() const noexcept
   return _impl->output_names;
 }
 
-const std::vector<int> &
-Model::input_sizes() const noexcept
+const std::vector<std::vector<int64_t>> &
+Model::input_base_shapes() const noexcept
 {
-  return _impl->input_sizes;
+  return _impl->input_base_shapes;
 }
 
-const std::vector<int> &
-Model::output_sizes() const noexcept
+const std::vector<std::vector<int64_t>> &
+Model::output_base_shapes() const noexcept
 {
-  return _impl->output_sizes;
+  return _impl->output_base_shapes;
 }
+
+// NOTE on tensor lifetime: the tensors returned by forward / jvp / jacobian
+// originate in Python (the native model's outputs) and are handed back as
+// at::Tensor across the boundary. The caller destroys them later in C++ without
+// holding the GIL. That is safe: a Python-origin tensor carries torch's
+// c10::impl::PyInterpreter hook, whose decref reacquires the GIL when it must
+// drop the backing PyObject, so no caller-side GIL management is required.
 
 std::map<std::string, at::Tensor>
 Model::forward(const std::map<std::string, at::Tensor> & inputs) const
@@ -147,6 +191,36 @@ Model::forward(const std::map<std::string, at::Tensor> & inputs) const
                    // the adapter returns a dict[str, Tensor] cast back to a map.
                    py::object out = _impl->adapter.attr("forward")(inputs);
                    return out.cast<std::map<std::string, at::Tensor>>();
+                 });
+}
+
+std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
+Model::jvp(const std::map<std::string, at::Tensor> & inputs,
+           const std::map<std::string, at::Tensor> & tangents) const
+{
+  using Ret = std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>;
+  return guarded("jvp",
+                 [&]() -> Ret
+                 {
+                   // The adapter returns (outputs, jvp_outputs) -- a 2-tuple of
+                   // dict[str, Tensor] cast back to a pair of maps.
+                   py::object out = _impl->adapter.attr("jvp")(inputs, tangents);
+                   return out.cast<Ret>();
+                 });
+}
+
+std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
+Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
+{
+  using Ret = std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>;
+  return guarded("jacobian",
+                 [&]() -> Ret
+                 {
+                   // The adapter returns (outputs, J) -- a dict[str, Tensor] and
+                   // the nested dict[str, dict[str, Tensor]] of variable-pair
+                   // blocks (*B, *out_base, *in_base).
+                   py::object out = _impl->adapter.attr("jacobian")(inputs);
+                   return out.cast<Ret>();
                  });
 }
 

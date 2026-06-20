@@ -47,33 +47,39 @@ from neml2.types import Scalar
 # ---------- schema_version constant ----------
 
 
-def test_schema_version_constant_is_int_four():
-    """v4 de-bakes the solver convergence / line-search configuration from the
-    metadata: the implicit-segment ``atol``/``rtol``/``miters``/``linesearch``
-    keys are gone, replaced by a ``[Solvers]`` block carried in the stub ``.i``
-    and forwarded to the C++ runtime at load. (The predictor is unchanged --
-    it still lowers to its own ``_predictor.pt2``.) The C++ loader mirrors this
-    constant and refuses any other value, so a stale v3 cache surfaces
-    immediately with a clear ``regenerate via neml2-compile`` message instead
-    of a cryptic missing-field error deep in the runtime."""
-    assert AOTI_META_SCHEMA_VERSION == 4
+def test_schema_version_constant_is_int_five():
+    """v5 makes the runtime variable-native: the master ``inputs``/``outputs``
+    metadata now carries each variable's ``base_shape`` so the C++ side reports
+    ``input_base_shapes()``/``output_base_shapes()``, validates canonical
+    ``(*B, *base)`` inputs, and returns unflattened jvp / variable-pair jacobian
+    blocks. (v4 had de-baked the solver config into the stub's ``[Solvers]``
+    block.) The C++ loader mirrors this constant and refuses any other value, so
+    a stale cache surfaces immediately with a clear ``regenerate via
+    neml2-compile`` message instead of a cryptic missing-field error."""
+    assert AOTI_META_SCHEMA_VERSION == 5
 
 
 # ---------- _var_infos default behaviour (no sub-batch) ----------
 
 
-def test_var_infos_default_emits_name_size_and_type():
+def test_var_infos_default_emits_name_size_type_and_base_shape():
     spec = {"x": Scalar}
     infos = _var_infos(spec)
-    assert infos == [{"name": "x", "var_size": 1, "var_type": "Scalar"}]
+    assert infos == [{"name": "x", "var_size": 1, "var_type": "Scalar", "base_shape": []}]
 
 
 def test_var_infos_omits_empty_sub_batch_shape():
     spec = {"x": Scalar, "y": Scalar}
     infos = _var_infos(spec, sub_batch_shapes={"x": (), "y": (3,)})
     assert infos == [
-        {"name": "x", "var_size": 1, "var_type": "Scalar"},
-        {"name": "y", "var_size": 1, "var_type": "Scalar", "sub_batch_shape": [3]},
+        {"name": "x", "var_size": 1, "var_type": "Scalar", "base_shape": []},
+        {
+            "name": "y",
+            "var_size": 1,
+            "var_type": "Scalar",
+            "base_shape": [],
+            "sub_batch_shape": [3],
+        },
     ]
 
 
@@ -138,9 +144,9 @@ def test_forward_segment_metadata_carries_only_names(tmp_path):
     with open(out_dir / "model_meta.json") as f:
         meta = json.load(f)
 
-    # Master level keeps the full info.
+    # Master level keeps the full info, including the v5 base_shape.
     for info in (*meta["inputs"], *meta["outputs"]):
-        assert set(info) >= {"name", "var_size", "var_type"}
+        assert set(info) >= {"name", "var_size", "var_type", "base_shape"}
         assert "sparsity" not in info
 
     # Segment level: only ``name``. ``param_inputs`` survives at the

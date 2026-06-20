@@ -75,7 +75,7 @@ a clear "regenerate via `neml2-compile`" message; the only
 remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `4`.
+The current schema version is `5`.
 
 At the top level the metadata records:
 
@@ -202,9 +202,9 @@ parameter wholesale:
 
 | Operation               | Returns                                             |
 | :---------------------- | :-------------------------------------------------- |
-| `forward(inputs)`       | One tensor per output name.                         |
-| `jvp(inputs, tangents)` | `(outputs, J @ v)`. Missing tangent keys → zero.    |
-| `jacobian(inputs)`      | `(outputs, J)` with `J` of shape `(*B, n_out, n_in)`. |
+| `forward(inputs)`       | One tensor per output name, at `(*B, *out_base)`.   |
+| `jvp(inputs, tangents)` | `(outputs, J @ v)`, each at `(*B, *out_base)`. Missing tangent keys → zero. |
+| `jacobian(inputs)`      | `(outputs, J)` with `J[out][in]` the block `(*B, *out_base, *in_base)`. |
 | `named_parameters()`    | Mutable dict of promoted parameters; empty if baked. |
 
 All three call paths take a dict keyed by the master input names
@@ -216,10 +216,12 @@ binding = model._inner    # the bare neml2.aoti.Model runtime
 # Forward.
 out = binding.forward({"strain": strain.data})
 
-# JVP: tangent dict shares keys with inputs; missing keys default to zero.
+# JVP: tangent dict shares keys + (*B, *base) shapes with inputs; missing keys
+# default to zero. jvp_out[name] is the directional derivative at (*B, *out_base).
 out, jvp_out = binding.jvp({"strain": strain.data}, {"strain": tangent.data})
 
-# Dense Jacobian.
+# Jacobian as unflattened variable-pair blocks: J[out_name][in_name] is
+# (*B, *out_base, *in_base) (e.g. SR2->SR2 -> (*B, 6, 6); Scalar->SR2 -> (*B, 6)).
 out, J = binding.jacobian({"strain": strain.data})
 ```
 
@@ -306,7 +308,8 @@ exposed by a single header in the wheel:
 neml2::aoti::Model model("path/to/elasticity_meta.json");
 
 auto outputs = model.forward({{"strain", strain_tensor}});
-auto [outs, J]  = model.jacobian({{"strain", strain_tensor}});
+// J is nested: J["stress"]["strain"] is the (*B, *out_base, *in_base) block.
+auto [outs, J] = model.jacobian({{"strain", strain_tensor}});
 
 // Promoted parameters are mutable in place.
 model.named_parameters().at("E").fill_(210000.0);

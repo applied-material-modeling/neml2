@@ -114,7 +114,7 @@ public:
   jvp(const std::map<std::string, at::Tensor> & inputs,
       const std::map<std::string, at::Tensor> & tangents) const;
 
-  std::pair<std::map<std::string, at::Tensor>, at::Tensor>
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
   jacobian(const std::map<std::string, at::Tensor> & inputs) const;
   ///@}
 
@@ -127,8 +127,8 @@ public:
   ///@{
   const std::vector<std::string> & input_names() const noexcept;
   const std::vector<std::string> & output_names() const noexcept;
-  const std::vector<int> & input_sizes() const noexcept;
-  const std::vector<int> & output_sizes() const noexcept;
+  const std::vector<std::vector<int64_t>> & input_base_shapes() const noexcept;
+  const std::vector<std::vector<int64_t>> & output_base_shapes() const noexcept;
   std::map<std::string, at::Tensor> & named_parameters() noexcept;
   const std::map<std::string, at::Tensor> & named_parameters() const noexcept;
   /// The compute device the workload is dispatched to.

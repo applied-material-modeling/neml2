@@ -107,8 +107,12 @@ def test_export_forward_model_metadata(forward_export):
     _, out_dir = forward_export
     meta = json.loads((out_dir / "model_meta.json").read_text())
     assert meta["type"] == "composed"
-    assert meta["inputs"] == [{"name": "strain", "var_size": 6, "var_type": "SR2"}]
-    assert meta["outputs"] == [{"name": "stress", "var_size": 6, "var_type": "SR2"}]
+    assert meta["inputs"] == [
+        {"name": "strain", "var_size": 6, "var_type": "SR2", "base_shape": [6]}
+    ]
+    assert meta["outputs"] == [
+        {"name": "stress", "var_size": 6, "var_type": "SR2", "base_shape": [6]}
+    ]
     seg = meta["segments"][0]
     assert seg["kind"] == "forward"
     # Forward-segment per-variable metadata is name-only (v4 schema). The

@@ -31,11 +31,11 @@ Python supplies it automatically.
 ## Load and run from C++
 
 `neml2::eager::load_model(input_file, model_name)` mirrors Python's
-`load_model(path, name)` and returns a `neml2::eager::Model` whose `forward` and
-metadata accessors (`input_names` / `output_names` / `input_sizes` /
-`output_sizes` / `device` / `dtype`) have the **same signatures** as
-`neml2::aoti::Model`. So test code switches between the eager and compiled
-runtimes by changing only the load call and the header.
+`load_model(path, name)` and returns a `neml2::eager::Model` whose operations
+(`forward` / `jvp` / `jacobian`) and metadata accessors (`input_names` /
+`output_names` / `input_base_shapes` / `output_base_shapes` / `device` / `dtype`)
+have the **same signatures** as `neml2::aoti::Model`. So test code switches between
+the eager and compiled runtimes by changing only the load call and the header.
 
 ```{literalinclude} ../../../tests/aoti/forward_single/model.i
 :language: ini
@@ -50,29 +50,75 @@ using namespace neml2::eager;
 // Loads the model named "model" straight from the .i by embedding Python.
 auto m = load_model("tests/aoti/forward_single/model.i", "model");
 
-// Build inputs at the model's device + dtype (NEML2 runs in float64).
+// Build each input at its canonical (*B, *base_shape) shape, on the model's
+// device + dtype (NEML2 runs in float64). For SR2 strain the base shape is {6}.
 const auto opts = at::TensorOptions().dtype(m.dtype()).device(m.device());
 std::map<std::string, at::Tensor> inputs;
 for (std::size_t i = 0; i < m.input_names().size(); ++i)
-  inputs.emplace(m.input_names()[i], at::randn({8, m.input_sizes()[i]}, opts));
+{
+  std::vector<int64_t> shape{8};                       // batch
+  const auto & base = m.input_base_shapes()[i];        // e.g. {6} for SR2, {} for Scalar
+  shape.insert(shape.end(), base.begin(), base.end());
+  inputs.emplace(m.input_names()[i], at::randn(shape, opts));
+}
 
 auto out = m.forward(inputs);   // {"stress": (8, 6) tensor}
 ```
 
-The reported `input_names` / `input_sizes` (and the outputs) are derived through
-the same helper the AOTI metadata uses, so an eager model and its compiled twin
-agree on the boundary contract — making `neml2::eager::Model` a true drop-in for
-`neml2::aoti::Model`.
+The reported `input_names` / `input_base_shapes` (and the outputs) are derived
+through the same helper the AOTI metadata uses, so an eager model and its compiled
+twin agree on the boundary contract — making `neml2::eager::Model` a true drop-in
+for `neml2::aoti::Model`. Inputs must be passed at their canonical
+`(*B, *base_shape)` shape; a non-canonical trailing shape (e.g. an SR2 strain
+passed as `(*B, 1)` instead of `(*B, 6)`) is rejected with a `FatalError`.
 
-The first cut implements `forward` only (no `jvp` / `jacobian`).
+## Sensitivities: `jvp` and `jacobian`
+
+`jvp` and `jacobian` mirror `neml2::aoti::Model` and are computed on the native
+model's chain rule (the same `v=` machinery the AOTI export traces), so they work
+for forward and implicit (Newton) models alike. Both are **variable-native**: the
+boundary works in variables, not flattened group vectors.
+
+```cpp
+// Jacobian-vector product: jvp_out[name] is the directional derivative at the
+// output's natural (*B, *out_base) shape.
+auto [out, jvp_out] = m.jvp(inputs, tangents);   // tangents keyed + shaped like
+                                                 // inputs; a missing key is zero.
+
+// Full Jacobian as unflattened variable-pair blocks: J[out_name][in_name] is
+// (*B, *out_base, *in_base) -- e.g. SR2->SR2 -> (*B, 6, 6); Scalar->SR2 -> (*B, 6).
+auto [out2, J] = m.jacobian(inputs);
+```
+
+:::{warning}
+**Plain-batch only.** The raw-tensor `forward(map)` boundary has no slot to
+declare per-input *sub-batch* shapes (in NEML2 those are caller-declared at
+compile time), so the eager runtime supports only plain-batch models. A model
+that carries BLOCK-aware / labelled sub-batch axes (e.g. crystal-plasticity
+geometry) is **rejected** with a `neml2::aoti::FatalError` rather than silently
+mishandled — use the compiled / dispatched path ([](model-dispatch)) for those.
+:::
 
 ## Errors
 
-Any Python-side failure — a parse error, an unknown model name, a wrong-dtype
-input — is normalized to `neml2::aoti::FatalError` (the same taxonomy the AOTI
-runtime uses; see [](aoti-packages)). The exception type is exported from
-`libneml2.so`, so a `catch (const neml2::aoti::Exception &)` works across the two
-libraries.
+A Python-side failure — a parse error, an unknown model name, a wrong-dtype
+input, a sub-batch model — is normalized to `neml2::aoti::FatalError` (the same
+taxonomy the AOTI runtime uses; see [](aoti-packages)). The one exception is a
+**solver divergence / max-iterations**, which is re-raised as the *recoverable*
+`neml2::aoti::ConvergenceError` (it originates as that type inside `libneml2.so`
+and round-trips faithfully through the embedded interpreter), so a host can cut
+the time step and retry:
+
+```cpp
+try { auto out = m.forward(inputs); }
+catch (const neml2::aoti::Exception & e) {
+  if (e.recoverable()) { /* cut dt, retry */ }
+  else throw;
+}
+```
+
+The exception types are exported from `libneml2.so`, so a
+`catch (const neml2::aoti::Exception &)` works across the two libraries.
 
 ## Requirements
 

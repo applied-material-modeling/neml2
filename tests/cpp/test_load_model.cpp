@@ -49,11 +49,15 @@ std::map<std::string, at::Tensor>
 make_inputs(const Model & model, int64_t b)
 {
   const auto & names = model.input_names();
-  const auto & sizes = model.input_sizes();
+  const auto & bases = model.input_base_shapes();
   const auto opts = at::TensorOptions().dtype(model.dtype()).device(model.device());
   std::map<std::string, at::Tensor> inputs;
   for (std::size_t i = 0; i < names.size(); ++i)
-    inputs.emplace(names[i], at::randn({b, sizes[i]}, opts));
+  {
+    std::vector<int64_t> shape{b};
+    shape.insert(shape.end(), bases[i].begin(), bases[i].end());
+    inputs.emplace(names[i], at::randn(shape, opts));
+  }
   return inputs;
 }
 

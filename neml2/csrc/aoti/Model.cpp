@@ -92,16 +92,17 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
           "'. Path must point at the _meta.json written by `neml2-compile`.");
   const auto meta = nlohmann::json::parse(meta_f);
 
-  // Schema-version handshake. v5 moves implicit-segment I/O from a
-  // single packed (*dyn, u_size) flat slab to per-variable tensors in
-  // their natural (*dyn, *sub_batch, *base) shape; the per-segment
-  // metadata records per-variable sub_batch_shape / base_shape so the
-  // C++ side can pack the segment loader's positional inputs and so
-  // convergence-norm bookkeeping can sum per-variable contributions.
-  // Older caches must be regenerated; we fail loudly instead of
-  // silently misinterpreting them.
-  // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 4;
+  // Schema-version handshake. v5 makes the runtime variable-native: the master
+  // `inputs`/`outputs` metadata records each variable's full `base_shape`, so
+  // the C++ side reports input_base_shapes()/output_base_shapes(), validates
+  // canonical (*B, *base) inputs, and returns unflattened jvp (*B, *out_base)
+  // and variable-pair jacobian blocks (*B, *out_base, *in_base). (v5 also keeps
+  // the per-segment per-variable sub_batch_shape / base_shape used to pack the
+  // segment loaders' positional inputs and sum convergence norms.) Older caches
+  // lack the master base_shape; we fail loudly instead of misinterpreting them.
+  // dependencies: aoti.schema_version (NOT auto-managed -- C++ `//` comments are
+  // not scanned by scripts/dep_manager.py; keep this literal in sync by hand).
+  static constexpr int kSupportedSchemaVersion = 5;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -152,6 +153,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
 
   // Master inputs / outputs.
   _input_names.reserve(meta["inputs"].size());
+  _input_base_shapes.reserve(meta["inputs"].size());
   _input_sizes.reserve(meta["inputs"].size());
   _input_offsets.reserve(meta["inputs"].size());
   for (const auto & v : meta["inputs"])
@@ -159,15 +161,18 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
     const auto name = v["name"].get<std::string>();
     const auto sz = v["var_size"].get<int>();
     _input_names.push_back(name);
+    _input_base_shapes.push_back(v["base_shape"].get<std::vector<int64_t>>());
     _input_offsets.push_back(_input_total_size);
     _input_sizes.push_back(sz);
     _input_total_size += sz;
   }
   _output_names.reserve(meta["outputs"].size());
+  _output_base_shapes.reserve(meta["outputs"].size());
   _output_sizes.reserve(meta["outputs"].size());
   for (const auto & v : meta["outputs"])
   {
     _output_names.push_back(v["name"].get<std::string>());
+    _output_base_shapes.push_back(v["base_shape"].get<std::vector<int64_t>>());
     _output_sizes.push_back(v["var_size"].get<int>());
   }
 
@@ -412,16 +417,16 @@ Model::output_names() const noexcept
   return _impl->output_names();
 }
 
-const std::vector<int> &
-Model::input_sizes() const noexcept
+const std::vector<std::vector<int64_t>> &
+Model::input_base_shapes() const noexcept
 {
-  return _impl->input_sizes();
+  return _impl->input_base_shapes();
 }
 
-const std::vector<int> &
-Model::output_sizes() const noexcept
+const std::vector<std::vector<int64_t>> &
+Model::output_base_shapes() const noexcept
 {
-  return _impl->output_sizes();
+  return _impl->output_base_shapes();
 }
 
 // The three ops run through `_guarded` so every exception leaving the public
@@ -442,7 +447,7 @@ Model::jvp(const std::map<std::string, at::Tensor> & inputs,
   return _guarded([&] { return _impl->jvp(inputs, tangents); });
 }
 
-std::pair<std::map<std::string, at::Tensor>, at::Tensor>
+std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
 Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
 {
   return _guarded([&] { return _impl->jacobian(inputs); });

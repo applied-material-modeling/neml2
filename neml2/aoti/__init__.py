@@ -46,7 +46,7 @@ Example usage::
     m.named_parameters()["E"].fill_(210000.0)
 """
 
-from ._aoti import Model
+from ._aoti import ConvergenceError, Model
 from ._shim import AOTIModel  # noqa: F401 (registers AOTIModel with native factory)
 
-__all__ = ["Model", "AOTIModel"]
+__all__ = ["Model", "AOTIModel", "ConvergenceError"]

@@ -123,8 +123,8 @@ batch size from 1 to roughly a million without recompilation.
 ## Jacobian and Jacobian-vector product
 
 Alongside `forward`, the compiled artifact also exposes `jvp` (outputs
-plus a directional derivative `J @ v`) and `jacobian` (outputs plus
-the dense Jacobian). Both live on the underlying C++ binding,
+plus a directional derivative `J @ v`) and `jacobian` (outputs plus the
+per-variable Jacobian blocks). Both live on the underlying C++ binding,
 reachable through the shim's inner attribute:
 
 ```{code-cell} ipython3
@@ -142,12 +142,16 @@ print("J @ v [stress] :", jvp["stress"][:, :3])
 ```{code-cell} ipython3
 out, J = binding.jacobian({"strain": strain.data})
 print("output[stress] :", out["stress"][:, :3])
-print("Jacobian shape :", J.shape)             # (batch, n_out, n_in)
-print("J[0] (6x6):\n", J[0])
+
+# J is nested by variable pair: J[output_name][input_name] is the block
+# d(output)/d(input), shaped (batch, *output_base, *input_base).
+block = J["stress"]["strain"]
+print("J[stress][strain] :", tuple(block.shape))   # (batch, 6, 6)
+print("first sample (6x6):\n", block[0])
 ```
 
 Use `jvp` when you only need one direction of the gradient; use
-`jacobian` when you need the whole matrix.
+`jacobian` when you need the full per-variable blocks.
 
 ## Promoting parameters
 

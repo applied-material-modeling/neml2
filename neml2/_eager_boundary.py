@@ -168,3 +168,78 @@ def unwrap_outputs(
         name: wrapper.data  # noqa: data-ok eager embed boundary
         for name, wrapper in zip(output_names, typed_outs, strict=True)
     }
+
+
+def assemble_jvp_outputs(
+    v_out: dict,
+    typed_outputs: tuple[TensorWrapper, ...],
+    output_names: list[str],
+) -> dict[str, torch.Tensor]:
+    """Sum directional chain-rule contributions into raw, base-shaped JVP outputs.
+
+    Outbound JVP half of the eager embed boundary. ``v_out`` is the native
+    ``ComposedModel`` chain-rule result ``{out_name: {seed_name: block}}`` from a
+    K=1 directional seed; each block's data is ``(1, *batch, *out_base)``. For
+    each output the K axis is squeezed and the per-input contributions summed,
+    giving the unflattened ``(*batch, *out_base)`` -- matching the C++
+    ``neml2::aoti::Model::jvp`` contract. An output with no dependence on any
+    seeded input is an explicit zero block.
+
+    Reads ``.data`` -- one of the few legitimate raw-tensor sites (see the module
+    docstring + CLAUDE.md "Hard rules / Rule 1").
+    """
+    out: dict[str, torch.Tensor] = {}
+    for typed_out, name in zip(typed_outputs, output_names, strict=True):
+        contribs = v_out.get(name, {})
+        if not contribs:
+            # Same (*batch, *out_base) shape as the value output, all zeros.
+            out[name] = torch.zeros_like(typed_out.data)  # noqa: data-ok eager embed boundary
+            continue
+        # (1, *batch, *out_base) -> (*batch, *out_base), summed over seeded inputs.
+        blocks = [b.data.squeeze(0) for b in contribs.values()]  # noqa: data-ok eager embed boundary
+        out[name] = blocks[0] if len(blocks) == 1 else torch.stack(blocks, 0).sum(0)
+    return out
+
+
+def assemble_jacobian(
+    v_out: dict,
+    typed_outputs: tuple[TensorWrapper, ...],
+    output_names: list[str],
+    output_spec: dict[str, type[TensorWrapper]],
+    input_names: list[str],
+    input_spec: dict[str, type[TensorWrapper]],
+) -> dict[str, dict[str, torch.Tensor]]:
+    """Assemble per-(out, in) chain-rule blocks into the nested variable-pair Jacobian.
+
+    Outbound Jacobian half of the eager embed boundary. ``v_out`` is the native
+    ``ComposedModel`` chain-rule result from a leading-K identity seed per input
+    (``{out_name: {in_name: block}}``). Returns the nested
+    ``{out_name: {in_name: (*batch, *out_base, *in_base)}}`` matching the C++
+    ``neml2::aoti::Model::jacobian`` contract (rows in ``output_spec`` order, cols
+    in ``input_spec`` order). A constant ``(out, in)`` pair (absent from
+    ``v_out``) is an explicit zero block.
+
+    Reuses :func:`neml2.cli.aoti_export._leading_k_block_to_per_pair` (the AOTI
+    export's own block-to-pair converter, lazily imported to avoid import-time
+    CLI coupling); the ``.data`` read happens inside that boundary helper.
+    """
+    from .cli.aoti_export import _leading_k_block_to_per_pair
+
+    first = typed_outputs[0]
+    batch_shape = tuple(first.batch_shape)
+    opts = {"dtype": first.dtype, "device": first.device}
+    jac: dict[str, dict[str, torch.Tensor]] = {}
+    for o_name in output_names:
+        o_base = tuple(output_spec[o_name].BASE_SHAPE)
+        row: dict[str, torch.Tensor] = {}
+        for i_name in input_names:
+            i_base = tuple(input_spec[i_name].BASE_SHAPE)
+            block = v_out.get(o_name, {}).get(i_name)
+            if block is None:
+                # Constant (out, in) pair: a structural zero block.
+                row[i_name] = torch.zeros(*batch_shape, *o_base, *i_base, **opts)
+            else:
+                # (*batch, *out_base, *in_base).
+                row[i_name] = _leading_k_block_to_per_pair(block, input_spec[i_name]).contiguous()
+        jac[o_name] = row
+    return jac

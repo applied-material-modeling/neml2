@@ -58,6 +58,13 @@ struct SolverConfig
   double ls_c = 1.0e-3;
 };
 
+/// A variable-pair Jacobian: `J[out_name][in_name]` is the unflattened block
+/// `(*B, *out_base_shape, *in_base_shape)` (e.g. SR2->SR2 -> `(*B,6,6)`;
+/// Scalar->SR2 -> `(*B,6)`; R2->R2 -> `(*B,3,3,3,3)`). Outer keys are the
+/// `output_names()`, inner keys the `input_names()`. A constant (out, in) pair
+/// is present with an all-zero block.
+using VariablePairJacobian = std::map<std::string, std::map<std::string, at::Tensor>>;
+
 /**
  * @brief Thin, self-contained runtime for AOTI-exported NEML2 models.
  *
@@ -140,29 +147,31 @@ public:
   const std::vector<std::string> & input_names() const noexcept;
   const std::vector<std::string> & output_names() const noexcept;
 
-  /// Per-name flat sizes (product of declared base shape; 1 for Scalar).
-  const std::vector<int> & input_sizes() const noexcept;
-  const std::vector<int> & output_sizes() const noexcept;
+  /// Per-name base shape (e.g. Scalar -> `{}`, SR2 -> `{6}`, R2 -> `{3,3}`).
+  /// Inputs must be passed at their canonical `(*B, *base_shape)` shape; the
+  /// flat per-variable size is `prod(base_shape)`.
+  const std::vector<std::vector<int64_t>> & input_base_shapes() const noexcept;
+  const std::vector<std::vector<int64_t>> & output_base_shapes() const noexcept;
 
   /// Evaluate the model. `inputs` is keyed by the names returned by
-  /// `input_names()`; missing keys throw. Returns one tensor per name in
-  /// `output_names()`.
+  /// `input_names()` and shaped `(*B, *base_shape)`; missing keys throw and a
+  /// non-canonical trailing shape is rejected. Returns one tensor per name in
+  /// `output_names()` at `(*B, *out_base_shape)`.
   std::map<std::string, at::Tensor> forward(const std::map<std::string, at::Tensor> & inputs) const;
 
-  /// Evaluate + JVP. `tangents` shares its keys with `inputs`; missing keys
-  /// default to zero. Returns `{outputs, jvp_outputs}` -- both maps keyed by
-  /// `output_names()`.
+  /// Evaluate + JVP. `tangents` shares its keys + `(*B, *in_base)` shapes with
+  /// `inputs`; a missing key defaults to zero. Returns `{outputs, jvp_outputs}`
+  /// -- both maps keyed by `output_names()`; `jvp_outputs[name]` is the
+  /// directional derivative at the output's natural `(*B, *out_base_shape)`.
   std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
   jvp(const std::map<std::string, at::Tensor> & inputs,
       const std::map<std::string, at::Tensor> & tangents) const;
 
-  /// Evaluate + full Jacobian. The returned `J` is the assembled
-  /// `(*B, sum(out_sizes), sum(in_sizes))` block-stacked tensor that the
-  /// segments' `_jvp.pt2` graphs already produce; the wrapper composes across
-  /// forward segments and threads IFT blocks across implicit segments. Per-
-  /// output / per-input slabs can be sliced off using `output_sizes()` /
-  /// `input_sizes()` offsets.
-  std::pair<std::map<std::string, at::Tensor>, at::Tensor>
+  /// Evaluate + full Jacobian as unflattened variable-pair blocks. Returns
+  /// `{outputs, J}` where `J[out_name][in_name]` is `(*B, *out_base, *in_base)`
+  /// (see @ref VariablePairJacobian). Composed across forward segments and
+  /// threaded through IFT blocks for implicit segments.
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
   jacobian(const std::map<std::string, at::Tensor> & inputs) const;
 
   /// Mutable surface for the runtime-flexible parameters (the set promoted
