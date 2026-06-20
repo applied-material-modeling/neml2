@@ -8,6 +8,16 @@ people maintaining the export path; downstream users who only want
 to *use* a compiled model should start with
 [](tutorials-models-compiled).
 
+```{figure} ../asset/neml2_compile_pipeline.svg
+:alt: The neml2-compile pipeline — the export and stub-emission subsystems
+:align: center
+
+What `neml2-compile` does end to end: the `export_model_for_aoti` subsystem
+(seven stages) lowers the live model into `.pt2` graphs plus a metadata JSON,
+while `emit_aoti_stub` rewrites the HIT file into an `AOTIModel` shim — the two
+branches converging at load time on `neml2::aoti::Model`.
+```
+
 ## High-level shape
 
 `neml2-compile` orchestrates two mostly-orthogonal subsystems:

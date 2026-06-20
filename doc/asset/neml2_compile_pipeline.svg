@@ -66,7 +66,7 @@
 <circle cx="36.0" cy="556.0" r="13" class="badge"/>
 <text x="36.0" y="560.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">5</text>
 <text x="58.0" y="551" class="t" font-size="12.5" text-anchor="start" font-weight="600">Seed sub-batch shapes</text>
-<text x="58.0" y="569" class="m" font-size="10" text-anchor="start">from [Drivers] example inputs</text>
+<text x="58.0" y="569" class="m" font-size="10" text-anchor="start">from --example-batch-shape / [Settings]</text>
 <rect x="36.0" y="600" width="280" height="60" rx="10" class="stp"/>
 <circle cx="36.0" cy="630.0" r="13" class="badge"/>
 <text x="36.0" y="634.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">6</text>
@@ -76,7 +76,7 @@
 <circle cx="36.0" cy="704.0" r="13" class="badge"/>
 <text x="36.0" y="708.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">7</text>
 <text x="58.0" y="699" class="t" font-size="12.5" text-anchor="start" font-weight="600">Trace · lower · package</text>
-<text x="58.0" y="717" class="m" font-size="10" text-anchor="start">torch.export + AOTI · ELF stack patch</text>
+<text x="58.0" y="717" class="m" font-size="10" text-anchor="start">torch.export + AOT-Inductor</text>
 <line x1="176" y1="290" x2="176" y2="304" class="ln" marker-end="url(#ah)"/>
 <line x1="176" y1="364" x2="176" y2="378" class="ln" marker-end="url(#ah)"/>
 <line x1="176" y1="438" x2="176" y2="452" class="ln" marker-end="url(#ah)"/>

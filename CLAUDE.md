@@ -8,6 +8,28 @@ NEML2 is a Python-native material modeling library that vectorizes constitutive 
 
 The legacy C++ tower from v2.x was retired in the v3 migration. The C++ that remains lives under `neml2/csrc/`: the AOT-Inductor runtime (`neml2/csrc/aoti/`) that loads the `.pt2` packages produced by `neml2-compile`, plus the work scheduler / dispatcher (`neml2/csrc/dispatchers/`) that spreads a batched evaluation across CPU/GPU(s). Both compile into a single shared library, `neml2/lib/libneml2.so`, built once as part of the wheel and invisible to most contributors. A second, **separate** library `neml2/lib/libneml2_eager.so` (`neml2/csrc/eager/`) embeds a CPython interpreter to run a model straight from its `.i` with no compile step — the fast-to-start path for downstream C++ unit tests; it is kept separate precisely so `libneml2.so` stays Python-free. See [](doc/content/migration/212_300.md) for the v2 → v3 rewrite summary.
 
+## The six evaluation routes
+
+A model is authored once in Python, then evaluated through one of six runtimes.
+Each carries a `host-mode` codename — use these in commits, issues, and review.
+Full reference (capability matrix, when-to-use): [](doc/content/deployment/overview.md).
+
+| Codename | Entry point | Compile | Host / library |
+| --- | --- | --- | --- |
+| `py-eager` | `neml2.load_model` | none | Python |
+| `py-jit` | `neml2.compile` | in-process `torch.compile` | Python |
+| `py-aoti` | `neml2.aoti.Model` | offline (`neml2-compile`) | Python via pybind over `libneml2.so` |
+| `cpp-aoti` | `neml2::aoti::Model` | offline (`neml2-compile`) | C++ (`libneml2.so`) |
+| `cpp-dispatch` | `neml2::aoti::DispatchedModel` | offline (`neml2-compile`) | C++ multi-device (`libneml2.so`) |
+| `cpp-eager` | `neml2::eager::Model` | none | C++ + embedded CPython (`libneml2_eager.so`) |
+
+**Parity is an invariant.** All six expose the same `forward` / `jvp` / `jacobian`
+surface over the same authored model. A change to the model boundary, the chain
+rule, or the AOTI metadata contract must be carried across every affected route —
+a fix that lands only in `py-eager` silently diverges the other five. The one
+deliberate asymmetry: `cpp-eager` is plain-batch only (sub-batch models such as
+crystal plasticity are rejected); every other route supports sub-batch.
+
 ## Hard rules — these supersede convenience
 
 These three rules are non-negotiable across the codebase. They exist because violations are individually local but collectively cascade into the kind of silent metadata-loss bug that consumes weeks of debugging. Re-read this section before any non-trivial edit.
@@ -142,7 +164,7 @@ The installed wheel exposes four console scripts (defined in `pyproject.toml` un
 - `neml2-run <input.i>` — drive a model through a load history.
 - `neml2-inspect <input.i>` — print the resolved input/output graph of a wired-up input file. Use this *before* `neml2-run` when composing models; wiring bugs surface as obvious mismatches instead of cryptic shape errors deep in Newton.
 - `neml2-syntax --section Models --summary` — browse the registered-object catalog with one-line docstrings (`--type <Name>` to drill into one). Run this when planning *any* new Model or wondering whether a primitive already does what you want.
-- `neml2-compile <input.i> --model <name>` — export a model to an AOT-Inductor `.pt2` package + drop-in HIT stub. See [](doc/content/deployment/) for the artifact format and [](doc/content/development/pipeline.md) for the compilation pipeline.
+- `neml2-compile <input.i> --model <name>` — export a model to an AOT-Inductor `.pt2` package + drop-in HIT stub. See [](doc/content/deployment/) for the artifact format and [](doc/content/pipeline.md) for the compilation pipeline.
 
 `neml2-diagnose` and `neml2-time` from v2 are gone.
 
@@ -166,7 +188,7 @@ The Python package layout under `neml2/`:
 - `drivers/` — `driver.py` (the abstract `Driver` base) plus the concrete `TransientDriver`, `ModelUnitTest`, `TransientRegression`, `Verification` files — the top-level "run a model over a load history" objects exposed in input files.
 - `data/` — `CubicCrystal`, `CrystalGeometry` and related crystallography data classes.
 - `user_tensors/` — registered `[Tensors]` block types other than `Python` (currently the `CSV<Type>` family).
-- `cli/aoti_compile.py`, `cli/aoti_export.py` — the `neml2-compile` orchestration and the per-segment export path; see [](doc/content/development/pipeline.md).
+- `cli/aoti_compile.py`, `cli/aoti_export.py` — the `neml2-compile` orchestration and the per-segment export path; see [](doc/content/pipeline.md).
 - `aoti/` — Python-side `AOTIModel` shim that loads a `_meta.json` + per-segment `.pt2` files and exposes `forward` / `jvp` / `jacobian`. Backed by the pybind module `aoti/_aoti.cpp` (which links `libneml2.so`).
 - `eager.py` + `_eager_boundary.py` — the Python adapter the C++ embedded-Python eager runtime imports. `_EagerModel` wraps a `factory.load_model` native model and presents the raw-tensor, name-keyed `forward` / `jvp` / `jacobian` (dict→dict, plus `(dict, J)` for jacobian) + `input_names`/`sizes`/`device`/`dtype` surface the C++ `neml2::eager::Model` consumes; `jvp`/`jacobian` reuse the native model's `v=` chain rule (the `_ForwardJacobianModule` seed/assembly helpers). `_eager_boundary.py` holds the device/dtype check + batch-broadcast + output-unwrap/assembly helpers it shares with the AOTI shim (the third raw-tensor framework boundary; see Rule 1). Eager is **plain-batch only**: a model that produces sub-batch output (e.g. crystal plasticity) is rejected (no slot to declare per-input sub-batch shapes at this boundary).
 - `pyzag/` — `NEML2PyzagModel` adapter that exposes a NEML2 `Model` as a `torch.nn.Module` consumable by the pyzag training library.
