@@ -18,10 +18,9 @@ step:
   [](models-GursonCavitation) for porous metal plasticity.
 - **Hardening models** — isotropic (`LinearIsotropicHardening`,
   `VoceIsotropicHardening`, `SlopeSaturationVoceIsotropicHardening`,
-  `IsotropicHardeningStaticRecovery`,
   `PowerLawIsotropicHardeningStaticRecovery`), kinematic
   (`LinearKinematicHardening`, `ChabochePlasticHardening`,
-  `FredrickArmstrongPlasticHardening`, `KinematicHardeningStaticRecovery`,
+  `FredrickArmstrongPlasticHardening`,
   `PowerLawKinematicHardeningStaticRecovery`), and rate-temperature couplings
   built from the Kocks-Mecking family (`KocksMeckingActivationEnergy`,
   `KocksMeckingFlowSwitch`, `KocksMeckingFlowViscosity`,
@@ -165,8 +164,8 @@ the Fischer-Burmeister consistency condition.
   `isotropic_hardening`, producing the three associative directions.
   `[Eprate]`, `[Kprate]`, `[eprate]` scale each direction by the consistency
   parameter `flow_rate`.
-- **Time integration** — three `BackwardEulerTimeIntegration` blocks
-  ([](models-SR2BackwardEulerTimeIntegration) and its `Scalar` sibling) turn
+- **Time integration** — three time-integration blocks
+  ([](models-SR2BackwardEulerTimeIntegration) and [](models-ScalarBackwardEulerTimeIntegration)) turn
   the rates into the residuals `plastic_strain_residual`,
   `kinematic_plastic_strain_residual`,
   `equivalent_plastic_strain_residual`.
@@ -204,9 +203,9 @@ compositions for the most common dialects:
 - `rate_independent_plasticity/gurson/` — porous metal plasticity using
   [](models-GTNYieldFunction) and [](models-GursonCavitation).
 - `viscoplasticity/perfect/` — Perzyna viscoplastic counterpart.
-- `recovery/` — adds isotropic/kinematic static recovery
-  ([](models-PowerLawIsotropicHardeningStaticRecovery),
-  [](models-PowerLawKinematicHardeningStaticRecovery), and the power-law variants).
+- `recovery/` — adds isotropic/kinematic static recovery using
+  [](models-PowerLawIsotropicHardeningStaticRecovery) and
+  [](models-PowerLawKinematicHardeningStaticRecovery).
 - `km_flow/` — Kocks-Mecking temperature- and rate-dependent flow.
 
 ## See also

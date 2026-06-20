@@ -143,9 +143,8 @@ Here the pair `(100, 0.3)` is tagged `(YOUNGS_MODULUS, POISSONS_RATIO)`,
 so the model derives $K$ and $G$ internally via the formulas above and
 then evaluates the volumetric/deviatoric split.
 
-The variable surface is fixed by the abstract `Elasticity` base: a
-single `SR2` input named `strain` and a single `SR2` output named
-`stress`. Other models reach this elasticity block by
+The variable surface for `LinearIsotropicElasticity` is a single `SR2`
+input named `strain` and a single `SR2` output named `stress`. Other models reach this elasticity block by
 matching those names — a `[Models]` entry that produces an
 `elastic_strain` and renames it to `strain` (or that renames this
 block's input to `elastic_strain`) wires straight into the start of

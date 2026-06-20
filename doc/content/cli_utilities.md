@@ -1,7 +1,7 @@
 (cli-utilities)=
 # CLI utilities
 
-The NEML2 wheel installs four console scripts:
+The NEML2 wheel installs five console scripts:
 
 | Tool            | Purpose                                              |
 | :-------------- | :--------------------------------------------------- |
@@ -9,14 +9,15 @@ The NEML2 wheel installs four console scripts:
 | `neml2-inspect` | Print the structural summary of a model.             |
 | `neml2-syntax`  | Browse the registered-object catalog.                |
 | `neml2-compile` | Export a model to an AOT-Inductor package.           |
+| `neml2-stub`    | Regenerate `.pyi` type stubs for the pybind11 extension modules. |
 
-They share a common style — each takes an input file (where one is
+The first four share a common style — each takes an input file (where one is
 needed), each forwards trailing positional tokens as HIT overrides
 (`Models/elasticity/E:=210000`), each is implemented in pure Python
 under [`neml2/cli/`](https://github.com/applied-material-modeling/neml2/tree/main/neml2/cli)
 and is also importable as a regular Python function.
 
-All four tools accept a cumulative `--load PATH` flag for importing
+All four of those tools accept a cumulative `--load PATH` flag for importing
 user-defined extensions (custom `Model` / `Driver` / `Solver` /
 `[Tensors]` / `[Data]` classes) before the tool's own work begins.
 `PATH` is either a path to a `.py` file or a package directory, or a
@@ -146,11 +147,10 @@ class — the same data the documentation's syntax catalog under
 Exports a model to an AOT-Inductor package — one or more `.pt2`
 files plus a metadata JSON and a drop-in HIT stub — that can be
 loaded later from either Python or C++ without parsing the original
-input file. Use it when you want a
-portable, dependency-light artifact for inference: shipping a
-calibrated model to a downstream simulator, dropping the HIT parser
-from a deployment image, baking parameters into a frozen graph for
-performance.
+input file. Use it when you want a dependency-light artifact for
+inference: shipping a calibrated model to a downstream simulator,
+dropping the HIT parser from a deployment image, baking parameters
+into a frozen graph for performance.
 
 ```{program-output} neml2-compile --help
 ```
@@ -160,12 +160,26 @@ artifact from Python, parameter promotion (`-p <name>`), and the
 trade-offs against eager mode — lives in
 [](tutorials-models-compiled).
 
+## `neml2-stub`
+
+Regenerates `.pyi` type stubs for every pybind11 extension module in the
+installed `neml2` package (currently `neml2.aoti._aoti`). The stubs are
+written next to their `.so` files so that pyright and IDE autocompletion
+resolve `from ._aoti import Model` cleanly.
+
+```{program-output} neml2-stub --help
+```
+
+This tool is primarily used by CI (between install and pyright) and by the
+wheel-building pipeline. Any extra arguments are forwarded verbatim to
+`pybind11_stubgen`.
+
 ## Where to go next
 
-- The four scripts are also importable as `neml2.cli.run.main`,
-  `neml2.cli.inspect.main`, `neml2.cli.syntax.main`, and
-  `neml2.cli.aoti_compile.main` if you want to drive them in-process
-  rather than via the shell.
+- The five scripts are also importable as `neml2.cli.run.main`,
+  `neml2.cli.inspect.main`, `neml2.cli.syntax.main`,
+  `neml2.cli.aoti_compile.main`, and `neml2.cli.stub.main` if you want to
+  drive them in-process rather than via the shell.
 - The Python-first path — `neml2.load_model(...)` + direct call —
   is the subject of [](tutorials-models-running-your-first-model)
   and is usually what you want when you need to inspect or

@@ -57,7 +57,7 @@ $$
 \tau_i = \sigma : Q \operatorname{sym}\left(d_i \otimes n_i\right) Q^T.
 $$
 
-Internally, orientations are stored as *modified* Rodrigues parameters; conversion to Euler angles, quaternions, or rotation matrices is available on demand (see [](models-RotationMatrix)).
+Internally, orientations are stored as *modified* Rodrigues parameters; conversion to a rotation matrix is available via [](models-RotationMatrix).
 
 :::{note}
 The catalog supports two integration strategies for the orientation equation: fully coupled implicit (integrate elastic strain, hardening, and orientation as one nonlinear system, via [](models-WR2ImplicitExponentialTimeIntegration)) and decoupled (integrate strain and hardening first, then advance orientation with an explicit exponential update). The example below uses the coupled form.

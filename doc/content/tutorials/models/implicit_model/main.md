@@ -149,8 +149,9 @@ A useful sanity check: evaluate the *residual* model at the
 residual_at_soln.data.norm().item()
 ```
 
-That is within the `abs_tol = 1e-10` set on the `Newton` block, as
-expected.
+That is below the solver's convergence threshold — the `Newton` block
+declares `rel_tol = 1e-8` and `abs_tol = 1e-10`; the solver stops when
+either criterion is met.
 
 ## Vectorized solves
 

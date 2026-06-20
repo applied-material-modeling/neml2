@@ -156,8 +156,10 @@ attribute it should be exposed under (`mu` here). Other useful options:
 
 `attr="mu"` just renames the storage slot so the model body can write
 `self.mu` instead of `self.dynamic_viscosity` — handy when the math
-uses Greek-letter conventions. The parameter itself is a real
-`torch.nn.Parameter` and trains the same way either way:
+uses Greek-letter conventions. The underlying storage is a
+`torch.nn.Parameter` (visible in `named_parameters()`), so the usual
+PyTorch training idioms work unchanged. Attribute access via `self.mu`
+returns a typed `Scalar` wrapper that carries the same data:
 
 ```{code-cell} ipython3
 dict(m.named_parameters())
@@ -173,14 +175,8 @@ unchanged — `model.to(device)`, `model.state_dict()`,
 
 ## Inspecting the declared surface
 
-Once the declarations are in place, the model knows everything about
-its surface — `repr` shows a summary:
-
-```{code-cell} ipython3
-m
-```
-
-The individual pieces are also available as attributes:
+Once the declarations are in place, the surface is available as
+attributes:
 
 ```{code-cell} ipython3
 print("input_spec :", m.input_spec)

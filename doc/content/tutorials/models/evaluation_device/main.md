@@ -135,7 +135,7 @@ device memory. A few rules of thumb:
   (e.g. `SR2.fill(..., device=target)`) instead of building on CPU
   and copying.
 - **Pull only what you need back to CPU.** Keep the integration loop
-  on GPU and only `.cpu()` the final history slice for plotting.
+  on GPU and only `.to(device="cpu")` the final history slice for plotting.
 
 ## Where to go next
 

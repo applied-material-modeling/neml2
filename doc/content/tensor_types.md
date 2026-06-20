@@ -39,8 +39,9 @@ data.shape == (*dynamic_batch_shape, *sub_batch_shape, *base_shape)
   without recompilation.
 
 `wrapper.batch_shape` returns `dynamic_batch_shape + sub_batch_shape`
-— "everything that isn't base". `wrapper.batch_ndim`, `.dynamic_ndim`,
-and `.sub_batch_ndim` provide the corresponding counts.
+— "everything that isn't base". `wrapper.batch.ndim`,
+`wrapper.dynamic_batch.ndim`, and `wrapper.sub_batch_ndim` provide the
+corresponding counts.
 
 ## Fixed-base-shape tensor types
 
@@ -63,10 +64,10 @@ class-specific factories — e.g. `R2.identity`, `SSR4.identity_sym`,
 | :------------- | :--------- | :-------------------------------------------------------------------------------------------------------------------- |
 | `Scalar`       | `()`       | A single number per batch entry. The wrapper exists so mixed operations like `Scalar * SR2` reliably return an `SR2`. |
 | `Vec`          | `(3,)`     | 3-vector.                                                                                                              |
-| `Rot`          | `(3,)`     | Rodrigues vector representing a 3D rotation.                                                                          |
+| `Rot`          | `(3,)`     | Modified Rodrigues parameters (MRPs) representing a 3D rotation: `n * tan(θ/4)`, zero vector = identity.             |
 | `MillerIndex`  | `(3,)`     | Integer-coordinate crystallographic direction or plane normal, stored as float for differentiability.                 |
 | `R2`           | `(3, 3)`   | Full second-order tensor (no symmetry).                                                                                |
-| `WR2`          | `(3,)`     | Skew-symmetric second-order tensor in *Mandel-style* axial-vector packing — the three independent components stored as a 3-vector. |
+| `WR2`          | `(3,)`     | Skew-symmetric second-order tensor stored as an axial 3-vector `(w0, w1, w2)`. No √2 scaling; the corresponding 3×3 skew form is recovered by `r2_from_wr2`. |
 | `SR2`          | `(6,)`     | Symmetric second-order tensor in **Mandel notation**: `(σ₁₁, σ₂₂, σ₃₃, √2·σ₂₃, √2·σ₁₃, √2·σ₁₂)`. The off-diagonal `√2` factors make the inner product `A : B = a · b` in 6-vector form. |
 | `SSR4`         | `(6, 6)`   | Fourth-order tensor with both pairs of minor symmetries (the symmetry class of the elasticity tensor `ℂ`) in Mandel packing. |
 

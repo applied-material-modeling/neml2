@@ -1,5 +1,5 @@
 (install)=
-# Installation
+# Basic installation
 
 NEML2 ships as a Python wheel on
 [PyPI](https://pypi.org/project/neml2/), and that's the recommended
@@ -35,7 +35,8 @@ The wheel installs into your site-packages under `neml2/`:
 ├── __init__.py              # `import neml2` entry point
 ├── aoti/, models/, ...      # the Python package
 ├── lib/
-│   └── libneml2.so          # the C++ runtime library
+│   ├── libneml2.so          # the C++ AOTI runtime library
+│   └── libneml2_eager.so    # the C++ eager (embedded-Python) runtime
 ├── include/
 │   └── neml2/csrc/          # C++ public headers
 ├── share/

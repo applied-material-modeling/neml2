@@ -3,7 +3,7 @@
 
 :::{note}
 End users should not need this page. The published PyPI wheels are
-expected to cover the vast majority of use cases — see [Basic installation](install.md).
+expected to cover the vast majority of use cases — see [Basic installation](../installation/install.md).
 Build from source if you are contributing to NEML2 itself, debugging a
 build flavor the wheels don't ship, or experimenting with a custom
 LibTorch.
@@ -29,8 +29,10 @@ For pure C++ development (the wheel build is invoked separately by
 different purpose:
 
 `dev` — the day-to-day build preset
-: Debug build of the C++ library and pybind extensions. This is the
-  preset for actually compiling sources:
+: Debug build of `libneml2_aoti` (the compiled-model runtime).
+  The pybind extension modules are not included (`NEML2_WHEEL=OFF`);
+  use `pip install -e ".[dev]"` to rebuild those.
+  This is the preset for iterating on C++ sources:
 
   ```shell
   cmake --preset dev -S .
@@ -40,10 +42,10 @@ different purpose:
 `cc` — a configure-only preset for tooling
 : Configures with `CMAKE_EXPORT_COMPILE_COMMANDS=ON` and
   `NEML2_WHEEL=ON` so the resulting `compile_commands.json` covers
-  both `libneml2` sources and the pybind extension `.cpp` files.
-  A `compile_commands.json` symlink is dropped into the repo root for
-  clangd / clang-tidy / other static-analysis tools to pick up. Use
-  `dev` if you also need to compile from a `cc`-configured build dir.
+  both the C++ runtime sources and the pybind extension `.cpp` files.
+  A `compile_commands.json` symlink is created in the repo root for
+  clangd / clang-tidy / other static-analysis tools to pick up.
+  This preset is configure-only; there is no corresponding build step.
 
   ```shell
   cmake --preset cc -S .

@@ -159,7 +159,7 @@ leaf in the catalog publishes the same `eigenstrain : SR2` surface.
 For finite-strain workflows the analogous pattern uses
 [](models-ThermalDeformationJacobian) or
 [](models-SwellingAndPhaseChangeDeformationJacobian), multiplied
-together via a `ScalarLinearCombination`-style chain, then handed
+together via a `ScalarMultiplication` block, then handed
 to [](models-VolumeAdjustDeformationGradient) to produce the
 mechanical deformation gradient that the elastic model consumes.
 On the small-strain side, [](models-VolumeChangeEigenstrain) plays

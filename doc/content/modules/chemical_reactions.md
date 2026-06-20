@@ -19,8 +19,8 @@ The catalog carves the domain into two layers:
   for a single reacting phase. [](models-AvramiErofeevNucleation),
   [](models-ContractingGeometry), and [](models-DiffusionLimitedReaction)
   are the three concrete leaves; they share the canonical
-  `conversion_degree` / `reaction_rate` variable names defined by the
-  abstract `ReactionMechanism` base.
+  `conversion_degree` / `reaction_rate` variable names, so they can be
+  swapped interchangeably in a composed model.
 - **Geometry and volume bridges** — kinematic primitives that turn
   the reaction state into the volumetric quantities other modules need.
   [](models-CylindricalChannelGeometry) gives the dimensionless inner
@@ -30,10 +30,9 @@ The catalog carves the domain into two layers:
   reaction's control mass can be tied into a control-volume framework.
 
 Time integration, predictors, Arrhenius temperature dependence,
-linear combinations, and the implicit Newton solve live under
-`common/` and the solver/predictor packages. The example below
-shows how the chemical-reactions primitives slot into that
-machinery.
+linear combinations, and the implicit Newton solve are provided by
+NEML2's shared primitives. The example below shows how the
+chemical-reactions types slot into that machinery.
 
 ## Math
 
@@ -111,7 +110,7 @@ contribution:
   [](models-ImplicitUpdate) block.
 
 The remaining blocks downstream of `solve_reaction` are conservation
-relations and time integration from `common/`:
+relations and time integration from NEML2's shared primitives:
 the four [](models-ScalarLinearCombination) blocks (`binder_rate`,
 `char_rate`, `gas_rate`, `open_pore_rate`) implement conservation
 relations such as $\dot{\omega}_c = Y \, \dot{\alpha}$ (with $Y$ the
@@ -126,7 +125,8 @@ Variable names flow through the composition by string match: the
 mechanism produces `alpha_rate`, which the linear combinations consume
 and rename into `wb_rate`, `wc_rate`, `wg_rate`, `phio_rate`; the
 time integrators then pair those rates with the state variables `wb`,
-`wc`, `wg`, `phio` declared in the driver's initial conditions. The
+`wc`, `wg`, `phio`; the driver's initial conditions initialize `wb` and
+`wc` explicitly, while `wg` and `phio` start from zero. The
 final `model` [](models-ComposedModel) glues the implicit solve, the
 rate computations, and the explicit integrations into one forward
 operator that the [](drivers-TransientDriver) walks over the

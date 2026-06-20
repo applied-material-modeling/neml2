@@ -267,11 +267,9 @@ into the smallest bin and added to the flux divergence via a
 `ScalarLinearCombination`. The full composition lives in
 `tests/regression/kwn/growth-nucleation-scaled/model.i`.
 
-## Tests and examples
+## Examples
 
-Per-class unit tests live in `tests/models/kwn/` — one `.i` per
-primitive — and exercise the forward evaluation and AD derivatives in
-isolation. End-to-end regression tests live in `tests/regression/kwn/`:
+End-to-end examples live in `tests/regression/kwn/`:
 
 - `growth-only-scaled/` — single-species growth with a tabulated
   chemical potential, semi-infinite scaled radius grid.

@@ -17,25 +17,44 @@ The CLI synopsis:
 ```
 neml2-compile <input.i> --model <name>
                         [--output-dir <dir>]
-                        [--device cpu|cuda] [--dtype float64|float32]
+                        [--device cpu|cuda [cpu|cuda ...]] [--dtype float64|float32]
                         [-p|--parameter NAME ...]
 ```
 
 See [](cli-utilities) for the broader CLI surface.
 
-## The four artifacts
+## On-disk layout
 
-For a forward single-segment model, `neml2-compile` typically emits
-four files (forward graph, optional JVP graph, metadata, HIT stub).
-Implicit single-segment models emit the per-segment set covered in
-the segment table below.
+`neml2-compile` writes a **per-device artifact folder** plus a single
+standalone HIT stub that sits next to it:
+
+```text
+<output-dir>/                  # default ./aoti/
+  <name>_aoti.i                # standalone HIT stub (points at the folder below)
+  <name>/                      # per-device artifact folder
+    cpu/   <name>_meta.json + *.pt2
+    cuda/  <name>_meta.json + *.pt2
+```
+
+A compile targeting a single device (the default `--device cpu`) emits
+just one `<device>/` subfolder; `neml2-compile --device cpu cuda` emits
+both `cpu/` and `cuda/`, each a complete, self-contained artifact for
+that device. The stub points at the `<name>/` folder via an absolute
+`artifact_path` field, and the loader resolves
+`<artifact_path>/<device>/<name>_meta.json` for the device it runs on
+(see [The HIT stub](#the-hit-stub)).
+
+Inside each `<device>/` subfolder, a forward single-segment model emits
+the metadata plus a value graph and an optional JVP graph:
 
 | File                  | Contents                                                                    |
 | :-------------------- | :-------------------------------------------------------------------------- |
 | `<name>.pt2`          | AOT-Inductor-compiled forward / value graph.                                |
 | `<name>_jvp.pt2`      | Flat-Jacobian graph: returns the outputs plus a stacked `dout/din` block.   |
 | `<name>_meta.json`    | Variable layout, dtype, device, promoted-parameter initial values.         |
-| `<name>_aoti.i`       | HIT stub: drops into any input file as a replacement for the source model. |
+
+Implicit single-segment models emit the per-segment set covered in the
+segment table below in place of the forward graphs.
 
 For models that contain an `ImplicitUpdate` — or a `ComposedModel`
 whose leaves contain one — the export splits at each implicit
@@ -59,25 +78,7 @@ the second table without the `_seg0_` prefix.
 
 The metadata is the source of truth: the `.pt2` files are opaque to
 NEML2, and re-loading an artifact in a new process never re-introspects
-the Python source.
-
-The exact field layout evolves alongside the export pipeline, so the
-schema is documented in code rather than mirrored here:
-
-- The emitter at `neml2/cli/aoti_export.py` is the authoritative
-  Python-side definition of what the file contains.
-- The loader at `neml2/csrc/aoti/Model.cpp` is the authoritative
-  C++-side reader.
-
-Both share an integer `schema_version` field bumped on any breaking
-layout change. The C++ loader refuses any non-matching version with
-a clear "regenerate via `neml2-compile`" message; the only
-remediation is a re-compile.
-
-<!-- dependencies: aoti.schema_version -->
-The current schema version is `5`.
-
-At the top level the metadata records:
+the Python source. It records, at a high level:
 
 - **Device + dtype**, baked into the `.pt2` graphs at export. There
   is no runtime override.
@@ -86,10 +87,19 @@ At the top level the metadata records:
 - **Promoted parameters** — the `-p` set, with initial values. Empty
   in the fully-baked case (the artifact is then a frozen inference
   graph and `named_parameters()` is empty at load time).
-- **Segments** — one entry per per-`ImplicitUpdate` boundary the
-  exporter split on; executed in order at runtime, with each segment's
-  outputs feeding the next segment's inputs via a shared
-  `name → tensor` state map.
+- **Segments** — one entry per `ImplicitUpdate` boundary the exporter
+  split on; executed in order at runtime, with each segment's outputs
+  feeding the next segment's inputs via a shared `name → tensor` state
+  map.
+
+The exact field layout evolves alongside the export pipeline, so it is
+not mirrored field-by-field here. The metadata carries an integer
+`schema_version`, bumped on any breaking layout change. The C++ loader
+refuses any non-matching version with a clear "regenerate via
+`neml2-compile`" message; the only remediation is a re-compile.
+
+<!-- dependencies: aoti.schema_version -->
+The current schema version is `5`.
 
 ### Segment kinds
 
@@ -114,8 +124,7 @@ Two segment kinds appear inside `segments`:
   baked — it lives inside the compiled `_step.pt2` / `_ift.pt2` graphs.
 
 Each segment declares its inputs / outputs / promoted-parameter inputs
-in the same per-variable structure as the top-level layout; see the
-emitter source for the current set of fields.
+in the same per-variable structure as the top-level layout.
 
 ### Cross-segment state
 
@@ -141,10 +150,17 @@ wherever a `Driver` consumes the model by name. A typical stub:
 [Models]
   [elasticity]
     type = AOTIModel
-    meta = ./elasticity_meta.json
+    artifact_path = '/abs/path/to/aoti/elasticity'
   []
 []
 ```
+
+The `artifact_path` is an **absolute** path to the per-device artifact
+folder (`<output-dir>/<name>/`). The loader appends `<device>/` for the
+running device and loads `<artifact_path>/<device>/<name>_meta.json`.
+Because the path is absolute and the stub lives outside that folder, the
+artifacts are **not relocatable** — moving the folder requires editing
+`artifact_path` or recompiling.
 
 The shim has the same surface as a native model — same `input_spec`,
 same `output_spec`, same call convention — but inside it dispatches
@@ -172,7 +188,7 @@ so they can be tuned by editing the stub without recompiling:
 [Models]
   [model]
     type = AOTIModel
-    meta = ./model_meta.json
+    artifact_path = '/abs/path/to/aoti/model'
     solver = 'newton'
   []
 []
@@ -186,7 +202,10 @@ have no effect — leaving it out keeps the stub free of inert controls.
 
 ## Loading from Python
 
-The stub loads with the usual `neml2.load_model`:
+Two entry points, depending on what you need. To drive the artifact
+through the normal HIT machinery (e.g. a `TransientDriver`), load the
+stub with `neml2.load_model` — the `AOTIModel` shim resolves the
+per-device subfolder for the current default device:
 
 ```python
 import neml2
@@ -194,11 +213,21 @@ import neml2
 model = neml2.load_model("elasticity_aoti.i", "elasticity")
 ```
 
-The runtime surface on the underlying `neml2.aoti.Model` binding
-centers on four call paths, backed by introspection properties
-(`input_names`, `output_names`, `device`, `dtype`, …) and a
-`set_parameter(name, tensor)` helper for replacing a promoted
-parameter wholesale:
+To work against the bare runtime directly — raw-tensor calls, JVP,
+Jacobian, promoted-parameter mutation — construct `neml2.aoti.Model`
+from a per-device metadata path:
+
+```python
+from neml2.aoti import Model
+
+binding = Model("aoti/elasticity/cpu/elasticity_meta.json")
+```
+
+Its surface centers on three call paths plus introspection properties
+(`input_names`, `output_names`, `input_base_shapes`, `output_base_shapes`,
+`device`, `dtype`), a mutable `named_parameters()` map, and a
+`set_parameter(name, tensor)` helper for replacing a promoted parameter
+wholesale:
 
 | Operation               | Returns                                             |
 | :---------------------- | :-------------------------------------------------- |
@@ -211,8 +240,6 @@ All three call paths take a dict keyed by the master input names
 listed in `input_names`; missing keys throw.
 
 ```python
-binding = model._inner    # the bare neml2.aoti.Model runtime
-
 # Forward.
 out = binding.forward({"strain": strain.data})
 
@@ -299,13 +326,16 @@ on the same device as the graph at load time.
 
 ## C++ runtime
 
-The C++ surface is the same `forward` / `jvp` / `jacobian` triple,
-exposed by a single header in the wheel:
+The C++ surface is the same `forward` / `jvp` / `jacobian` triple. The
+entry point that mirrors Python's `load_model(path, name)` is
+`neml2::aoti::load_model`: hand it the stub `.i` and the model name, and
+it parses the stub, resolves the per-device artifact folder from
+`artifact_path`, and forwards any `[Solvers]` settings to the runtime:
 
 ```cpp
-#include "neml2/csrc/aoti/Model.h"
+#include "neml2/csrc/dispatchers/factory.h"
 
-neml2::aoti::Model model("path/to/elasticity_meta.json");
+auto model = neml2::aoti::load_model("aoti/elasticity_aoti.i", "elasticity");
 
 auto outputs = model.forward({{"strain", strain_tensor}});
 // J is nested: J["stress"]["strain"] is the (*B, *out_base, *in_base) block.
@@ -315,12 +345,22 @@ auto [outs, J] = model.jacobian({{"strain", strain_tensor}});
 model.named_parameters().at("E").fill_(210000.0);
 ```
 
-The constructor takes a single filesystem path to the metadata JSON;
-the per-segment `.pt2` files are resolved relative to that path.
-The class is a bare loader — it does not participate in HIT-input
-parsing, which is the caller's responsibility.
+`load_model` returns a `Model`-shaped handle. Passing an optional
+scheduler turns on multi-device dispatch (chunking a batch across
+CPU + GPU(s)); see [](model-dispatch) for the scheduler surface.
 
-The class is non-copyable and non-movable; hold it as a
+If you already have a per-device metadata path and want to skip HIT
+parsing entirely, construct the bare `neml2::aoti::Model` directly. It
+takes a single filesystem path to a `<device>/<name>_meta.json`; the
+per-segment `.pt2` files are resolved relative to that path:
+
+```cpp
+#include "neml2/csrc/aoti/Model.h"
+
+neml2::aoti::Model model("aoti/elasticity/cpu/elasticity_meta.json");
+```
+
+The bare `Model` is non-copyable and non-movable; hold it as a
 `std::unique_ptr` / `std::shared_ptr` or as an automatic on the
 stack.
 
@@ -338,6 +378,8 @@ For build-system wiring — `find_package(neml2)`, pkg-config,
   scripts.
 - [](cli-neml2-inspect) — inspect a compiled stub the same way you
   inspect any other model.
+- [](model-dispatch) — load these artifacts from C++ and spread a
+  batched evaluation across CPU + GPU(s).
 - [](external-project-integration) — CMake / pkg-config wiring for
   C++ projects that consume the bundled `libneml2.so` from the
   wheel.
