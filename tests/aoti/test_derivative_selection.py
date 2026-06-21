@@ -43,6 +43,9 @@ import neml2  # noqa: F401 — registers models
 _TESTS_ROOT = Path(__file__).resolve().parents[1]
 _ELASTICITY_I = _TESTS_ROOT / "models/solid_mechanics/elasticity/LinearIsotropicElasticity.i"
 _COMPOSED_I = _TESTS_ROOT / "aoti/forward_implicit/model.i"
+# Two independent pipelines (forward strain->mandel_stress; implicit x->y) in one
+# model: requesting one pipeline's pair prunes the OTHER pipeline's whole segment.
+_PRUNE_I = _TESTS_ROOT / "aoti/derivative_prune/prune.i"
 # A sub-batched (per-grain) implicit model: unknowns u_per (per-grain) / u_glob
 # (global); givens g_per / g_glob / coupling.
 _SUBBATCH_IMPLICIT_I = _TESTS_ROOT / "aoti/implicit_grain_global_cross/model.i"
@@ -162,6 +165,34 @@ def test_composed_reachability_partial_matches_eager(tmp_path):
     _, Jc = m.jacobian(ins)
     assert list(Jc) == [o] and list(Jc[o]) == [i]
     assert _broadcast_equal(Jc[o][i], Je[o][i])
+
+
+@pytest.mark.parametrize(
+    "pair",
+    [
+        # Forward-pipeline pair: keeps the forward segment, prunes the implicit one.
+        "mandel_stress:strain",
+        # Implicit-pipeline pair: keeps the implicit segment, prunes the forward one(s).
+        "y:x",
+    ],
+)
+def test_offpath_segment_pruned_jacobian_matches_eager(tmp_path, pair):
+    """A composed model of two INDEPENDENT pipelines: requesting one pipeline's
+    pair prunes the other pipeline's whole segment (no jvp/ift graph). At runtime
+    that segment is advanced value-only and its dstate zero-filled; the requested
+    block must still equal the eager chain-rule block (the off-path zeros are
+    never folded into a kept pair)."""
+    from neml2.eager import _EagerModel
+
+    out, inp = (s.strip() for s in pair.split(":"))
+    m = _compile(tmp_path, _PRUNE_I, "model", derivatives=[pair])
+    eager = _EagerModel(str(_PRUNE_I), "model")
+    ins = _rand_inputs(eager, B=4)
+
+    _, Jc = m.jacobian(ins)
+    _, Je = eager.jacobian(ins)
+    assert list(Jc) == [out] and list(Jc[out]) == [inp]
+    assert _broadcast_equal(Jc[out][inp], Je[out][inp])
 
 
 def test_subbatch_implicit_global_global_compiles_and_matches_fd(tmp_path):
