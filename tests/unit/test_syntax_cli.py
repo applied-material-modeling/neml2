@@ -227,7 +227,35 @@ def test_generated_json_is_accepted_by_docs_extension():
         page = module._render_type_page(entry)
         assert entry["type"] in page
         assert page.startswith("(")  # MyST label
-    types = sorted({r["type"] for r in records if r.get("section") == "Models"})
-    assert module._render_section_index("Models", types).startswith("(models-syntax)=")
-    top = module._render_top_index({"Models": types, "Solvers": ["Newton"]})
+    # Path-grouped catalog: group Models by their source-tree submodule the
+    # way doc/_ext/neml2_syntax.py:_generate does, then exercise the section
+    # and submodule index renderers.
+    models = [r for r in records if r.get("section") == "Models"]
+    groups: dict[tuple, list] = {}
+    for r in models:
+        groups.setdefault(module._submodule_parts(r.get("source_path", "")), []).append(r)
+    child_subs = sorted({parts[0] for parts in groups if parts})
+    root_types = sorted(r["type"] for r in groups.get((), []))
+    section_index = module._render_section_index("Models", child_subs, root_types)
+    assert section_index.startswith("(models-syntax)=")
+    assert child_subs and all(f"{sub}/index" in section_index for sub in child_subs)
+
+    nested = next(parts for parts in groups if parts)  # e.g. ("solid_mechanics", ...)
+    sub_index = module._render_submodule_index(
+        "Models", nested, [], sorted(r["type"] for r in groups[nested])
+    )
+    assert sub_index.startswith(f"# {nested[-1]}")
+
+    top = module._render_top_index(["Models", "Solvers"])
     assert "Models/index" in top and "Solvers/index" in top
+
+    # Inert RST cross-reference roles are degraded to code spans (MyST can't
+    # render them), so none should survive into a rendered type page.
+    rst_roles = (":func:`", ":class:`", ":meth:`", ":attr:`")
+    role_entry = next(
+        (r for r in records if any(role in (r.get("doc") or "") for role in rst_roles)),
+        None,
+    )
+    assert role_entry is not None, "expected at least one docstring with an RST role"
+    role_page = module._render_type_page(role_entry)
+    assert not any(role in role_page for role in rst_roles)

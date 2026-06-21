@@ -48,11 +48,13 @@ def _log(s: Scalar) -> Scalar:
 class AvramiErofeevNucleation(Model):
     r"""Avrami--Erofeev nucleation reaction mechanism.
 
-    Maps the conversion degree :math:`a` to the reaction rate
+    Maps the conversion degree $a$ to the reaction rate
 
-    .. math:: f = k (1 - a) \bigl(-\ln(1 - a)\bigr)^n
+    $$
+    f = k (1 - a) \bigl(-\ln(1 - a)\bigr)^n
+    $$
 
-    where :math:`k` is the reaction coefficient and :math:`n` is the reaction
+    where $k$ is the reaction coefficient and $n$ is the reaction
     order.
     """
 

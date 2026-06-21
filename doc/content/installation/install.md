@@ -45,7 +45,7 @@ The wheel installs into your site-packages under `neml2/`:
 └── version, hash            # build metadata
 ```
 
-Python consumers can skip ahead to [](getting-started); the next
+Python consumers can skip ahead to [](deployment-overview); the next
 section on torch variants is worth a look if you need a specific CUDA
 / ROCm / nightly build.
 

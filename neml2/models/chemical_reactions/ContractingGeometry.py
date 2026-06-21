@@ -39,12 +39,14 @@ from ..model import Model
 class ContractingGeometry(Model):
     r"""Contracting-geometry reaction mechanism.
 
-    Maps the conversion degree :math:`a` to the reaction rate
+    Maps the conversion degree $a$ to the reaction rate
 
-    .. math:: f = k (1 - a)^n
+    $$
+    f = k (1 - a)^n
+    $$
 
-    where :math:`k` is the reaction coefficient and :math:`n` is the reaction
-    order. :math:`(1 - a)` is clamped into ``[eps, 1 - eps]`` to keep
+    where $k$ is the reaction coefficient and $n$ is the reaction
+    order. $(1 - a)$ is clamped into ``[eps, 1 - eps]`` to keep
     :func:`pow` well-defined at the endpoints, matching the C++ model.
     """
 

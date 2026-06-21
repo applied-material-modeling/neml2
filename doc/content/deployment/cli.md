@@ -1,7 +1,10 @@
 (cli-utilities)=
 # CLI utilities
 
-The NEML2 wheel installs five console scripts:
+The command line is the third way to use neml2 — alongside the Python
+([](python-integration)) and C++ ([](external-project-integration)) runtimes,
+you can drive a model end to end from a shell, with no code. The NEML2 wheel
+installs five console scripts:
 
 | Tool            | Purpose                                              |
 | :-------------- | :--------------------------------------------------- |

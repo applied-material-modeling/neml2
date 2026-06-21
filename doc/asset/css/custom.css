@@ -24,6 +24,18 @@
   color: var(--sy-c-link-hover);
 }
 
+/* Always show the breadcrumb trail. Shibuya hides `.sy-breadcrumbs` at
+   >=1280px (the bar doubles as the mobile menu host on narrow viewports),
+   so by default desktop readers get no breadcrumbs. Re-show it on wide
+   screens for orientation in the deeply-nested syntax catalog. The two
+   menu buttons inside the bar stay hidden by their own md:hidden /
+   xl:hidden utility classes, so only the trail renders. */
+@media (min-width: 1280px) {
+  .sy-breadcrumbs {
+    display: block;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Scheduler / dispatcher animations (doc/js/components/scheduler-demos.js)
    Theme-aware palette: the SVG inherits `color` for text/strokes, and the

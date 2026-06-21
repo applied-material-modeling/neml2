@@ -8,7 +8,6 @@ models on CPU and GPU using PyTorch as the tensor backend.
 :caption: User guide
 
 content/installation/index
-content/getting_started
 content/tutorials/index
 content/tensor_types
 content/modules/index
@@ -19,10 +18,10 @@ content/migration/index
 :maxdepth: 1
 :caption: Deployment & integration
 
-content/deployment/aoti_packages
-content/deployment/dispatcher
-content/deployment/eager
-content/deployment/integration
+content/deployment/overview
+content/deployment/python
+content/deployment/cpp
+content/deployment/cli
 ```
 
 ```{toctree}
@@ -36,7 +35,6 @@ content/development/dependencies
 content/development/documentation
 content/development/notebooks
 content/development/submitting
-content/development/pipeline
 content/development/benchmarking
 ```
 
@@ -44,7 +42,14 @@ content/development/benchmarking
 :maxdepth: 1
 :caption: Reference
 
+content/references/py_eager
+content/references/py_jit
+content/references/py_aoti
+content/references/cpp_aoti
+content/references/cpp_dispatch
+content/references/cpp_eager
+content/references/aoti_packages
+content/references/pipeline
 generated/syntax/index
 content/python_api/index
-content/cli_utilities
 ```

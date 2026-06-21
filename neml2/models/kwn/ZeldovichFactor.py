@@ -39,11 +39,11 @@ from ..model import Model
 class ZeldovichFactor(Model):
     r"""Zeldovich factor for nucleation.
 
-    Computes :math:`Z = \dfrac{V_m}{2\pi N_a R_{\mathrm{crit}}^2}
-    \sqrt{\dfrac{\gamma}{k T}}`, where :math:`R_{\mathrm{crit}}` is the
-    critical radius for nucleation, :math:`\gamma` is the surface energy of the
-    precipitate, :math:`T` is the temperature, :math:`V_m` is the molar volume,
-    :math:`N_a` is Avogadro's number, and :math:`k` is the Boltzmann constant.
+    Computes $Z = \dfrac{V_m}{2\pi N_a R_{\mathrm{crit}}^2}
+    \sqrt{\dfrac{\gamma}{k T}}$, where $R_{\mathrm{crit}}$ is the
+    critical radius for nucleation, $\gamma$ is the surface energy of the
+    precipitate, $T$ is the temperature, $V_m$ is the molar volume,
+    $N_a$ is Avogadro's number, and $k$ is the Boltzmann constant.
     """
 
     hit = HitSchema(

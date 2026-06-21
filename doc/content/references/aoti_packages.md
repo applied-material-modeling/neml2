@@ -2,9 +2,10 @@
 # AOTI packages
 
 This is the on-disk reference for the artifacts that `neml2-compile`
-produces and the thin runtime that loads them back. It is aimed at
-downstream C++ embedders who need to know exactly what a `.pt2`
-package contains.
+produces — the `.pt2` graphs, the metadata, and the HIT stub. It is the
+shared substrate both compiled-model routes load: from Python via
+[](py-aoti) and from C++ via [](cpp-aoti). Read it when you need to know
+exactly what a `.pt2` package contains.
 
 The *how* — what `neml2-compile` does between reading your HIT
 file and emitting these files — is covered in
@@ -200,69 +201,6 @@ Only the knobs that take effect are carried. The `linear_solver` field is
 have no effect — leaving it out keeps the stub free of inert controls.
 `[EquationSystems]` and `[Data]` are dropped — their state was baked in.
 
-## Loading from Python
-
-Two entry points, depending on what you need. To drive the artifact
-through the normal HIT machinery (e.g. a `TransientDriver`), load the
-stub with `neml2.load_model` — the `AOTIModel` shim resolves the
-per-device subfolder for the current default device:
-
-```python
-import neml2
-
-model = neml2.load_model("elasticity_aoti.i", "elasticity")
-```
-
-To work against the bare runtime directly — raw-tensor calls, JVP,
-Jacobian, promoted-parameter mutation — construct `neml2.aoti.Model`
-from a per-device metadata path:
-
-```python
-from neml2.aoti import Model
-
-binding = Model("aoti/elasticity/cpu/elasticity_meta.json")
-```
-
-Its surface centers on three call paths plus introspection properties
-(`input_names`, `output_names`, `input_base_shapes`, `output_base_shapes`,
-`device`, `dtype`), a mutable `named_parameters()` map, and a
-`set_parameter(name, tensor)` helper for replacing a promoted parameter
-wholesale:
-
-| Operation               | Returns                                             |
-| :---------------------- | :-------------------------------------------------- |
-| `forward(inputs)`       | One tensor per output name, at `(*B, *out_base)`.   |
-| `jvp(inputs, tangents)` | `(outputs, J @ v)`, each at `(*B, *out_base)`. Missing tangent keys → zero. |
-| `jacobian(inputs)`      | `(outputs, J)` with `J[out][in]` the block `(*B, *out_base, *in_base)`. |
-| `named_parameters()`    | Mutable dict of promoted parameters; empty if baked. |
-
-All three call paths take a dict keyed by the master input names
-listed in `input_names`; missing keys throw.
-
-```python
-# Forward.
-out = binding.forward({"strain": strain.data})
-
-# JVP: tangent dict shares keys + (*B, *base) shapes with inputs; missing keys
-# default to zero. jvp_out[name] is the directional derivative at (*B, *out_base).
-out, jvp_out = binding.jvp({"strain": strain.data}, {"strain": tangent.data})
-
-# Jacobian as unflattened variable-pair blocks: J[out_name][in_name] is
-# (*B, *out_base, *in_base) (e.g. SR2->SR2 -> (*B, 6, 6); Scalar->SR2 -> (*B, 6)).
-out, J = binding.jacobian({"strain": strain.data})
-```
-
-The promoted-parameter map is mutable; the next call sees the new
-value:
-
-```python
-binding.named_parameters()["E"].fill_(100e3)
-```
-
-`inspect`-style diagnostics — variable names, dtypes, shapes — are
-available via `neml2-inspect` against the stub, the same way as any
-other model (see [](cli-neml2-inspect)).
-
 ## Parameter promotion (`-p`)
 
 Every parameter and buffer is **baked** into the lowered graph as a
@@ -324,52 +262,10 @@ target a different device or dtype, re-run `neml2-compile` with the
 new `--device` / `--dtype`. Promoted parameter tensors are placed
 on the same device as the graph at load time.
 
-## C++ runtime
-
-The C++ surface is the same `forward` / `jvp` / `jacobian` triple. The
-entry point that mirrors Python's `load_model(path, name)` is
-`neml2::aoti::load_model`: hand it the stub `.i` and the model name, and
-it parses the stub, resolves the per-device artifact folder from
-`artifact_path`, and forwards any `[Solvers]` settings to the runtime:
-
-```cpp
-#include "neml2/csrc/dispatchers/factory.h"
-
-auto model = neml2::aoti::load_model("aoti/elasticity_aoti.i", "elasticity");
-
-auto outputs = model.forward({{"strain", strain_tensor}});
-// J is nested: J["stress"]["strain"] is the (*B, *out_base, *in_base) block.
-auto [outs, J] = model.jacobian({{"strain", strain_tensor}});
-
-// Promoted parameters are mutable in place.
-model.named_parameters().at("E").fill_(210000.0);
-```
-
-`load_model` returns a `Model`-shaped handle. Passing an optional
-scheduler turns on multi-device dispatch (chunking a batch across
-CPU + GPU(s)); see [](model-dispatch) for the scheduler surface.
-
-If you already have a per-device metadata path and want to skip HIT
-parsing entirely, construct the bare `neml2::aoti::Model` directly. It
-takes a single filesystem path to a `<device>/<name>_meta.json`; the
-per-segment `.pt2` files are resolved relative to that path:
-
-```cpp
-#include "neml2/csrc/aoti/Model.h"
-
-neml2::aoti::Model model("aoti/elasticity/cpu/elasticity_meta.json");
-```
-
-The bare `Model` is non-copyable and non-movable; hold it as a
-`std::unique_ptr` / `std::shared_ptr` or as an automatic on the
-stack.
-
-For build-system wiring — `find_package(neml2)`, pkg-config,
-`#include` paths, and the runtime library search — see
-[](external-project-integration).
-
 ## See also
 
+- [](py-aoti) — load and call a compiled package from Python.
+- [](cpp-aoti) — load and call a compiled package from C++.
 - [](model-compilation-pipeline) — what `neml2-compile` does between
   the HIT file and these artifacts.
 - [](tutorials-models-compiled) — end-to-end how-to: compile, load,

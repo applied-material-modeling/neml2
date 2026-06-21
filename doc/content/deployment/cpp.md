@@ -172,3 +172,17 @@ snippet above does it explicitly) the resulting binary runs out of the box.
 If you opt out of rpath, set
 `LD_LIBRARY_PATH=$NEML2_ROOT/lib:$NEML2_ROOT/../torch/lib` (Linux) or
 `DYLD_LIBRARY_PATH` (macOS) before running.
+
+## Now evaluate
+
+With the build wired up and a model artifact in hand (a compiled `.pt2`
+package, or the original `.i` for the eager route), pick the route that
+matches your deployment:
+
+- [](cpp-aoti) — load and call a compiled `.pt2` package on a single device.
+- [](model-dispatch) — the same artifact, spread across CPU + GPU(s).
+- [](model-eager-cpp) — run a model straight from its `.i` with no compile step
+  (the fast-to-start path for downstream C++ tests).
+
+The on-disk artifact format the first two consume is documented in
+[](aoti-packages).

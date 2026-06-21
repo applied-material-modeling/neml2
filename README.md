@@ -37,7 +37,7 @@ cd neml2
 pip install -e ".[dev]"
 ```
 
-Once NEML2 is installed, refer to the [getting started](https://applied-material-modeling.github.io/neml2/content/getting_started.html) guide for commonly used APIs.
+Once NEML2 is installed, the [deployment overview](https://applied-material-modeling.github.io/neml2/content/deployment/overview.html) walks through the different ways to evaluate a model, and the [tutorials](https://applied-material-modeling.github.io/neml2/content/tutorials/index.html) cover the commonly used APIs.
 
 ### Features and design philosophy
 

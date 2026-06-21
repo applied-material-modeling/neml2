@@ -37,10 +37,10 @@ from ..model import Model
 class NucleationFluxMagnitude(Model):
     r"""Magnitude of the nucleation flux (excluding the Dirac delta term).
 
-    Computes :math:`J = Z \, \beta \, N_0 \, \exp\!\bigl(-\Delta g / (k T)\bigr)`,
-    where :math:`Z` is the Zeldovich factor, :math:`\beta` is the kinetic
-    factor, :math:`\Delta g` is the nucleation barrier, :math:`T` is the
-    temperature, :math:`N_0` is the nucleation site density, and :math:`k` is
+    Computes $J = Z \, \beta \, N_0 \, \exp\!\bigl(-\Delta g / (k T)\bigr)$,
+    where $Z$ is the Zeldovich factor, $\beta$ is the kinetic
+    factor, $\Delta g$ is the nucleation barrier, $T$ is the
+    temperature, $N_0$ is the nucleation site density, and $k$ is
     the Boltzmann constant.
     """
 
