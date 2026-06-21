@@ -216,7 +216,7 @@ html_title = f"NEML2 {release}"
 # Sphinx serves anything in html_static_path under /_static/. We mount the
 # existing convention dirs (doc/asset, doc/js) verbatim so paths in source
 # markdown can read `../../_static/asset/...` and so the per-page raw-HTML
-# mounts in deployment/dispatcher.md (the `.scheduler-demo` divs) keep working.
+# mounts in references/cpp_dispatch.md (the `.scheduler-demo` divs) keep working.
 html_static_path = ["asset", "js"]
 
 # CSS overrides loaded on every page; same is-it-needed logic as html_js_files

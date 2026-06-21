@@ -8,7 +8,7 @@ people maintaining the export path; downstream users who only want
 to *use* a compiled model should start with
 [](tutorials-models-compiled).
 
-```{figure} ../asset/neml2_compile_pipeline.svg
+```{figure} ../../asset/neml2_compile_pipeline.svg
 :alt: The neml2-compile pipeline — the export and stub-emission subsystems
 :align: center
 

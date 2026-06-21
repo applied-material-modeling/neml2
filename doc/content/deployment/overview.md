@@ -11,12 +11,15 @@ interactively, training, or deploying into a host application.
 If you are an *end user* of an application built on NEML2, you evaluate models
 through whatever interface that application exposes — you do not choose a runtime
 and can stop reading here. This page is for developers integrating NEML2 into
-their own Python or C++ workflow, who need to pick the right runtime for the job.
+their own Python, C++, or command-line workflow. The deployment guides
+([](python-integration), [](external-project-integration), [](cli-utilities))
+cover getting set up; the reference pages linked below cover each route's
+evaluation API.
 :::
 
 All runtimes operate on the same starting point: a
 [HIT](https://github.com/applied-material-modeling/neml2-hit) input file that
-names one or more models. The minimal example used below lives at
+names one or more models. The minimal example referenced throughout lives at
 `tutorials/models/running_your_first_model/input.i`:
 
 ```{literalinclude} ../tutorials/models/running_your_first_model/input.i
@@ -60,102 +63,28 @@ inner batch dimension):
 | `cpp-dispatch` | `neml2::aoti::DispatchedModel` | offline | C++ | ✓ | ✓ | multi-device throughput |
 | `cpp-eager` | `neml2::eager::Model` | none | C++ + embedded Python | ✓ | ✗ | compile-free C++ tests |
 
-## `py-eager` — eager Python
+## The routes
 
-The interactive path. `pip install neml2`, load the model with one call, and
-evaluate it like any `torch.nn.Module`:
+Each route has its own reference page with the loading-and-calling API; the
+deployment guides cover the setup (install / build / artifacts) that comes first.
 
-```python
-import neml2
-from neml2.types import SR2
+**Python** — set up with [](python-integration):
 
-model = neml2.load_model("input.i", "elasticity")
-stress = model(SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0))
-```
+- [](py-eager) — load and call the model directly; the default for development,
+  interactive work, and autograd training.
+- [](py-jit) — `neml2.compile` accelerates the in-process graph, mainly for pyzag.
+- [](py-aoti) — load and run a compiled `.pt2` package from Python.
 
-Inputs and outputs are typed tensor wrappers (`Scalar`, `SR2`, `R2`, …) from
-`neml2.types`. There is no compile step; the model runs eager PyTorch and
-supports the full `forward` / `jvp` / `jacobian` surface plus autograd, on any
-device, including sub-batch models. This is the path you reach for during
-development, in tests, and when training with PyTorch autograd. The line-by-line
-walkthrough is in [](tutorials-models-running-your-first-model).
+**C++** — set up with [](external-project-integration):
 
-Most shell and Python entry points are layered on top of this runtime — see
-[Runtimes vs. consumers](#runtimes-vs-consumers) below.
+- [](cpp-aoti) — load a compiled `.pt2` package via `libneml2.so`.
+- [](model-dispatch) — the same artifact, chunked across CPU + GPU(s).
+- [](model-eager-cpp) — run a model from its `.i` with no compile (for C++ tests).
 
-## `py-jit` — in-process `torch.compile`
-
-The same eager model, accelerated in the running interpreter:
-
-```python
-import neml2
-
-model = neml2.load_model("input.i", "elasticity")
-neml2.compile(model)   # in place; the object is returned, now compiled
-```
-
-`neml2.compile` wraps the model's feed-forward `forward` in `torch.compile`. It
-produces no artifact — the compiled graph lives in the interpreter and recompiles
-lazily once per distinct input shape. Sensitivities still flow through the native
-chain rule. It accepts a `Model`, a `ModelNonlinearSystem`, or a pyzag wrapper,
-and exists primarily to speed up pyzag training loops (the residual / Jacobian
-assembly). See [](tutorials-optimization-pyzag).
-
-## Ahead-of-time compilation (AOTI)
-
-The deployment path. Once a model is locked in, `neml2-compile` lowers it through
-`torch.export` + AOT-Inductor into a self-contained artifact set — one or more
-`.pt2` graphs, a metadata sidecar, and a drop-in HIT stub:
-
-```bash
-neml2-compile input.i --model elasticity
-```
-
-This writes compiled graphs and metadata into `aoti/elasticity/<device>/` (one
-subfolder per target device) and drops a standalone stub `aoti/elasticity_aoti.i`
-next to it. The artifact loads quickly, skips the HIT parser on every call, and
-carries no NEML2 Python dependency at the C++ runtime. The package format itself
-is documented in [](aoti-packages); the internals of the lowering are in
-[](model-compilation-pipeline).
-
-The *same* artifact is consumed by two hosts:
-
-### `cpp-aoti` — from C++
-
-`neml2::aoti::Model` (in `libneml2.so`) loads the package and exposes
-`forward` / `jvp` / `jacobian` keyed by the structural names recorded in the
-metadata. Wire it into your build with CMake or `pkg-config` —
-[](external-project-integration).
-
-### `cpp-dispatch` — across multiple devices
-
-`neml2::aoti::DispatchedModel` wraps one pinned `aoti::Model` per device and an
-injected `WorkScheduler`, chunking a batched call across CPU + GPU(s) and
-stitching the results back. Schedulers range from a single-device chunk loop
-(`SimpleScheduler`, `MPISimpleScheduler`) to a concurrent thread-per-device pool
-(`StaticHybridScheduler`). This is a multi-device configuration of the C++ path,
-not a separate compile — see [](model-dispatch).
-
-### `py-aoti` — from Python
-
-`neml2.aoti.Model` binds the same C++ runtime through pybind, and the
-`AOTIModel` HIT shim lets a driver or input file load a compiled model in place
-of a native one. Use this to run a compiled model from Python without re-exporting,
-or to reproduce C++ numerics from a notebook. See [](aoti-packages).
-
-## `cpp-eager` — C++ embedded eager Python
-
-`neml2::eager::Model` runs a model straight from its original `.i` with **no
-compile step**: it embeds a CPython interpreter (in the separate
-`libneml2_eager.so`), imports the `neml2.eager._EagerModel` adapter, and marshals
-tensors across the boundary. It mirrors `neml2::aoti::Model`'s
-`forward` / `jvp` / `jacobian` surface, so it is a drop-in for the AOTI C++ path —
-fast to start, slow to run. It is intended for downstream C++ unit tests that
-cannot afford an Inductor compile on every build.
-
-This runtime is **plain-batch only**: a model that produces sub-batch output
-(e.g. crystal plasticity) is rejected, because there is no slot to declare
-per-input sub-batch shapes at this boundary. See [](model-eager-cpp).
+The three compiled routes (`py-aoti`, `cpp-aoti`, `cpp-dispatch`) share one
+artifact — see [](aoti-packages) for its format and
+[](model-compilation-pipeline) for how `neml2-compile` produces it. The command
+line is a fourth way to drive a model with no code at all: [](cli-utilities).
 
 ## Choosing a runtime
 
@@ -190,10 +119,9 @@ The full tool reference is in [](cli-utilities).
 
 ## See also
 
-- [](aoti-packages) — the on-disk AOTI package format and loading API.
-- [](model-dispatch) — the multi-device work scheduler / dispatcher.
-- [](model-eager-cpp) — the C++ embedded-eager runtime in detail.
-- [](external-project-integration) — CMake / `pkg-config` wiring for C++ hosts.
+- [](python-integration) / [](external-project-integration) / [](cli-utilities) —
+  set up neml2 in a Python app, a C++ build, or from the shell.
+- [](aoti-packages) — the compiled-package format shared by the AOTI routes.
 - [](model-compilation-pipeline) — what `neml2-compile` does, stage by stage.
-- [](tutorials) — end-to-end walkthroughs, including the compiled-model round trip.
+- [](tutorials) — end-to-end walkthroughs.
 - [](migration-guides) — what changed across NEML2 versions.
