@@ -38,19 +38,102 @@ Model::Impl::_init_dstate(const at::TensorOptions & options,
                           at::IntArrayRef batch_shape,
                           std::map<std::string, at::Tensor> & dstate) const
 {
-  std::vector<int64_t> shape_vec(batch_shape.begin(), batch_shape.end());
+  // Narrowed carrier: columns span only the *requested* input directions
+  // (`_req_total_size`), so the composition's matmuls and the IFT solve's RHS
+  // ("B matrix") are sized to the derivatives the user asked for. An input that
+  // is never on the `in` side of a requested pair gets an all-zero block (it is
+  // never differentiated, so it contributes nothing downstream).
+  //
+  // `batch_shape` is the FIRST input's full leading shape `(*dyn, *sub0)`. Each
+  // dstate block carries the shared dynamic batch `*common_dyn` (with the first
+  // input's own sub-batch axes stripped) and the per-variable folded storage
+  // `sub_total_k * base_k`, so a heterogeneous mix of global and per-grain
+  // inputs each gets the right shape (the first input being per-grain must not
+  // impose its grain axis on a global input's sensitivity).
+  const std::size_t in0_sub =
+      _input_sub_batch_shapes.empty() ? 0 : _input_sub_batch_shapes[0].size();
+  std::vector<int64_t> common_dyn(batch_shape.begin(),
+                                  batch_shape.end() - static_cast<int64_t>(in0_sub));
   for (std::size_t k = 0; k < _input_names.size(); ++k)
   {
-    const auto s_k = _input_sizes[k];
-    const auto c_k = _input_offsets[k];
-    shape_vec.push_back(s_k);
-    shape_vec.push_back(_input_total_size);
+    int64_t sub_total = 1;
+    for (auto s : _input_sub_batch_shapes[k])
+      sub_total *= s;
+    const int64_t folded = sub_total * _input_sizes[k];
+    std::vector<int64_t> shape_vec = common_dyn;
+    shape_vec.push_back(folded);
+    shape_vec.push_back(_req_total_size);
     auto block = at::zeros(shape_vec, options);
-    block.narrow(/*dim=*/-1, /*start=*/c_k, /*length=*/s_k).copy_(at::eye(s_k, options));
-    shape_vec.pop_back();
-    shape_vec.pop_back();
+    auto it = _req_input_offset.find(_input_names[k]);
+    if (it != _req_input_offset.end())
+    {
+      // Requested inputs are plain-batch (the compile-time guard rejects
+      // sub-batched requested pairs), so folded == _req_input_size here.
+      const auto rs = _req_input_size.at(_input_names[k]);
+      block.narrow(/*dim=*/-1, /*start=*/it->second, /*length=*/rs).copy_(at::eye(rs, options));
+    }
     dstate[_input_names[k]] = block;
   }
+}
+
+std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+Model::Impl::_forward_pair_blocks(const std::map<std::string, at::Tensor> & inputs) const
+{
+  const auto & seg = _segments.front();
+
+  // Pack + validate caller inputs into a state map (canonical (*B, *base)).
+  std::map<std::string, at::Tensor> state;
+  for (std::size_t k = 0; k < _input_names.size(); ++k)
+  {
+    const auto & n = _input_names[k];
+    auto it = inputs.find(n);
+    _assert(it != inputs.end(), "aoti::Model::jacobian: missing required input '", n, "'.");
+    _validate_input_shape(k, it->second);
+    state[n] = it->second.contiguous();
+  }
+
+  // Run the jvp loader once: it returns (*outputs, *per-pair blocks) where the
+  // blocks are row-major over seg.jacobian_pairs (the requested pairs).
+  std::vector<at::Tensor> loader_in;
+  loader_in.reserve(seg.fwd_inputs.size() + seg.param_inputs.size());
+  for (const auto & name : seg.fwd_inputs)
+    loader_in.push_back(state.at(name).contiguous());
+  for (auto & p : _gather_params(seg.param_inputs))
+    loader_in.push_back(std::move(p));
+  const auto outs = seg.jvp_loader->run(loader_in);
+
+  const std::size_t n_outs = seg.fwd_outputs.size();
+  const std::size_t n_pairs = seg.jacobian_pairs.size();
+  _assert(outs.size() == n_outs + n_pairs,
+          "aoti::Model::jacobian: jvp loader returned ",
+          outs.size(),
+          " tensors, expected ",
+          n_outs + n_pairs,
+          ".");
+
+  std::map<std::string, at::Tensor> outputs;
+  for (std::size_t i = 0; i < n_outs; ++i)
+    outputs[seg.fwd_outputs[i]] = outs[i];
+
+  VariablePairJacobian jac;
+  for (std::size_t k = 0; k < n_pairs; ++k)
+  {
+    const auto & p = seg.jacobian_pairs[k];
+    auto block = outs[n_outs + k]; // (*dyn, *in_sub, *out_base, *in_base)
+    if (p.batch_independent)
+    {
+      // A batch-independent block traced to a static size-1 dynamic-batch axis;
+      // drop the leading size-1 axes so it is returned unbatched (broadcasts
+      // against any runtime batch). The metadata flag gates this, so a
+      // state-dependent block that happens to run at batch=1 is never squeezed.
+      const int64_t trail = static_cast<int64_t>(p.in_sub_batch_shape.size() +
+                                                 p.out_base_shape.size() + p.in_base_shape.size());
+      while (block.dim() > trail && block.size(0) == 1)
+        block = block.squeeze(0);
+    }
+    jac[p.out_var][p.in_var] = block.contiguous();
+  }
+  return {std::move(outputs), std::move(jac)};
 }
 
 void
@@ -243,9 +326,10 @@ Model::Impl::_run_implicit_segment_jacobian(const Segment & seg,
                                             const std::vector<at::Tensor> & g_groups,
                                             std::map<std::string, at::Tensor> & dstate) const
 {
-  // IFT loader signature: (*u_groups, *g_groups, [params...]) -> *cells.
-  // Each cell is one (row_group, col_group) entry of -du_dg in row-major
-  // order (matches seg.ift_cells).
+  // IFT loader signature: (*u_groups, *g_groups, [params...]) -> *blocks, one
+  // per (unknown, given) pair in seg.jacobian_pairs order (the disassemble of
+  // -du/dg). Compose each block against dstate[given] into dstate[unknown] --
+  // the same per-pair Jacobian path a forward segment uses.
   std::vector<at::Tensor> ift_in;
   ift_in.reserve(u_solved_groups.size() + g_groups.size() + seg.param_inputs.size());
   for (const auto & t : u_solved_groups)
@@ -255,190 +339,73 @@ Model::Impl::_run_implicit_segment_jacobian(const Segment & seg,
   for (auto & p : _gather_params(seg.param_inputs))
     ift_in.push_back(std::move(p));
 
-  const auto ift_outs = seg.ift_loader->run(ift_in);
-  _assert(ift_outs.size() == seg.ift_cells.size(),
+  const auto blocks = seg.ift_loader->run(ift_in);
+  const std::size_t n_pairs = seg.jacobian_pairs.size();
+  _assert(blocks.size() == n_pairs,
           "aoti::Model: IFT loader returned ",
-          ift_outs.size(),
-          " tensors, expected ",
-          seg.ift_cells.size(),
-          " (one per cell).");
+          blocks.size(),
+          " blocks, expected ",
+          n_pairs,
+          " (one per (unknown, given) pair).");
 
-  // Master_ndim from dstate of any given var (all dstate entries share
-  // the trailing M dim).
+  // Master dim M + batch shape from any given's dstate (all share trailing M).
   _assert(!seg.givens.empty(),
           "aoti::Model: implicit-segment IFT has no givens; cannot infer master_ndim.");
-  auto first_dg_it = dstate.find(seg.givens[0].name);
+  auto first_dg_it = dstate.find(seg.givens.front().name);
   _assert(first_dg_it != dstate.end(),
           "aoti::Model: dstate missing given '",
-          seg.givens[0].name,
+          seg.givens.front().name,
           "' at IFT composition time.");
-  const int64_t M = first_dg_it->second.size(-1);
-
-  // Batch shape (leading dims of any cell's tensor, before its sub +
-  // base axes). Pick cell 0 to source it.
-  const auto & cell0 = ift_outs[0];
-  const auto & cinfo0 = seg.ift_cells[0];
-  const int64_t cell0_trail =
-      static_cast<int64_t>(cinfo0.sub_batch_shape.size()) + 2; // sub + 2 base
-  _assert(cell0.dim() >= cell0_trail,
-          "aoti::Model: IFT cell tensor ndim=",
-          cell0.dim(),
-          " < expected trail=",
-          cell0_trail);
-  const int64_t batch_ndim = cell0.dim() - cell0_trail;
+  const auto & dg_ref = first_dg_it->second;
+  const int64_t M = dg_ref.size(-1);
   std::vector<int64_t> batch_shape;
-  batch_shape.reserve(static_cast<std::size_t>(batch_ndim));
-  for (int64_t d = 0; d < batch_ndim; ++d)
-    batch_shape.push_back(cell0.size(d));
+  for (int64_t d = 0; d < dg_ref.dim() - 2; ++d)
+    batch_shape.push_back(dg_ref.size(d));
 
-  // Per-unknown accumulator at the converged-segment shape:
-  // (*B, u.var_size, M). Mirrors what the old flat-matmul produced so
-  // downstream forward composition sees an identical layout.
+  // Per-unknown accumulator (*B, u.var_size, M). Unknowns are not seeded in
+  // _init_dstate (they are produced by composition), so start at zero.
   std::map<std::string, at::Tensor> du_acc;
   for (const auto & u : seg.unknowns)
   {
     std::vector<int64_t> shape = batch_shape;
     shape.push_back(u.var_size);
     shape.push_back(M);
-    du_acc[u.name] = at::zeros(shape, cell0.options());
+    du_acc[u.name] = at::zeros(shape, dg_ref.options());
   }
 
-  // Iterate cells; for each, slice per-(rvar, cvar) sub-cells on the
-  // last 2 dims by base offsets, dispatch matmul kind by
-  // (row_structure, col_structure), accumulate into du_acc[rvar].
-  for (std::size_t k = 0; k < ift_outs.size(); ++k)
+  for (std::size_t k = 0; k < n_pairs; ++k)
   {
-    const auto & cell_t = ift_outs[k];
-    const auto & cinfo = seg.ift_cells[k];
-    const bool row_block = (cinfo.row_structure == "block");
-    const bool col_block = (cinfo.col_structure == "block");
+    const auto & blk = blocks[k];
+    const auto & pinfo = seg.jacobian_pairs[k];
 
-    int64_t r_off = 0;
-    for (const auto & rv : cinfo.row_vars)
-    {
-      int64_t r_base = 1;
-      for (auto s : rv.base_shape)
-        r_base *= s;
-      int64_t r_sub_total = 1;
-      for (auto s : rv.sub_batch_shape)
-        r_sub_total *= s;
+    auto din_it = dstate.find(pinfo.in_var);
+    _assert(din_it != dstate.end(),
+            "aoti::Model: IFT needs dstate['",
+            pinfo.in_var,
+            "'] which is missing.");
+    const auto & din = din_it->second;
 
-      int64_t c_off = 0;
-      for (const auto & cv : cinfo.col_vars)
-      {
-        int64_t c_base = 1;
-        for (auto s : cv.base_shape)
-          c_base *= s;
-        int64_t c_sub_total = 1;
-        for (auto s : cv.sub_batch_shape)
-          c_sub_total *= s;
+    // ``disassemble`` blocks carry exactly two trailing storage axes
+    // ``(*B, [sub], out_storage, in_storage)`` (out_storage == unknown var_size,
+    // in_storage == given var_size). For a plain batch the block is
+    // ``(*B, out_storage, in_storage)`` and ``dstate[given]`` is
+    // ``(*B, in_storage, M)``, so the IFT composition is a direct matmul. A
+    // BLOCK (per-grain) side adds an intermediate sub axis that needs the paired
+    // / cross-grain reduction -- deferred (rejected) until the sub-batch IFT
+    // path lands.
+    _assert(pinfo.in_sub_batch_shape.empty() &&
+                blk.dim() == static_cast<int64_t>(batch_shape.size()) + 2,
+            "aoti::Model: sub-batch (BLOCK) IFT Jacobian for (",
+            pinfo.out_var,
+            ", ",
+            pinfo.in_var,
+            ") is not yet implemented.");
 
-        // Slice sub-cell from cell_t (last-2 dims).
-        auto sub_cell = cell_t.narrow(/*dim=*/-2, /*start=*/r_off, /*length=*/r_base)
-                            .narrow(/*dim=*/-1, /*start=*/c_off, /*length=*/c_base);
-
-        // Pick the matching dg_dmaster view for cv. dstate[cv.name]
-        // has shape (*B, cv.var_size, M). For a BLOCK col group, view
-        // as (*B, *cv.sub, *cv.base_flat, M) but we want (*B, sub, c_base, M)
-        // with sub_total flat across cv's sub axes; for DENSE col, keep
-        // (*B, cv.var_size, M).
-        auto dg_it = dstate.find(cv.name);
-        _assert(dg_it != dstate.end(),
-                "aoti::Model: IFT consumer needs dstate['",
-                cv.name,
-                "'] which is missing.");
-        const auto & dg = dg_it->second;
-
-        // Contribution shape: (*B, *cell_sub_for_row, r_base, M).
-        at::Tensor contribution;
-        if (row_block && col_block)
-        {
-          // PAIRED BLOCK + BLOCK: sub axes on row and col are the same
-          // (single sub axis on cell tensor). dg viewed as
-          // (*B, c_sub_total, c_base, M).
-          std::vector<int64_t> dg_target = batch_shape;
-          for (auto s : cv.sub_batch_shape)
-            dg_target.push_back(s);
-          dg_target.push_back(c_base);
-          dg_target.push_back(M);
-          auto dg_view = dg.reshape(dg_target);
-          // sub_cell shape: (*B, *cell_sub, r_base, c_base); dg_view
-          // (*B, *cv.sub, c_base, M); matmul → (*B, *sub, r_base, M).
-          contribution = at::matmul(sub_cell, dg_view);
-        }
-        else if (row_block && !col_block)
-        {
-          // BLOCK row, DENSE col: sub_cell (*B, *row_sub, r_base,
-          // c_folded). dg (*B, c_folded, M). Broadcast dg with
-          // singleton sub axes.
-          std::vector<int64_t> dg_target = batch_shape;
-          for (std::size_t s = 0; s < cinfo.sub_batch_shape.size(); ++s)
-            dg_target.push_back(1);
-          dg_target.push_back(c_base);
-          dg_target.push_back(M);
-          auto dg_view = dg.reshape(dg_target);
-          contribution = at::matmul(sub_cell, dg_view);
-        }
-        else if (!row_block && col_block)
-        {
-          // DENSE row, BLOCK col: sub_cell (*B, *col_sub, r_folded,
-          // c_base). dg (*B, *cv.sub, c_base, M). matmul → (*B,
-          // *col_sub, r_folded, M); SUM over the col_sub axes (cross-
-          // grain reduction into the global row).
-          std::vector<int64_t> dg_target = batch_shape;
-          for (auto s : cv.sub_batch_shape)
-            dg_target.push_back(s);
-          dg_target.push_back(c_base);
-          dg_target.push_back(M);
-          auto dg_view = dg.reshape(dg_target);
-          auto per_col = at::matmul(sub_cell, dg_view);
-          std::vector<int64_t> sum_dims;
-          const int64_t col_sub_ndim = static_cast<int64_t>(cv.sub_batch_shape.size());
-          for (int64_t d = per_col.dim() - 2 - col_sub_ndim; d < per_col.dim() - 2; ++d)
-            sum_dims.push_back(d);
-          contribution = per_col.sum(sum_dims);
-        }
-        else
-        {
-          // DENSE row, DENSE col: standard matmul.
-          contribution = at::matmul(sub_cell, dg);
-        }
-
-        // Accumulate into du_acc[rv.name] at shape (*B, rv.var_size, M).
-        // For BLOCK row, contribution carries row sub axes; reshape to
-        // (*B, sub_total * r_base, M) so it lays out var-shaped slabs.
-        at::Tensor flat_contribution;
-        if (row_block)
-        {
-          std::vector<int64_t> target = batch_shape;
-          target.push_back(r_sub_total * r_base);
-          target.push_back(M);
-          flat_contribution = contribution.reshape(target);
-          (void)c_sub_total; // not used in this branch
-        }
-        else
-        {
-          flat_contribution = contribution;
-        }
-
-        // r_var_size = (BLOCK row: r_sub_total * r_base; DENSE row:
-        // r_base). du_acc is keyed by rv.name with shape (*B,
-        // rv.var_size, M).
-        int64_t r_var_size = (row_block) ? (r_sub_total * r_base) : r_base;
-        _assert(r_var_size == rv.var_size,
-                "aoti::Model: IFT row-var size mismatch for '",
-                rv.name,
-                "'");
-        du_acc[rv.name] = du_acc[rv.name] + flat_contribution;
-
-        c_off += c_base;
-      }
-      r_off += r_base;
-    }
+    auto contrib = at::matmul(blk, din); // (*B, out_storage, M)
+    du_acc[pinfo.out_var] = du_acc[pinfo.out_var] + contrib;
   }
 
-  // Write final per-unknown du into dstate. Negation: cells carry
-  // -du_dg already (Python side returns -du_dg.tensors[i][j]).
+  // Negation already applied Python-side (IFT emits -du/dg).
   for (const auto & u : seg.unknowns)
     dstate[u.name] = du_acc[u.name].contiguous();
 }

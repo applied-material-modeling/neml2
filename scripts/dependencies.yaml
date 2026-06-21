@@ -105,7 +105,7 @@ neml2:
 # ``doc/content/tutorials/models/compiled_models/`` are regenerated at
 # tutorial-rebuild time and so are not tracked here.
 aoti:
-  schema_version: "5"
+  schema_version: "6"
   files:
     - neml2/cli/aoti_export.py
     - neml2/csrc/aoti/Model.cpp

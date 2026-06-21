@@ -153,25 +153,6 @@ struct Model::Impl
     std::vector<GroupInfo> given_groups;
     std::vector<GroupInfo> residual_groups;
 
-    /// Per-(row_group, col_group) cell metadata for the IFT loader's
-    /// output tuple. ``ift_cells[k]`` corresponds to ``ift_outs[k]`` --
-    /// row-major (rows outer, cols inner) over ``unknown_groups`` ×
-    /// ``given_groups``. Each cell carries the row/col group indices,
-    /// the per-side structure ("block" / "dense"), the cell's own
-    /// sub_batch_shape (paired or single-side), and the per-(rvar, cvar)
-    /// VarInfo lists for slicing sub-cells out of the cell tensor.
-    struct CellInfo
-    {
-      int64_t row_group_idx = 0;
-      int64_t col_group_idx = 0;
-      std::string row_structure;
-      std::string col_structure;
-      std::vector<int64_t> sub_batch_shape;
-      std::vector<VarInfo> row_vars;
-      std::vector<VarInfo> col_vars;
-    };
-    std::vector<CellInfo> ift_cells;
-
     /// Per-(out_var, in_var) Jacobian-pair metadata for the
     /// forward-segment Jacobian loader output tuple. Ordered row-major
     /// (outputs outer, structural inputs inner). The C++ Jacobian
@@ -185,6 +166,11 @@ struct Model::Impl
       std::vector<int64_t> out_base_shape;
       std::vector<int64_t> in_base_shape;
       std::vector<int64_t> in_sub_batch_shape;
+      /// True when this block does not depend on the dynamic batch (e.g. a
+      /// constant stiffness tensor). The compiled graph emits it with a static
+      /// size-1 leading dynamic-batch axis; the single-forward-segment Jacobian
+      /// path squeezes that axis and returns the block unbatched.
+      bool batch_independent = false;
     };
     std::vector<PairInfo> jacobian_pairs;
 
@@ -259,12 +245,12 @@ struct Model::Impl
 
   /// Compose an implicit segment's IFT into `dstate`: run the IFT loader on
   /// the converged per-group ``u_solved_groups`` + per-group ``g_groups``,
-  /// receive one tensor per ``(row_group, col_group)`` cell of
-  /// ``-du_dg`` (in row-major order matching ``seg.ift_cells``), and
-  /// accumulate per-cell matmul contributions into per-unknown
-  /// ``du_dmaster`` slots. Each cell's matmul kind is dispatched by
-  /// ``(row_structure, col_structure)``; per-grain BLOCK + BLOCK cells
-  /// stay compact throughout, no N² dense materialisation.
+  /// receive one block per ``(unknown, given)`` pair of ``-du_dg`` (in
+  /// ``seg.jacobian_pairs`` order, the disassemble of the IFT matrix), and
+  /// accumulate each block's matmul against ``dstate[given]`` into the
+  /// ``dstate[unknown]`` slot -- the same per-pair Jacobian composition a
+  /// forward segment uses. (BLOCK / per-grain unknowns are rejected with a
+  /// clear "not yet implemented" error pending the sub-batch IFT path.)
   void _run_implicit_segment_jacobian(const Segment & seg,
                                       const std::vector<at::Tensor> & u_solved_groups,
                                       const std::vector<at::Tensor> & g_groups,
@@ -287,12 +273,17 @@ struct Model::Impl
   /// has already passed for this input.
   std::vector<int64_t> _batch_shape_of(std::size_t idx, const at::Tensor & t) const;
 
-  /// Internal flat Jacobian: outputs + the assembled dense `(*B, Σout, Σin)`
-  /// matrix (rows in `_output_names` order, cols in `_input_names` order). The
-  /// public `jacobian()` reshapes this into unflattened variable-pair blocks;
-  /// `jvp()` contracts it directly as `J @ v`.
-  std::pair<std::map<std::string, at::Tensor>, at::Tensor>
-  _jacobian_flat(const std::map<std::string, at::Tensor> & inputs) const;
+  /// Compose the master Jacobian carrier: returns the output values plus the
+  /// per-variable `dstate` map, where `dstate[var]` is `(*common_dyn,
+  /// var_folded, M_req)` -- the variable's sensitivity to the requested input
+  /// columns (`M_req`), its own sub-batch folded into `var_folded`. `jacobian()`
+  /// slices each requested output's block and reshapes to `(*B, *out_base,
+  /// *in_base)`; `jvp()` contracts the requested input columns with the
+  /// tangents. (Returning the map -- not a single catted `(*B, Σout, M_req)` --
+  /// keeps per-output offsets correct when outputs have heterogeneous folded
+  /// sizes, e.g. a per-grain output alongside a global one.)
+  std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
+  _jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) const;
 
   // The per-group Newton iteration + line-search reductions now live in
   // newton.{h,cpp} (driven through the NonlinearSystem abstraction);
@@ -313,6 +304,47 @@ struct Model::Impl
   std::vector<std::string> _output_names;
   std::vector<std::vector<int64_t>> _output_base_shapes;
   std::vector<int> _output_sizes;
+
+  // Per-master-input sub-batch shapes (empty when plain-batch). The dense
+  // Jacobian carrier seeds `dstate[var] = (*common_dyn, var_folded, M_req)` --
+  // a shared dynamic batch (NOT the first input's full leading shape) with each
+  // variable's own sub-batch axes folded into the storage dim -- so a
+  // heterogeneous mix of global and per-grain inputs composes correctly.
+  std::vector<std::vector<int64_t>> _input_sub_batch_shapes;
+
+  // Master (out, in) derivative pairs the artifact supports, in the order the
+  // metadata recorded them (output-order, input-order). Empty => no derivative
+  // graphs were compiled; jvp() / jacobian() raise. `_deriv_by_out` is a cache
+  // mapping each covered output to its requested inputs for O(1) assembly.
+  std::vector<std::pair<std::string, std::string>> _derivatives;
+  std::map<std::string, std::vector<std::string>> _deriv_by_out;
+
+  // The "dense auxiliary B matrix" narrowing (multi-segment path): the dense
+  // chain-rule carrier (`dstate`) and flat Jacobian carry columns for only the
+  // *requested* input directions, not every master input. `_req_inputs` is the
+  // distinct requested inputs in `_input_names` order; `_req_input_offset` /
+  // `_req_total_size` are their column offsets / total width in that narrowed
+  // matrix.
+  std::vector<std::string> _req_inputs;
+  std::map<std::string, int64_t> _req_input_offset;
+  std::map<std::string, int64_t> _req_input_size;
+  int64_t _req_total_size = 0;
+
+  /// Single-forward-segment Jacobian fast path: run the segment's jvp loader once
+  /// and return (outputs, per-pair blocks) directly (no dense flat-J), squeezing
+  /// the static size-1 dynamic-batch axis of batch-independent blocks so they
+  /// come back unbatched. Only valid when there is exactly one Forward segment
+  /// with a jvp loader.
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+  _forward_pair_blocks(const std::map<std::string, at::Tensor> & inputs) const;
+
+  /// True iff the artifact is a single forward segment carrying a jvp loader --
+  /// the case the per-pair fast path (unbatched batch-independent return) covers.
+  bool _is_single_forward_jac() const
+  {
+    return _segments.size() == 1 && _segments.front().kind == SegmentKind::Forward &&
+           static_cast<bool>(_segments.front().jvp_loader);
+  }
 
   // Owned state -- only the runtime-flexible (promoted) parameters live here.
   // Baked entries are constants inside the AOTI graphs and have no C++-side

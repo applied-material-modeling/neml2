@@ -155,7 +155,10 @@ jobs:
       - name: Install clang + llvm
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang llvm
+          # patchelf: cpp_coverage.sh stages a SONAME-patched copy of the
+          # instrumented libneml2 so the Python AOTI suite (driven through the
+          # pybind binding) loads the instrumented runtime via LD_PRELOAD.
+          sudo apt-get install -y clang llvm patchelf
           ver=$(clang --version | grep -oP 'clang version \K[0-9]+' | head -1)
           echo "LLVM_PROFDATA=llvm-profdata-$ver" >> "$GITHUB_ENV"
           echo "LLVM_COV=llvm-cov-$ver" >> "$GITHUB_ENV"

@@ -68,11 +68,74 @@ def test_parse_example_batch_shape_rejects_label_suffix():
         _parse_example_batch_shape("(2; 3:grain)")
 
 
+def test_resolve_derivative_specs_grammar_and_errors():
+    """``-d/--derivative OUT:IN`` resolution: explicit pairs, the omission
+    grammar (either/both sides empty = 'all'), the empty-specs default, and the
+    error branches (no colon, unknown output, unknown/promoted input)."""
+    from neml2.cli.aoti_export import _resolve_derivative_specs
+
+    outs = ["stress", "energy"]
+    ins = ["strain", "temperature"]
+
+    # No specs -> no pairs (derivative graphs are opt-in).
+    assert _resolve_derivative_specs([], outs, ins) == set()
+
+    # One explicit pair.
+    assert _resolve_derivative_specs(["stress:strain"], outs, ins) == {("stress", "strain")}
+
+    # Omit the output side -> every output w.r.t. that input.
+    assert _resolve_derivative_specs([":strain"], outs, ins) == {
+        ("stress", "strain"),
+        ("energy", "strain"),
+    }
+
+    # Omit the input side -> that output w.r.t. every input.
+    assert _resolve_derivative_specs(["stress:"], outs, ins) == {
+        ("stress", "strain"),
+        ("stress", "temperature"),
+    }
+
+    # Both sides omitted -> all pairs; whitespace around names is tolerated.
+    assert _resolve_derivative_specs([":"], outs, ins) == {(o, i) for o in outs for i in ins}
+    assert _resolve_derivative_specs([" stress : strain "], outs, ins) == {("stress", "strain")}
+
+    # Multiple specs union (and dedupe).
+    assert _resolve_derivative_specs(["stress:strain", "stress:strain", "energy:"], outs, ins) == {
+        ("stress", "strain"),
+        ("energy", "strain"),
+        ("energy", "temperature"),
+    }
+
+    # Missing colon.
+    with pytest.raises(ValueError, match="expected OUT:IN"):
+        _resolve_derivative_specs(["stress"], outs, ins)
+
+    # Unknown output.
+    with pytest.raises(ValueError, match="unknown output 'nope'"):
+        _resolve_derivative_specs(["nope:strain"], outs, ins)
+
+    # Unknown input (a promoted-parameter name is rejected here too: it is not a
+    # structural input and never appears in the Jacobian).
+    with pytest.raises(ValueError, match="unknown input 'E'"):
+        _resolve_derivative_specs(["stress:E"], outs, ins)
+
+
 @pytest.fixture(scope="session")
 def forward_export(tmp_path_factory):
     from neml2.cli.aoti_export import export_model_for_aoti
 
     out_dir = tmp_path_factory.mktemp("aoti_forward")
+    # Derivative graphs are opt-in (schema v6); request all pairs so the
+    # jvp/jacobian assertions below have a graph to exercise.
+    meta = export_model_for_aoti(_ELASTICITY_I, "model", out_dir, derivatives=[":"])
+    return meta, out_dir
+
+
+@pytest.fixture(scope="session")
+def forward_export_no_deriv(tmp_path_factory):
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out_dir = tmp_path_factory.mktemp("aoti_forward_no_deriv")
     meta = export_model_for_aoti(_ELASTICITY_I, "model", out_dir)
     return meta, out_dir
 
@@ -82,7 +145,7 @@ def implicit_export(tmp_path_factory):
     from neml2.cli.aoti_export import export_model_for_aoti
 
     out_dir = tmp_path_factory.mktemp("aoti_implicit")
-    meta = export_model_for_aoti(_J2_NATIVE_I, "return_map", out_dir)
+    meta = export_model_for_aoti(_J2_NATIVE_I, "return_map", out_dir, derivatives=[":"])
     return meta, out_dir
 
 
@@ -113,6 +176,9 @@ def test_export_forward_model_metadata(forward_export):
     assert meta["outputs"] == [
         {"name": "stress", "var_size": 6, "var_type": "SR2", "base_shape": [6]}
     ]
+    # Schema v6: top-level `derivatives` lists the requested master pairs.
+    assert meta["schema_version"] == 6
+    assert meta["derivatives"] == [["stress", "strain"]]
     seg = meta["segments"][0]
     assert seg["kind"] == "forward"
     # Forward-segment per-variable metadata is name-only (v4 schema). The
@@ -123,6 +189,23 @@ def test_export_forward_model_metadata(forward_export):
     # Forward segments carry a `jvp_package` next to the value package.
     assert seg["jvp_package"] == "model_jvp.pt2"
     assert (out_dir / "model_jvp.pt2").exists()
+    # Each pair carries a batch_independent flag; elasticity's Jacobian is the
+    # constant stiffness tensor -> batch-independent.
+    pair = seg["jacobian_pairs"][0]
+    assert (pair["out_var"], pair["in_var"]) == ("stress", "strain")
+    assert pair["batch_independent"] is True
+
+
+def test_export_forward_default_off_no_derivatives(forward_export_no_deriv):
+    """With no -d flags, NO derivative graph is compiled: empty top-level
+    `derivatives`, no segment `jvp_package`, no `*_jvp.pt2` on disk."""
+    meta, out_dir = forward_export_no_deriv
+    assert meta["schema_version"] == 6
+    assert meta["derivatives"] == []
+    seg = meta["segments"][0]
+    assert "jvp_package" not in seg
+    assert "jacobian_pairs" not in seg
+    assert not (out_dir / "model_jvp.pt2").exists()
 
 
 def test_export_forward_jvp_matches_finite_difference(forward_export):
@@ -256,10 +339,33 @@ def test_export_implicit_ift_satisfies_IFT_identity(implicit_export):
     A = A_assembled.tensors[0][0].data
     B = B_assembled.tensors[0][0].data
 
-    J = ift_pkg(u, g)
-    if isinstance(J, tuple):
-        J = J[0]
-    # IFT identity: A J + B = 0.
+    # The IFT graph now emits one block per (unknown, given) pair (the
+    # disassemble of -du/dg), in unknown x given order. Reassemble them into the
+    # full -du/dg matrix and check the IFT identity A J + B = 0.
+    blocks = ift_pkg(u, g)
+    if not isinstance(blocks, tuple):
+        blocks = (blocks,)
+    u_off = {
+        n: sum(system.ulayout.var_size(m) for m in system.unknown_names[:i])
+        for i, n in enumerate(system.unknown_names)
+    }
+    g_off = {
+        n: sum(system.glayout.var_size(m) for m in system.given_names[:i])
+        for i, n in enumerate(system.given_names)
+    }
+    J = torch.zeros(
+        u.shape[0],
+        system.ulayout.storage_size(),
+        system.glayout.storage_size(),
+        dtype=torch.float64,
+    )
+    k = 0
+    for un in system.unknown_names:
+        rs = system.ulayout.var_size(un)
+        for gn in system.given_names:
+            cs = system.glayout.var_size(gn)
+            J[:, u_off[un] : u_off[un] + rs, g_off[gn] : g_off[gn] + cs] = blocks[k]
+            k += 1
     residual = A @ J + B
     assert torch.allclose(residual, torch.zeros_like(residual), atol=1e-10)
 

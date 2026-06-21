@@ -130,6 +130,21 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "-d",
+        "--derivative",
+        action="append",
+        default=[],
+        metavar="OUT:IN",
+        help=(
+            "Compile the derivative (Jacobian / JVP) graph for the OUT:IN "
+            "output-input pair. Repeatable. Omit a side to select all on that "
+            "side: 'stress:strain' is one pair, 'stress:' all inputs of stress, "
+            "':strain' all outputs wrt strain, ':' all pairs. With no -d flags "
+            "NO derivative graphs are compiled (smallest artifact) and the "
+            "runtime jvp()/jacobian() raise until recompiled with -d."
+        ),
+    )
+    parser.add_argument(
         "--example-batch-shape",
         action="append",
         default=[],
@@ -178,6 +193,7 @@ def compile_and_emit_stub(
     promoted: set[str] | None = None,
     example_batch_shape=None,
     dynamic_batch: bool | None = None,
+    derivatives: tuple[str, ...] = (),
     pre: tuple[str, ...] = (),
     additional_args: tuple[str, ...] = (),
 ) -> Path:
@@ -214,6 +230,7 @@ def compile_and_emit_stub(
         promoted=promoted or set(),
         example_batch_shape=example_batch_shape,
         dynamic_batch=dynamic_batch,
+        derivatives=derivatives,
         pre=pre,
         additional_args=additional_args,
     )
@@ -547,6 +564,7 @@ def main(argv: list[str] | None = None) -> int:
                 promoted=set(args.parameter),
                 example_batch_shape=example_batch_shape,
                 dynamic_batch=args.dynamic_batch,
+                derivatives=tuple(args.derivative),
                 additional_args=tuple(additional_args),
             )
         except Exception as exc:  # noqa: BLE001
@@ -571,13 +589,19 @@ def main(argv: list[str] | None = None) -> int:
     n_promoted = len(args.parameter)
     bake_note = "fully baked" if n_promoted == 0 else f"{n_promoted} promoted parameter(s)"
     driver_note = f", driven by [{keep_driver}]" if keep_driver else ""
+    n_deriv = len(meta.get("derivatives", []))
+    deriv_note = (
+        ", no derivative graphs (use -d to compile jvp/jacobian)"
+        if n_deriv == 0
+        else f", {n_deriv} derivative pair(s)"
+    )
 
     def _rel(p: Path) -> Path:
         return p.relative_to(Path.cwd()) if p.is_relative_to(Path.cwd()) else p
 
     dev_list = ", ".join(device for device, _ in compiled)
     print(
-        f"Compiled '{model_name}' ({meta['type']}, {bake_note}{driver_note}) "
+        f"Compiled '{model_name}' ({meta['type']}, {bake_note}{driver_note}{deriv_note}) "
         f"for [{dev_list}] -> {_rel(artifact_dir)}"
     )
     print(f"  stub: {_rel(stub_path)}")

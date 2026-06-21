@@ -89,7 +89,7 @@ from ..types import TensorWrapper
 #: shape (per-variable ``sub_batch_shape`` / ``sub_batch_labels`` /
 #: ``base_shape`` recorded so the C++ side can reshape per-variable slots).
 #:
-#: v4 (current): solver convergence / line-search configuration is no longer
+#: v4: solver convergence / line-search configuration is no longer
 #: baked into the metadata. The implicit-segment ``atol`` / ``rtol`` /
 #: ``miters`` / ``linesearch`` keys are gone -- the generated stub ``.i``
 #: carries a minimal ``[Solvers]`` block (the honored knobs only; the linear
@@ -98,25 +98,34 @@ from ..types import TensorWrapper
 #: predictor is unchanged: it still lowers to its own ``_predictor.pt2``
 #: graph with ``predictor_package`` / ``predictor_inputs`` /
 #: ``predictor_outputs`` metadata.
+#:
+#: v5: per-group / per-cell metadata for implicit segments
+#: (``unknown_group_infos`` / ``given_group_infos`` / ``residual_group_infos``
+#: / ``ift_cells``) so the C++ Newton loop + IFT composition runs per group.
+#:
+#: v6 (current): derivative graphs are opt-in. A new top-level ``derivatives``
+#: array lists the master ``[out, in]`` pairs the artifact supports (empty =>
+#: none; ``jvp`` / ``jacobian`` raise). A forward segment's ``jvp_package`` /
+#: ``jacobian_pairs`` and an implicit segment's ``ift_package`` are present
+#: only when some requested pair needs them, and each ``jacobian_pairs`` entry
+#: gains a ``batch_independent`` flag (the block does not depend on the dynamic
+#: batch, e.g. a constant elasticity tensor, so the runtime may carry / return
+#: it unbatched).
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 5
+AOTI_META_SCHEMA_VERSION = 6
 
 
 def _var_size(type_cls) -> int:
     return prod(type_cls.BASE_SHAPE) if type_cls.BASE_SHAPE else 1
 
 
-def _enumerate_groups_and_cells(system) -> dict:
-    """Canonical group + cell metadata for nonlinear-system segments.
+def _enumerate_group_infos(system) -> dict:
+    """Canonical per-group metadata for nonlinear-system segments.
 
     Single source of truth for the iteration order in which group
-    tensors appear in RHS/NewtonStep/IFT forward signatures, and for
-    the row-major (rows outer, cols inner) order of IFT cells. The
+    tensors appear in RHS/NewtonStep/IFT forward signatures. The
     matching reader side in :mod:`neml2.es.implicit` walks the same
-    order via :func:`~neml2.es.implicit.enumerate_group_var_names` for
-    the per-group tensors and via a nested
-    ``for row in row_groups: for col in col_groups`` loop for IFT
-    cells.
+    order via :func:`~neml2.es.implicit.enumerate_group_var_names`.
 
     Returns a dict with:
 
@@ -129,10 +138,10 @@ def _enumerate_groups_and_cells(system) -> dict:
       ``per_var_info`` (a list of per-variable
       ``{name, var_size, base_shape, sub_batch_shape}`` dicts ordered
       as in the group).
-    - ``ift_cells``: per-(row_group, col_group) list of dicts with
-      ``row_group_idx``, ``col_group_idx``, ``row_structure``,
-      ``col_structure``, ``sub_batch_shape`` (the cell tensor's own
-      sub axes), ``row_vars``, ``col_vars``.
+
+    The per-(unknown, given) IFT Jacobian-pair metadata is built
+    separately in :func:`_compile_implicit_segment` (the IFT graph emits
+    per-pair blocks via ``AssembledMatrix.disassemble``).
     """
 
     def _var_info(layout, name):
@@ -172,40 +181,6 @@ def _enumerate_groups_and_cells(system) -> dict:
     given_group_infos = _group_infos(glayout)
     residual_group_infos = _group_infos(blayout)
 
-    ift_cells: list[dict] = []
-    for i, ugroup in enumerate(ulayout.groups):
-        u_structure = ulayout.structure[i]
-        u_sb = list(int(s) for s in ulayout.sub_batch_shape(ugroup[0])) if ugroup else []
-        for j, ggroup in enumerate(glayout.groups):
-            g_structure = glayout.structure[j]
-            g_sb = list(int(s) for s in glayout.sub_batch_shape(ggroup[0])) if ggroup else []
-            # Cell sub_batch_shape: which sub axes survive on the cell
-            # tensor. Paired BLOCK+BLOCK with matching sub: single
-            # shared sub. Single-side BLOCK: that side's sub. Both
-            # DENSE: no sub.
-            if u_structure == "block" and g_structure == "block":
-                if u_sb == g_sb:
-                    cell_sb = list(u_sb)
-                else:
-                    cell_sb = list(u_sb) + list(g_sb)
-            elif u_structure == "block":
-                cell_sb = list(u_sb)
-            elif g_structure == "block":
-                cell_sb = list(g_sb)
-            else:
-                cell_sb = []
-            ift_cells.append(
-                {
-                    "row_group_idx": i,
-                    "col_group_idx": j,
-                    "row_structure": u_structure,
-                    "col_structure": g_structure,
-                    "sub_batch_shape": cell_sb,
-                    "row_vars": [_var_info(ulayout, n) for n in ugroup],
-                    "col_vars": [_var_info(glayout, n) for n in ggroup],
-                }
-            )
-
     return {
         "unknown_groups": [list(g) for g in ulayout.groups],
         "given_groups": [list(g) for g in glayout.groups],
@@ -218,7 +193,6 @@ def _enumerate_groups_and_cells(system) -> dict:
         "unknown_group_infos": unknown_group_infos,
         "given_group_infos": given_group_infos,
         "residual_group_infos": residual_group_infos,
-        "ift_cells": ift_cells,
     }
 
 
@@ -994,10 +968,20 @@ class _ForwardJacobianModule(nn.Module):
     consumer (`jacobian.cpp:_run_implicit_segment_jacobian`).
     """
 
-    def __init__(self, model, promoted_qnames: set[str] | None = None) -> None:
+    def __init__(
+        self,
+        model,
+        promoted_qnames: set[str] | None = None,
+        selected_pairs: set[tuple[str, str]] | None = None,
+    ) -> None:
         super().__init__()
         self.model = model
         self.promoted_qnames = set(promoted_qnames or ())
+        # Local ``(out_var, in_var)`` pairs to emit. ``None`` means all pairs
+        # (legacy / all-pairs export); a set restricts the emitted trailing
+        # tensors (and matching ``jacobian_pairs`` metadata) to that subset, in
+        # the same row-major order — the C++ consumes them positionally.
+        self.selected_pairs = selected_pairs
         self.input_names = tuple(model.input_spec)
         self.output_names = tuple(model.output_spec)
         self.in_types = tuple(model.input_spec.values())
@@ -1021,10 +1005,23 @@ class _ForwardJacobianModule(nn.Module):
         for i in self.structural_idx:
             ti = typed_inputs[i]
             name = self.input_names[i]
+            # Seed with a size-1 dynamic-batch identity ``(K, 1..1, *sub, *base)``
+            # rather than expanding to the input's full dynamic batch. A
+            # Jacobian block that does not depend on the dynamic batch then
+            # stays size-1 along those axes (``(1, ...)``), exposing
+            # batch-independence (e.g. a constant elasticity tensor); a block
+            # that does depend broadcasts up to the real batch through the
+            # ordinary chain-rule arithmetic. Real sub-batch extents are kept
+            # so the per-site chain rule is unaffected. ``torch.export``
+            # preserves the static size-1 axis under a dynamic batch ``Dim``.
+            full_batch = tuple(ti.batch_shape)
+            sub_ndim = ti.sub_batch_ndim
+            dyn_ndim = len(full_batch) - sub_ndim
+            seed_batch = (1,) * dyn_ndim + full_batch[dyn_ndim:]
             seed[name] = {
                 name: _leading_k_identity_seed(
                     self.in_types[i],
-                    ti.batch_shape,
+                    seed_batch,
                     dtype=ti.dtype,
                     device=ti.device,
                 )
@@ -1039,6 +1036,11 @@ class _ForwardJacobianModule(nn.Module):
             out_base = tuple(int(s) for s in out_type.BASE_SHAPE)
             for i in self.structural_idx:
                 in_name = self.input_names[i]
+                if (
+                    self.selected_pairs is not None
+                    and (out_name, in_name) not in self.selected_pairs
+                ):
+                    continue
                 in_type = self.in_types[i]
                 in_base = tuple(int(s) for s in in_type.BASE_SHAPE)
                 block = v_out.get(out_name, {}).get(in_name)
@@ -1075,6 +1077,53 @@ def _segment_param_inputs(seg_spec: dict, promoted_qnames: set[str]) -> list[str
     """Return the promoted names that appear in this segment's input_spec,
     preserving the spec's declared order (which is the graph-call order)."""
     return [k for k in seg_spec if k in promoted_qnames]
+
+
+def _resolve_derivative_specs(
+    specs: Sequence[str],
+    output_names: Sequence[str],
+    structural_input_names: Sequence[str],
+) -> set[tuple[str, str]]:
+    """Resolve ``-d/--derivative`` ``OUT:IN`` specs into master (out, in) pairs.
+
+    Each spec must contain exactly one ``:``. Either side may be empty, meaning
+    "all" on that side: ``stress:strain`` is one pair; ``stress:`` is every
+    structural input of ``stress``; ``:strain`` is every output w.r.t.
+    ``strain``; ``:`` is all pairs. An empty *specs* yields an empty set — no
+    derivative graphs are compiled and the runtime ``jvp`` / ``jacobian`` raise.
+
+    Unknown output / input names raise ``ValueError`` listing the available
+    names. A promoted-parameter name on the input side is rejected the same way
+    (it is not a structural input and never appears in the Jacobian).
+    """
+    outputs = list(output_names)
+    inputs = list(structural_input_names)
+    pairs: set[tuple[str, str]] = set()
+    for spec in specs:
+        if ":" not in spec:
+            raise ValueError(f"--derivative {spec!r}: expected OUT:IN (use ':' for all pairs).")
+        out_part, in_part = (s.strip() for s in spec.split(":", 1))
+        if out_part == "":
+            sel_out = outputs
+        elif out_part in outputs:
+            sel_out = [out_part]
+        else:
+            raise ValueError(
+                f"--derivative {spec!r}: unknown output {out_part!r}; available outputs: {outputs}."
+            )
+        if in_part == "":
+            sel_in = inputs
+        elif in_part in inputs:
+            sel_in = [in_part]
+        else:
+            raise ValueError(
+                f"--derivative {spec!r}: unknown input {in_part!r}; "
+                f"available (structural) inputs: {inputs}."
+            )
+        for o in sel_out:
+            for i in sel_in:
+                pairs.add((o, i))
+    return pairs
 
 
 def _build_example_inputs(
@@ -1165,11 +1214,16 @@ def _compile_forward_segment(
     promoted_snapshots: dict[str, torch.Tensor] | None = None,
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
-    emit_jvp: bool = True,
+    selected_pairs: set[tuple[str, str]] | None = None,
 ) -> tuple[str, list[dict], list[dict], str | None, list[str], list[dict] | None]:
     """Compile a single forward-shape model to ``<pkg_basename>.pt2`` plus,
-    when ``emit_jvp`` is True, ``<pkg_basename>_jvp.pt2`` carrying the flat
-    ``dout/din`` Jacobian.
+    when derivatives are requested, ``<pkg_basename>_jvp.pt2`` carrying the
+    per-(out, in) Jacobian blocks.
+
+    *selected_pairs* selects which local ``(out_var, in_var)`` blocks to emit:
+    ``None`` emits all pairs (legacy / all-pairs export); an empty set emits no
+    derivative graph at all (forward value only); a non-empty set restricts the
+    emitted blocks (and matching ``jacobian_pairs`` metadata) to that subset.
 
     Promoted parameters are routed through the leaf's NLParam machinery
     (see :func:`_promote_to_nl_params`), which expanded the leaf's
@@ -1210,11 +1264,23 @@ def _compile_forward_segment(
 
     jvp_pkg_name: str | None = None
     jacobian_pairs: list[dict] | None = None
-    if emit_jvp:
+    do_jvp = selected_pairs is None or len(selected_pairs) > 0
+    if do_jvp:
         # JVP wrapper differentiates along structural inputs only -- promoted
         # inputs aren't seeded so they contribute structural zeros via
         # the default chain rule's ``v.get(name, {})`` empty fallback.
-        jvp_module = _ForwardJacobianModule(exportable, promoted_qnames).to(device)
+        jvp_module = _ForwardJacobianModule(
+            exportable, promoted_qnames, selected_pairs=selected_pairs
+        ).to(device)
+        # Probe eagerly first (example dynamic batch is >=2 by construction, see
+        # _DEFAULT_EXAMPLE_SHAPE) to classify each emitted pair: a block whose
+        # dynamic-batch axes stay size-1 does not depend on the runtime batch
+        # (e.g. a constant elasticity tensor) and is recorded as
+        # ``batch_independent`` so the runtime can carry / return it unbatched.
+        with torch.no_grad():
+            probe = jvp_module(*example_inputs)
+        n_outs = len(jvp_module.output_names)
+        probe_pairs = list(probe[n_outs:])
         jvp_pkg_name = f"{pkg_basename}_jvp.pt2"
         compile_model(
             jvp_module, example_inputs, output_dir / jvp_pkg_name, dynamic_batch_dim=dynamic_dim
@@ -1225,9 +1291,21 @@ def _compile_forward_segment(
         structural_in_spec = _structural_inputs(model.input_spec, promoted_qnames)
         shapes_local = shapes or {}
         jacobian_pairs = []
+        k = 0
         for out_name, out_type in model.output_spec.items():
+            out_base_ndim = len(out_type.BASE_SHAPE)
             for in_name, in_type in structural_in_spec.items():
+                if selected_pairs is not None and (out_name, in_name) not in selected_pairs:
+                    continue
                 in_sub = shapes_local.get(in_name, ((), ()))[1]
+                in_base_ndim = len(in_type.BASE_SHAPE)
+                pair_t = probe_pairs[k]
+                # Pair shape is (*dyn, *sub, *out_base, *in_base); the leading
+                # dyn axes are size-1 iff this block is batch-independent.
+                dyn_ndim = max(pair_t.dim() - len(in_sub) - out_base_ndim - in_base_ndim, 0)
+                batch_independent = bool(dynamic_batch) and all(
+                    int(pair_t.shape[d]) == 1 for d in range(dyn_ndim)
+                )
                 jacobian_pairs.append(
                     {
                         "out_var": out_name,
@@ -1235,8 +1313,10 @@ def _compile_forward_segment(
                         "out_base_shape": [int(s) for s in out_type.BASE_SHAPE],
                         "in_base_shape": [int(s) for s in in_type.BASE_SHAPE],
                         "in_sub_batch_shape": [int(s) for s in in_sub],
+                        "batch_independent": batch_independent,
                     }
                 )
+                k += 1
 
     structural_in = _structural_inputs(model.input_spec, promoted_qnames)
     in_sb = {n: sub for n, (_, sub) in (shapes or {}).items() if sub}
@@ -1260,8 +1340,14 @@ def _export_forward(
     promoted_snapshots: dict[str, torch.Tensor],
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
+    derivatives: set[tuple[str, str]] | None = None,
 ) -> dict:
-    """Export a forward-shape model as a single-segment composed artifact."""
+    """Export a forward-shape model as a single-segment composed artifact.
+
+    *derivatives* is the resolved master ``(out, in)`` pair set (empty = no
+    derivative graph). For a single forward segment the master pairs *are* the
+    segment-local pairs, so they pass straight through as ``selected_pairs``.
+    """
     (
         pkg_name,
         in_infos,
@@ -1278,6 +1364,7 @@ def _export_forward(
         promoted_snapshots=promoted_snapshots,
         shapes=shapes,
         dynamic_batch=dynamic_batch,
+        selected_pairs=derivatives if derivatives is not None else set(),
     )
     seg = {
         "kind": "forward",
@@ -1311,10 +1398,27 @@ def _compile_implicit_segment(
     *,
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
+    emit_ift: bool = True,
+    selected_ift_pairs: set[tuple[str, str]] | None = None,
 ) -> dict:
     """Compile an ImplicitUpdate to ``<pkg_basename>_rhs.pt2`` + ``_step.pt2``
-    + ``_ift.pt2`` (+ optional ``_predictor.pt2``), returning the metadata
-    dict (without the outer ``"type"`` key — caller adds it).
+    (+ ``_ift.pt2`` when *emit_ift*) (+ optional ``_predictor.pt2``), returning
+    the metadata dict (without the outer ``"type"`` key — caller adds it).
+
+    *selected_ift_pairs* restricts the IFT graph to the requested
+    ``(unknown, given)`` pairs (``None`` = all). A requested pair whose unknown
+    or given is **sub-batched** (per-grain, e.g. crystal plasticity) is rejected
+    here with a clear compile-time error: the per-pair IFT consumer only supports
+    plain-batch (DENSE) pairs today, so e.g. a global-output / global-input
+    derivative of a crystal-plasticity model compiles, while a per-grain pair
+    fails fast at ``neml2-compile`` rather than at runtime.
+
+    ``rhs`` + ``step`` drive the forward Newton solve and are always compiled.
+    ``ift`` is the user-facing derivative graph (the implicit-function-theorem
+    sensitivity of the converged solution); it is compiled only when *emit_ift*
+    is True (i.e. some derivative was requested via ``-d``). When False, the
+    ``ift_package`` key is omitted and the runtime leaves the segment's IFT
+    loader null.
 
     Per-variable I/O at the AOTI graph boundary (v5+): each unknown,
     given, and residual is its own positional tensor in the segment
@@ -1336,7 +1440,26 @@ def _compile_implicit_segment(
 
     rhs = RHS(system).to(device)
     step = NewtonStep(system, solver.linear_solver).to(device)
-    ift = IFT(system, solver.linear_solver).to(device)
+    ift = IFT(system, solver.linear_solver, selected_pairs=selected_ift_pairs).to(device)
+
+    # Compile-time guard: the per-pair IFT consumer only supports plain-batch
+    # (DENSE) variable pairs. A requested pair touching a sub-batched (per-grain)
+    # unknown or given -- e.g. crystal plasticity's per-grain state -- is not yet
+    # supported; fail fast here with a clear message instead of at runtime. A
+    # global-output / global-input pair of the same model compiles fine.
+    if emit_ift:
+        for u, g in ift.emitted_pairs():
+            u_sub = tuple(system.ulayout.sub_batch_shape(u))
+            g_sub = tuple(system.glayout.sub_batch_shape(g))
+            if u_sub or g_sub:
+                bad = f"{u!r} (sub_batch {u_sub})" if u_sub else f"{g!r} (sub_batch {g_sub})"
+                raise NotImplementedError(
+                    f"neml2-compile: derivative ({u}, {g}) of implicit model involves the "
+                    f"sub-batched variable {bad}; compiled Jacobian/JVP for sub-batched "
+                    f"(per-grain) implicit variables is not yet supported. Request only "
+                    f"non-sub-batched output:input pairs (e.g. a global-to-global "
+                    f"derivative), or use eager mode for the per-grain sensitivities."
+                )
 
     # Build per-variable example inputs at the user-declared natural
     # shapes first, then pack them into per-group tensors via
@@ -1380,12 +1503,34 @@ def _compile_implicit_segment(
     dynamic_dim = 0 if dynamic_batch else None
     compile_model(rhs, example_inputs, output_dir / rhs_name, dynamic_batch_dim=dynamic_dim)
     compile_model(step, example_inputs, output_dir / step_name, dynamic_batch_dim=dynamic_dim)
-    compile_model(ift, example_inputs, output_dir / ift_name, dynamic_batch_dim=dynamic_dim)
+    # Per-(unknown, given) pair metadata for the IFT graph. The IFT emits one
+    # block per variable pair (via AssembledMatrix.disassemble), in
+    # ift.emitted_pairs() order, so the C++ runtime composes them against
+    # dg_dmaster exactly like a forward segment's per-pair Jacobian blocks. An
+    # IFT block is always batch-dependent (it is a function of the converged
+    # solution + the residual Jacobians), so ``batch_independent`` is False -- no
+    # eager probe is run (the IFT solve would be singular at the zero example
+    # point anyway). The sub-batch (BLOCK) guard above guarantees every emitted
+    # pair is plain-batch, so ``in_sub_batch_shape`` is empty.
+    ift_jacobian_pairs: list[dict] | None = None
+    if emit_ift:
+        ift_jacobian_pairs = [
+            {
+                "out_var": u,
+                "in_var": g,
+                "out_base_shape": [int(s) for s in system.ulayout.specs[u].BASE_SHAPE],
+                "in_base_shape": [int(s) for s in system.glayout.specs[g].BASE_SHAPE],
+                "in_sub_batch_shape": [],
+                "batch_independent": False,
+            }
+            for (u, g) in ift.emitted_pairs()
+        ]
+        compile_model(ift, example_inputs, output_dir / ift_name, dynamic_batch_dim=dynamic_dim)
 
     # Per-variable infos retained at the segment level as the source of
     # truth for the C++ runtime's per-variable state map (predictor
     # routing, downstream forward composition). Per-group / per-cell
-    # metadata sits alongside via _enumerate_groups_and_cells.
+    # metadata sits alongside via _enumerate_group_infos.
     def _var_info(layout, name: str) -> dict:
         type_cls = layout.type_of(name)
         sb = tuple(int(s) for s in layout.sub_batch_shape(name))
@@ -1404,7 +1549,7 @@ def _compile_implicit_segment(
     given_infos = [_var_info(system.glayout, n) for n in system.given_names]
     residual_infos = [_var_info(system.blayout, n) for n in system.residual_names]
 
-    group_meta = _enumerate_groups_and_cells(system)
+    group_meta = _enumerate_group_infos(system)
 
     # NB: solver convergence / line-search configuration (atol / rtol / miters /
     # linesearch) is NOT baked here (schema v4). The generated stub `.i` carries
@@ -1414,26 +1559,24 @@ def _compile_implicit_segment(
     seg: dict = {
         "rhs_package": rhs_name,
         "step_package": step_name,
-        "ift_package": ift_name,
         "unknowns": unknown_infos,
         "givens": given_infos,
         "residuals": residual_infos,
-        # v7 per-group / per-cell metadata. The C++ runtime consumes
-        # ``unknown_group_infos`` / ``given_group_infos`` /
-        # ``residual_group_infos`` for the per-group pack/unpack at
-        # solve start/end and for the per-group Newton loop arithmetic.
-        # ``ift_cells`` orders one entry per (row_group, col_group) cell
-        # of the IFT loader's output tuple, row-major (rows outer, cols
-        # inner) -- matches
-        # :func:`~neml2.es.implicit._matrix_to_per_cell_raws`.
+        # Per-group metadata drives the per-group pack/unpack at solve
+        # start/end and the per-group Newton loop arithmetic (rhs/step).
         "unknown_group_infos": group_meta["unknown_group_infos"],
         "given_group_infos": group_meta["given_group_infos"],
         "residual_group_infos": group_meta["residual_group_infos"],
-        "ift_cells": group_meta["ift_cells"],
         # Always empty under this iteration's constraint -- promotion inside
         # implicit segments is rejected above. Recorded for schema uniformity.
         "param_inputs": [],
     }
+    if emit_ift:
+        seg["ift_package"] = ift_name
+        # Per-(unknown, given) pair metadata for the IFT loader's output tuple,
+        # in the same order the IFT graph emits blocks. Consumed via the
+        # per-pair Jacobian composition (same path as a forward segment).
+        seg["jacobian_pairs"] = ift_jacobian_pairs
 
     # Predictor: compile as an extra graph if present. Promoted tail not
     # threaded here either (same reason as the rhs/step/ift block above; the
@@ -1463,6 +1606,7 @@ def _export_implicit(
     promoted_qnames: set[str],
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
+    derivatives: set[tuple[str, str]] | None = None,
 ) -> dict:
     """Export an ImplicitUpdate as a single-segment composed artifact.
 
@@ -1470,9 +1614,28 @@ def _export_implicit(
     in :func:`_validate_promoted`, so ``promoted_qnames`` only affects the
     metadata's master ``inputs`` filter here -- the trace itself is identical
     to the no-promotion case.
+
+    *derivatives* is the resolved master pair set; the single implicit segment
+    emits its IFT graph iff any pair was requested (the IFT couples every given
+    to every unknown, so a single requested pair pulls in the whole graph).
     """
+    # Map the requested master (out, in) pairs to local (unknown, given) IFT
+    # pairs. For a single ImplicitUpdate the outputs are the unknowns and the
+    # structural inputs are givens, so this is a direct filter.
+    master_pairs = derivatives or set()
+    sys = inner.system
+    selected_ift_pairs = {
+        (o, i) for (o, i) in master_pairs if o in sys.unknown_names and i in sys.given_names
+    }
     seg = _compile_implicit_segment(
-        inner, model_name, output_dir, device, shapes=shapes, dynamic_batch=dynamic_batch
+        inner,
+        model_name,
+        output_dir,
+        device,
+        shapes=shapes,
+        dynamic_batch=dynamic_batch,
+        emit_ift=bool(selected_ift_pairs),
+        selected_ift_pairs=selected_ift_pairs,
     )
     structural_in = _structural_inputs(model.input_spec, promoted_qnames)
     in_sb = {n: sub for n, (_, sub) in (shapes or {}).items() if sub}
@@ -1553,6 +1716,7 @@ def _export_composed(
     promoted_snapshots: dict[str, torch.Tensor],
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
+    derivatives: set[tuple[str, str]] | None = None,
 ) -> dict:
     """Export a ComposedModel containing ImplicitUpdate children as multiple
     .pt2 artifacts.
@@ -1560,10 +1724,20 @@ def _export_composed(
     Each non-implicit run of leaves becomes one forward segment .pt2; each
     ImplicitUpdate becomes the standard rhs/step (+ optional predictor) set.
     The C++ ``AOTIModel`` orchestrates the segments in order.
+
+    *derivatives* is the resolved master ``(out, in)`` pair set. Forward
+    segments emit only the local pairs that lie on a dependency path between a
+    requested master input and a requested master output (a forward segment with
+    no such pair emits no derivative graph); an implicit segment emits its IFT
+    graph iff it lies on any requested path. Correctness gate: a local pair is
+    kept whenever its row reaches a requested output AND its column is reachable
+    from a requested input — never dropping a pair that carries a requested
+    sensitivity. Empty *derivatives* → no derivative graphs anywhere.
     """
     from ..models.common import ComposedModel, ImplicitUpdate
 
     segments = _partition_into_segments(model)
+    master_pairs = derivatives or set()
 
     # Each segment's ComposedModel wrapper would otherwise hide variables that
     # are consumed inside the segment, dropping inter-segment data flow on the
@@ -1587,12 +1761,43 @@ def _export_composed(
         return set(payload.input_spec)  # type: ignore[attr-defined]
 
     seg_output_sets = [_seg_outputs(payload) for _, payload in segments]
+    seg_input_sets = [_seg_inputs(payload) for _, payload in segments]
     downstream_demands: list[set[str]] = [set() for _ in segments]
     for j, (_, payload_j) in enumerate(segments):
         inputs_j = _seg_inputs(payload_j)
         for i in range(j):
             downstream_demands[i] |= inputs_j
     master_outs = set(model.output_spec)
+
+    # --- Dependency reachability for the per-segment derivative prune ---
+    # ``reach[V]`` = master (structural) inputs that can flow into V; ``canreach
+    # [V]`` = master outputs V can reach. Each segment is modelled as "every
+    # output depends on every input" (the all-pairs internal Jacobian; an
+    # implicit segment's IFT couples every given to every unknown), which is the
+    # correct conservative data-flow model. A local pair (o, i) carries a
+    # requested master sensitivity (o_m, i_m) iff ``i_m ∈ reach[i]`` and
+    # ``o_m ∈ canreach[o]`` — keep it iff that holds for some requested pair.
+    structural_master_in = set(_structural_inputs(model.input_spec, promoted_qnames))
+    reach: dict[str, set[str]] = {i: {i} for i in structural_master_in}
+    for sin, sout in zip(seg_input_sets, seg_output_sets, strict=True):
+        flowed: set[str] = set()
+        for x in sin:
+            flowed |= reach.get(x, set())
+        for o in sout:
+            reach[o] = reach.get(o, set()) | flowed
+    canreach: dict[str, set[str]] = {o: {o} for o in master_outs}
+    for sin, sout in zip(reversed(seg_input_sets), reversed(seg_output_sets), strict=True):
+        reachable: set[str] = set()
+        for o in sout:
+            reachable |= canreach.get(o, set())
+        for x in sin:
+            canreach[x] = canreach.get(x, set()) | reachable
+
+    def _keep_local_pair(o: str, i: str) -> bool:
+        return any(
+            (i_m in reach.get(i, ())) and (o_m in canreach.get(o, ()))
+            for (o_m, i_m) in master_pairs
+        )
 
     seg_metas: list[dict] = []
     for i, (kind, payload) in enumerate(segments):
@@ -1606,6 +1811,15 @@ def _export_composed(
             needed = (master_outs | downstream_demands[i]) & seg_output_sets[i]
             extra = sorted(needed)
             seg_model = ComposedModel(payload, additional_outputs=extra).to(device)
+            # Local pairs to emit: those on a dependency path between a requested
+            # master input and a requested master output (empty -> no jvp graph).
+            seg_struct_in = _structural_inputs(seg_model.input_spec, promoted_qnames)
+            seg_selected = {
+                (o, i)
+                for o in seg_model.output_spec
+                for i in seg_struct_in
+                if _keep_local_pair(o, i)
+            }
             (
                 pkg_name,
                 in_infos,
@@ -1622,6 +1836,7 @@ def _export_composed(
                 promoted_snapshots=promoted_snapshots,
                 shapes=shapes,
                 dynamic_batch=dynamic_batch,
+                selected_pairs=seg_selected,
             )
             seg_entry = {
                 "kind": "forward",
@@ -1638,6 +1853,17 @@ def _export_composed(
             # payload is the ImplicitUpdate leaf.
             impl_model = payload
             assert isinstance(impl_model, ImplicitUpdate)
+            # Local (unknown, given) IFT pairs on a requested dependency path:
+            # the given reachable from a requested master input AND the unknown
+            # reaching a requested master output. Drives both whether to emit the
+            # IFT graph and which per-pair blocks it emits.
+            isys = impl_model.system
+            selected_ift_pairs = {
+                (u, g)
+                for u in isys.unknown_names
+                for g in isys.given_names
+                if _keep_local_pair(u, g)
+            }
             seg = _compile_implicit_segment(
                 impl_model,
                 basename,
@@ -1645,6 +1871,8 @@ def _export_composed(
                 device,
                 shapes=shapes,
                 dynamic_batch=dynamic_batch,
+                emit_ift=bool(selected_ift_pairs),
+                selected_ift_pairs=selected_ift_pairs,
             )
             seg_metas.append({"kind": "implicit", **seg})
 
@@ -1674,6 +1902,7 @@ def export_model_for_aoti(
     promoted: set[str] | list[str] | tuple[str, ...] = (),
     example_batch_shape: dict[str, str] | str | None = None,
     dynamic_batch: bool | None = None,
+    derivatives: Sequence[str] = (),
     pre: Sequence[str] = (),
     additional_args: tuple[str, ...] = (),
 ) -> dict:
@@ -1719,6 +1948,15 @@ def export_model_for_aoti(
         a baked parameter has a rank ≥ 1 shape that would specialize the
         dynamic dim. When ``None`` (default), the HIT setting -- or ``True``
         if unset -- applies.
+    derivatives:
+        Sequence of ``OUT:IN`` derivative specs (the ``-d/--derivative`` CLI
+        surface). Each requests a Jacobian/JVP block for that output-input
+        pair; omitting a side selects all on that side (``stress:`` = all
+        inputs of stress, ``:strain`` = all outputs wrt strain, ``:`` = all
+        pairs). Empty (the default) compiles **no** derivative graphs, and the
+        runtime ``jvp`` / ``jacobian`` raise until recompiled with ``-d``.
+        Resolved against the model's outputs + structural inputs after
+        promotion (see :func:`_resolve_derivative_specs`).
     pre:
         HIT snippets prepended before parsing (same semantics as
         ``nmhit.parse_file``'s ``pre`` arg). Use to bind ``${var}``
@@ -1776,6 +2014,14 @@ def export_model_for_aoti(
     _promote_to_nl_params(model, promoted_names)
     promoted_qnames = set(promoted_names)
 
+    # Resolve -d/--derivative specs into the master (out, in) pair set, against
+    # the post-promotion outputs + structural inputs (promoted parameters never
+    # appear in the Jacobian). Empty => no derivative graphs are compiled.
+    structural_input_names = list(_structural_inputs(model.input_spec, promoted_qnames))
+    master_pairs = _resolve_derivative_specs(
+        derivatives, list(model.output_spec), structural_input_names
+    )
+
     # Freeze any remaining nn.Parameter to a persistent buffer so torch.export
     # bakes it into the graph instead of lifting it as a graph input. Promoted
     # entries are already gone from _parameters so they're skipped naturally.
@@ -1806,6 +2052,7 @@ def export_model_for_aoti(
             promoted_qnames=promoted_qnames,
             shapes=resolved_shapes,
             dynamic_batch=dynamic_batch,
+            derivatives=master_pairs,
         )
     elif _contains_implicit(inner):
         meta = _export_composed(
@@ -1817,6 +2064,7 @@ def export_model_for_aoti(
             promoted_snapshots=promoted_snapshots,
             shapes=resolved_shapes,
             dynamic_batch=dynamic_batch,
+            derivatives=master_pairs,
         )
     else:
         meta = _export_forward(
@@ -1828,6 +2076,7 @@ def export_model_for_aoti(
             promoted_snapshots=promoted_snapshots,
             shapes=resolved_shapes,
             dynamic_batch=dynamic_batch,
+            derivatives=master_pairs,
         )
 
     # v2 top-level additions: device + dtype are baked into the artifact;
@@ -1835,6 +2084,17 @@ def export_model_for_aoti(
     meta["device"] = device
     meta["dtype"] = dtype
     meta["parameters"] = _parameter_infos(promoted_snapshots, origin)
+    # Master (out, in) derivative pairs the artifact supports, in deterministic
+    # (output-order, input-order) order so the runtime iterates rows/cols
+    # consistently. Empty => no derivative graphs (jvp/jacobian raise).
+    out_order = {n: k for k, n in enumerate(model.output_spec)}
+    in_order = {n: k for k, n in enumerate(structural_input_names)}
+    meta["derivatives"] = [
+        [o, i]
+        for (o, i) in sorted(
+            master_pairs, key=lambda p: (out_order.get(p[0], 0), in_order.get(p[1], 0))
+        )
+    ]
 
     _write_meta(output_dir / f"{model_name}_meta.json", meta)
     return meta

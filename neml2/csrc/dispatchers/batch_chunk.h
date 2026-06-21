@@ -136,12 +136,22 @@ to_device_nested(const std::map<std::string, std::map<std::string, at::Tensor>> 
   return out;
 }
 
-/// Concatenate per-chunk nested variable-pair Jacobians block by block along
-/// dim 0. Keyed by the first chunk's (out, in) structure; every chunk must
-/// carry the same blocks.
+/// Concatenate per-chunk nested Jacobians, passing batch-independent blocks
+/// through instead of concatenating them.
+///
+/// A batch-independent block (e.g. a constant stiffness tensor) is returned by
+/// the per-device model unbatched at its natural ``(*out_base, *in_base)`` shape
+/// -- identical across every chunk. Concatenating it along dim 0 would corrupt
+/// it (stacking N identical copies and mislabelling an ``out_base`` axis as
+/// batch). We detect it structurally: a block with exactly
+/// ``out_base_ndim[o] + in_base_ndim[i]`` dims carries no leading batch axis, so
+/// take the first chunk's copy; any block with more dims is batched and is
+/// concatenated as usual.
 inline std::map<std::string, std::map<std::string, at::Tensor>>
 cat_batch_nested(
-    const std::vector<std::map<std::string, std::map<std::string, at::Tensor>>> & chunks)
+    const std::vector<std::map<std::string, std::map<std::string, at::Tensor>>> & chunks,
+    const std::map<std::string, int64_t> & out_base_ndim,
+    const std::map<std::string, int64_t> & in_base_ndim)
 {
   _assert(!chunks.empty(), "cat_batch_nested: no chunks to concatenate.");
   if (chunks.size() == 1)
@@ -151,7 +161,13 @@ cat_batch_nested(
   for (const auto & [o, row] : chunks.front())
     for (const auto & [i, first] : row)
     {
-      (void)first;
+      const int64_t trail = out_base_ndim.at(o) + in_base_ndim.at(i);
+      if (first.dim() == trail)
+      {
+        // Batch-independent: identical across chunks, take the first.
+        out[o].emplace(i, first);
+        continue;
+      }
       std::vector<at::Tensor> parts;
       parts.reserve(chunks.size());
       for (const auto & c : chunks)

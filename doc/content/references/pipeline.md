@@ -177,15 +177,19 @@ promoted-parameter pack, or named positionals only — and the adapter
 normalizes the example list and dynamic-shape spec to whichever shape
 the target leaf expects.
 
-The lowered output is a `.pt2` package per graph. **Implicit
-segments** lower three graphs each (a Newton residual, a fused
-assemble + solve + update step, and an implicit-function-theorem
-sensitivity graph) plus an optional predictor; **forward segments**
-lower one value graph plus an optional flat-Jacobian graph (`jvp`).
-The implicit-segment graphs forward to whichever linear solver the
-source model is configured with (`DenseLU` for the common
-single-group case; `SchurComplement` for the `BLOCK + DENSE`
-2-group factorisation).
+The lowered output is a `.pt2` package per graph. Derivative graphs are
+**opt-in**: `neml2-compile` emits them only for the output-input pairs
+requested with `-d/--derivative` (none by default). **Forward segments**
+always lower a value graph and, when a requested pair runs through them, a
+per-variable-pair `jvp` graph emitting just the on-path blocks — a block
+that does not depend on the dynamic batch is traced, and returned,
+unbatched. **Implicit segments** always lower a Newton residual and a
+fused assemble + solve + update step (plus an optional predictor), and
+additionally an implicit-function-theorem sensitivity graph only when a
+requested pair's derivative path runs through them. The implicit-segment
+graphs forward to whichever linear solver the source model is configured
+with (`DenseLU` for the common single-group case; `SchurComplement` for
+the `BLOCK + DENSE` 2-group factorisation).
 
 The C++ orchestrator sees the same flat `(u_flat, g_flat) →
 (u_new, b_new)` contract either way — the multi-group / sub-batch

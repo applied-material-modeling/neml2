@@ -31,8 +31,13 @@ several devices needs one artifact per device. `neml2-compile` takes multiple
 ```
 
 ```console
-$ neml2-compile tests/aoti/forward_single/model.i --model model --device cpu cuda
+$ neml2-compile tests/aoti/forward_single/model.i --model model --device cpu cuda -d :
 ```
+
+(`-d :` compiles every Jacobian/JVP pair so the dispatched `jacobian` /
+`jvp` work; drop it for a forward-only artifact, or name specific pairs.)
+A batch-independent block is returned unbatched and the dispatcher passes
+it through unchanged (it is identical across batch chunks).
 
 produces a standalone stub next to a per-device artifact folder:
 

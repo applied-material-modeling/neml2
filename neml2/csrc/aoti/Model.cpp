@@ -102,7 +102,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
   // lack the master base_shape; we fail loudly instead of misinterpreting them.
   // dependencies: aoti.schema_version (NOT auto-managed -- C++ `//` comments are
   // not scanned by scripts/dep_manager.py; keep this literal in sync by hand).
-  static constexpr int kSupportedSchemaVersion = 5;
+  static constexpr int kSupportedSchemaVersion = 6;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -162,6 +162,9 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
     const auto sz = v["var_size"].get<int>();
     _input_names.push_back(name);
     _input_base_shapes.push_back(v["base_shape"].get<std::vector<int64_t>>());
+    _input_sub_batch_shapes.push_back(v.contains("sub_batch_shape")
+                                          ? v["sub_batch_shape"].get<std::vector<int64_t>>()
+                                          : std::vector<int64_t>{});
     _input_offsets.push_back(_input_total_size);
     _input_sizes.push_back(sz);
     _input_total_size += sz;
@@ -174,6 +177,42 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
     _output_names.push_back(v["name"].get<std::string>());
     _output_base_shapes.push_back(v["base_shape"].get<std::vector<int64_t>>());
     _output_sizes.push_back(v["var_size"].get<int>());
+  }
+
+  // Master (out, in) derivative pairs the artifact supports (v6+). Absent /
+  // empty => no derivative graphs compiled; jvp() / jacobian() raise. Kept in
+  // the metadata's (output-order, input-order) so the public maps iterate
+  // rows/cols consistently.
+  if (meta.contains("derivatives"))
+    for (const auto & pr : meta["derivatives"])
+    {
+      auto o = pr.at(0).get<std::string>();
+      auto i = pr.at(1).get<std::string>();
+      _deriv_by_out[o].push_back(i);
+      _derivatives.emplace_back(std::move(o), std::move(i));
+    }
+
+  // Narrowed "dense auxiliary B matrix" layout: the distinct requested input
+  // directions, in `_input_names` order, with their column offsets in the
+  // narrowed carrier. The multi-segment dense Jacobian seeds + composes over
+  // only these columns instead of every master input.
+  {
+    std::map<std::string, std::size_t> in_idx;
+    for (std::size_t j = 0; j < _input_names.size(); ++j)
+      in_idx[_input_names[j]] = j;
+    std::vector<char> seen(_input_names.size(), 0);
+    for (const auto & [o, i] : _derivatives)
+    {
+      const auto j = in_idx.at(i);
+      if (!seen[j])
+      {
+        seen[j] = 1;
+        _req_input_offset[i] = _req_total_size;
+        _req_input_size[i] = _input_sizes[j];
+        _req_inputs.push_back(i);
+        _req_total_size += _input_sizes[j];
+      }
+    }
   }
 
   // Promoted parameters (v2; empty in the common fully-baked case).
@@ -272,6 +311,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
             pi.in_base_shape = p["in_base_shape"].get<std::vector<int64_t>>();
           if (p.contains("in_sub_batch_shape"))
             pi.in_sub_batch_shape = p["in_sub_batch_shape"].get<std::vector<int64_t>>();
+          pi.batch_independent = p.value("batch_independent", false);
           seg.jacobian_pairs.push_back(std::move(pi));
         }
       }
@@ -316,30 +356,25 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
       for (const auto & g : seg_meta["residual_group_infos"])
         seg.residual_groups.push_back(parse_group_info(g));
 
-      // v7 per-(row_group, col_group) IFT cell metadata.
-      // ift_cells[k] corresponds to ift_outs[k] in row-major order.
-      if (seg_meta.contains("ift_cells"))
+      // Per-(unknown, given) IFT Jacobian-pair metadata (v6). The IFT loader
+      // emits one block per pair (via AssembledMatrix.disassemble), in
+      // jacobian_pairs order, so the runtime composes them against dg_dmaster
+      // exactly like a forward segment's per-pair blocks.
+      if (seg_meta.contains("jacobian_pairs"))
       {
-        for (const auto & c : seg_meta["ift_cells"])
+        for (const auto & p : seg_meta["jacobian_pairs"])
         {
-          Segment::CellInfo ci;
-          ci.row_group_idx = c["row_group_idx"].get<int64_t>();
-          ci.col_group_idx = c["col_group_idx"].get<int64_t>();
-          ci.row_structure = c["row_structure"].get<std::string>();
-          ci.col_structure = c["col_structure"].get<std::string>();
-          if (c.contains("sub_batch_shape"))
-            ci.sub_batch_shape = c["sub_batch_shape"].get<std::vector<int64_t>>();
-          if (c.contains("row_vars"))
-          {
-            for (const auto & v : c["row_vars"])
-              ci.row_vars.push_back(parse_var_info(v));
-          }
-          if (c.contains("col_vars"))
-          {
-            for (const auto & v : c["col_vars"])
-              ci.col_vars.push_back(parse_var_info(v));
-          }
-          seg.ift_cells.push_back(std::move(ci));
+          Segment::PairInfo pi;
+          pi.out_var = p["out_var"].get<std::string>();
+          pi.in_var = p["in_var"].get<std::string>();
+          if (p.contains("out_base_shape"))
+            pi.out_base_shape = p["out_base_shape"].get<std::vector<int64_t>>();
+          if (p.contains("in_base_shape"))
+            pi.in_base_shape = p["in_base_shape"].get<std::vector<int64_t>>();
+          if (p.contains("in_sub_batch_shape"))
+            pi.in_sub_batch_shape = p["in_sub_batch_shape"].get<std::vector<int64_t>>();
+          pi.batch_independent = p.value("batch_independent", false);
+          seg.jacobian_pairs.push_back(std::move(pi));
         }
       }
       // Solver convergence / line-search configuration is no longer baked into

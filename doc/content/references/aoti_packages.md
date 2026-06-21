@@ -20,6 +20,31 @@ neml2-compile <input.i> --model <name>
                         [--output-dir <dir>]
                         [--device cpu|cuda [cpu|cuda ...]] [--dtype float64|float32]
                         [-p|--parameter NAME ...]
+                        [-d|--derivative OUT:IN ...]
+```
+
+Derivative graphs are **opt-in**. With no `-d` flag only the `forward`
+graph is compiled and the runtime `jvp` / `jacobian` raise. Each
+`-d OUT:IN` requests the Jacobian/JVP for that output-input pair; omit a
+side to select all on it (`stress:` = every input of `stress`, `:strain`
+= every output w.r.t. `strain`, `:` = all pairs). The requested master
+pairs are recorded in the metadata's top-level `derivatives` array.
+
+Each derivative is one per-variable-pair block. A block that does not
+depend on the dynamic batch (e.g. a constant stiffness tensor) is returned
+**unbatched** at its natural `(*out_base, *in_base)` shape.
+
+```{note}
+For an **implicit (Newton-solve) model with sub-batched (per-grain) state**
+— e.g. crystal plasticity — a derivative of a **non-sub-batched output
+w.r.t. a non-sub-batched input** (e.g. a global stress w.r.t. a global
+strain) is supported: the IFT solve handles the internal per-grain coupling
+and the returned block has no grain axis. A derivative that *touches* a
+per-grain variable (a sub-batched output or input) is not yet implemented
+and fails fast at `neml2-compile` with a clear "… involves the sub-batched
+variable …" error; use eager mode (`torch.autograd`) for per-grain
+sensitivities. Forward evaluation of such models, and all plain-batch /
+forward derivatives, are fully supported.
 ```
 
 See [](cli-utilities) for the broader CLI surface.
@@ -51,8 +76,8 @@ the metadata plus a value graph and an optional JVP graph:
 | File                  | Contents                                                                    |
 | :-------------------- | :-------------------------------------------------------------------------- |
 | `<name>.pt2`          | AOT-Inductor-compiled forward / value graph.                                |
-| `<name>_jvp.pt2`      | Flat-Jacobian graph: returns the outputs plus a stacked `dout/din` block.   |
-| `<name>_meta.json`    | Variable layout, dtype, device, promoted-parameter initial values.         |
+| `<name>_jvp.pt2`      | Per-pair Jacobian graph (only when `-d` requested a forward-segment pair): returns the outputs plus one block per requested `(out, in)`. A block that does not depend on the dynamic batch (e.g. a constant stiffness tensor) is emitted unbatched (`batch_independent` in the metadata). |
+| `<name>_meta.json`    | Variable layout, dtype, device, promoted-parameter initial values, and the top-level `derivatives` array (master `[out, in]` pairs the artifact supports; empty = none). |
 
 Implicit single-segment models emit the per-segment set covered in the
 segment table below in place of the forward graphs.
@@ -64,10 +89,10 @@ boundary into separate **segments**, each numbered `_seg{i}_`:
 | File                            | Contents                                                |
 | :------------------------------ | :------------------------------------------------------ |
 | `<name>_seg{i}.pt2`             | Forward-segment value graph.                            |
-| `<name>_seg{i}_jvp.pt2`         | Forward-segment flat Jacobian graph (optional).         |
+| `<name>_seg{i}_jvp.pt2`         | Forward-segment per-pair Jacobian graph (only when `-d` requested a pair this segment contributes to). |
 | `<name>_seg{i}_rhs.pt2`         | Implicit-segment Newton residual `-r(u, g)`.            |
 | `<name>_seg{i}_step.pt2`        | Implicit-segment fused assemble + solve + update.       |
-| `<name>_seg{i}_ift.pt2`         | Implicit-function-theorem sensitivity `-A^{-1} B`.      |
+| `<name>_seg{i}_ift.pt2`         | Implicit-function-theorem sensitivity `-A^{-1} B` (only when `-d` requested a pair routed through this segment). |
 | `<name>_seg{i}_predictor.pt2`   | Newton initial guess (only if the source had one).      |
 
 The `_seg0_` infix is dropped in the single-segment shortcut, so
@@ -100,23 +125,26 @@ refuses any non-matching version with a clear "regenerate via
 `neml2-compile`" message; the only remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `5`.
+The current schema version is `6`.
 
 ### Segment kinds
 
 Two segment kinds appear inside `segments`:
 
-- **Forward** segments lower to a single value graph (`_seg{i}.pt2`)
-  plus an optional flat-Jacobian graph (`_seg{i}_jvp.pt2`). Call shape
+- **Forward** segments lower to a value graph (`_seg{i}.pt2`), plus a
+  per-variable-pair Jacobian graph (`_seg{i}_jvp.pt2`) when `-d`
+  requested a derivative pair this segment contributes to (a block that
+  does not depend on the dynamic batch is emitted unbatched). Call shape
   is `(*user_inputs, *promoted_params) -> outputs`.
-- **Implicit** segments lower to three graphs — `_rhs.pt2` (Newton
-  residual), `_step.pt2` (fused assemble + LU solve + update +
-  post-update residual), `_ift.pt2` (`-A^{-1} B`
-  implicit-function-theorem sensitivity at the converged state) —
-  plus an optional `_predictor.pt2` graph when the source had a
-  `Predictor`. The Newton loop body is one loader call per iteration
-  plus a convergence sync; the IFT graph is consumed by `jacobian()`
-  and `jvp()`.
+- **Implicit** segments always lower `_rhs.pt2` (Newton residual) and
+  `_step.pt2` (fused assemble + LU solve + update + post-update
+  residual), plus an optional `_predictor.pt2` graph when the source had
+  a `Predictor`. They additionally lower `_ift.pt2` (`-A^{-1} B`
+  implicit-function-theorem sensitivity at the converged state) **only
+  when `-d` requested a pair whose derivative path runs through this
+  segment**. The Newton loop body is one loader call per iteration plus a
+  convergence sync; the IFT graph, when present, is consumed by
+  `jacobian()` and `jvp()`.
 
   The Newton solve's convergence tolerances, iteration cap, and line-search
   settings are **not** baked into the metadata (schema v4+). They are carried

@@ -26,6 +26,9 @@ auto model = neml2::aoti::load_model("aoti/elasticity_aoti.i", "elasticity");
 
 auto outputs = model.forward({{"strain", strain_tensor}});
 // J is nested: J["stress"]["strain"] is the (*B, *out_base, *in_base) block.
+// jacobian()/jvp() return only the pairs the artifact was compiled with
+// (`neml2-compile -d OUT:IN`); they throw a FatalError if none were requested.
+// A batch-independent block (constant stiffness) is returned unbatched.
 auto [outs, J] = model.jacobian({{"strain", strain_tensor}});
 
 // Promoted parameters are mutable in place.

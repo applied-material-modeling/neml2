@@ -32,12 +32,12 @@ Three ``nn.Module`` graphs, one per piece of the Newton orchestration:
 - :class:`NewtonStep` -- ``(*u_groups, *g_groups) -> (*du_groups, *b_groups)``
                          (Newton step direction + residual at the current
                          iterate).
-- :class:`IFT`        -- ``(*u_groups, *g_groups) -> *cells`` (implicit
+- :class:`IFT`        -- ``(*u_groups, *g_groups) -> *blocks`` (implicit
                          function theorem Jacobian at the converged state,
-                         emitted as one typed cell per (row_group,
-                         col_group) entry of the AssembledMatrix; the
-                         C++ runtime consumes cells with per-cell matmul
-                         accumulation against ``dg_dmaster``).
+                         emitted as one block per ``(unknown, given)`` pair
+                         via ``AssembledMatrix.disassemble``; the C++ runtime
+                         composes each block against ``dg_dmaster`` with the
+                         same per-pair path a forward segment uses).
 
 All three segments take and return per-group raw tensors at the natural
 ``AssembledVector`` / ``AssembledMatrix`` group shape -- BLOCK groups
@@ -69,7 +69,7 @@ def enumerate_group_var_names(layout: AxisLayout) -> tuple[tuple[str, ...], ...]
 
     Single source of truth for the order in which group tensors are
     enumerated in segment forward signatures and in metadata
-    emission. See :func:`~neml2.cli.aoti_export._enumerate_groups_and_cells`
+    emission. See :func:`~neml2.cli.aoti_export._enumerate_group_infos`
     for the matching emitter side.
     """
     return tuple(tuple(g) for g in layout.groups)
@@ -227,21 +227,6 @@ def _vector_to_per_group_raws(vec: AssembledVector) -> tuple[torch.Tensor, ...]:
     return tuple(t.data for t in vec.tensors)  # noqa: data-ok AOTI
 
 
-def _matrix_to_per_cell_raws(mat: AssembledMatrix) -> tuple[torch.Tensor, ...]:
-    """Extract per-(row_group, col_group) raw tensors from an AssembledMatrix.
-
-    Row-major order (rows outer, cols inner). Matches
-    :func:`~neml2.cli.aoti_export._enumerate_groups_and_cells` on the
-    metadata side -- both must use the same nested loop or the schema
-    cells will desync from the loader output positions.
-    """
-    cells: list[torch.Tensor] = []
-    for i in range(mat.row_layout.ngroup):
-        for j in range(mat.col_layout.ngroup):
-            cells.append(mat.tensors[i][j].data)  # noqa: data-ok AOTI
-    return tuple(cells)
-
-
 class RHS(_SystemModule):
     """Exportable residual graph.
 
@@ -288,23 +273,42 @@ class IFT(_SystemModule):
     """Exportable IFT Jacobian $du/dg = -A^{-1} B$ for a converged
     :class:`ImplicitUpdate`.
 
-    Contract: ``(*u_groups, *g_groups) -> *cells`` where each cell is one
-    ``(row_group_i, col_group_j)`` entry of ``-du_dg`` in row-major
-    order (matches
-    :func:`~neml2.cli.aoti_export._enumerate_groups_and_cells`). Each
-    cell stays at its natural per-(row_structure, col_structure) shape;
-    no fold to dense.
+    Contract: ``(*u_groups, *g_groups) -> *blocks`` where each block is one
+    per-variable-pair ``(unknown, given)`` entry of ``-du_dg``, emitted in
+    ``unknown_names`` (outer) × ``given_names`` (inner) order -- matching the
+    ``jacobian_pairs`` metadata in
+    :func:`~neml2.cli.aoti_export._compile_implicit_segment`.
 
-    The C++ runtime consumes the cells via per-cell matmul against the
-    matching ``dg_dmaster`` segment, accumulating into per-unknown
-    ``du_dmaster`` slots. Per-grain BLOCK + BLOCK cells stay
-    block-diagonal-compact throughout -- the runtime never materialises
-    the N² dense block.
+    The equation system assembles the dense ``A`` / ``B`` (via the model's
+    per-variable chain rule), applies the IFT solve, then ``disassemble()``\\ s
+    the resulting :class:`~neml2.es.assembled.AssembledMatrix` into
+    per-(unknown, given) blocks. Each block keeps its natural per-structure
+    shape (``"dense"`` -> ``(*B, u_storage, g_storage)``; a BLOCK side stays
+    block-diagonal-compact, no N² fold). The C++ runtime then composes these
+    blocks against ``dg_dmaster`` exactly like a forward segment's per-pair
+    Jacobian blocks -- one uniform per-pair path for forward and implicit.
     """
 
-    def __init__(self, system: ModelNonlinearSystem, linear_solver) -> None:
+    def __init__(
+        self,
+        system: ModelNonlinearSystem,
+        linear_solver,
+        selected_pairs: set[tuple[str, str]] | None = None,
+    ) -> None:
         super().__init__(system)
         self._linear_solver = linear_solver
+        # Local (unknown, given) pairs to emit; ``None`` = all. Emitted in
+        # unknown x given order to match the metadata.
+        self._selected_pairs = selected_pairs
+
+    def emitted_pairs(self) -> list[tuple[str, str]]:
+        """The (unknown, given) pairs this graph emits, in emission order."""
+        return [
+            (u, g)
+            for u in self.unknown_names
+            for g in self.given_names
+            if self._selected_pairs is None or (u, g) in self._selected_pairs
+        ]
 
     def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
         state = self._state_from_per_group_args(args)
@@ -313,7 +317,13 @@ class IFT(_SystemModule):
         A = self._assembled_matrix(self.ulayout, v_out, output_state)
         B = self._assembled_matrix(self.glayout, v_out, output_state)
         du_dg = self._linear_solver.solve(A, B)
-        return _matrix_to_per_cell_raws(-du_dg)
+        cells = (-du_dg).disassemble().cells
+        # Emit per-(unknown, given) raw blocks in the canonical order. The
+        # ``.data`` reads are the legitimate AOTI segment-output boundary.
+        return tuple(
+            cells[u][g].data  # noqa: data-ok AOTI
+            for (u, g) in self.emitted_pairs()
+        )
 
 
 __all__ = ["RHS", "NewtonStep", "IFT", "enumerate_group_var_names"]

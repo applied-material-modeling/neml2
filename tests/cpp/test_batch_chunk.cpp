@@ -110,5 +110,46 @@ main()
     NEML2_CHECK(at::equal(cat.narrow(0, 4, 6), b));
   }
 
+  // cat_batch_nested (base-shape-aware): per-(out,in) blocks, where a batched
+  // block (dim > out_base_ndim + in_base_ndim) is concatenated along dim 0 while
+  // a batch-independent block (dim == that trail) is identical across chunks and
+  // passed through unchanged. Out var "o" has base ndim 1; inputs "i"/"c" too.
+  {
+    const std::map<std::string, int64_t> out_nd{{"o", 1}};
+    const std::map<std::string, int64_t> in_nd{{"i", 1}, {"c", 1}};
+    auto a = at::randn({4, 2, 3}, dbl); // batched (o,i) block, chunk 0
+    auto b = at::randn({6, 2, 3}, dbl); // batched (o,i) block, chunk 1
+    auto bi = at::randn({2, 3}, dbl);   // batch-independent (o,c) block
+
+    std::map<std::string, std::map<std::string, at::Tensor>> c0, c1;
+    c0["o"]["i"] = a;
+    c0["o"]["c"] = bi;
+    c1["o"]["i"] = b;
+    c1["o"]["c"] = bi; // identical across chunks (batch-independent)
+
+    auto cat = cat_batch_nested({c0, c1}, out_nd, in_nd);
+    // Batched pair: concatenated to the full batch.
+    NEML2_CHECK(cat.at("o").at("i").size(0) == 10);
+    NEML2_CHECK(at::equal(cat.at("o").at("i").narrow(0, 0, 4), a));
+    NEML2_CHECK(at::equal(cat.at("o").at("i").narrow(0, 4, 6), b));
+    // Batch-independent pair: passed through at its natural (2, 3), not stacked.
+    NEML2_CHECK(cat.at("o").at("c").dim() == 2);
+    NEML2_CHECK(at::equal(cat.at("o").at("c"), bi));
+
+    // Single-chunk fast path: returned verbatim.
+    auto one = cat_batch_nested({c0}, out_nd, in_nd);
+    NEML2_CHECK(at::equal(one.at("o").at("i"), a));
+    NEML2_CHECK(at::equal(one.at("o").at("c"), bi));
+  }
+
+  // to_device_nested: a cpu->cpu move is a no-op that preserves every block.
+  {
+    std::map<std::string, std::map<std::string, at::Tensor>> j;
+    auto blk = at::randn({3, 2, 3}, dbl);
+    j["o"]["i"] = blk;
+    auto moved = to_device_nested(j, at::kCPU);
+    NEML2_CHECK(at::equal(moved.at("o").at("i"), blk));
+  }
+
   return 0;
 }
