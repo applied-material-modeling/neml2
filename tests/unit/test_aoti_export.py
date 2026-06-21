@@ -68,6 +68,58 @@ def test_parse_example_batch_shape_rejects_label_suffix():
         _parse_example_batch_shape("(2; 3:grain)")
 
 
+def test_resolve_derivative_specs_grammar_and_errors():
+    """``-d/--derivative OUT:IN`` resolution: explicit pairs, the omission
+    grammar (either/both sides empty = 'all'), the empty-specs default, and the
+    error branches (no colon, unknown output, unknown/promoted input)."""
+    from neml2.cli.aoti_export import _resolve_derivative_specs
+
+    outs = ["stress", "energy"]
+    ins = ["strain", "temperature"]
+
+    # No specs -> no pairs (derivative graphs are opt-in).
+    assert _resolve_derivative_specs([], outs, ins) == set()
+
+    # One explicit pair.
+    assert _resolve_derivative_specs(["stress:strain"], outs, ins) == {("stress", "strain")}
+
+    # Omit the output side -> every output w.r.t. that input.
+    assert _resolve_derivative_specs([":strain"], outs, ins) == {
+        ("stress", "strain"),
+        ("energy", "strain"),
+    }
+
+    # Omit the input side -> that output w.r.t. every input.
+    assert _resolve_derivative_specs(["stress:"], outs, ins) == {
+        ("stress", "strain"),
+        ("stress", "temperature"),
+    }
+
+    # Both sides omitted -> all pairs; whitespace around names is tolerated.
+    assert _resolve_derivative_specs([":"], outs, ins) == {(o, i) for o in outs for i in ins}
+    assert _resolve_derivative_specs([" stress : strain "], outs, ins) == {("stress", "strain")}
+
+    # Multiple specs union (and dedupe).
+    assert _resolve_derivative_specs(["stress:strain", "stress:strain", "energy:"], outs, ins) == {
+        ("stress", "strain"),
+        ("energy", "strain"),
+        ("energy", "temperature"),
+    }
+
+    # Missing colon.
+    with pytest.raises(ValueError, match="expected OUT:IN"):
+        _resolve_derivative_specs(["stress"], outs, ins)
+
+    # Unknown output.
+    with pytest.raises(ValueError, match="unknown output 'nope'"):
+        _resolve_derivative_specs(["nope:strain"], outs, ins)
+
+    # Unknown input (a promoted-parameter name is rejected here too: it is not a
+    # structural input and never appears in the Jacobian).
+    with pytest.raises(ValueError, match="unknown input 'E'"):
+        _resolve_derivative_specs(["stress:E"], outs, ins)
+
+
 @pytest.fixture(scope="session")
 def forward_export(tmp_path_factory):
     from neml2.cli.aoti_export import export_model_for_aoti

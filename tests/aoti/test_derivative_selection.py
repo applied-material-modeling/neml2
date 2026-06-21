@@ -109,6 +109,19 @@ def test_selected_pair_returns_only_that_pair_and_matches_eager(tmp_path):
     assert torch.allclose(jv["stress"], jve["stress"], rtol=1e-6, atol=1e-8)
 
 
+def test_jvp_missing_tangent_contributes_zero(tmp_path):
+    """A tangent dict missing an input key contributes nothing: the runtime
+    packs an absent tangent as zeros, so jvp along an empty tangent is zero."""
+    from neml2.eager import _EagerModel
+
+    m = _compile(tmp_path, _ELASTICITY_I, "model", derivatives=["stress:strain"])
+    eager = _EagerModel(str(_ELASTICITY_I), "model")
+    ins = _rand_inputs(eager)
+
+    _, jv = m.jvp(ins, {})  # no tangents -> zero directional derivative
+    assert torch.allclose(jv["stress"], torch.zeros_like(jv["stress"]))
+
+
 def test_constant_jacobian_block_returned_unbatched(tmp_path):
     """Linear elasticity's d(stress)/d(strain) is the constant stiffness tensor:
     the metadata flags it ``batch_independent`` and the single-forward-segment
