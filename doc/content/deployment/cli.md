@@ -158,6 +158,10 @@ into a frozen graph for performance.
 ```{program-output} neml2-compile --help
 ```
 
+Derivative graphs are opt-in: with no `-d` flag only `forward` is
+compiled and `jvp` / `jacobian` raise at runtime. Request the pairs you
+need with `-d OUT:IN` (e.g. `-d stress:strain`, or `-d :` for all).
+
 The end-to-end walkthrough — emitted file layout, loading the
 artifact from Python, parameter promotion (`-p <name>`), and the
 trade-offs against eager mode — lives in

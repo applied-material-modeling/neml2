@@ -171,4 +171,56 @@ cat_batch_nested(
     }
   return out;
 }
+
+/// Concatenate per-chunk nested Jacobians, passing batch-independent blocks
+/// through instead of concatenating them.
+///
+/// A batch-independent block (e.g. a constant stiffness tensor) is returned by
+/// the per-device model unbatched at its natural ``(*out_base, *in_base)`` shape
+/// -- identical across every chunk. Concatenating it along dim 0 would corrupt
+/// it (stacking N identical copies and mislabelling an ``out_base`` axis as
+/// batch). We detect it structurally: a block with exactly
+/// ``out_base_ndim[o] + in_base_ndim[i]`` dims carries no leading batch axis, so
+/// take the first chunk's copy; any block with more dims is batched and is
+/// concatenated as usual.
+inline std::map<std::string, std::map<std::string, at::Tensor>>
+cat_batch_nested(
+    const std::vector<std::map<std::string, std::map<std::string, at::Tensor>>> & chunks,
+    const std::map<std::string, int64_t> & out_base_ndim,
+    const std::map<std::string, int64_t> & in_base_ndim)
+{
+  _assert(!chunks.empty(), "cat_batch_nested: no chunks to concatenate.");
+  if (chunks.size() == 1)
+    return chunks.front();
+
+  std::map<std::string, std::map<std::string, at::Tensor>> out;
+  for (const auto & [o, row] : chunks.front())
+    for (const auto & [i, first] : row)
+    {
+      const int64_t trail = out_base_ndim.at(o) + in_base_ndim.at(i);
+      if (first.dim() == trail)
+      {
+        // Batch-independent: identical across chunks, take the first.
+        out[o].emplace(i, first);
+        continue;
+      }
+      std::vector<at::Tensor> parts;
+      parts.reserve(chunks.size());
+      for (const auto & c : chunks)
+      {
+        auto oit = c.find(o);
+        _assert(oit != c.end(), "cat_batch_nested: output '", o, "' missing from a chunk.");
+        auto iit = oit->second.find(i);
+        _assert(iit != oit->second.end(),
+                "cat_batch_nested: block ('",
+                o,
+                "', '",
+                i,
+                "') missing from a chunk.");
+        parts.push_back(iit->second);
+      }
+      out[o].emplace(i, at::cat(parts, /*dim=*/0));
+    }
+  return out;
+}
 } // namespace neml2::aoti

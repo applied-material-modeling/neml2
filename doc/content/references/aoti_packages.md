@@ -20,6 +20,31 @@ neml2-compile <input.i> --model <name>
                         [--output-dir <dir>]
                         [--device cpu|cuda [cpu|cuda ...]] [--dtype float64|float32]
                         [-p|--parameter NAME ...]
+                        [-d|--derivative OUT:IN ...]
+```
+
+Derivative graphs are **opt-in**. With no `-d` flag only the `forward`
+graph is compiled and the runtime `jvp` / `jacobian` raise. Each
+`-d OUT:IN` requests the Jacobian/JVP for that output-input pair; omit a
+side to select all on it (`stress:` = every input of `stress`, `:strain`
+= every output w.r.t. `strain`, `:` = all pairs). The requested master
+pairs are recorded in the metadata's top-level `derivatives` array.
+
+Each derivative is one per-variable-pair block. A block that does not
+depend on the dynamic batch (e.g. a constant stiffness tensor) is returned
+**unbatched** at its natural `(*out_base, *in_base)` shape.
+
+```{note}
+For an **implicit (Newton-solve) model with sub-batched (per-grain) state**
+— e.g. crystal plasticity — a derivative of a **non-sub-batched output
+w.r.t. a non-sub-batched input** (e.g. a global stress w.r.t. a global
+strain) is supported: the IFT solve handles the internal per-grain coupling
+and the returned block has no grain axis. A derivative that *touches* a
+per-grain variable (a sub-batched output or input) is not yet implemented
+and fails fast at `neml2-compile` with a clear "… involves the sub-batched
+variable …" error; use eager mode (`torch.autograd`) for per-grain
+sensitivities. Forward evaluation of such models, and all plain-batch /
+forward derivatives, are fully supported.
 ```
 
 See [](cli-utilities) for the broader CLI surface.
@@ -51,8 +76,8 @@ the metadata plus a value graph and an optional JVP graph:
 | File                  | Contents                                                                    |
 | :-------------------- | :-------------------------------------------------------------------------- |
 | `<name>.pt2`          | AOT-Inductor-compiled forward / value graph.                                |
-| `<name>_jvp.pt2`      | Flat-Jacobian graph: returns the outputs plus a stacked `dout/din` block.   |
-| `<name>_meta.json`    | Variable layout, dtype, device, promoted-parameter initial values.         |
+| `<name>_jvp.pt2`      | Per-pair Jacobian graph (only when `-d` requested a forward-segment pair): returns the outputs plus one block per requested `(out, in)`. A block that does not depend on the dynamic batch (e.g. a constant stiffness tensor) is emitted unbatched (`batch_independent` in the metadata). |
+| `<name>_meta.json`    | Variable layout, dtype, device, promoted-parameter initial values, and the top-level `derivatives` array (master `[out, in]` pairs the artifact supports; empty = none). |
 
 Implicit single-segment models emit the per-segment set covered in the
 segment table below in place of the forward graphs.
@@ -100,7 +125,7 @@ refuses any non-matching version with a clear "regenerate via
 `neml2-compile`" message; the only remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `5`.
+The current schema version is `6`.
 
 ### Segment kinds
 

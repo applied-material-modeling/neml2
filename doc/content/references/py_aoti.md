@@ -46,9 +46,15 @@ wholesale:
 | Operation               | Returns                                             |
 | :---------------------- | :-------------------------------------------------- |
 | `forward(inputs)`       | One tensor per output name, at `(*B, *out_base)`.   |
-| `jvp(inputs, tangents)` | `(outputs, J @ v)`, each at `(*B, *out_base)`. Missing tangent keys → zero. |
-| `jacobian(inputs)`      | `(outputs, J)` with `J[out][in]` the block `(*B, *out_base, *in_base)`. |
+| `jvp(inputs, tangents)` | `(outputs, J @ v)` over the **requested** pairs. Missing tangent keys → zero. |
+| `jacobian(inputs)`      | `(outputs, J)` with `J[out][in]` the block for each **requested** pair, `(*B, *out_base, *in_base)`. |
 | `named_parameters()`    | Mutable dict of promoted parameters; empty if baked. |
+
+`jvp` / `jacobian` only return the output-input pairs the artifact was
+compiled with (`neml2-compile -d OUT:IN`); pairs absent from the
+`derivatives` metadata are absent from the returned maps. An artifact
+compiled with no `-d` raises from both. A batch-independent block (e.g. a
+constant stiffness tensor) comes back unbatched (`(*out_base, *in_base)`).
 
 All three call paths take a dict keyed by the master input names
 listed in `input_names`; missing keys throw.

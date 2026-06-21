@@ -239,7 +239,22 @@ struct DispatchedModel::Impl
       outs.push_back(std::move(c.first));
       jparts.push_back(std::move(c.second));
     }
-    return {cat_batch(outs), cat_batch_nested(jparts)};
+    // Per-pair reassembly is base-shape-aware so a batch-independent block
+    // (returned unbatched by the single-forward fast path) is passed through
+    // rather than concatenated across chunks. Build name -> base-ndim maps from
+    // the active model's declared layout.
+    std::map<std::string, int64_t> out_base_ndim, in_base_ndim;
+    {
+      const auto & onames = _active->output_names();
+      const auto & oshapes = _active->output_base_shapes();
+      for (std::size_t k = 0; k < onames.size(); ++k)
+        out_base_ndim[onames[k]] = static_cast<int64_t>(oshapes[k].size());
+      const auto & inames = _active->input_names();
+      const auto & ishapes = _active->input_base_shapes();
+      for (std::size_t k = 0; k < inames.size(); ++k)
+        in_base_ndim[inames[k]] = static_cast<int64_t>(ishapes[k].size());
+    }
+    return {cat_batch(outs), cat_batch_nested(jparts, out_base_ndim, in_base_ndim)};
   }
 
   void set_solver_config(const SolverConfig & config)

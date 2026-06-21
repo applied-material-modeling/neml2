@@ -28,7 +28,7 @@ input.i ──► neml2-compile ──► elasticity_aoti.i             (standal
                               elasticity/
                                 cpu/  elasticity_meta.json   (variable layout, dtype, device)
                                       elasticity.pt2         (AOTI-compiled kernels)
-                                      elasticity_jvp.pt2     (flat dout/din graph)
+                                      elasticity_jvp.pt2     (per-pair Jacobian graph; only with -d)
 ```
 
 `neml2-compile` emits one artifact folder per device (`elasticity/<device>/`)
@@ -51,10 +51,14 @@ runs on.
 ## Compiling from the shell
 
 `neml2-compile` (see [](cli-utilities)) builds the package in one
-invocation:
+invocation. Derivative graphs are **opt-in**: with no `-d` flag only the
+`forward` graph is compiled (the smallest artifact). Request the
+derivatives you need with `-d OUT:IN` (here `stress:strain`; omit a side
+to select all on it, `-d :` for every pair) so the artifact also exposes
+`jvp` / `jacobian` for those pairs:
 
 ```{code-cell} ipython3
-!neml2-compile input.i --model elasticity
+!neml2-compile input.i --model elasticity -d stress:strain
 ```
 
 Compilation is a one-time cost (Inductor + C++ compile, typically
@@ -164,7 +168,7 @@ constant. That's fastest, but it also means you can't change them at
 runtime. To keep one mutable, promote it at compile time with `-p`:
 
 ```{code-cell} ipython3
-!neml2-compile input.i --model elasticity --output-dir aoti_promoted -p E
+!neml2-compile input.i --model elasticity --output-dir aoti_promoted -p E -d stress:strain
 ```
 
 The promoted artifact loads the same way; the difference is that the

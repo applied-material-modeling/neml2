@@ -47,16 +47,17 @@ from neml2.types import Scalar
 # ---------- schema_version constant ----------
 
 
-def test_schema_version_constant_is_int_five():
-    """v5 makes the runtime variable-native: the master ``inputs``/``outputs``
-    metadata now carries each variable's ``base_shape`` so the C++ side reports
-    ``input_base_shapes()``/``output_base_shapes()``, validates canonical
-    ``(*B, *base)`` inputs, and returns unflattened jvp / variable-pair jacobian
-    blocks. (v4 had de-baked the solver config into the stub's ``[Solvers]``
-    block.) The C++ loader mirrors this constant and refuses any other value, so
-    a stale cache surfaces immediately with a clear ``regenerate via
-    neml2-compile`` message instead of a cryptic missing-field error."""
-    assert AOTI_META_SCHEMA_VERSION == 5
+def test_schema_version_constant_is_int_six():
+    """v6 makes derivative graphs opt-in: a top-level ``derivatives`` array lists
+    the master ``[out, in]`` pairs the artifact supports (empty => jvp/jacobian
+    raise), forward ``jvp_package`` / implicit ``ift_package`` are emitted only
+    when requested, and each ``jacobian_pairs`` entry gains a ``batch_independent``
+    flag. (v5 carried per-variable ``base_shape`` for the variable-native runtime;
+    v4 de-baked the solver config.) The C++ loader mirrors this constant and
+    refuses any other value, so a stale cache surfaces immediately with a clear
+    ``regenerate via neml2-compile`` message instead of a cryptic missing-field
+    error."""
+    assert AOTI_META_SCHEMA_VERSION == 6
 
 
 # ---------- _var_infos default behaviour (no sub-batch) ----------

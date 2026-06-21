@@ -111,7 +111,12 @@ main(int argc, char ** argv)
       NEML2_CHECK(at::allclose(jout.at(o), std::get<0>(ref_jac).at(o), 1e-8, 1e-10));
       for (const auto & i : ref.input_names())
       {
-        NEML2_CHECK(j.at(o).at(i).size(0) == b);
+        // The dispatched block must reassemble to the same shape the
+        // single-device reference returns: a batched block is concatenated back
+        // to leading dim `b`, while a batch-independent block (this model's
+        // constant stiffness Jacobian) is passed through unbatched. Comparing to
+        // the reference covers both without hard-coding the batch axis.
+        NEML2_CHECK(j.at(o).at(i).sizes() == std::get<1>(ref_jac).at(o).at(i).sizes());
         NEML2_CHECK(at::allclose(j.at(o).at(i), std::get<1>(ref_jac).at(o).at(i), 1e-8, 1e-10));
       }
     }
