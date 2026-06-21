@@ -39,17 +39,17 @@ from ..model import Model
 class CylindricalChannelGeometry(Model):
     r"""Dimensionless inner/outer radii of a cylindrical reaction product.
 
-    Given the volume fractions :math:`\phi_s` (solid) and :math:`\phi_p`
-    (product), define :math:`\mathrm{cap} = 1 - \phi_s - \phi_p`. Then
+    Given the volume fractions $\phi_s$ (solid) and $\phi_p$
+    (product), define $\mathrm{cap} = 1 - \phi_s - \phi_p$. Then
 
-    .. math::
-
-        r_i = \sqrt{\operatorname{clamp}(\mathrm{cap}, \varepsilon, 1 - \varepsilon)},
-        \qquad
-        r_o = \sqrt{1 - \phi_s}.
+    $$
+    r_i = \sqrt{\operatorname{clamp}(\mathrm{cap}, \varepsilon, 1 - \varepsilon)},
+    \qquad
+    r_o = \sqrt{1 - \phi_s}.
+    $$
 
     The clamp guards :func:`sqrt` against negative arguments and the flat
-    saturation tails kill the derivative of :math:`r_i` exactly as in the
+    saturation tails kill the derivative of $r_i$ exactly as in the
     C++ source.
     """
 

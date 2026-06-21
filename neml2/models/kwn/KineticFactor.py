@@ -39,10 +39,10 @@ from ..model import Model
 class KineticFactor(Model):
     r"""Nucleation kinetic factor.
 
-    Computes :math:`\beta = 4\pi \, (N_a / V_m)^{4/3} \, R_{\mathrm{crit}}^2 /
-    \mathrm{sum}`, where :math:`R_{\mathrm{crit}}` is the critical radius for
-    nucleation, :math:`\mathrm{sum}` is the projected diffusivity sum,
-    :math:`V_m` is the molar volume of the precipitate, and :math:`N_a` is
+    Computes $\beta = 4\pi \, (N_a / V_m)^{4/3} \, R_{\mathrm{crit}}^2 /
+    \mathrm{sum}$, where $R_{\mathrm{crit}}$ is the critical radius for
+    nucleation, $\mathrm{sum}$ is the projected diffusivity sum,
+    $V_m$ is the molar volume of the precipitate, and $N_a$ is
     Avogadro's number.
     """
 

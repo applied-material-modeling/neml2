@@ -39,12 +39,12 @@ from ..model import Model
 class PrecipitateVolumeFraction(Model):
     r"""Compute the precipitate volume fraction from a discrete size distribution.
 
-    For a discrete distribution with per-bin radius :math:`R_i` and per-bin
-    number density :math:`n_i`, the precipitate volume fraction is
+    For a discrete distribution with per-bin radius $R_i$ and per-bin
+    number density $n_i$, the precipitate volume fraction is
 
-    .. math::
-
-        f = \sum_i \tfrac{4}{3} \pi R_i^3 \, n_i
+    $$
+    f = \sum_i \tfrac{4}{3} \pi R_i^3 \, n_i
+    $$
 
     where the sum runs over all precipitate size bins.
     """

@@ -37,20 +37,20 @@ from ..model import Model
 class DiffusionLimitedReaction(Model):
     r"""Diffusion-limited reaction rate for a shrinking-core product phase.
 
-    Given the dimensionless inner radius :math:`r_i` and outer radius
-    :math:`r_o` of the product phase, the liquid and solid reactivities
-    :math:`R_l` and :math:`R_s` (both in :math:`[0, 1]`), the characteristic
-    diffusion coefficient :math:`D` of the rate-limiting species, and the
-    molar volume :math:`\omega` of that species, the volumetric reaction
+    Given the dimensionless inner radius $r_i$ and outer radius
+    $r_o$ of the product phase, the liquid and solid reactivities
+    $R_l$ and $R_s$ (both in $[0, 1]$), the characteristic
+    diffusion coefficient $D$ of the rate-limiting species, and the
+    molar volume $\omega$ of that species, the volumetric reaction
     rate is
 
-    .. math::
+    $$
+    \dot{\alpha} = \frac{2 D R_l R_s}{\omega}
+                   \cdot \frac{r_o}{r_o - r_i + \delta}
+    $$
 
-        \dot{\alpha} = \frac{2 D R_l R_s}{\omega}
-                       \cdot \frac{r_o}{r_o - r_i + \delta}
-
-    where :math:`\delta` is a small "dummy thickness" added to the product
-    thickness :math:`r_o - r_i` to keep the rate finite at the start of the
+    where $\delta$ is a small "dummy thickness" added to the product
+    thickness $r_o - r_i$ to keep the rate finite at the start of the
     reaction.
     """
 

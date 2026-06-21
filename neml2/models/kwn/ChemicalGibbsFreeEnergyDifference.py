@@ -37,10 +37,10 @@ from ..model import Model
 class ChemicalGibbsFreeEnergyDifference(Model):
     r"""Chemical Gibbs free energy difference for a set of species.
 
-    Computes :math:`\Delta g = \sum_i \Delta x_i \, (\mu_i - \mu_i^{\mathrm{eq}})`
-    where :math:`\Delta x_i` is the concentration difference for species
-    :math:`i`, :math:`\mu_i` is the chemical potential in the matrix, and
-    :math:`\mu_i^{\mathrm{eq}}` is the equilibrium chemical potential.
+    Computes $\Delta g = \sum_i \Delta x_i \, (\mu_i - \mu_i^{\mathrm{eq}})$
+    where $\Delta x_i$ is the concentration difference for species
+    $i$, $\mu_i$ is the chemical potential in the matrix, and
+    $\mu_i^{\mathrm{eq}}$ is the equilibrium chemical potential.
     """
 
     hit = HitSchema(

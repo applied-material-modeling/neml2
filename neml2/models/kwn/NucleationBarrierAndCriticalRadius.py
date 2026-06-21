@@ -41,15 +41,15 @@ class NucleationBarrierAndCriticalRadius(Model):
 
     Mirrors the C++ ``NucleationBarrierAndCriticalRadius``:
 
-    .. math::
+    $$
+    R_{\mathrm{crit}} = \dfrac{2\,\gamma\,V_m}{\Delta g_{\mathrm{total}}},
+    \qquad
+    \Delta g = \dfrac{16}{3}\,\pi\,\gamma^{3}\,V_m^{2}
+               \big/ \Delta g_{\mathrm{total}}^{2},
+    $$
 
-        R_{\mathrm{crit}} = \dfrac{2\,\gamma\,V_m}{\Delta g_{\mathrm{total}}},
-        \qquad
-        \Delta g = \dfrac{16}{3}\,\pi\,\gamma^{3}\,V_m^{2}
-                   \big/ \Delta g_{\mathrm{total}}^{2},
-
-    where :math:`\gamma` is the surface energy of the precipitate,
-    :math:`V_m` is the molar volume, and :math:`\Delta g_{\mathrm{total}}`
+    where $\gamma$ is the surface energy of the precipitate,
+    $V_m$ is the molar volume, and $\Delta g_{\mathrm{total}}$
     is the total Gibbs free energy difference driving nucleation.
     """
 

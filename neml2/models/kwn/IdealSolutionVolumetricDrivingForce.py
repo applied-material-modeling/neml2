@@ -40,12 +40,12 @@ class IdealSolutionVolumetricDrivingForce(Model):
     Computes the molar Gibbs free energy of precipitation under the
     ideal-solution approximation,
 
-    .. math::
-
-        \Delta g = R T \sum_k w_k \ln(c_k / c_k^{\mathrm{eq}}),
+    $$
+    \Delta g = R T \sum_k w_k \ln(c_k / c_k^{\mathrm{eq}}),
+    $$
 
     where the sum runs over the species participating in the precipitate and
-    :math:`w_k` are user-supplied stoichiometric weights (default 1, matching
+    $w_k$ are user-supplied stoichiometric weights (default 1, matching
     the Hu--Cocks "product of all components" convention for compound
     precipitates).
     """

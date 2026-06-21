@@ -38,9 +38,9 @@ from ..model import Model
 class FiniteVolumeUpwindedAdvectiveFlux(Model):
     """Compute upwinded advective fluxes at cell edges.
 
-    .. math::
-
-        J_e = v_e \\, \\bigl(H(v_e) u_{e^-} + (1 - H(v_e)) u_{e^+}\\bigr)
+    $$
+    J_e = v_e \\, \\bigl(H(v_e) u_{e^-} + (1 - H(v_e)) u_{e^+}\\bigr)
+    $$
 
     where $v_e$ is the cell-edge advection velocity, $H$ is the Heaviside
     step ($1$ when $v_e > 0$, $0$ when $v_e < 0$), and $u_{e^\\pm}$ are the

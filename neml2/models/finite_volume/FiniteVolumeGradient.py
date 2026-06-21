@@ -38,9 +38,9 @@ from ..model import Model
 class FiniteVolumeGradient(Model):
     """Compute prefactor-weighted gradients at cell edges using first-order reconstruction.
 
-    .. math::
-
-        \\nabla u\\bigl|_e = -\\frac{\\text{prefactor}}{\\Delta x_e}\\,(u_{e^+} - u_{e^-})
+    $$
+    \\nabla u\\bigl|_e = -\\frac{\\text{prefactor}}{\\Delta x_e}\\,(u_{e^+} - u_{e^-})
+    $$
 
     The minus sign matches the C++ implementation and the surrounding
     finite-volume conventions.

@@ -37,15 +37,15 @@ from ..model import Model
 class CurrentConcentration(Model):
     r"""Compute the current matrix concentration from precipitate volume fractions.
 
-    For :math:`N` precipitate species with volume fractions :math:`f_i` and
-    (constant) precipitate concentrations :math:`x_i^p`, the matrix
+    For $N$ precipitate species with volume fractions $f_i$ and
+    (constant) precipitate concentrations $x_i^p$, the matrix
     concentration is
 
-    .. math::
+    $$
+    x = \frac{x_0 - \sum_i f_i x_i^p}{1 - \sum_i f_i}
+    $$
 
-        x = \frac{x_0 - \sum_i f_i x_i^p}{1 - \sum_i f_i}
-
-    where :math:`x_0` is the initial concentration in solution.
+    where $x_0$ is the initial concentration in solution.
     """
 
     hit = HitSchema(

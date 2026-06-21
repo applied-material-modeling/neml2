@@ -37,15 +37,15 @@ from ..model import Model
 class EffectiveVolume(Model):
     r"""Total volume of a control-mass composite during a reaction.
 
-    .. math::
+    $$
+    V = \frac{M}{1 - \phi_o} \sum_i \frac{\omega_i}{\rho_i}
+    $$
 
-        V = \frac{M}{1 - \phi_o} \sum_i \frac{\omega_i}{\rho_i}
-
-    where :math:`\omega_i` and :math:`\rho_i` are the mass fraction and density
-    of each component, :math:`\phi_o` is the open volume fraction (accounting
-    for leakage out of the control mass), and :math:`M` is the reference mass
+    where $\omega_i$ and $\rho_i$ are the mass fraction and density
+    of each component, $\phi_o$ is the open volume fraction (accounting
+    for leakage out of the control mass), and $M$ is the reference mass
     of the composite. The open-volume-fraction input is optional - when HIT is
-    silent the prefactor reduces to :math:`M`.
+    silent the prefactor reduces to $M$.
     """
 
     hit = HitSchema(
