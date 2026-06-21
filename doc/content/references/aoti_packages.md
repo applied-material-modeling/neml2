@@ -89,10 +89,10 @@ boundary into separate **segments**, each numbered `_seg{i}_`:
 | File                            | Contents                                                |
 | :------------------------------ | :------------------------------------------------------ |
 | `<name>_seg{i}.pt2`             | Forward-segment value graph.                            |
-| `<name>_seg{i}_jvp.pt2`         | Forward-segment flat Jacobian graph (optional).         |
+| `<name>_seg{i}_jvp.pt2`         | Forward-segment per-pair Jacobian graph (only when `-d` requested a pair this segment contributes to). |
 | `<name>_seg{i}_rhs.pt2`         | Implicit-segment Newton residual `-r(u, g)`.            |
 | `<name>_seg{i}_step.pt2`        | Implicit-segment fused assemble + solve + update.       |
-| `<name>_seg{i}_ift.pt2`         | Implicit-function-theorem sensitivity `-A^{-1} B`.      |
+| `<name>_seg{i}_ift.pt2`         | Implicit-function-theorem sensitivity `-A^{-1} B` (only when `-d` requested a pair routed through this segment). |
 | `<name>_seg{i}_predictor.pt2`   | Newton initial guess (only if the source had one).      |
 
 The `_seg0_` infix is dropped in the single-segment shortcut, so
@@ -131,17 +131,20 @@ The current schema version is `6`.
 
 Two segment kinds appear inside `segments`:
 
-- **Forward** segments lower to a single value graph (`_seg{i}.pt2`)
-  plus an optional flat-Jacobian graph (`_seg{i}_jvp.pt2`). Call shape
+- **Forward** segments lower to a value graph (`_seg{i}.pt2`), plus a
+  per-variable-pair Jacobian graph (`_seg{i}_jvp.pt2`) when `-d`
+  requested a derivative pair this segment contributes to (a block that
+  does not depend on the dynamic batch is emitted unbatched). Call shape
   is `(*user_inputs, *promoted_params) -> outputs`.
-- **Implicit** segments lower to three graphs — `_rhs.pt2` (Newton
-  residual), `_step.pt2` (fused assemble + LU solve + update +
-  post-update residual), `_ift.pt2` (`-A^{-1} B`
-  implicit-function-theorem sensitivity at the converged state) —
-  plus an optional `_predictor.pt2` graph when the source had a
-  `Predictor`. The Newton loop body is one loader call per iteration
-  plus a convergence sync; the IFT graph is consumed by `jacobian()`
-  and `jvp()`.
+- **Implicit** segments always lower `_rhs.pt2` (Newton residual) and
+  `_step.pt2` (fused assemble + LU solve + update + post-update
+  residual), plus an optional `_predictor.pt2` graph when the source had
+  a `Predictor`. They additionally lower `_ift.pt2` (`-A^{-1} B`
+  implicit-function-theorem sensitivity at the converged state) **only
+  when `-d` requested a pair whose derivative path runs through this
+  segment**. The Newton loop body is one loader call per iteration plus a
+  convergence sync; the IFT graph, when present, is consumed by
+  `jacobian()` and `jvp()`.
 
   The Newton solve's convergence tolerances, iteration cap, and line-search
   settings are **not** baked into the metadata (schema v4+). They are carried
