@@ -39,6 +39,7 @@ rebuilds on `--watch` runs.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from collections import defaultdict
@@ -101,6 +102,35 @@ def _write_if_changed(path: Path, content: str) -> bool:
     return True
 
 
+# Sphinx/RST inline roles (`:func:`x``, `:class:`~a.b.C``, `:meth:`Title <a.b.c>``)
+# are inert in MyST, so they leak into the generated catalog as literal text. The
+# same docstrings are also rendered by the RST autodoc (python_api), where these
+# roles resolve to working cross-references -- so we degrade them to code spans
+# here, at generation time, instead of rewriting the source (which would break the
+# autodoc cross-refs). Math is handled the other way (dollarmath in the source
+# docstring, per the project convention), so it is intentionally not touched here.
+_RST_ROLE_RE = re.compile(
+    r":(?:py:)?(?:func|class|meth|attr|mod|data|obj|exc|ref|doc):"
+    r"`(~?)([^`<]+?)\s*(?:<([^>]+)>)?`"
+)
+
+
+def _rst_roles_to_code(text: str) -> str:
+    """Render inert RST cross-reference roles as plain code spans for the catalog."""
+
+    def repl(m: re.Match) -> str:
+        tilde, head, explicit = m.group(1), m.group(2).strip(), m.group(3)
+        if explicit is not None:
+            display = head  # ``:role:`Title <target>``` -> the human title
+        elif tilde:
+            display = head.rsplit(".", 1)[-1]  # ``~a.b.C`` -> ``C``
+        else:
+            display = head
+        return f"`{display}`"
+
+    return _RST_ROLE_RE.sub(repl, text)
+
+
 def _render_option_row(opt: dict) -> str:
     """Render one option as a definition-list entry (MyST deflist)."""
     name = opt.get("name", "?")
@@ -108,7 +138,7 @@ def _render_option_row(opt: dict) -> str:
     ftype = opt.get("ftype", "NONE")
     required = opt.get("required", False)
     default = opt.get("value", "")
-    doc = (opt.get("doc") or "").strip().replace("\n", " ")
+    doc = _rst_roles_to_code((opt.get("doc") or "").strip().replace("\n", " "))
 
     badges = []
     if ftype and ftype != "NONE":
@@ -133,7 +163,7 @@ def _render_type_page(entry: dict) -> str:
     type_name = entry["type"]
     section = entry.get("section", "")
     source = entry.get("source_path", "")
-    doc = (entry.get("doc") or "").strip()
+    doc = _rst_roles_to_code((entry.get("doc") or "").strip())
     options = entry.get("options", []) or []
 
     label = f"({section.lower()}-{type_name})=" if section else f"({type_name})="
