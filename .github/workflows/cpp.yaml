@@ -190,7 +190,7 @@ jobs:
       - name: Run coverage
         run: scripts/cpp_coverage.sh build/dev
       - name: Upload C++ coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: build/dev/coverage/coverage.lcov
           disable_search: true
