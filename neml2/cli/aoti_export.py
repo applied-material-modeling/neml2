@@ -209,7 +209,14 @@ def _leading_k_identity_seed(
     mid = (1,) * len(batch_shape)
     eye = eye.reshape(n, *mid, *type_cls.BASE_SHAPE)
     data = eye.expand(n, *tuple(batch_shape), *type_cls.BASE_SHAPE).contiguous()
-    return type_cls(data)
+    # Declare the leading axis as a K region (one "full" seed axis of size n)
+    # rather than folding it into the batch. Derivative-leaf models (e.g.
+    # Normality) emit tangents with k_ndim=1; if the seed leaves K folded
+    # (k_ndim=0), the two conventions collide in align_k when both feed the
+    # same downstream sum (e.g. a frozen flow_direction passed as a given to an
+    # ImplicitUpdate solve). Establishing the K region at the seed keeps the
+    # whole chain rule consistent.
+    return type_cls(data, k_ndim=1, k_state=("full",), k_pairing=(None,))
 
 
 def _leading_k_block_to_trailing_k(block: torch.Tensor | TensorWrapper) -> torch.Tensor:
