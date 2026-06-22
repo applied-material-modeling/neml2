@@ -22,7 +22,7 @@ jobs:
   guard:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           # dependencies: python.version_min
@@ -42,7 +42,7 @@ jobs:
       wheel_matrix: ${{ steps.set.outputs.wheel_matrix }}
       test_matrix: ${{ steps.set.outputs.test_matrix }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           # dependencies: python.version_min
@@ -64,7 +64,7 @@ jobs:
       matrix: ${{ fromJson(needs.matrix.outputs.wheel_matrix) }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
       - name: Free disk space
@@ -109,7 +109,7 @@ jobs:
       matrix: ${{ fromJson(needs.matrix.outputs.test_matrix) }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
