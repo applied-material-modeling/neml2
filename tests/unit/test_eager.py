@@ -260,6 +260,75 @@ def test_jvp_jacobian_composed_multi_output():
         assert torch.allclose(jvp_out[o_name], expect, atol=1e-10)
 
 
+# --- implicit-model Jacobian vs finite differences ----------------------------
+# Regression for the leading-K (``k_ndim``) seed-region convention. The Jacobian
+# seed declares its identity directions as a K region, and derivative-leaf models
+# (e.g. ``Normality``) emit tangents carrying that region. When such a leaf
+# output is frozen and passed as a *given* to an ``ImplicitUpdate`` solve (radial
+# return), its tangent is summed -- in ``_output_sensitivities`` -- with the
+# direct input tangent for the same seed. If the seed left K folded into the
+# batch (``k_ndim=0``) while the leaf used ``k_ndim=1``, ``align_k`` could not
+# reconcile the two and produced a malformed block. These composed models
+# exercise that path through the ``d(output)/d(E)`` column (``E`` feeds both the
+# frozen ``flow_direction`` and the implicit residual directly). Implicit-model
+# Jacobians were previously covered only for forward values, so this was latent.
+
+_SM_REGRESSION = _REPO / "tests" / "regression" / "solid_mechanics"
+_IMPLICIT_JAC_MODELS = [
+    _SM_REGRESSION / "viscoplasticity" / "radial_return" / "model.i",
+    _SM_REGRESSION / "viscoplasticity" / "isoharden" / "model.i",
+    _SM_REGRESSION / "viscoplasticity" / "chaboche" / "model.i",
+    _SM_REGRESSION / "rate_independent_plasticity" / "perfect" / "model.i",
+    _SM_REGRESSION / "rate_independent_plasticity" / "radial_return" / "model.i",
+]
+
+
+def _fd_strain_column(m, inputs, o_name, h=1e-7):
+    """Central-difference ``d(o_name)/d(E)`` -> ``(*batch, *out_base, 6)``."""
+    base = inputs["E"]
+    cols = []
+    for k in range(6):
+        e = torch.zeros_like(base)
+        e[..., k] = h
+        fp = m.forward({**inputs, "E": base + e})[o_name]
+        fm = m.forward({**inputs, "E": base - e})[o_name]
+        cols.append((fp - fm) / (2 * h))
+    return torch.stack(cols, dim=-1)
+
+
+@pytest.mark.parametrize(
+    "path", _IMPLICIT_JAC_MODELS, ids=lambda p: f"{p.parents[1].name}-{p.parent.name}"
+)
+def test_implicit_jacobian_strain_column_matches_fd(path):
+    m = _EagerModel(str(path), "model")
+    b = 4
+    # Uniaxial strain well into the plastic regime (yield strain ~1e-3), with all
+    # lagged states left at the fresh-start zero and t = 1 (dt = 1). Perturbing
+    # only E avoids predictor-only inputs (e.g. gamma~1), whose converged-solution
+    # sensitivity is a structural zero the central difference cannot resolve.
+    inputs = {}
+    for name, base_shape in zip(m.input_names, m.input_base_shapes, strict=True):
+        if name == "t":
+            inputs[name] = torch.ones(b, *base_shape, dtype=m.dtype, device=m.device)
+        elif name == "E":
+            strain = torch.zeros(b, *base_shape, dtype=m.dtype, device=m.device)
+            strain[..., 0] = 5e-3
+            strain[..., 1] = strain[..., 2] = -0.3 * 5e-3
+            inputs[name] = strain
+        else:
+            inputs[name] = torch.zeros(b, *base_shape, dtype=m.dtype, device=m.device)
+
+    _, jac = m.jacobian(inputs)
+    for o_name, o_base in zip(m.output_names, m.output_base_shapes, strict=True):
+        block = jac[o_name]["E"]
+        assert tuple(block.shape) == (b, *o_base, 6)
+        ref = _fd_strain_column(m, inputs, o_name)
+        scale = ref.abs().max().item() + 1e-30
+        assert (block - ref).abs().max().item() / scale < 1e-5, (
+            f"{path.parent.name}: d({o_name})/dE disagrees with finite differences"
+        )
+
+
 # --- #2 plain-batch guard: reject sub-batch (crystal-plasticity) models -------
 
 

@@ -119,8 +119,17 @@ def _matrix_pushforward(
     # leading (K, *dynamic_batch) axes. ``tangent.dynamic_batch_shape``
     # already includes the chain-rule K dim, so it is the full leading
     # axis count for the flat tensor.
-    dyn_ndim = len(tangent.dynamic_batch_shape)
     type_t = type(tangent)
+    # Leading axes to preserve when flattening the tangent's trailing
+    # (sub_batch + base) axes into a single DOF axis. A chain-rule tangent's
+    # layout is [K | dynamic_batch | sub_batch | base] (see neml2.types._base):
+    # the leading region is the K (seed-direction) axes PLUS the dynamic batch
+    # axes. The earlier code used len(dynamic_batch_shape), which by definition
+    # excludes the K region (dynamic_batch_shape starts after k_ndim), so for a
+    # tangent carrying k_ndim > 0 it dropped the K axis -- e.g. an SR2 tangent
+    # (K=6, batch=8, base=6) was flattened as if its leading shape were just
+    # (8,) and reshaped to (6, 6), failing on size 288.
+    dyn_ndim = tangent.k_ndim + len(tangent.dynamic_batch_shape)
     sub_total = 1
     for s in tangent.sub_batch_shape:
         sub_total *= int(s)
@@ -139,9 +148,18 @@ def _matrix_pushforward(
     else:
         # Scalar output with no sub-batch: drop the trailing length-1.
         contribution = contribution_t.data.squeeze(-1)
+    # The generic Tensor matmul above is K-unaware (it folds the leading K axes
+    # into batch), so re-declare the K region on the output: the contribution's
+    # leading axes are [K | dynamic_batch], and downstream chain-rule ops + the
+    # final Jacobian assembly need k_ndim to map the K directions back onto the
+    # seeded input's base. Carry the tangent's K metadata through unchanged --
+    # the contraction touches only the trailing DOF axis, leaving K intact.
     return output_type(
         contribution,
         sub_batch_ndim=len(output_sub_batch_shape),
+        k_ndim=tangent.k_ndim,
+        k_state=tangent.k_state,
+        k_pairing=tangent.k_pairing,
     )
 
 

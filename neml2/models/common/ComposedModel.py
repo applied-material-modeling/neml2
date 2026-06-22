@@ -141,71 +141,9 @@ def _walk_nl_params(m: Model) -> dict[str, NLParam]:
     return dict(getattr(m, "_nl_params", {}))
 
 
-def _internal_models(m: Model) -> dict[int, Model]:
-    """Object-id → model map for every model transitively evaluated by m.
-
-    Empty for a leaf. For a ``ComposedModel``, the union of every plan
-    submodule plus its own internals, recursively.
-    """
-    if not hasattr(m, "_plan"):
-        return {}
-    inner: dict[int, Model] = {}
-    for attr, *_ in m._plan:  # type: ignore[attr-defined]
-        sub = getattr(m, attr)
-        inner[id(sub)] = sub
-        inner.update(_internal_models(sub))
-    return inner
-
-
 # v2-parity: EdgeInfo / per-label composition machinery removed. The chain
 # rule no longer dispatches on labels -- it uses positional K_pairing
 # metadata. The composed map is just inherited reachability now.
-
-
-def _check_no_redundant_nl_param_provider(ordered: list[Model]) -> None:
-    """Refuse compositions where the same nl-param provider would be
-    evaluated more than once per outer call.
-
-    The case caught: an outer ``ComposedModel`` lists provider ``P`` as a
-    direct child (explicitly or via auto-include) AND one of its other
-    children is itself a ``ComposedModel`` that also evaluates ``P``
-    internally (via *its* own auto-include of ``P`` from one of its
-    grandchildren's nl-params). The outer would then call ``P`` once as a
-    direct step and a second time through the inner -- silently wasted
-    work, and a sign that the composition wants restructuring (typically:
-    drop the explicit listing, or split ``P`` out so it's owned by exactly
-    one ancestor).
-
-    Detected by id() equality so a model that's deliberately registered as
-    a child of multiple ComposedModels (a legitimate sharing pattern when
-    each ComposedModel runs in isolation) is *not* flagged -- the check
-    only fires when the same instance appears at two different levels of
-    the SAME outer's evaluation tree.
-    """
-    direct_ids = {id(m): m for m in ordered}
-    for child in ordered:
-        inner_ids = _internal_models(child)
-        # Don't flag the child against itself.
-        inner_ids.pop(id(child), None)
-        overlap = set(direct_ids) & set(inner_ids)
-        if not overlap:
-            continue
-        dup_models = [direct_ids[i] for i in overlap]
-
-        def _name(m: Model) -> str:
-            hit = getattr(m, "_hit_name", None)
-            return repr(hit) if hit else type(m).__name__
-
-        dup_str = ", ".join(_name(m) for m in dup_models)
-        raise ValueError(
-            f"Redundant nl-param provider in ComposedModel: "
-            f"{dup_str} appears both as a direct child AND inside "
-            f"the child {_name(child)}. The provider would be evaluated "
-            "more than once per outer call. Resolve by either (a) removing "
-            "the explicit listing -- the inner composition's auto-include "
-            "already provides it -- or (b) restructuring so the provider "
-            "lives in exactly one ancestor."
-        )
 
 
 if TYPE_CHECKING:
@@ -294,8 +232,6 @@ class ComposedModel(Model):
                 ordered.append(nlp.provider)
                 seen_ids.add(id(nlp.provider))
                 queue.append(nlp.provider)
-
-        _check_no_redundant_nl_param_provider(ordered)
 
         ao_node = node.find("additional_outputs")
         additional_outputs = node.param_list_str("additional_outputs") if ao_node else None
