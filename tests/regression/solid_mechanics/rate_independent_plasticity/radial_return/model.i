@@ -49,21 +49,14 @@
   [trial_elastic_strain]
     type = SR2LinearCombination
     from = 'E plastic_strain~1'
-    to = 'Ee_trial'
+    to = 'elastic_strain'
     weights = '1 -1'
   []
-  [trial_cauchy_stress]
-    type = LinearIsotropicElasticity
-    coefficients = '1e5 0.3'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'Ee_trial'
-    stress = 'S_trial'
-  []
-  [trial_mandel_stress]
-    type = IsotropicMandelStress
-    cauchy_stress = 'S_trial'
-    mandel_stress = 'M_trial'
-  []
+  # The elastic response (cauchy_stress + mandel_stress) is reused from the
+  # single instances defined below for the actual return map. Each ComposedModel
+  # scope binds 'elastic_strain' to its own value (trial here, current in
+  # 'surface'), so the same elasticity instance -- and its parameters -- serves
+  # both, rather than duplicating the model.
   [trial_isoharden]
     type = LinearIsotropicHardening
     equivalent_plastic_strain = 'equivalent_plastic_strain~1'
@@ -79,7 +72,7 @@
   [trial_overstress]
     type = SR2LinearCombination
     to = 'O_trial'
-    from = 'M_trial X_trial'
+    from = 'mandel_stress X_trial'
     weights = '1 -1'
   []
   [trial_vonmises]
@@ -103,12 +96,12 @@
     type = Normality
     model = 'trial_flow'
     function = 'fp_trial'
-    from = 'M_trial k_trial X_trial'
+    from = 'mandel_stress k_trial X_trial'
     to = 'NM Nk NX'
   []
   [trial_state]
     type = ComposedModel
-    models = 'trial_elastic_strain trial_cauchy_stress trial_mandel_stress
+    models = 'trial_elastic_strain cauchy_stress mandel_stress
               trial_isoharden trial_kinharden trial_normality'
   []
   ###############################################################################
