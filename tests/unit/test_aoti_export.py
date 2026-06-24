@@ -318,8 +318,11 @@ def test_export_forward_param_vjp_metadata(param_jac_export):
 
 def test_export_forward_param_vjp_matches_finite_difference(param_jac_export):
     """The adjoint graph's dL/dE (L = <w, stress>) agrees with central differences
-    of the scalar loss on the value package. The parameter stays scalar; the grad
-    sums over the batch -- exactly dL/dE for a global parameter."""
+    of the scalar loss on the value package. The promoted parameter enters the
+    adjoint graph PER-BATCH (schema v7, like the param-Jacobian graph), so the graph
+    returns one gradient per batch element; for a global (uniform) E those
+    per-element gradients sum to the scalar dL/dE -- which is what the C++ runtime
+    returns for an unbatched parameter."""
     from neml2.models.export import load_package
     from neml2.types import SR2
 
@@ -334,19 +337,25 @@ def test_export_forward_param_vjp_matches_finite_difference(param_jac_export):
     w = torch.randn(b, 6, dtype=torch.float64)  # output cotangent
 
     def loss(e_val):
-        # Value graph takes the promoted parameter per-batch (schema v7); the
-        # param_vjp graph below keeps it scalar (its grad sums over the batch).
+        # Value graph takes the promoted parameter per-batch (schema v7).
         res = value(SR2(strain), torch.full((b,), float(e_val), dtype=torch.float64))[0]
         s = res.data if hasattr(res, "data") else res
         return (s * w).sum().item()
 
     for e_val in (100.0, 250.0):
-        # The cotangent is a typed input (matching the output's wrapper class).
-        out = pvjp(SR2(strain), torch.tensor(float(e_val), dtype=torch.float64), SR2(w))
-        g = out[0] if isinstance(out, tuple) else out  # scalar dL/dE
+        # The parameter is per-batch and the cotangent is a typed input (matching
+        # the output's wrapper class); the graph returns a per-element (b,) adjoint.
+        out = pvjp(
+            SR2(strain),
+            torch.full((b,), float(e_val), dtype=torch.float64),
+            SR2(w),
+        )
+        g = out[0] if isinstance(out, tuple) else out  # per-element (b,) dL/dE_i
+        assert tuple(g.shape) == (b,)
         h = 1e-4 * e_val
         fd = (loss(e_val + h) - loss(e_val - h)) / (2 * h)
-        rel = abs(float(g) - fd) / (abs(fd) + 1e-30)
+        # The per-element adjoints sum to the global dL/dE (the scalar-loss FD).
+        rel = abs(float(g.sum()) - fd) / (abs(fd) + 1e-30)
         assert rel < 1e-5, f"E={e_val}: dL/dE adjoint disagrees with FD (rel={rel:.2e})"
 
 
