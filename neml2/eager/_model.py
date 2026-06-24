@@ -40,13 +40,13 @@ the C++ ``neml2::aoti::Model`` pybind binding (``input_names`` / ``output_names`
 ``forward`` / ``jvp`` / ``jacobian``).
 
 Framework boundary (CLAUDE.md "Hard rules / Rule 1"): together with
-:mod:`neml2._eager_boundary`, this module is the third legitimate raw-tensor
+:mod:`neml2.types._boundary`, this module is the third legitimate raw-tensor
 boundary (alongside the AOTI shim and ``torch.autograd.Function``). Raw
 ``torch.Tensor`` objects appear only in :meth:`_EagerModel.forward`'s argument
 and return dicts, marshalled across the C++/Python line by torch's pybind
 casters. They are wrapped into typed wrappers immediately on entry and unwrapped
 back to raw only at the return boundary (in
-:func:`neml2._eager_boundary.unwrap_outputs`).
+:func:`neml2.types._boundary.unwrap_outputs`).
 """
 
 from __future__ import annotations
@@ -55,7 +55,7 @@ import itertools
 
 import torch
 
-from ._eager_boundary import (
+from ..types._boundary import (
     assemble_jacobian,
     assemble_jvp_outputs,
     broadcast_to_common_batch,
@@ -123,9 +123,9 @@ class _EagerModel:
     ) -> None:
         # Lazy imports: keep module import (which the C++ ctor triggers) cheap
         # and avoid any import-time coupling to the CLI / model packages.
-        from .cli.aoti_export import _var_infos
-        from .factory import load_model
-        from .models.common import ComposedModel
+        from ..cli.aoti_export import _var_infos
+        from ..factory import load_model
+        from ..models.common import ComposedModel
 
         model = load_model(input_file, model_name)
         # Wrap a bare leaf in a ComposedModel for a stable plain-tensor boundary,
@@ -147,6 +147,24 @@ class _EagerModel:
         self.output_names: list[str] = [i["name"] for i in out_infos]
         self.input_base_shapes: list[list[int]] = [list(i["base_shape"]) for i in in_infos]
         self.output_base_shapes: list[list[int]] = [list(i["base_shape"]) for i in out_infos]
+
+        # Calibration-parameter surface (d(output)/d(parameter), reverse-mode AD).
+        # Parameters are addressed by their named_parameters() qualified name
+        # (e.g. "elasticity.E"); base shapes come from each parameter's typed
+        # wrapper class. This is the parameter analogue of the input surface and
+        # is what the C++ neml2::eager::Model consumes for param_jacobian.
+        from ..models.param_ad import enumerate_typed_params
+
+        self._typed_params = enumerate_typed_params(self._model)
+        self.param_names: list[str] = [q for q, _ in self._typed_params]
+        self.param_base_shapes: list[list[int]] = [
+            list(tc.BASE_SHAPE) for _, tc in self._typed_params
+        ]
+        # {qname: natural base shape}; used to split a (possibly batched) parameter's
+        # stored shape into (batch, base) when computing the call batch / param blocks.
+        self._param_base_shape_map: dict[str, tuple[int, ...]] = {
+            q: tuple(tc.BASE_SHAPE) for q, tc in self._typed_params
+        }
 
     @property
     def device(self) -> torch.device:
@@ -320,14 +338,23 @@ class _EagerModel:
         native chain rule via a leading-K identity seed per input (reusing the
         AOTI export's ``_leading_k_identity_seed``).
         """
-        from .cli.aoti_export import _leading_k_identity_seed
+        from ..cli.aoti_export import _leading_k_identity_seed
+        from ..models.param_ad import call_batch_shape
 
         typed_args = self._typed_args(inputs)
+        # The output batches on broadcast(input batches, parameter batches) -- a
+        # parameter may carry its own batch dim (e.g. a per-batch-element Scalar).
+        # Build every input's identity seed at that common call batch so the chain
+        # rule and the (output-batch-keyed) assembly agree; a per-input batch would
+        # mismatch whenever a parameter's batch exceeds the inputs'.
+        call_batch = call_batch_shape(
+            typed_args, self._model, self.param_names, self._param_base_shape_map
+        )
         seed = {
             name: {
                 name: _leading_k_identity_seed(
                     self.input_spec[name],
-                    typed_in.batch_shape,
+                    call_batch,
                     dtype=typed_in.dtype,
                     device=typed_in.device,
                 )
@@ -346,3 +373,92 @@ class _EagerModel:
             self.input_spec,
         )
         return outputs, jac
+
+    def named_parameters(self) -> dict[str, torch.Tensor]:
+        """Raw, name-keyed view of the model's calibration parameters.
+
+        Keyed by the qualified ``named_parameters()`` name (e.g. ``"elasticity.E"``),
+        in ``param_names`` order; values are detached raw tensors at the parameter's
+        natural ``(*param_base)`` shape. This is the read side of the parameter
+        surface the C++ ``neml2::eager::Model`` exposes (the parameter analogue of
+        the input/output name accessors); it is part of the raw-tensor embed
+        boundary (see module docstring).
+        """
+        params = dict(self._model.named_parameters())
+        return {q: params[q].detach() for q in self.param_names}
+
+    def set_parameter(self, name: str, value: torch.Tensor) -> None:
+        """Replace a calibration parameter's value -- the write side of
+        :meth:`named_parameters`, mirroring ``neml2::eager::Model::set_parameter``
+        / the AOTI ``set_parameter``. Forwards to the native model's
+        :meth:`~neml2.models.model.Model.set_parameter` (a ``torch.no_grad``
+        in-place copy into the live ``nn.Parameter``). *value* is a raw tensor at
+        the parameter's ``(*param_base)`` shape (raw-tensor embed boundary)."""
+        self._model.set_parameter(name, value)
+
+    def param_jacobian(
+        self,
+        inputs: dict[str, torch.Tensor],
+    ) -> tuple[dict[str, torch.Tensor], dict[str, dict[str, torch.Tensor]]]:
+        """Evaluate the model and its Jacobian w.r.t. the calibration parameters.
+
+        Returns ``(outputs, P)`` -- ``outputs`` keyed by ``output_names`` and ``P``
+        the nested ``{out_name: {param_qname: (*batch, *out_base, *param_base)}}``
+        block dict (rows in ``output_spec`` order, columns in ``param_names``
+        order), the parameter analogue of :meth:`jacobian`'s variable-pair output.
+
+        Unlike :meth:`jacobian` (forward-mode input chain rule), this uses
+        reverse-mode autograd over the model's parameters via
+        :func:`neml2.models.param_ad.param_jacobian`; the input ``v=`` path is not
+        touched. Composition through an ``ImplicitUpdate`` (Newton solve) is
+        handled by that function's reverse pass (the implicit-function-theorem
+        adjoint in ``_ImplicitUpdateFn.backward``). A constant ``(out, param)``
+        pair is an explicit zero block.
+        """
+        from ..models.param_ad import param_jacobian as _param_jacobian
+
+        typed_args = self._typed_args(inputs)
+        # Plain forward for the value outputs + the plain-batch (sub-batch) guard;
+        # the parameter Jacobian re-runs the forward under functional_call.
+        typed_outputs, _ = self._eval(typed_args)
+        outputs = unwrap_outputs(typed_outputs, self.output_names)
+        pjac = _param_jacobian(
+            self._model,
+            typed_args,
+            self.param_names,
+            self.output_names,
+            self.output_spec,
+            self._param_base_shape_map,
+        )
+        return outputs, pjac
+
+    def param_vjp(
+        self,
+        inputs: dict[str, torch.Tensor],
+        cotangents: dict[str, torch.Tensor],
+    ) -> dict[str, torch.Tensor]:
+        r"""Parameter adjoint ``dL/d\theta`` for ``L = sum_o <cotangent_o, out_o>``.
+
+        Returns ``{param_qname: grad}`` at each parameter's natural shape (a
+        scalar parameter yields a scalar, the batch summed out). One reverse pass
+        total via :func:`neml2.models.param_ad.param_vjp` -- the cheap form for
+        many-parameter (inverse-optimization) gradients, and the eager analogue
+        of the compiled ``param_vjp``. Composition through an ``ImplicitUpdate``
+        is handled by the implicit-function-theorem adjoint in the parameter
+        swap's backward, exactly as in :meth:`param_jacobian`.
+
+        *cotangents* maps each output name to ``w_o`` at the output's
+        ``(*batch, *out_base)`` shape (raw tensor; sub-batch is rejected upstream).
+        """
+        from ..models.param_ad import param_vjp as _param_vjp
+
+        typed_args = self._typed_args(inputs)
+        # Plain forward runs the plain-batch (sub-batch) guard before the adjoint.
+        self._eval(typed_args)
+        return _param_vjp(
+            self._model,
+            typed_args,
+            self.param_names,
+            self.output_names,
+            cotangents,
+        )

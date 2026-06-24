@@ -33,6 +33,8 @@ transforms (hard) and ``torch.einsum`` (hard), each liftable via an
 
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 import torch
 
@@ -182,3 +184,67 @@ def test_depth_balanced_after_exception():
     with pytest.raises(RuntimeError):
         leaf(_ONE)
     assert guard._depth() == 0
+
+
+# --------------------------------------------------------------------------- #
+# Registered-parameter attribute-read guard
+# --------------------------------------------------------------------------- #
+class _ParamDirect(Model):
+    """Reads its registered parameter as ``self.k`` inside forward (forbidden)."""
+
+    input_spec = {"a": Scalar}
+    output_spec = {"b": Scalar}
+
+    def __post_init__(self):
+        self.register_typed_parameter("k", Scalar(torch.tensor(2.0)))
+
+    def forward(self, *inputs, v=None):  # type: ignore[override]
+        a = inputs[0]
+        return Scalar(a.data * self.k.data)  # direct param attribute read
+
+
+class _ParamViaGetParam(Model):
+    """Reads its registered parameter through ``_get_param`` (the allowed path)."""
+
+    input_spec = {"a": Scalar}
+    output_spec = {"b": Scalar}
+
+    def __post_init__(self):
+        self.register_typed_parameter("k", Scalar(torch.tensor(2.0)))
+
+    def forward(self, *inputs, v=None):  # type: ignore[override]
+        a = inputs[0]
+        k = self._get_param("k", inputs[1:], Scalar)
+        return Scalar(a.data * k.data)
+
+
+def test_param_attr_read_in_forward_raises():
+    with pytest.raises(RuntimeError, match="registered parameter 'k'"):
+        _ParamDirect()(_ONE)
+
+
+def test_param_attr_guard_message_points_to_get_param():
+    with pytest.raises(RuntimeError, match="_get_param"):
+        _ParamDirect()(_ONE)
+
+
+def test_param_via_get_param_runs_under_guard():
+    out = _ParamViaGetParam()(Scalar(torch.tensor(3.0)))
+    assert torch.allclose(out.data, torch.tensor(6.0))
+
+
+def test_param_attr_read_allowed_outside_forward():
+    # depth == 0: reading the parameter as an attribute is fine (construction,
+    # tests, serialization). Only inside a forward window is it forbidden.
+    leaf = _ParamDirect()
+    k = cast(Scalar, leaf.k)  # depth-0 attribute read is permitted
+    assert torch.allclose(k.data, torch.tensor(2.0))
+    assert guard._depth() == 0
+
+
+def test_param_attr_guard_depth_balanced_after_raise():
+    with pytest.raises(RuntimeError):
+        _ParamDirect()(_ONE)
+    assert guard._depth() == 0
+    # The internal allow-counter must not leak either.
+    assert not guard._armed(guard._PARAM_ATTR) or guard._depth() == 0

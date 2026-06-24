@@ -77,7 +77,7 @@ class FiniteVolumeGradient(Model):
         # differences via sub_batch slicing on the cell axis. The chain
         # rule path reuses ``coeff`` so the value and pushforward share
         # the same materialised stencil weights.
-        inv_dx = 1.0 / self.dx
+        inv_dx = 1.0 / self._get_param("dx", nl_params, Scalar)
         coeff = pf_wrap * inv_dx
         u_left = u_wrap.sub_batch[:-1]
         u_right = u_wrap.sub_batch[1:]

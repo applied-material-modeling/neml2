@@ -69,6 +69,11 @@ __all__ = ["allow_autograd", "allow_einsum"]
 # Category keys.
 _AUTOGRAD = "autograd"
 _EINSUM = "einsum"
+#: A registered parameter read as a plain ``self.<attr>`` inside a forward. This
+#: one is not a monkeypatch on a torch callable -- it is checked in
+#: :meth:`Model.__getattr__` -- but it reuses the same depth + allow-counter
+#: machinery so the forward window and an internal escape hatch behave uniformly.
+_PARAM_ATTR = "param_attr"
 
 # Per-thread state: forward-nesting depth + per-category allow-counters.
 _state = threading.local()
@@ -123,6 +128,35 @@ _MESSAGES = {
 def _check(category: str, name: str) -> None:
     if _armed(category):
         raise RuntimeError(_MESSAGES[category].format(name=name))
+
+
+# --------------------------------------------------------------------------- #
+# Registered-parameter attribute-read guard
+# --------------------------------------------------------------------------- #
+def param_attr_guarded() -> bool:
+    """True iff a NEML2-native forward is active and a registered-parameter
+    attribute read is not currently permitted.
+
+    Checked by :meth:`neml2.models.model.Model.__getattr__` to forbid reading a
+    registered parameter as ``self.<attr>`` inside ``forward`` -- that bypasses
+    the static-or-promoted dispatch in :meth:`Model._get_param` and silently
+    breaks parameter promotion. The internal :func:`_allow_param_attr` window
+    (used by ``_get_param`` itself) lifts it.
+    """
+    return _armed(_PARAM_ATTR)
+
+
+@contextmanager
+def _allow_param_attr() -> Generator[None, None, None]:
+    """Internal escape hatch: permit registered-parameter attribute reads for the
+    duration of the block. Used by :meth:`Model._get_param`, the one sanctioned
+    reader, so its own ``getattr(self, name)`` is not rejected by the guard."""
+    counts = _allow_counts()
+    counts[_PARAM_ATTR] = counts.get(_PARAM_ATTR, 0) + 1
+    try:
+        yield
+    finally:
+        counts[_PARAM_ATTR] = max(0, counts.get(_PARAM_ATTR, 0) - 1)
 
 
 # --------------------------------------------------------------------------- #

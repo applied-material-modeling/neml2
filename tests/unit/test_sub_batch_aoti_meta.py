@@ -47,17 +47,19 @@ from neml2.types import Scalar
 # ---------- schema_version constant ----------
 
 
-def test_schema_version_constant_is_int_six():
-    """v6 makes derivative graphs opt-in: a top-level ``derivatives`` array lists
-    the master ``[out, in]`` pairs the artifact supports (empty => jvp/jacobian
-    raise), forward ``jvp_package`` / implicit ``ift_package`` are emitted only
-    when requested, and each ``jacobian_pairs`` entry gains a ``batch_independent``
-    flag. (v5 carried per-variable ``base_shape`` for the variable-native runtime;
-    v4 de-baked the solver config.) The C++ loader mirrors this constant and
-    refuses any other value, so a stale cache surfaces immediately with a clear
-    ``regenerate via neml2-compile`` message instead of a cryptic missing-field
-    error."""
-    assert AOTI_META_SCHEMA_VERSION == 6
+def test_schema_version_constant():
+    """v7 adds parameter derivatives `d(output)/d(parameter)`: a `parameter_derivatives`
+    array of `(out, param)` pairs, per-segment param-Jacobian / param-VJP graphs (forward,
+    single-`ImplicitUpdate`, and composed), and a `param_base_shape` field per promoted
+    parameter. Promoted parameters enter the value / jvp / jacobian / param-Jacobian /
+    param-VJP graphs as per-batch `(B, *param_base)` inputs, so a batched (per-batch-element)
+    parameter flows through and yields per-element derivatives (param_vjp sums over the batch
+    only for an unbatched/global parameter), matching eager. (v6 made derivative graphs
+    opt-in; v5 carried per-variable ``base_shape``; v4 de-baked the solver config.) The C++
+    loader mirrors this constant and refuses any other value, so a stale cache surfaces
+    immediately with a clear ``regenerate via neml2-compile`` message instead of a cryptic
+    missing-field error."""
+    assert AOTI_META_SCHEMA_VERSION == 7
 
 
 # ---------- _var_infos default behaviour (no sub-batch) ----------

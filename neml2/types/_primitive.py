@@ -166,6 +166,26 @@ class PrimitiveTensor(TensorWrapper):
         return self._scale(other, operator.mul)
 
     def __truediv__(self: Self, other) -> Self:
+        # ``x / c`` (Python literal) is ``x * (1/c)`` -- saved-input, AOTI-safe;
+        # keep it on the plain ``_scale`` path. A TENSOR denominator (Self / Self
+        # or Self / Scalar) lowers to a reciprocal whose backward saves its
+        # OUTPUT, which AOTInductor cannot lower under strict + dynamic-batch
+        # export (pytorch/pytorch#187907). When that denominator requires grad,
+        # rewrite ``num / den`` as ``num * reciprocal_ad(den)`` so the backward
+        # references the denominator placeholder instead of a lifted saved-output
+        # constant. Off the AD path the plain divide runs (value path unchanged).
+        if not isinstance(other, (float, int)):
+            scalar_cls = type(self)._SCALAR_CLS
+            is_wrapped_den = isinstance(other, type(self)) or (
+                scalar_cls is not None and isinstance(other, scalar_cls)
+            )
+            if is_wrapped_den and other.data.requires_grad:
+                from neml2.types.functions import reciprocal_ad  # noqa: PLC0415
+
+                recip = other._rewrap(
+                    reciprocal_ad(other.data), sub_batch_ndim=other.sub_batch_ndim
+                )
+                return self._binary(recip, operator.mul)
         return self._scale(other, operator.truediv)
 
     def __radd__(self: Self, other) -> Self:

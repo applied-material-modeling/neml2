@@ -96,7 +96,7 @@ class ScalarPNorm(Model):
         weights = self._get_param_list("weight", nl_params, Scalar)
         if len(weights) == 1:
             weights = weights * n_from
-        p = self._p
+        p = self._get_param("_p", nl_params, Scalar)
 
         # Sum_i w_i * |x_i|^p. With ``p`` held static (allow_nonlinear=False),
         # autograd never differentiates ``pow`` w.r.t. the exponent, so the

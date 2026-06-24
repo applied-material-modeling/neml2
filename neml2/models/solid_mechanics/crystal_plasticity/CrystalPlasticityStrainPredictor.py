@@ -91,11 +91,12 @@ class CrystalPlasticityStrainPredictor(Model):
         t: Scalar,
         t_n: Scalar,
         Ee_n: SR2,
+        *nl_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
         dt = t - t_n
-        scale = self.scale
-        threshold = self.threshold
+        scale = self._get_param("scale", nl_params, Scalar)
+        threshold = self._get_param("threshold", nl_params, Scalar)
         Ee_pred = Ee_n + scale * D * dt
         use_pred = lt(norm(Ee_n), threshold)
         result = where(use_pred, Ee_pred, Ee_n)

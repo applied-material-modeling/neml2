@@ -79,9 +79,11 @@ A few notes on the schema:
   …) is the name the input file will use.
 - The third argument is the field's docstring — it shows up in the
   auto-generated syntax catalog.
-- `attr="mu"` on the parameter exposes it on the instance as
-  `self.mu`, so the model body can write `self.mu * velocity`
-  directly.
+- `attr="mu"` on the parameter names its storage slot. **Inside
+  `forward`** read it through `self._get_param("mu", nl_params,
+  Scalar)` — reading `self.mu` directly there is rejected, because it
+  bypasses parameter promotion (see the note below). Outside `forward`
+  (for inspection) `self.mu` is fine.
 - A `buffer` is a constant that travels with the model (e.g., goes to
   GPU when the model does) but isn't trainable.
 
@@ -154,12 +156,28 @@ attribute it should be exposed under (`mu` here). Other useful options:
   model's output. See [](tutorials-extension-composition) for the
   details.
 
-`attr="mu"` just renames the storage slot so the model body can write
-`self.mu` instead of `self.dynamic_viscosity` — handy when the math
-uses Greek-letter conventions. The underlying storage is a
-`torch.nn.Parameter` (visible in `named_parameters()`), so the usual
-PyTorch training idioms work unchanged. Attribute access via `self.mu`
-returns a typed `Scalar` wrapper that carries the same data:
+`attr="mu"` names the storage slot — handy when the math uses
+Greek-letter conventions and you'd rather not spell out
+`dynamic_viscosity` everywhere. The underlying storage is a
+`torch.nn.Parameter` (visible in `named_parameters()`).
+
+:::{note}
+**Inside `forward`, read a parameter through
+`self._get_param("mu", nl_params, Scalar)` — not `self.mu`.** A bare
+`self.mu` inside `forward` is rejected by a runtime guard: it bypasses
+parameter promotion, so it would break the moment the parameter is
+promoted to a runtime input (`neml2-compile -p`), when the static
+`nn.Parameter` no longer exists. `_get_param` works for both static
+and promoted parameters, which is why `forward`'s signature carries the
+`*nl_params` pack (`def forward(self, velocity, *nl_params, v=None)`):
+promoted parameters arrive there. Buffers are not affected — a buffer
+like `self.g` is read directly. The next tutorial,
+[](tutorials-extension-forward), shows this in a real `forward` body.
+:::
+
+Outside `forward` — for inspection, calibration setup, etc. —
+attribute access via `self.mu` is fine and returns a typed `Scalar`
+wrapper carrying the same data:
 
 ```{code-cell} ipython3
 dict(m.named_parameters())

@@ -41,10 +41,10 @@ import torch
 from torch import nn
 
 import neml2
-from neml2._eager_boundary import broadcast_to_common_batch, check_tensor
 from neml2.cli.aoti_export import _var_infos
 from neml2.eager import _EagerModel, _infer_device_dtype
 from neml2.types import SR2
+from neml2.types._boundary import broadcast_to_common_batch, check_tensor
 
 _REPO = Path(__file__).resolve().parents[2]
 # tests/unit/test_eager.py -> repo root -> the forward-only fixture .i.
@@ -260,6 +260,244 @@ def test_jvp_jacobian_composed_multi_output():
         assert torch.allclose(jvp_out[o_name], expect, atol=1e-10)
 
 
+# --- parameter Jacobian d(output)/d(parameter) (reverse-mode AD) --------------
+# The parameter surface is a SEPARATE path from the input chain rule: it
+# differentiates outputs w.r.t. the model's calibration nn.Parameters via
+# reverse-mode autograd (neml2.models.param_ad), addressed by named_parameters()
+# qualified name. These pin it against central finite differences.
+
+
+def _fd_param_block(m, inputs, o_name, p_name, h_rel=1e-6):
+    """Central-difference d(o_name)/d(p_name) for a SCALAR parameter.
+
+    Returns ``(*batch, *out_base)`` (scalar param contributes no trailing axis),
+    matching ``param_jacobian``'s block convention. Perturbs the named parameter
+    via ``functional_call`` so the model itself is never mutated.
+    """
+    from torch.func import functional_call
+
+    typed = tuple(m.input_spec[n](inputs[n]) for n in m.input_names)
+    p0 = dict(m._model.named_parameters())[p_name].detach()
+    assert p0.numel() == 1, "FD helper handles scalar params only"
+    v0 = float(p0.reshape(()))
+    h = h_rel * max(abs(v0), 1.0)
+    o_idx = m.output_names.index(o_name)
+
+    def out_at(val):
+        cp = {p_name: torch.as_tensor(val, dtype=m.dtype, device=m.device).reshape(p0.shape)}
+        res = functional_call(m._model, cp, typed)
+        res = res if isinstance(res, tuple) else (res,)
+        return res[o_idx].data
+
+    return (out_at(v0 + h) - out_at(v0 - h)) / (2 * h)
+
+
+def _rel_err(a, b):
+    return (a - b).abs().max().item() / (b.abs().max().item() + 1e-30)
+
+
+def test_named_parameters_lists_typed_params():
+    m = _EagerModel(str(_INPUT), "model")
+    np_ = m.named_parameters()
+    # LinearIsotropicElasticity exposes E and nu as scalar typed parameters.
+    assert set(np_) == set(m.param_names) == {"model.E", "model.nu"}
+    assert m.param_base_shapes == [[], []]
+    for q in m.param_names:
+        assert tuple(np_[q].shape) == ()  # scalar params, no batch
+
+
+def test_native_model_set_parameter():
+    """``Model.set_parameter`` copies into the live ``nn.Parameter`` (torch
+    ``no_grad``), preserving identity / dtype / grad-tracking; the next forward
+    reflects the new value. ``KeyError`` for an unregistered name."""
+    native = neml2.load_model(str(_INPUT), "model")
+    x = SR2(torch.ones(6, dtype=torch.float64))
+    before = native(x).data.clone()
+    p = dict(native.named_parameters())["E"]
+
+    native.set_parameter("E", torch.tensor(200.0, dtype=torch.float64))
+    assert float(dict(native.named_parameters())["E"]) == 200.0
+    # In-place copy: same Parameter object, still grad-tracking.
+    assert dict(native.named_parameters())["E"] is p
+    assert p.requires_grad
+    # The value change is reflected in the next forward.
+    assert not torch.allclose(before, native(x).data)
+
+    with pytest.raises(KeyError):
+        native.set_parameter("does_not_exist", torch.tensor(1.0, dtype=torch.float64))
+
+
+def test_native_model_set_parameter_batch_shape_change():
+    """``set_parameter`` supports promoting a scalar parameter to a per-batch
+    ``(B,)`` value: ``copy_`` cannot resize, so the Parameter is replaced. The
+    next forward then uses the per-batch values (a different value per element)."""
+    native = neml2.load_model(str(_INPUT), "model")
+    assert tuple(dict(native.named_parameters())["E"].shape) == ()  # scalar to start
+
+    perbatch = torch.tensor([100.0, 150.0, 200.0, 250.0], dtype=torch.float64)
+    native.set_parameter("E", perbatch)
+    E = dict(native.named_parameters())["E"]
+    assert tuple(E.shape) == (4,)
+    assert torch.equal(E.detach(), perbatch)
+    assert E.requires_grad  # still a grad-tracking Parameter after the replace
+
+    # The per-batch E feeds a batched forward and varies the output across batch.
+    out = native(SR2(torch.ones(4, 6, dtype=torch.float64))).data
+    assert tuple(out.shape) == (4, 6)
+    assert not torch.allclose(out[0], out[1])
+
+
+def test_eager_model_set_parameter():
+    """``_EagerModel.set_parameter`` forwards to the native model; the read-side
+    ``named_parameters`` reflects the new value."""
+    m = _EagerModel(str(_INPUT), "model")
+    q = m.param_names[0]
+    m.set_parameter(q, torch.tensor(123.0, dtype=m.dtype, device=m.device))
+    assert float(m.named_parameters()[q]) == 123.0
+
+
+def test_param_jacobian_matches_fd():
+    """d(stress)/d(E), d(stress)/d(nu) match central finite differences."""
+    m = _EagerModel(str(_INPUT), "model")
+    torch.manual_seed(0)
+    x = torch.randn(4, 6, dtype=m.dtype, device=m.device)
+
+    outputs, P = m.param_jacobian({"strain": x})
+    # Value half matches a plain forward.
+    assert torch.allclose(outputs["stress"], m.forward({"strain": x})["stress"])
+    for p in ("model.E", "model.nu"):
+        block = P["stress"][p]
+        assert tuple(block.shape) == (4, 6)  # (*B, *out_base, *param_base=())
+        ref = _fd_param_block(m, {"strain": x}, "stress", p)
+        assert _rel_err(block, ref) < 1e-6, f"d(stress)/d({p}) disagrees with FD"
+
+
+def test_param_jacobian_composed():
+    """Parameter Jacobian threads through a 2-leaf ComposedModel: a leaf param
+    drives every downstream output."""
+    m = _EagerModel(str(_COMPOSED), "model")
+    torch.manual_seed(0)
+    b = 5
+    ins = _rand_inputs(m, b)
+
+    outputs, P = m.param_jacobian(ins)
+    assert set(P) == set(m.output_names)
+    fwd = m.forward(ins)
+    for o_name in m.output_names:
+        assert torch.allclose(outputs[o_name], fwd[o_name])
+    for o_name, o_base in zip(m.output_names, m.output_base_shapes, strict=True):
+        for p in m.param_names:
+            block = P[o_name][p]
+            assert tuple(block.shape) == (b, *o_base)  # scalar params
+            ref = _fd_param_block(m, ins, o_name, p)
+            assert _rel_err(block, ref) < 1e-6, f"d({o_name})/d({p}) disagrees with FD"
+
+
+def test_param_jacobian_batched_parameter():
+    """A per-batch-element parameter (Scalar ``E`` set to ``(B,)``) is
+    differentiated per element. The call batch is ``broadcast(input batches,
+    parameter batches)``, so the value and every derivative are correctly shaped
+    even when the parameter's batch exceeds the inputs' -- the case that used to
+    emit the wrong batch shape / crash. Validated vs per-element finite differences
+    (the discriminating test: a batch-summing bug passes a uniform-E FD but fails
+    a per-element FD)."""
+    B = 4
+    # Two cases: input batched at B, and an UNBATCHED input whose output batches
+    # solely on the parameter (the case that used to crash in jacobian/param_jacobian).
+    for label, strain in (
+        ("input (B,)", torch.randn(B, 6, dtype=torch.float64)),
+        ("input ()", torch.randn(6, dtype=torch.float64)),
+    ):
+        m = _EagerModel(str(_INPUT), "model")
+        E0 = torch.linspace(90.0, 110.0, B, dtype=m.dtype, device=m.device)
+        m.set_parameter("model.E", E0.clone())
+
+        out, P = m.param_jacobian({"strain": strain})
+        assert tuple(out["stress"].shape) == (B, 6), label
+        # The input Jacobian also batches on the parameter (used to size-mismatch).
+        jblock = m.jacobian({"strain": strain})[1]["stress"]["strain"]
+        assert tuple(jblock.shape) == (B, 6, 6), label
+        block = P["stress"]["model.E"]
+        assert tuple(block.shape) == (B, 6), label  # (*B, *out_base, *param_base=())
+
+        # Per-element central differences: E_b only affects stress_b.
+        h = 1e-6
+        fd = torch.zeros(B, 6, dtype=m.dtype)
+        for b in range(B):
+            up = E0.clone()
+            up[b] += h
+            m.set_parameter("model.E", up)
+            sp = m.forward({"strain": strain})["stress"]
+            dn = E0.clone()
+            dn[b] -= h
+            m.set_parameter("model.E", dn)
+            sm = m.forward({"strain": strain})["stress"]
+            fd[b] = (sp[b] - sm[b]) / (2 * h)
+        assert _rel_err(block, fd) < 1e-6, f"{label}: batched d(stress)/d(E) disagrees with FD"
+
+        # param_vjp lands the adjoint at each parameter's natural shape: the batched
+        # E gets a per-element gradient (B,); the scalar nu is summed over the batch.
+        m.set_parameter("model.E", E0.clone())
+        g = m.param_vjp({"strain": strain}, {"stress": torch.randn(B, 6, dtype=m.dtype)})
+        assert tuple(g["model.E"].shape) == (B,), label
+        assert tuple(g["model.nu"].shape) == (), label
+
+
+# --- py-eager native Model param methods (the route-method surface) -----------
+# ``neml2.load_model(...)`` returns a native ``Model``; these pin its
+# ``param_jacobian`` / ``param_vjp`` methods -- the py-eager half of the
+# cross-route method surface, delegating to ``models.param_ad``. The engine itself is
+# FD-validated above via ``_EagerModel``; here we pin the native method plumbing
+# (input wrapping, default param set, value return, vjp == <w, jacobian>).
+
+
+def test_native_model_param_jacobian_and_vjp():
+    from torch.func import functional_call
+
+    native = neml2.load_model(str(_INPUT), "model")
+    torch.manual_seed(0)
+    x = torch.randn(4, 6, dtype=torch.float64)
+
+    outputs, P = native.param_jacobian({"strain": x})
+    # Value half == a plain native forward.
+    assert torch.allclose(outputs["stress"], native(SR2(x)).data)
+    # Default param set = every typed parameter (qualified names).
+    params = [q for q, _ in native.named_parameters()]
+    assert set(P["stress"]) == set(params)
+
+    for p in params:
+        p0 = dict(native.named_parameters())[p].detach()
+        v0 = float(p0.reshape(()))
+        h = 1e-6 * max(abs(v0), 1.0)
+
+        def out_at(val, _p=p, _p0=p0):
+            cp = {_p: torch.as_tensor(val, dtype=torch.float64).reshape(_p0.shape)}
+            return functional_call(native, cp, (SR2(x),)).data
+
+        fd = (out_at(v0 + h) - out_at(v0 - h)) / (2 * h)
+        assert _rel_err(P["stress"][p].flatten(), fd.flatten()) < 1e-6, f"d(stress)/d({p}) vs FD"
+
+    # param_vjp adjoint == <w, param_jacobian>.
+    w = torch.randn(4, 6, dtype=torch.float64)
+    g = native.param_vjp({"strain": x}, {"stress": w})
+    assert set(g) == set(params)
+    for p in params:
+        contracted = float((w.flatten() * P["stress"][p].flatten()).sum())
+        assert abs(float(g[p]) - contracted) < 1e-9, f"param_vjp[{p}] != <w, J>"
+
+
+def test_native_model_param_methods_subset_selection():
+    """The optional ``params=`` selector restricts the columns / keys."""
+    native = neml2.load_model(str(_INPUT), "model")
+    x = torch.randn(4, 6, generator=torch.Generator().manual_seed(0), dtype=torch.float64)
+    _, P = native.param_jacobian({"strain": x}, params=["E"])
+    assert set(P["stress"]) == {"E"}
+    g = native.param_vjp(
+        {"strain": x}, {"stress": torch.ones(4, 6, dtype=torch.float64)}, params=["nu"]
+    )
+    assert set(g) == {"nu"}
+
+
 # --- implicit-model Jacobian vs finite differences ----------------------------
 # Regression for the leading-K (``k_ndim``) seed-region convention. The Jacobian
 # seed declares its identity directions as a K region, and derivative-leaf models
@@ -326,6 +564,106 @@ def test_implicit_jacobian_strain_column_matches_fd(path):
         scale = ref.abs().max().item() + 1e-30
         assert (block - ref).abs().max().item() / scale < 1e-5, (
             f"{path.parent.name}: d({o_name})/dE disagrees with finite differences"
+        )
+
+
+def _uniaxial_plastic_inputs(m, b=4):
+    """Uniaxial strain into the plastic regime, lagged states at fresh-start
+    zero, t = 1 -- the converging setup shared by the implicit derivative tests."""
+    inputs = {}
+    for name, base_shape in zip(m.input_names, m.input_base_shapes, strict=True):
+        if name == "t":
+            inputs[name] = torch.ones(b, *base_shape, dtype=m.dtype, device=m.device)
+        elif name == "E":
+            strain = torch.zeros(b, *base_shape, dtype=m.dtype, device=m.device)
+            strain[..., 0] = 5e-3
+            strain[..., 1] = strain[..., 2] = -0.3 * 5e-3
+            inputs[name] = strain
+        else:
+            inputs[name] = torch.zeros(b, *base_shape, dtype=m.dtype, device=m.device)
+    return inputs
+
+
+def test_param_jacobian_through_implicit_matches_fd():
+    """d(output)/d(parameter) composes through a Newton solve via the IFT adjoint.
+
+    Checks parameters that live INSIDE the implicit residual (yield stress ``sy``,
+    flow-rate ``eta`` -- their sensitivity needs ``du/dθ = -A⁻¹ ∂r/∂θ``) and one
+    feeding the solve from the trial state (Young's modulus ``E``). The parameter
+    surface (reverse-mode autograd) traverses ``_ImplicitUpdateFn.backward``'s
+    implicit-function-theorem adjoint; this pins it against finite differences.
+    """
+    path = _SM_REGRESSION / "viscoplasticity" / "radial_return" / "model.i"
+    m = _EagerModel(str(path), "model")
+    inputs = _uniaxial_plastic_inputs(m, b=4)
+
+    outputs, P = m.param_jacobian(inputs)
+    fwd = m.forward(inputs)
+    for o_name in m.output_names:
+        assert torch.allclose(outputs[o_name], fwd[o_name])
+
+    checks = {
+        "model0.return_map.surface.yield_surface.sy": "implicit residual",
+        "model0.return_map.surface.flow_rate.eta": "implicit residual",
+        "model0.trial_state.cauchy_stress.E": "trial state -> given",
+    }
+    for q, where in checks.items():
+        block = P["stress"][q]
+        assert tuple(block.shape) == (4, 6)  # scalar param -> (*B, *out_base)
+        ref = _fd_param_block(m, inputs, "stress", q)
+        assert _rel_err(block, ref) < 1e-5, f"d(stress)/d({q}) [{where}] disagrees with FD"
+
+
+def test_param_vjp_through_implicit_matches_jacobian_and_fd():
+    """dL/dθ for L = sum_o <w_o, out_o> via the one-pass reverse-mode adjoint.
+
+    The eager ``param_vjp`` swaps each parameter at its NATURAL shape (no
+    per-batch expansion) and sums the gradient over the batch -- the global-
+    parameter adjoint -- composing through the Newton solve's IFT backward. Pin
+    it against the param-Jacobian contraction <w, dθ> (exact) and finite
+    differences on the scalar loss.
+    """
+    path = _SM_REGRESSION / "viscoplasticity" / "radial_return" / "model.i"
+    m = _EagerModel(str(path), "model")
+    inputs = _uniaxial_plastic_inputs(m, b=4)
+
+    _, P = m.param_jacobian(inputs)
+    torch.manual_seed(0)
+    cot = {
+        o: torch.randn(4, *ob, dtype=m.dtype, device=m.device)
+        for o, ob in zip(m.output_names, m.output_base_shapes, strict=True)
+    }
+    grads = m.param_vjp(inputs, cot)
+
+    p0 = {q: m.named_parameters()[q].clone() for q in m.param_names}
+
+    def loss():
+        out = m.forward(inputs)
+        return float(sum((out[o] * cot[o]).sum() for o in m.output_names))
+
+    checks = [
+        "model0.return_map.surface.yield_surface.sy",
+        "model0.return_map.surface.flow_rate.eta",
+        "model0.trial_state.cauchy_stress.E",
+    ]
+    for q in checks:
+        g = float(grads[q])  # scalar param
+        # Exact: contraction of the param Jacobian with the cotangents.
+        contracted = sum((cot[o] * P[o][q]).sum().item() for o in m.output_names)
+        assert abs(g - contracted) < 1e-7 * max(abs(contracted), 1.0), (
+            f"param_vjp d(L)/d({q}) != <w, dθ> (vjp={g}, contracted={contracted})"
+        )
+        # Finite differences on the scalar loss.
+        v0 = float(p0[q])
+        h = 1e-6 * max(abs(v0), 1.0)
+        m.named_parameters()[q].fill_(v0 + h)
+        lp = loss()
+        m.named_parameters()[q].fill_(v0 - h)
+        lm = loss()
+        m.named_parameters()[q].copy_(p0[q])
+        fd = (lp - lm) / (2 * h)
+        assert abs(g - fd) < 1e-4 * max(abs(fd), 1.0), (
+            f"param_vjp d(L)/d({q}) disagrees with FD (vjp={g}, fd={fd})"
         )
 
 

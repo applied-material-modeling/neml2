@@ -157,22 +157,58 @@ public:
   /// `input_names()` and shaped `(*B, *base_shape)`; missing keys throw and a
   /// non-canonical trailing shape is rejected. Returns one tensor per name in
   /// `output_names()` at `(*B, *out_base_shape)`.
-  std::map<std::string, at::Tensor> forward(const std::map<std::string, at::Tensor> & inputs) const;
+  ///
+  /// `param_overrides` (default empty) replaces a promoted parameter's value for
+  /// this call only, without mutating `named_parameters()`. It exists for the
+  /// multi-device dispatcher, which passes each chunk its batched parameters
+  /// sliced to the chunk's rows so the per-device stored params stay immutable
+  /// (and concurrent workers never race). Each override is taken at the same
+  /// `(*B, *param_base)` contract a stored parameter would be.
+  std::map<std::string, at::Tensor>
+  forward(const std::map<std::string, at::Tensor> & inputs,
+          const std::map<std::string, at::Tensor> & param_overrides = {}) const;
 
   /// Evaluate + JVP. `tangents` shares its keys + `(*B, *in_base)` shapes with
   /// `inputs`; a missing key defaults to zero. Returns `{outputs, jvp_outputs}`
   /// -- both maps keyed by `output_names()`; `jvp_outputs[name]` is the
   /// directional derivative at the output's natural `(*B, *out_base_shape)`.
+  /// See `forward` for `param_overrides`.
   std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
   jvp(const std::map<std::string, at::Tensor> & inputs,
-      const std::map<std::string, at::Tensor> & tangents) const;
+      const std::map<std::string, at::Tensor> & tangents,
+      const std::map<std::string, at::Tensor> & param_overrides = {}) const;
 
   /// Evaluate + full Jacobian as unflattened variable-pair blocks. Returns
   /// `{outputs, J}` where `J[out_name][in_name]` is `(*B, *out_base, *in_base)`
   /// (see @ref VariablePairJacobian). Composed across forward segments and
-  /// threaded through IFT blocks for implicit segments.
+  /// threaded through IFT blocks for implicit segments. See `forward` for
+  /// `param_overrides`.
   std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
-  jacobian(const std::map<std::string, at::Tensor> & inputs) const;
+  jacobian(const std::map<std::string, at::Tensor> & inputs,
+           const std::map<std::string, at::Tensor> & param_overrides = {}) const;
+
+  /// Evaluate + parameter Jacobian (schema v7). Returns `{outputs, P}` where
+  /// `P[out_name][param_qname]` is the dense block `(*B, *out_base, *param_base)`
+  /// -- the parameter analogue of `jacobian()` (reverse-mode AD over the promoted
+  /// parameters). Requires the artifact was compiled with `-d OUT:PARAM` over a
+  /// promoted parameter; otherwise raises. Supported for single-forward-segment
+  /// artifacts (multi-segment / implicit parameter Jacobians are a follow-up).
+  /// See `forward` for `param_overrides`.
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+  param_jacobian(const std::map<std::string, at::Tensor> & inputs,
+                 const std::map<std::string, at::Tensor> & param_overrides = {}) const;
+
+  /// Parameter VJP / adjoint (schema v7). Returns `dL/d(param)` keyed by
+  /// parameter qualified name, for the loss `L = sum_o <cotangent_o, out_o>`.
+  /// `cotangents` is keyed by output name (each at the output's `(*B, *out_base)`
+  /// shape); the cheaper form for many-parameter inverse optimization. Same
+  /// compile requirement + single-forward-segment support as `param_jacobian`.
+  /// See `forward` for `param_overrides`. (The adjoint graph keeps parameters
+  /// scalar, so per-element BATCHED parameters are not yet supported here.)
+  std::map<std::string, at::Tensor>
+  param_vjp(const std::map<std::string, at::Tensor> & inputs,
+            const std::map<std::string, at::Tensor> & cotangents,
+            const std::map<std::string, at::Tensor> & param_overrides = {}) const;
 
   /// Mutable surface for the runtime-flexible parameters (the set promoted
   /// via `neml2-compile --parameter NAME`). Baked entries do not appear here.
@@ -184,6 +220,19 @@ public:
   /// must match the compile-time contract, or the next forward will throw.
   std::map<std::string, at::Tensor> & named_parameters() noexcept;
   const std::map<std::string, at::Tensor> & named_parameters() const noexcept;
+
+  /// Natural base shape of each promoted parameter (Scalar -> `{}`, SR2 ->
+  /// `{6}`), keyed by qualified name. A stored parameter is `(*pbatch, *base)`;
+  /// this is the trailing `*base`. The multi-device dispatcher uses it to tell a
+  /// batched parameter (`pbatch == B`) from an unbatched one when slicing per
+  /// chunk. Empty when nothing was promoted.
+  const std::map<std::string, std::vector<int64_t>> & parameter_base_shapes() const noexcept;
+
+  /// Replace a promoted parameter's value (the runtime-flexible setter). *name*
+  /// must be a promoted parameter (appear in `named_parameters()`), else throws.
+  /// The new value is taken at the parameter's `(*param_base)` shape; it is used
+  /// on the next `forward`/`jvp`/`jacobian`/`param_*` call.
+  void set_parameter(const std::string & name, const at::Tensor & value);
 
   /// Device + dtype the model was compiled for. Read-only -- baked at export
   /// time, immutable for the life of this object.

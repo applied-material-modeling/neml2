@@ -1,5 +1,5 @@
 (model-eager-cpp)=
-# Eager evaluation from C++
+# `cpp-eager` — eager evaluation from C++
 
 The compiled path ([](aoti-packages)) is the right way to run a NEML2 model
 from C++ in production: it is fast and needs no Python at the hot loop. But
@@ -32,7 +32,8 @@ Python supplies it automatically.
 
 `neml2::eager::load_model(input_file, model_name)` mirrors Python's
 `load_model(path, name)` and returns a `neml2::eager::Model` whose operations
-(`forward` / `jvp` / `jacobian`) and metadata accessors (`input_names` /
+(`forward` / `jvp` / `jacobian` plus the parameter derivatives `param_jacobian` /
+`param_vjp`) and metadata accessors (`input_names` /
 `output_names` / `input_base_shapes` / `output_base_shapes` / `device` / `dtype`)
 have the **same signatures** as `neml2::aoti::Model`. So test code switches between
 the eager and compiled runtimes by changing only the load call and the header.
@@ -71,6 +72,26 @@ twin agree on the boundary contract — making `neml2::eager::Model` a true drop
 for `neml2::aoti::Model`. Inputs must be passed at their canonical
 `(*B, *base_shape)` shape; a non-canonical trailing shape (e.g. an SR2 strain
 passed as `(*B, 1)` instead of `(*B, 6)`) is rejected with a `FatalError`.
+
+## Loading external (Python-authored) models
+
+Because the eager runtime *is* an embedded interpreter, a C++ host can drive
+models that live outside the installed `neml2` package — the embedded-eager
+counterpart of the `--load` flag on `neml2-run` / `neml2-compile`. Pass the
+external Python extensions (file paths, package directories, or importable dotted
+module names) as the optional `load` argument; each is imported — registering its
+`@register_neml2_object` types into the factory — *before* the model is built:
+
+```cpp
+// my_model.py defines `@register_neml2_object("MyModel") class MyModel(Model): ...`
+// and my_model.i has `type = MyModel`. Without the load argument, MyModel is an
+// unknown type and the load fails.
+auto m = load_model("my_model.i", "model", {"path/to/my_model.py"});
+```
+
+Resolution and ordering match the CLI (`neml2.cli._extensions.load_user_extensions`).
+Registration is process-global: once an extension is loaded, its types stay visible
+to later `load_model` calls in the same process.
 
 ## Sensitivities: `jvp` and `jacobian`
 

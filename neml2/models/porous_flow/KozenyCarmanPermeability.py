@@ -77,10 +77,10 @@ class KozenyCarmanPermeability(Model):
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         phi = porosity
-        K0 = self.K0
-        phi0 = self.phi0
-        n = self.n
-        m = self.m
+        K0 = self._get_param("K0", nl_params, Scalar)
+        phi0 = self._get_param("phi0", nl_params, Scalar)
+        n = self._get_param("n", nl_params, Scalar)
+        m = self._get_param("m", nl_params, Scalar)
 
         # Note from the C++ docstring (verbatim): the formula reads
         # K = K0 * phi^n * (1 - phi0^m) / (phi0^m * (1 - phi)^n). The actual

@@ -26,6 +26,7 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 
 #include "neml2/csrc/eager/Model.h"
 #include "neml2/csrc/eager/eager_export.h"
@@ -38,12 +39,20 @@ namespace neml2::eager
 /// and the eager counterpart of @ref neml2::aoti::load_model -- but it consumes
 /// the *original* `.i`, not a `neml2-compile` stub.
 ///
+/// `load` is an optional list of external Python extensions (file paths, package
+/// directories, or importable dotted module names) imported into the embedded
+/// interpreter before the model is built -- the embedded-eager counterpart of the
+/// `--load` CLI flag, letting a downstream C++ consumer register Python-authored
+/// models that live outside the installed `neml2` package. See @ref Model.
+///
 /// Returns by value; @ref Model is non-movable, so this relies on C++17
 /// guaranteed copy elision (the returned prvalue is constructed directly into
 /// the caller's storage).
 ///
 /// Throws @ref neml2::aoti::FatalError on any failure (interpreter bootstrap,
-/// missing `neml2` package, parse error, unknown model name).
+/// missing `neml2` package, parse error, unknown model name, or a `load`
+/// extension that fails to import).
 EAGER_EXPORT Model load_model(const std::filesystem::path & input_file,
-                              const std::string & model_name);
+                              const std::string & model_name,
+                              const std::vector<std::string> & load = {});
 } // namespace neml2::eager

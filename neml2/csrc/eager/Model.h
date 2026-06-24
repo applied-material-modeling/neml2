@@ -105,9 +105,19 @@ public:
   ///
   /// `device_override`, when set, moves the model onto that device (e.g.
   /// `cuda:1`); when omitted, the model's natural device is used.
+  ///
+  /// `load` is an optional list of external Python extensions (file paths,
+  /// package directories, or importable dotted module names) imported into the
+  /// embedded interpreter BEFORE the model is constructed -- the embedded-eager
+  /// counterpart of the `--load` flag on `neml2-run` / `neml2-compile`. Each
+  /// imported module self-registers its `@register_neml2_object` types into the
+  /// factory, so a downstream C++ consumer can drive Python-authored models that
+  /// live outside the installed `neml2` package. Same resolution + ordering as
+  /// the CLI (see `neml2.cli._extensions.load_user_extensions`).
   explicit Model(const std::filesystem::path & input_file,
                  const std::string & model_name,
-                 std::optional<at::Device> device_override = std::nullopt);
+                 std::optional<at::Device> device_override = std::nullopt,
+                 const std::vector<std::string> & load = {});
 
   /// Declared here and defined out-of-line where `Impl` is complete, as the
   /// PImpl idiom requires.
@@ -152,6 +162,39 @@ public:
   /// @ref neml2::aoti::Model::jacobian. Acquires the GIL.
   std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
   jacobian(const std::map<std::string, at::Tensor> & inputs) const;
+
+  /// Calibration-parameter names (qualified, e.g. `"elasticity.E"`) and their
+  /// per-name base shapes -- the parameter analogue of `input_names()` /
+  /// `input_base_shapes()`. Cached at load; no GIL.
+  const std::vector<std::string> & param_names() const noexcept;
+  const std::vector<std::vector<int64_t>> & param_base_shapes() const noexcept;
+
+  /// Current values of the calibration parameters, keyed by qualified name
+  /// (`param_names()` order), each a detached tensor at its `(*param_base)`
+  /// shape. The read side of the parameter surface MOOSE drives. Acquires the GIL.
+  std::map<std::string, at::Tensor> named_parameters() const;
+
+  /// Replace a calibration parameter's value (the write side). *name* is the
+  /// qualified parameter name; *value* is taken at its `(*param_base)` shape and
+  /// copied into the live parameter on the embedded model (forwards to torch).
+  /// Acquires the GIL.
+  void set_parameter(const std::string & name, const at::Tensor & value);
+
+  /// Evaluate + parameter Jacobian as unflattened variable-pair blocks. Returns
+  /// `{outputs, P}` where `P[out_name][param_qname]` is `(*B, *out_base,
+  /// *param_base)` -- the parameter analogue of `jacobian()` (reverse-mode AD
+  /// over the model's parameters; the input chain rule is untouched). Holds the GIL.
+  std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
+  param_jacobian(const std::map<std::string, at::Tensor> & inputs) const;
+
+  /// Parameter VJP / adjoint: `dL/d(param)` keyed by parameter qualified name for
+  /// the loss `L = sum_o <cotangent_o, out_o>`. `cotangents` is keyed by output
+  /// name (each at the output's `(*B, *out_base)` shape). One reverse pass total
+  /// -- the cheap form for many-parameter inverse optimization, the parameter
+  /// analogue of `param_jacobian()`. Holds the GIL.
+  std::map<std::string, at::Tensor>
+  param_vjp(const std::map<std::string, at::Tensor> & inputs,
+            const std::map<std::string, at::Tensor> & cotangents) const;
 
   /// Device + dtype the model runs on. Cached at load; no GIL.
   at::Device device() const noexcept;

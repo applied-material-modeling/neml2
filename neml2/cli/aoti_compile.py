@@ -590,11 +590,16 @@ def main(argv: list[str] | None = None) -> int:
     bake_note = "fully baked" if n_promoted == 0 else f"{n_promoted} promoted parameter(s)"
     driver_note = f", driven by [{keep_driver}]" if keep_driver else ""
     n_deriv = len(meta.get("derivatives", []))
-    deriv_note = (
-        ", no derivative graphs (use -d to compile jvp/jacobian)"
-        if n_deriv == 0
-        else f", {n_deriv} derivative pair(s)"
-    )
+    n_param_deriv = len(meta.get("parameter_derivatives", []))
+    if n_deriv == 0 and n_param_deriv == 0:
+        deriv_note = ", no derivative graphs (use -d to compile jvp/jacobian)"
+    else:
+        parts = []
+        if n_deriv:
+            parts.append(f"{n_deriv} derivative pair(s)")
+        if n_param_deriv:
+            parts.append(f"{n_param_deriv} parameter-derivative pair(s)")
+        deriv_note = ", " + ", ".join(parts)
 
     def _rel(p: Path) -> Path:
         return p.relative_to(Path.cwd()) if p.is_relative_to(Path.cwd()) else p

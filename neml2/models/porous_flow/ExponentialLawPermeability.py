@@ -80,9 +80,9 @@ class ExponentialLawPermeability(Model):
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         phi = porosity
-        K0 = self.K0
-        phi0 = self.phi0
-        a = self.a
+        K0 = self._get_param("K0", nl_params, Scalar)
+        phi0 = self._get_param("phi0", nl_params, Scalar)
+        a = self._get_param("a", nl_params, Scalar)
 
         # K = K0 * exp(-a * (phi - phi0)) -- typed Scalar algebra end to end.
         arg = -a * (phi - phi0)

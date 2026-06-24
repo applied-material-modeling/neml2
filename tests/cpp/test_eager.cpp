@@ -126,6 +126,61 @@ main(int argc, char ** argv)
     NEML2_CHECK(at::allclose(jvp0.at("stress"), at::zeros_like(jvp0.at("stress"))));
   }
 
+  // Parameter surface: named_parameters() + param_jacobian() expose d(stress)/
+  // d(param) over the model's calibration parameters (E, nu). The blocks are
+  // (b, 6) for these Scalar parameters; the value half matches forward. (Value
+  // parity vs finite differences is checked in tests/unit/test_eager.py.)
+  {
+    const auto pnames = m.param_names();
+    NEML2_CHECK(pnames.size() == 2); // LinearIsotropicElasticity: E, nu
+    NEML2_CHECK((m.param_base_shapes() == std::vector<std::vector<int64_t>>{{}, {}}));
+
+    const auto np = m.named_parameters();
+    NEML2_CHECK(np.size() == 2);
+    for (const auto & p : pnames)
+    {
+      NEML2_CHECK(np.count(p) == 1);
+      NEML2_CHECK(np.at(p).dim() == 0); // scalar parameter
+    }
+
+    const auto [pout, P] = m.param_jacobian(inputs);
+    NEML2_CHECK(at::allclose(pout.at("stress"), out.at("stress")));
+    for (const auto & p : pnames)
+    {
+      const auto & block = P.at("stress").at(p);
+      NEML2_CHECK(block.dim() == 2);
+      NEML2_CHECK(block.size(0) == b);
+      NEML2_CHECK(block.size(1) == 6);
+      NEML2_CHECK(at::isfinite(block).all().item<bool>());
+    }
+
+    // param_vjp: the adjoint dL/d(param) for L = <w, stress> equals the dense
+    // contraction <w, d(stress)/d(param)>, at each scalar parameter's natural
+    // (scalar) shape.
+    const auto w = at::randn({b, 6}, at::TensorOptions().dtype(m.dtype()));
+    const auto g = m.param_vjp(inputs, {{"stress", w}});
+    NEML2_CHECK(g.size() == pnames.size());
+    for (const auto & p : pnames)
+    {
+      const auto contracted = (w * P.at("stress").at(p)).sum();
+      NEML2_CHECK(g.at(p).dim() == 0); // scalar parameter -> scalar grad
+      NEML2_CHECK(at::allclose(g.at(p), contracted));
+    }
+
+    // set_parameter: replace a parameter value (forwards to torch on the
+    // embedded model); named_parameters() reflects it and the next forward
+    // changes, then restores exactly when set back.
+    const auto & pname = pnames.front();
+    const auto orig = m.named_parameters().at(pname).clone();
+    const auto out0 = m.forward(inputs).at("stress").clone();
+    m.set_parameter(pname, orig * 2.0);
+    NEML2_CHECK(at::allclose(m.named_parameters().at(pname), orig * 2.0));
+    NEML2_CHECK(!at::allclose(m.forward(inputs).at("stress"), out0));
+    m.set_parameter(pname, orig);
+    NEML2_CHECK(at::allclose(m.forward(inputs).at("stress"), out0));
+    NEML2_CHECK_THROWS(m.set_parameter("does_not_exist", orig));
+  }
+
   // A second handle shares the embedded interpreter and agrees value-for-value.
   {
     auto m2 = load_model(input_file, "model");
@@ -221,6 +276,45 @@ main(int argc, char ** argv)
       NEML2_CHECK(e.recoverable()); // recoverable: a host can cut dt and retry
     }
     NEML2_CHECK(got_conv);
+  }
+
+  // #5: external Python model via the `--load` hook. argv[3] is an .i whose model
+  // type (ExtScaleStress) is defined in an out-of-package module argv[4], not in
+  // the installed neml2 package. Without --load the type is unknown (load fails);
+  // with it, the module self-registers into the factory and the model loads + runs
+  // (out_stress = 2 * in_stress). This is the embedded-eager counterpart of the
+  // `neml2-run --load` flag, for a C++ host driving Python-authored models.
+  if (argc >= 5)
+  {
+    const std::string ext_input = argv[3];
+    const std::string ext_module = argv[4];
+
+    // Negative FIRST: the type is not registered yet, so loading without --load
+    // throws. (Registration is a process-global side effect of importing the
+    // module, so this must run before the --load below registers it.)
+    NEML2_CHECK_THROWS(load_model(ext_input, "model"));
+
+    // With --load: the external module registers ExtScaleStress, so it loads.
+    auto me = load_model(ext_input, "model", {ext_module});
+    NEML2_CHECK(me.input_names() == std::vector<std::string>{"in_stress"});
+    NEML2_CHECK(me.output_names() == std::vector<std::string>{"out_stress"});
+
+    // Build the input at the model's own dtype (this paramless model has no
+    // calibration coefficients anchoring it to float64, so it takes torch's
+    // default) -- the eager boundary rejects a dtype mismatch.
+    std::map<std::string, at::Tensor> ein;
+    ein.emplace("in_stress", at::ones({4, 6}, at::TensorOptions().dtype(me.dtype())));
+    const auto eout = me.forward(ein);
+    NEML2_CHECK(eout.count("out_stress") == 1);
+    NEML2_CHECK(eout.at("out_stress").size(0) == 4 && eout.at("out_stress").size(1) == 6);
+    // The external model doubles its input -> proves it actually ran.
+    NEML2_CHECK(at::allclose(eout.at("out_stress"), 2.0 * ein.at("in_stress")));
+
+    // The registration persists in the process-global factory, so a later load
+    // WITHOUT --load now resolves the type too -- confirming the hook registered
+    // into the shared registry (not a per-call scratch namespace).
+    auto me2 = load_model(ext_input, "model");
+    NEML2_CHECK(at::allclose(me2.forward(ein).at("out_stress"), eout.at("out_stress")));
   }
 
   return 0;

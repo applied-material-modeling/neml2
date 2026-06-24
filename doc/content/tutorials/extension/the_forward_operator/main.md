@@ -39,9 +39,11 @@ $$
   \boldsymbol{a} = \boldsymbol{g} - \mu \boldsymbol{v}.
 $$
 
-`self.g` is the gravity vector, `self.mu` is the drag coefficient, and
-the velocity comes in as the first positional argument. The whole
-forward is:
+`self.g` is the gravity vector (a buffer, read directly), and the
+velocity comes in as the first positional argument. The drag
+coefficient `mu` is a *parameter*, so it is read through
+`self._get_param("mu", nl_params, Scalar)` rather than `self.mu` —
+more on that below. The whole forward is:
 
 ```{literalinclude} projectile.py
 :language: python
@@ -49,7 +51,21 @@ forward is:
 :pyobject: ProjectileAcceleration.forward
 ```
 
-The first line is the physics: `Vec - Scalar * Vec` gives back a `Vec`,
+The first line reads the parameter:
+`mu = self._get_param("mu", nl_params, Scalar)`. Always read a
+*parameter* this way inside `forward` — never as `self.mu`. A bare
+`self.mu` is rejected by a runtime guard, because it bypasses
+`_get_param`'s static-or-promoted dispatch: the moment `mu` is
+promoted to a runtime input (`neml2-compile -p`) the static
+`nn.Parameter` no longer exists and the attribute read breaks.
+`_get_param` works for both static and promoted parameters — it pulls
+the value from `self` when static and from the `*nl_params` pack when
+promoted — so the leaf stays promotion-compatible. (Buffers like
+`self.g` are *not* parameters, so reading them directly is fine.) That
+is also why the signature is `def forward(self, v_in, *nl_params,
+v=None)`: the `*nl_params` pack is where promoted parameters arrive.
+
+The next line is the physics: `Vec - Scalar * Vec` gives back a `Vec`,
 batched or not. If `v is None` (the usual case) the method returns and
 you're done.
 
@@ -58,9 +74,10 @@ variable to a small function that takes an incoming tangent
 (something the same shape as that input) and returns its
 contribution to the output's tangent. For this model the math is
 simple: $\partial \boldsymbol{a}/\partial \boldsymbol{v} = -\mu I$,
-so the closure is `lambda V: -self.mu * V`. `apply_chain_rule` then
-sums the contribution against any tangents the caller seeded on
-`v`, without ever building the full Jacobian matrix in memory.
+so the closure is `lambda V: -mu * V`, capturing the local `mu` we
+read at the top. `apply_chain_rule` then sums the contribution against
+any tangents the caller seeded on `v`, without ever building the full
+Jacobian matrix in memory.
 
 ## Evaluation
 

@@ -78,9 +78,9 @@ class PowerLawPermeability(Model):
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         phi = porosity
-        K0 = self.K0
-        phi0 = self.phi0
-        p = self.p
+        K0 = self._get_param("K0", nl_params, Scalar)
+        phi0 = self._get_param("phi0", nl_params, Scalar)
+        p = self._get_param("p", nl_params, Scalar)
 
         # ``K = K0 * (phi / phi0) ** p`` — typed Scalar algebra end to end.
         ratio = phi / phi0

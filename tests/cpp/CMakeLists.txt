@@ -52,7 +52,8 @@ endif()
 add_test(
       NAME dispatcher_fixture_compile
       COMMAND ${Python3_EXECUTABLE} -m neml2.cli.aoti_compile ${_fixture_input}
-              --model model --device ${_fixture_devices} -p E -p nu -d :
+              --model model --device ${_fixture_devices} -p E -p nu
+              -d : -d stress:E -d stress:nu
               --output-dir ${_fixture_dir}
       WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
 )
@@ -102,10 +103,14 @@ set_target_properties(test_eager PROPERTIES
 # argv[1]: the forward fixture (forward / jvp / jacobian / device-override).
 # argv[2]: a max_its=0 implicit fixture driving the recoverable ConvergenceError
 # path (kept under tests/cpp so the AOTI compile sweep never drives it).
+# argv[3]/argv[4]: an .i using an out-of-package model type + the external module
+# defining it, exercising the `--load` extension hook.
 add_test(NAME test_eager
       COMMAND test_eager
             ${NEML2_SOURCE_DIR}/tests/aoti/forward_single/model.i
-            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/implicit_diverge.i)
+            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/implicit_diverge.i
+            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/ext_model.i
+            ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/ext_model.py)
 # The embedded interpreter must find the stdlib (PYTHONHOME) + the neml2 source
 # package (PYTHONPATH); torch/lib stays on LD_LIBRARY_PATH for the transitive
 # libtorch resolution the existing tests also rely on.

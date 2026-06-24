@@ -61,11 +61,15 @@ import json
 from collections.abc import Sequence
 from math import prod
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 import torch
 from torch import nn
 
 from ..types import TensorWrapper
+
+if TYPE_CHECKING:
+    from ..models.model import Model
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -103,7 +107,7 @@ from ..types import TensorWrapper
 #: (``unknown_group_infos`` / ``given_group_infos`` / ``residual_group_infos``
 #: / ``ift_cells``) so the C++ Newton loop + IFT composition runs per group.
 #:
-#: v6 (current): derivative graphs are opt-in. A new top-level ``derivatives``
+#: v6: derivative graphs are opt-in. A new top-level ``derivatives``
 #: array lists the master ``[out, in]`` pairs the artifact supports (empty =>
 #: none; ``jvp`` / ``jacobian`` raise). A forward segment's ``jvp_package`` /
 #: ``jacobian_pairs`` and an implicit segment's ``ift_package`` are present
@@ -111,8 +115,52 @@ from ..types import TensorWrapper
 #: gains a ``batch_independent`` flag (the block does not depend on the dynamic
 #: batch, e.g. a constant elasticity tensor, so the runtime may carry / return
 #: it unbatched).
+#:
+#: v7: parameter derivatives ``d(out)/d(param)`` are opt-in, separate
+#: from the input-variable derivatives. A new top-level ``parameter_derivatives``
+#: array lists the master ``[out, param_qname]`` pairs (param on a promoted
+#: parameter); when some pair is requested a forward segment gains two graphs,
+#: both computed by reverse-mode autograd (the only AD that lowers through
+#: AOTInductor):
+#:   * ``param_jacobian_package`` + ``param_jacobian_pairs`` -- the dense
+#:     ``d(out)/d(param)`` blocks. This graph takes the promoted parameter(s) as
+#:     PER-BATCH inputs (``(*dyn, *param_base)``); the C++ runtime broadcasts the
+#:     stored scalar parameter to the runtime batch before calling it.
+#:   * ``param_vjp_package`` + ``param_vjp_params`` + ``param_vjp_outputs`` -- the
+#:     adjoint ``dL/d(param)`` for ``L = sum_o <cotangent_o, out_o>`` (the cheaper
+#:     form for many-parameter optimization). Its inputs are the model inputs
+#:     (parameters stay scalar here) followed by one cotangent per output (in
+#:     ``param_vjp_outputs`` order); its outputs are the parameter gradients (in
+#:     ``param_vjp_params`` order).
+#: The value / input-jvp graphs are unchanged (parameters stay scalar there).
+#:
+#: v8: parameter derivatives for a single ``ImplicitUpdate`` segment.
+#: A promoted parameter living INSIDE the implicit residual is threaded as a
+#: positional tail through the segment's rhs / step / ift graphs (the same
+#: ``param_inputs`` list already carried for forward segments; the stored scalar
+#: is bound constant across the solve and the input-Jacobian). When some
+#: ``parameter_derivatives`` pair targets such a parameter the implicit segment
+#: gains a ``param_ift_package`` + ``param_jacobian_pairs`` graph
+#: (:class:`~neml2.es.implicit.ParamIFT`) emitting the per-(unknown, param)
+#: blocks of ``du/dθ = -A⁻¹ ∂r/∂θ`` -- ``A`` from the analytic chain rule,
+#: ``∂r/∂θ`` from reverse-mode autograd. Like the forward dense
+#: parameter-Jacobian graph it takes the promoted parameter PER-BATCH; the C++
+#: runtime broadcasts the stored scalar to the runtime batch before the call.
+#: Multi-segment (composed) parameter Jacobians remain a follow-up.
+#:
+#: v9 (current): batched parameters. A promoted parameter may carry its own batch
+#: dim (e.g. a per-batch-element Scalar set via ``set_parameter``). The forward /
+#: input-jvp / input-jacobian VALUE graphs now take each promoted parameter as a
+#: PER-BATCH input ``(*dyn, *param_base)`` with the batch dim marked dynamic (was a
+#: scalar baked at its natural shape), so a batched parameter flows through; the C++
+#: runtime broadcasts a stored scalar parameter up to the call batch before calling.
+#: Each ``parameters[]`` entry gains ``param_base_shape`` (the NATURAL base from the
+#: typed class) so the runtime can split a stored ``(*pbatch, *base)`` parameter into
+#: batch vs base. ``param_jacobian`` parameter blocks now record the natural base
+#: too. Batched ``param_vjp`` (per-element, un-summed) and batched parameters inside
+#: an implicit segment's value path remain follow-ups.
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 6
+AOTI_META_SCHEMA_VERSION = 7
 
 
 def _var_size(type_cls) -> int:
@@ -763,19 +811,21 @@ def _resolve_attr(module: nn.Module, qualified: str) -> tuple[nn.Module, str]:
 
 def _validate_promoted(model: nn.Module, promoted: set[str]) -> tuple[list[str], dict[str, str]]:
     """Verify every name in ``promoted`` resolves to a parameter or buffer in
-    *model*, AND that its holding submodule is not inside any
-    :class:`ImplicitUpdate`'s ``system.model`` tree (promotion of parameters
-    inside an implicit segment is not yet supported -- the Dense/Block
-    equation-system wrappers have fixed `(u_flat, g_flat)` signatures).
+    *model*.
+
+    Promotion is supported everywhere a typed parameter lives -- forward leaves,
+    a single :class:`ImplicitUpdate`'s residual (schema v7), and (schema v7+)
+    inside an implicit child of a composed model, where the multi-segment
+    parameter Jacobian carrier composes ``du/dθ`` through the downstream forward
+    segments. The actual nl-param plumbing is validated downstream in
+    :func:`_promote_to_nl_params` (the holder must be a native Model with
+    ``register_typed_parameter`` storage).
 
     Returns ``(sorted_names, origin_map)`` where ``origin_map[name]`` is
     ``"parameter"`` or ``"buffer"`` (diagnostic only; the C++ runtime treats
-    both identically). Raises ``ValueError`` with a clear listing if any
-    name is unmatched, or ``NotImplementedError`` if any name lives inside
-    an implicit segment.
+    both identically). Raises ``ValueError`` with a clear listing if any name is
+    unmatched.
     """
-    from ..models.common import ImplicitUpdate  # noqa: PLC0415
-
     params = dict(model.named_parameters(recurse=True))
     buffers = dict(model.named_buffers(recurse=True))
     available = {**params, **buffers}
@@ -783,31 +833,6 @@ def _validate_promoted(model: nn.Module, promoted: set[str]) -> tuple[list[str],
     if missing:
         avail_str = ", ".join(sorted(available)) or "<none>"
         raise ValueError(f"Promoted name(s) not found in model: {missing}. Available: {avail_str}")
-
-    # Build the set of submodule ids that live inside any ImplicitUpdate's
-    # system.model. Promoting into one of these would require threading the
-    # NL-param tail through RHS/NewtonStep/IFT/predictor; not yet
-    # implemented.
-    implicit_ids: set[int] = set()
-    for sub in model.modules():
-        if isinstance(sub, ImplicitUpdate):
-            for inner in sub.system.model.modules():
-                implicit_ids.add(id(inner))
-
-    in_implicit: list[str] = []
-    for qname in promoted:
-        holder, _ = _resolve_attr(model, qname)
-        if id(holder) in implicit_ids:
-            in_implicit.append(qname)
-    if in_implicit:
-        raise NotImplementedError(
-            f"Promotion of parameters inside an ImplicitUpdate segment is not "
-            f"yet supported (would-be promoted: {sorted(in_implicit)}). The "
-            f"implicit segment's RHS/NewtonStep/IFT wrappers have fixed "
-            f"(u_flat, g_flat) signatures; a follow-up will thread *nl_params "
-            f"through them. Compile without these --parameter flags, or move "
-            f"the parameters out of the implicit region."
-        )
 
     origin = {n: ("parameter" if n in params else "buffer") for n in promoted}
     return sorted(promoted), origin
@@ -920,8 +945,84 @@ def _promote_to_nl_params(
     return info
 
 
-def _parameter_infos(snapshots: dict[str, torch.Tensor], origin: dict[str, str]) -> list[dict]:
-    """Build the v2 metadata ``parameters`` array entries (sorted by name)."""
+def _rebuild_after_promotion(model: Model) -> Model:
+    """Rebuild every spec-caching container after :func:`_promote_to_nl_params`.
+
+    Promotion mutates a leaf's ``input_spec`` in place (adds the promoted
+    parameter as a graph input), but every enclosing container caches its
+    children's specs at construction:
+
+    * :class:`~neml2.models.common.ComposedModel` caches ``input_spec`` /
+      ``output_spec`` / ``_plan`` -- a stale plan never routes the new input to
+      the leaf, so the leaf's ``forward`` gets too few ``*nl_params`` and
+      :meth:`Model._get_param` raises ``IndexError`` (the symptom seen for a
+      promoted weight in a top-level composed model or a ``ScalarConstantParameter``
+      provider).
+    * ``Normality`` caches ``self.input_spec = dict(inner.input_spec)`` -- a
+      promoted parameter inside the inner model never surfaces to the outer graph.
+    * :class:`~neml2.models.common.ImplicitUpdate` reuses its system's residual
+      model, so the residual ComposedModel must be rebuilt in place.
+
+    This walks the tree bottom-up and rebuilds each container from its (already
+    rebuilt) children so all cached specs reflect the promotion. Leaves are
+    returned untouched (their ``input_spec`` was updated by the promotion). The
+    forward path's old ``ComposedModel([leaf])`` re-wrap only covered a single
+    leaf; this covers arbitrary nesting (composed-of-composed, providers, and
+    parameters promoted inside a ``Normality`` inner model).
+    """
+    from ..models.common import ComposedModel, ImplicitUpdate  # noqa: PLC0415
+
+    # Lazy import: Normality lives in the solid_mechanics leaf library. Tolerate
+    # its absence (e.g. a trimmed build) -- only models that actually use it need
+    # it, and it's always importable in a full install.
+    try:
+        from ..models.solid_mechanics.plasticity.Normality import Normality  # noqa: PLC0415
+    except Exception:  # noqa: BLE001
+        Normality = ()  # type: ignore[assignment]
+
+    if isinstance(model, ComposedModel):
+        children = [
+            _rebuild_after_promotion(cast("Model", getattr(model, attr)))
+            for attr, *_ in model._plan
+        ]
+        old_outputs = list(model.output_spec)
+        natural = ComposedModel(children)
+        extra = [o for o in old_outputs if o not in natural.output_spec]
+        return ComposedModel(children, additional_outputs=extra) if extra else natural
+
+    if Normality and isinstance(model, Normality):
+        inner = _rebuild_after_promotion(model._inner)
+        return type(model)(inner, model._function, model._from, model._to)
+
+    if isinstance(model, ImplicitUpdate):
+        model.system.model = _rebuild_after_promotion(model.system.model)
+        return model
+
+    return model
+
+
+def _parameter_infos(
+    snapshots: dict[str, torch.Tensor],
+    origin: dict[str, str],
+    base_shapes: dict[str, tuple[int, ...]],
+    device: str,
+) -> list[dict]:
+    """Build the metadata ``parameters`` array entries (sorted by name).
+
+    ``shape`` is the stored snapshot shape (carries any batch dim); ``param_base_shape``
+    (schema v7) is the parameter's NATURAL base shape from its typed class. The C++
+    runtime uses ``param_base_shape`` to split a batched parameter ``(*pbatch, *base)``
+    into batch vs base when broadcasting it to the call batch and when reshaping
+    parameter-derivative blocks. For an unbatched parameter the two coincide.
+
+    ``device`` is the artifact's compile-target device (e.g. ``"cuda"``), NOT the
+    snapshot's own device: the compiled graphs run on the artifact device and, since
+    a promoted parameter now enters the value graph as a per-batch ``(B, *base)``
+    buffer, the kernel dereferences it as a device pointer. The snapshot is taken from
+    the (cpu) source model, so recording its device would land the parameter on cpu and
+    feed a host pointer to a cuda kernel -- an illegal memory access. The runtime
+    materializes the inlined ``values`` directly on this device.
+    """
     infos = []
     for name in sorted(snapshots):
         t = snapshots[name]
@@ -931,7 +1032,8 @@ def _parameter_infos(snapshots: dict[str, torch.Tensor], origin: dict[str, str])
                 "name": name,
                 "dtype": dtype,
                 "shape": list(t.shape),
-                "device": t.device.type,
+                "param_base_shape": [int(s) for s in base_shapes.get(name, tuple(t.shape))],
+                "device": device,
                 "values": t.detach().to(torch.float64).flatten().tolist(),
                 "origin": origin[name],
             }
@@ -1067,6 +1169,192 @@ class _ForwardJacobianModule(nn.Module):
         return (*typed_outputs, *pairs)
 
 
+class _ParamJacobianModule(nn.Module):
+    """Wrap a (promoted) ComposedModel to emit per-(out_var, param) Jacobian blocks
+    ``d(out)/d(param)`` via reverse-mode autograd.
+
+    Forward signature ``(*structural_inputs, *param_inputs) -> (*param_blocks)``
+    where each ``param_block`` is the dense Jacobian for one ``(out_var, param)``
+    pair at its natural ``(*batch, *out_base, *param_base)`` shape. Blocks are
+    emitted row-major: outputs in ``output_spec`` order (outer), promoted params
+    in ``input_spec`` order (inner), restricted to *selected_pairs*.
+
+    Two design points (see DECISION: AOTI reverse-mode AD lowering):
+
+    * Reverse-mode ``torch.autograd.grad`` is the ONLY autodiff that lowers
+      through ``torch.export`` -> AOTInductor. Export must run ``strict=True``
+      with ``torch._dynamo.config.trace_autograd_ops = True`` (set by the
+      compile helper), and grad-connected outputs are ``.detach()``-ed (AOTAutograd
+      drops ``requires_grad`` on graph outputs).
+    * The promoted parameter enters HERE as a PER-BATCH input
+      (``(*dyn, *param_base)``), not the scalar the value/jvp graphs use. A scalar
+      expanded to the batch inside the graph is a uniform tensor whose value is the
+      symbolic input, which trips Inductor's ``constant_fold_uniform_value`` under
+      a dynamic batch. A genuine per-batch input is symbolic and never folded. The
+      C++ runtime broadcasts the stored scalar parameter to the runtime batch
+      before calling this graph.
+
+    One reverse pass per output base-component (cost ~ n_out, independent of the
+    number of parameters).
+    """
+
+    def __init__(
+        self,
+        model,
+        promoted_qnames: set[str],
+        selected_pairs: set[tuple[str, str]] | None = None,
+    ) -> None:
+        super().__init__()
+        self.model = model
+        self.input_names = tuple(model.input_spec)
+        self.in_types = tuple(model.input_spec.values())
+        self.output_names = tuple(model.output_spec)
+        self.out_types = tuple(model.output_spec.values())
+        # Promoted parameter inputs, in input_spec order (the differentiation set).
+        self.param_names = tuple(n for n in self.input_names if n in promoted_qnames)
+        # Structural inputs supply the batch and pass through unchanged.
+        self.structural_idx = tuple(
+            i for i, n in enumerate(self.input_names) if n not in promoted_qnames
+        )
+        self.selected_pairs = selected_pairs
+
+    # This body executes only inside `torch.export`'s Dynamo trace at compile time
+    # (transformed bytecode), so coverage.py cannot see these lines; the AOTI
+    # parameter-Jacobian tests exercise it end-to-end (compile + run + FD). Hence
+    # the coverage exclusion on the def below.
+    def forward(self, *inputs) -> tuple:  # pragma: no cover
+        s0 = inputs[self.structural_idx[0]]
+        s0_type = self.in_types[self.structural_idx[0]]
+        s0t = s0 if isinstance(s0, s0_type) else s0_type(s0)
+        batch = tuple(s0t.batch_shape)
+
+        call_args: list = []
+        leaves: dict[str, torch.Tensor] = {}
+        for i, name in enumerate(self.input_names):
+            arg = inputs[i]
+            if name in self.param_names:
+                # Per-batch parameter input -> a fresh grad-tracking leaf.
+                raw = arg.data if isinstance(arg, self.in_types[i]) else arg
+                pe = raw.clone().requires_grad_(True)
+                leaves[name] = pe
+                call_args.append(pe)  # raw; ComposedModel coerces to typed
+            else:
+                type_cls = self.in_types[i]
+                call_args.append(arg if isinstance(arg, type_cls) else type_cls(arg))
+
+        result = self.model(*call_args)
+        typed_outputs = result if isinstance(result, tuple) else (result,)
+
+        blocks: list[torch.Tensor] = []
+        for o_typed, o_name, o_type in zip(
+            typed_outputs, self.output_names, self.out_types, strict=True
+        ):
+            odata = o_typed.data
+            o_base = tuple(int(s) for s in o_type.BASE_SHAPE)
+            n_out = 1
+            for s in o_base:
+                n_out *= s
+            for name in self.param_names:
+                if self.selected_pairs is not None and (o_name, name) not in self.selected_pairs:
+                    continue
+                cols: list[torch.Tensor] = []
+                for k in range(n_out):
+                    seed_flat = torch.zeros(*batch, n_out, dtype=odata.dtype, device=odata.device)
+                    seed_flat[..., k] = 1.0
+                    seed = seed_flat.reshape(odata.shape)
+                    (g,) = torch.autograd.grad(
+                        odata,
+                        leaves[name],
+                        grad_outputs=seed,
+                        retain_graph=True,
+                        allow_unused=True,
+                    )
+                    cols.append(g if g is not None else torch.zeros_like(leaves[name]))
+                pbase = tuple(leaves[name].shape[len(batch) :])
+                block = torch.stack(cols, dim=len(batch)).reshape(*batch, *o_base, *pbase)
+                blocks.append(block.detach())
+        return tuple(blocks)
+
+
+class _ParamVJPModule(nn.Module):
+    """Wrap a (promoted) ComposedModel to emit the parameter VJP / adjoint
+    ``dL/d(param)`` for a loss ``L = sum_o <cotangent_o, out_o>``.
+
+    Forward signature
+    ``(*structural_inputs, *param_inputs, *output_cotangents) -> (*param_grads)``:
+    the model inputs (in ``input_spec`` order) followed by one cotangent per
+    output (in ``output_spec`` order, each at the output's ``(*batch, *out_base)``
+    shape). Returns one gradient per promoted parameter (in ``input_spec`` order,
+    restricted to *param_names*) at the parameter's natural ``(*param_base)`` shape.
+
+    This is the adjoint operation PDE-constrained inverse optimization uses; it is
+    cheaper than the dense Jacobian when there are many parameters (one reverse
+    pass total, vs n_out passes). Like :class:`_ParamJacobianModule` the parameter
+    enters as a PER-BATCH leaf (the compile helper feeds a ``(*dyn, *param_base)``
+    example), so ``autograd.grad`` returns one gradient per batch element rather
+    than the batch-summed scalar-leaf gradient. The C++ runtime collapses that to
+    match the parameter's stored shape -- summed over the batch for a global
+    (unbatched) parameter, kept per-element for a batched one -- so the result
+    matches the eager ``param_vjp``. A genuine per-batch input is also symbolic and
+    never tripped by ``constant_fold_uniform_value`` under a dynamic batch. Export
+    still runs ``strict=True`` with ``trace_autograd_ops`` enabled (set by the
+    compile helper).
+    """
+
+    def __init__(self, model, param_names: tuple[str, ...]) -> None:
+        super().__init__()
+        self.model = model
+        self.input_names = tuple(model.input_spec)
+        self.in_types = tuple(model.input_spec.values())
+        self.output_names = tuple(model.output_spec)
+        # Promoted parameters to differentiate, in input_spec order.
+        self.param_names = tuple(n for n in self.input_names if n in set(param_names))
+
+    # This body executes only inside `torch.export`'s Dynamo trace at compile time
+    # (transformed bytecode), so coverage.py cannot see these lines; the AOTI
+    # parameter-VJP tests exercise it end-to-end (compile + run + FD). Hence the
+    # coverage exclusion on the def below.
+    def forward(self, *args) -> tuple:  # pragma: no cover
+        n_in = len(self.input_names)
+        model_args = args[:n_in]
+        cotangents = args[n_in:]  # one per output, in output_spec order
+
+        call_args: list = []
+        leaves: dict[str, torch.Tensor] = {}
+        for i, name in enumerate(self.input_names):
+            arg = model_args[i]
+            if name in self.param_names:
+                raw = arg.data if isinstance(arg, self.in_types[i]) else arg  # scalar param
+                pe = raw.clone().requires_grad_(True)
+                leaves[name] = pe
+                call_args.append(pe)
+            else:
+                type_cls = self.in_types[i]
+                call_args.append(arg if isinstance(arg, type_cls) else type_cls(arg))
+
+        result = self.model(*call_args)
+        typed_outputs = result if isinstance(result, tuple) else (result,)
+
+        # L = sum_o <cotangent_o, out_o>.
+        loss: torch.Tensor | None = None
+        for o_typed, cot in zip(typed_outputs, cotangents, strict=True):
+            cw = cot.data if hasattr(cot, "data") else cot
+            term = (o_typed.data * cw).sum()
+            loss = term if loss is None else loss + term
+        assert loss is not None  # at least one output -> at least one term
+
+        grads = torch.autograd.grad(
+            loss,
+            [leaves[p] for p in self.param_names],
+            retain_graph=False,
+            allow_unused=True,
+        )
+        return tuple(
+            (g if g is not None else torch.zeros_like(leaves[p])).detach()
+            for p, g in zip(self.param_names, grads, strict=True)
+        )
+
+
 def _structural_inputs(spec: dict, promoted_qnames: set[str]) -> dict:
     """Return ``spec`` filtered to entries NOT in *promoted_qnames*.
 
@@ -1086,26 +1374,69 @@ def _segment_param_inputs(seg_spec: dict, promoted_qnames: set[str]) -> list[str
     return [k for k in seg_spec if k in promoted_qnames]
 
 
+def _reorder_params_last(exportable, promoted_qnames: set[str]) -> None:
+    """Reorder a forward segment's ``ComposedModel`` input_spec so promoted
+    parameters come LAST, matching the C++ runtime's input feed order.
+
+    The C++ forward runners build a graph call as ``[structural inputs] +
+    [promoted params]`` (``fwd_inputs`` then ``param_inputs``). The traced graph,
+    however, consumes inputs in ``ComposedModel.input_spec`` order
+    (``forward`` does ``dict(zip(self._in_names, inputs))``). These agree only
+    when promoted parameters happen to sort last -- which is NOT guaranteed: the
+    dependency resolver can place a parameter promoted on a ``[Models]``
+    *provider* (e.g. a ``ScalarConstantParameter`` feeding several consumers)
+    BEFORE the structural inputs, silently swapping arguments at runtime. Reorder
+    here so structural-then-param is the canonical graph signature for every
+    segment. Only ``input_spec`` / ``_in_names`` (the outer arg map) change; the
+    per-child ``_plan`` is independent of the outer order. No-op when there are
+    no promoted inputs or they are already last.
+    """
+    from ..models.common import ComposedModel  # noqa: PLC0415
+
+    if not isinstance(exportable, ComposedModel):
+        return
+    names = list(exportable.input_spec)
+    params = [n for n in names if n in promoted_qnames]
+    if not params:
+        return
+    structural = [n for n in names if n not in promoted_qnames]
+    new_order = structural + params
+    if new_order == names:
+        return
+    exportable.input_spec = {n: exportable.input_spec[n] for n in new_order}
+    exportable._in_names = new_order
+
+
 def _resolve_derivative_specs(
     specs: Sequence[str],
     output_names: Sequence[str],
     structural_input_names: Sequence[str],
-) -> set[tuple[str, str]]:
-    """Resolve ``-d/--derivative`` ``OUT:IN`` specs into master (out, in) pairs.
+    param_names: Sequence[str] = (),
+) -> tuple[set[tuple[str, str]], set[tuple[str, str]]]:
+    """Resolve ``-d/--derivative`` ``OUT:IN`` specs into master pairs.
+
+    Returns ``(structural_pairs, param_pairs)`` -- the ``(out, in)`` pairs over
+    structural inputs and the ``(out, param)`` pairs over promoted parameters,
+    respectively. ``IN`` is matched against the structural inputs first, then the
+    promoted-parameter names; a parameter derivative is requested by naming the
+    promoted parameter (``stress:E`` with ``E`` promoted via ``-p``).
 
     Each spec must contain exactly one ``:``. Either side may be empty, meaning
-    "all" on that side: ``stress:strain`` is one pair; ``stress:`` is every
-    structural input of ``stress``; ``:strain`` is every output w.r.t.
-    ``strain``; ``:`` is all pairs. An empty *specs* yields an empty set — no
-    derivative graphs are compiled and the runtime ``jvp`` / ``jacobian`` raise.
+    "all" on that side, with one asymmetry: an empty ``IN`` (``stress:``) selects
+    all **structural** inputs only -- parameter derivatives are strictly opt-in by
+    name, so the common input-Jacobian request is unchanged and never silently
+    pulls in (more expensive) parameter graphs. ``:strain`` is every output w.r.t.
+    ``strain``; ``:`` is all structural pairs. An empty *specs* yields two empty
+    sets -- no derivative graphs are compiled and ``jvp`` / ``jacobian`` raise.
 
-    Unknown output / input names raise ``ValueError`` listing the available
-    names. A promoted-parameter name on the input side is rejected the same way
-    (it is not a structural input and never appears in the Jacobian).
+    Unknown output / input names raise ``ValueError`` listing both the structural
+    inputs and the promoted parameters available.
     """
     outputs = list(output_names)
     inputs = list(structural_input_names)
-    pairs: set[tuple[str, str]] = set()
+    params = list(param_names)
+    struct_pairs: set[tuple[str, str]] = set()
+    param_pairs: set[tuple[str, str]] = set()
     for spec in specs:
         if ":" not in spec:
             raise ValueError(f"--derivative {spec!r}: expected OUT:IN (use ':' for all pairs).")
@@ -1119,18 +1450,22 @@ def _resolve_derivative_specs(
                 f"--derivative {spec!r}: unknown output {out_part!r}; available outputs: {outputs}."
             )
         if in_part == "":
-            sel_in = inputs
+            sel_struct, sel_param = inputs, []  # all structural; params opt-in by name
         elif in_part in inputs:
-            sel_in = [in_part]
+            sel_struct, sel_param = [in_part], []
+        elif in_part in params:
+            sel_struct, sel_param = [], [in_part]
         else:
             raise ValueError(
-                f"--derivative {spec!r}: unknown input {in_part!r}; "
-                f"available (structural) inputs: {inputs}."
+                f"--derivative {spec!r}: unknown input {in_part!r}; available structural "
+                f"inputs: {inputs}; promoted parameters: {params or '<none; promote with -p>'}."
             )
         for o in sel_out:
-            for i in sel_in:
-                pairs.add((o, i))
-    return pairs
+            for i in sel_struct:
+                struct_pairs.add((o, i))
+            for p in sel_param:
+                param_pairs.add((o, p))
+    return struct_pairs, param_pairs
 
 
 def _build_example_inputs(
@@ -1170,14 +1505,20 @@ def _build_example_inputs(
     examples: list = []
     for name, type_cls in seg_spec.items():
         if name in promoted_qnames:
-            # Promoted parameters arrive as raw ``torch.Tensor`` snapshots;
-            # they're treated as constants by the trace (AOTI bakes them
-            # or routes them through the per-segment ``param_inputs`` tail).
-            # ``ComposedModel.forward`` auto-wraps via ``_coerce_to_input_type``
-            # so the leaf still sees a typed value when promoted parameters
-            # flow into it.
+            # Promoted parameters arrive as raw ``torch.Tensor`` inputs routed
+            # through the per-segment ``param_inputs`` tail; ``ComposedModel.forward``
+            # auto-wraps via ``_coerce_to_input_type`` so the leaf still sees a typed
+            # value. Feed a genuine PER-BATCH example ``(*dyn, *param_base)`` so
+            # ``torch.export`` marks the parameter's leading (batch) dim dynamic --
+            # a batched parameter (e.g. a per-batch-element Scalar set via
+            # ``set_parameter``) then flows through the compiled value graph, and the
+            # C++ runtime broadcasts a stored scalar parameter up to the call batch.
+            # The example value is symbolic at runtime, so the snapshot broadcast is
+            # only a representative operating point; it lives on the artifact's target
+            # ``device`` (matching the recorded parameter device in the metadata).
+            base = tuple(int(s) for s in type_cls.BASE_SHAPE)
             snap = promoted_snapshots[name].to(device=device, dtype=torch.float64)
-            examples.append(snap)
+            examples.append(snap.broadcast_to((*fallback_dyn, *base)).contiguous())
         else:
             # Segments can have names that the outer input_spec doesn't
             # surface, in two flavours:
@@ -1254,6 +1595,8 @@ def _compile_forward_segment(
     # fresh ComposedModel below picks up the promoted inputs in its
     # input_spec via dependency resolution.
     exportable = model if isinstance(model, ComposedModel) else ComposedModel([model])
+    # Canonical structural-then-param graph signature (matches the C++ feed).
+    _reorder_params_last(exportable, promoted_qnames)
 
     # Move buffers/parameters onto the target device — torch.export refuses
     # to trace a mixed-device graph.
@@ -1337,6 +1680,257 @@ def _compile_forward_segment(
     )
 
 
+#: AOTInductor cannot lower a reverse-mode-autograd graph through an operator
+#: whose backward SAVES ITS OUTPUT (``sqrt`` / ``reciprocal`` / ``exp`` / ``tanh``
+#: / ``sigmoid`` ..., hence a von-Mises stress / norm) under a dynamic batch +
+#: strict export: AOTAutograd materialises that saved-output activation as a
+#: lifted constant with a symbolic (batch) shape, which Inductor can neither
+#: inline nor serialise. (Ops that save their INPUT -- ``log``, ``pow``, ``x*x``
+#: -- reference the placeholder instead and lower fine, so the trigger is the
+#: saved output, not a division in the backward: ``exp`` has no division yet
+#: fails, ``log`` divides yet succeeds.) Filed upstream as
+#: https://github.com/pytorch/pytorch/issues/187907. These are the substrings of
+#: the (InductorError-wrapped) RuntimeError messages that failure produces --
+#: ``storage_offset`` (example batch <= 8, inline path), ``size_bytes_is_heap_
+#: allocated_`` (example batch > 8), and ``data is not allocated`` (static batch).
+#: Matching the message (not the torch version) makes the guard self-disable the
+#: moment the upstream fix stops producing the error -- we cannot know the fix
+#: version in advance. The COMMON saved-output ops are already worked around at
+#: the typed-wrapper level (``neml2/types/functions.py`` ``_recompute_unary`` +
+#: the division-dunder routing), so this guard is a BACKSTOP: it fires only when
+#: a model's differentiated path uses a saved-output op that is not yet wrapped.
+_AOTI_PARAM_DERIV_BUG_SIGNATURES = (
+    "storage_offset() on tensor with symbolic",
+    "size_bytes_is_heap_allocated_",
+    "tensor has a non-zero number of elements, but its data is not allocated",
+)
+
+_AOTI_PARAM_DERIV_BUG_HINT = (
+    "neml2-compile: AOTInductor could not lower the parameter-derivative graph "
+    "'{graph}'. This model's differentiated path contains an operator whose "
+    "reverse-mode backward saves its output. This is a known upstream PyTorch "
+    "limitation, not a NEML2 bug: https://github.com/pytorch/pytorch/issues/187907."
+    "\n\n"
+    "NEML2 already works around the COMMON saved-output ops (sqrt / exp / tanh / "
+    "reciprocal and division by a differentiated value) via input-recompute "
+    "autograd Functions in neml2/types/functions.py, so most models compile. "
+    "Hitting this means the differentiated path uses a saved-output op that is "
+    "NOT yet wrapped (e.g. a raw torch.<op> call inside a leaf, or an op such as "
+    "sigmoid with no typed wrapper). Fixes, in order of preference:\n"
+    "  1. Route the offending op through its AOTI-safe wrapper in "
+    "neml2/types/functions.py (add one via `_recompute_unary` if missing); or\n"
+    "  2. Compute parameter derivatives for this model through the EAGER route, "
+    "which never lowers a graph and is always safe:\n"
+    "       - Python:  neml2.eager (param_jacobian / param_vjp)\n"
+    "       - C++:     the cpp-eager runtime\n"
+    "  3. Recompile without `-d <out>:<param>` for the affected parameters if you "
+    "only need the value / input Jacobian.\n\n"
+    "The original AOTInductor error is chained below for reference."
+)
+
+
+def _compile_param_derivative_graph(module, example_inputs, path, *, dynamic_batch_dim) -> None:
+    """``compile_model`` for a parameter-derivative graph (strict + reverse-mode
+    autograd), with a clear error on the known upstream AOTInductor lowering bug.
+
+    Sets ``trace_autograd_ops`` (the only configuration in which
+    ``torch.autograd.grad`` lowers), compiles ``strict=True``, and -- if the
+    compile hits the documented reverse-mode-AD constant-handling failure
+    (pytorch/pytorch#187907) -- re-raises a ``NotImplementedError`` that names the
+    workaround instead of a cryptic Inductor traceback. Any OTHER error
+    propagates unchanged, and the original error is always chained.
+    """
+    import torch._dynamo  # noqa: PLC0415
+
+    from ..models.export import compile_model  # noqa: PLC0415
+
+    if not hasattr(torch._dynamo.config, "trace_autograd_ops"):
+        raise NotImplementedError(
+            "Parameter-derivative AOTI compilation requires torch >= 2.11 (this torch "
+            "lacks torch._dynamo.config.trace_autograd_ops, the only configuration in "
+            "which torch.autograd.grad lowers through AOTInductor). Forward / jvp / "
+            "jacobian compilation is unaffected -- upgrade torch to compile parameter "
+            "derivatives."
+        )
+
+    prev = torch._dynamo.config.trace_autograd_ops
+    torch._dynamo.config.trace_autograd_ops = True
+    try:
+        compile_model(
+            module, example_inputs, path, dynamic_batch_dim=dynamic_batch_dim, strict=True
+        )
+    except Exception as exc:  # noqa: BLE001
+        msg = str(exc)
+        if any(sig in msg for sig in _AOTI_PARAM_DERIV_BUG_SIGNATURES):
+            raise NotImplementedError(
+                _AOTI_PARAM_DERIV_BUG_HINT.format(graph=Path(path).name)
+            ) from exc
+        raise
+    finally:
+        torch._dynamo.config.trace_autograd_ops = prev
+
+
+def _compile_param_jacobian(
+    model,
+    pkg_basename: str,
+    output_dir: Path,
+    device: str,
+    *,
+    promoted_qnames: set[str],
+    promoted_snapshots: dict[str, torch.Tensor],
+    selected_param_pairs: set[tuple[str, str]],
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
+    dynamic_batch: bool = True,
+) -> tuple[str, list[dict]]:
+    """Compile the parameter-Jacobian graph to ``<pkg_basename>_pjac.pt2``.
+
+    Returns ``(pkg_name, param_jacobian_pairs)``. The graph emits dense
+    ``d(out)/d(param)`` blocks (one per requested ``(out, param)`` pair) via
+    reverse-mode autograd in :class:`_ParamJacobianModule`. Promoted parameters
+    are fed as PER-BATCH inputs (``(*dyn, *param_base)``) so the export does not
+    materialize a uniform-from-scalar tensor under a dynamic batch; the value /
+    input-jvp graphs keep them scalar. Export runs ``strict=True`` with
+    ``torch._dynamo.config.trace_autograd_ops`` enabled -- the only configuration
+    in which ``torch.autograd.grad`` lowers through AOTInductor (torch 2.12).
+    """
+    from ..models.common import ComposedModel  # noqa: PLC0415
+
+    exportable = model if isinstance(model, ComposedModel) else ComposedModel([model])
+    _reorder_params_last(exportable, promoted_qnames)
+    exportable = exportable.to(device)
+    seg_spec = exportable.input_spec
+
+    shapes = shapes or {}
+    fallback_dyn = (
+        _shared_dyn_shape(shapes, list(seg_spec.keys())) if shapes else _DEFAULT_EXAMPLE_SHAPE[0]
+    )
+    # Example inputs: structural at (*dyn, *sub, *base); promoted parameters at
+    # (*dyn, *param_base) -- the per-batch form the derivative graph needs.
+    examples: list = []
+    for name, type_cls in seg_spec.items():
+        if name in promoted_qnames:
+            # Per-batch example ``(*dyn, *param_base)`` at the parameter's NATURAL
+            # base (from the typed class). The example value is the parameter's actual
+            # SNAPSHOT broadcast to the batch -- the reverse-mode param-derivative
+            # graph BAKES THE OPERATING POINT, so the example must be a representative
+            # parameter value (a random example yields a wrong derivative). Broadcasting
+            # the snapshot also keeps the build deterministic / reproducible.
+            base = tuple(int(s) for s in type_cls.BASE_SHAPE)
+            snap = promoted_snapshots[name].to(device=device, dtype=torch.float64)
+            examples.append(snap.broadcast_to((*fallback_dyn, *base)).contiguous())
+        else:
+            bare = name.split("~", 1)[0]
+            dyn, sub = shapes.get(
+                name, shapes.get(bare, shapes.get(f"{bare}~1", (fallback_dyn, ())))
+            )
+            raw = torch.zeros(*dyn, *sub, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device)
+            examples.append(type_cls(raw, sub_batch_ndim=len(sub)))
+    example_inputs = tuple(examples)
+
+    module = _ParamJacobianModule(
+        exportable, promoted_qnames, selected_pairs=selected_param_pairs
+    ).to(device)
+
+    pkg_name = f"{pkg_basename}_pjac.pt2"
+    dynamic_dim = 0 if dynamic_batch else None
+    _compile_param_derivative_graph(
+        module, example_inputs, output_dir / pkg_name, dynamic_batch_dim=dynamic_dim
+    )
+
+    # Per-(out_var, param) metadata in the SAME order the module emits blocks:
+    # outputs outer (output_spec order), promoted params inner (input_spec order).
+    param_pairs: list[dict] = []
+    for out_name, out_type in exportable.output_spec.items():
+        for p_name in seg_spec:
+            if p_name not in promoted_qnames or (out_name, p_name) not in selected_param_pairs:
+                continue
+            param_pairs.append(
+                {
+                    "out_var": out_name,
+                    "param": p_name,
+                    "out_base_shape": [int(s) for s in out_type.BASE_SHAPE],
+                    "param_base_shape": [int(s) for s in seg_spec[p_name].BASE_SHAPE],
+                }
+            )
+    return pkg_name, param_pairs
+
+
+def _compile_param_vjp(
+    model,
+    pkg_basename: str,
+    output_dir: Path,
+    device: str,
+    *,
+    promoted_qnames: set[str],
+    promoted_snapshots: dict[str, torch.Tensor],
+    selected_params: set[str],
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
+    dynamic_batch: bool = True,
+) -> tuple[str, list[str], list[str]]:
+    """Compile the parameter VJP / adjoint graph to ``<pkg_basename>_pvjp.pt2``.
+
+    Returns ``(pkg_name, param_vjp_params, param_vjp_outputs)`` -- the parameters
+    differentiated (in ``input_spec`` order, the grad-output order) and the
+    outputs whose cotangents the graph consumes (in ``output_spec`` order, the
+    cotangent-input order). The graph computes the per-batch-element adjoint
+    ``d(<cotangents, outputs>)/d(param)`` for ``L = sum_o <cotangent_o, out_o>``
+    via :class:`_ParamVJPModule`. Promoted parameters are fed PER-BATCH
+    (``(*dyn, *param_base)``, like the param-Jacobian graph), so ``autograd.grad``
+    returns one gradient per batch element ``(*dyn, *param_base)`` -- the C++
+    runtime then sums over the batch for an unbatched (global) stored parameter
+    and keeps the per-element gradient for a batched one, matching the eager
+    ``param_vjp``. Export runs ``strict=True`` with ``trace_autograd_ops`` enabled.
+    """
+    from ..models.common import ComposedModel  # noqa: PLC0415
+
+    exportable = model if isinstance(model, ComposedModel) else ComposedModel([model])
+    _reorder_params_last(exportable, promoted_qnames)
+    exportable = exportable.to(device)
+    seg_spec = exportable.input_spec
+    out_spec = exportable.output_spec
+
+    shapes = shapes or {}
+    fallback_dyn = (
+        _shared_dyn_shape(shapes, list(seg_spec.keys())) if shapes else _DEFAULT_EXAMPLE_SHAPE[0]
+    )
+    # Model inputs (structural typed + promoted parameters PER-BATCH, so the
+    # adjoint is per-batch-element; a genuine per-batch input is also symbolic and
+    # never constant-folded under a dynamic batch), then one cotangent per output
+    # at (*dyn, *out_base). The parameter example is the SNAPSHOT broadcast to the
+    # batch -- the param-derivative graph bakes the operating point.
+    examples: list = []
+    for name, type_cls in seg_spec.items():
+        if name in promoted_qnames:
+            base = tuple(int(s) for s in type_cls.BASE_SHAPE)
+            snap = promoted_snapshots[name].to(device=device, dtype=torch.float64)
+            examples.append(snap.broadcast_to((*fallback_dyn, *base)).contiguous())
+        else:
+            bare = name.split("~", 1)[0]
+            dyn, sub = shapes.get(
+                name, shapes.get(bare, shapes.get(f"{bare}~1", (fallback_dyn, ())))
+            )
+            raw = torch.zeros(*dyn, *sub, *type_cls.BASE_SHAPE, dtype=torch.float64, device=device)
+            examples.append(type_cls(raw, sub_batch_ndim=len(sub)))
+    # Output cotangents must be TYPED wrappers (matching each output's class), not
+    # raw tensors: a raw cotangent input makes Inductor mis-serialize a baked
+    # constant ("size_bytes_is_heap_allocated_") at AOTI codegen; a typed
+    # (pytree-registered) cotangent compiles cleanly.
+    for o_type in out_spec.values():
+        cot = torch.ones(*fallback_dyn, *o_type.BASE_SHAPE, dtype=torch.float64, device=device)
+        examples.append(o_type(cot))
+    example_inputs = tuple(examples)
+
+    module = _ParamVJPModule(exportable, tuple(selected_params)).to(device)
+
+    pkg_name = f"{pkg_basename}_pvjp.pt2"
+    dynamic_dim = 0 if dynamic_batch else None
+    _compile_param_derivative_graph(
+        module, example_inputs, output_dir / pkg_name, dynamic_batch_dim=dynamic_dim
+    )
+
+    return pkg_name, list(module.param_names), list(out_spec)
+
+
 def _export_forward(
     model,
     model_name: str,
@@ -1348,6 +1942,7 @@ def _export_forward(
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
     derivatives: set[tuple[str, str]] | None = None,
+    param_derivatives: set[tuple[str, str]] | None = None,
 ) -> dict:
     """Export a forward-shape model as a single-segment composed artifact.
 
@@ -1383,6 +1978,36 @@ def _export_forward(
     if jvp_pkg_name is not None:
         seg["jvp_package"] = jvp_pkg_name
         seg["jacobian_pairs"] = jacobian_pairs
+    if param_derivatives:
+        pjac_pkg, param_jac_pairs = _compile_param_jacobian(
+            model,
+            model_name,
+            output_dir,
+            device,
+            promoted_qnames=promoted_qnames,
+            promoted_snapshots=promoted_snapshots,
+            selected_param_pairs=param_derivatives,
+            shapes=shapes,
+            dynamic_batch=dynamic_batch,
+        )
+        seg["param_jacobian_package"] = pjac_pkg
+        seg["param_jacobian_pairs"] = param_jac_pairs
+        # Also emit the adjoint (VJP) graph -- dL/d(param) for a loss defined by
+        # output cotangents -- the cheaper form for many-parameter optimization.
+        pvjp_pkg, pvjp_params, pvjp_outputs = _compile_param_vjp(
+            model,
+            model_name,
+            output_dir,
+            device,
+            promoted_qnames=promoted_qnames,
+            promoted_snapshots=promoted_snapshots,
+            selected_params={p for (_, p) in param_derivatives},
+            shapes=shapes,
+            dynamic_batch=dynamic_batch,
+        )
+        seg["param_vjp_package"] = pvjp_pkg
+        seg["param_vjp_params"] = pvjp_params
+        seg["param_vjp_outputs"] = pvjp_outputs
     return {
         "schema_version": AOTI_META_SCHEMA_VERSION,
         "type": "composed",
@@ -1407,10 +2032,14 @@ def _compile_implicit_segment(
     dynamic_batch: bool = True,
     emit_ift: bool = True,
     selected_ift_pairs: set[tuple[str, str]] | None = None,
+    promoted_qnames: set[str] | None = None,
+    promoted_snapshots: dict[str, torch.Tensor] | None = None,
+    selected_param_pairs: set[tuple[str, str]] | None = None,
 ) -> dict:
     """Compile an ImplicitUpdate to ``<pkg_basename>_rhs.pt2`` + ``_step.pt2``
-    (+ ``_ift.pt2`` when *emit_ift*) (+ optional ``_predictor.pt2``), returning
-    the metadata dict (without the outer ``"type"`` key — caller adds it).
+    (+ ``_ift.pt2`` when *emit_ift*) (+ ``_pift.pt2`` when *selected_param_pairs*)
+    (+ optional ``_predictor.pt2``), returning the metadata dict (without the
+    outer ``"type"`` key — caller adds it).
 
     *selected_ift_pairs* restricts the IFT graph to the requested
     ``(unknown, given)`` pairs (``None`` = all). A requested pair whose unknown
@@ -1421,11 +2050,13 @@ def _compile_implicit_segment(
     fails fast at ``neml2-compile`` rather than at runtime.
 
     ``rhs`` + ``step`` drive the forward Newton solve and are always compiled.
-    ``ift`` is the user-facing derivative graph (the implicit-function-theorem
-    sensitivity of the converged solution); it is compiled only when *emit_ift*
-    is True (i.e. some derivative was requested via ``-d``). When False, the
-    ``ift_package`` key is omitted and the runtime leaves the segment's IFT
-    loader null.
+    ``ift`` is the user-facing input-derivative graph (the implicit-function-
+    theorem sensitivity ``du/dg``); it is compiled only when *emit_ift* is True
+    (some ``-d`` pair targets a structural input). ``pift`` is the parameter
+    sensitivity graph (:class:`~neml2.es.implicit.ParamIFT`, ``du/dθ``); it is
+    compiled only when *selected_param_pairs* is non-empty (some ``-d`` pair
+    targets a promoted parameter inside the residual). When a graph is not
+    compiled its package key is omitted and the runtime leaves that loader null.
 
     Per-variable I/O at the AOTI graph boundary (v5+): each unknown,
     given, and residual is its own positional tensor in the segment
@@ -1433,21 +2064,43 @@ def _compile_implicit_segment(
     heterogeneous-ndim end-to-end; no cross-group cat or fold-to-flat
     inside the graph (except IFT's once-per-solve flat ``du/dg`` slab).
 
-    Promotion of parameters inside the implicit segment is rejected
-    earlier (in :func:`_validate_promoted`); any promoted-parameter
-    machinery is handled entirely in the forward path, so this function
-    takes no promoted_* kwargs.
+    Promoted parameters living inside the implicit residual (schema v7) are
+    threaded as a positional tail through every graph. ``rhs`` / ``step`` / ``ift``
+    take the stored SCALAR (constant across the solve / input-Jacobian); the C++
+    runtime passes ``_gather_params(seg.param_inputs)`` for them. ``pift`` takes
+    the parameter PER-BATCH (the reverse pass must be per batch element); the C++
+    runtime broadcasts the stored scalar to the runtime batch before calling it.
     """
-    from ..es import IFT, RHS, AssembledVector, NewtonStep
+    from ..es import IFT, RHS, AssembledVector, NewtonStep, ParamIFT
     from ..models.common import ComposedModel
     from ..models.export import compile_model
 
     system = inner.system
     solver = inner.solver
 
-    rhs = RHS(system).to(device)
-    step = NewtonStep(system, solver.linear_solver).to(device)
-    ift = IFT(system, solver.linear_solver, selected_pairs=selected_ift_pairs).to(device)
+    promoted_qnames = promoted_qnames or set()
+    promoted_snapshots = promoted_snapshots or {}
+    selected_param_pairs = selected_param_pairs or set()
+    # Promoted parameters that live inside this segment's residual model, in
+    # model.input_spec order (the canonical graph-call tail order). After the
+    # _promote_to_nl_params + _rebuild_after_promotion pass these appear
+    # in system.model.input_spec but are neither unknowns nor givens.
+    seg_param_inputs = [
+        n
+        for n in system.model.input_spec
+        if n in promoted_qnames and n not in system.unknown_names and n not in system.given_names
+    ]
+    param_tail = tuple(seg_param_inputs)
+    emit_pift = bool(selected_param_pairs)
+
+    rhs = RHS(system, param_names=param_tail).to(device)
+    step = NewtonStep(system, solver.linear_solver, param_names=param_tail).to(device)
+    ift = IFT(
+        system, solver.linear_solver, selected_pairs=selected_ift_pairs, param_names=param_tail
+    ).to(device)
+    pift = ParamIFT(
+        system, solver.linear_solver, param_tail, selected_pairs=selected_param_pairs
+    ).to(device)
 
     # Compile-time guard: the per-pair IFT consumer only supports plain-batch
     # (DENSE) variable pairs. A requested pair touching a sub-batched (per-grain)
@@ -1501,11 +2154,29 @@ def _compile_implicit_segment(
 
     u_group_examples = _per_group_examples(system.ulayout, _example_for_unknown)
     g_group_examples = _per_group_examples(system.glayout, _example_for_given)
-    example_inputs = tuple(u_group_examples) + tuple(g_group_examples)
+    # Promoted-parameter tail. rhs/step/ift take the stored SCALAR (natural
+    # shape -- typically ()); ParamIFT takes the parameter PER-BATCH
+    # ((*dyn, *param_base)) so its reverse pass is per batch element (the same
+    # scalar-vs-per-batch split the forward value vs param-Jacobian graphs use).
+    scalar_param_examples = [
+        promoted_snapshots[n].to(device=device, dtype=torch.float64) for n in seg_param_inputs
+    ]
+
+    def _per_batch_param(name: str) -> torch.Tensor:
+        snap = promoted_snapshots[name].to(device=device, dtype=torch.float64)
+        pbase = tuple(snap.shape)
+        return snap.reshape((1,) * len(dyn_shape) + pbase).expand(*dyn_shape, *pbase).contiguous()
+
+    per_batch_param_examples = [_per_batch_param(n) for n in seg_param_inputs]
+
+    base_examples = tuple(u_group_examples) + tuple(g_group_examples)
+    example_inputs = base_examples + tuple(scalar_param_examples)
+    pift_example_inputs = base_examples + tuple(per_batch_param_examples)
 
     rhs_name = f"{pkg_basename}_rhs.pt2"
     step_name = f"{pkg_basename}_step.pt2"
     ift_name = f"{pkg_basename}_ift.pt2"
+    pift_name = f"{pkg_basename}_pift.pt2"
 
     dynamic_dim = 0 if dynamic_batch else None
     compile_model(rhs, example_inputs, output_dir / rhs_name, dynamic_batch_dim=dynamic_dim)
@@ -1533,6 +2204,28 @@ def _compile_implicit_segment(
             for (u, g) in ift.emitted_pairs()
         ]
         compile_model(ift, example_inputs, output_dir / ift_name, dynamic_batch_dim=dynamic_dim)
+
+    # Per-(unknown, param) parameter-Jacobian graph (ParamIFT). Emits one dense
+    # ``du/dθ`` block per requested ``(unknown, param)`` pair, in
+    # pift.emitted_param_pairs() order (unknowns outer, params inner). The
+    # promoted parameter enters PER-BATCH (pift_example_inputs); the C++ runtime
+    # broadcasts the stored scalar to the runtime batch before the call. Compiled
+    # with the same strict + trace_autograd_ops recipe the forward parameter
+    # graphs use (reverse-mode autograd is the only AD that lowers).
+    param_jacobian_pairs: list[dict] | None = None
+    if emit_pift:
+        param_jacobian_pairs = [
+            {
+                "out_var": u,
+                "param": p,
+                "out_base_shape": [int(s) for s in system.ulayout.specs[u].BASE_SHAPE],
+                "param_base_shape": [int(s) for s in promoted_snapshots[p].shape],
+            }
+            for (u, p) in pift.emitted_param_pairs()
+        ]
+        _compile_param_derivative_graph(
+            pift, pift_example_inputs, output_dir / pift_name, dynamic_batch_dim=dynamic_dim
+        )
 
     # Per-variable infos retained at the segment level as the source of
     # truth for the C++ runtime's per-variable state map (predictor
@@ -1574,9 +2267,12 @@ def _compile_implicit_segment(
         "unknown_group_infos": group_meta["unknown_group_infos"],
         "given_group_infos": group_meta["given_group_infos"],
         "residual_group_infos": group_meta["residual_group_infos"],
-        # Always empty under this iteration's constraint -- promotion inside
-        # implicit segments is rejected above. Recorded for schema uniformity.
-        "param_inputs": [],
+        # Promoted parameters threaded into this segment's graphs as the trailing
+        # positional tail (graph-call order). Empty in the common fully-baked
+        # case; non-empty (schema v7) when a parameter inside the residual was
+        # promoted. The C++ runtime passes the stored scalars to rhs/step/ift and
+        # broadcasts them per-batch for the param-IFT graph.
+        "param_inputs": list(seg_param_inputs),
     }
     if emit_ift:
         seg["ift_package"] = ift_name
@@ -1584,6 +2280,12 @@ def _compile_implicit_segment(
         # in the same order the IFT graph emits blocks. Consumed via the
         # per-pair Jacobian composition (same path as a forward segment).
         seg["jacobian_pairs"] = ift_jacobian_pairs
+    if emit_pift:
+        seg["param_ift_package"] = pift_name
+        # Per-(unknown, param) pair metadata for the ParamIFT loader's output
+        # tuple, in pift.emitted_param_pairs() order (unknowns outer, params
+        # inner). Consumed by the C++ implicit parameter-Jacobian path.
+        seg["param_jacobian_pairs"] = param_jacobian_pairs
 
     # Predictor: compile as an extra graph if present. Promoted tail not
     # threaded here either (same reason as the rhs/step/ift block above; the
@@ -1611,28 +2313,35 @@ def _export_implicit(
     device: str,
     *,
     promoted_qnames: set[str],
+    promoted_snapshots: dict[str, torch.Tensor] | None = None,
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
     derivatives: set[tuple[str, str]] | None = None,
+    param_derivatives: set[tuple[str, str]] | None = None,
 ) -> dict:
     """Export an ImplicitUpdate as a single-segment composed artifact.
 
-    Promotion of parameters inside the implicit segment is rejected up-front
-    in :func:`_validate_promoted`, so ``promoted_qnames`` only affects the
-    metadata's master ``inputs`` filter here -- the trace itself is identical
-    to the no-promotion case.
+    Promoted parameters living inside the residual are threaded through the
+    segment's graphs (schema v7); ``promoted_qnames`` also filters the metadata's
+    master ``inputs``.
 
-    *derivatives* is the resolved master pair set; the single implicit segment
-    emits its IFT graph iff any pair was requested (the IFT couples every given
-    to every unknown, so a single requested pair pulls in the whole graph).
+    *derivatives* is the resolved master ``(out, in)`` pair set; the single
+    implicit segment emits its IFT graph iff any structural pair was requested
+    (the IFT couples every given to every unknown). *param_derivatives* is the
+    resolved master ``(out, param)`` pair set; the segment emits its ParamIFT
+    graph iff any was requested. For a single ImplicitUpdate the outputs are the
+    unknowns, so both map to local pairs by a direct filter.
     """
-    # Map the requested master (out, in) pairs to local (unknown, given) IFT
-    # pairs. For a single ImplicitUpdate the outputs are the unknowns and the
-    # structural inputs are givens, so this is a direct filter.
     master_pairs = derivatives or set()
+    param_pairs = param_derivatives or set()
     sys = inner.system
     selected_ift_pairs = {
         (o, i) for (o, i) in master_pairs if o in sys.unknown_names and i in sys.given_names
+    }
+    # Local (unknown, param) pairs: the output is an unknown and the "input" is a
+    # promoted parameter inside the residual.
+    selected_param_pairs = {
+        (o, p) for (o, p) in param_pairs if o in sys.unknown_names and p in promoted_qnames
     }
     seg = _compile_implicit_segment(
         inner,
@@ -1643,6 +2352,9 @@ def _export_implicit(
         dynamic_batch=dynamic_batch,
         emit_ift=bool(selected_ift_pairs),
         selected_ift_pairs=selected_ift_pairs,
+        promoted_qnames=promoted_qnames,
+        promoted_snapshots=promoted_snapshots,
+        selected_param_pairs=selected_param_pairs,
     )
     structural_in = _structural_inputs(model.input_spec, promoted_qnames)
     in_sb = {n: sub for n, (_, sub) in (shapes or {}).items() if sub}
@@ -1724,6 +2436,7 @@ def _export_composed(
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
     derivatives: set[tuple[str, str]] | None = None,
+    param_derivatives: set[tuple[str, str]] | None = None,
 ) -> dict:
     """Export a ComposedModel containing ImplicitUpdate children as multiple
     .pt2 artifacts.
@@ -1740,11 +2453,24 @@ def _export_composed(
     kept whenever its row reaches a requested output AND its column is reachable
     from a requested input — never dropping a pair that carries a requested
     sensitivity. Empty *derivatives* → no derivative graphs anywhere.
+
+    *param_derivatives* is the resolved master ``(out, param)`` pair set for
+    parameters promoted inside the segments (the multi-segment parameter
+    Jacobian). A promoted parameter enters the dataflow at its OWN segment's
+    outputs (forward: ``param_jacobian`` graph; implicit: ``ParamIFT`` graph),
+    and its sensitivity must then PROPAGATE through every downstream segment to
+    the requested master output. So each segment additionally compiles its jvp /
+    IFT propagation graph for any local pair whose column carries a requested
+    parameter sensitivity (``param_reach``) and whose row reaches a requested
+    output -- the C++ ``_param_jacobian_dstate`` carrier composes the direct
+    (param-graph) and indirect (jvp/IFT) contributions segment by segment.
     """
     from ..models.common import ComposedModel, ImplicitUpdate
 
     segments = _partition_into_segments(model)
     master_pairs = derivatives or set()
+    param_pairs = param_derivatives or set()
+    requested_params = {p for (_, p) in param_pairs}
 
     # Each segment's ComposedModel wrapper would otherwise hide variables that
     # are consumed inside the segment, dropping inter-segment data flow on the
@@ -1806,6 +2532,44 @@ def _export_composed(
             for (o_m, i_m) in master_pairs
         )
 
+    # --- Parameter reachability for the multi-segment param Jacobian ---
+    # Which requested promoted parameters live directly in each segment (after
+    # promotion + _rebuild_after_promotion, the qname appears in that
+    # segment's model.input_spec).
+    def _seg_direct_params(payload: object) -> set[str]:
+        if isinstance(payload, list):
+            return {p for p in requested_params for leaf in payload if p in leaf.input_spec}
+        return {p for p in requested_params if p in payload.system.model.input_spec}  # type: ignore[attr-defined]
+
+    seg_direct_params = [_seg_direct_params(payload) for _, payload in segments]
+
+    # ``param_reach[V]`` = requested promoted params whose sensitivity reaches V.
+    # Forward pass mirroring ``reach``: a segment's outputs inherit the union of
+    # its inputs' param_reach (indirect) plus the params promoted directly in
+    # that segment (direct, conservative all-outputs model -- same all-pairs
+    # assumption ``reach`` uses).
+    param_reach: dict[str, set[str]] = {}
+    for sin, sout, direct in zip(seg_input_sets, seg_output_sets, seg_direct_params, strict=True):
+        flowed: set[str] = set(direct)
+        for x in sin:
+            flowed |= param_reach.get(x, set())
+        for o in sout:
+            param_reach[o] = param_reach.get(o, set()) | flowed
+
+    def _keep_param_prop(o: str, i: str) -> bool:
+        """A jvp / IFT local pair (o, i) must be compiled when its column ``i``
+        carries a requested parameter sensitivity needed at a requested output
+        reachable from ``o``."""
+        return any(
+            (p in param_reach.get(i, ())) and (o_m in canreach.get(o, ()))
+            for (o_m, p) in param_pairs
+        )
+
+    def _keep_param_pair(o: str, p: str) -> bool:
+        """A direct param-graph pair (o, p): keep when ``o`` reaches a requested
+        master output paired with parameter ``p``."""
+        return any(o_m in canreach.get(o, ()) for (o_m, pp) in param_pairs if pp == p)
+
     seg_metas: list[dict] = []
     for i, (kind, payload) in enumerate(segments):
         basename = f"{model_name}_seg{i}"
@@ -1818,14 +2582,16 @@ def _export_composed(
             needed = (master_outs | downstream_demands[i]) & seg_output_sets[i]
             extra = sorted(needed)
             seg_model = ComposedModel(payload, additional_outputs=extra).to(device)
-            # Local pairs to emit: those on a dependency path between a requested
-            # master input and a requested master output (empty -> no jvp graph).
+            # Local jvp pairs to emit: kept for input derivatives (on a path
+            # between a requested master input and output) OR for parameter
+            # propagation (column carries a requested param sensitivity needed at
+            # a reachable output). Empty -> no jvp graph.
             seg_struct_in = _structural_inputs(seg_model.input_spec, promoted_qnames)
             seg_selected = {
                 (o, i)
                 for o in seg_model.output_spec
                 for i in seg_struct_in
-                if _keep_local_pair(o, i)
+                if _keep_local_pair(o, i) or _keep_param_prop(o, i)
             }
             (
                 pkg_name,
@@ -1855,6 +2621,28 @@ def _export_composed(
             if jvp_pkg_name is not None:
                 seg_entry["jvp_package"] = jvp_pkg_name
                 seg_entry["jacobian_pairs"] = jacobian_pairs
+            # Direct parameter Jacobian for params promoted in THIS segment, for
+            # (out, param) pairs reaching a requested master output.
+            seg_param_pairs = {
+                (o, p)
+                for o in seg_model.output_spec
+                for p in seg_direct_params[i]
+                if _keep_param_pair(o, p)
+            }
+            if seg_param_pairs:
+                pjac_pkg, pjac_pairs = _compile_param_jacobian(
+                    seg_model,
+                    basename,
+                    output_dir,
+                    device,
+                    promoted_qnames=promoted_qnames,
+                    promoted_snapshots=promoted_snapshots,
+                    selected_param_pairs=seg_param_pairs,
+                    shapes=shapes,
+                    dynamic_batch=dynamic_batch,
+                )
+                seg_entry["param_jacobian_package"] = pjac_pkg
+                seg_entry["param_jacobian_pairs"] = pjac_pairs
             seg_metas.append(seg_entry)
         else:
             # payload is the ImplicitUpdate leaf.
@@ -1869,7 +2657,14 @@ def _export_composed(
                 (u, g)
                 for u in isys.unknown_names
                 for g in isys.given_names
-                if _keep_local_pair(u, g)
+                if _keep_local_pair(u, g) or _keep_param_prop(u, g)
+            }
+            # Direct ParamIFT pairs for params promoted in THIS implicit segment.
+            selected_param_pairs = {
+                (u, p)
+                for u in isys.unknown_names
+                for p in seg_direct_params[i]
+                if _keep_param_pair(u, p)
             }
             seg = _compile_implicit_segment(
                 impl_model,
@@ -1880,6 +2675,9 @@ def _export_composed(
                 dynamic_batch=dynamic_batch,
                 emit_ift=bool(selected_ift_pairs),
                 selected_ift_pairs=selected_ift_pairs,
+                promoted_qnames=promoted_qnames,
+                promoted_snapshots=promoted_snapshots,
+                selected_param_pairs=selected_param_pairs,
             )
             seg_metas.append({"kind": "implicit", **seg})
 
@@ -2018,15 +2816,29 @@ def export_model_for_aoti(
     # the call boundary's `_coerce_to_input_type` wraps raw tensors in the
     # right TensorWrapper before handing them to the leaf's forward, which
     # reads via `_get_param` from the *nl_params pack.
-    _promote_to_nl_params(model, promoted_names)
+    promo_info = _promote_to_nl_params(model, promoted_names)
     promoted_qnames = set(promoted_names)
+    # Natural base shape (BASE_SHAPE) per promoted parameter, from its typed-wrapper
+    # class. The C++ runtime uses it to split a (possibly batched) stored parameter
+    # ``(*pbatch, *base)`` into batch vs base; it equals the snapshot's full shape
+    # only for an unbatched parameter.
+    promoted_base_shapes = {q: tuple(cls.BASE_SHAPE) for q, (cls, _h, _l) in promo_info.items()}
+
+    # Rebuild every spec-caching container (ComposedModel / Normality /
+    # ImplicitUpdate residual) so the promoted parameters route correctly through
+    # the graph. No-op when nothing was promoted.
+    if promoted_names:
+        model = _rebuild_after_promotion(model)
 
     # Resolve -d/--derivative specs into the master (out, in) pair set, against
     # the post-promotion outputs + structural inputs (promoted parameters never
     # appear in the Jacobian). Empty => no derivative graphs are compiled.
     structural_input_names = list(_structural_inputs(model.input_spec, promoted_qnames))
-    master_pairs = _resolve_derivative_specs(
-        derivatives, list(model.output_spec), structural_input_names
+    master_pairs, param_pairs = _resolve_derivative_specs(
+        derivatives,
+        list(model.output_spec),
+        structural_input_names,
+        param_names=sorted(promoted_qnames),
     )
 
     # Freeze any remaining nn.Parameter to a persistent buffer so torch.export
@@ -2049,6 +2861,11 @@ def export_model_for_aoti(
 
     inner = model
 
+    # Parameter derivatives d(out)/d(param) are supported for forward-only models
+    # (single forward segment), a single ImplicitUpdate (ParamIFT -- schema v7),
+    # and composed models containing an ImplicitUpdate (the multi-segment carrier
+    # composes du/dθ across forward + implicit segments -- schema v7+). No guard
+    # left to raise here.
     if isinstance(inner, ImplicitUpdate):
         meta = _export_implicit(
             model,
@@ -2057,9 +2874,11 @@ def export_model_for_aoti(
             output_dir,
             device,
             promoted_qnames=promoted_qnames,
+            promoted_snapshots=promoted_snapshots,
             shapes=resolved_shapes,
             dynamic_batch=dynamic_batch,
             derivatives=master_pairs,
+            param_derivatives=param_pairs,
         )
     elif _contains_implicit(inner):
         meta = _export_composed(
@@ -2072,6 +2891,7 @@ def export_model_for_aoti(
             shapes=resolved_shapes,
             dynamic_batch=dynamic_batch,
             derivatives=master_pairs,
+            param_derivatives=param_pairs,
         )
     else:
         meta = _export_forward(
@@ -2084,13 +2904,14 @@ def export_model_for_aoti(
             shapes=resolved_shapes,
             dynamic_batch=dynamic_batch,
             derivatives=master_pairs,
+            param_derivatives=param_pairs,
         )
 
     # v2 top-level additions: device + dtype are baked into the artifact;
     # parameters records the promoted set with initial values.
     meta["device"] = device
     meta["dtype"] = dtype
-    meta["parameters"] = _parameter_infos(promoted_snapshots, origin)
+    meta["parameters"] = _parameter_infos(promoted_snapshots, origin, promoted_base_shapes, device)
     # Master (out, in) derivative pairs the artifact supports, in deterministic
     # (output-order, input-order) order so the runtime iterates rows/cols
     # consistently. Empty => no derivative graphs (jvp/jacobian raise).
@@ -2101,6 +2922,12 @@ def export_model_for_aoti(
         for (o, i) in sorted(
             master_pairs, key=lambda p: (out_order.get(p[0], 0), in_order.get(p[1], 0))
         )
+    ]
+    # Master (out, param) parameter-derivative pairs the artifact supports, in
+    # deterministic (output-order, param-name) order. Empty => no param-jacobian
+    # graph (the runtime parameter-Jacobian accessor raises).
+    meta["parameter_derivatives"] = [
+        [o, p] for (o, p) in sorted(param_pairs, key=lambda x: (out_order.get(x[0], 0), x[1]))
     ]
 
     _write_meta(output_dir / f"{model_name}_meta.json", meta)

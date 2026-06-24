@@ -71,7 +71,7 @@ class ContractingGeometry(Model):
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         a = conversion_degree
         k = self._get_param("k", nl_params, Scalar)
-        n = self.n
+        n = self._get_param("n", nl_params, Scalar)
 
         eps = torch.finfo(a.dtype).eps
         ac = clamp(1.0 - a, eps, 1.0 - eps)  # clamp(1 - a, eps, 1 - eps)

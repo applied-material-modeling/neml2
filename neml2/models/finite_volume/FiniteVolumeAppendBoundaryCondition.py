@@ -90,24 +90,24 @@ class FiniteVolumeAppendBoundaryCondition(Model):
         self.input_spec = {self._input_name: Scalar}
         self.output_spec = {self._output_name: Scalar}
 
-    def _bc_tail(self, template: Scalar) -> Scalar:
+    def _bc_tail(self, template: Scalar, nl_params) -> Scalar:
         """Typed (*template_dyn, 1) Scalar carrying the parameter ``bc_value``.
 
         The tail mirrors ``template``'s dynamic batch (broadcast) plus a
         single sub-batch slot at the boundary. ``sub_batch_zeros_like``
-        gives the zero baseline with the correct K layout; adding
-        ``self.bc_value`` (a typed Scalar parameter) lifts it to the
-        boundary value via typed arithmetic.
+        gives the zero baseline with the correct K layout; adding the
+        ``bc_value`` parameter (read through ``_get_param``, not ``self.<attr>``,
+        to stay promotion-compatible) lifts it to the boundary value.
         """
         zero = Scalar.zeros_like(template, sub_batch_shape=(1,))
-        return zero + self.bc_value
+        return zero + self._get_param("bc_value", nl_params, Scalar)
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
-        (u_wrap,) = inputs
+        (u_wrap,) = inputs  # bc_value is static (not promotable) -> no nl_params
         # Value path: bc_tail carries the parameter value, then cat
         # along the cell axis (sub-batch dim 0 for a Scalar with
         # sub_batch_ndim=1).
-        bc_tail = self._bc_tail(u_wrap)
+        bc_tail = self._bc_tail(u_wrap, ())
         if self._side == "left":
             out = cat([bc_tail.sub_batch, u_wrap.sub_batch], dim=0)
         else:

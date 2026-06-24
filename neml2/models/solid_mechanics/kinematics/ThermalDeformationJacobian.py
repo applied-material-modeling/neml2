@@ -79,7 +79,7 @@ class ThermalDeformationJacobian(Model):
         v: ChainRuleDict | None = None,
     ):
         T = temperature
-        T0 = self.T0
+        T0 = self._get_param("T0", nl_params, Scalar)
         alpha = self._get_param("alpha", nl_params, Scalar)
         J = 1.0 + alpha * (T - T0)
         if v is None:

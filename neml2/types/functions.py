@@ -185,6 +185,119 @@ torch.library.register_autograd(
 )
 
 
+# ---- AOTI-safe saved-output element-wise ops ---------------------------------
+#
+# AOTInductor cannot lower a reverse-mode-autograd graph through an element-wise
+# op whose backward SAVES ITS OUTPUT (sqrt / exp / tanh / reciprocal -- and
+# ``const / x`` division, which lowers to reciprocal). Under strict export +
+# dynamic batch + ``torch._dynamo.config.trace_autograd_ops``, AOTAutograd lifts
+# that saved-output activation as a CONSTANT with a symbolic batch shape, which
+# Inductor can neither inline nor serialise (pytorch/pytorch#187907). Ops that
+# save their INPUT (log, x*x, pow, mul, x/const) reference the input placeholder
+# instead and lower fine.
+#
+# Fix: a transparent ``autograd.Function`` whose backward recomputes the
+# derivative FROM THE SAVED INPUT, so the backward references the input
+# placeholder, never a lifted saved-output constant. Empirically validated to:
+# lower through AOTI, survive ``ep.run_decompositions()``, pass
+# ``torch.compile(fullgraph=True)`` with no graph break (safe for pyzag), keep
+# the forward a fusible ``aten.<op>`` (no fusion barrier), and produce exact
+# numerics. Dispatch is conditional on ``requires_grad``: the value / no-AD path
+# uses the plain fast ``torch.<op>`` with zero Function overhead; only the AD
+# path uses the recompute Function.
+#
+# Defining ``autograd.Function`` subclasses at import is dynamo-free (unlike the
+# ``@torch.library.custom_op`` decorator -- see the opaque_pow note above): a
+# plain subclass is pure Python with no ``torch._dynamo`` import, so it does not
+# trip the autograd guard at import. The guard (``neml2/models/_guard.py``) does
+# NOT patch ``Function.apply``, so these are guard-compatible inside a forward.
+# Remove this machinery once #187907 is fixed (the xfail test
+# ``tests/aoti/test_upstream_pytorch_187907.py`` fires when it is).
+
+
+def _recompute_unary(fwd, dfwd):
+    """Build a transparent ``autograd.Function.apply`` for a unary element-wise
+    op whose backward recomputes ``dfwd`` FROM THE SAVED INPUT.
+
+    ``fwd(x)`` is the forward (e.g. ``torch.exp``); ``dfwd(x)`` is the local
+    derivative recomputed from the input (e.g. ``torch.exp(x)`` for exp,
+    ``0.5 * x**-0.5`` for sqrt). The forward stays a bare ``aten.<op>`` so
+    Inductor fuses it; the backward saves only ``x`` (an existing graph
+    placeholder), so AOTI lowers it instead of lifting a saved-output constant.
+
+    Both ``fwd`` and ``dfwd`` are built from differentiable torch ops, so the
+    Function supports double-backward. ``dfwd`` must itself use only saved-INPUT
+    ops (pow / mul) to stay AOTI-safe at second order.
+    """
+
+    class _Recompute(torch.autograd.Function):
+        @staticmethod
+        def forward(ctx, x):  # type: ignore[override]
+            ctx.save_for_backward(x)
+            return fwd(x)
+
+        @staticmethod
+        def backward(ctx, *grad_outputs):  # type: ignore[override]
+            (g,) = grad_outputs
+            (x,) = ctx.saved_tensors
+            return g * dfwd(x)
+
+    return _Recompute.apply
+
+
+def _ad_safe(data: torch.Tensor, fast, recompute) -> torch.Tensor:
+    """Raw-tensor dispatcher: plain ``fast(data)`` off the AD path, the
+    input-recompute ``recompute(data)`` on it (keyed on ``data.requires_grad``).
+
+    Raw ``torch.Tensor`` in/out -- internal to ``neml2/types/`` where ``.data``
+    access is permitted. dtype / device agnostic (both branches operate on the
+    passed tensor).
+    """
+    if data.requires_grad:
+        return recompute(data)
+    return fast(data)
+
+
+# Saved-output forwards paired with their input-recompute derivatives. Each
+# ``dfwd`` recomputes the local slope from the INPUT x using only saved-input
+# ops (pow / mul), so it is AOTI-safe and safe at second order:
+#   sqrt:       d/dx sqrt(x)  = 0.5 * x**-0.5
+#   exp:        d/dx exp(x)   = exp(x)            (recomputed, not the saved output)
+#   tanh:       d/dx tanh(x)  = 1 - tanh(x)**2    (recomputed from input)
+#   reciprocal: d/dx (1/x)    = -x**-2            (pow, not a nested reciprocal)
+_sqrt_ad = _recompute_unary(torch.sqrt, lambda x: 0.5 * x**-0.5)
+_exp_ad = _recompute_unary(torch.exp, torch.exp)
+_tanh_ad = _recompute_unary(torch.tanh, lambda x: 1.0 - torch.tanh(x) ** 2)
+_reciprocal_ad = _recompute_unary(torch.reciprocal, lambda x: -(x**-2))
+
+
+def sqrt_ad(data: torch.Tensor) -> torch.Tensor:
+    """``torch.sqrt`` as a raw tensor, AOTI-safe under reverse-mode AD (see
+    :func:`_ad_safe`). For direct-call sites that bypass the typed wrappers."""
+    return _ad_safe(data, torch.sqrt, _sqrt_ad)
+
+
+def exp_ad(data: torch.Tensor) -> torch.Tensor:
+    """``torch.exp`` as a raw tensor, AOTI-safe under reverse-mode AD."""
+    return _ad_safe(data, torch.exp, _exp_ad)
+
+
+def tanh_ad(data: torch.Tensor) -> torch.Tensor:
+    """``torch.tanh`` as a raw tensor, AOTI-safe under reverse-mode AD."""
+    return _ad_safe(data, torch.tanh, _tanh_ad)
+
+
+def reciprocal_ad(data: torch.Tensor) -> torch.Tensor:
+    """Reciprocal ``1/data`` as a raw tensor, AOTI-safe under reverse-mode AD.
+
+    Off the AD path returns plain ``torch.reciprocal``; on it returns the
+    input-recompute Function (backward ``-x**-2``). Used by the division dunders
+    to route a denominator-requires-grad ``num / den`` through
+    ``num * reciprocal_ad(den)`` without lifting a saved-output constant.
+    """
+    return _ad_safe(data, torch.reciprocal, _reciprocal_ad)
+
+
 # ---- SR2 invariants / decompositions ----
 
 
@@ -236,12 +349,15 @@ def norm(A, eps: float = 0.0):
       :class:`~neml2.types.Tensor`. Returns a ``Tensor`` with
       ``base_ndim=0``; ``batch`` / ``sub_batch`` axes are preserved.
     """
+    # ``sqrt_ad`` (not raw ``torch.sqrt``): this Frobenius norm is the J2 / von
+    # Mises norm on the parameter-derivative path; raw sqrt's saved-output
+    # backward would not lower through AOTI (pytorch/pytorch#187907).
     if isinstance(A, _TensorBaseView):
         ns = norm_sq(A)
-        return Tensor(torch.sqrt(ns.data), ns.batch_ndim, ns.sub_batch_ndim)
+        return Tensor(sqrt_ad(ns.data), ns.batch_ndim, ns.sub_batch_ndim)
     sr2 = cast(SR2, A)
     sq = (sr2.data * sr2.data).sum(dim=-1)
-    return wrap_like(Scalar, torch.sqrt(sq + eps * eps), sr2)
+    return wrap_like(Scalar, sqrt_ad(sq + eps * eps), sr2)
 
 
 def dot(a: _TensorBaseView, b: _TensorBaseView) -> Tensor:
@@ -263,6 +379,11 @@ def norm_sq(view: _TensorBaseView) -> Tensor:
 def unit(A: SR2, eps: float = 0.0) -> SR2:
     """Normalize $A$ by its Frobenius norm. ``eps`` regularizes at ``A == 0``."""
     n = align_scalar_base(norm(A, eps).data, 1)
+    # On the AD path divide via the input-recompute reciprocal so the norm in the
+    # denominator doesn't trip AOTI's saved-output lowering (pytorch/pytorch#187907);
+    # off it keep the plain divide (value path byte-identical).
+    if n.requires_grad:
+        return A._rewrap(A.data * reciprocal_ad(n), sub_batch_ndim=A.sub_batch_ndim)
     return A._rewrap(A.data / n, sub_batch_ndim=A.sub_batch_ndim)
 
 
@@ -1215,16 +1336,37 @@ def bilinear_interpolation_slopes(
 
 
 def sqrt(s: Scalar) -> Scalar:
-    return s._rewrap(torch.sqrt(s.data), sub_batch_ndim=s.sub_batch_ndim)
+    # ``torch.sqrt``'s reverse-mode backward saves its OUTPUT (``grad/(2*out)``),
+    # which AOTInductor cannot lower under strict + dynamic-batch export
+    # (pytorch/pytorch#187907). Off the AD path keep the dedicated sqrt
+    # instruction; on it use the input-recompute Function. See ``_ad_safe``.
+    return s._rewrap(_ad_safe(s.data, torch.sqrt, _sqrt_ad), sub_batch_ndim=s.sub_batch_ndim)
 
 
 def exp(s: Scalar) -> Scalar:
-    return s._rewrap(torch.exp(s.data), sub_batch_ndim=s.sub_batch_ndim)
+    # ``torch.exp``'s reverse-mode backward saves its OUTPUT; recompute from the
+    # input on the AD path so AOTI can lower it (pytorch/pytorch#187907).
+    return s._rewrap(_ad_safe(s.data, torch.exp, _exp_ad), sub_batch_ndim=s.sub_batch_ndim)
 
 
 def tanh(s: Scalar) -> Scalar:
     """Hyperbolic tangent. Matches ``neml2::tanh(const Scalar&)``."""
-    return s._rewrap(torch.tanh(s.data), sub_batch_ndim=s.sub_batch_ndim)
+    # ``torch.tanh``'s reverse-mode backward saves its OUTPUT; recompute from the
+    # input on the AD path so AOTI can lower it (pytorch/pytorch#187907).
+    return s._rewrap(_ad_safe(s.data, torch.tanh, _tanh_ad), sub_batch_ndim=s.sub_batch_ndim)
+
+
+def reciprocal(s: Scalar) -> Scalar:
+    """Element-wise reciprocal ``1/s``. Matches ``neml2::reciprocal``.
+
+    ``torch.reciprocal``'s reverse-mode backward saves its OUTPUT
+    (``-grad*out**2``), the same AOTI lowering hazard as ``sqrt`` / ``exp``
+    (pytorch/pytorch#187907). Off the AD path keep the plain instruction; on it
+    use the input-recompute Function (backward ``-x**-2``).
+    """
+    return s._rewrap(
+        _ad_safe(s.data, torch.reciprocal, _reciprocal_ad), sub_batch_ndim=s.sub_batch_ndim
+    )
 
 
 def cosh(s: Scalar) -> Scalar:
@@ -1771,10 +1913,14 @@ def compose(r1: Rot, r2: Rot) -> Rot:
     cross_ba = _cross_raw(b, a)
     num = (1.0 - rr2) * a + (1.0 - rr1) * b - 2.0 * cross_ba
     den = 1.0 + rr1 * rr2 - 2.0 * dot
+    # ``num / den`` with a parameter-dependent ``den`` would trip AOTI's
+    # saved-output reciprocal lowering (pytorch/pytorch#187907); recompute the
+    # reciprocal from the input on the AD path, plain divide off it.
+    quot = num * reciprocal_ad(den) if den.requires_grad else num / den
     state, meta = combine_sub_batch_state(aa, bb)
     _k_ndim, _k_state, _k_pairing = _combine_k_from_operands(aa, bb)
     return Rot(
-        num / den,
+        quot,
         sub_batch_ndim=sb,
         sub_batch_state=state,
         sub_batch_meta=meta,

@@ -39,7 +39,8 @@ namespace neml2::aoti
 {
 void
 Model::Impl::_run_forward_segment(const Segment & seg,
-                                  std::map<std::string, at::Tensor> & state) const
+                                  std::map<std::string, at::Tensor> & state,
+                                  const std::vector<int64_t> & batch) const
 {
   std::vector<at::Tensor> inputs;
   inputs.reserve(seg.fwd_inputs.size() + seg.param_inputs.size());
@@ -52,9 +53,12 @@ Model::Impl::_run_forward_segment(const Segment & seg,
             "' which is not in the state map.");
     inputs.push_back(it->second.contiguous());
   }
-  // Promoted-parameter tail.
-  for (auto & p : _gather_params(seg.param_inputs))
-    inputs.push_back(std::move(p));
+  // Promoted-parameter tail: the forward value graph takes each parameter as a
+  // per-batch input (schema v7), so broadcast the stored parameter (scalar or
+  // already batched) to the call batch before the call.
+  for (const auto & pname : seg.param_inputs)
+    inputs.push_back(broadcast_param_to_batch(
+        _resolve_param(pname), batch, static_cast<int64_t>(_param_base_shapes.at(pname).size())));
 
   const auto outs = seg.fwd_loader->run(inputs);
   _assert(outs.size() == seg.fwd_outputs.size(),
@@ -235,7 +239,9 @@ Model::Impl::_run_implicit_segment(const Segment & seg,
               "' which is not in the state map.");
       p_inputs.push_back(it->second.contiguous());
     }
-    for (auto & p : _gather_params(seg.param_inputs))
+    // The predictor is compiled without the residual's promoted tail; pass its
+    // own (currently always empty) promoted-param list, not seg.param_inputs.
+    for (auto & p : _gather_params(seg.predictor_param_inputs))
       p_inputs.push_back(std::move(p));
 
     const auto p_outs = seg.predictor_loader->run(p_inputs);

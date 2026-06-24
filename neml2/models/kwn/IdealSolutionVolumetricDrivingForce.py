@@ -137,7 +137,7 @@ class IdealSolutionVolumetricDrivingForce(Model):
         if len(xs) != n:
             raise ValueError(f"{type(self).__name__} expected {n} inputs, got {len(xs)}")
 
-        R_g = self.R_g
+        R_g = self._get_param("R_g", nl_params, Scalar)
         x_eqs = self._get_param_list("_x_eq_names", nl_params, Scalar)
         ws = self._get_param_list("_w_names", nl_params, Scalar)
 

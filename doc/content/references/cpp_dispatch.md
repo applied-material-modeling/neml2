@@ -1,5 +1,5 @@
 (model-dispatch)=
-# Dispatching across devices
+# `cpp-dispatch` — dispatching across devices
 
 Modern compute nodes are heterogeneous: one or more CPUs alongside one or more
 GPUs. The **work scheduler / dispatcher** lets a single compiled model spread a
@@ -58,8 +58,10 @@ scheduler (below).
 
 `neml2::aoti::load_model` mirrors Python's `load_model(path, name)` and returns a
 `DispatchedModel` — a `Model`-shaped handle exposing the same
-`forward` / `jvp` / `jacobian`. The optional scheduler is the dispatch opt-in; it
-is supplied in C++ source, never from the `.i`.
+`forward` / `jvp` / `jacobian` plus the parameter derivatives
+`param_jacobian` / `param_vjp` (each chunked across devices and stitched back —
+Jacobian blocks concatenated along the batch, VJP adjoints summed). The optional
+scheduler is the dispatch opt-in; it is supplied in C++ source, never from the `.i`.
 
 ```cpp
 #include "neml2/csrc/dispatchers/factory.h"

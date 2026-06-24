@@ -316,11 +316,27 @@ class Tensor:
         return self.__mul__(other)
 
     def __truediv__(self, other) -> Tensor:
+        # A tensor denominator that requires grad lowers to a reciprocal whose
+        # backward saves its OUTPUT, which AOTInductor cannot lower under strict
+        # + dynamic-batch export (pytorch/pytorch#187907). Rewrite ``num / den``
+        # as ``num * reciprocal_ad(den)`` on the AD path; ``x / literal`` and the
+        # off-AD path keep the plain divide (value path unchanged).
+        if isinstance(other, Tensor) and other.data.requires_grad:
+            from neml2.types.functions import reciprocal_ad  # noqa: PLC0415
+
+            return self._binary(other._rewrap(reciprocal_ad(other.data)), torch.mul)
         return self._binary(other, torch.div)
 
     def __rtruediv__(self, other) -> Tensor:
         if isinstance(other, (float, int)):
-            return self._rewrap(other / self.data)
+            data = self.data
+            if data.requires_grad:
+                # reciprocal backward saves its output -> AOTI hazard
+                # (pytorch/pytorch#187907); recompute from input on the AD path.
+                from neml2.types.functions import reciprocal_ad  # noqa: PLC0415
+
+                return self._rewrap(other * reciprocal_ad(data))
+            return self._rewrap(other / data)
         return NotImplemented
 
     # ---- matmul / solve ----

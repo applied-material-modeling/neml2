@@ -48,11 +48,15 @@ wholesale:
 | `forward(inputs)`       | One tensor per output name, at `(*B, *out_base)`.   |
 | `jvp(inputs, tangents)` | `(outputs, J @ v)` over the **requested** pairs. Missing tangent keys → zero. |
 | `jacobian(inputs)`      | `(outputs, J)` with `J[out][in]` the block for each **requested** pair, `(*B, *out_base, *in_base)`. |
+| `param_jacobian(inputs)` | `(outputs, P)` with `P[out][param]` the block `(*B, *out_base, *param_base)` for each **requested** `(output, promoted-parameter)` pair. |
+| `param_vjp(inputs, cotangents)` | `{param: grad}` adjoint `dL/dθ` for `L = Σ⟨cotangent_o, out_o⟩`, each grad at the parameter's natural shape. |
 | `named_parameters()`    | Mutable dict of promoted parameters; empty if baked. |
 
-`jvp` / `jacobian` only return the output-input pairs the artifact was
-compiled with (`neml2-compile -d OUT:IN`); pairs absent from the
-`derivatives` metadata are absent from the returned maps. An artifact
+`jvp` / `jacobian` / `param_jacobian` / `param_vjp` only return the
+output-input (or output-parameter) pairs the artifact was compiled with
+(`neml2-compile -d OUT:IN`, with the parameter promoted via `-p NAME`);
+pairs absent from the `derivatives` metadata are absent from the returned
+maps. An artifact
 compiled with no `-d` raises from both. A batch-independent block (e.g. a
 constant stiffness tensor) comes back unbatched (`(*out_base, *in_base)`).
 

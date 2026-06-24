@@ -231,7 +231,7 @@ def cmd_expand(args) -> None:
 
 def _render_table(combinations: list[dict[str, str]]) -> str:
     """Return a Markdown view of the matrix, grouped by OS then Python."""
-    pretty_os = {"ubuntu-latest": "linux", "macos-latest": "macOS"}
+    pretty_os = {"ubuntu-latest": "linux", "macos-latest": "macOS", "macos-26": "macOS"}
 
     grouped: dict[str, dict[str, list[str]]] = {}
     for r in combinations:

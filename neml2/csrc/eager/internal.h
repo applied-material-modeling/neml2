@@ -60,6 +60,8 @@ struct Model::Impl
   std::vector<std::string> output_names;
   std::vector<std::vector<int64_t>> input_base_shapes;
   std::vector<std::vector<int64_t>> output_base_shapes;
+  std::vector<std::string> param_names;
+  std::vector<std::vector<int64_t>> param_base_shapes;
   at::Device device{at::kCPU};
   at::ScalarType dtype{at::kDouble};
 };

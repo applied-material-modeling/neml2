@@ -81,7 +81,7 @@ class ThermalEigenstrain(Model):
         v: ChainRuleDict | None = None,
     ):
         T = temperature
-        T0 = self.T0
+        T0 = self._get_param("T0", nl_params, Scalar)
         alpha = self._get_param("alpha", nl_params, Scalar)
         I = SR2.identity(dtype=T.data.dtype, device=T.data.device)
         eg = alpha * (T - T0) * I

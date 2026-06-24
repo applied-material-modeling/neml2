@@ -28,11 +28,16 @@ This module exposes :class:`Model` -- a wrapper around the bare C++ class
 that loads AOTI-exported NEML2 model artifacts (``.pt2`` + ``_meta.json``)
 produced by ``neml2-compile``.
 
-The runtime has three operations -- ``forward``, ``jvp``, ``jacobian`` --
-keyed by the structural input/output names recorded in the metadata. A
-``named_parameters()`` dict exposes parameters that were explicitly
-promoted via ``neml2-compile --parameter NAME`` at compile time;
-mutating those tensors in place is reflected on the next call.
+The runtime exposes ``forward``, ``jvp``, ``jacobian`` plus the
+parameter-derivative pair ``param_jacobian`` / ``param_vjp`` (``d(output)/
+d(parameter)`` for promoted parameters) -- all keyed by the structural
+input/output names recorded in the metadata. A ``named_parameters()`` dict
+exposes parameters that were explicitly promoted via ``neml2-compile
+--parameter NAME`` at compile time; mutating those tensors in place is
+reflected on the next call. The derivative graphs are emitted only for the
+``(output, input)`` / ``(output, parameter)`` pairs requested with
+``neml2-compile --derivative OUT:IN`` (``jvp`` / ``jacobian`` /
+``param_jacobian`` / ``param_vjp`` raise for pairs that were not compiled in).
 
 Example usage::
 
