@@ -916,7 +916,7 @@ class Model(nn.Module, ABC):
     # methods (the same name-keyed contract the compiled routes expose via
     # ``neml2::aoti::Model`` / the pybind ``neml2.aoti.Model`` / the cpp-eager
     # ``_EagerModel`` adapter). Both delegate to the shared reverse-mode engine in
-    # :mod:`neml2.es.param_ad`; the forward-mode input chain rule (``forward(v=)``)
+    # :mod:`neml2.models.param_ad`; the forward-mode input chain rule (``forward(v=)``)
     # is a separate path and is untouched.
 
     def param_jacobian(
@@ -936,14 +936,14 @@ class Model(nn.Module, ABC):
         ``input_spec``). *params* selects the parameters by their
         :meth:`~torch.nn.Module.named_parameters` qualified name; ``None`` (default)
         uses every typed parameter. Reverse-mode autograd over the parameters via
-        :func:`neml2.es.param_ad.param_jacobian` -- one pass per output base
+        :func:`neml2.models.param_ad.param_jacobian` -- one pass per output base
         component, independent of the parameter count; composition through an
         :class:`~neml2.models.common.ImplicitUpdate` is handled by that function's
         implicit-function-theorem adjoint.
         """
-        from .._eager_boundary import unwrap_outputs  # noqa: PLC0415
-        from ..es.param_ad import enumerate_typed_params  # noqa: PLC0415
-        from ..es.param_ad import param_jacobian as _param_jacobian  # noqa: PLC0415
+        from ..types._boundary import unwrap_outputs  # noqa: PLC0415
+        from .param_ad import enumerate_typed_params  # noqa: PLC0415
+        from .param_ad import param_jacobian as _param_jacobian  # noqa: PLC0415
 
         typed_args = tuple(t(inputs[n]) for n, t in self.input_spec.items())  # type: ignore[call-arg]
         typed_params = enumerate_typed_params(self)
@@ -976,8 +976,8 @@ class Model(nn.Module, ABC):
         :class:`~neml2.models.common.ImplicitUpdate` is handled by the
         implicit-function-theorem adjoint, exactly as in :meth:`param_jacobian`.
         """
-        from ..es.param_ad import enumerate_typed_params  # noqa: PLC0415
-        from ..es.param_ad import param_vjp as _param_vjp  # noqa: PLC0415
+        from .param_ad import enumerate_typed_params  # noqa: PLC0415
+        from .param_ad import param_vjp as _param_vjp  # noqa: PLC0415
 
         typed_args = tuple(t(inputs[n]) for n, t in self.input_spec.items())  # type: ignore[call-arg]
         param_qnames = (

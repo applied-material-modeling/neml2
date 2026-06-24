@@ -50,7 +50,7 @@ from typing import TYPE_CHECKING
 import torch
 
 if TYPE_CHECKING:
-    from .types import TensorWrapper
+    from . import TensorWrapper
 
 
 def check_tensor(
@@ -223,7 +223,7 @@ def assemble_jacobian(
     export's own block-to-pair converter, lazily imported to avoid import-time
     CLI coupling); the ``.data`` read happens inside that boundary helper.
     """
-    from .cli.aoti_export import _leading_k_block_to_per_pair
+    from ..cli.aoti_export import _leading_k_block_to_per_pair
 
     first = typed_outputs[0]
     batch_shape = tuple(first.batch_shape)

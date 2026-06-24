@@ -48,7 +48,7 @@ swaps a per-batch-expanded, grad-tracking copy of each selected parameter into
 the module functionally -- no module mutation, no per-leaf edits.
 
 Framework boundary (CLAUDE.md "Hard rules" 1 & 2): like
-:mod:`neml2._eager_boundary`, this is a sanctioned raw-tensor / autograd site.
+:mod:`neml2.types._boundary`, this is a sanctioned raw-tensor / autograd site.
 The ``.data`` reads below are the autograd boundary and bear ``# noqa: data-ok``.
 The reverse-mode ``autograd.grad`` runs at forward-depth 0 (after the model's
 ``forward`` returns), so the :mod:`neml2.models._guard` AD ban is never armed --

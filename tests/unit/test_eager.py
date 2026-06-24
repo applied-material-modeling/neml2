@@ -41,10 +41,10 @@ import torch
 from torch import nn
 
 import neml2
-from neml2._eager_boundary import broadcast_to_common_batch, check_tensor
 from neml2.cli.aoti_export import _var_infos
 from neml2.eager import _EagerModel, _infer_device_dtype
 from neml2.types import SR2
+from neml2.types._boundary import broadcast_to_common_batch, check_tensor
 
 _REPO = Path(__file__).resolve().parents[2]
 # tests/unit/test_eager.py -> repo root -> the forward-only fixture .i.
@@ -263,7 +263,7 @@ def test_jvp_jacobian_composed_multi_output():
 # --- parameter Jacobian d(output)/d(parameter) (reverse-mode AD) --------------
 # The parameter surface is a SEPARATE path from the input chain rule: it
 # differentiates outputs w.r.t. the model's calibration nn.Parameters via
-# reverse-mode autograd (neml2.es.param_ad), addressed by named_parameters()
+# reverse-mode autograd (neml2.models.param_ad), addressed by named_parameters()
 # qualified name. These pin it against central finite differences.
 
 
@@ -446,7 +446,7 @@ def test_param_jacobian_batched_parameter():
 # --- py-eager native Model param methods (the route-method surface) -----------
 # ``neml2.load_model(...)`` returns a native ``Model``; these pin its
 # ``param_jacobian`` / ``param_vjp`` methods -- the py-eager half of the
-# cross-route method surface, delegating to ``es.param_ad``. The engine itself is
+# cross-route method surface, delegating to ``models.param_ad``. The engine itself is
 # FD-validated above via ``_EagerModel``; here we pin the native method plumbing
 # (input wrapping, default param set, value return, vjp == <w, jacobian>).
 

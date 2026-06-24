@@ -54,10 +54,10 @@ import torch
 from torch import nn
 
 from .. import types as _types
-from .._eager_boundary import broadcast_to_common_batch, check_tensor
 from ..factory import register_neml2_object
 from ..schema import HitSchema, dependency, option
 from ..types import TensorWrapper
+from ..types._boundary import broadcast_to_common_batch, check_tensor
 from ._aoti import Model as _BoundModel
 
 if TYPE_CHECKING:
@@ -210,7 +210,7 @@ class AOTIModel(nn.Module):
         """Strict device + dtype check; raise TypeError on mismatch.
 
         Thin wrapper over the shared
-        :func:`neml2._eager_boundary.check_tensor` (the device/dtype
+        :func:`neml2.types._boundary.check_tensor` (the device/dtype
         validation is identical across the AOTI + eager boundaries). ``kind``
         is ``'input'`` or ``'parameter'``; the AOTI-specific remediation
         guidance is supplied here as the ``hint``.
@@ -367,7 +367,7 @@ class AOTIModel(nn.Module):
         with the dynamic-batch axes broadcast to a single common shape.
 
         Thin wrapper over the shared
-        :func:`neml2._eager_boundary.broadcast_to_common_batch`; see there for
+        :func:`neml2.types._boundary.broadcast_to_common_batch`; see there for
         the (dyn, sub, base) per-input split rationale. The per-input
         ``sub_batch_ndim`` is resolved from the caller's typed wrapper instance
         (or the legacy metadata ``sub_batch_shape`` when the caller passes a

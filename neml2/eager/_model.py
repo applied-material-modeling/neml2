@@ -40,13 +40,13 @@ the C++ ``neml2::aoti::Model`` pybind binding (``input_names`` / ``output_names`
 ``forward`` / ``jvp`` / ``jacobian``).
 
 Framework boundary (CLAUDE.md "Hard rules / Rule 1"): together with
-:mod:`neml2._eager_boundary`, this module is the third legitimate raw-tensor
+:mod:`neml2.types._boundary`, this module is the third legitimate raw-tensor
 boundary (alongside the AOTI shim and ``torch.autograd.Function``). Raw
 ``torch.Tensor`` objects appear only in :meth:`_EagerModel.forward`'s argument
 and return dicts, marshalled across the C++/Python line by torch's pybind
 casters. They are wrapped into typed wrappers immediately on entry and unwrapped
 back to raw only at the return boundary (in
-:func:`neml2._eager_boundary.unwrap_outputs`).
+:func:`neml2.types._boundary.unwrap_outputs`).
 """
 
 from __future__ import annotations
@@ -55,7 +55,7 @@ import itertools
 
 import torch
 
-from ._eager_boundary import (
+from ..types._boundary import (
     assemble_jacobian,
     assemble_jvp_outputs,
     broadcast_to_common_batch,
@@ -123,9 +123,9 @@ class _EagerModel:
     ) -> None:
         # Lazy imports: keep module import (which the C++ ctor triggers) cheap
         # and avoid any import-time coupling to the CLI / model packages.
-        from .cli.aoti_export import _var_infos
-        from .factory import load_model
-        from .models.common import ComposedModel
+        from ..cli.aoti_export import _var_infos
+        from ..factory import load_model
+        from ..models.common import ComposedModel
 
         model = load_model(input_file, model_name)
         # Wrap a bare leaf in a ComposedModel for a stable plain-tensor boundary,
@@ -153,7 +153,7 @@ class _EagerModel:
         # (e.g. "elasticity.E"); base shapes come from each parameter's typed
         # wrapper class. This is the parameter analogue of the input surface and
         # is what the C++ neml2::eager::Model consumes for param_jacobian.
-        from .es.param_ad import enumerate_typed_params
+        from ..models.param_ad import enumerate_typed_params
 
         self._typed_params = enumerate_typed_params(self._model)
         self.param_names: list[str] = [q for q, _ in self._typed_params]
@@ -338,8 +338,8 @@ class _EagerModel:
         native chain rule via a leading-K identity seed per input (reusing the
         AOTI export's ``_leading_k_identity_seed``).
         """
-        from .cli.aoti_export import _leading_k_identity_seed
-        from .es.param_ad import call_batch_shape
+        from ..cli.aoti_export import _leading_k_identity_seed
+        from ..models.param_ad import call_batch_shape
 
         typed_args = self._typed_args(inputs)
         # The output batches on broadcast(input batches, parameter batches) -- a
@@ -409,13 +409,13 @@ class _EagerModel:
 
         Unlike :meth:`jacobian` (forward-mode input chain rule), this uses
         reverse-mode autograd over the model's parameters via
-        :func:`neml2.es.param_ad.param_jacobian`; the input ``v=`` path is not
+        :func:`neml2.models.param_ad.param_jacobian`; the input ``v=`` path is not
         touched. Composition through an ``ImplicitUpdate`` (Newton solve) is
         handled by that function's reverse pass (the implicit-function-theorem
         adjoint in ``_ImplicitUpdateFn.backward``). A constant ``(out, param)``
         pair is an explicit zero block.
         """
-        from .es.param_ad import param_jacobian as _param_jacobian
+        from ..models.param_ad import param_jacobian as _param_jacobian
 
         typed_args = self._typed_args(inputs)
         # Plain forward for the value outputs + the plain-batch (sub-batch) guard;
@@ -441,7 +441,7 @@ class _EagerModel:
 
         Returns ``{param_qname: grad}`` at each parameter's natural shape (a
         scalar parameter yields a scalar, the batch summed out). One reverse pass
-        total via :func:`neml2.es.param_ad.param_vjp` -- the cheap form for
+        total via :func:`neml2.models.param_ad.param_vjp` -- the cheap form for
         many-parameter (inverse-optimization) gradients, and the eager analogue
         of the compiled ``param_vjp``. Composition through an ``ImplicitUpdate``
         is handled by the implicit-function-theorem adjoint in the parameter
@@ -450,7 +450,7 @@ class _EagerModel:
         *cotangents* maps each output name to ``w_o`` at the output's
         ``(*batch, *out_base)`` shape (raw tensor; sub-batch is rejected upstream).
         """
-        from .es.param_ad import param_vjp as _param_vjp
+        from ..models.param_ad import param_vjp as _param_vjp
 
         typed_args = self._typed_args(inputs)
         # Plain forward runs the plain-batch (sub-batch) guard before the adjoint.
