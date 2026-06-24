@@ -134,6 +134,56 @@ v_out["a"]["velocity_leaf"].data
 This matches the analytical $\partial \boldsymbol{a}/\partial
 \boldsymbol{v} = -\mu I = -0.001\, I_3$ exactly.
 
+## Auto-deriving the chain rule with `request_AD`
+
+Hand-writing `actions` is the right call when the local Jacobian is simple, like
+the projectile's $-\mu I$. But sometimes it isn't — a constitutive law with many
+coupled terms, or a **machine-learning surrogate** (a trained `torch.nn.Module`)
+whose derivative you would never want to differentiate by hand. For those, a leaf
+can declare `request_AD()` and write *only* the value forward; the framework
+supplies the first-order chain rule for you by reverse-mode automatic
+differentiation:
+
+```python
+class MySurrogate(Model):
+    hit = HitSchema(...)            # same input/output declarations as usual
+
+    def __post_init__(self):
+        self.request_AD()           # auto-derive d(output)/d(input) for all pairs
+
+    def forward(self, x, *nl_params):
+        return self.net(x.data)     # value only -- no `v=` branch, no `actions`
+```
+
+`request_AD()` with no arguments covers every `(output, input)` pair; pass
+`outputs=[...]` / `inputs=[...]` to auto-derive only a subset and hand-write the
+rest. The result is indistinguishable from a hand-written chain rule and behaves
+identically on **every route** — eager (`py-eager` / `cpp-eager`) and
+AOT-compiled (`py-aoti` / `cpp-aoti` / `cpp-dispatch`). It slots into the *same*
+forward-mode chain-rule graph the framework already uses: neighbouring analytic
+leaves keep their hand-written `actions`, and only the request_AD leaf's
+reverse-mode local Jacobian is traced inline (and lowered through AOTInductor on
+the compiled routes). The `tests/regression/_fixtures/SurrogateFlowRate.py` fixture
+is a worked example wrapping a Python surrogate as a NEML2 flow rate.
+
+A few things to know:
+
+- **First-order only.** `request_AD` supplies the `v=` channel
+  ($\partial\,\text{out}/\partial\,\text{in}$). A leaf that must provide the
+  second-order chain rule (i.e. one used inside a `Normality` wrap) still
+  hand-writes it.
+- **Reverse-mode under the hood.** It is the one autodiff that survives
+  `torch.export` → AOTInductor. If your differentiated path uses a saved-output
+  op (`exp` / `sqrt` / `tanh` / reciprocal), route it through the AOTI-safe
+  variants in `neml2.types.functions` (e.g. `exp_ad`) so the compiled routes
+  lower (see the upstream-bug note in that module); eager is unaffected.
+- **AOTI compile.** Pass `-d` to `neml2-compile` to bake the derivative graph,
+  exactly as for an analytic model — `request_AD` changes *how* the Jacobian is
+  computed, not *whether* it is compiled. This holds even for a request_AD leaf
+  inside an `ImplicitUpdate` residual: the Newton-step / implicit-function-theorem
+  graphs differentiate the residual (which contains the leaf) and lower the same
+  way.
+
 ## Driving the model from a unit-test input
 
 `ModelUnitTest` is the usual way to pin a custom model's behavior in

@@ -22,19 +22,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Test-only Python-native NEML2 models.
+"""Register the shared test-only native models for the AOTI suite.
 
-These are test-only Python-native models backing regression-test inputs:
-``TabulatedPolynomialModel`` and ``SurrogateFlowRate`` (the latter a
-machine-learning-surrogate flow rate demonstrating ``request_AD``, replacing the
-v2-era ``TorchScriptFlowRate``). They live here rather than in ``neml2.models``
-because they only exist for the tests — they have no place in the production
-native package.
-
-Importing this package side-effect-registers every fixture with the native
-factory registry via ``@register_neml2_object``. The native ``regression/conftest.py``
-imports it so the registrations fire before pytest collects the input files.
+The ``request_ad_forward`` scenario uses ``SurrogateFlowRate`` (a request_AD
+machine-learning surrogate), which lives in ``tests/regression/_fixtures`` rather
+than the production package. Side-effect-import it so ``@register_neml2_object``
+fires before the AOTI scenarios are collected -- the same mechanism
+``tests/regression/conftest.py`` uses for the eager regression suite.
 """
 
-from . import SurrogateFlowRate as _surrogate_flow_rate  # noqa: F401
-from . import TabulatedPolynomialModel as _tabulated_polynomial  # noqa: F401
+import importlib
+import sys
+from pathlib import Path
+
+_REGRESSION = Path(__file__).resolve().parent.parent / "regression"
+if str(_REGRESSION) not in sys.path:
+    sys.path.insert(0, str(_REGRESSION))
+
+# Side-effect import: ``@register_neml2_object`` fires for the test fixtures.
+# ``import_module`` (rather than ``import _fixtures``) honors the dynamic sys.path
+# entry above without pyright flagging an unresolved import (``_fixtures`` lives
+# under tests/regression/, not this directory).
+importlib.import_module("_fixtures")

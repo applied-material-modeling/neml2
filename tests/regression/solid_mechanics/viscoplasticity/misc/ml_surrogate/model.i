@@ -51,7 +51,7 @@
 
 [Models]
   #####################################################################################
-  # Compute the invariant plastic flow direction and scalar trial stress
+  # Compute the invariant plastic flow direction since we are doing J2 radial return
   #####################################################################################
   [trial_elastic_strain]
     type = SR2LinearCombination
@@ -71,80 +71,13 @@
     mandel_stress = 'S_trial'
     flow_direction = 'N_trial'
   []
-  [vonmises_trial]
-    type = SR2Invariant
-    invariant_type = 'VONMISES'
-    tensor = 'S_trial'
-    invariant = 's_trial'
-  []
   [trial_state]
     type = ComposedModel
-    models = 'trial_elastic_strain trial_cauchy_stress trial_flow_direction vonmises_trial'
+    models = 'trial_elastic_strain trial_cauchy_stress trial_flow_direction'
   []
 
   #####################################################################################
-  # Scalar-level stress update for the implicit solve
-  #####################################################################################
-  [trial_stress_update]
-    type = LinearIsotropicElasticJ2TrialStressUpdate
-    coefficients = '1e5 0.3'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    elastic_trial_stress = 's_trial'
-    equivalent_plastic_strain = 'equivalent_plastic_strain'
-    updated_trial_stress = 'vonmises_stress'
-  []
-  [rom]
-    type = TorchScriptFlowRate
-    von_mises_stress = 'vonmises_stress'
-    temperature = 'temperature'
-    equivalent_plastic_strain_rate = 'equivalent_plastic_strain_rate'
-    torch_script = 'gold/surrogate.pt'
-  []
-  [integrate_ep]
-    type = ScalarBackwardEulerTimeIntegration
-    variable = 'equivalent_plastic_strain'
-  []
-  [rate]
-    type = ComposedModel
-    models = 'trial_stress_update rom integrate_ep'
-  []
-[]
-
-[EquationSystems]
-  [eq_sys]
-    type = NonlinearSystem
-    model = 'rate'
-    unknowns = 'equivalent_plastic_strain'
-    residuals = 'equivalent_plastic_strain_residual'
-  []
-[]
-
-[Solvers]
-  [newton]
-    type = Newton
-    abs_tol = 1e-8
-    rel_tol = 1e-6
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
-[Models]
-  [predictor]
-    type = LinearExtrapolationPredictor
-    unknowns_Scalar = 'equivalent_plastic_strain'
-  []
-  [radial_return]
-    type = ImplicitUpdate
-    equation_system = 'eq_sys'
-    solver = 'newton'
-    predictor = 'predictor'
-  []
-
-  #####################################################################################
-  # Full tensor plastic strain update after the scalar solve
+  # Stress update (forward Euler in plastic strain using trial flow direction)
   #####################################################################################
   [ep_rate]
     type = ScalarVariableRate
@@ -180,6 +113,66 @@
   [stress_update]
     type = ComposedModel
     models = 'elastic_strain cauchy_stress'
+  []
+
+  #####################################################################################
+  # ROM rate model and residual for equivalent plastic strain
+  #####################################################################################
+  [vonmises]
+    type = SR2Invariant
+    invariant_type = 'VONMISES'
+    tensor = 'stress'
+    invariant = 'vonmises_stress'
+  []
+  [rom]
+    type = SurrogateFlowRate
+    von_mises_stress = 'vonmises_stress'
+    temperature = 'temperature'
+    equivalent_plastic_strain_rate = 'ep_rate_from_rom'
+  []
+  [ep_residual]
+    type = ScalarLinearCombination
+    from = 'equivalent_plastic_strain_rate ep_rate_from_rom'
+    to = 'equivalent_plastic_strain_residual'
+    weights = '1 -1'
+  []
+  [rate]
+    type = ComposedModel
+    models = 'ep_rate plastic_strain_rate_model plastic_strain_update elastic_strain cauchy_stress vonmises rom ep_residual'
+  []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'rate'
+    unknowns = 'equivalent_plastic_strain'
+    residuals = 'equivalent_plastic_strain_residual'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    abs_tol = 1e-8
+    rel_tol = 1e-6
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
+  [predictor]
+    type = LinearExtrapolationPredictor
+    unknowns_Scalar = 'equivalent_plastic_strain'
+  []
+  [radial_return]
+    type = ImplicitUpdate
+    equation_system = 'eq_sys'
+    solver = 'newton'
+    predictor = 'predictor'
   []
   [model]
     type = ComposedModel

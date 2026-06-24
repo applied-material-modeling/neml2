@@ -1169,6 +1169,19 @@ class _ForwardJacobianModule(nn.Module):
         return (*typed_outputs, *pairs)
 
 
+def _model_uses_request_ad(model) -> bool:
+    """True iff *model* or any submodule declared ``request_AD`` pairs.
+
+    Such a model's chain rule contains an embedded reverse-mode ``torch.autograd.grad``
+    at its request_AD leaves (the analytic leaves keep their hand-written forward-mode
+    actions). That autograd lowers only under ``trace_autograd_ops`` + ``strict``, so
+    the derivative graphs (forward ``jvp`` and the implicit ``NewtonStep`` / ``IFT``)
+    are compiled with :func:`_compile_param_derivative_graph` rather than the plain
+    forward :func:`~neml2.models.export.compile_model`.
+    """
+    return any(getattr(m, "_ad_pairs", None) for m in model.modules())
+
+
 class _ParamJacobianModule(nn.Module):
     """Wrap a (promoted) ComposedModel to emit per-(out_var, param) Jacobian blocks
     ``d(out)/d(param)`` via reverse-mode autograd.
@@ -1617,8 +1630,17 @@ def _compile_forward_segment(
     do_jvp = selected_pairs is None or len(selected_pairs) > 0
     if do_jvp:
         # JVP wrapper differentiates along structural inputs only -- promoted
-        # inputs aren't seeded so they contribute structural zeros via
-        # the default chain rule's ``v.get(name, {})`` empty fallback.
+        # inputs aren't seeded so they contribute structural zeros via the default
+        # chain rule's ``v.get(name, {})`` empty fallback. The SAME forward-mode
+        # chain-rule module is used whether or not the model uses request_AD: the
+        # analytic leaves emit their hand-written actions, and a request_AD leaf's
+        # reverse-mode local Jacobian traces inline (the guard is inert while
+        # compiling -- see _guard._armed). A request_AD model's chain rule contains
+        # that embedded ``torch.autograd.grad``, which lowers only under
+        # ``trace_autograd_ops`` + ``strict``, so its JVP graph uses the
+        # parameter-derivative compile helper; an all-analytic model uses the plain
+        # forward compile.
+        uses_ad = _model_uses_request_ad(exportable)
         jvp_module = _ForwardJacobianModule(
             exportable, promoted_qnames, selected_pairs=selected_pairs
         ).to(device)
@@ -1626,15 +1648,22 @@ def _compile_forward_segment(
         # _DEFAULT_EXAMPLE_SHAPE) to classify each emitted pair: a block whose
         # dynamic-batch axes stay size-1 does not depend on the runtime batch
         # (e.g. a constant elasticity tensor) and is recorded as
-        # ``batch_independent`` so the runtime can carry / return it unbatched.
+        # ``batch_independent`` so the runtime can carry / return it unbatched. The
+        # eager request_AD pushforward re-enables grad itself, so the no_grad probe
+        # is fine even when an AD leaf is present.
         with torch.no_grad():
             probe = jvp_module(*example_inputs)
         n_outs = len(jvp_module.output_names)
         probe_pairs = list(probe[n_outs:])
         jvp_pkg_name = f"{pkg_basename}_jvp.pt2"
-        compile_model(
-            jvp_module, example_inputs, output_dir / jvp_pkg_name, dynamic_batch_dim=dynamic_dim
-        )
+        if uses_ad:
+            _compile_param_derivative_graph(
+                jvp_module, example_inputs, output_dir / jvp_pkg_name, dynamic_batch_dim=dynamic_dim
+            )
+        else:
+            compile_model(
+                jvp_module, example_inputs, output_dir / jvp_pkg_name, dynamic_batch_dim=dynamic_dim
+            )
         # Per-(out_var, in_var) pair metadata in the SAME order the JVP
         # module emits trailing tensors: rows-outer (output_spec order),
         # cols-inner (structural inputs in input_spec order).
@@ -2179,8 +2208,17 @@ def _compile_implicit_segment(
     pift_name = f"{pkg_basename}_pift.pt2"
 
     dynamic_dim = 0 if dynamic_batch else None
+    # A request_AD leaf inside the residual makes the residual Jacobian (``A=∂r/∂u``
+    # in ``step``, ``∂r/∂g`` in ``ift``) carry an embedded reverse-mode
+    # ``torch.autograd.grad``, which lowers only under ``trace_autograd_ops`` +
+    # ``strict``. The equation-system assembly that both graphs use was made
+    # strict-export-friendly (no in-``forward`` generators -- the static layout math
+    # is precomputed), so the SAME graphs lower with the strict helper. ``rhs`` is
+    # the residual VALUE (no autograd), always plain compile.
+    uses_ad = _model_uses_request_ad(system.model)
+    _compile_jac = _compile_param_derivative_graph if uses_ad else compile_model
     compile_model(rhs, example_inputs, output_dir / rhs_name, dynamic_batch_dim=dynamic_dim)
-    compile_model(step, example_inputs, output_dir / step_name, dynamic_batch_dim=dynamic_dim)
+    _compile_jac(step, example_inputs, output_dir / step_name, dynamic_batch_dim=dynamic_dim)
     # Per-(unknown, given) pair metadata for the IFT graph. The IFT emits one
     # block per variable pair (via AssembledMatrix.disassemble), in
     # ift.emitted_pairs() order, so the C++ runtime composes them against
@@ -2203,7 +2241,7 @@ def _compile_implicit_segment(
             }
             for (u, g) in ift.emitted_pairs()
         ]
-        compile_model(ift, example_inputs, output_dir / ift_name, dynamic_batch_dim=dynamic_dim)
+        _compile_jac(ift, example_inputs, output_dir / ift_name, dynamic_batch_dim=dynamic_dim)
 
     # Per-(unknown, param) parameter-Jacobian graph (ParamIFT). Emits one dense
     # ``du/dθ`` block per requested ``(unknown, param)`` pair, in
@@ -2840,6 +2878,13 @@ def export_model_for_aoti(
         structural_input_names,
         param_names=sorted(promoted_qnames),
     )
+
+    # ``request_AD`` controls HOW a leaf's derivatives are computed (reverse-mode
+    # autodiff embedded in the chain rule); ``-d`` still controls WHETHER any are
+    # compiled, exactly as for an analytic model. So a value-only export of
+    # a request_AD model compiles no derivative graph (and needs no
+    # ``trace_autograd_ops``); the author's win is never hand-writing the chain
+    # rule, not implicit ``-d`` selection.
 
     # Freeze any remaining nn.Parameter to a persistent buffer so torch.export
     # bakes it into the graph instead of lifting it as a graph input. Promoted
