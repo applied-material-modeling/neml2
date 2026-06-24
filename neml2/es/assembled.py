@@ -183,7 +183,7 @@ class AssembledVector:
         per_var_sizes = [
             (
                 _storage_size(self.layout.specs[n])
-                * (prod(int(s) for s in self.layout.sub_batch_shape(n)) or 1)
+                * (prod([int(s) for s in self.layout.sub_batch_shape(n)]) or 1)
                 if structure == "dense"
                 else _storage_size(self.layout.specs[n])
             )
@@ -446,7 +446,7 @@ class AssembledMatrix:
         base = _storage_size(type_cls)
         if structure == "dense":
             sb = layout.sub_batch_shape(name)
-            return base * (prod(int(s) for s in sb) or 1)
+            return base * (prod([int(s) for s in sb]) or 1)
         return base
 
     @overload
@@ -623,7 +623,7 @@ def _build_group_block(
         for col_name in col_group:
             col_var_size = _storage_size(col_layout.specs[col_name])
             col_sb = col_layout.sub_batch_shape(col_name)
-            col_sb_total = prod(int(s) for s in col_sb) or 1
+            col_sb_total = prod([int(s) for s in col_sb]) or 1
             # Expected trailing-K for this col var: sub_col_total * var_base.
             expected_K = col_sb_total * col_var_size
             # Tangent block for this (row, col) pair.
@@ -679,10 +679,10 @@ def _zero_block(
     row_var_base = _storage_size(row_layout.specs[row_name])
     col_var_base = _storage_size(col_layout.specs[col_name])
     col_sb = col_layout.sub_batch_shape(col_name)
-    col_sb_total = prod(int(s) for s in col_sb) or 1
+    col_sb_total = prod([int(s) for s in col_sb]) or 1
     row_var_base = _storage_size(row_layout.specs[row_name])
     row_sb = row_layout.sub_batch_shape(row_name)
-    row_sb_total = prod(int(s) for s in row_sb) or 1
+    row_sb_total = prod([int(s) for s in row_sb]) or 1
     # Paired BLOCK+BLOCK: single per-site intmd axis to match
     # _convert_tangent_to_paired_block's storage convention.
     paired = (
@@ -849,7 +849,7 @@ def _convert_tangent_to_block(
     row_sb = row_layout.sub_batch_shape(row_name)
     col_sb = col_layout.sub_batch_shape(col_name)
     col_var_base = _storage_size(col_layout.specs[col_name])
-    col_sb_total = prod(int(s) for s in col_sb) or 1
+    col_sb_total = prod([int(s) for s in col_sb]) or 1
 
     # Paired BLOCK+BLOCK: same per-site sub_batch shape on both sides means
     # the per-(site_row, site_col) Jacobian is non-zero only on the diagonal

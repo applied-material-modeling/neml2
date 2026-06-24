@@ -179,8 +179,10 @@ A few things to know:
   lower (see the upstream-bug note in that module); eager is unaffected.
 - **AOTI compile.** Pass `-d` to `neml2-compile` to bake the derivative graph,
   exactly as for an analytic model — `request_AD` changes *how* the Jacobian is
-  computed, not *whether* it is compiled. A request_AD leaf inside an
-  `ImplicitUpdate` residual is currently supported on the eager routes only.
+  computed, not *whether* it is compiled. This holds even for a request_AD leaf
+  inside an `ImplicitUpdate` residual: the Newton-step / implicit-function-theorem
+  graphs differentiate the residual (which contains the leaf) and lower the same
+  way.
 
 ## Driving the model from a unit-test input
 

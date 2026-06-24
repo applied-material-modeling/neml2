@@ -94,3 +94,65 @@ def test_request_ad_aoti_jacobian_matches_eager_and_fd(tmp_path: Path):
     fm = aoti.forward({"vonmises_stress": vm - eps, "temperature": T})[_OUT]
     fd = (fp - fm) / (2 * eps)
     assert torch.allclose(jac_aoti[_OUT]["vonmises_stress"], fd, rtol=1e-4, atol=1e-6)
+
+
+# Implicit case: a request_AD leaf (SurrogateFlowRate) INSIDE an ImplicitUpdate
+# residual. The Newton-step / IFT graphs differentiate the residual (which contains
+# the AD leaf) by reverse-mode; this lowers because the equation-system assembly was
+# made strict-export-friendly. The model is the scalar radial-return regression
+# fixture (registered via tests/aoti/conftest.py importing _fixtures).
+_IMPLICIT_I = (
+    Path(__file__).parent.parent
+    / "regression/solid_mechanics/viscoplasticity/misc/ml_surrogate/model_scalar.i"
+)
+
+
+def _implicit_inputs(b: int = 4):
+    torch.manual_seed(0)
+    e = torch.zeros(b, 6, dtype=torch.float64)
+    e[:, 0] = 0.02 + 0.005 * torch.rand(b, dtype=torch.float64)  # deviatoric, yields (sy=1000)
+    e[:, 1] = -0.01
+    e[:, 2] = -0.01
+    z = torch.zeros(b, dtype=torch.float64)
+    return {
+        "E": e,
+        "plastic_strain~1": torch.zeros(b, 6, dtype=torch.float64),
+        "equivalent_plastic_strain~1": z.clone(),
+        "temperature": torch.full((b,), 1200.0, dtype=torch.float64),
+        "t": torch.full((b,), 1.0, dtype=torch.float64),
+        "t~1": torch.full((b,), 0.5, dtype=torch.float64),
+        "t~2": z.clone(),
+        "equivalent_plastic_strain~2": z.clone(),
+    }
+
+
+@_REQUIRES_AUTOGRAD_LOWERING
+def test_request_ad_in_implicit_residual_matches_eager(tmp_path: Path):
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+    from neml2.eager import _EagerModel
+
+    out_dir = tmp_path / "implicit_request_ad"
+    meta = export_model_for_aoti(_IMPLICIT_I, "model", out_dir, derivatives=(":",))
+    # The implicit segment carries an IFT graph with the residual's du/dg pairs.
+    seg = next(s for s in meta["segments"] if s.get("rhs_package"))
+    assert "ift_package" in seg
+    # d(equivalent_plastic_strain)/d(temperature) flows through the request_AD
+    # surrogate inside the residual.
+    pairs = {(p["out_var"], p["in_var"]) for p in seg["jacobian_pairs"]}
+    assert ("equivalent_plastic_strain", "temperature") in pairs
+
+    aoti = AOTIModel(str(out_dir / "model_meta.json"))
+    eager = _EagerModel(str(_IMPLICIT_I), "model")
+    raw = _implicit_inputs()
+
+    out_a, jac_a = aoti.jacobian(raw)
+    out_e, jac_e = eager.jacobian(raw)
+
+    # Converged-state parity (the Newton solve runs identically on both routes).
+    for name in out_e:
+        assert torch.allclose(out_a[name], out_e[name], atol=1e-9), f"value {name} mismatch"
+    # Implicit-function-theorem sensitivity parity, including the pair routed
+    # through the request_AD leaf.
+    worst = max((jac_a[o][i] - jac_e[o][i]).abs().max().item() for o in jac_e for i in jac_e[o])
+    assert worst < 1e-8, f"implicit jacobian aoti-vs-eager worst err {worst:.2e}"

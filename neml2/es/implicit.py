@@ -191,8 +191,11 @@ class _SystemModule(nn.Module):
         u_vec = AssembledVector(self.ulayout, u_tensors)
         g_vec = AssembledVector(self.glayout, g_tensors)
         state: dict[str, TensorWrapper] = {}
-        state.update(u_vec.disassemble())
-        state.update(g_vec.disassemble())
+        # ``.values`` is the plain ``{name: wrapper}`` dict; pass it (not the
+        # SparseVector itself) to ``dict.update`` so strict export traces it -- a
+        # SparseVector iterates KEYS, which Dynamo's update tries to unpack as pairs.
+        state.update(u_vec.disassemble().values)
+        state.update(g_vec.disassemble().values)
         # Inject the promoted-parameter tail. Wrap each raw to its typed class
         # (wrapping preserves any incoming autograd graph -- the ParamIFT
         # reverse pass relies on it). No sub_batch: promoted parameters are

@@ -1182,24 +1182,6 @@ def _model_uses_request_ad(model) -> bool:
     return any(getattr(m, "_ad_pairs", None) for m in model.modules())
 
 
-def _request_ad_inside_implicit(model) -> bool:
-    """True iff a ``request_AD`` leaf lives inside an :class:`ImplicitUpdate` residual.
-
-    The implicit-segment export builds the residual Jacobian / IFT graph through the
-    forward-mode chain rule, which for an AD leaf is the untraceable eager
-    pushforward. That case is not yet supported through AOTI (forward-segment
-    request_AD is); :func:`export_model_for_aoti` raises a clear error rather than
-    letting ``torch.export`` fail cryptically.
-    """
-    from ..models.common import ImplicitUpdate  # noqa: PLC0415
-
-    return any(
-        isinstance(m, ImplicitUpdate)
-        and any(getattr(sub, "_ad_pairs", None) for sub in m.modules())
-        for m in model.modules()
-    )
-
-
 class _ParamJacobianModule(nn.Module):
     """Wrap a (promoted) ComposedModel to emit per-(out_var, param) Jacobian blocks
     ``d(out)/d(param)`` via reverse-mode autograd.
@@ -2226,12 +2208,17 @@ def _compile_implicit_segment(
     pift_name = f"{pkg_basename}_pift.pt2"
 
     dynamic_dim = 0 if dynamic_batch else None
-    # NB: ``step`` / ``ift`` build the residual Jacobian through the equation-system
-    # assembly, which does not survive strict export -- so a request_AD leaf inside
-    # the residual is rejected up front in ``export_model_for_aoti`` (see the
-    # NotImplementedError there) and these always use the plain forward compile.
+    # A request_AD leaf inside the residual makes the residual Jacobian (``A=∂r/∂u``
+    # in ``step``, ``∂r/∂g`` in ``ift``) carry an embedded reverse-mode
+    # ``torch.autograd.grad``, which lowers only under ``trace_autograd_ops`` +
+    # ``strict``. The equation-system assembly that both graphs use was made
+    # strict-export-friendly (no in-``forward`` generators -- the static layout math
+    # is precomputed), so the SAME graphs lower with the strict helper. ``rhs`` is
+    # the residual VALUE (no autograd), always plain compile.
+    uses_ad = _model_uses_request_ad(system.model)
+    _compile_jac = _compile_param_derivative_graph if uses_ad else compile_model
     compile_model(rhs, example_inputs, output_dir / rhs_name, dynamic_batch_dim=dynamic_dim)
-    compile_model(step, example_inputs, output_dir / step_name, dynamic_batch_dim=dynamic_dim)
+    _compile_jac(step, example_inputs, output_dir / step_name, dynamic_batch_dim=dynamic_dim)
     # Per-(unknown, given) pair metadata for the IFT graph. The IFT emits one
     # block per variable pair (via AssembledMatrix.disassemble), in
     # ift.emitted_pairs() order, so the C++ runtime composes them against
@@ -2254,7 +2241,7 @@ def _compile_implicit_segment(
             }
             for (u, g) in ift.emitted_pairs()
         ]
-        compile_model(ift, example_inputs, output_dir / ift_name, dynamic_batch_dim=dynamic_dim)
+        _compile_jac(ift, example_inputs, output_dir / ift_name, dynamic_batch_dim=dynamic_dim)
 
     # Per-(unknown, param) parameter-Jacobian graph (ParamIFT). Emits one dense
     # ``du/dθ`` block per requested ``(unknown, param)`` pair, in
@@ -2898,24 +2885,6 @@ def export_model_for_aoti(
     # a request_AD model compiles no derivative graph (and needs no
     # ``trace_autograd_ops``); the author's win is never hand-writing the chain
     # rule, not implicit ``-d`` selection.
-
-    # A request_AD leaf inside an ImplicitUpdate residual is not yet supported on
-    # the AOTI routes: the implicit Jacobian graphs (NewtonStep / IFT) build A=∂r/∂u
-    # through the equation-system assembly (AssembledVector / AssembledMatrix), which
-    # is generator-heavy and does NOT survive the strict export that the embedded
-    # reverse-mode autograd requires (the same reason ParamIFT is hand-written to
-    # bypass it). Forward-segment request_AD lowers fine. Raise a clear error here
-    # rather than letting torch.export fail on an opaque ``<genexpr>`` proxy error.
-    if master_pairs and _request_ad_inside_implicit(model):
-        raise NotImplementedError(
-            "request_AD is not yet supported for a leaf inside an ImplicitUpdate "
-            "residual on the AOTI routes: the implicit Jacobian graphs (NewtonStep / "
-            "IFT) assemble the residual Jacobian with machinery that does not survive "
-            "the strict torch.export required for the leaf's reverse-mode autodiff. "
-            "Use the eager routes (py-eager / cpp-eager), which support request_AD "
-            "everywhere, or hand-write the chain rule for the leaf used inside the "
-            "implicit residual. Forward-segment request_AD IS supported through AOTI."
-        )
 
     # Freeze any remaining nn.Parameter to a persistent buffer so torch.export
     # bakes it into the graph instead of lifting it as a graph input. Promoted
