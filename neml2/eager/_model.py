@@ -36,8 +36,8 @@ an ordinary Python-native model loaded via :func:`neml2.factory.load_model`
 from the *original* ``.i`` file. It is not HIT-registered; it exists only to
 present a raw-tensor, name-keyed surface to the C++ embed bridge that mirrors
 the C++ ``neml2::aoti::Model`` pybind binding (``input_names`` / ``output_names``
-/ ``input_base_shapes`` / ``output_base_shapes`` / ``device`` / ``dtype`` /
-``forward`` / ``jvp`` / ``jacobian``).
+/ ``input_base_shapes`` / ``output_base_shapes`` / ``parameter_base_shapes`` /
+``device`` / ``dtype`` / ``forward`` / ``jvp`` / ``jacobian``).
 
 Framework boundary (CLAUDE.md "Hard rules / Rule 1"): together with
 :mod:`neml2.types._boundary`, this module is the third legitimate raw-tensor
@@ -156,14 +156,22 @@ class _EagerModel:
         from ..models.param_ad import enumerate_typed_params
 
         self._typed_params = enumerate_typed_params(self._model)
-        self.param_names: list[str] = [q for q, _ in self._typed_params]
-        self.param_base_shapes: list[list[int]] = [
-            list(tc.BASE_SHAPE) for _, tc in self._typed_params
-        ]
+        # Internal name list feeding the reverse-mode AD engine (param_jacobian /
+        # param_vjp / named_parameters); the engine returns name-keyed dicts, so its
+        # order is irrelevant. The public surface is the qualified-name -> base shape
+        # map below (unified with aoti::Model.parameter_base_shapes).
+        self._param_names: list[str] = [q for q, _ in self._typed_params]
         # {qname: natural base shape}; used to split a (possibly batched) parameter's
         # stored shape into (batch, base) when computing the call batch / param blocks.
         self._param_base_shape_map: dict[str, tuple[int, ...]] = {
             q: tuple(tc.BASE_SHAPE) for q, tc in self._typed_params
+        }
+        # Public parameter-base-shape map keyed by qualified name (Scalar -> [],
+        # SR2 -> [6]); the parameter analogue of input_base_shapes and the unified
+        # surface the C++ neml2::eager::Model / neml2::aoti::Model expose. Keys are
+        # the calibration parameters (same keys as named_parameters()).
+        self.parameter_base_shapes: dict[str, list[int]] = {
+            q: list(b) for q, b in self._param_base_shape_map.items()
         }
 
     @property
@@ -348,7 +356,7 @@ class _EagerModel:
         # rule and the (output-batch-keyed) assembly agree; a per-input batch would
         # mismatch whenever a parameter's batch exceeds the inputs'.
         call_batch = call_batch_shape(
-            typed_args, self._model, self.param_names, self._param_base_shape_map
+            typed_args, self._model, self._param_names, self._param_base_shape_map
         )
         seed = {
             name: {
@@ -377,15 +385,15 @@ class _EagerModel:
     def named_parameters(self) -> dict[str, torch.Tensor]:
         """Raw, name-keyed view of the model's calibration parameters.
 
-        Keyed by the qualified ``named_parameters()`` name (e.g. ``"elasticity.E"``),
-        in ``param_names`` order; values are detached raw tensors at the parameter's
-        natural ``(*param_base)`` shape. This is the read side of the parameter
-        surface the C++ ``neml2::eager::Model`` exposes (the parameter analogue of
-        the input/output name accessors); it is part of the raw-tensor embed
-        boundary (see module docstring).
+        Keyed by the qualified ``named_parameters()`` name (e.g. ``"elasticity.E"``);
+        values are detached raw tensors at the parameter's natural ``(*param_base)``
+        shape. This is the read side of the parameter surface the C++
+        ``neml2::eager::Model`` exposes (the value analogue of
+        :attr:`parameter_base_shapes`); it is part of the raw-tensor embed boundary
+        (see module docstring).
         """
         params = dict(self._model.named_parameters())
-        return {q: params[q].detach() for q in self.param_names}
+        return {q: params[q].detach() for q in self._param_names}
 
     def set_parameter(self, name: str, value: torch.Tensor) -> None:
         """Replace a calibration parameter's value -- the write side of
@@ -404,8 +412,9 @@ class _EagerModel:
 
         Returns ``(outputs, P)`` -- ``outputs`` keyed by ``output_names`` and ``P``
         the nested ``{out_name: {param_qname: (*batch, *out_base, *param_base)}}``
-        block dict (rows in ``output_spec`` order, columns in ``param_names``
-        order), the parameter analogue of :meth:`jacobian`'s variable-pair output.
+        block dict (rows in ``output_spec`` order, columns keyed by the qualified
+        parameter name), the parameter analogue of :meth:`jacobian`'s variable-pair
+        output.
 
         Unlike :meth:`jacobian` (forward-mode input chain rule), this uses
         reverse-mode autograd over the model's parameters via
@@ -425,7 +434,7 @@ class _EagerModel:
         pjac = _param_jacobian(
             self._model,
             typed_args,
-            self.param_names,
+            self._param_names,
             self.output_names,
             self.output_spec,
             self._param_base_shape_map,
@@ -458,7 +467,7 @@ class _EagerModel:
         return _param_vjp(
             self._model,
             typed_args,
-            self.param_names,
+            self._param_names,
             self.output_names,
             cotangents,
         )

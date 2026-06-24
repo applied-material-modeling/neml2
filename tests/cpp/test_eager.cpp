@@ -131,9 +131,17 @@ main(int argc, char ** argv)
   // (b, 6) for these Scalar parameters; the value half matches forward. (Value
   // parity vs finite differences is checked in tests/unit/test_eager.py.)
   {
-    const auto pnames = m.param_names();
-    NEML2_CHECK(pnames.size() == 2); // LinearIsotropicElasticity: E, nu
-    NEML2_CHECK((m.param_base_shapes() == std::vector<std::vector<int64_t>>{{}, {}}));
+    // parameter_base_shapes(): the unified parameter surface, keyed by qualified
+    // name (E, nu are Scalars => empty base shape). Derive a name list from the
+    // map keys for the per-parameter loops below.
+    const auto & pbs = m.parameter_base_shapes();
+    NEML2_CHECK(pbs.size() == 2); // LinearIsotropicElasticity: E, nu
+    std::vector<std::string> pnames;
+    for (const auto & [q, base] : pbs)
+    {
+      NEML2_CHECK(base.empty()); // scalar parameter
+      pnames.push_back(q);
+    }
 
     const auto np = m.named_parameters();
     NEML2_CHECK(np.size() == 2);

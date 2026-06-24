@@ -31,8 +31,9 @@ auto outputs = model.forward({{"strain", strain_tensor}});
 // A batch-independent block (constant stiffness) is returned unbatched.
 auto [outs, J] = model.jacobian({{"strain", strain_tensor}});
 
-// Promoted parameters are mutable in place.
-model.named_parameters().at("E").fill_(210000.0);
+// Promoted parameters are mutable in place. Names are fully qualified: a bare
+// leaf is wrapped at compile time, so `--model elasticity` exposes `elasticity.E`.
+model.named_parameters().at("elasticity.E").fill_(210000.0);
 ```
 
 `load_model` returns a `Model`-shaped handle. Passing an optional

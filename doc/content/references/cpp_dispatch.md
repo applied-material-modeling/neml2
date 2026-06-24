@@ -164,7 +164,7 @@ map; mutating it in place is broadcast to every device copy before the next
 dispatch, so the usual single-device idiom keeps working:
 
 ```cpp
-m.named_parameters().at("E").fill_(150e3);  // reflected on every device next call
+m.named_parameters().at("model.E").fill_(150e3);  // reflected on every device next call
 ```
 
 ## Error handling

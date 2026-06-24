@@ -60,12 +60,13 @@ namespace neml2::eager
  * no generated stub. @ref load_model is the convenience factory.
  *
  * **API parity.** `forward` and the metadata accessors (`input_names` /
- * `output_names` / `input_base_shapes` / `output_base_shapes` / `device` /
- * `dtype`) have signatures identical to `aoti::Model`, so test code switches between the two
- * runtimes by changing only the load call. The Python adapter reports
- * names/sizes through the same helper the AOTI metadata uses, so the two agree
- * for the same model. `forward`, `jvp`, and `jacobian` are all implemented (the
- * latter two on the native model's `v=` chain rule).
+ * `output_names` / `input_base_shapes` / `output_base_shapes` /
+ * `parameter_base_shapes` / `device` / `dtype`) have signatures identical to
+ * `aoti::Model`, so test code switches between the two runtimes by changing only
+ * the load call. The Python adapter reports names/sizes through the same helper
+ * the AOTI metadata uses, so the two agree for the same model. `forward`, `jvp`,
+ * and `jacobian` are all implemented (the latter two on the native model's `v=`
+ * chain rule).
  *
  * **Plain-batch only.** The raw-tensor `forward(map)` boundary has no slot to
  * declare per-input sub-batch shapes (in NEML2 those are caller-declared at AOTI
@@ -163,15 +164,18 @@ public:
   std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
   jacobian(const std::map<std::string, at::Tensor> & inputs) const;
 
-  /// Calibration-parameter names (qualified, e.g. `"elasticity.E"`) and their
-  /// per-name base shapes -- the parameter analogue of `input_names()` /
-  /// `input_base_shapes()`. Cached at load; no GIL.
-  const std::vector<std::string> & param_names() const noexcept;
-  const std::vector<std::vector<int64_t>> & param_base_shapes() const noexcept;
+  /// Per-calibration-parameter natural base shape, keyed by qualified name
+  /// (e.g. `"elasticity.E"` -> `{}` for a Scalar, `{6}` for an SR2) -- the
+  /// parameter analogue of `input_base_shapes()`. The map keys are the
+  /// calibration parameters; same keys as `named_parameters()`. Identical
+  /// signature to @ref neml2::aoti::Model::parameter_base_shapes, so consumers
+  /// introspect the parameter surface the same way on either runtime. Cached at
+  /// load; no GIL.
+  const std::map<std::string, std::vector<int64_t>> & parameter_base_shapes() const noexcept;
 
-  /// Current values of the calibration parameters, keyed by qualified name
-  /// (`param_names()` order), each a detached tensor at its `(*param_base)`
-  /// shape. The read side of the parameter surface MOOSE drives. Acquires the GIL.
+  /// Current values of the calibration parameters, keyed by qualified name,
+  /// each a detached tensor at its `(*param_base)` shape. The read side of the
+  /// parameter surface MOOSE drives. Acquires the GIL.
   std::map<std::string, at::Tensor> named_parameters() const;
 
   /// Replace a calibration parameter's value (the write side). *name* is the

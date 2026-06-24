@@ -170,9 +170,10 @@ def param_jac_export(tmp_path_factory):
 
     out_dir = tmp_path_factory.mktemp("aoti_param_jac")
     # Promote E to a runtime input and request the parameter derivative
-    # d(stress)/d(E) -- the schema-v7 parameter-Jacobian path.
+    # d(stress)/d(E) -- the schema-v7 parameter-Jacobian path. A bare leaf is
+    # wrapped in ComposedModel([leaf]) at export, so its qualified name is "model.E".
     meta = export_model_for_aoti(
-        _ELASTICITY_I, "model", out_dir, promoted={"E"}, derivatives=["stress:E"]
+        _ELASTICITY_I, "model", out_dir, promoted={"model.E"}, derivatives=["stress:model.E"]
     )
     return meta, out_dir
 
@@ -256,16 +257,16 @@ def test_export_forward_param_jacobian_metadata(param_jac_export):
     `parameters`."""
     meta, out_dir = param_jac_export
     assert meta["schema_version"] == AOTI_META_SCHEMA_VERSION
-    assert meta["parameter_derivatives"] == [["stress", "E"]]
+    assert meta["parameter_derivatives"] == [["stress", "model.E"]]
     # No structural derivative was requested, so the input-jvp graph is absent.
     assert meta["derivatives"] == []
-    assert any(p["name"] == "E" for p in meta["parameters"])
+    assert any(p["name"] == "model.E" for p in meta["parameters"])
     seg = meta["segments"][0]
     assert "jvp_package" not in seg
     assert seg["param_jacobian_package"] == "model_pjac.pt2"
     assert (out_dir / "model_pjac.pt2").exists()
     pair = seg["param_jacobian_pairs"][0]
-    assert (pair["out_var"], pair["param"]) == ("stress", "E")
+    assert (pair["out_var"], pair["param"]) == ("stress", "model.E")
     assert pair["out_base_shape"] == [6]
     assert pair["param_base_shape"] == []  # scalar parameter -> no trailing axis
 
@@ -312,7 +313,7 @@ def test_export_forward_param_vjp_metadata(param_jac_export):
     seg = meta["segments"][0]
     assert seg["param_vjp_package"] == "model_pvjp.pt2"
     assert (out_dir / "model_pvjp.pt2").exists()
-    assert seg["param_vjp_params"] == ["E"]  # grad-output order
+    assert seg["param_vjp_params"] == ["model.E"]  # grad-output order
     assert seg["param_vjp_outputs"] == ["stress"]  # cotangent-input order
 
 

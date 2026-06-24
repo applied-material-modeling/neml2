@@ -109,6 +109,14 @@ Everything else is baked into the graph as a constant.
                              &Model::output_base_shapes,
                              "Per-output base shape (Scalar -> [], SR2 -> [6], R2 -> [3, 3]).")
       .def_property_readonly(
+          "parameter_base_shapes",
+          &Model::parameter_base_shapes,
+          "Per-promoted-parameter natural base shape, keyed by qualified name "
+          "(Scalar -> [], SR2 -> [6]). The keys are the promoted parameters (same "
+          "keys as named_parameters()); empty when nothing was promoted. The "
+          "parameter analogue of input_base_shapes / output_base_shapes, and the "
+          "unified parameter surface shared with neml2.eager._EagerModel.")
+      .def_property_readonly(
           "device",
           [](const Model & m) { return m.device(); },
           "Device the artifact was compiled for (immutable).")

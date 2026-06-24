@@ -1,1 +1,0 @@
-scale_stress.weight_0

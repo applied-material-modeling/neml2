@@ -25,15 +25,13 @@
 """Parametrized AOTI export + reload tests.
 
 Walks every ``<scenario>/model.i`` under this directory, compiles the model
-named ``model`` via :func:`~neml2.cli.aoti_export.export_model_for_aoti`,
-reloads the artifact through :class:`~neml2.aoti.Model`, and asserts
-the compiled forward output matches the eager native run within
-``rtol/atol``.
-
-Per-scenario knobs (all optional, sidecar files):
-
-* ``promote.txt`` -- one parameter qname per line; passed as the ``promoted``
-  argument to ``export_model_for_aoti``. Absent = fully baked.
+named ``model`` (fully baked -- no promotions) via
+:func:`~neml2.cli.aoti_export.export_model_for_aoti`, reloads the artifact
+through :class:`~neml2.aoti.Model`, and asserts the compiled forward output
+matches the eager native run within ``rtol/atol``. Promoted-parameter behavior
+is exercised separately by the dedicated parameter-derivative tests below
+(``test_aoti_param_jacobian_and_vjp_match_fd`` and friends), which pass
+``promoted=`` explicitly.
 
 Runs by default. Each scenario triggers an Inductor compile, so the
 full sweep is slow -- the CI ``test`` job allocates several minutes
@@ -67,17 +65,6 @@ _SCENARIOS = sorted(
     for d in _SCENARIO_DIR.iterdir()
     if d.is_dir() and (d / "model.i").exists() and d.name not in _DEDICATED
 )
-
-
-def _load_promoted(scenario: Path) -> set[str]:
-    promote_file = scenario / "promote.txt"
-    if not promote_file.exists():
-        return set()
-    return {
-        line.strip()
-        for line in promote_file.read_text().splitlines()
-        if line.strip() and not line.startswith("#")
-    }
 
 
 def _make_inputs(
@@ -134,26 +121,20 @@ def test_aoti_export_reload_matches_eager(scenario: Path, tmp_path: Path):
     from neml2.aoti import Model as AOTIModel
     from neml2.cli.aoti_export import AOTI_META_SCHEMA_VERSION, export_model_for_aoti
 
-    promoted = _load_promoted(scenario)
     hit_path = scenario / "model.i"
 
-    # Compile.
+    # Compile (fully baked -- promotion is covered by the dedicated tests).
     out_dir = tmp_path / scenario.name
-    meta = export_model_for_aoti(hit_path, "model", out_dir, promoted=promoted)
+    meta = export_model_for_aoti(hit_path, "model", out_dir)
     assert meta["schema_version"] == AOTI_META_SCHEMA_VERSION
-    if promoted:
-        assert {p["name"] for p in meta["parameters"]} == promoted
-    else:
-        assert meta["parameters"] == []
+    assert meta["parameters"] == []
 
     # Reload through the pybind binding.
     aoti = AOTIModel(str(out_dir / "model_meta.json"))
 
     # Build a reproducible structural-input batch shared by eager and AOTI.
-    # ``export_model_for_aoti`` mutates its own model copy via _promote_to_nl_params,
-    # not the one we load here, so eager_model retains its original input_spec.
     eager_model = load_input(hit_path).get_model("model")
-    structural_spec = _structural_input_spec(eager_model, promoted)
+    structural_spec = dict(eager_model.input_spec)
     # Match the export-time shape declaration so per-input sub-batch
     # axes line up between eager and AOTI -- the .pt2 was compiled with
     # these shapes, so calling it with mismatched ones is an error
@@ -206,7 +187,6 @@ def test_aoti_stub_loads_through_native_factory(scenario: Path, tmp_path: Path):
     from neml2.cli.aoti_compile import emit_aoti_stub
     from neml2.cli.aoti_export import export_model_for_aoti
 
-    promoted = _load_promoted(scenario)
     hit_path = scenario / "model.i"
 
     # New layout: <out>/model/<device>/ artifacts + a standalone <out>/model_aoti.i
@@ -215,7 +195,7 @@ def test_aoti_stub_loads_through_native_factory(scenario: Path, tmp_path: Path):
     out_dir = tmp_path / scenario.name
     dev = torch.get_default_device().type
     artifact_dir = out_dir / "model"
-    export_model_for_aoti(hit_path, "model", artifact_dir / dev, device=dev, promoted=promoted)
+    export_model_for_aoti(hit_path, "model", artifact_dir / dev, device=dev)
     # `export_model_for_aoti` only writes the .pt2 segments + metadata; the
     # `.i` stub is `neml2-compile`'s additional step. Drive it directly so
     # this test stays a single in-process call.
@@ -228,12 +208,10 @@ def test_aoti_stub_loads_through_native_factory(scenario: Path, tmp_path: Path):
     assert type(shim).__name__ == "AOTIModel"
     assert hasattr(shim, "input_spec") and hasattr(shim, "output_spec")
 
-    # Build positional typed-wrapper args matching the shim's input_spec.
-    # The shim's input_spec excludes promoted entries (they live on the
-    # underlying binding's named_parameters); structural inputs match the
-    # eager model's structural spec.
+    # Build positional typed-wrapper args matching the shim's input_spec
+    # (fully baked, so all inputs are structural).
     eager_model = load_input(hit_path).get_model("model")
-    structural_spec = _structural_input_spec(eager_model, promoted)
+    structural_spec = dict(eager_model.input_spec)
     shapes = _read_per_input_shapes(hit_path, structural_spec)
     inputs = _make_inputs(structural_spec, shapes=shapes)
     typed_args = tuple(
@@ -333,6 +311,42 @@ def test_scenarios_discovered():
     )
 
 
+def test_parameter_base_shapes_map_matches_eager(tmp_path: Path):
+    """The unified parameter-introspection surface: both ``neml2.aoti.Model`` and
+    the eager ``_EagerModel`` expose ``parameter_base_shapes`` as a
+    ``{qualified_name: base_shape}`` map whose keys are exactly the runtime
+    parameter set (``named_parameters()``). For the same model with every typed
+    parameter promoted, the two maps are byte-identical -- both use the qualified
+    name (a bare leaf named ``model`` reports ``model.E`` on either route, since
+    the AOTI export now wraps the leaf in ``ComposedModel([leaf])`` before
+    promotion, matching the eager runtime). Promotion alone (no derivative graphs)
+    suffices, so this needs no param-deriv torch support."""
+    from neml2.aoti._aoti import Model as PybindModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+    from neml2.eager import _EagerModel
+
+    hit_path = _SCENARIO_DIR / "forward_single" / "model.i"
+
+    # The eager parameter surface = every typed parameter; keys == named_parameters().
+    em = _EagerModel(str(hit_path), "model")
+    assert em.parameter_base_shapes  # forward_single exposes scalar params (E, nu)
+    assert set(em.parameter_base_shapes) == set(em.named_parameters())
+    assert set(em.parameter_base_shapes) == {"model.E", "model.nu"}  # qualified names
+
+    # Promote everything eager exposes (same qualified namespace) so the AOTI
+    # (promoted-subset) surface covers the same parameters.
+    out_dir = tmp_path / "pbs"
+    export_model_for_aoti(hit_path, "model", out_dir, promoted=set(em.parameter_base_shapes))
+    m = PybindModel(str(out_dir / "model_meta.json"))
+
+    # aoti: the map keys are exactly the runtime-settable promoted parameters.
+    assert set(m.parameter_base_shapes) == set(m.named_parameters())
+
+    # Byte-identical qualified-name -> base-shape map across the cpp-aoti and
+    # cpp-eager routes.
+    assert m.parameter_base_shapes == em.parameter_base_shapes
+
+
 @_REQUIRES_PARAM_DERIV_TORCH
 def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     """The compiled cpp-aoti parameter-derivative path (schema v7) through the
@@ -345,19 +359,23 @@ def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
 
     hit_path = _SCENARIO_DIR / "forward_single" / "model.i"
     out_dir = tmp_path / "param"
-    export_model_for_aoti(hit_path, "model", out_dir, promoted={"E"}, derivatives=["stress:E"])
+    # A bare leaf is wrapped in ComposedModel([leaf]) at export, so the promoted
+    # parameter's qualified name is "model.E" (matching the eager runtime).
+    export_model_for_aoti(
+        hit_path, "model", out_dir, promoted={"model.E"}, derivatives=["stress:model.E"]
+    )
     m = PybindModel(str(out_dir / "model_meta.json"))
-    assert "E" in m.named_parameters()
+    assert "model.E" in m.named_parameters()
 
     torch.manual_seed(0)
     b = 5
     strain = torch.randn(b, 6, dtype=torch.float64)
     raw = {"strain": strain}  # E is a promoted parameter, not a structural input
-    e0 = float(m.named_parameters()["E"])
+    e0 = float(m.named_parameters()["model.E"])
     h = 1e-4 * e0
 
     def set_e(v):
-        m.named_parameters()["E"].fill_(float(v))
+        m.named_parameters()["model.E"].fill_(float(v))
 
     def stress_at(v):
         set_e(v)
@@ -366,7 +384,7 @@ def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     # param_jacobian vs FD.
     set_e(e0)
     outs, pjac = m.param_jacobian(raw)
-    block = pjac["stress"]["E"]
+    block = pjac["stress"]["model.E"]
     assert tuple(block.shape) == (b, 6)
     assert torch.allclose(outs["stress"], m.forward(raw)["stress"])
     fd = (stress_at(e0 + h) - stress_at(e0 - h)) / (2 * h)
@@ -378,7 +396,7 @@ def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     w = torch.randn(b, 6, dtype=torch.float64)
     set_e(e0)
     grads = m.param_vjp(raw, {"stress": w})
-    g_e = float(grads["E"])
+    g_e = float(grads["model.E"])
 
     def loss_at(v):
         set_e(v)
@@ -406,7 +424,10 @@ def test_aoti_batched_param_matches_fd_and_eager(tmp_path: Path):
 
     hit_path = _SCENARIO_DIR / "forward_single" / "model.i"
     out_dir = tmp_path / "batched"
-    export_model_for_aoti(hit_path, "model", out_dir, promoted={"E"}, derivatives=["stress:E"])
+    # Bare leaf wrapped at export => qualified parameter name "model.E" (== eager).
+    export_model_for_aoti(
+        hit_path, "model", out_dir, promoted={"model.E"}, derivatives=["stress:model.E"]
+    )
     m = PybindModel(str(out_dir / "model_meta.json"))
 
     torch.manual_seed(0)
@@ -414,9 +435,9 @@ def test_aoti_batched_param_matches_fd_and_eager(tmp_path: Path):
     strain = torch.randn(b, 6, dtype=torch.float64)
     raw = {"strain": strain}
     e_batched = torch.linspace(90.0, 110.0, b, dtype=torch.float64)  # per-element Youngs modulus
-    m.set_parameter("E", e_batched.clone())
+    m.set_parameter("model.E", e_batched.clone())
 
-    # Eager reference with the same batched parameter (qname is composed: "model.E").
+    # Eager reference with the same batched parameter (same qualified name).
     em = _EagerModel(str(hit_path), "model")
     em.set_parameter("model.E", e_batched.clone())
 
@@ -427,7 +448,7 @@ def test_aoti_batched_param_matches_fd_and_eager(tmp_path: Path):
 
     # param_jacobian block (b, 6) = per-element d(stress_i)/d(E_i); off-diagonal zero.
     outs, pjac = m.param_jacobian(raw)
-    block = pjac["stress"]["E"]
+    block = pjac["stress"]["model.E"]
     assert tuple(block.shape) == (b, 6)
     assert torch.allclose(outs["stress"], out, atol=1e-10)
     _, p_eager = em.param_jacobian(raw)
@@ -439,11 +460,11 @@ def test_aoti_batched_param_matches_fd_and_eager(tmp_path: Path):
     for i in range(b):
         up = e_batched.clone()
         up[i] += h
-        m.set_parameter("E", up)
+        m.set_parameter("model.E", up)
         sp = m.forward(raw)["stress"]
         dn = e_batched.clone()
         dn[i] -= h
-        m.set_parameter("E", dn)
+        m.set_parameter("model.E", dn)
         sm = m.forward(raw)["stress"]
         fd[i] = (sp[i] - sm[i]) / (2 * h)
     rel = (block - fd).abs().max().item() / (fd.abs().max().item() + 1e-30)
@@ -451,9 +472,9 @@ def test_aoti_batched_param_matches_fd_and_eager(tmp_path: Path):
 
     # param_vjp with the batched parameter: a PER-ELEMENT (b,) adjoint (E_i only
     # affects stress_i), matching eager -- NOT the global batch-summed scalar.
-    m.set_parameter("E", e_batched.clone())
+    m.set_parameter("model.E", e_batched.clone())
     w = torch.randn(b, 6, dtype=torch.float64)
-    g = m.param_vjp(raw, {"stress": w})["E"]
+    g = m.param_vjp(raw, {"stress": w})["model.E"]
     assert tuple(g.shape) == (b,), f"batched param_vjp should be per-element, got {tuple(g.shape)}"
     g_eager = em.param_vjp(raw, {"stress": w})["model.E"]
     assert torch.allclose(g, g_eager, atol=1e-8), "batched param_vjp != eager"

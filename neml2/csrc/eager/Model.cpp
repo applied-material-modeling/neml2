@@ -150,9 +150,8 @@ Model::Model(const std::filesystem::path & input_file,
             _impl->adapter.attr("input_base_shapes").cast<std::vector<std::vector<int64_t>>>();
         _impl->output_base_shapes =
             _impl->adapter.attr("output_base_shapes").cast<std::vector<std::vector<int64_t>>>();
-        _impl->param_names = _impl->adapter.attr("param_names").cast<std::vector<std::string>>();
-        _impl->param_base_shapes =
-            _impl->adapter.attr("param_base_shapes").cast<std::vector<std::vector<int64_t>>>();
+        _impl->parameter_base_shapes = _impl->adapter.attr("parameter_base_shapes")
+                                           .cast<std::map<std::string, std::vector<int64_t>>>();
         _impl->device = _impl->adapter.attr("device").cast<at::Device>();
         _impl->dtype = _impl->adapter.attr("dtype").cast<at::ScalarType>();
       });
@@ -234,16 +233,10 @@ Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
                  });
 }
 
-const std::vector<std::string> &
-Model::param_names() const noexcept
+const std::map<std::string, std::vector<int64_t>> &
+Model::parameter_base_shapes() const noexcept
 {
-  return _impl->param_names;
-}
-
-const std::vector<std::vector<int64_t>> &
-Model::param_base_shapes() const noexcept
-{
-  return _impl->param_base_shapes;
+  return _impl->parameter_base_shapes;
 }
 
 std::map<std::string, at::Tensor>
