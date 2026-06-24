@@ -117,7 +117,8 @@ Model::Impl::~Impl()
 
 Model::Model(const std::filesystem::path & input_file,
              const std::string & model_name,
-             std::optional<at::Device> device_override)
+             std::optional<at::Device> device_override,
+             const std::vector<std::string> & load)
 {
   // Construct the Impl first -- this brings up the embedded interpreter via the
   // InterpreterGuard member (no GIL required yet). Kept outside `guarded`
@@ -133,6 +134,12 @@ Model::Model(const std::filesystem::path & input_file,
         // _aoti binding), then import the Python-side adapter.
         py::module_::import("torch");
         auto mod = py::module_::import("neml2.eager");
+        // Load any external Python extensions into the registry BEFORE
+        // constructing the model, so `factory.load_model` (invoked by
+        // `_EagerModel` below) can resolve their `@register_neml2_object` types.
+        // Reuses the exact CLI `--load` plumbing for identical semantics.
+        if (!load.empty())
+          py::module_::import("neml2.cli._extensions").attr("load_user_extensions")(load);
         py::object device = device_override.has_value() ? py::cast(*device_override) : py::none();
         _impl->adapter = mod.attr("_EagerModel")(input_file.string(), model_name, device);
 

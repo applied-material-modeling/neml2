@@ -105,9 +105,19 @@ public:
   ///
   /// `device_override`, when set, moves the model onto that device (e.g.
   /// `cuda:1`); when omitted, the model's natural device is used.
+  ///
+  /// `load` is an optional list of external Python extensions (file paths,
+  /// package directories, or importable dotted module names) imported into the
+  /// embedded interpreter BEFORE the model is constructed -- the embedded-eager
+  /// counterpart of the `--load` flag on `neml2-run` / `neml2-compile`. Each
+  /// imported module self-registers its `@register_neml2_object` types into the
+  /// factory, so a downstream C++ consumer can drive Python-authored models that
+  /// live outside the installed `neml2` package. Same resolution + ordering as
+  /// the CLI (see `neml2.cli._extensions.load_user_extensions`).
   explicit Model(const std::filesystem::path & input_file,
                  const std::string & model_name,
-                 std::optional<at::Device> device_override = std::nullopt);
+                 std::optional<at::Device> device_override = std::nullopt,
+                 const std::vector<std::string> & load = {});
 
   /// Declared here and defined out-of-line where `Impl` is complete, as the
   /// PImpl idiom requires.

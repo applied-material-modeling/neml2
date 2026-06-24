@@ -27,10 +27,12 @@
 namespace neml2::eager
 {
 Model
-load_model(const std::filesystem::path & input_file, const std::string & model_name)
+load_model(const std::filesystem::path & input_file,
+           const std::string & model_name,
+           const std::vector<std::string> & load)
 {
   // `Model` is non-movable; this prvalue return relies on C++17 guaranteed copy
   // elision (constructed directly into the caller's storage).
-  return Model(input_file, model_name);
+  return Model(input_file, model_name, std::nullopt, load);
 }
 } // namespace neml2::eager

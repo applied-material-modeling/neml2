@@ -278,5 +278,44 @@ main(int argc, char ** argv)
     NEML2_CHECK(got_conv);
   }
 
+  // #5: external Python model via the `--load` hook. argv[3] is an .i whose model
+  // type (ExtScaleStress) is defined in an out-of-package module argv[4], not in
+  // the installed neml2 package. Without --load the type is unknown (load fails);
+  // with it, the module self-registers into the factory and the model loads + runs
+  // (out_stress = 2 * in_stress). This is the embedded-eager counterpart of the
+  // `neml2-run --load` flag, for a C++ host driving Python-authored models.
+  if (argc >= 5)
+  {
+    const std::string ext_input = argv[3];
+    const std::string ext_module = argv[4];
+
+    // Negative FIRST: the type is not registered yet, so loading without --load
+    // throws. (Registration is a process-global side effect of importing the
+    // module, so this must run before the --load below registers it.)
+    NEML2_CHECK_THROWS(load_model(ext_input, "model"));
+
+    // With --load: the external module registers ExtScaleStress, so it loads.
+    auto me = load_model(ext_input, "model", {ext_module});
+    NEML2_CHECK(me.input_names() == std::vector<std::string>{"in_stress"});
+    NEML2_CHECK(me.output_names() == std::vector<std::string>{"out_stress"});
+
+    // Build the input at the model's own dtype (this paramless model has no
+    // calibration coefficients anchoring it to float64, so it takes torch's
+    // default) -- the eager boundary rejects a dtype mismatch.
+    std::map<std::string, at::Tensor> ein;
+    ein.emplace("in_stress", at::ones({4, 6}, at::TensorOptions().dtype(me.dtype())));
+    const auto eout = me.forward(ein);
+    NEML2_CHECK(eout.count("out_stress") == 1);
+    NEML2_CHECK(eout.at("out_stress").size(0) == 4 && eout.at("out_stress").size(1) == 6);
+    // The external model doubles its input -> proves it actually ran.
+    NEML2_CHECK(at::allclose(eout.at("out_stress"), 2.0 * ein.at("in_stress")));
+
+    // The registration persists in the process-global factory, so a later load
+    // WITHOUT --load now resolves the type too -- confirming the hook registered
+    // into the shared registry (not a per-call scratch namespace).
+    auto me2 = load_model(ext_input, "model");
+    NEML2_CHECK(at::allclose(me2.forward(ein).at("out_stress"), eout.at("out_stress")));
+  }
+
   return 0;
 }
