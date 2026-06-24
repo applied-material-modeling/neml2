@@ -1218,7 +1218,11 @@ class _ParamJacobianModule(nn.Module):
         )
         self.selected_pairs = selected_pairs
 
-    def forward(self, *inputs) -> tuple:
+    # This body executes only inside `torch.export`'s Dynamo trace at compile time
+    # (transformed bytecode), so coverage.py cannot see these lines; the AOTI
+    # parameter-Jacobian tests exercise it end-to-end (compile + run + FD). Hence
+    # the coverage exclusion on the def below.
+    def forward(self, *inputs) -> tuple:  # pragma: no cover
         s0 = inputs[self.structural_idx[0]]
         s0_type = self.in_types[self.structural_idx[0]]
         s0t = s0 if isinstance(s0, s0_type) else s0_type(s0)
@@ -1306,7 +1310,11 @@ class _ParamVJPModule(nn.Module):
         # Promoted parameters to differentiate, in input_spec order.
         self.param_names = tuple(n for n in self.input_names if n in set(param_names))
 
-    def forward(self, *args) -> tuple:
+    # This body executes only inside `torch.export`'s Dynamo trace at compile time
+    # (transformed bytecode), so coverage.py cannot see these lines; the AOTI
+    # parameter-VJP tests exercise it end-to-end (compile + run + FD). Hence the
+    # coverage exclusion on the def below.
+    def forward(self, *args) -> tuple:  # pragma: no cover
         n_in = len(self.input_names)
         model_args = args[:n_in]
         cotangents = args[n_in:]  # one per output, in output_spec order

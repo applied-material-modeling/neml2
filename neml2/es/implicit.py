@@ -507,7 +507,12 @@ class ParamIFT(_SystemModule):
             if self._selected_pairs is None or (u, p) in self._selected_pairs
         ]
 
-    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+    # This body executes only inside `torch.export`'s Dynamo trace when the
+    # ParamIFT graph is compiled; Dynamo runs transformed bytecode, so coverage.py
+    # never sees these source lines even though the AOTI implicit parameter-
+    # derivative tests exercise it end-to-end (compile + run + FD check). Hence the
+    # coverage exclusion on the def below.
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:  # pragma: no cover
         n_u = len(self.unknown_groups)
         n_g = len(self.given_groups)
         u_group_raws = args[:n_u]
