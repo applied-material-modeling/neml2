@@ -33,10 +33,20 @@ AOTInductor, or fuse poorly in Inductor (see ``DECISION.md`` D-051 / D-060 and
 * **autograd / functional transforms** — ``torch.func.{vmap, jvp, vjp, jacrev,
   jacfwd, hessian, grad}``, ``torch.vmap``, ``torch.autograd.grad`` /
   ``backward``, ``torch.autograd.functional.*``, ``Tensor.backward``,
-  ``torch.enable_grad``. Higher-order autodiff does not survive export; derive
-  Jacobians analytically through the ``forward(v=...)`` chain-rule machinery.
+  ``torch.enable_grad``. The ``torch.func`` transforms / forward-mode dual never
+  survive export; derive Jacobians analytically through the ``forward(v=...)``
+  chain-rule machinery.
 * **``torch.einsum``** — does not fuse cleanly with neighbouring pointwise ops in
   Inductor; use explicit ``matmul`` / broadcast-multiply-sum.
+
+The ban is a default, not an absolute: **single reverse-mode** ``torch.autograd.grad``
+*does* lower through AOTInductor (with ``torch._dynamo.config.trace_autograd_ops``;
+proven by the parameter-derivative path). The framework uses it deliberately in two
+sanctioned, framework-managed places that wrap the call in :func:`allow_autograd`:
+the parameter derivatives (:mod:`neml2.models.param_ad`) and the ``request_AD``
+auto-derived input chain rule (:mod:`neml2.models.input_ad`, see
+:meth:`neml2.models.model.Model.request_AD`). The guard still fires for *hand-written*
+autograd inside a leaf ``forward`` — that is the case it is meant to catch.
 
 Mechanism: importing this module monkeypatches the offending callables *once,
 process-wide*, with thin wrappers that delegate to the original implementation
@@ -102,8 +112,22 @@ def _exit_forward() -> None:
 
 
 def _armed(category: str) -> bool:
-    """True iff a forward is active and *category* is not currently allowed."""
-    return _depth() > 0 and _allow_counts().get(category, 0) == 0
+    """True iff a forward is active and *category* is not currently allowed.
+
+    Always False while ``torch.export`` / ``torch.compile`` is tracing. The guard
+    is an EAGER authoring check -- it catches *hand-written* autograd / einsum in a
+    ``forward`` -- and the framework's own sanctioned reverse-mode autodiff
+    (parameter derivatives and ``request_AD``) must trace cleanly into the exported
+    graph. Disabling the guard under compilation lets those graphs lower without the
+    ``@contextmanager`` escape hatches (which Dynamo cannot trace through its block
+    stack), at no loss of protection: an invalid model trips the guard the moment it
+    runs eager, long before anyone exports it. ``is_compiling()`` is only consulted
+    on the would-arm path (depth > 0, category not allowed), so eager has no extra
+    cost on the common path.
+    """
+    return (
+        _depth() > 0 and _allow_counts().get(category, 0) == 0 and not torch.compiler.is_compiling()
+    )
 
 
 _MESSAGES = {

@@ -151,6 +151,60 @@ def broadcast_to_common_batch(
     return out, common_dyn
 
 
+def contract_jacobian_block(
+    block: torch.Tensor,
+    v: TensorWrapper,
+    out_type: type[TensorWrapper],
+) -> TensorWrapper:
+    """Contract a raw local Jacobian block with a typed chain-rule tangent.
+
+    The ``request_AD`` boundary: reverse-mode autograd yields a dense local
+    Jacobian ``block`` of shape ``(*B, *out_base, *in_base)`` (see
+    :func:`neml2.models.input_ad.local_input_jacobians`); ``v`` is the incoming
+    first-order tangent of the *input* type, carrying a single leading K (seed)
+    axis (``k_ndim == 1``): ``(K, *B, *in_base)``. Returns ``J @ v`` summed over
+    the input base, broadcast over K and the batch -- the contribution to the
+    output tangent as an ``out_type`` wrapper with the same single K axis
+    preserved: ``(K, *B, *out_base)``. :meth:`~neml2.models.model.Model.apply_chain_rule`
+    accumulates these across input edges.
+
+    Plain-batch only (``v.sub_batch_ndim == 0``): the request_AD primitive does
+    not yet thread sub-batch structure through the AD-derived block.
+
+    Framework boundary (CLAUDE.md "Hard rules / Rule 1"): the block is raw
+    (reverse-mode autograd output), so this read of ``v.data`` + raw matmul is a
+    sanctioned raw-tensor site, re-wrapped to typed on return.
+    """
+    if v.sub_batch_ndim:
+        raise NotImplementedError(
+            "request_AD is plain-batch only (v1): the AD-derived Jacobian block "
+            f"cannot contract a sub-batched tangent ({type(v).__name__} with "
+            f"sub_batch_ndim={v.sub_batch_ndim})."
+        )
+    if v.k_ndim != 1:
+        raise NotImplementedError(
+            "contract_jacobian_block expects a single leading K axis (k_ndim=1), "
+            f"got k_ndim={v.k_ndim}."
+        )
+    in_base = tuple(int(s) for s in type(v).BASE_SHAPE)
+    out_base = tuple(int(s) for s in out_type.BASE_SHAPE)
+    n_in = 1
+    for s in in_base:
+        n_in *= s
+    n_out = 1
+    for s in out_base:
+        n_out *= s
+    vd = v.data  # noqa: data-ok request_AD autograd boundary  (K, *B, *in_base)
+    v_batch = vd.shape[1 : vd.ndim - len(in_base)]
+    v_flat = vd.reshape(vd.shape[0], *v_batch, n_in)
+    nb = block.ndim - len(out_base) - len(in_base)
+    block_flat = block.reshape(*block.shape[:nb], n_out, n_in)
+    # (1, *Bblk, n_out, n_in) @ (K, *Bv, n_in, 1) -> (K, *B, n_out, 1) -> (K, *B, n_out)
+    res = (block_flat.unsqueeze(0) @ v_flat.unsqueeze(-1)).squeeze(-1)
+    res = res.reshape(*res.shape[:-1], *out_base)
+    return out_type(res, k_ndim=1, k_state=v.k_state, k_pairing=v.k_pairing)
+
+
 def unwrap_outputs(
     typed_outs: tuple[TensorWrapper, ...],
     output_names: list[str],

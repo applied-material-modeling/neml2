@@ -237,6 +237,12 @@ class Model(nn.Module, ABC):
         #: ``input_spec`` keyed by ``NLParam.input_name``; :meth:`_get_param`
         #: reads from positional inputs for these and from ``self`` otherwise.
         self._nl_params: dict[str, NLParam] = {}
+        #: Resolved ``{(output_name, input_name)}`` pairs whose first-order chain
+        #: rule is auto-derived by reverse-mode autodiff instead of a hand-written
+        #: ``forward(v=)`` branch. Populated by :meth:`request_AD`; empty for the
+        #: usual analytic leaf. When non-empty, :meth:`__call__` routes a
+        #: derivative request through :meth:`_ad_pushforward`.
+        self._ad_pairs: set[tuple[str, str]] = set()
         self._store_schema_values(hit_values)
         self.__post_init__()
 
@@ -508,6 +514,11 @@ class Model(nn.Module, ABC):
 
         _enter_forward()
         try:
+            # request_AD leaves write only a value forward; when a first-order
+            # derivative is requested, supply the chain rule by reverse-mode
+            # autodiff instead of dispatching ``v`` into ``forward``.
+            if kwargs.get("v") is not None and getattr(self, "_ad_pairs", None):
+                return self._ad_pushforward(args, kwargs)
             return super().__call__(*args, **kwargs)
         finally:
             _exit_forward()
@@ -907,6 +918,111 @@ class Model(nn.Module, ABC):
             else:
                 out[n] = self.output_spec[n](v)
         return out
+
+    # ------------------------------------------------------------------
+    # request_AD: auto-derived first-order chain rule (reverse-mode autodiff)
+    # ------------------------------------------------------------------
+
+    def request_AD(
+        self,
+        outputs: Sequence[str] | None = None,
+        inputs: Sequence[str] | None = None,
+    ) -> None:
+        """Declare ``(output, input)`` derivative pairs to be auto-derived by autodiff.
+
+        Mirrors v2's per-output ``request_AD``: a leaf that calls this writes only
+        a value ``forward`` (no ``v=`` chain-rule branch) and the framework
+        supplies the first-order chain rule for the declared pairs by reverse-mode
+        autograd (see :meth:`_ad_pushforward` /
+        :func:`neml2.models.input_ad.local_input_jacobians`). Call it from the
+        leaf's ``__init__`` / ``__post_init__``.
+
+        *outputs* defaults to every output; *inputs* defaults to every
+        **structural** input -- promoted runtime parameters (``-p``) are excluded,
+        as their derivatives are the separate :meth:`param_jacobian` surface. Both
+        are validated against ``output_spec`` / ``input_spec``. Idempotent and
+        additive (call multiple times to mix subsets).
+
+        First-order only: an AD leaf keeps ``SUPPORTS_SECOND_ORDER = False`` and so
+        cannot appear inside a :class:`~neml2.models.solid_mechanics.plasticity.Normality`
+        wrap. v1 is plain-batch only (a sub-batched input/output is rejected at
+        evaluation time).
+        """
+        out_names = list(self.output_spec) if outputs is None else list(outputs)
+        promoted = {nlp.input_name for nlp in self._nl_params.values()}
+        structural = [n for n in self.input_spec if n not in promoted]
+        in_names = structural if inputs is None else list(inputs)
+        for o in out_names:
+            if o not in self.output_spec:
+                raise ValueError(
+                    f"request_AD: {o!r} is not an output of {type(self).__name__} "
+                    f"(available: {list(self.output_spec)})."
+                )
+        for i in in_names:
+            if i not in self.input_spec:
+                raise ValueError(
+                    f"request_AD: {i!r} is not an input of {type(self).__name__} "
+                    f"(available: {list(self.input_spec)})."
+                )
+            if i in promoted:
+                raise ValueError(
+                    f"request_AD: input {i!r} is a promoted runtime parameter; its "
+                    "derivative is the param_jacobian surface, not the input chain rule."
+                )
+        for o in out_names:
+            for i in in_names:
+                self._ad_pairs.add((o, i))
+
+    def _ad_pushforward(self, args: tuple, kwargs: dict) -> tuple:
+        """Value + first-order ``v_out`` for a request_AD leaf via reverse-mode autodiff.
+
+        Routed here from :meth:`__call__` when ``self._ad_pairs`` is non-empty and a
+        ``v`` seed is present. Builds the dense local Jacobian for each requested
+        pair by reverse-mode AD (:func:`neml2.models.input_ad.local_input_jacobians`),
+        contracts each block with the incoming seed
+        (:func:`neml2.types._boundary.contract_jacobian_block`), and accumulates the
+        contributions through :meth:`apply_chain_rule` -- reusing the standard
+        K-axis alignment + per-edge summation so the result is indistinguishable
+        from a hand-written chain rule. Returns ``(*values, v_out)`` (or
+        ``(value, v_out)`` for a single output), matching the forward contract.
+        First-order only.
+        """
+        if kwargs.get("v2") is not None or kwargs.get("vh") is not None:
+            raise NotImplementedError(
+                f"{type(self).__name__}: request_AD is first-order only; it cannot supply "
+                "the second-order chain rule (v2/vh) needed inside a Normality wrap."
+            )
+        from ..types._boundary import contract_jacobian_block  # noqa: PLC0415
+        from .input_ad import local_input_jacobians  # noqa: PLC0415
+
+        v = kwargs["v"]
+        input_names = list(self.input_spec)
+        typed_args = tuple(
+            arg if isinstance(arg, type_cls) else type_cls(arg)  # type: ignore[call-arg]
+            for type_cls, arg in zip(self.input_spec.values(), args, strict=True)
+        )
+        out_names = list(self.output_spec)
+        typed_outs, blocks = local_input_jacobians(
+            self, typed_args, self._ad_pairs, out_names, self.output_spec
+        )
+
+        v_out: ChainRuleDict = {}
+        for o_typed, o_name in zip(typed_outs, out_names, strict=True):
+            actions: dict[str, ChainRuleAction] = {}
+            for in_name in input_names:
+                block = blocks.get((o_name, in_name))
+                if block is None:
+                    continue
+                o_type = type(o_typed)
+                actions[in_name] = lambda V, _b=block, _ot=o_type: contract_jacobian_block(
+                    _b, V, _ot
+                )
+            if actions:
+                v_out.update(self.apply_chain_rule(v, o_name, actions, output=o_typed))
+
+        if len(typed_outs) == 1:
+            return (typed_outs[0], v_out)
+        return (*typed_outs, v_out)
 
     # ------------------------------------------------------------------
     # Parameter derivatives (reverse-mode autograd over calibration params)

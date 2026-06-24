@@ -57,7 +57,16 @@ _REQUIRES_PARAM_DERIV_TORCH = pytest.mark.skipif(
     not hasattr(torch._dynamo.config, "trace_autograd_ops"),
     reason="parameter-derivative AOTI compilation requires torch >= 2.11 (trace_autograd_ops)",
 )
-_SCENARIOS = sorted(d for d in _SCENARIO_DIR.iterdir() if d.is_dir() and (d / "model.i").exists())
+# Scenarios with a dedicated test that need domain-specific inputs the generic
+# randn-driven value/stub tests here cannot supply. ``request_ad_forward`` is a
+# physically-sensitive ML surrogate (Arrhenius exp(-Q/RT) overflows for the
+# negative temperatures randn produces); it is covered by test_request_ad_aoti.py.
+_DEDICATED = {"request_ad_forward"}
+_SCENARIOS = sorted(
+    d
+    for d in _SCENARIO_DIR.iterdir()
+    if d.is_dir() and (d / "model.i").exists() and d.name not in _DEDICATED
+)
 
 
 def _load_promoted(scenario: Path) -> set[str]:
