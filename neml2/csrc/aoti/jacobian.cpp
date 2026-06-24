@@ -98,8 +98,15 @@ Model::Impl::_forward_pair_blocks(const std::map<std::string, at::Tensor> & inpu
   loader_in.reserve(seg.fwd_inputs.size() + seg.param_inputs.size());
   for (const auto & name : seg.fwd_inputs)
     loader_in.push_back(state.at(name).contiguous());
-  for (auto & p : _gather_params(seg.param_inputs))
-    loader_in.push_back(std::move(p));
+  // The jvp graph takes promoted parameters as per-batch inputs (schema v7), so
+  // broadcast each stored parameter to the call batch before the call.
+  const auto batch_shape =
+      _input_names.empty() ? std::vector<int64_t>{} : _batch_shape_of(0, state.at(_input_names[0]));
+  for (const auto & pname : seg.param_inputs)
+    loader_in.push_back(
+        broadcast_param_to_batch(_resolve_param(pname),
+                                 batch_shape,
+                                 static_cast<int64_t>(_param_base_shapes.at(pname).size())));
   const auto outs = seg.jvp_loader->run(loader_in);
 
   const std::size_t n_outs = seg.fwd_outputs.size();
@@ -136,10 +143,349 @@ Model::Impl::_forward_pair_blocks(const std::map<std::string, at::Tensor> & inpu
   return {std::move(outputs), std::move(jac)};
 }
 
+// Broadcast a stored promoted parameter `(*pbatch, *base)` to the call batch
+// `(*batch, *base)` (right-aligned; `base` is the trailing `base_ndim` dims). See
+// the declaration in internal.h. A scalar/unbatched parameter expands up to the
+// batch; a per-batch-element parameter (`pbatch == batch`) passes through; any
+// other `pbatch` is rejected by `expand` (the unsupported general-broadcast case).
+at::Tensor
+Model::Impl::broadcast_param_to_batch(const at::Tensor & param,
+                                      const std::vector<int64_t> & batch,
+                                      int64_t base_ndim)
+{
+  const auto & sizes = param.sizes();
+  std::vector<int64_t> tgt(batch.begin(), batch.end());
+  tgt.insert(tgt.end(), sizes.end() - base_ndim, sizes.end()); // (*batch, *base)
+  return param.expand(tgt).contiguous();
+}
+
+std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+Model::Impl::_forward_param_pair_blocks(const std::map<std::string, at::Tensor> & inputs) const
+{
+  const auto & seg = _segments.front();
+
+  // Pack + validate caller inputs into a state map (canonical (*B, *base)).
+  std::map<std::string, at::Tensor> state;
+  for (std::size_t k = 0; k < _input_names.size(); ++k)
+  {
+    const auto & n = _input_names[k];
+    auto it = inputs.find(n);
+    _assert(it != inputs.end(), "aoti::Model::param_jacobian: missing required input '", n, "'.");
+    _validate_input_shape(k, it->second);
+    state[n] = it->second.contiguous();
+  }
+
+  // Runtime batch shape from the first structural input. The param-Jacobian graph
+  // takes per-batch parameter inputs, so broadcast the stored scalar parameters
+  // to this batch before the call (the value / jvp graphs keep them scalar).
+  const auto batch_shape = _batch_shape_of(0, state.at(_input_names[0]));
+
+  std::vector<at::Tensor> loader_in;
+  loader_in.reserve(seg.fwd_inputs.size() + seg.param_inputs.size());
+  for (const auto & name : seg.fwd_inputs)
+    loader_in.push_back(state.at(name).contiguous());
+  for (const auto & pname : seg.param_inputs)
+    loader_in.push_back(
+        broadcast_param_to_batch(_resolve_param(pname),
+                                 batch_shape,
+                                 static_cast<int64_t>(_param_base_shapes.at(pname).size())));
+
+  // The param-Jacobian graph returns ONLY the per-pair blocks (no value outputs),
+  // in seg.param_jacobian_pairs order (outputs outer, params inner).
+  const auto blocks = seg.param_jacobian_loader->run(loader_in);
+  const std::size_t n_pairs = seg.param_jacobian_pairs.size();
+  _assert(blocks.size() == n_pairs,
+          "aoti::Model::param_jacobian: loader returned ",
+          blocks.size(),
+          " tensors, expected ",
+          n_pairs,
+          " (one block per (out, param) pair).");
+
+  VariablePairJacobian pjac;
+  for (std::size_t k = 0; k < n_pairs; ++k)
+  {
+    const auto & p = seg.param_jacobian_pairs[k];
+    pjac[p.out_var][p.param] = blocks[k].contiguous();
+  }
+
+  // Value outputs come from the value graph (the param-Jacobian graph emits only
+  // derivative blocks). Run the segment's value loader on the same inputs.
+  std::map<std::string, at::Tensor> out_state = state;
+  _run_forward_segment(seg, out_state, batch_shape);
+  std::map<std::string, at::Tensor> outputs;
+  for (const auto & n : _output_names)
+    outputs[n] = out_state.at(n);
+
+  return {std::move(outputs), std::move(pjac)};
+}
+
+std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+Model::Impl::_implicit_param_pair_blocks(const std::map<std::string, at::Tensor> & inputs) const
+{
+  const auto & seg = _segments.front();
+
+  // Pack + validate caller inputs into a state map (canonical (*B, *base)).
+  std::map<std::string, at::Tensor> state;
+  for (std::size_t k = 0; k < _input_names.size(); ++k)
+  {
+    const auto & n = _input_names[k];
+    auto it = inputs.find(n);
+    _assert(it != inputs.end(), "aoti::Model::param_jacobian: missing required input '", n, "'.");
+    _validate_input_shape(k, it->second);
+    state[n] = it->second.contiguous();
+  }
+
+  // Run the Newton solve to convergence; this writes the converged unknowns back
+  // into `state` and hands us the converged per-group unknowns + per-group givens
+  // (the exact tensors the ParamIFT graph was traced against).
+  std::vector<at::Tensor> u_solved_groups;
+  std::vector<at::Tensor> g_groups;
+  _run_implicit_segment(seg, state, u_solved_groups, g_groups);
+
+  // Runtime batch shape from the first converged unknown group: plain-batch =>
+  // DENSE group tensor (*batch, group_storage), so batch = everything but the
+  // last axis. (The implicit-promotion guard rejects sub-batched variables.)
+  _assert(!u_solved_groups.empty(),
+          "aoti::Model::param_jacobian: implicit segment produced no unknown groups.");
+  const auto & u0 = u_solved_groups.front();
+  std::vector<int64_t> batch_shape(u0.sizes().begin(), u0.sizes().end() - 1);
+
+  // ParamIFT loader signature: (*u_groups, *g_groups, *params) where each param
+  // is PER-BATCH. Broadcast the stored scalar parameters to the runtime batch.
+  std::vector<at::Tensor> pift_in;
+  pift_in.reserve(u_solved_groups.size() + g_groups.size() + seg.param_inputs.size());
+  for (const auto & t : u_solved_groups)
+    pift_in.push_back(t.contiguous());
+  for (const auto & t : g_groups)
+    pift_in.push_back(t.contiguous());
+  for (const auto & pname : seg.param_inputs)
+    pift_in.push_back(
+        broadcast_param_to_batch(_resolve_param(pname),
+                                 batch_shape,
+                                 static_cast<int64_t>(_param_base_shapes.at(pname).size())));
+
+  // One dense du/dθ block per (unknown, param) pair, in param_jacobian_pairs
+  // order (unknowns outer, params inner).
+  const auto blocks = seg.param_ift_loader->run(pift_in);
+  const std::size_t n_pairs = seg.param_jacobian_pairs.size();
+  _assert(blocks.size() == n_pairs,
+          "aoti::Model::param_jacobian: ParamIFT loader returned ",
+          blocks.size(),
+          " blocks, expected ",
+          n_pairs,
+          " (one per (unknown, param) pair).");
+
+  VariablePairJacobian pjac;
+  for (std::size_t k = 0; k < n_pairs; ++k)
+  {
+    const auto & p = seg.param_jacobian_pairs[k];
+    pjac[p.out_var][p.param] = blocks[k].contiguous();
+  }
+
+  // Outputs are the converged unknowns (the implicit model's outputs).
+  std::map<std::string, at::Tensor> outputs;
+  for (const auto & n : _output_names)
+  {
+    auto it = state.find(n);
+    _assert(it != state.end(),
+            "aoti::Model::param_jacobian: output '",
+            n,
+            "' was not produced by the implicit solve.");
+    outputs[n] = it->second;
+  }
+
+  return {std::move(outputs), std::move(pjac)};
+}
+
+void
+Model::Impl::_add_forward_param_direct(const Segment & seg,
+                                       const std::map<std::string, at::Tensor> & state,
+                                       const std::vector<int64_t> & common_dyn,
+                                       std::map<std::string, at::Tensor> & dpstate) const
+{
+  // Run the forward param-Jacobian graph (structural inputs + promoted params
+  // broadcast per-batch) and accumulate each d(out)/d(param) block at the
+  // parameter's column band of dpstate[out].
+  std::vector<at::Tensor> loader_in;
+  loader_in.reserve(seg.fwd_inputs.size() + seg.param_inputs.size());
+  for (const auto & name : seg.fwd_inputs)
+    loader_in.push_back(state.at(name).contiguous());
+  for (const auto & pname : seg.param_inputs)
+    loader_in.push_back(
+        broadcast_param_to_batch(_resolve_param(pname),
+                                 common_dyn,
+                                 static_cast<int64_t>(_param_base_shapes.at(pname).size())));
+
+  const auto blocks = seg.param_jacobian_loader->run(loader_in);
+  _assert(blocks.size() == seg.param_jacobian_pairs.size(),
+          "aoti::Model::param_jacobian: forward param-Jacobian loader returned ",
+          blocks.size(),
+          " blocks, expected ",
+          seg.param_jacobian_pairs.size(),
+          ".");
+
+  for (std::size_t k = 0; k < seg.param_jacobian_pairs.size(); ++k)
+  {
+    const auto & pinfo = seg.param_jacobian_pairs[k];
+    int64_t out_folded = 1;
+    for (auto s : pinfo.out_base_shape)
+      out_folded *= s;
+    const int64_t psize = _req_param_size.at(pinfo.param);
+    std::vector<int64_t> tgt = common_dyn;
+    tgt.push_back(out_folded);
+    tgt.push_back(psize);
+    auto blk = blocks[k].reshape(tgt); // (*common_dyn, out_folded, psize)
+    dpstate.at(pinfo.out_var)
+        .narrow(/*dim=*/-1, /*start=*/_req_param_offset.at(pinfo.param), /*length=*/psize)
+        .add_(blk);
+  }
+}
+
+void
+Model::Impl::_add_implicit_param_direct(const Segment & seg,
+                                        const std::vector<at::Tensor> & u_solved_groups,
+                                        const std::vector<at::Tensor> & g_groups,
+                                        const std::vector<int64_t> & common_dyn,
+                                        std::map<std::string, at::Tensor> & dpstate) const
+{
+  // Run the ParamIFT graph on the converged per-group unknowns + givens +
+  // promoted params (broadcast per-batch) and accumulate each du/d(param) block
+  // at the parameter's column band of dpstate[unknown].
+  std::vector<at::Tensor> pift_in;
+  pift_in.reserve(u_solved_groups.size() + g_groups.size() + seg.param_inputs.size());
+  for (const auto & t : u_solved_groups)
+    pift_in.push_back(t.contiguous());
+  for (const auto & t : g_groups)
+    pift_in.push_back(t.contiguous());
+  for (const auto & pname : seg.param_inputs)
+    pift_in.push_back(
+        broadcast_param_to_batch(_resolve_param(pname),
+                                 common_dyn,
+                                 static_cast<int64_t>(_param_base_shapes.at(pname).size())));
+
+  const auto blocks = seg.param_ift_loader->run(pift_in);
+  _assert(blocks.size() == seg.param_jacobian_pairs.size(),
+          "aoti::Model::param_jacobian: ParamIFT loader returned ",
+          blocks.size(),
+          " blocks, expected ",
+          seg.param_jacobian_pairs.size(),
+          ".");
+
+  for (std::size_t k = 0; k < seg.param_jacobian_pairs.size(); ++k)
+  {
+    const auto & pinfo = seg.param_jacobian_pairs[k];
+    int64_t u_folded = 1;
+    for (auto s : pinfo.out_base_shape)
+      u_folded *= s;
+    const int64_t psize = _req_param_size.at(pinfo.param);
+    std::vector<int64_t> tgt = common_dyn;
+    tgt.push_back(u_folded);
+    tgt.push_back(psize);
+    auto blk = blocks[k].reshape(tgt); // (*common_dyn, u_folded, psize)
+    dpstate.at(pinfo.out_var)
+        .narrow(/*dim=*/-1, /*start=*/_req_param_offset.at(pinfo.param), /*length=*/psize)
+        .add_(blk);
+  }
+}
+
+std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
+Model::Impl::_param_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) const
+{
+  // Pack + validate caller inputs (canonical (*B, *base)).
+  std::map<std::string, at::Tensor> state;
+  for (std::size_t k = 0; k < _input_names.size(); ++k)
+  {
+    const auto & n = _input_names[k];
+    auto it = inputs.find(n);
+    _assert(it != inputs.end(), "aoti::Model::param_jacobian: missing required input '", n, "'.");
+    _validate_input_shape(k, it->second);
+    state[n] = it->second.contiguous();
+  }
+
+  // Shared dynamic batch (input 0's leading shape minus its own sub-batch), the
+  // same `common_dyn` the input-Jacobian carrier uses for its per-variable
+  // dstate blocks.
+  const auto & ref = state.at(_input_names.front());
+  const auto batch_full = _batch_shape_of(0, ref);
+  const std::size_t in0_sub =
+      _input_sub_batch_shapes.empty() ? 0 : _input_sub_batch_shapes[0].size();
+  std::vector<int64_t> common_dyn(batch_full.begin(),
+                                  batch_full.end() - static_cast<int64_t>(in0_sub));
+  int64_t common_numel = 1;
+  for (auto s : common_dyn)
+    common_numel *= s;
+
+  // Seed dpstate = 0 for every master input (P parameter columns): inputs do not
+  // depend on the promoted parameters; sensitivity accrues as segments inject
+  // direct contributions and propagate them.
+  const int64_t P = _param_total_size;
+  std::map<std::string, at::Tensor> dpstate;
+  for (std::size_t k = 0; k < _input_names.size(); ++k)
+  {
+    int64_t sub_total = 1;
+    for (auto s : _input_sub_batch_shapes[k])
+      sub_total *= s;
+    const int64_t folded = sub_total * _input_sizes[k];
+    std::vector<int64_t> shape = common_dyn;
+    shape.push_back(folded);
+    shape.push_back(P);
+    dpstate[_input_names[k]] = at::zeros(shape, ref.options());
+  }
+
+  for (const auto & seg : _segments)
+  {
+    if (seg.kind == SegmentKind::Forward)
+    {
+      if (seg.jvp_loader)
+        _run_forward_segment_jacobian(
+            seg, state, dpstate, common_dyn); // indirect (+ advances state)
+      else
+      {
+        _run_forward_segment(seg, state, common_dyn);
+        for (const auto & oname : seg.fwd_outputs)
+        {
+          const auto & val = state.at(oname);
+          const int64_t osz = common_numel > 0 ? val.numel() / common_numel : 0;
+          std::vector<int64_t> shp = common_dyn;
+          shp.push_back(osz);
+          shp.push_back(P);
+          dpstate[oname] = at::zeros(shp, ref.options());
+        }
+      }
+      if (seg.param_jacobian_loader)
+        _add_forward_param_direct(seg, state, common_dyn, dpstate); // direct
+    }
+    else
+    {
+      std::vector<at::Tensor> u_solved_groups;
+      std::vector<at::Tensor> g_groups;
+      _run_implicit_segment(seg, state, u_solved_groups, g_groups);
+      if (seg.ift_loader)
+        _run_implicit_segment_jacobian(seg, u_solved_groups, g_groups, dpstate); // indirect
+      else
+        for (const auto & u : seg.unknowns)
+        {
+          std::vector<int64_t> shp = common_dyn;
+          shp.push_back(u.var_size);
+          shp.push_back(P);
+          dpstate[u.name] = at::zeros(shp, ref.options());
+        }
+      if (seg.param_ift_loader)
+        _add_implicit_param_direct(seg, u_solved_groups, g_groups, common_dyn, dpstate); // direct
+    }
+  }
+
+  std::map<std::string, at::Tensor> outputs;
+  for (const auto & n : _output_names)
+    outputs[n] = state.at(n);
+  return {std::move(outputs), std::move(dpstate)};
+}
+
 void
 Model::Impl::_run_forward_segment_jacobian(const Segment & seg,
                                            std::map<std::string, at::Tensor> & state,
-                                           std::map<std::string, at::Tensor> & dstate) const
+                                           std::map<std::string, at::Tensor> & dstate,
+                                           const std::vector<int64_t> & batch) const
 {
   std::vector<at::Tensor> inputs;
   inputs.reserve(seg.fwd_inputs.size() + seg.param_inputs.size());
@@ -152,8 +498,11 @@ Model::Impl::_run_forward_segment_jacobian(const Segment & seg,
             "' which is not in the state map.");
     inputs.push_back(it->second.contiguous());
   }
-  for (auto & p : _gather_params(seg.param_inputs))
-    inputs.push_back(std::move(p));
+  // Promoted-parameter tail: the jvp/jacobian value graph takes each parameter as
+  // a per-batch input (schema v7), so broadcast the stored parameter to `batch`.
+  for (const auto & pname : seg.param_inputs)
+    inputs.push_back(broadcast_param_to_batch(
+        _resolve_param(pname), batch, static_cast<int64_t>(_param_base_shapes.at(pname).size())));
 
   // JVP loader returns (*outputs..., *J_pairs) where J_pairs are one
   // per (out_var, in_var) pair, row-major (outputs outer, structural

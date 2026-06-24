@@ -60,6 +60,57 @@ def test_unary_ops():
     assert abs(-s).data.item() == 4.0
 
 
+def test_saved_output_ops_value_path_matches_torch():
+    """Off the AD path, the AOTI-safe wrappers (``sqrt`` / ``exp`` / ``tanh`` /
+    ``reciprocal``) are byte-identical to the plain ``torch`` op -- the
+    input-recompute branch only fires when the input requires grad."""
+    from neml2.types import reciprocal, tanh
+
+    x = torch.rand(5, dtype=torch.float64) + 0.5
+    s = Scalar(x)
+    for fn, ref in [
+        (sqrt, torch.sqrt),
+        (exp, torch.exp),
+        (tanh, torch.tanh),
+        (reciprocal, torch.reciprocal),
+    ]:
+        assert torch.equal(fn(s).data, ref(x)), f"{fn.__name__} value path differs from torch"
+
+
+def test_saved_output_ops_ad_path_matches_analytic_gradient():
+    """On the AD path the input-recompute ``autograd.Function`` yields the exact
+    analytic gradient (this is the workaround for pytorch/pytorch#187907; the raw
+    saved-output backward is what fails to lower through AOTI)."""
+    from neml2.types import reciprocal, tanh
+
+    cases = [
+        (sqrt, lambda x: 0.5 * x**-0.5),
+        (exp, torch.exp),
+        (tanh, lambda x: 1.0 - torch.tanh(x) ** 2),
+        (reciprocal, lambda x: -(x**-2)),
+    ]
+    for fn, dref in cases:
+        x = (torch.rand(5, dtype=torch.float64) + 0.5).requires_grad_(True)
+        (g,) = torch.autograd.grad(fn(Scalar(x)).data.sum(), x)
+        assert torch.allclose(g, dref(x.detach())), f"{fn.__name__} AD gradient wrong"
+
+
+def test_division_by_grad_tensor_matches_analytic_gradient():
+    """Division with a denominator that requires grad routes through the
+    input-recompute reciprocal (``const/x`` via ``__rtruediv__``, ``x/y`` via
+    ``__truediv__``); the gradients are exact and value-path division is
+    unchanged."""
+    # const / x  ->  d/dx (c/x) = -c/x**2
+    x = (torch.rand(5, dtype=torch.float64) + 0.5).requires_grad_(True)
+    (g,) = torch.autograd.grad((3.0 / Scalar(x)).data.sum(), x)
+    assert torch.allclose(g, -3.0 * x.detach() ** -2)
+    # SR2 / Scalar  ->  d/d(den) sum(num/den) = -sum(num)/den**2
+    den = (torch.rand(4, dtype=torch.float64) + 0.5).requires_grad_(True)
+    num = SR2(torch.rand(4, 6, dtype=torch.float64))
+    (g2,) = torch.autograd.grad((num / Scalar(den)).data.sum(), den)
+    assert torch.allclose(g2, -num.data.sum(-1) * den.detach() ** -2)
+
+
 def test_arithmetic_with_scalar_and_python_numbers():
     a, b = Scalar(torch.tensor(3.0)), Scalar(torch.tensor(2.0))
     assert (a + b).data.item() == 5.0

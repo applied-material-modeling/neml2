@@ -116,6 +116,20 @@ public:
 
   std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
   jacobian(const std::map<std::string, at::Tensor> & inputs) const;
+
+  /// Evaluate + dense parameter Jacobian, chunked + dispatched. Returns
+  /// `{outputs, P}` with `P[out_name][param_qname]` at `(*B, *out_base,
+  /// *param_base)`; blocks are concatenated across chunks (batch-independent
+  /// blocks passed through), mirroring `jacobian()`.
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+  param_jacobian(const std::map<std::string, at::Tensor> & inputs) const;
+
+  /// Parameter VJP / adjoint `dL/d(param)`, chunked + dispatched. Each chunk
+  /// returns the adjoint summed over its batch slice, so the per-parameter grads
+  /// are SUMMED across chunks (not concatenated).
+  std::map<std::string, at::Tensor>
+  param_vjp(const std::map<std::string, at::Tensor> & inputs,
+            const std::map<std::string, at::Tensor> & cotangents) const;
   ///@}
 
   /// Configure the implicit-segment Newton solve (forwarded to every Model).
@@ -131,6 +145,10 @@ public:
   const std::vector<std::vector<int64_t>> & output_base_shapes() const noexcept;
   std::map<std::string, at::Tensor> & named_parameters() noexcept;
   const std::map<std::string, at::Tensor> & named_parameters() const noexcept;
+
+  /// Replace a promoted parameter's value on the master copy; re-synced to every
+  /// device copy on the next dispatched call. Mirrors `Model::set_parameter`.
+  void set_parameter(const std::string & name, const at::Tensor & value);
   /// The compute device the workload is dispatched to.
   at::Device device() const noexcept;
   at::ScalarType dtype() const noexcept;

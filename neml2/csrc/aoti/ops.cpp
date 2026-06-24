@@ -30,6 +30,10 @@
 
 #include "neml2/csrc/aoti/internal.h"
 
+// param_vjp runs an AOTI loader directly (the other ops delegate loader calls to
+// jacobian.cpp); pull in the full loader type for ->run().
+#include <torch/csrc/inductor/aoti_package/model_package_loader.h>
+
 namespace neml2::aoti
 {
 void
@@ -83,8 +87,10 @@ Model::Impl::_batch_shape_of(std::size_t idx, const at::Tensor & t) const
 }
 
 std::map<std::string, at::Tensor>
-Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs) const
+Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
+                     const std::map<std::string, at::Tensor> & param_overrides) const
 {
+  const ParamOverrideGuard _pog(this, param_overrides);
   std::map<std::string, at::Tensor> state;
   for (std::size_t k = 0; k < _input_names.size(); ++k)
   {
@@ -95,11 +101,17 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs) const
     state[n] = it->second.contiguous();
   }
 
+  // Call batch from the first structural input (its base stripped). Forward
+  // segments broadcast each promoted parameter to this batch before the call,
+  // since the value graphs take parameters as per-batch inputs (schema v7).
+  const std::vector<int64_t> batch =
+      _input_names.empty() ? std::vector<int64_t>{} : _batch_shape_of(0, state.at(_input_names[0]));
+
   for (const auto & seg : _segments)
   {
     if (seg.kind == SegmentKind::Forward)
     {
-      _run_forward_segment(seg, state);
+      _run_forward_segment(seg, state, batch);
     }
     else
     {
@@ -157,14 +169,14 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
     if (seg.kind == SegmentKind::Forward)
     {
       if (seg.jvp_loader)
-        _run_forward_segment_jacobian(seg, state, dstate);
+        _run_forward_segment_jacobian(seg, state, dstate, batch_shape_vec);
       else
       {
         // Off-path forward segment (pruned by `-d` selection): its outputs are
         // on no requested derivative path, so advance `state` via the value
         // graph and zero-fill its outputs' dstate. The zeros are never consumed
         // by a kept pair -- only discarded in the final per-pair slice.
-        _run_forward_segment(seg, state);
+        _run_forward_segment(seg, state, batch_shape_vec);
         for (const auto & oname : seg.fwd_outputs)
         {
           const auto & val = state.at(oname);
@@ -205,8 +217,10 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
 }
 
 std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
-Model::Impl::jacobian(const std::map<std::string, at::Tensor> & inputs) const
+Model::Impl::jacobian(const std::map<std::string, at::Tensor> & inputs,
+                      const std::map<std::string, at::Tensor> & param_overrides) const
 {
+  const ParamOverrideGuard _pog(this, param_overrides);
   _assert(!_derivatives.empty(),
           "aoti::Model::jacobian: this artifact was compiled with no derivative graphs. "
           "Recompile with `neml2-compile -d OUT:IN` (e.g. `-d :` for all pairs).");
@@ -248,10 +262,214 @@ Model::Impl::jacobian(const std::map<std::string, at::Tensor> & inputs) const
   return {std::move(outputs), std::move(jac)};
 }
 
+std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+Model::Impl::param_jacobian(const std::map<std::string, at::Tensor> & inputs,
+                            const std::map<std::string, at::Tensor> & param_overrides) const
+{
+  const ParamOverrideGuard _pog(this, param_overrides);
+  _assert(!_param_derivatives.empty(),
+          "aoti::Model::param_jacobian: this artifact was compiled with no parameter "
+          "derivatives. Recompile with `neml2-compile -p PARAM -d OUT:PARAM`.");
+  // Two single-segment fast paths return the param blocks directly: a forward
+  // segment carrying the dense param-Jacobian loader, and an implicit segment
+  // carrying the ParamIFT loader (du/dθ = -A⁻¹ ∂r/∂θ).
+  if (_segments.size() == 1 && _segments.front().kind == SegmentKind::Forward &&
+      static_cast<bool>(_segments.front().param_jacobian_loader))
+    return _forward_param_pair_blocks(inputs);
+  if (_segments.size() == 1 && _segments.front().kind == SegmentKind::Implicit &&
+      static_cast<bool>(_segments.front().param_ift_loader))
+    return _implicit_param_pair_blocks(inputs);
+
+  // Multi-segment (composed) artifacts: compose the parameter sensitivity across
+  // segments through the zero-seeded parameter carrier, then slice each
+  // requested (out, param) block from dpstate[out]'s parameter column band.
+  auto [outputs, dpstate] = _param_jacobian_dstate(inputs); // dpstate[var]: (*B, var_folded, P)
+
+  std::map<std::string, std::size_t> out_idx;
+  for (std::size_t i = 0; i < _output_names.size(); ++i)
+    out_idx[_output_names[i]] = i;
+
+  VariablePairJacobian pjac;
+  for (const auto & [o, p] : _param_derivatives)
+  {
+    const auto & blk = dpstate.at(o); // (*B, out_folded, P)
+    std::vector<int64_t> batch(blk.sizes().begin(), blk.sizes().end() - 2);
+    auto col = blk.narrow(/*dim=*/-1, _req_param_offset.at(p), _req_param_size.at(p));
+    std::vector<int64_t> block_shape = batch;
+    block_shape.insert(block_shape.end(),
+                       _output_base_shapes[out_idx.at(o)].begin(),
+                       _output_base_shapes[out_idx.at(o)].end());
+    // Trailing param axes are the NATURAL base (param_base_shape), not the stored
+    // parameter's full shape -- a batched parameter's batch dim is carried by the
+    // block's leading `batch`, never injected into the param-base axes.
+    const auto & pbase = _param_base_shapes.at(p);
+    block_shape.insert(block_shape.end(), pbase.begin(), pbase.end());
+    pjac[o][p] = col.reshape(block_shape).contiguous();
+  }
+  return {std::move(outputs), std::move(pjac)};
+}
+
+std::map<std::string, at::Tensor>
+Model::Impl::param_vjp(const std::map<std::string, at::Tensor> & inputs,
+                       const std::map<std::string, at::Tensor> & cotangents,
+                       const std::map<std::string, at::Tensor> & param_overrides) const
+{
+  const ParamOverrideGuard _pog(this, param_overrides);
+  _assert(!_param_derivatives.empty(),
+          "aoti::Model::param_vjp: this artifact was compiled with no parameter derivatives. "
+          "Recompile with `neml2-compile -p PARAM -d OUT:PARAM`.");
+
+  // Collapse a per-batch-element adjoint `(*call_batch, *param_base)` to match the
+  // parameter's stored shape, mirroring the eager param_vjp (whose autograd leaf
+  // takes the stored shape): keep per-element for a BATCHED parameter, sum over
+  // the batch for an unbatched (GLOBAL) one. The per-batch adjoint graph + this
+  // collapse are numerically identical to the old scalar-leaf graph for a global
+  // parameter (sum-of-per-element == the scalar-leaf gradient).
+  auto collapse = [&](const std::string & p, const at::Tensor & per_elem) -> at::Tensor
+  {
+    auto bit = _param_base_shapes.find(p);
+    const int64_t base_ndim =
+        (bit != _param_base_shapes.end()) ? static_cast<int64_t>(bit->second.size()) : 0;
+    const bool batched = (_resolve_param(p).dim() - base_ndim) >= 1;
+    if (batched)
+      return per_elem.contiguous();
+    const int64_t nlead = per_elem.dim() - base_ndim;
+    if (nlead <= 0)
+      return per_elem.contiguous();
+    std::vector<int64_t> dims;
+    dims.reserve(static_cast<std::size_t>(nlead));
+    for (int64_t d = 0; d < nlead; ++d)
+      dims.push_back(d);
+    return per_elem.sum(dims).contiguous();
+  };
+
+  // Single forward segment: a dedicated adjoint graph computes the per-batch
+  // adjoint in one reverse pass -- the cheapest form for many params.
+  const auto & seg = _segments.front();
+  if (_segments.size() == 1 && seg.kind == SegmentKind::Forward &&
+      static_cast<bool>(seg.param_vjp_loader))
+  {
+    // Validate + pack structural inputs (canonical (*B, *base)).
+    std::map<std::string, at::Tensor> state;
+    for (std::size_t k = 0; k < _input_names.size(); ++k)
+    {
+      const auto & n = _input_names[k];
+      auto it = inputs.find(n);
+      _assert(it != inputs.end(), "aoti::Model::param_vjp: missing required input '", n, "'.");
+      _validate_input_shape(k, it->second);
+      state[n] = it->second.contiguous();
+    }
+
+    // Loader inputs: structural state, promoted parameters broadcast PER-BATCH
+    // (the adjoint graph differentiates a per-batch leaf -> per-batch-element
+    // gradient), then one cotangent per output in param_vjp_outputs order (each at
+    // the output's natural (*B, *out_base) shape).
+    const std::vector<int64_t> batch = _input_names.empty()
+                                           ? std::vector<int64_t>{}
+                                           : _batch_shape_of(0, state.at(_input_names[0]));
+    std::vector<at::Tensor> loader_in;
+    loader_in.reserve(seg.fwd_inputs.size() + seg.param_inputs.size() +
+                      seg.param_vjp_outputs.size());
+    for (const auto & name : seg.fwd_inputs)
+      loader_in.push_back(state.at(name).contiguous());
+    for (const auto & pname : seg.param_inputs)
+      loader_in.push_back(broadcast_param_to_batch(
+          _resolve_param(pname), batch, static_cast<int64_t>(_param_base_shapes.at(pname).size())));
+    for (const auto & oname : seg.param_vjp_outputs)
+    {
+      auto it = cotangents.find(oname);
+      _assert(it != cotangents.end(),
+              "aoti::Model::param_vjp: missing cotangent for output '",
+              oname,
+              "'.");
+      loader_in.push_back(it->second.contiguous());
+    }
+
+    // One per-batch-element gradient per parameter, in param_vjp_params order;
+    // collapse each to the stored parameter's shape (sum global / keep batched).
+    const auto grads = seg.param_vjp_loader->run(loader_in);
+    _assert(grads.size() == seg.param_vjp_params.size(),
+            "aoti::Model::param_vjp: VJP loader returned ",
+            grads.size(),
+            " gradients, expected ",
+            seg.param_vjp_params.size(),
+            ".");
+
+    std::map<std::string, at::Tensor> out;
+    for (std::size_t k = 0; k < grads.size(); ++k)
+      out[seg.param_vjp_params[k]] = collapse(seg.param_vjp_params[k], grads[k]);
+    return out;
+  }
+
+  // Implicit / composed: there is no dedicated adjoint graph, but the parameter
+  // sensitivity carrier already builds the per-element d(out)/d(param) in O(n_out)
+  // reverse passes (independent of the parameter count), so the VJP is its
+  // contraction with the output cotangents over the OUTPUT-BASE axes only:
+  //     adjoint_p[*B] = Σ_o <w_o[*B], d(out_o)/d(θ_p)[*B]>   (per batch element),
+  // then collapsed (summed over batch for a global parameter).
+  auto [outputs, pjac] = param_jacobian(inputs);
+  (void)outputs;
+
+  std::map<std::string, int64_t> out_base_ndim;
+  for (std::size_t i = 0; i < _output_names.size(); ++i)
+    out_base_ndim[_output_names[i]] = static_cast<int64_t>(_output_base_shapes[i].size());
+
+  std::map<std::string, at::Tensor> grads;
+  for (const auto & [o, p] : _param_derivatives)
+  {
+    auto cit = cotangents.find(o);
+    _assert(cit != cotangents.end(),
+            "aoti::Model::param_vjp: missing cotangent for output '",
+            o,
+            "' (a (",
+            o,
+            ", ",
+            p,
+            ") parameter derivative was compiled, so its cotangent is required).");
+    const auto & w = cit->second;      // (*B, *out_base)
+    const auto & J = pjac.at(o).at(p); // (*B, *out_base, *param_base)
+    const int64_t ob = out_base_ndim.at(o);
+    const int64_t bnd = w.dim() - ob; // batch ndim
+    _assert(bnd >= 0 && J.dim() == w.dim() + static_cast<int64_t>(_param_base_shapes.at(p).size()),
+            "aoti::Model::param_vjp: cotangent for '",
+            o,
+            "' (shape ",
+            w.sizes(),
+            ") is incompatible with the Jacobian block (",
+            o,
+            ", ",
+            p,
+            ") shape ",
+            J.sizes(),
+            ".");
+    std::vector<int64_t> batch_sizes(w.sizes().begin(), w.sizes().begin() + bnd);
+    int64_t bn = 1;
+    for (auto s : batch_sizes)
+      bn *= s;
+    int64_t obn = 1;
+    for (int64_t d = bnd; d < w.dim(); ++d)
+      obn *= w.size(d);
+    const auto & pbase = _param_base_shapes.at(p);
+    int64_t pb = 1;
+    for (auto s : pbase)
+      pb *= s;
+    // Contract the out_base axes (keep batch): (bn, obn, 1) * (bn, obn, pb) -> (bn, pb).
+    auto per_elem = (w.reshape({bn, obn, 1}) * J.reshape({bn, obn, pb})).sum(1);
+    std::vector<int64_t> pe_shape = batch_sizes;
+    pe_shape.insert(pe_shape.end(), pbase.begin(), pbase.end());
+    auto contrib = collapse(p, per_elem.reshape(pe_shape)); // (*B,*pbase) or (*pbase)
+    auto git = grads.find(p);
+    grads[p] = (git == grads.end()) ? contrib : (git->second + contrib).contiguous();
+  }
+  return grads;
+}
+
 std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
 Model::Impl::jvp(const std::map<std::string, at::Tensor> & inputs,
-                 const std::map<std::string, at::Tensor> & tangents) const
+                 const std::map<std::string, at::Tensor> & tangents,
+                 const std::map<std::string, at::Tensor> & param_overrides) const
 {
+  const ParamOverrideGuard _pog(this, param_overrides);
   _assert(!_derivatives.empty(),
           "aoti::Model::jvp: this artifact was compiled with no derivative graphs. "
           "Recompile with `neml2-compile -d OUT:IN` (e.g. `-d :` for all pairs).");

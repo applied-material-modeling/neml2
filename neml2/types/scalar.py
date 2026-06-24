@@ -239,7 +239,17 @@ class Scalar(PrimitiveTensor):
 
     def __rtruediv__(self, other) -> Scalar:
         if isinstance(other, (float, int)):
-            return self._rewrap(other / self.data, sub_batch_ndim=self.sub_batch_ndim)
+            # ``other / self`` lowers to ``other * reciprocal(self)``, whose
+            # reverse-mode backward saves its OUTPUT -- which AOTInductor cannot
+            # lower under strict + dynamic-batch export (pytorch/pytorch#187907).
+            # On the AD path route through the input-recompute reciprocal; keep
+            # the plain divide off it so the value path is byte-identical.
+            data = self.data
+            if data.requires_grad:
+                from neml2.types.functions import reciprocal_ad  # noqa: PLC0415
+
+                return self._rewrap(other * reciprocal_ad(data), sub_batch_ndim=self.sub_batch_ndim)
+            return self._rewrap(other / data, sub_batch_ndim=self.sub_batch_ndim)
         return NotImplemented
 
     # ---- Scalar-only transcendentals / unary ops ----

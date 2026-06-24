@@ -33,6 +33,7 @@ import pytest
 import torch
 
 import neml2  # noqa: F401 — ensures all models are registered
+from neml2.cli.aoti_export import AOTI_META_SCHEMA_VERSION
 
 _TESTS_UNIT = Path(__file__).parent
 _TESTS_ROOT = _TESTS_UNIT.parent
@@ -70,41 +71,57 @@ def test_parse_example_batch_shape_rejects_label_suffix():
 
 def test_resolve_derivative_specs_grammar_and_errors():
     """``-d/--derivative OUT:IN`` resolution: explicit pairs, the omission
-    grammar (either/both sides empty = 'all'), the empty-specs default, and the
-    error branches (no colon, unknown output, unknown/promoted input)."""
+    grammar (either/both sides empty = 'all'), the empty-specs default, the
+    structural/parameter partition, and the error branches (no colon, unknown
+    output, unknown input)."""
     from neml2.cli.aoti_export import _resolve_derivative_specs
 
     outs = ["stress", "energy"]
     ins = ["strain", "temperature"]
+    params = ["E", "nu"]
 
+    def struct(specs):  # structural pairs only (no param names declared)
+        return _resolve_derivative_specs(specs, outs, ins)[0]
+
+    # The function returns (structural_pairs, param_pairs).
     # No specs -> no pairs (derivative graphs are opt-in).
-    assert _resolve_derivative_specs([], outs, ins) == set()
+    assert _resolve_derivative_specs([], outs, ins) == (set(), set())
 
     # One explicit pair.
-    assert _resolve_derivative_specs(["stress:strain"], outs, ins) == {("stress", "strain")}
+    assert struct(["stress:strain"]) == {("stress", "strain")}
 
     # Omit the output side -> every output w.r.t. that input.
-    assert _resolve_derivative_specs([":strain"], outs, ins) == {
-        ("stress", "strain"),
-        ("energy", "strain"),
-    }
+    assert struct([":strain"]) == {("stress", "strain"), ("energy", "strain")}
 
-    # Omit the input side -> that output w.r.t. every input.
-    assert _resolve_derivative_specs(["stress:"], outs, ins) == {
-        ("stress", "strain"),
-        ("stress", "temperature"),
-    }
+    # Omit the input side -> that output w.r.t. every STRUCTURAL input.
+    assert struct(["stress:"]) == {("stress", "strain"), ("stress", "temperature")}
 
-    # Both sides omitted -> all pairs; whitespace around names is tolerated.
-    assert _resolve_derivative_specs([":"], outs, ins) == {(o, i) for o in outs for i in ins}
-    assert _resolve_derivative_specs([" stress : strain "], outs, ins) == {("stress", "strain")}
+    # Both sides omitted -> all structural pairs; whitespace tolerated.
+    assert struct([":"]) == {(o, i) for o in outs for i in ins}
+    assert struct([" stress : strain "]) == {("stress", "strain")}
 
     # Multiple specs union (and dedupe).
-    assert _resolve_derivative_specs(["stress:strain", "stress:strain", "energy:"], outs, ins) == {
+    assert struct(["stress:strain", "stress:strain", "energy:"]) == {
         ("stress", "strain"),
         ("energy", "strain"),
         ("energy", "temperature"),
     }
+
+    # Parameter derivatives: an IN naming a promoted parameter resolves to a
+    # param pair, kept separate from structural pairs.
+    assert _resolve_derivative_specs(["stress:E"], outs, ins, param_names=params) == (
+        set(),
+        {("stress", "E")},
+    )
+    # An empty IN selects structural inputs only -- params are opt-in by name.
+    assert _resolve_derivative_specs(["stress:"], outs, ins, param_names=params) == (
+        {("stress", "strain"), ("stress", "temperature")},
+        set(),
+    )
+    # Mixed specs partition into the two sets.
+    assert _resolve_derivative_specs(
+        ["stress:strain", "energy:nu"], outs, ins, param_names=params
+    ) == ({("stress", "strain")}, {("energy", "nu")})
 
     # Missing colon.
     with pytest.raises(ValueError, match="expected OUT:IN"):
@@ -114,8 +131,9 @@ def test_resolve_derivative_specs_grammar_and_errors():
     with pytest.raises(ValueError, match="unknown output 'nope'"):
         _resolve_derivative_specs(["nope:strain"], outs, ins)
 
-    # Unknown input (a promoted-parameter name is rejected here too: it is not a
-    # structural input and never appears in the Jacobian).
+    # Unknown input: a name that is neither a structural input nor a declared
+    # promoted parameter is rejected (here no param_names are declared, so 'E'
+    # is unknown -- promote it with -p to request a parameter derivative).
     with pytest.raises(ValueError, match="unknown input 'E'"):
         _resolve_derivative_specs(["stress:E"], outs, ins)
 
@@ -137,6 +155,25 @@ def forward_export_no_deriv(tmp_path_factory):
 
     out_dir = tmp_path_factory.mktemp("aoti_forward_no_deriv")
     meta = export_model_for_aoti(_ELASTICITY_I, "model", out_dir)
+    return meta, out_dir
+
+
+@pytest.fixture(scope="session")
+def param_jac_export(tmp_path_factory):
+    import torch._dynamo  # noqa: PLC0415
+
+    if not hasattr(torch._dynamo.config, "trace_autograd_ops"):
+        pytest.skip(
+            "parameter-derivative AOTI compilation requires torch >= 2.11 (trace_autograd_ops)"
+        )
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out_dir = tmp_path_factory.mktemp("aoti_param_jac")
+    # Promote E to a runtime input and request the parameter derivative
+    # d(stress)/d(E) -- the schema-v7 parameter-Jacobian path.
+    meta = export_model_for_aoti(
+        _ELASTICITY_I, "model", out_dir, promoted={"E"}, derivatives=["stress:E"]
+    )
     return meta, out_dir
 
 
@@ -176,9 +213,11 @@ def test_export_forward_model_metadata(forward_export):
     assert meta["outputs"] == [
         {"name": "stress", "var_size": 6, "var_type": "SR2", "base_shape": [6]}
     ]
-    # Schema v6: top-level `derivatives` lists the requested master pairs.
-    assert meta["schema_version"] == 6
+    # Schema v7: top-level `derivatives` lists the requested master pairs;
+    # `parameter_derivatives` is empty (no -d over a promoted parameter here).
+    assert meta["schema_version"] == AOTI_META_SCHEMA_VERSION
     assert meta["derivatives"] == [["stress", "strain"]]
+    assert meta["parameter_derivatives"] == []
     seg = meta["segments"][0]
     assert seg["kind"] == "forward"
     # Forward-segment per-variable metadata is name-only (v4 schema). The
@@ -200,12 +239,115 @@ def test_export_forward_default_off_no_derivatives(forward_export_no_deriv):
     """With no -d flags, NO derivative graph is compiled: empty top-level
     `derivatives`, no segment `jvp_package`, no `*_jvp.pt2` on disk."""
     meta, out_dir = forward_export_no_deriv
-    assert meta["schema_version"] == 6
+    assert meta["schema_version"] == AOTI_META_SCHEMA_VERSION
     assert meta["derivatives"] == []
+    assert meta["parameter_derivatives"] == []
     seg = meta["segments"][0]
     assert "jvp_package" not in seg
     assert "jacobian_pairs" not in seg
+    assert "param_jacobian_package" not in seg
     assert not (out_dir / "model_jvp.pt2").exists()
+
+
+def test_export_forward_param_jacobian_metadata(param_jac_export):
+    """Schema v7: a requested d(out)/d(param) is recorded at top level
+    (`parameter_derivatives`) and on the segment (`param_jacobian_package` +
+    `param_jacobian_pairs`), with the promoted parameter listed under
+    `parameters`."""
+    meta, out_dir = param_jac_export
+    assert meta["schema_version"] == AOTI_META_SCHEMA_VERSION
+    assert meta["parameter_derivatives"] == [["stress", "E"]]
+    # No structural derivative was requested, so the input-jvp graph is absent.
+    assert meta["derivatives"] == []
+    assert any(p["name"] == "E" for p in meta["parameters"])
+    seg = meta["segments"][0]
+    assert "jvp_package" not in seg
+    assert seg["param_jacobian_package"] == "model_pjac.pt2"
+    assert (out_dir / "model_pjac.pt2").exists()
+    pair = seg["param_jacobian_pairs"][0]
+    assert (pair["out_var"], pair["param"]) == ("stress", "E")
+    assert pair["out_base_shape"] == [6]
+    assert pair["param_base_shape"] == []  # scalar parameter -> no trailing axis
+
+
+def test_export_forward_param_jacobian_matches_finite_difference(param_jac_export):
+    """The compiled parameter-Jacobian graph's d(stress)/d(E) block agrees with
+    central differences taken on the value package. The parameter enters the
+    derivative graph as a PER-BATCH input (the C++ runtime broadcasts the stored
+    scalar parameter to the runtime batch before calling it)."""
+    from neml2.models.export import load_package
+    from neml2.types import SR2
+
+    meta, out_dir = param_jac_export
+    seg = meta["segments"][0]
+    pjac = load_package(str(out_dir / seg["param_jacobian_package"]))
+    value = load_package(str(out_dir / seg["package"]))
+
+    torch.manual_seed(0)
+    b = 5
+    strain = torch.randn(b, 6, dtype=torch.float64)
+
+    def stress(e_val):
+        # The value graph now takes the promoted parameter as a PER-BATCH input
+        # (schema v7), so feed it at the batch shape (the runtime broadcasts a
+        # stored scalar; here we pass the value at (b,) directly).
+        res = value(SR2(strain), torch.full((b,), float(e_val), dtype=torch.float64))[0]
+        return res.data if hasattr(res, "data") else res
+
+    for e_val in (100.0, 250.0):
+        out = pjac(SR2(strain), torch.full((b,), float(e_val), dtype=torch.float64))
+        block = out[0] if isinstance(out, tuple) else out  # (b, 6)
+        assert tuple(block.shape) == (b, 6)
+        h = 1e-4 * e_val
+        fd = (stress(e_val + h) - stress(e_val - h)) / (2 * h)
+        rel = (block - fd).abs().max().item() / (fd.abs().max().item() + 1e-30)
+        assert rel < 1e-5, f"E={e_val}: d(stress)/dE disagrees with FD (rel={rel:.2e})"
+
+
+def test_export_forward_param_vjp_metadata(param_jac_export):
+    """Requesting a parameter derivative also emits the adjoint (VJP) graph:
+    `param_vjp_package` + the parameter (grad-output) and output (cotangent-input)
+    orderings."""
+    meta, out_dir = param_jac_export
+    seg = meta["segments"][0]
+    assert seg["param_vjp_package"] == "model_pvjp.pt2"
+    assert (out_dir / "model_pvjp.pt2").exists()
+    assert seg["param_vjp_params"] == ["E"]  # grad-output order
+    assert seg["param_vjp_outputs"] == ["stress"]  # cotangent-input order
+
+
+def test_export_forward_param_vjp_matches_finite_difference(param_jac_export):
+    """The adjoint graph's dL/dE (L = <w, stress>) agrees with central differences
+    of the scalar loss on the value package. The parameter stays scalar; the grad
+    sums over the batch -- exactly dL/dE for a global parameter."""
+    from neml2.models.export import load_package
+    from neml2.types import SR2
+
+    meta, out_dir = param_jac_export
+    seg = meta["segments"][0]
+    pvjp = load_package(str(out_dir / seg["param_vjp_package"]))
+    value = load_package(str(out_dir / seg["package"]))
+
+    torch.manual_seed(1)
+    b = 4
+    strain = torch.randn(b, 6, dtype=torch.float64)
+    w = torch.randn(b, 6, dtype=torch.float64)  # output cotangent
+
+    def loss(e_val):
+        # Value graph takes the promoted parameter per-batch (schema v7); the
+        # param_vjp graph below keeps it scalar (its grad sums over the batch).
+        res = value(SR2(strain), torch.full((b,), float(e_val), dtype=torch.float64))[0]
+        s = res.data if hasattr(res, "data") else res
+        return (s * w).sum().item()
+
+    for e_val in (100.0, 250.0):
+        # The cotangent is a typed input (matching the output's wrapper class).
+        out = pvjp(SR2(strain), torch.tensor(float(e_val), dtype=torch.float64), SR2(w))
+        g = out[0] if isinstance(out, tuple) else out  # scalar dL/dE
+        h = 1e-4 * e_val
+        fd = (loss(e_val + h) - loss(e_val - h)) / (2 * h)
+        rel = abs(float(g) - fd) / (abs(fd) + 1e-30)
+        assert rel < 1e-5, f"E={e_val}: dL/dE adjoint disagrees with FD (rel={rel:.2e})"
 
 
 def test_export_forward_jvp_matches_finite_difference(forward_export):

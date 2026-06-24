@@ -84,6 +84,23 @@ if TYPE_CHECKING:
 #: :meth:`Model._get_param`, so the return type is narrowed at the call site.
 _TW = TypeVar("_TW", bound=TensorWrapper)
 
+#: Raised when a leaf reads a registered parameter as ``self.<attr>`` inside a
+#: forward. Such a read bypasses the static-or-promoted dispatch in
+#: :meth:`Model._get_param`, so it works only until that parameter is promoted to
+#: a runtime input (``-p``) -- then the ``nn.Parameter`` is gone and the read
+#: fails (or, worse, silently differentiates the wrong thing). Routing every
+#: parameter read through ``_get_param`` keeps the leaf promotion-compatible.
+_PARAM_ATTR_GUARD_MSG = (
+    "{cls}.forward reads the registered parameter '{name}' as an attribute "
+    "(self.{name}). This bypasses parameter promotion: once '{name}' is promoted "
+    "to a runtime input (neml2-compile -p), the static nn.Parameter no longer "
+    "exists and the read breaks. Read it through "
+    "`self._get_param('{name}', nl_params, <Type>)` instead (add `*nl_params` to "
+    "the forward signature if absent) -- that resolves the static slot or the "
+    "promoted runtime input uniformly. For a list of parameters use "
+    "`self._get_param_list('<attr>', nl_params, <Type>)`."
+)
+
 __all__ = [
     "TangentAction",
     "ChainRuleDict",
@@ -802,8 +819,17 @@ class Model(nn.Module, ABC):
         ``_typed_storage_classes``, and promoted slots are wrapped to
         ``input_spec``'s type by the caller before ``forward``.
         """
+        from ._guard import _allow_param_attr  # noqa: PLC0415
+
         nlp = self._nl_params.get(name)
-        value = getattr(self, name) if nlp is None else nl_params[nlp.tail_index]
+        if nlp is None:
+            # Static slot: read from ``self``. This is the ONE sanctioned
+            # attribute read of a registered parameter, so lift the
+            # __getattr__ guard that forbids it everywhere else in a forward.
+            with _allow_param_attr():
+                value = getattr(self, name)
+        else:
+            value = nl_params[nlp.tail_index]
         assert isinstance(value, type_cls), (
             f"_get_param({name!r}) resolved to {type(value).__name__}, expected {type_cls.__name__}"
         )
@@ -824,6 +850,17 @@ class Model(nn.Module, ABC):
         return [self._get_param(n, nl_params, type_cls) for n in names]
 
     def __getattr__(self, name: str):
+        # Forbid reading a registered parameter as a plain attribute inside a
+        # forward -- it bypasses _get_param's static-or-promoted dispatch and
+        # silently breaks promotion. _get_param itself reads through an
+        # _allow_param_attr() window so it is exempt. Cheap guard: only true
+        # parameters (in self._parameters) on a failed lookup reach this branch.
+        params = self.__dict__.get("_parameters")
+        if params is not None and name in params:
+            from ._guard import param_attr_guarded  # noqa: PLC0415
+
+            if param_attr_guarded():
+                raise RuntimeError(_PARAM_ATTR_GUARD_MSG.format(cls=type(self).__name__, name=name))
         attr = super().__getattr__(name)
         typed = self.__dict__.get("_typed_storage_classes", {}).get(name)
         if typed is None or not isinstance(attr, torch.Tensor):
@@ -870,6 +907,124 @@ class Model(nn.Module, ABC):
             else:
                 out[n] = self.output_spec[n](v)
         return out
+
+    # ------------------------------------------------------------------
+    # Parameter derivatives (reverse-mode autograd over calibration params)
+    # ------------------------------------------------------------------
+    #
+    # The py-eager surface of the cross-route ``param_jacobian`` / ``param_vjp``
+    # methods (the same name-keyed contract the compiled routes expose via
+    # ``neml2::aoti::Model`` / the pybind ``neml2.aoti.Model`` / the cpp-eager
+    # ``_EagerModel`` adapter). Both delegate to the shared reverse-mode engine in
+    # :mod:`neml2.es.param_ad`; the forward-mode input chain rule (``forward(v=)``)
+    # is a separate path and is untouched.
+
+    def param_jacobian(
+        self,
+        inputs: Mapping[str, TensorWrapper | torch.Tensor],
+        params: list[str] | None = None,
+    ) -> tuple[dict[str, torch.Tensor], dict[str, dict[str, torch.Tensor]]]:
+        """Evaluate the model and the dense Jacobian w.r.t. its calibration parameters.
+
+        Returns ``(outputs, P)`` -- ``outputs`` the raw ``{out_name: tensor}`` value
+        dict and ``P`` the nested ``{out_name: {param_qname: block}}`` map, each
+        block ``(*batch, *out_base, *param_base)`` (a Scalar parameter contributes
+        no trailing axis; a constant ``(out, param)`` pair is an explicit zero
+        block). Rows in ``output_spec`` order, columns in *params* order.
+
+        *inputs* is keyed by input name (typed wrappers or raw tensors, wrapped via
+        ``input_spec``). *params* selects the parameters by their
+        :meth:`~torch.nn.Module.named_parameters` qualified name; ``None`` (default)
+        uses every typed parameter. Reverse-mode autograd over the parameters via
+        :func:`neml2.es.param_ad.param_jacobian` -- one pass per output base
+        component, independent of the parameter count; composition through an
+        :class:`~neml2.models.common.ImplicitUpdate` is handled by that function's
+        implicit-function-theorem adjoint.
+        """
+        from .._eager_boundary import unwrap_outputs  # noqa: PLC0415
+        from ..es.param_ad import enumerate_typed_params  # noqa: PLC0415
+        from ..es.param_ad import param_jacobian as _param_jacobian  # noqa: PLC0415
+
+        typed_args = tuple(t(inputs[n]) for n, t in self.input_spec.items())  # type: ignore[call-arg]
+        typed_params = enumerate_typed_params(self)
+        param_base_shapes = {q: tuple(cls.BASE_SHAPE) for q, cls in typed_params}
+        param_qnames = params if params is not None else [q for q, _ in typed_params]
+        output_names = list(self.output_spec)
+        result = self(*typed_args)
+        typed_outs = result if isinstance(result, tuple) else (result,)
+        outputs = unwrap_outputs(typed_outs, output_names)
+        pjac = _param_jacobian(
+            self, typed_args, param_qnames, output_names, self.output_spec, param_base_shapes
+        )
+        return outputs, pjac
+
+    def param_vjp(
+        self,
+        inputs: Mapping[str, TensorWrapper | torch.Tensor],
+        cotangents: Mapping[str, TensorWrapper | torch.Tensor],
+        params: list[str] | None = None,
+    ) -> dict[str, torch.Tensor]:
+        r"""Parameter adjoint ``dL/d\theta`` for ``L = sum_o <cotangent_o, out_o>``.
+
+        Returns ``{param_qname: grad}`` at each parameter's natural shape (the batch
+        summed out -- the global-parameter gradient). One reverse pass total,
+        independent of the parameter count; the cheap form for many-parameter
+        inverse-optimization gradients, and the py-eager analogue of the compiled
+        ``param_vjp``. *cotangents* maps each output name to ``w_o`` at the output's
+        ``(*batch, *out_base)`` shape (typed or raw). *inputs* / *params* as in
+        :meth:`param_jacobian`. Composition through an
+        :class:`~neml2.models.common.ImplicitUpdate` is handled by the
+        implicit-function-theorem adjoint, exactly as in :meth:`param_jacobian`.
+        """
+        from ..es.param_ad import enumerate_typed_params  # noqa: PLC0415
+        from ..es.param_ad import param_vjp as _param_vjp  # noqa: PLC0415
+
+        typed_args = tuple(t(inputs[n]) for n, t in self.input_spec.items())  # type: ignore[call-arg]
+        param_qnames = (
+            params if params is not None else [q for q, _ in enumerate_typed_params(self)]
+        )
+        return _param_vjp(self, typed_args, param_qnames, list(self.output_spec), dict(cotangents))
+
+    def set_parameter(self, name: str, value: torch.Tensor | float | int) -> None:
+        """Set a calibration parameter's value (the write side of the cross-route
+        parameter surface; the compiled routes expose the same ``set_parameter``
+        on ``neml2::aoti::Model`` / the pybind ``Model`` / the cpp-eager runtime).
+
+        *name* is the parameter's :meth:`~torch.nn.Module.named_parameters`
+        qualified name (e.g. ``"elasticity.E"``); *value* is cast to the
+        parameter's dtype / device. When *value* broadcasts into the parameter's
+        current shape (the common case -- same shape, or a scalar into a batched
+        parameter) it is written in place with ``torch.no_grad`` ``copy_``, so the
+        ``nn.Parameter`` identity is preserved (optimizer state and the autograd
+        graph are undisturbed). When *value* has an incompatible shape -- e.g.
+        promoting a scalar parameter to a per-batch ``(B,)`` value, which ``copy_``
+        cannot resize into -- the parameter is **replaced** with a fresh
+        ``nn.Parameter`` of the new shape (preserving ``requires_grad``). Raises
+        ``KeyError`` for an unregistered name.
+        """
+        params = dict(self.named_parameters())
+        if name not in params:
+            raise KeyError(
+                f"set_parameter: {name!r} is not a registered parameter "
+                f"(available: {sorted(params)})"
+            )
+        p = params[name]
+        v = torch.as_tensor(value, dtype=p.dtype, device=p.device)
+        # ``copy_`` broadcasts *into* p's shape but cannot resize it; fall back to
+        # replacing the Parameter when the new value needs a different shape.
+        try:
+            broadcasts_into_p = tuple(torch.broadcast_shapes(v.shape, p.shape)) == tuple(p.shape)
+        except RuntimeError:
+            broadcasts_into_p = False
+        if broadcasts_into_p:
+            with torch.no_grad():
+                p.copy_(v)
+        else:
+            module_path, _, pname = name.rpartition(".")
+            owner = self.get_submodule(module_path) if module_path else self
+            owner._parameters[pname] = nn.Parameter(
+                v.detach().clone(), requires_grad=p.requires_grad
+            )
 
     # ------------------------------------------------------------------
     # Chain-rule helpers

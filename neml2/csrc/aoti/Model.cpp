@@ -102,7 +102,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
   // lack the master base_shape; we fail loudly instead of misinterpreting them.
   // dependencies: aoti.schema_version (NOT auto-managed -- C++ `//` comments are
   // not scanned by scripts/dep_manager.py; keep this literal in sync by hand).
-  static constexpr int kSupportedSchemaVersion = 6;
+  static constexpr int kSupportedSchemaVersion = 7;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -192,6 +192,17 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
       _derivatives.emplace_back(std::move(o), std::move(i));
     }
 
+  // Master (out, param) parameter-derivative pairs the artifact supports (v7+).
+  // Absent / empty => no parameter-Jacobian graph; param_jacobian() / param_vjp()
+  // raise. Separate from `_derivatives` (which is over structural inputs).
+  if (meta.contains("parameter_derivatives"))
+    for (const auto & pr : meta["parameter_derivatives"])
+    {
+      auto o = pr.at(0).get<std::string>();
+      auto p = pr.at(1).get<std::string>();
+      _param_derivatives.emplace_back(std::move(o), std::move(p));
+    }
+
   // Narrowed "dense auxiliary B matrix" layout: the distinct requested input
   // directions, in `_input_names` order, with their column offsets in the
   // narrowed carrier. The multi-segment dense Jacobian seeds + composes over
@@ -223,6 +234,9 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
       const auto name = p["name"].get<std::string>();
       const auto dtype = parse_dtype(p.value("dtype", std::string("float64")));
       const auto shape = p["shape"].get<std::vector<int64_t>>();
+      // Natural base shape (v7). Fallback to the full stored shape (== base for an
+      // unbatched parameter) keeps older single-param paths robust.
+      _param_base_shapes[name] = p.value("param_base_shape", shape);
       auto device = p.contains("device") ? parse_device(p["device"].get<std::string>()) : _device;
       // Promoted params must land on the same concrete GPU as the graphs: when
       // the model device carries an index (override-aware), inherit it.
@@ -256,6 +270,32 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
       }
       _named_parameters.emplace(name, t.contiguous());
     }
+  }
+
+  // Narrowed parameter-column layout for the multi-segment parameter-Jacobian
+  // carrier: the distinct requested promoted parameters (in _param_derivatives
+  // order) with their column offsets / sizes. The parameter size is the stored
+  // parameter's element count (natural base shape -- scalar => 1). Built after
+  // _named_parameters is populated. Parallel to the _req_input_* block above.
+  for (const auto & [o, p] : _param_derivatives)
+  {
+    if (_req_param_offset.count(p))
+      continue; // already laid out (a param may pair with several outputs)
+    auto pit = _named_parameters.find(p);
+    _assert(pit != _named_parameters.end(),
+            "aoti::Model: parameter-derivative references promoted parameter '",
+            p,
+            "' which is missing from named_parameters().");
+    // The carrier column band is PER-BASE-ELEMENT (prod of the natural base), not
+    // the stored numel -- a batched parameter `(*pbatch, *base)` still contributes
+    // only `prod(base)` columns (its batch aligns with the carrier's batch).
+    int64_t psize = 1;
+    for (const auto s : _param_base_shapes.at(p))
+      psize *= s;
+    _req_param_offset[p] = _param_total_size;
+    _req_param_size[p] = psize;
+    _req_params.push_back(p);
+    _param_total_size += psize;
   }
 
   // Segments.
@@ -314,6 +354,33 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
           pi.batch_independent = p.value("batch_independent", false);
           seg.jacobian_pairs.push_back(std::move(pi));
         }
+      }
+      // v7 parameter-derivative graphs (present iff parameter derivatives were
+      // requested). The param-Jacobian loader returns one dense block per
+      // (out, param) pair (ONLY blocks, no value outputs); the param-VJP loader
+      // returns one gradient per parameter given output cotangents.
+      if (seg_meta.contains("param_jacobian_package"))
+      {
+        seg.param_jacobian_loader =
+            make_loader(cache_dir / seg_meta["param_jacobian_package"].get<std::string>(), dev_idx);
+        for (const auto & p : seg_meta["param_jacobian_pairs"])
+        {
+          Segment::ParamPairInfo pi;
+          pi.out_var = p["out_var"].get<std::string>();
+          pi.param = p["param"].get<std::string>();
+          if (p.contains("out_base_shape"))
+            pi.out_base_shape = p["out_base_shape"].get<std::vector<int64_t>>();
+          if (p.contains("param_base_shape"))
+            pi.param_base_shape = p["param_base_shape"].get<std::vector<int64_t>>();
+          seg.param_jacobian_pairs.push_back(std::move(pi));
+        }
+      }
+      if (seg_meta.contains("param_vjp_package"))
+      {
+        seg.param_vjp_loader =
+            make_loader(cache_dir / seg_meta["param_vjp_package"].get<std::string>(), dev_idx);
+        seg.param_vjp_params = seg_meta["param_vjp_params"].get<std::vector<std::string>>();
+        seg.param_vjp_outputs = seg_meta["param_vjp_outputs"].get<std::vector<std::string>>();
       }
     }
     else if (seg_kind == "implicit")
@@ -377,6 +444,26 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
           seg.jacobian_pairs.push_back(std::move(pi));
         }
       }
+      // v8 implicit parameter-derivative graph (ParamIFT). Present iff a
+      // parameter derivative targeting a promoted parameter inside the residual
+      // was requested. Emits one dense du/dθ block per (unknown, param) pair in
+      // param_jacobian_pairs order (unknowns outer, params inner).
+      if (seg_meta.contains("param_ift_package"))
+      {
+        seg.param_ift_loader =
+            make_loader(cache_dir / seg_meta["param_ift_package"].get<std::string>(), dev_idx);
+        for (const auto & p : seg_meta["param_jacobian_pairs"])
+        {
+          Segment::ParamPairInfo pi;
+          pi.out_var = p["out_var"].get<std::string>();
+          pi.param = p["param"].get<std::string>();
+          if (p.contains("out_base_shape"))
+            pi.out_base_shape = p["out_base_shape"].get<std::vector<int64_t>>();
+          if (p.contains("param_base_shape"))
+            pi.param_base_shape = p["param_base_shape"].get<std::vector<int64_t>>();
+          seg.param_jacobian_pairs.push_back(std::move(pi));
+        }
+      }
       // Solver convergence / line-search configuration is no longer baked into
       // the metadata (schema v4). It is supplied at load time via
       // Model::set_solver_config (driven from the stub's [Solvers] block).
@@ -394,6 +481,12 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
           seg.predictor_inputs.push_back(v["name"].get<std::string>());
         for (const auto & v : seg_meta["predictor_outputs"])
           seg.predictor_outputs.push_back(v["name"].get<std::string>());
+        // The predictor is compiled without the residual's promoted tail, so it
+        // currently takes no promoted params (the field stays empty unless a
+        // future export threads them in explicitly).
+        if (seg_meta.contains("predictor_param_inputs"))
+          seg.predictor_param_inputs =
+              seg_meta["predictor_param_inputs"].get<std::vector<std::string>>();
       }
     }
     else
@@ -411,21 +504,31 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
   }
 }
 
+const at::Tensor &
+Model::Impl::_resolve_param(const std::string & name) const
+{
+  if (_param_overrides != nullptr)
+  {
+    auto oit = _param_overrides->find(name);
+    if (oit != _param_overrides->end())
+      return oit->second;
+  }
+  auto it = _named_parameters.find(name);
+  _assert(it != _named_parameters.end(),
+          "aoti::Model: segment references promoted parameter '",
+          name,
+          "' which is missing from named_parameters(). Either the user mutated the map "
+          "or the metadata is inconsistent.");
+  return it->second;
+}
+
 std::vector<at::Tensor>
 Model::Impl::_gather_params(const std::vector<std::string> & names) const
 {
   std::vector<at::Tensor> out;
   out.reserve(names.size());
   for (const auto & n : names)
-  {
-    auto it = _named_parameters.find(n);
-    _assert(it != _named_parameters.end(),
-            "aoti::Model: segment references promoted parameter '",
-            n,
-            "' which is missing from named_parameters(). Either the user mutated the map "
-            "or the metadata is inconsistent.");
-    out.push_back(it->second.contiguous());
-  }
+    out.push_back(_resolve_param(n).contiguous());
   return out;
 }
 
@@ -470,22 +573,40 @@ Model::output_base_shapes() const noexcept
 // error (e.g. a shape / device mismatch raised inside a compiled graph) is
 // normalized to a non-recoverable FatalError.
 std::map<std::string, at::Tensor>
-Model::forward(const std::map<std::string, at::Tensor> & inputs) const
+Model::forward(const std::map<std::string, at::Tensor> & inputs,
+               const std::map<std::string, at::Tensor> & param_overrides) const
 {
-  return _guarded([&] { return _impl->forward(inputs); });
+  return _guarded([&] { return _impl->forward(inputs, param_overrides); });
 }
 
 std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
 Model::jvp(const std::map<std::string, at::Tensor> & inputs,
-           const std::map<std::string, at::Tensor> & tangents) const
+           const std::map<std::string, at::Tensor> & tangents,
+           const std::map<std::string, at::Tensor> & param_overrides) const
 {
-  return _guarded([&] { return _impl->jvp(inputs, tangents); });
+  return _guarded([&] { return _impl->jvp(inputs, tangents, param_overrides); });
 }
 
 std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
-Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
+Model::jacobian(const std::map<std::string, at::Tensor> & inputs,
+                const std::map<std::string, at::Tensor> & param_overrides) const
 {
-  return _guarded([&] { return _impl->jacobian(inputs); });
+  return _guarded([&] { return _impl->jacobian(inputs, param_overrides); });
+}
+
+std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+Model::param_jacobian(const std::map<std::string, at::Tensor> & inputs,
+                      const std::map<std::string, at::Tensor> & param_overrides) const
+{
+  return _guarded([&] { return _impl->param_jacobian(inputs, param_overrides); });
+}
+
+std::map<std::string, at::Tensor>
+Model::param_vjp(const std::map<std::string, at::Tensor> & inputs,
+                 const std::map<std::string, at::Tensor> & cotangents,
+                 const std::map<std::string, at::Tensor> & param_overrides) const
+{
+  return _guarded([&] { return _impl->param_vjp(inputs, cotangents, param_overrides); });
 }
 
 std::map<std::string, at::Tensor> &
@@ -498,6 +619,25 @@ const std::map<std::string, at::Tensor> &
 Model::named_parameters() const noexcept
 {
   return _impl->named_parameters();
+}
+
+const std::map<std::string, std::vector<int64_t>> &
+Model::parameter_base_shapes() const noexcept
+{
+  return _impl->parameter_base_shapes();
+}
+
+void
+Model::set_parameter(const std::string & name, const at::Tensor & value)
+{
+  auto & params = _impl->named_parameters();
+  auto it = params.find(name);
+  _assert(it != params.end(),
+          "set_parameter: '",
+          name,
+          "' is not a promoted parameter; only entries that appear in "
+          "named_parameters() may be set.");
+  it->second = value.contiguous();
 }
 
 at::Device

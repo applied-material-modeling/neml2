@@ -131,6 +131,16 @@ select = ["E", "F", "W", "I", "B", "UP"]
 # if a non-math module accumulates genuinely ambiguous one-letter names.
 ignore = ["E741"]
 
+[tool.ruff.lint.isort]
+# Pin `neml2` as first-party so import sorting is deterministic regardless of
+# whether the package (and its compiled `_aoti` / `_eager` extensions) is built
+# or installed. Without this, ruff's auto-detection can classify a compiled
+# submodule (e.g. `neml2.aoti._aoti`, present only as a `.so`) differently from a
+# pure-Python sibling (`neml2.cli.aoti_export`) when the build is absent — as in
+# the CI `lint` job, which never builds the wheel — and inserts a spurious blank
+# line between the two import groups, diverging from a built local checkout.
+known-first-party = ["neml2"]
+
 [tool.ruff.lint.per-file-ignores]
 # Re-export shims: __init__.py files routinely import names for the sole
 # purpose of exposing them on the package surface, and `from .x import *`

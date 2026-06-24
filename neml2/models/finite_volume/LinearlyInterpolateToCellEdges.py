@@ -62,17 +62,19 @@ class LinearlyInterpolateToCellEdges(Model):
     cell_edges: Scalar
     _out_name: str
 
-    def _weights(self) -> tuple[Scalar, Scalar]:
+    def _weights(self, nl_params) -> tuple[Scalar, Scalar]:
         """Typed stencil weights ``w_left``, ``w_right`` over the M=N-1 interior edges.
 
-        ``register_typed_parameter`` stores the raw tensor data, so
-        ``self.cell_centers`` / ``self.cell_edges`` arrive with
+        ``register_typed_parameter`` stores the raw tensor data, so the
+        ``cell_centers`` / ``cell_edges`` parameters arrive with
         ``sub_batch_ndim=0``. Retag to expose the cell axis as
         ``sub_batch`` so slicing along it is typed (and so the typed
-        arithmetic with ``cell_values`` below aligns on sub_batch).
+        arithmetic with ``cell_values`` below aligns on sub_batch). Read
+        through ``_get_param`` (not ``self.<attr>``) so the leaf stays
+        promotion-compatible.
         """
-        centers = self.cell_centers.sub_batch.retag(1)
-        edges = self.cell_edges.sub_batch.retag(1)
+        centers = self._get_param("cell_centers", nl_params, Scalar).sub_batch.retag(1)
+        edges = self._get_param("cell_edges", nl_params, Scalar).sub_batch.retag(1)
         x_left = centers.sub_batch[:-1]
         x_right = centers.sub_batch[1:]
         xe_vec = edges.sub_batch[1:-1]  # interior edges, size N-1
@@ -83,7 +85,7 @@ class LinearlyInterpolateToCellEdges(Model):
 
     def forward(self, *nl_params, v: ChainRuleDict | None = None):  # type: ignore[override]
         cv_wrap = self._get_param("cell_values", nl_params, Scalar)
-        w_left, w_right = self._weights()
+        w_left, w_right = self._weights(nl_params)
         q_left = cv_wrap.sub_batch[:-1]
         q_right = cv_wrap.sub_batch[1:]
         out = w_left * q_left + w_right * q_right

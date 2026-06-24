@@ -103,8 +103,8 @@ def _make_bilinear(type_name: str, ordinate_cls: type[TensorWrapper]) -> type[Mo
             *nl_params: TensorWrapper,
             v: ChainRuleDict | None = None,
         ):
-            X1 = self.abscissa1
-            X2 = self.abscissa2
+            X1 = self._get_param("abscissa1", nl_params, Scalar)
+            X2 = self._get_param("abscissa2", nl_params, Scalar)
             Y = self._get_param("ordinate", nl_params, ordinate_cls)
             # The ordinate as registered carries ``sub_batch_ndim=0``; re-tag
             # to the (N1, N2) sub-batch layout the primitive expects.

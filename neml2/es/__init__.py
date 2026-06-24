@@ -36,12 +36,13 @@ Layered:
 - :mod:`.system` -- :class:`LinearSystem`, :class:`NonlinearSystem`,
   :class:`ModelNonlinearSystem`.
 - :mod:`.implicit` -- AOTI export wrappers (:class:`RHS`,
-  :class:`NewtonStep`, :class:`IFT`) for the implicit-segment Newton path.
+  :class:`NewtonStep`, :class:`IFT`, :class:`ParamIFT`) for the
+  implicit-segment Newton path.
 """
 
 from .assembled import AssembledMatrix, AssembledVector, norm, norm_sq
 from .axis_layout import AxisLayout
-from .implicit import IFT, RHS, NewtonStep
+from .implicit import IFT, RHS, NewtonStep, ParamIFT
 from .sparse import SparseMatrix, SparseVector
 from .system import LinearSystem, ModelNonlinearSystem, NonlinearSystem
 
@@ -57,6 +58,7 @@ __all__ = [
     "RHS",
     "NewtonStep",
     "IFT",
+    "ParamIFT",
     "norm",
     "norm_sq",
 ]

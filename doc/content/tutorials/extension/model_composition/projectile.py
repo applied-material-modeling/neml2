@@ -47,21 +47,29 @@ class ProjectileAcceleration(Model):
     def forward(  # type: ignore[override]
         self,
         v_in: Vec,
-        *,
+        *nl_params,
         v: ChainRuleDict | None = None,
     ):
-        # Compute the value: a = g - mu * v.
-        a = self.g - self.mu * v_in
+        # Read the drag coefficient through ``_get_param`` rather than
+        # ``self.mu``. ``_get_param`` resolves a static slot from ``self`` or
+        # a promoted runtime input from ``*nl_params``, so the same forward
+        # keeps working after ``mu`` is promoted (neml2-compile -p); a bare
+        # ``self.mu`` would be rejected by the parameter-attribute guard.
+        mu = self._get_param("mu", nl_params, Scalar)
+
+        # Compute the value: a = g - mu * v. ``self.g`` is a buffer (not a
+        # parameter), so reading it directly is fine.
+        a = self.g - mu * v_in
 
         # Pure forward: return the typed output and stop.
         if v is None:
             return a
 
         # First-order chain rule: ∂a / ∂v_in = -mu * I. The closure
-        # captures ``self.mu`` and receives an incoming tangent V
+        # captures the local ``mu`` and receives an incoming tangent V
         # (a ``Vec`` shaped like the input), returns the contribution
         # to ∂(acceleration)/∂(seed-leaf).
-        actions = {self._v_name: lambda V: -self.mu * V}
+        actions = {self._v_name: lambda V: -mu * V}
 
         # ``apply_chain_rule`` returns the v_out dict; pair it with the
         # value so the caller can unpack ``(a, v_out)``.

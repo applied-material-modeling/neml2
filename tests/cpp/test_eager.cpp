@@ -126,6 +126,61 @@ main(int argc, char ** argv)
     NEML2_CHECK(at::allclose(jvp0.at("stress"), at::zeros_like(jvp0.at("stress"))));
   }
 
+  // Parameter surface: named_parameters() + param_jacobian() expose d(stress)/
+  // d(param) over the model's calibration parameters (E, nu). The blocks are
+  // (b, 6) for these Scalar parameters; the value half matches forward. (Value
+  // parity vs finite differences is checked in tests/unit/test_eager.py.)
+  {
+    const auto pnames = m.param_names();
+    NEML2_CHECK(pnames.size() == 2); // LinearIsotropicElasticity: E, nu
+    NEML2_CHECK((m.param_base_shapes() == std::vector<std::vector<int64_t>>{{}, {}}));
+
+    const auto np = m.named_parameters();
+    NEML2_CHECK(np.size() == 2);
+    for (const auto & p : pnames)
+    {
+      NEML2_CHECK(np.count(p) == 1);
+      NEML2_CHECK(np.at(p).dim() == 0); // scalar parameter
+    }
+
+    const auto [pout, P] = m.param_jacobian(inputs);
+    NEML2_CHECK(at::allclose(pout.at("stress"), out.at("stress")));
+    for (const auto & p : pnames)
+    {
+      const auto & block = P.at("stress").at(p);
+      NEML2_CHECK(block.dim() == 2);
+      NEML2_CHECK(block.size(0) == b);
+      NEML2_CHECK(block.size(1) == 6);
+      NEML2_CHECK(at::isfinite(block).all().item<bool>());
+    }
+
+    // param_vjp: the adjoint dL/d(param) for L = <w, stress> equals the dense
+    // contraction <w, d(stress)/d(param)>, at each scalar parameter's natural
+    // (scalar) shape.
+    const auto w = at::randn({b, 6}, at::TensorOptions().dtype(m.dtype()));
+    const auto g = m.param_vjp(inputs, {{"stress", w}});
+    NEML2_CHECK(g.size() == pnames.size());
+    for (const auto & p : pnames)
+    {
+      const auto contracted = (w * P.at("stress").at(p)).sum();
+      NEML2_CHECK(g.at(p).dim() == 0); // scalar parameter -> scalar grad
+      NEML2_CHECK(at::allclose(g.at(p), contracted));
+    }
+
+    // set_parameter: replace a parameter value (forwards to torch on the
+    // embedded model); named_parameters() reflects it and the next forward
+    // changes, then restores exactly when set back.
+    const auto & pname = pnames.front();
+    const auto orig = m.named_parameters().at(pname).clone();
+    const auto out0 = m.forward(inputs).at("stress").clone();
+    m.set_parameter(pname, orig * 2.0);
+    NEML2_CHECK(at::allclose(m.named_parameters().at(pname), orig * 2.0));
+    NEML2_CHECK(!at::allclose(m.forward(inputs).at("stress"), out0));
+    m.set_parameter(pname, orig);
+    NEML2_CHECK(at::allclose(m.forward(inputs).at("stress"), out0));
+    NEML2_CHECK_THROWS(m.set_parameter("does_not_exist", orig));
+  }
+
   // A second handle shares the embedded interpreter and agrees value-for-value.
   {
     auto m2 = load_model(input_file, "model");

@@ -143,6 +143,9 @@ Model::Model(const std::filesystem::path & input_file,
             _impl->adapter.attr("input_base_shapes").cast<std::vector<std::vector<int64_t>>>();
         _impl->output_base_shapes =
             _impl->adapter.attr("output_base_shapes").cast<std::vector<std::vector<int64_t>>>();
+        _impl->param_names = _impl->adapter.attr("param_names").cast<std::vector<std::string>>();
+        _impl->param_base_shapes =
+            _impl->adapter.attr("param_base_shapes").cast<std::vector<std::vector<int64_t>>>();
         _impl->device = _impl->adapter.attr("device").cast<at::Device>();
         _impl->dtype = _impl->adapter.attr("dtype").cast<at::ScalarType>();
       });
@@ -220,6 +223,67 @@ Model::jacobian(const std::map<std::string, at::Tensor> & inputs) const
                    // the nested dict[str, dict[str, Tensor]] of variable-pair
                    // blocks (*B, *out_base, *in_base).
                    py::object out = _impl->adapter.attr("jacobian")(inputs);
+                   return out.cast<Ret>();
+                 });
+}
+
+const std::vector<std::string> &
+Model::param_names() const noexcept
+{
+  return _impl->param_names;
+}
+
+const std::vector<std::vector<int64_t>> &
+Model::param_base_shapes() const noexcept
+{
+  return _impl->param_base_shapes;
+}
+
+std::map<std::string, at::Tensor>
+Model::named_parameters() const
+{
+  return guarded("named_parameters",
+                 [&]() -> std::map<std::string, at::Tensor>
+                 {
+                   // The adapter returns dict[str, Tensor] of detached parameter
+                   // values keyed by qualified name.
+                   py::object out = _impl->adapter.attr("named_parameters")();
+                   return out.cast<std::map<std::string, at::Tensor>>();
+                 });
+}
+
+void
+Model::set_parameter(const std::string & name, const at::Tensor & value)
+{
+  guarded("set_parameter", [&]() { _impl->adapter.attr("set_parameter")(name, value); });
+}
+
+std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>
+Model::param_jacobian(const std::map<std::string, at::Tensor> & inputs) const
+{
+  using Ret = std::pair<std::map<std::string, at::Tensor>, neml2::aoti::VariablePairJacobian>;
+  return guarded("param_jacobian",
+                 [&]() -> Ret
+                 {
+                   // The adapter returns (outputs, P) -- a dict[str, Tensor] and
+                   // the nested dict[str, dict[str, Tensor]] of parameter-pair
+                   // blocks (*B, *out_base, *param_base).
+                   py::object out = _impl->adapter.attr("param_jacobian")(inputs);
+                   return out.cast<Ret>();
+                 });
+}
+
+std::map<std::string, at::Tensor>
+Model::param_vjp(const std::map<std::string, at::Tensor> & inputs,
+                 const std::map<std::string, at::Tensor> & cotangents) const
+{
+  using Ret = std::map<std::string, at::Tensor>;
+  return guarded("param_vjp",
+                 [&]() -> Ret
+                 {
+                   // The adapter returns dL/d(param) keyed by parameter qname for
+                   // the loss L = sum_o <cotangent_o, out_o>.
+                   py::object out = _impl->adapter.attr("param_vjp")(inputs, cotangents);
                    return out.cast<Ret>();
                  });
 }

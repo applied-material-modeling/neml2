@@ -135,29 +135,25 @@ struct DispatchedModel::Impl
     const auto in_device = inputs.begin()->second.device();
     const int64_t b = infer_batch_size(inputs);
 
-    if (_async != nullptr)
+    // Per chunk: slice inputs + any batched parameters to the chunk's rows, run
+    // on the chunk's device, move the result back to the input device.
+    auto chunk_fn = [&](at::Device d, int64_t s, int64_t cnt)
     {
-      auto chunks = run_async<std::map<std::string, at::Tensor>>(
-          b,
-          [&](at::Device d, int64_t s, int64_t cnt)
-          {
-            auto in = to_device(slice_batch(inputs, s, cnt), d);
-            return to_device(_models.at(d.str())->forward(in), in_device);
-          });
-      return cat_batch(chunks);
-    }
+      auto in = to_device(slice_batch(inputs, s, cnt), d);
+      auto ov = chunk_param_overrides(s, cnt, b, d);
+      return to_device(_models.at(d.str())->forward(in, ov), in_device);
+    };
+
+    if (_async != nullptr)
+      return cat_batch(run_async<std::map<std::string, at::Tensor>>(b, chunk_fn));
 
     const int64_t chunk = chunk_extent(b);
     if (chunk >= b && _active->device() == in_device)
-      return _active->forward(inputs); // fast path
+      return _active->forward(inputs); // fast path (full batched param used as-is)
 
     std::vector<std::map<std::string, at::Tensor>> results;
     for (int64_t s = 0; s < b; s += chunk)
-    {
-      const int64_t cnt = std::min(chunk, b - s);
-      auto in = to_device(slice_batch(inputs, s, cnt), _active->device());
-      results.push_back(to_device(_active->forward(in), in_device));
-    }
+      results.push_back(chunk_fn(_active->device(), s, std::min(chunk, b - s)));
     return cat_batch(results);
   }
 
@@ -175,7 +171,8 @@ struct DispatchedModel::Impl
     {
       auto in = to_device(slice_batch(inputs, s, cnt), d);
       auto tan = to_device(slice_batch(tangents, s, cnt), d);
-      auto [out, jout] = _models.at(d.str())->jvp(in, tan);
+      auto ov = chunk_param_overrides(s, cnt, b, d);
+      auto [out, jout] = _models.at(d.str())->jvp(in, tan, ov);
       return {to_device(out, in_device), to_device(jout, in_device)};
     };
 
@@ -214,7 +211,8 @@ struct DispatchedModel::Impl
     auto chunk_fn = [&](at::Device d, int64_t s, int64_t cnt) -> Pair
     {
       auto in = to_device(slice_batch(inputs, s, cnt), d);
-      auto [out, j] = _models.at(d.str())->jacobian(in);
+      auto ov = chunk_param_overrides(s, cnt, b, d);
+      auto [out, j] = _models.at(d.str())->jacobian(in, ov);
       return {to_device(out, in_device), to_device_nested(j, in_device)};
     };
 
@@ -257,6 +255,135 @@ struct DispatchedModel::Impl
     return {cat_batch(outs), cat_batch_nested(jparts, out_base_ndim, in_base_ndim)};
   }
 
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+  param_jacobian(const std::map<std::string, at::Tensor> & inputs)
+  {
+    _assert(!inputs.empty(), "DispatchedModel::param_jacobian: inputs are empty.");
+    sync_params();
+    const auto in_device = inputs.begin()->second.device();
+    const int64_t b = infer_batch_size(inputs);
+
+    using Pair = std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>;
+    auto chunk_fn = [&](at::Device d, int64_t s, int64_t cnt) -> Pair
+    {
+      auto in = to_device(slice_batch(inputs, s, cnt), d);
+      auto ov = chunk_param_overrides(s, cnt, b, d);
+      auto [out, p] = _models.at(d.str())->param_jacobian(in, ov);
+      return {to_device(out, in_device), to_device_nested(p, in_device)};
+    };
+
+    std::vector<Pair> chunks;
+    if (_async != nullptr)
+      chunks = run_async<Pair>(b, chunk_fn);
+    else
+    {
+      const int64_t chunk = chunk_extent(b);
+      if (chunk >= b && _active->device() == in_device)
+        return _active->param_jacobian(inputs); // fast path
+      for (int64_t s = 0; s < b; s += chunk)
+        chunks.push_back(chunk_fn(_active->device(), s, std::min(chunk, b - s)));
+    }
+
+    std::vector<std::map<std::string, at::Tensor>> outs;
+    std::vector<VariablePairJacobian> pparts;
+    outs.reserve(chunks.size());
+    pparts.reserve(chunks.size());
+    for (auto & c : chunks)
+    {
+      outs.push_back(std::move(c.first));
+      pparts.push_back(std::move(c.second));
+    }
+    // Same base-shape-aware reassembly as jacobian(): the "column" axis here is
+    // the parameter, so the inner base-ndim map is keyed by parameter qname. A
+    // batch-independent block (returned unbatched) is passed through, not
+    // concatenated. Parameter base shapes come from the active model's promoted
+    // parameter values (each stored at its (*param_base) shape).
+    std::map<std::string, int64_t> out_base_ndim, param_base_ndim;
+    {
+      const auto & onames = _active->output_names();
+      const auto & oshapes = _active->output_base_shapes();
+      for (std::size_t k = 0; k < onames.size(); ++k)
+        out_base_ndim[onames[k]] = static_cast<int64_t>(oshapes[k].size());
+      // NATURAL base ndim, not the stored tensor's dim(): a batched parameter
+      // `(B, *base)` would otherwise report an inflated trailing-ndim and
+      // mis-classify its `(*B, *out_base, *param_base)` block as
+      // batch-independent in cat_batch_nested (dropping all but the first chunk).
+      for (const auto & [q, base] : _active->parameter_base_shapes())
+        param_base_ndim[q] = static_cast<int64_t>(base.size());
+    }
+    return {cat_batch(outs), cat_batch_nested(pparts, out_base_ndim, param_base_ndim)};
+  }
+
+  std::map<std::string, at::Tensor> param_vjp(const std::map<std::string, at::Tensor> & inputs,
+                                              const std::map<std::string, at::Tensor> & cotangents)
+  {
+    _assert(!inputs.empty(), "DispatchedModel::param_vjp: inputs are empty.");
+    sync_params();
+    const auto in_device = inputs.begin()->second.device();
+    const int64_t b = infer_batch_size(inputs);
+
+    using Ret = std::map<std::string, at::Tensor>;
+    auto chunk_fn = [&](at::Device d, int64_t s, int64_t cnt) -> Ret
+    {
+      // Slice inputs, output cotangents, AND any batched parameter to the chunk's
+      // rows; the per-device param_vjp collapses each gradient to the (per-chunk)
+      // stored/override shape -- per-element for a batched parameter, summed for a
+      // global one.
+      auto in = to_device(slice_batch(inputs, s, cnt), d);
+      auto cot = to_device(slice_batch(cotangents, s, cnt), d);
+      auto ov = chunk_param_overrides(s, cnt, b, d);
+      return to_device(_models.at(d.str())->param_vjp(in, cot, ov), in_device);
+    };
+
+    std::vector<Ret> chunks;
+    if (_async != nullptr)
+      chunks = run_async<Ret>(b, chunk_fn);
+    else
+    {
+      const int64_t chunk = chunk_extent(b);
+      if (chunk >= b && _active->device() == in_device)
+        return _active->param_vjp(inputs, cotangents); // fast path
+      for (int64_t s = 0; s < b; s += chunk)
+        chunks.push_back(chunk_fn(_active->device(), s, std::min(chunk, b - s)));
+    }
+    // Adjoint stitch, per parameter: a BATCHED (per-batch-element) parameter's
+    // per-chunk gradients are CONCATENATED back to the full batch; a GLOBAL
+    // parameter's are SUMMED (each chunk already reduced its own slice). Mirrors
+    // the per-device collapse so the dispatched result equals a single shot.
+    _assert(!chunks.empty(), "DispatchedModel::param_vjp: no chunks produced.");
+    if (chunks.size() == 1)
+      return chunks.front();
+    std::map<std::string, at::Tensor> out;
+    const auto & bases = _active->parameter_base_shapes();
+    const auto & master = _active->named_parameters();
+    for (const auto & [q, first] : chunks.front())
+    {
+      auto bit = bases.find(q);
+      const int64_t base_ndim = (bit != bases.end()) ? static_cast<int64_t>(bit->second.size()) : 0;
+      auto mit = master.find(q);
+      const bool batched =
+          mit != master.end() && (mit->second.dim() - base_ndim >= 1) && (mit->second.size(0) == b);
+      std::vector<at::Tensor> parts;
+      parts.reserve(chunks.size());
+      for (const auto & c : chunks)
+      {
+        auto it = c.find(q);
+        _assert(it != c.end(), "DispatchedModel::param_vjp: key '", q, "' missing from a chunk.");
+        parts.push_back(it->second);
+      }
+      if (batched)
+        out.emplace(q, at::cat(parts, /*dim=*/0));
+      else
+      {
+        at::Tensor acc = parts.front();
+        for (std::size_t k = 1; k < parts.size(); ++k)
+          acc = acc + parts[k];
+        out.emplace(q, std::move(acc));
+      }
+    }
+    return out;
+  }
+
   void set_solver_config(const SolverConfig & config)
   {
     for (auto & [name, m] : _models)
@@ -272,6 +399,14 @@ struct DispatchedModel::Impl
     return _active->named_parameters();
   }
   const std::map<std::string, at::Tensor> & params() const { return _active->named_parameters(); }
+
+  void set_parameter(const std::string & name, const at::Tensor & value)
+  {
+    // Update the master (active-device) slot; the per-device copies are
+    // re-synced from it on the next dispatched call.
+    _active->set_parameter(name, value);
+    _params_dirty = true;
+  }
 
   Model * active() const { return _active; }
 
@@ -296,6 +431,14 @@ private:
 
   /// Broadcast the master promoted params to every other device copy. No-op for
   /// a single device, an empty (fully-baked) param set, or an unmutated master.
+  ///
+  /// Uses slot ASSIGNMENT (not in-place `copy_`): a batched parameter set via
+  /// `set_parameter` re-shapes the master slot from `(*base)` to `(B, *base)`,
+  /// which an in-place `copy_` into the device copy's original-shaped slot would
+  /// reject. The per-device copy of a batched parameter is then never actually
+  /// read -- each dispatched chunk passes its own sliced override (see
+  /// `chunk_param_overrides`) -- but keeping the copies shape-consistent with the
+  /// master keeps the unbatched path and any direct device-model use correct.
   void sync_params()
   {
     if (!_params_dirty || _models.size() <= 1)
@@ -308,6 +451,7 @@ private:
     {
       if (m.get() == _active)
         continue;
+      const auto dev = m->device();
       auto & dst = m->named_parameters();
       for (const auto & [k, v] : master)
       {
@@ -318,10 +462,38 @@ private:
                 "' is missing on device '",
                 name,
                 "'.");
-        it->second.copy_(v); // cross-device copy
+        it->second = (v.device() == dev) ? v : v.to(dev); // cross-device slot assign
       }
     }
     _params_dirty = false;
+  }
+
+  /// Per-chunk promoted-parameter overrides for the chunk `[s, s+cnt)`: each
+  /// BATCHED stored parameter (a leading dim beyond its natural base, sized to
+  /// the call batch `B`) narrowed to the chunk's rows and moved to device `d`.
+  /// Unbatched / scalar parameters are omitted -- the per-device Model uses its
+  /// own synced copy (broadcast in-graph to the chunk batch). Empty when nothing
+  /// is batched, so the unbatched path costs nothing. Read-only on the master, so
+  /// safe to call concurrently from the async workers.
+  std::map<std::string, at::Tensor>
+  chunk_param_overrides(int64_t s, int64_t cnt, int64_t b, at::Device d) const
+  {
+    std::map<std::string, at::Tensor> ov;
+    const auto & params = _active->named_parameters();
+    const auto & bases = _active->parameter_base_shapes();
+    for (const auto & [q, t] : params)
+    {
+      auto bit = bases.find(q);
+      const int64_t base_ndim = (bit != bases.end()) ? static_cast<int64_t>(bit->second.size()) : 0;
+      // Batched iff it carries a leading dim past its base AND that dim is the
+      // call batch. A size-1 / unbatched leading dim broadcasts -- leave it to
+      // the stored copy.
+      if (t.dim() - base_ndim < 1 || t.size(0) != b)
+        continue;
+      auto sl = t.narrow(0, s, cnt);
+      ov.emplace(q, sl.device() == d ? sl : sl.to(d));
+    }
+    return ov;
   }
 
   // --- async thread-per-device pool ------------------------------------------
@@ -585,6 +757,19 @@ DispatchedModel::jacobian(const std::map<std::string, at::Tensor> & inputs) cons
   return _guarded([&] { return _impl->jacobian(inputs); });
 }
 
+std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+DispatchedModel::param_jacobian(const std::map<std::string, at::Tensor> & inputs) const
+{
+  return _guarded([&] { return _impl->param_jacobian(inputs); });
+}
+
+std::map<std::string, at::Tensor>
+DispatchedModel::param_vjp(const std::map<std::string, at::Tensor> & inputs,
+                           const std::map<std::string, at::Tensor> & cotangents) const
+{
+  return _guarded([&] { return _impl->param_vjp(inputs, cotangents); });
+}
+
 void
 DispatchedModel::set_solver_config(const SolverConfig & config)
 {
@@ -625,6 +810,12 @@ const std::map<std::string, at::Tensor> &
 DispatchedModel::named_parameters() const noexcept
 {
   return _impl->params();
+}
+
+void
+DispatchedModel::set_parameter(const std::string & name, const at::Tensor & value)
+{
+  _impl->set_parameter(name, value);
 }
 
 at::Device

@@ -47,6 +47,26 @@ sensitivities. Forward evaluation of such models, and all plain-batch /
 forward derivatives, are fully supported.
 ```
 
+```{note}
+**Parameter derivatives and saved-output ops.** Parameter-derivative graphs
+(`-d OUT:PARAM` for a promoted `-p PARAM`) are compiled by reverse-mode
+autograd, which is currently the only AD that lowers through AOTInductor. An
+upstream PyTorch limitation
+([pytorch/pytorch#187907](https://github.com/pytorch/pytorch/issues/187907))
+prevents lowering a reverse-mode graph through an element-wise op whose backward
+**saves its output** (`sqrt`, `exp`, `tanh`, `reciprocal`, and division by a
+differentiated value — e.g. a von Mises norm or an Arrhenius/Kocks–Mecking
+`exp`). NEML2 works around the common cases transparently: the typed-tensor
+wrappers (`neml2/types/functions.py`) route these ops through input-recompute
+`autograd.Function`s on the AD path while keeping the plain instruction on the
+value path, so such models compile and match eager to machine precision. If a
+model's differentiated path reaches a saved-output op that is *not* wrapped
+(e.g. a raw `torch.<op>` inside a leaf), `neml2-compile` fails fast with an
+actionable message; route that op through its wrapper, or compute the parameter
+derivative through the eager runtime (Python `neml2.eager` / `cpp-eager`), which
+never lowers a graph.
+```
+
 See [](cli-utilities) for the broader CLI surface.
 
 ## On-disk layout
@@ -110,9 +130,18 @@ the Python source. It records, at a high level:
   is no runtime override.
 - **Inputs and outputs** — master input/output order with per-variable
   storage size, base shape, and sub-batch shape.
-- **Promoted parameters** — the `-p` set, with initial values. Empty
-  in the fully-baked case (the artifact is then a frozen inference
-  graph and `named_parameters()` is empty at load time).
+- **Promoted parameters** — the `-p` set, with initial values, the
+  artifact's device, and each parameter's natural base shape
+  (`param_base_shape`; e.g. `[]` for a `Scalar`, `[6]` for an `SR2`).
+  Empty in the fully-baked case (the artifact is then a frozen inference
+  graph and `named_parameters()` is empty at load time). The value /
+  jvp / jacobian / param-Jacobian / param-VJP graphs take each promoted
+  parameter as a **per-batch** `(B, *param_base)` input, so the runtime
+  can broadcast a stored scalar up to the call batch — or pass a
+  genuinely batched parameter through (see
+  [Batched parameters](#batched-parameters)). The recorded device is the
+  artifact's compile-target device (not the source snapshot's), since
+  those graphs dereference the parameter on-device.
 - **Segments** — one entry per `ImplicitUpdate` boundary the exporter
   split on; executed in order at runtime, with each segment's outputs
   feeding the next segment's inputs via a shared `name → tensor` state
@@ -125,7 +154,7 @@ refuses any non-matching version with a clear "regenerate via
 `neml2-compile`" message; the only remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `6`.
+The current schema version is `7`.
 
 ### Segment kinds
 
@@ -266,6 +295,38 @@ with a message pointing at the offending name. Parameters in forward
 segments of a composed model promote normally; see
 [](model-compilation-pipeline) for the underlying constraint on the
 equation-system wrappers.
+
+(batched-parameters)=
+### Batched parameters
+
+A promoted parameter can be set to a **per-batch-element** value at runtime —
+e.g. a `Scalar` parameter given shape `(B,)` via `set_parameter`, a spatially
+varying material property (the common MOOSE inverse-optimization case). The
+value / jvp / jacobian / param-Jacobian / param-VJP graphs all take each promoted
+parameter as a per-batch `(B, *param_base)` input (a genuine per-batch input is
+symbolic, so it is never re-pinned by Inductor's `constant_fold_uniform_value`
+under the dynamic batch). The runtime broadcasts a stored *scalar* parameter up
+to the call batch before the call, and passes a genuinely *batched* parameter
+through unchanged; the call batch is `broadcast(input batches, parameter
+batches)`.
+
+The two parameter-derivative surfaces then follow the parameter's shape,
+matching the eager runtime:
+
+- **`param_jacobian`** returns a dense `d(out)/d(param)` block
+  `(*B, *out_base, *param_base)` — per batch element, so a batched parameter's
+  block varies across the batch.
+- **`param_vjp`** returns the adjoint `dL/d(param)` **summed over the batch for a
+  global (unbatched) parameter** (the gradient reverse-mode autograd accumulates
+  for a shared leaf) and **per-element `(*B, *param_base)` for a batched one**
+  (each batch element depends only on its own copy). The adjoint graph emits the
+  per-element gradient and the runtime collapses it to the stored parameter's
+  shape.
+
+For `cpp-dispatch`, each chunk receives the batched parameter sliced to its own
+rows; per-element `param_jacobian` blocks and batched `param_vjp` adjoints are
+concatenated back across chunks, while a global `param_vjp` adjoint is summed.
+Sub-batched (per-grain) parameters are not yet supported.
 
 ## Dynamic batch dimension
 

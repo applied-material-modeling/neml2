@@ -67,12 +67,34 @@ struct Model::Impl
   explicit Impl(const std::filesystem::path & meta_path, std::optional<at::Device> device_override);
 
   // --- Public ops (forwarded from Model) -----------------------------------
-  std::map<std::string, at::Tensor> forward(const std::map<std::string, at::Tensor> & inputs) const;
+  //
+  // `param_overrides` (default empty) substitutes a promoted parameter's value
+  // for the duration of THIS call only, without mutating the stored
+  // `_named_parameters`. The multi-device dispatcher uses it to pass each chunk
+  // its batched parameters sliced to the chunk's rows: the per-device Model's
+  // stored params stay immutable, so concurrent workers never race. Empty
+  // overrides => the stored parameters are used (the direct, single-call case).
+  std::map<std::string, at::Tensor>
+  forward(const std::map<std::string, at::Tensor> & inputs,
+          const std::map<std::string, at::Tensor> & param_overrides = {}) const;
   std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
   jvp(const std::map<std::string, at::Tensor> & inputs,
-      const std::map<std::string, at::Tensor> & tangents) const;
+      const std::map<std::string, at::Tensor> & tangents,
+      const std::map<std::string, at::Tensor> & param_overrides = {}) const;
   std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
-  jacobian(const std::map<std::string, at::Tensor> & inputs) const;
+  jacobian(const std::map<std::string, at::Tensor> & inputs,
+           const std::map<std::string, at::Tensor> & param_overrides = {}) const;
+  /// Evaluate + parameter Jacobian (schema v7). `P[out][param]` is
+  /// `(*B, *out_base, *param_base)` (reverse-mode AD over promoted parameters).
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+  param_jacobian(const std::map<std::string, at::Tensor> & inputs,
+                 const std::map<std::string, at::Tensor> & param_overrides = {}) const;
+  /// Parameter VJP / adjoint (schema v7): `dL/d(param)` for
+  /// `L = sum_o <cotangent_o, out_o>`, keyed by parameter qualified name.
+  std::map<std::string, at::Tensor>
+  param_vjp(const std::map<std::string, at::Tensor> & inputs,
+            const std::map<std::string, at::Tensor> & cotangents,
+            const std::map<std::string, at::Tensor> & param_overrides = {}) const;
 
   // --- Accessors (forwarded from Model) ------------------------------------
   const std::vector<std::string> & input_names() const noexcept { return _input_names; }
@@ -90,8 +112,22 @@ struct Model::Impl
   {
     return _named_parameters;
   }
+  /// Natural base shape per promoted parameter (Scalar => {}, SR2 => {6}). The
+  /// dispatcher needs this to tell a batched stored parameter `(*pbatch, *base)`
+  /// from an unbatched one when slicing per chunk.
+  const std::map<std::string, std::vector<int64_t>> & parameter_base_shapes() const noexcept
+  {
+    return _param_base_shapes;
+  }
   at::Device device() const noexcept { return _device; }
   at::ScalarType dtype() const noexcept { return _dtype; }
+
+  /// Resolve a promoted parameter for the CURRENT call: the per-call override
+  /// value if one was supplied for `name`, else the stored `_named_parameters`
+  /// entry. The single point every value/derivative graph reads a promoted
+  /// parameter through, so a dispatcher-supplied per-chunk slice transparently
+  /// replaces the stored value without mutating it. Throws if `name` is neither.
+  const at::Tensor & _resolve_param(const std::string & name) const;
 
   enum class SegmentKind
   {
@@ -115,6 +151,13 @@ struct Model::Impl
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> rhs_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> step_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> ift_loader;
+    /// Implicit-segment parameter sensitivity graph (schema v7): du/dθ for a
+    /// promoted parameter inside the residual. Takes the converged per-group
+    /// unknowns + givens + the promoted parameters PER-BATCH (the runtime
+    /// broadcasts the stored scalar to the batch before the call), returns one
+    /// dense du/dθ block per (unknown, param) pair in `param_jacobian_pairs`
+    /// order. Null unless an implicit parameter derivative was compiled.
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> param_ift_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> predictor_loader;
 
     /// Per-variable metadata. The natural ``(*B, *sub_batch, *base)``
@@ -174,8 +217,41 @@ struct Model::Impl
     };
     std::vector<PairInfo> jacobian_pairs;
 
+    /// Per-(out_var, param) parameter-Jacobian-pair metadata (schema v7). Empty
+    /// unless parameter derivatives were compiled. The param-Jacobian loader
+    /// returns one dense block per pair in this row-major order (outputs outer,
+    /// promoted params inner) and ONLY blocks (no value outputs).
+    struct ParamPairInfo
+    {
+      std::string out_var;
+      std::string param;
+      std::vector<int64_t> out_base_shape;
+      std::vector<int64_t> param_base_shape;
+    };
+    std::vector<ParamPairInfo> param_jacobian_pairs;
+    /// Forward-segment parameter-Jacobian graph. Its promoted-parameter inputs
+    /// are PER-BATCH (`(*B, *param_base)`) -- the runtime broadcasts the stored
+    /// scalar parameter to the batch before the call (the value / jvp graphs keep
+    /// parameters scalar). Null unless parameter derivatives were compiled.
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> param_jacobian_loader;
+
+    /// Parameter VJP / adjoint graph (schema v7): inputs are the model inputs
+    /// (parameters scalar) followed by one TYPED cotangent per output (in
+    /// `param_vjp_outputs` order); outputs are the parameter gradients (in
+    /// `param_vjp_params` order). Null unless parameter derivatives were compiled.
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> param_vjp_loader;
+    std::vector<std::string> param_vjp_params;
+    std::vector<std::string> param_vjp_outputs;
+
     std::vector<std::string> predictor_inputs;
     std::vector<std::string> predictor_outputs;
+    /// Promoted parameters the predictor graph consumes (schema v7). Separate
+    /// from `param_inputs` because the predictor is a distinct nn.Module: the
+    /// rhs/step/ift graphs take the residual's promoted tail, but the predictor
+    /// is compiled without it, so it currently receives no promoted params
+    /// (empty). Kept as its own field so threading promoted params into a
+    /// predictor later does not perturb the residual tail.
+    std::vector<std::string> predictor_param_inputs;
 
     // Solver convergence / line-search configuration is no longer per-segment
     // metadata (schema v4); it lives in the owning Impl's `_solver_config`,
@@ -201,9 +277,22 @@ struct Model::Impl
   /// every loader call.
   std::vector<at::Tensor> _gather_params(const std::vector<std::string> & names) const;
 
+  /// Broadcast a stored promoted parameter `(*pbatch, *base)` to the runtime call
+  /// batch `(*batch, *base)` (right-aligned; `base` is its natural base, the
+  /// trailing `base_ndim` dims). A scalar/unbatched parameter expands up to the
+  /// batch; a per-batch-element parameter (`pbatch == batch`) passes through. The
+  /// value / jvp / jacobian / param-Jacobian graphs all take promoted parameters
+  /// as per-batch inputs (schema v7).
+  static at::Tensor broadcast_param_to_batch(const at::Tensor & param,
+                                             const std::vector<int64_t> & batch,
+                                             int64_t base_ndim);
+
   /// Run a forward segment: pull inputs from `state`, run AOTI (with the
-  /// promoted-parameter tail), write outputs back to `state`.
-  void _run_forward_segment(const Segment & seg, std::map<std::string, at::Tensor> & state) const;
+  /// promoted-parameter tail, each parameter broadcast to `batch`), write outputs
+  /// back to `state`.
+  void _run_forward_segment(const Segment & seg,
+                            std::map<std::string, at::Tensor> & state,
+                            const std::vector<int64_t> & batch) const;
 
   /// Run an implicit segment: pack per-group ``u_groups``/``g_groups``
   /// from per-variable ``state`` (one ``at::cat`` per group along the
@@ -241,7 +330,8 @@ struct Model::Impl
   /// blocks written to `dstate[seg.fwd_outputs[i]]`.
   void _run_forward_segment_jacobian(const Segment & seg,
                                      std::map<std::string, at::Tensor> & state,
-                                     std::map<std::string, at::Tensor> & dstate) const;
+                                     std::map<std::string, at::Tensor> & dstate,
+                                     const std::vector<int64_t> & batch) const;
 
   /// Compose an implicit segment's IFT into `dstate`: run the IFT loader on
   /// the converged per-group ``u_solved_groups`` + per-group ``g_groups``,
@@ -319,6 +409,68 @@ struct Model::Impl
   std::vector<std::pair<std::string, std::string>> _derivatives;
   std::map<std::string, std::vector<std::string>> _deriv_by_out;
 
+  // Master (out, param) parameter-derivative pairs the artifact supports (schema
+  // v7), in metadata order. Empty => no parameter-Jacobian graph; param_jacobian
+  // / param_vjp raise.
+  std::vector<std::pair<std::string, std::string>> _param_derivatives;
+
+  // Narrowed parameter-column layout for the multi-segment parameter-Jacobian
+  // carrier: the distinct requested promoted parameters (in `_param_derivatives`
+  // order), with their column offsets / sizes in the `(*B, var_folded, P)`
+  // parameter carrier (`P == _param_total_size`). Parallel to `_req_input_*`.
+  std::vector<std::string> _req_params;
+  std::map<std::string, int64_t> _req_param_offset;
+  std::map<std::string, int64_t> _req_param_size;
+  int64_t _param_total_size = 0;
+
+  /// Single-forward-segment parameter-Jacobian fast path: broadcast the stored
+  /// scalar parameters to the runtime batch, run the param-Jacobian loader once,
+  /// and return (outputs, per-(out,param) blocks). Only valid for one forward
+  /// segment carrying a param-Jacobian loader.
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+  _forward_param_pair_blocks(const std::map<std::string, at::Tensor> & inputs) const;
+
+  /// Single-implicit-segment parameter-Jacobian path (schema v7): run the Newton
+  /// solve to convergence, then run the ParamIFT loader on the converged
+  /// per-group unknowns + givens + the promoted parameters broadcast per-batch,
+  /// returning (outputs == converged unknowns, per-(unknown, param) du/dθ
+  /// blocks). Only valid for one implicit segment carrying a param-IFT loader.
+  std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
+  _implicit_param_pair_blocks(const std::map<std::string, at::Tensor> & inputs) const;
+
+  /// Multi-segment (composed) parameter-Jacobian carrier (schema v7). Mirrors
+  /// `_jacobian_dstate` but for promoted parameters: a `(*B, var_folded, P)`
+  /// carrier seeded to ZERO (master inputs do not depend on parameters), then
+  /// composed segment by segment. Each forward segment adds its INDIRECT
+  /// contribution (`jvp_loader` per-pair blocks composed against `dpstate[in]`
+  /// via `_run_forward_segment_jacobian`) plus its DIRECT contribution
+  /// (`param_jacobian_loader` blocks injected at the parameter's column band);
+  /// each implicit segment adds its indirect (`ift_loader` via
+  /// `_run_implicit_segment_jacobian`) plus its direct (`param_ift_loader`
+  /// blocks). Returns the master outputs + the per-variable `dpstate` map; the
+  /// caller slices each requested `(out, param)` block.
+  std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
+  _param_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) const;
+
+  /// Add a forward segment's DIRECT parameter Jacobian into `dpstate`: run the
+  /// segment's `param_jacobian_loader` (promoted params broadcast per-batch) and
+  /// accumulate each `d(out)/d(param)` block at the parameter's column band of
+  /// `dpstate[out]`. `common_dyn` is the carrier's shared dynamic batch.
+  void _add_forward_param_direct(const Segment & seg,
+                                 const std::map<std::string, at::Tensor> & state,
+                                 const std::vector<int64_t> & common_dyn,
+                                 std::map<std::string, at::Tensor> & dpstate) const;
+
+  /// Add an implicit segment's DIRECT parameter sensitivity into `dpstate`: run
+  /// the segment's `param_ift_loader` on the converged per-group unknowns +
+  /// givens + promoted params (broadcast per-batch) and accumulate each
+  /// `du/d(param)` block at the parameter's column band of `dpstate[unknown]`.
+  void _add_implicit_param_direct(const Segment & seg,
+                                  const std::vector<at::Tensor> & u_solved_groups,
+                                  const std::vector<at::Tensor> & g_groups,
+                                  const std::vector<int64_t> & common_dyn,
+                                  std::map<std::string, at::Tensor> & dpstate) const;
+
   // The "dense auxiliary B matrix" narrowing (multi-segment path): the dense
   // chain-rule carrier (`dstate`) and flat Jacobian carry columns for only the
   // *requested* input directions, not every master input. `_req_inputs` is the
@@ -350,6 +502,42 @@ struct Model::Impl
   // Baked entries are constants inside the AOTI graphs and have no C++-side
   // representation.
   std::map<std::string, at::Tensor> _named_parameters;
+
+  // Per-call promoted-parameter override (null outside a call). Points at the
+  // caller's `param_overrides` map for the duration of one public op, consulted
+  // by `_resolve_param`. `mutable` because the public ops are const yet need to
+  // stash it; thread-safe under the dispatcher because each per-device Model is
+  // driven by a single worker at a time (the stored params are never mutated).
+  // Set/restored by `ParamOverrideGuard` so nested internal calls (e.g.
+  // param_vjp -> param_jacobian) inherit the outer override.
+  mutable const std::map<std::string, at::Tensor> * _param_overrides = nullptr;
+
+  /// RAII setter for `_param_overrides`. A non-empty `overrides` installs itself
+  /// for the guard's lifetime; an empty one leaves the current override in place
+  /// (so an internal call that passes no override inherits its caller's). The
+  /// previous pointer is always restored on destruction.
+  struct ParamOverrideGuard
+  {
+    const Impl * impl;
+    const std::map<std::string, at::Tensor> * prev;
+    ParamOverrideGuard(const Impl * i, const std::map<std::string, at::Tensor> & overrides)
+      : impl(i),
+        prev(i->_param_overrides)
+    {
+      if (!overrides.empty())
+        i->_param_overrides = &overrides;
+    }
+    ~ParamOverrideGuard() { impl->_param_overrides = prev; }
+    ParamOverrideGuard(const ParamOverrideGuard &) = delete;
+    ParamOverrideGuard & operator=(const ParamOverrideGuard &) = delete;
+  };
+
+  // Natural base shape per promoted parameter (schema v7), from its typed class
+  // (Scalar => {}, SR2 => {6}). Used to split a (possibly batched) stored
+  // parameter `(*pbatch, *base)` into batch vs base -- for broadcasting it to the
+  // call batch and for reshaping parameter-derivative blocks. Distinct from the
+  // stored tensor's full shape, which carries any batch dim.
+  std::map<std::string, std::vector<int64_t>> _param_base_shapes;
 
   // Device + dtype baked into the artifact at export time.
   at::Device _device = at::kCPU;

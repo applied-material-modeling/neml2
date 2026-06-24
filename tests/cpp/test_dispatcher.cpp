@@ -83,6 +83,20 @@ main(int argc, char ** argv)
   const auto ref_jac = ref.jacobian(inputs);
   const auto tangents = make_inputs(ref, b); // distinct random tangents for jvp
   const auto ref_jvp = ref.jvp(inputs, tangents);
+  // Parameter-derivative references (the fixture promotes E + nu and compiles
+  // `-d :`, so d(stress)/d{E,nu} graphs exist). Cotangents keyed by output at
+  // (b, *out_base) for the adjoint.
+  std::map<std::string, at::Tensor> cotangents;
+  for (std::size_t i = 0; i < ref.output_names().size(); ++i)
+  {
+    std::vector<int64_t> shape{b};
+    shape.insert(
+        shape.end(), ref.output_base_shapes()[i].begin(), ref.output_base_shapes()[i].end());
+    cotangents.emplace(ref.output_names()[i],
+                       at::randn(shape, at::TensorOptions().dtype(at::kDouble)));
+  }
+  const auto ref_pjac = ref.param_jacobian(inputs);
+  const auto ref_pvjp = ref.param_vjp(inputs, cotangents);
 
   // Chunked dispatch must match for every chunk size, including ones that do
   // not evenly divide the batch, the exact-batch case, and the no-chunk
@@ -128,6 +142,143 @@ main(int argc, char ** argv)
       NEML2_CHECK(at::allclose(vout.at(name), std::get<0>(ref_jvp).at(name), 1e-8, 1e-10));
       NEML2_CHECK(at::allclose(vdot.at(name), std::get<1>(ref_jvp).at(name), 1e-8, 1e-10));
     }
+
+    // param_jacobian: outputs + nested {out: {param: block}}. d(stress)/d{E,nu}
+    // is batch-dependent here, so chunked blocks are concatenated back to b.
+    auto [pout, P] = disp.param_jacobian(inputs);
+    for (const auto & o : ref.output_names())
+    {
+      NEML2_CHECK(at::allclose(pout.at(o), std::get<0>(ref_pjac).at(o), 1e-8, 1e-10));
+      for (const auto & [pname, refblock] : std::get<1>(ref_pjac).at(o))
+      {
+        NEML2_CHECK(P.at(o).at(pname).sizes() == refblock.sizes());
+        NEML2_CHECK(at::allclose(P.at(o).at(pname), refblock, 1e-8, 1e-10));
+      }
+    }
+
+    // param_vjp: the per-parameter adjoint is summed (not concatenated) across
+    // chunks -- each chunk already reduced its own batch slice.
+    auto g = disp.param_vjp(inputs, cotangents);
+    NEML2_CHECK(g.size() == ref_pvjp.size());
+    for (const auto & [pname, refgrad] : ref_pvjp)
+    {
+      NEML2_CHECK(g.at(pname).sizes() == refgrad.sizes());
+      NEML2_CHECK(at::allclose(g.at(pname), refgrad, 1e-8, 1e-10));
+    }
+  }
+
+  // Batched (per-batch-element) promoted parameter. Set ONE scalar promoted
+  // parameter to a distinct value per batch row (the other stays global); forward,
+  // param_jacobian, and param_vjp must dispatch chunk-wise (each chunk receives the
+  // batched parameter sliced to its rows, never the whole tensor) and reproduce a
+  // single-shot reference carrying the same batched parameter. For param_vjp this
+  // means the batched parameter's adjoint comes back PER-ELEMENT (concatenated
+  // across chunks) while the global parameter's is SUMMED.
+  {
+    // A scalar promoted parameter (natural base shape empty) -- E or nu.
+    std::string sp;
+    for (const auto & [q, base] : ref.parameter_base_shapes())
+      if (base.empty())
+      {
+        sp = q;
+        break;
+      }
+    NEML2_CHECK(!sp.empty()); // forward_promoted promotes scalar E + nu
+
+    // Distinct per-row values, deterministic.
+    const auto pvals =
+        at::linspace(0.8, 1.2, b, at::TensorOptions().dtype(ref.dtype()).device(ref.device())) *
+        ref.named_parameters().at(sp);
+
+    // Batched single-shot reference.
+    Model bref(meta_path);
+    bref.set_parameter(sp, pvals);
+    const auto bref_out = bref.forward(inputs);
+    const auto bref_pjac = bref.param_jacobian(inputs);
+    const auto bref_pvjp = bref.param_vjp(inputs, cotangents);
+    // Sanity: a per-row parameter makes the d(out)/d(sp) block vary across the
+    // batch (so the test cannot pass with the override ignored), and the batched
+    // parameter's adjoint is per-element (B,) while a global parameter's stays
+    // scalar -- exactly the shapes the chunk stitch must reproduce.
+    {
+      const auto & blk = std::get<1>(bref_pjac).at(ref.output_names().front()).at(sp);
+      NEML2_CHECK(blk.size(0) == b);
+      NEML2_CHECK(!at::allclose(blk.index({0}), blk.index({b - 1})));
+      NEML2_CHECK(bref_pvjp.at(sp).dim() == 1 && bref_pvjp.at(sp).size(0) == b); // per-element
+      for (const auto & [q, g] : bref_pvjp)
+        if (q != sp)
+          NEML2_CHECK(g.dim() == 0); // global parameter -> scalar adjoint
+    }
+
+    // Sync chunked + async hybrid, including chunk sizes that do not divide b.
+    // Returns 0 on success, 1 on a failed check (NEML2_CHECK* `return`s an int,
+    // so this helper -- and not a void lambda -- is what they must live in).
+    auto check_disp = [&](DispatchedModel & disp) -> int
+    {
+      disp.set_parameter(sp, pvals);
+
+      auto out = disp.forward(inputs);
+      for (const auto & name : ref.output_names())
+        NEML2_CHECK(at::allclose(out.at(name), bref_out.at(name), 1e-8, 1e-10));
+
+      auto [pout, P] = disp.param_jacobian(inputs);
+      for (const auto & o : ref.output_names())
+      {
+        NEML2_CHECK(at::allclose(pout.at(o), std::get<0>(bref_pjac).at(o), 1e-8, 1e-10));
+        for (const auto & [pname, refblock] : std::get<1>(bref_pjac).at(o))
+        {
+          NEML2_CHECK(P.at(o).at(pname).sizes() == refblock.sizes());
+          NEML2_CHECK(at::allclose(P.at(o).at(pname), refblock, 1e-8, 1e-10));
+        }
+      }
+
+      // param_vjp: batched parameter's adjoint concatenated per-element, global
+      // parameter's summed -- both must equal the batched single-shot reference.
+      auto g = disp.param_vjp(inputs, cotangents);
+      NEML2_CHECK(g.size() == bref_pvjp.size());
+      for (const auto & [pname, refgrad] : bref_pvjp)
+      {
+        NEML2_CHECK(g.at(pname).sizes() == refgrad.sizes());
+        NEML2_CHECK(at::allclose(g.at(pname), refgrad, 1e-8, 1e-10));
+      }
+      return 0;
+    };
+
+    for (std::size_t k : {std::size_t{3}, std::size_t{4}, std::size_t{10}, std::size_t{0}})
+    {
+      DispatchedModel disp(artifact_root,
+                           std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cpu", k}));
+      if (check_disp(disp) != 0)
+        return 1;
+    }
+    {
+      // Async path: workers build their own per-chunk override concurrently.
+      StaticHybridScheduler::Config cfg;
+      cfg.devices = {"cpu"};
+      cfg.batch_sizes = {3};
+      DispatchedModel disp(artifact_root, std::make_shared<StaticHybridScheduler>(cfg));
+      if (check_disp(disp) != 0)
+        return 1;
+    }
+  }
+
+  // set_parameter on the dispatched handle updates the master and is broadcast
+  // to every device copy on the next call, matching a single-shot reference with
+  // the same parameter set (this also exercises aoti::Model::set_parameter via
+  // ref2). CPU-only so it is independent of the cuda cross-device path.
+  {
+    auto scheduler = std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cpu", 4});
+    DispatchedModel disp(artifact_root, scheduler);
+    const std::string pname = ref.named_parameters().begin()->first;
+    const auto newval = ref.named_parameters().at(pname).clone() * 1.5;
+    disp.set_parameter(pname, newval);
+
+    Model ref2(meta_path);
+    ref2.set_parameter(pname, newval);
+    const auto out = disp.forward(inputs);
+    const auto ref2_out = ref2.forward(inputs);
+    for (const auto & name : ref.output_names())
+      NEML2_CHECK(at::allclose(out.at(name), ref2_out.at(name), 1e-8, 1e-10));
   }
 
   // Public API surface: the (Model, scheduler) constructor, move semantics, and
@@ -311,6 +462,44 @@ main(int argc, char ** argv)
       auto out_w = disp_w.forward(inputs);
       for (const auto & name : ref.output_names())
         NEML2_CHECK(at::allclose(out_w.at(name), ref_mut_out.at(name), 1e-6, 1e-8));
+    }
+
+    // Batched promoted parameter across the real CPU+GPU hybrid: every chunk --
+    // on cpu or cuda -- must receive the parameter sliced (and moved) to its own
+    // rows. Compare to a cpu single-shot reference with the same batched value.
+    {
+      std::string sp;
+      for (const auto & [q, base] : ref.parameter_base_shapes())
+        if (base.empty())
+        {
+          sp = q;
+          break;
+        }
+      NEML2_CHECK(!sp.empty());
+      const auto pvals = at::linspace(0.8, 1.2, b, at::TensorOptions().dtype(ref.dtype())) *
+                         ref.named_parameters().at(sp);
+
+      Model bref(meta_path); // cpu single-shot, batched
+      bref.set_parameter(sp, pvals);
+      const auto bref_out = bref.forward(inputs);
+      const auto bref_pjac = bref.param_jacobian(inputs);
+
+      StaticHybridScheduler::Config cfg;
+      cfg.devices = {"cpu", "cuda"};
+      cfg.batch_sizes = {3, 4};
+      DispatchedModel disp(artifact_root, std::make_shared<StaticHybridScheduler>(cfg));
+      disp.set_parameter(sp, pvals);
+
+      auto out = disp.forward(inputs);
+      for (const auto & name : ref.output_names())
+      {
+        NEML2_CHECK(out.at(name).device().is_cpu());
+        NEML2_CHECK(at::allclose(out.at(name), bref_out.at(name), 1e-6, 1e-8));
+      }
+      auto [pout, P] = disp.param_jacobian(inputs);
+      for (const auto & o : ref.output_names())
+        for (const auto & [pname, refblock] : std::get<1>(bref_pjac).at(o))
+          NEML2_CHECK(at::allclose(P.at(o).at(pname), refblock, 1e-6, 1e-8));
     }
   }
 

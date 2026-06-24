@@ -74,7 +74,7 @@ class EffectiveSaturation(Model):
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         phi = fluid_fraction
-        Sr = self.Sr
+        Sr = self._get_param("Sr", nl_params, Scalar)
         phi_max = self._get_param("phi_max", nl_params, Scalar)
 
         # ``S = (phi/phi_max - Sr) / (1 - Sr)``

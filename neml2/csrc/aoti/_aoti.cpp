@@ -118,30 +118,36 @@ Everything else is baked into the graph as a constant.
           "Floating-point dtype the artifact was compiled for (immutable).")
       .def(
           "forward",
-          [](const Model & m, const std::map<std::string, at::Tensor> & inputs)
+          [](const Model & m,
+             const std::map<std::string, at::Tensor> & inputs,
+             const std::map<std::string, at::Tensor> & param_overrides)
           {
             // ``Model::forward`` returns ``std::map`` which is sorted by key;
             // re-pack into a Python dict in ``output_names`` declaration
             // order so the caller can rely on ``list(outs.keys()) ==
             // model.output_names()`` for tuple-style consumers.
-            auto out_map = m.forward(inputs);
+            auto out_map = m.forward(inputs, param_overrides);
             py::dict result;
             for (const auto & name : m.output_names())
               result[name.c_str()] = out_map.at(name);
             return result;
           },
           py::arg("inputs"),
+          py::arg("param_overrides") = std::map<std::string, at::Tensor>{},
           R"(
 Evaluate the model.
 
 ``inputs`` is keyed by the names returned by ``input_names``; missing
 keys raise an error. Returns one tensor per name in ``output_names``,
-preserving declaration order.
+preserving declaration order. ``param_overrides`` (default empty) replaces a
+promoted parameter's value for this call only, without mutating
+``named_parameters()`` -- a hook for multi-device dispatch.
 )")
       .def("jvp",
            &Model::jvp,
            py::arg("inputs"),
            py::arg("tangents"),
+           py::arg("param_overrides") = std::map<std::string, at::Tensor>{},
            R"(
 Evaluate + JVP.
 
@@ -154,6 +160,7 @@ output's natural ``(*B, *out_base_shape)``.
       .def("jacobian",
            &Model::jacobian,
            py::arg("inputs"),
+           py::arg("param_overrides") = std::map<std::string, at::Tensor>{},
            R"(
 Evaluate + full Jacobian as unflattened variable-pair blocks.
 
@@ -162,6 +169,34 @@ Returns a 2-tuple ``(outputs, J)`` where ``J`` is a nested
 ``(*B, *out_base_shape, *in_base_shape)`` (e.g. SR2->SR2 -> (*B, 6, 6);
 Scalar->SR2 -> (*B, 6)) over the **structural** inputs (promoted-parameter
 inputs are not exposed in J).
+)")
+      .def("param_jacobian",
+           &Model::param_jacobian,
+           py::arg("inputs"),
+           py::arg("param_overrides") = std::map<std::string, at::Tensor>{},
+           R"(
+Evaluate + parameter Jacobian as unflattened variable-pair blocks (schema v7).
+
+Returns a 2-tuple ``(outputs, P)`` where ``P`` is a nested
+``dict[str, dict[str, Tensor]]``: ``P[out_name][param_qname]`` is the block
+``(*B, *out_base_shape, *param_base_shape)`` (e.g. stress w.r.t. a Scalar E ->
+(*B, 6)). The keys are promoted parameters (see ``named_parameters()``), not
+structural inputs. Requires the artifact was compiled with ``-d OUT:PARAM`` over
+a promoted parameter; otherwise raises.
+)")
+      .def("param_vjp",
+           &Model::param_vjp,
+           py::arg("inputs"),
+           py::arg("cotangents"),
+           py::arg("param_overrides") = std::map<std::string, at::Tensor>{},
+           R"(
+Parameter VJP / adjoint (schema v7): ``dL/d(param)`` for the loss
+``L = sum_o <cotangent_o, out_o>``.
+
+``cotangents`` is a ``dict[str, Tensor]`` keyed by output name, each at the
+output's ``(*B, *out_base_shape)`` shape. Returns ``dict[str, Tensor]`` keyed by
+parameter qualified name -- the cheaper form for many-parameter inverse
+optimization. Same compile requirement as ``param_jacobian``.
 )")
       .def(
           "named_parameters",
@@ -182,15 +217,7 @@ Empty when the model was compiled with no ``--parameter`` flags.
       .def(
           "set_parameter",
           [](Model & self, const std::string & name, const at::Tensor & value)
-          {
-            auto & params = self.named_parameters();
-            auto it = params.find(name);
-            if (it == params.end())
-              throw py::key_error("set_parameter: '" + name +
-                                  "' is not a promoted parameter; only entries that appear in "
-                                  "named_parameters() may be set.");
-            it->second = value.contiguous();
-          },
+          { self.set_parameter(name, value); },
           py::arg("name"),
           py::arg("value"),
           "Replace a promoted parameter's tensor (the C++-side slot is updated).")

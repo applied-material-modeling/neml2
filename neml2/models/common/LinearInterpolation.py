@@ -84,7 +84,12 @@ class ScalarLinearInterpolation(Model):
         if len(inputs) != 1:
             raise ValueError(f"ScalarLinearInterpolation expected 1 input, got {len(inputs)}")
         x_arg = inputs[0]
-        out = linear_interpolation(x_arg, self.abscissa, self.ordinate)
+        # abscissa / ordinate are static (no allow_nonlinear); read via _get_param
+        # so the leaf stays promotion-compatible (no direct self.<param> read in
+        # the forward). inputs[1:] is the (empty) nl_params pack.
+        abscissa = self._get_param("abscissa", inputs[1:], Scalar)
+        ordinate = self._get_param("ordinate", inputs[1:], Scalar)
+        out = linear_interpolation(x_arg, abscissa, ordinate)
         if v is None:
             return out
 
@@ -92,7 +97,7 @@ class ScalarLinearInterpolation(Model):
         # ``searchsorted`` + gather indexing behind a typed-function boundary
         # so the leaf body stays in pure typed-wrapper algebra.
         def argument_action(V: Scalar) -> Scalar:
-            return jvp_linear_interpolation(x_arg, self.abscissa, self.ordinate, V)
+            return jvp_linear_interpolation(x_arg, abscissa, ordinate, V)
 
         actions_1 = {self._argument: argument_action}
 

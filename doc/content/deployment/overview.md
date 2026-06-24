@@ -63,6 +63,39 @@ inner batch dimension):
 | `cpp-dispatch` | `neml2::aoti::DispatchedModel` | offline | C++ | ✓ | ✓ | multi-device throughput |
 | `cpp-eager` | `neml2::eager::Model` | none | C++ + embedded Python | ✓ | ✗ | compile-free C++ tests |
 
+**Parameter derivatives.** All six routes additionally expose the same
+`param_jacobian(inputs) -> (outputs, {out: {param: block}})` and
+`param_vjp(inputs, cotangents) -> {param: grad}` surface for `d(output)/d(parameter)`,
+computed by reverse-mode autograd — a separate path from the forward-mode input
+chain rule that backs `jvp` / `jacobian`. The eager routes (`py-eager`,
+`py-jit`, `cpp-eager`) differentiate w.r.t. every parameter at call time
+(`params=` selects a subset); the AOTI routes (`py-aoti`, `cpp-aoti`,
+`cpp-dispatch`) return only the `(output, parameter)` pairs whose graphs were
+compiled in — promote the parameter with `-p NAME` and request the pair with
+`-d OUT:NAME` at `neml2-compile` time (see [](aoti-packages)).
+
+**Parameter values at runtime.** All six routes also share a parameter
+read/write surface: `named_parameters()` returns the current values, and
+`set_parameter(name, value)` updates one in place (a `torch.no_grad` copy on the
+eager routes; a slot replacement on the AOTI routes, broadcast across devices for
+`cpp-dispatch`). The new value is used on the next call.
+
+**Batched (per-batch-element) parameters.** `set_parameter` also accepts a value
+that carries a leading batch dimension — e.g. a `Scalar` parameter set to shape
+`(B,)`, a spatially varying material property and the common MOOSE
+inverse-optimization case. The call batch is then
+`broadcast(input batches, parameter batches)`, and all of `forward` / `jvp` /
+`jacobian` / `param_jacobian` / `param_vjp` return per-batch-element results on
+every route (`cpp-dispatch` slices each batched parameter to each chunk's rows).
+Both parameter-derivative surfaces follow the parameter's shape, matching the
+eager semantics: `param_jacobian` returns a `d(output)/d(parameter)` block whose
+trailing axes are `(*param_base)` (per batch element when the parameter is
+batched), and `param_vjp` returns the adjoint `dL/d(param)` **summed over the
+batch for a global (unbatched) parameter** but **per-element `(B, *param_base)`
+for a batched one** — the latter being what reverse-mode autograd accumulates when
+each batch element depends only on its own copy of the parameter. (`cpp-dispatch`
+concatenates each batched parameter's per-chunk adjoint and sums each global one.)
+
 ## The routes
 
 Each route has its own reference page with the loading-and-calling API; the

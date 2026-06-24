@@ -90,8 +90,8 @@ class SwellingAndPhaseChangeDeformationJacobian(Model):
     ):
         vf = fluid_fraction
         c = self._get_param("c", nl_params, Scalar)
-        alpha = self.alpha
-        dOmega = self.dOmega
+        alpha = self._get_param("alpha", nl_params, Scalar)
+        dOmega = self._get_param("dOmega", nl_params, Scalar)
         J = 1.0 + alpha * c * vf + (1.0 - c) * vf * dOmega
         if v is None:
             return J

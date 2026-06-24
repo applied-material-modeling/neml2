@@ -167,7 +167,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [ubuntu-latest, macos-latest, gpu_runner]
+        runner: [ubuntu-latest, macos-26, gpu_runner]
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v7
@@ -222,7 +222,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-26]
         python: ${{ fromJson(needs.wheel-matrix.outputs.cibw) }}
     runs-on: ${{ matrix.os }}
     steps:

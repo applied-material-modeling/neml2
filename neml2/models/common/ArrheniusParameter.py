@@ -74,9 +74,9 @@ class ArrheniusParameter(Model):
         vh: ChainRuleDict | None = None,
     ):
         T = temperature
-        p0 = self.p0
-        Q = self.Q
-        R = self.R
+        p0 = self._get_param("p0", nl_params, Scalar)
+        Q = self._get_param("Q", nl_params, Scalar)
+        R = self.R  # float option, not a registered parameter
         p = p0 * exp(-Q / R / T)
         if v is None:
             return p

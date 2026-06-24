@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [ubuntu-latest, macos-latest, gpu_runner]
+        runner: [ubuntu-latest, macos-26, gpu_runner]
         btype: [Debug, Release]
     runs-on: ${{ matrix.runner }}
     steps:

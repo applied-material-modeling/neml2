@@ -1,5 +1,5 @@
 (model-eager-cpp)=
-# Eager evaluation from C++
+# `cpp-eager` — eager evaluation from C++
 
 The compiled path ([](aoti-packages)) is the right way to run a NEML2 model
 from C++ in production: it is fast and needs no Python at the hot loop. But
@@ -32,7 +32,8 @@ Python supplies it automatically.
 
 `neml2::eager::load_model(input_file, model_name)` mirrors Python's
 `load_model(path, name)` and returns a `neml2::eager::Model` whose operations
-(`forward` / `jvp` / `jacobian`) and metadata accessors (`input_names` /
+(`forward` / `jvp` / `jacobian` plus the parameter derivatives `param_jacobian` /
+`param_vjp`) and metadata accessors (`input_names` /
 `output_names` / `input_base_shapes` / `output_base_shapes` / `device` / `dtype`)
 have the **same signatures** as `neml2::aoti::Model`. So test code switches between
 the eager and compiled runtimes by changing only the load call and the header.
