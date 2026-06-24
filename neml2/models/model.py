@@ -506,7 +506,12 @@ class Model(nn.Module, ABC):
             obj._store_schema_values(leftover)
         return obj
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Any:
+        # ``-> Any`` matches ``nn.Module.__call__`` and the dynamic forward
+        # contract (a leaf returns a typed wrapper, a tuple of them, or -- with
+        # ``v`` -- ``(*outputs, v_out)``); without it the ``_ad_pushforward``
+        # branch below would narrow the inferred return to ``tuple`` and break
+        # every ``model(x).data`` call site under pyright.
         # Open a forward window so the AOTI-incompatible-function guard
         # (see _guard.py / DECISION.md D-060) is armed for the whole forward
         # subtree. Re-entrant: nested child Model calls just bump the depth.

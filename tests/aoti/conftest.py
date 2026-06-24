@@ -31,6 +31,7 @@ fires before the AOTI scenarios are collected -- the same mechanism
 ``tests/regression/conftest.py`` uses for the eager regression suite.
 """
 
+import importlib
 import sys
 from pathlib import Path
 
@@ -38,4 +39,8 @@ _REGRESSION = Path(__file__).resolve().parent.parent / "regression"
 if str(_REGRESSION) not in sys.path:
     sys.path.insert(0, str(_REGRESSION))
 
-import _fixtures  # noqa: E402, F401  (side-effect: @register_neml2_object fires)
+# Side-effect import: ``@register_neml2_object`` fires for the test fixtures.
+# ``import_module`` (rather than ``import _fixtures``) honors the dynamic sys.path
+# entry above without pyright flagging an unresolved import (``_fixtures`` lives
+# under tests/regression/, not this directory).
+importlib.import_module("_fixtures")

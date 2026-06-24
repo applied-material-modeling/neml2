@@ -27,10 +27,9 @@
 Exports the ``request_ad_forward`` scenario (the ``SurrogateFlowRate`` ML surrogate,
 whose first-order chain rule is auto-derived by ``request_AD``), then asserts the
 compiled ``jacobian`` matches both the cpp-eager surface (``_EagerModel``) and
-finite differences. The forward segment's Jacobian is emitted by the reverse-mode
-:class:`~neml2.cli.aoti_export._InputJacobianADModule` and lowered through
-AOTInductor -- the request_AD AOTI path (``SurrogateFlowRate`` is registered for
-this suite by ``tests/aoti/conftest.py``).
+finite differences. The request_AD leaf's reverse-mode local Jacobian is traced
+inline into the forward-mode chain-rule graph and lowered through AOTInductor
+(``SurrogateFlowRate`` is registered for this suite by ``tests/aoti/conftest.py``).
 """
 
 from __future__ import annotations

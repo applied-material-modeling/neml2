@@ -1,9 +1,8 @@
 # A forward-only request_AD model: the machine-learning SurrogateFlowRate leaf
 # (a Python torch surrogate whose first-order chain rule is auto-derived by
 # request_AD / reverse-mode autograd). Exercises the request_AD AOTI path -- the
-# forward segment's Jacobian is emitted by the reverse-mode _InputJacobianADModule
-# (not the forward-mode chain rule), lowered through AOTInductor. No -d needed:
-# request_AD auto-enables d(out)/d(in) for every (output, structural input) pair.
+# request_AD leaf's reverse-mode local Jacobian traces inline into the forward-mode
+# chain-rule graph and is lowered through AOTInductor. Pass `-d` to select pairs.
 [Models]
   [model]
     type = SurrogateFlowRate
