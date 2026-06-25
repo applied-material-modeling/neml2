@@ -1758,6 +1758,41 @@ _AOTI_PARAM_DERIV_BUG_HINT = (
 )
 
 
+def _reverse_ad_aoti_unsupported_reason() -> str | None:
+    """Why reverse-mode-AD AOTI graphs (parameter derivatives / request_AD) cannot
+    be lowered on the running torch, or ``None`` if they can.
+
+    Two torch versions are excluded:
+
+    * torch < 2.11 lacks ``torch._dynamo.config.trace_autograd_ops`` -- the only
+      configuration in which ``torch.autograd.grad`` lowers through AOTInductor.
+    * torch 2.11.x has that config but its ``torch._dynamo`` rejects
+      ``Tensor.requires_grad_()`` under strict export
+      (``torch._dynamo.exc.Unsupported``), which every reverse-AD graph hits;
+      fixed in torch 2.12.
+
+    Forward / jvp / jacobian compilation is unaffected by either. The tests that
+    exercise parameter-derivative / request_AD AOTI graphs skip on the same
+    predicate, so the runtime guard and the test gate can't drift.
+    """
+    import torch._dynamo  # noqa: PLC0415
+
+    if not hasattr(torch._dynamo.config, "trace_autograd_ops"):
+        return (
+            "requires torch >= 2.11 (this torch lacks "
+            "torch._dynamo.config.trace_autograd_ops, the only configuration in "
+            "which torch.autograd.grad lowers through AOTInductor)"
+        )
+    parts = str(torch.__version__).split("+", 1)[0].split(".")
+    major, minor = int(parts[0]), int(parts[1])
+    if (major, minor) == (2, 11):
+        return (
+            "is not supported on torch 2.11.x (torch._dynamo rejects "
+            "Tensor.requires_grad_() under strict export; fixed in torch 2.12)"
+        )
+    return None
+
+
 def _compile_param_derivative_graph(module, example_inputs, path, *, dynamic_batch_dim) -> None:
     """``compile_model`` for a parameter-derivative graph (strict + reverse-mode
     autograd), with a clear error on the known upstream AOTInductor lowering bug.
@@ -1773,13 +1808,11 @@ def _compile_param_derivative_graph(module, example_inputs, path, *, dynamic_bat
 
     from ..models.export import compile_model  # noqa: PLC0415
 
-    if not hasattr(torch._dynamo.config, "trace_autograd_ops"):
+    reason = _reverse_ad_aoti_unsupported_reason()
+    if reason is not None:
         raise NotImplementedError(
-            "Parameter-derivative AOTI compilation requires torch >= 2.11 (this torch "
-            "lacks torch._dynamo.config.trace_autograd_ops, the only configuration in "
-            "which torch.autograd.grad lowers through AOTInductor). Forward / jvp / "
-            "jacobian compilation is unaffected -- upgrade torch to compile parameter "
-            "derivatives."
+            f"Parameter-derivative / request_AD AOTI compilation {reason}. Forward / "
+            "jvp / jacobian compilation is unaffected."
         )
 
     prev = torch._dynamo.config.trace_autograd_ops

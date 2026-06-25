@@ -38,11 +38,16 @@ from pathlib import Path
 
 import pytest
 import torch
-import torch._dynamo
 
+from neml2.cli.aoti_export import _reverse_ad_aoti_unsupported_reason
+
+# request_AD AOTI graphs go through the reverse-mode-AD compile path, so they share
+# the exporter's support predicate: skipped on torch < 2.11 (no trace_autograd_ops)
+# and torch 2.11.x (requires_grad_() unsupported under strict export).
+_AUTOGRAD_LOWERING_UNSUPPORTED = _reverse_ad_aoti_unsupported_reason()
 _REQUIRES_AUTOGRAD_LOWERING = pytest.mark.skipif(
-    not hasattr(torch._dynamo.config, "trace_autograd_ops"),
-    reason="request_AD AOTI compilation requires torch >= 2.11 (trace_autograd_ops)",
+    _AUTOGRAD_LOWERING_UNSUPPORTED is not None,
+    reason=f"request_AD AOTI compilation {_AUTOGRAD_LOWERING_UNSUPPORTED}",
 )
 
 _SCENARIO = Path(__file__).parent / "request_ad_forward"

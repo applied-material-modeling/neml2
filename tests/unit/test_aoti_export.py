@@ -160,12 +160,11 @@ def forward_export_no_deriv(tmp_path_factory):
 
 @pytest.fixture(scope="session")
 def param_jac_export(tmp_path_factory):
-    import torch._dynamo  # noqa: PLC0415
+    from neml2.cli.aoti_export import _reverse_ad_aoti_unsupported_reason  # noqa: PLC0415
 
-    if not hasattr(torch._dynamo.config, "trace_autograd_ops"):
-        pytest.skip(
-            "parameter-derivative AOTI compilation requires torch >= 2.11 (trace_autograd_ops)"
-        )
+    reason = _reverse_ad_aoti_unsupported_reason()
+    if reason is not None:
+        pytest.skip(f"reverse-mode AD AOTI compilation {reason}")
     from neml2.cli.aoti_export import export_model_for_aoti
 
     out_dir = tmp_path_factory.mktemp("aoti_param_jac")
