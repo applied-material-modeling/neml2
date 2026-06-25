@@ -33,15 +33,16 @@
 namespace neml2::aoti
 {
 /**
- * @brief Assign CUDA devices to MPI ranks, round-robin within each node.
+ * @brief Assign devices to MPI ranks, round-robin within each node.
  *
- * For MPI jobs that drive GPUs from many ranks: each rank picks a device from
- * `devices` based on its rank *within its node* (ranks are grouped by hostname,
- * then `local_rank % devices.size()` indexes into the list). With `m` ranks on a
- * node and `n = devices.size()`: `m == n` gives one device per rank, `m > n`
- * wraps round-robin (so a device may serve several ranks), and `m < n` is an
- * error -- idle GPUs are disallowed. Within a rank the workload is then chunked
- * exactly like @ref SimpleScheduler.
+ * For MPI jobs that drive several devices from many ranks: each rank picks a
+ * device from `devices` (CPU or CUDA) based on its rank *within its node* (ranks
+ * are grouped by hostname, then `local_rank % devices.size()` indexes into the
+ * list). With `m` ranks on a node and `n = devices.size()`: `m == n` gives one
+ * device per rank, `m > n` wraps round-robin (so a device may serve several
+ * ranks), and `m < n` is an error -- idle devices are disallowed. Within a rank
+ * the workload is then chunked exactly like @ref SimpleScheduler. A pure-CPU run
+ * typically passes a single `{"cpu"}` so every rank chunks on the CPU.
  *
  * The per-node split is **collective** over the chosen communicator, so every
  * rank in it must construct the scheduler.
@@ -58,8 +59,11 @@ class AOTI_EXPORT MPISimpleScheduler : public SyncScheduler
 public:
   struct Config
   {
-    /// CUDA devices to choose from, e.g. {"cuda:0", "cuda:1"}. At least one rank
-    /// per device on each node is required (idle GPUs are an error).
+    /// Devices to choose from (CPU or CUDA), e.g. {"cuda:0", "cuda:1"} or
+    /// {"cpu"}. `cpu` may appear at most once, and if any CUDA device pins an
+    /// index then every CUDA device must pin a unique one (no mixing bare `cuda`
+    /// with `cuda:N`, no duplicate indices). At least one rank per device on each
+    /// node is required (idle devices are an error).
     std::vector<std::string> devices;
     /// Per-device chunk size. Length 1 broadcasts to all devices; otherwise it
     /// must match `devices`.
@@ -90,4 +94,12 @@ private:
 /// for direct unit testing without an MPI runtime.
 AOTI_EXPORT std::size_t
 mpi_device_index(std::size_t local_rank, std::size_t local_size, std::size_t ndevices);
+
+/// Parse + validate the scheduler's device list: it must be non-empty, every
+/// entry must name a CPU or CUDA device (the only devices the dispatcher
+/// supports), `cpu` may appear at most once, and if any CUDA device pins an index
+/// then every CUDA device must pin a unique one. Free-standing and MPI-free
+/// (compiled in every build config) so it is exposed for direct unit testing
+/// without an MPI runtime.
+AOTI_EXPORT std::vector<at::Device> parse_mpi_devices(const std::vector<std::string> & devices);
 } // namespace neml2::aoti

@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <set>
+
 #include "neml2/csrc/dispatchers/MPISimpleScheduler.h"
 #include "neml2/csrc/aoti/assertions.h"
 
@@ -48,6 +50,60 @@ mpi_device_index(std::size_t local_rank, std::size_t local_size, std::size_t nde
           "one rank per device, or pass fewer devices.");
   // ndevices >= 1 is guaranteed by the constructor's non-empty-devices assert.
   return local_rank % ndevices;
+}
+
+std::vector<at::Device>
+parse_mpi_devices(const std::vector<std::string> & devices)
+{
+  _assert(!devices.empty(), "MPISimpleScheduler: `devices` must be non-empty.");
+
+  std::vector<at::Device> parsed;
+  parsed.reserve(devices.size());
+  std::size_t ncpu = 0;
+  bool any_cuda_indexed = false;
+  for (const auto & d : devices)
+  {
+    // at::Device(std::string) parses "cpu" / "cuda" / "cuda:N" and throws a
+    // c10::Error on an unrecognised string.
+    at::Device dev(d);
+    _assert(dev.is_cpu() || dev.is_cuda(),
+            "MPISimpleScheduler: device '",
+            d,
+            "' is not a CPU or CUDA device; only those are supported.");
+    if (dev.is_cpu())
+      ++ncpu;
+    else if (dev.has_index())
+      any_cuda_indexed = true;
+    parsed.push_back(dev);
+  }
+
+  // `cpu` names a single device, so it may appear at most once.
+  _assert(ncpu <= 1,
+          "MPISimpleScheduler: `cpu` may appear at most once in `devices`; it names a single "
+          "device.");
+
+  // If any CUDA device pins an index (e.g. "cuda:0"), every CUDA device must pin
+  // a *unique* index -- otherwise round-robin would map distinct ranks onto the
+  // same or an ambiguous (default) GPU. Bare "cuda" entries are allowed only when
+  // none pins an index.
+  if (any_cuda_indexed)
+  {
+    std::set<int> seen;
+    for (const auto & dev : parsed)
+    {
+      if (!dev.is_cuda())
+        continue;
+      _assert(dev.has_index(),
+              "MPISimpleScheduler: cannot mix pinned and unpinned CUDA devices; pin every CUDA "
+              "device with a unique index (e.g. cuda:0, cuda:1) or pin none.");
+      _assert(seen.insert(static_cast<int>(dev.index())).second,
+              "MPISimpleScheduler: CUDA device index ",
+              static_cast<int>(dev.index()),
+              " appears more than once; each CUDA device must pin a unique index.");
+    }
+  }
+
+  return parsed;
 }
 
 #ifndef NEML2_MPI
@@ -95,28 +151,16 @@ determine_device_index(MPI_Comm comm, std::size_t ndevices)
 } // namespace
 
 MPISimpleScheduler::MPISimpleScheduler(const Config & config)
-  : _batch_sizes(config.batch_sizes)
+  : _devices(parse_mpi_devices(config.devices)),
+    _batch_sizes(config.batch_sizes)
 {
-  _assert(!config.devices.empty(), "MPISimpleScheduler: `devices` must be non-empty.");
   _assert(!_batch_sizes.empty(), "MPISimpleScheduler: `batch_sizes` must be non-empty.");
-  _assert(_batch_sizes.size() == 1 || _batch_sizes.size() == config.devices.size(),
+  _assert(_batch_sizes.size() == 1 || _batch_sizes.size() == _devices.size(),
           "MPISimpleScheduler: `batch_sizes` must have length 1 (broadcast) or match `devices` (",
-          config.devices.size(),
+          _devices.size(),
           "); got ",
           _batch_sizes.size(),
           ".");
-
-  _devices.reserve(config.devices.size());
-  for (const auto & d : config.devices)
-  {
-    at::Device dev(d);
-    _assert(dev.is_cuda(),
-            "MPISimpleScheduler: device '",
-            d,
-            "' is not a CUDA device. The MPI scheduler assigns CUDA devices to "
-            "ranks; use SimpleScheduler for CPU dispatch.");
-    _devices.push_back(dev);
-  }
 
   // The host (mpirun harness / MOOSE app) owns MPI's lifetime.
   int inited = 0;

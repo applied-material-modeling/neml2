@@ -95,5 +95,41 @@ main()
     NEML2_CHECK_THROWS(mpi_device_index(0, 1, 2));
   }
 
+  // parse_mpi_devices: CPU and CUDA are both accepted (a pure-CPU MPI run passes
+  // {"cpu"}); an empty list or an unsupported device type is rejected. MPI-free,
+  // so tested directly without an MPI runtime.
+  {
+    const auto cpu = parse_mpi_devices({"cpu"});
+    NEML2_CHECK(cpu.size() == 1);
+    NEML2_CHECK(cpu.front().is_cpu());
+
+    const auto gpus = parse_mpi_devices({"cuda:0", "cuda:1"});
+    NEML2_CHECK(gpus.size() == 2);
+    NEML2_CHECK(gpus.at(0).is_cuda());
+    NEML2_CHECK(gpus.at(1).is_cuda());
+    NEML2_CHECK(gpus.at(1).index() == 1);
+
+    const auto mixed = parse_mpi_devices({"cpu", "cuda:0", "cuda:1"});
+    NEML2_CHECK(mixed.size() == 3);
+    NEML2_CHECK(mixed.at(0).is_cpu());
+    NEML2_CHECK(mixed.at(1).is_cuda());
+    NEML2_CHECK(mixed.at(2).is_cuda());
+
+    // Bare (unpinned) CUDA devices are allowed when none pins an index.
+    const auto bare = parse_mpi_devices({"cuda", "cuda"});
+    NEML2_CHECK(bare.size() == 2);
+
+    NEML2_CHECK_THROWS(parse_mpi_devices({}));      // empty list
+    NEML2_CHECK_THROWS(parse_mpi_devices({"mps"})); // unsupported device type
+
+    // `cpu` may appear at most once.
+    NEML2_CHECK_THROWS(parse_mpi_devices({"cpu", "cpu"}));
+
+    // If any CUDA device pins an index, all must -- and uniquely.
+    NEML2_CHECK_THROWS(parse_mpi_devices({"cuda:0", "cuda:0"})); // duplicate index
+    NEML2_CHECK_THROWS(parse_mpi_devices({"cuda:0", "cuda"}));   // mixed pinned/unpinned
+    NEML2_CHECK_THROWS(parse_mpi_devices({"cuda", "cuda:0"}));   // mixed (other order)
+  }
+
   return 0;
 }
