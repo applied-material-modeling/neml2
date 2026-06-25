@@ -1,16 +1,21 @@
 ---
 name: add-tutorial
-description: Author a new NEML2 tutorial page under `doc/content/tutorials/`. Tutorial pages are MyST-NB documents with executable `{code-cell}` blocks, paired with a sibling `input.i` shown via `{literalinclude}`. Trigger on phrases like "add a tutorial for X", "write a tutorial about Y", "I need a notebook-style doc page demonstrating Z". For static reference pages without executable cells, see `add-doc` instead.
+description: Author a new NEML2 tutorial page under `doc/content/tutorials/`. Tutorials are self-contained, Colab-runnable Jupyter notebooks (jupytext-paired `main.ipynb`+`main.md`) with executable `{code-cell}` blocks; they create their own input files in-notebook via `%%writefile` (no sibling files, no `{literalinclude}`) and carry an auto-injected "Open in Colab" badge. Trigger on phrases like "add a tutorial for X", "write a tutorial about Y", "I need a notebook-style doc page demonstrating Z". For static reference pages without executable cells, see `add-doc` instead.
 ---
 
 # add-tutorial
 
 A tutorial page renders runnable Python inline next to its captured
-output — `myst-nb` extracts `{code-cell} ipython3` blocks into a
-notebook, executes them at build time, and weaves the output into the
-HTML. Tutorials sit under `doc/content/tutorials/{models,extension,
-optimization}/<name>/` as a directory containing `main.md` plus any
-supporting `input.i` / sibling files.
+output — `myst-nb` extracts `{code-cell} ipython3` blocks, executes them
+at build time, and weaves the output into the HTML. The *same* notebook
+also opens in **Google Colab** (every tutorial gets an auto-injected
+"Open in Colab" badge), so it must be **self-contained**: it installs
+NEML2 and writes out any input files it needs, rather than relying on
+sibling files that only exist in the repo.
+
+Tutorials sit under `doc/content/tutorials/{models,extension,
+optimization}/<name>/` as a directory containing a jupytext-paired
+`main.ipynb` + `main.md`.
 
 ## Voice (most important rule)
 
@@ -64,12 +69,28 @@ jargon or assumed a missing prerequisite.
 
 ```
 doc/content/tutorials/<section>/<name>/
-├── main.md       — narrative + code cells + literalincludes
-└── input.i       — the HIT input the code cells load (optional)
+├── main.ipynb   — the rendered + Colab-launched notebook (source of truth)
+└── main.md      — jupytext mirror (myst); edit this, sync to the .ipynb
 ```
 
-Single-page tutorials without supporting files live as a flat
-`<name>.md` (the `optimization/pyzag.md` pattern).
+**No sibling files.** Anything the notebook loads (`input.i`,
+`projectile.py`, …) is created *inside* the notebook with a
+`%%writefile` cell — there is nothing on disk next to `main.md` for
+Colab to miss. Do **not** add an `input.i` file or use
+`{literalinclude}` (the directive does not render in Colab).
+
+Author in `main.md`, then generate the paired notebook:
+
+```bash
+cd doc/content/tutorials/<section>/<name>
+python -m jupytext --set-formats ipynb,md:myst --sync main.md
+```
+
+Commit **both** `main.ipynb` and `main.md`, with **no outputs** (the
+docs build executes the notebook; only the two expensive optimization
+notebooks are committed pre-executed). The jupytext pre-commit hook
+keeps the pair in sync; `ruff-format` will format the `.ipynb` code
+cells (re-run the `--sync` afterwards if you format by hand).
 
 ## Required front-matter (mandatory)
 
@@ -79,6 +100,7 @@ directives and the page renders the prose only.
 ```yaml
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
@@ -87,14 +109,15 @@ kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 ```
 
+Do **not** add a `mystnb.execution_mode` key — execution is controlled
+globally in `doc/conf.py` (`nb_execution_mode = "cache"`).
+
 ## Body structure
 
-```markdown
+````markdown
 (tutorials-<section>-<name>)=
 # Title
 
@@ -102,55 +125,76 @@ One or two sentences on what the reader will accomplish here. Link
 prerequisites with [](label) only if they're truly required to follow
 along.
 
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# Install NEML2 when running in Google Colab; no-op in the docs build and
+# local Jupyter, and hidden from the rendered page.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
+
 ## The input file
 
-\```{literalinclude} input.i
-:language: ini
-:caption: input.i
-\```
+Run the cell below to write this tutorial's input file:
 
-Brief prose if the input file uses anything non-obvious. If it's a
-basic block, the file speaks for itself.
+```{code-cell} ipython3
+%%writefile input.i
+[Models]
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients      = '200e3          0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+  []
+[]
+```
 
 ## Loading the model
 
-\```{code-cell} ipython3
+```{code-cell} ipython3
 import neml2
 model = neml2.load_model("input.i", "<model name>")
 model
-\```
+```
 
 ## Evaluating
 
-\```{code-cell} ipython3
+```{code-cell} ipython3
 import torch
 from neml2.types import SR2
 strain = SR2(torch.tensor([0.01, 0, 0, 0, 0, 0], dtype=torch.float64))
 model(strain)
-\```
+```
 
 ## (Optional) The math behind it
 
 If the equation IS the lesson, put it here, after the reader has
-already seen the model run. Math in MyST: `$...$` for inline, `$$...$$`
-for display, `\begin{align}` for numbered groups. If the math just
-restates what the code does, drop this section.
+already seen the model run. Math in MyST: `$...$` inline, `$$...$$`
+display, `\begin{align}` for numbered groups. If the math just
+restates the code, drop this section.
 
 ## Where to go next
 
 - [](next-tutorial-anchor) — what to read after this.
-```
+````
 
 ## Hard rules
 
-- **Code cells**: triple-backtick \`\`\`{code-cell} ipython3\`\`\` form,
-  language **must be `ipython3`** (`python` parses but doesn't
-  execute).
-- **HIT code blocks**: language `ini` (`python` triggers Pygments
-  warnings on `!include` and `${var}`).
-- **Cwd for executed cells** is the source file's directory, so
-  `load_model("input.i", ...)` finds an `input.i` sibling without
-  path gymnastics.
+- **Bootstrap cell first.** The hidden `:tags: [remove-cell]` pip cell
+  is the first cell, before any `import neml2`. It is a no-op outside
+  Colab and invisible in the rendered docs.
+- **`%%writefile` must be the first line of its cell** — no comment or
+  blank line before it (it's a cell magic). Everything after it becomes
+  the file's contents, so write the whole file (e.g. a complete
+  `projectile.py`, not one method).
+- **Self-contained, no siblings.** Executed cells run in a throwaway
+  temp dir (`nb_execution_in_temp = True`), so a `%%writefile input.i`
+  cell must run *before* the `load_model("input.i", ...)` that reads it;
+  both resolve against that temp cwd. Never assume a file exists on disk.
+- **Code cells**: triple-backtick `{code-cell} ipython3` form, language
+  **must be `ipython3`** (`python` parses but doesn't execute).
 - **Cross-references**: `[](label)` MyST short form. Common labels:
   - Tutorials: `tutorials-models-<name>`,
     `tutorials-extension-<name>`, `tutorials-optimization-<name>`.
@@ -158,25 +202,34 @@ restates what the code does, drop this section.
     `solvers-<Name>`, `drivers-<Name>`.
   - Top-level pages: `getting-started`, `cli-utilities`,
     `aoti-packages`, `tensor-types`, `contributing`.
-- **Shell commands** in a tutorial: use `!cmd ...` shell magic inside
-  a `{code-cell}` block, *not* `{program-output}`. Sphinx-side
-  `{program-output}` runs during the docutils transform phase, before
-  myst-nb executes code cells — artifacts produced by one won't be
-  visible to the other.
-- **No `subprocess.run` wrappers** for CLI demos. `!neml2-compile ...`
-  inside a code cell is cleaner and renders as a shell session.
-- **Pre-verify every cell** standalone (`python -c "..."`) before
-  pasting in. Build-time failures cost a full rebuild round-trip.
-- **Toctree wiring**: add the new tutorial to the corresponding
-  `index.md` toctree in the parent directory.
+- **Shell commands**: use `!cmd ...` shell magic inside a `{code-cell}`
+  block (e.g. `!neml2-compile input.i --model elasticity`), *not*
+  `{program-output}` (it runs in a different phase than myst-nb
+  execution) and *not* `subprocess.run` wrappers.
+- **The "Open in Colab" badge is automatic** — `doc/_ext/colab_button.py`
+  injects it from the page's `.ipynb` path. Don't add a badge by hand.
+- **Pre-verify the notebook is self-contained**: execute it in an empty
+  temp dir before committing —
+  `d=$(mktemp -d); cp main.ipynb "$d"; (cd "$d" && python -m jupyter nbconvert --to notebook --execute main.ipynb --output o.ipynb)`.
+  It must run with no siblings present. (Or build the docs.)
+- **Toctree wiring**: add `<section>/<name>/main` to the corresponding
+  `index.md` toctree. Sphinx renders the `.ipynb` and ignores the paired
+  `.md` (excluded automatically in `conf.py`).
 
-## Cache + per-page opt-in
+## Execution model
 
-The global `nb_execution_mode` is `"off"` so plain markdown stays
-fast. The `mystnb.execution_mode: cache` front-matter opts the
-tutorial in — first build executes, subsequent builds reuse cached
-outputs via `_build/.jupyter_cache/` when the cell source is
-unchanged.
+The global `nb_execution_mode` is `"cache"` and `nb_execution_in_temp`
+is `True`: the first build executes each tutorial in a temp dir and
+reuses cached outputs (`_build/.jupyter_cache/`) when the cell source is
+unchanged. The two **expensive** pyzag notebooks
+(`optimization/{deterministic,statistical}`) are the exception — they are
+listed in `nb_execution_excludepatterns`, committed pre-executed, kept
+that way by the scoped `check-notebook-executed` hook, and get no Colab
+badge.
+
+The live docs site deploys on **release** (not every push to main), so a
+tutorial's Colab badge points at the released tag and the `pip install
+neml2` it runs matches the deployed page.
 
 ## See also
 
