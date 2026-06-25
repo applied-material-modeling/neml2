@@ -116,12 +116,32 @@ one device, a new chunk dispatched as in-flight ones finish and free capacity.
 
 ### `MPISimpleScheduler`
 
-For MPI jobs running one rank per GPU. `Config{devices, batch_sizes}` lists the
-CUDA devices to choose from; each rank is assigned one based on its rank *within
-its node* (ranks are grouped by hostname, then the local rank indexes into the
-list), after which it chunks exactly like `SimpleScheduler`. Requires NEML2 built
-with `-DNEML2_MPI=ON` and at least one device per rank per node; otherwise the
-constructor throws.
+For MPI jobs that drive several devices from many ranks. `Config{devices,
+batch_sizes, comm}` lists the devices to choose from (CPU or CUDA — e.g.
+`{"cuda:0", "cuda:1"}`, or `{"cpu"}` for a pure-CPU run); each rank is assigned
+one based on its rank *within its node* (ranks are grouped by hostname, then
+`local_rank % devices.size()` indexes into the list), after which it chunks
+exactly like `SimpleScheduler`. With `m` ranks on a node and `n` devices:
+
+- `m == n` — one device per rank;
+- `m > n` — round-robin, so a device serves several ranks;
+- `m < n` — an **error**: idle devices are not allowed (launch more ranks, or
+  pass fewer devices).
+
+`comm` is optional (`nullptr` ⇒ `MPI_COMM_WORLD`); to confine the scheduler to a
+subcommunicator, point it at your `MPI_Comm` (read only during construction):
+
+```cpp
+MPI_Comm sub = /* ... */;
+MPISimpleScheduler::Config cfg;
+cfg.devices     = {"cuda:0", "cuda:1"};
+cfg.batch_sizes = {4096};
+cfg.comm        = &sub;   // omit for MPI_COMM_WORLD
+```
+
+The per-node split is **collective** over the chosen communicator, so every rank
+in it must construct the scheduler. Requires NEML2 built with `-DNEML2_MPI=ON`
+and the host to have called `MPI_Init`; otherwise the constructor throws.
 
 ### `StaticHybridScheduler`
 
