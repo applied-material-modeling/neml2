@@ -585,3 +585,218 @@ def test_compile_interactive_delegates_to_wizard(monkeypatch):
 
     assert aoti_compile.main(["-i", str(_FIXTURE), "--load", "ext.py"]) == 0
     assert captured == {"input_file": str(_FIXTURE), "initial_load": ("ext.py",)}
+
+
+def test_compile_interactive_missing_questionary_hint(monkeypatch, capsys):
+    """`-i` with questionary absent prints an install hint and returns 1."""
+    import builtins  # noqa: PLC0415
+
+    from neml2.cli import aoti_compile  # noqa: PLC0415
+
+    real_import = builtins.__import__
+
+    def _fake_import(name, *args, **kwargs):
+        if name == "questionary" or name.startswith("questionary."):
+            raise ImportError("blocked")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", _fake_import)
+    assert aoti_compile.main(["-i", str(_FIXTURE)]) == 1
+    assert "pip install questionary" in capsys.readouterr().err
+
+
+# --------------------------------------------------------------------------- #
+# Wizard coverage: early exits, cancels, review/edit loop, helpers            #
+# --------------------------------------------------------------------------- #
+
+# A model with a promotable param + one output/input, so the linear prompt
+# sequence is deterministic for the scripted flows below.
+_WIZ_INTRO = IntrospectionForm(promotable=["E"], outputs=["stress"], inputs=["strain"])
+# Linear-pass answers (one per prompt) for that intro, with a uniform example
+# shape: target, name, promote, derivatives?, devices, dtype, output, uniform?,
+# uniform value, dynamic batch.
+_LINEAR_OK = ["model", "elasticity", ["E"], False, ["cpu"], "float64", "./aoti", True, "", True]
+
+
+def _patch_intro(monkeypatch, wiz, intro=_WIZ_INTRO):
+    monkeypatch.setattr(wiz, "_introspect", lambda *a, **k: intro)
+
+
+def test_run_wizard_bad_input_file(monkeypatch, tmp_path):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([]))
+    assert wiz.run_wizard(input_file=str(tmp_path / "missing.i")) == 1
+
+
+def test_run_wizard_extension_load_error(monkeypatch):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([]))
+    rc = wiz.run_wizard(input_file=str(_FIXTURE), initial_load=("nonexistent_module_zzz_999",))
+    assert rc == 1
+
+
+@pytest.mark.parametrize("cancel_at", range(len(_LINEAR_OK)))
+def test_run_wizard_cancel_at_any_prompt_aborts(monkeypatch, cancel_at):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary(_LINEAR_OK[:cancel_at] + [None]))
+    _patch_intro(monkeypatch, wiz)
+    assert wiz.run_wizard(input_file=str(_FIXTURE)) == 1
+
+
+def test_run_wizard_name_empty_aborts(monkeypatch):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary(["model", "  "]))
+    _patch_intro(monkeypatch, wiz)
+    assert wiz.run_wizard(input_file=str(_FIXTURE)) == 1
+
+
+def test_run_wizard_review_quit(monkeypatch):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([*_LINEAR_OK, "quit"]))
+    _patch_intro(monkeypatch, wiz)
+    monkeypatch.setattr(wiz, "run_compile", lambda argv: 0)
+    assert wiz.run_wizard(input_file=str(_FIXTURE)) == 0
+
+
+def test_run_wizard_review_cancel_aborts(monkeypatch):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([*_LINEAR_OK, None]))
+    _patch_intro(monkeypatch, wiz)
+    assert wiz.run_wizard(input_file=str(_FIXTURE)) == 1
+
+
+def test_run_wizard_review_validate_problem_then_quit(monkeypatch):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    # devices = [] -> validate_state flags it -> "run" loops back -> "quit".
+    answers = ["model", "elasticity", ["E"], False, [], "float64", "./aoti", True, "", True]
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([*answers, "run", "quit"]))
+    _patch_intro(monkeypatch, wiz)
+    monkeypatch.setattr(wiz, "run_compile", lambda argv: 0)  # must NOT be called
+    assert wiz.run_wizard(input_file=str(_FIXTURE)) == 0
+
+
+def test_run_wizard_review_edit_target_reasks_name(monkeypatch):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    # review -> edit -> field "target" -> target "model" -> name re-ask "elasticity" -> run.
+    answers = [*_LINEAR_OK, "edit", "target", "model", "elasticity", "run"]
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary(answers))
+    _patch_intro(monkeypatch, wiz)
+    captured: dict[str, list[str]] = {}
+    monkeypatch.setattr(wiz, "run_compile", lambda argv: captured.update(argv=argv) or 0)
+    assert wiz.run_wizard(input_file=str(_FIXTURE)) == 0
+    assert captured["argv"][:3] == [str(_FIXTURE), "--model", "elasticity"]
+
+
+def test_run_wizard_introspection_failure_fallback(monkeypatch):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    def _boom(*a, **k):
+        raise RuntimeError("cannot load")
+
+    monkeypatch.setattr(wiz, "_introspect", _boom)
+    # No promote/derivative prompts (intro is None); example uses the free-text
+    # fallback. target, name, devices, dtype, output, example-fallback, dynamic, quit.
+    answers = ["model", "m", ["cpu"], "float64", "./aoti", "(2,)", True, "quit"]
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary(answers))
+    assert wiz.run_wizard(input_file=str(_FIXTURE)) == 0
+
+
+def test_ask_example_shape_cancel_paths(monkeypatch):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    _patch_intro(monkeypatch, wiz, IntrospectionForm(outputs=["stress"], inputs=["strain"]))
+
+    def _state():
+        s = wiz._default_state()
+        s["name"] = "m"
+        return s
+
+    # Decline uniform, then cancel the "which inputs" checkbox.
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([False, None]))
+    assert wiz._ask_example_shape(str(_FIXTURE), _state(), {}) is False
+    # Decline uniform, pick strain, then cancel its per-variable text.
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([False, ["strain"], None]))
+    assert wiz._ask_example_shape(str(_FIXTURE), _state(), {}) is False
+
+
+def test_bulk_select_pairs_paths(monkeypatch):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    def q(answers):
+        monkeypatch.setattr(wiz, "questionary", _FakeQuestionary(answers))
+
+    # avail_out empty -> nothing left to add.
+    q([])
+    assert wiz._bulk_select_pairs(["a"], ["x"], ["a:x"]) == []
+    # outputs cancelled / empty.
+    q([None])
+    assert wiz._bulk_select_pairs(["a"], ["x"], []) is None
+    q([[]])
+    assert wiz._bulk_select_pairs(["a"], ["x"], []) == []
+    # avail_in empty (the one selected output is already fully paired).
+    q([["a"]])
+    assert wiz._bulk_select_pairs(["a", "b"], ["x"], ["a:x"]) == []
+    # inputs cancelled / empty.
+    q([["a"], None])
+    assert wiz._bulk_select_pairs(["a"], ["x", "y"], []) is None
+    q([["a"], []])
+    assert wiz._bulk_select_pairs(["a"], ["x", "y"], []) == []
+    # normal: cross-product, excluding the already-selected pair.
+    q([["a"], ["x", "y"]])
+    assert wiz._bulk_select_pairs(["a"], ["x", "y"], ["a:x"]) == ["a:y"]
+
+
+def test_run_compile_invokes_subprocess(monkeypatch):
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([]))
+    captured: dict[str, list[str]] = {}
+    monkeypatch.setattr(wiz.subprocess, "call", lambda cmd: captured.update(cmd=cmd) or 0)
+    assert wiz.run_compile(["in.i", "--model", "m"]) == 0
+    assert captured["cmd"][1:3] == ["-m", "neml2.cli.aoti_compile"]
+    assert captured["cmd"][-3:] == ["in.i", "--model", "m"]
+
+    def _interrupt(cmd):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(wiz.subprocess, "call", _interrupt)
+    assert wiz.run_compile(["x"]) == 130
+
+
+def test_introspect_real_model_and_driver():
+    """Exercise the real introspection body (model + driver-resolution branch)."""
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    by_model = wiz._introspect(str(_FIXTURE), "model", "elasticity")
+    assert by_model.outputs and by_model.inputs
+    by_driver = wiz._introspect(str(_FIXTURE), "driver", "driver")
+    assert by_driver.outputs == by_model.outputs  # driver resolves to the same model
+
+
+def test_argv_builder_empty_optionals():
+    """All-empty optionals exercise the skip branches in build_compile_argv."""
+    argv = build_compile_argv(
+        FormState(input_file="", name="", output_dir="", devices=(), dtype="")
+    )
+    assert argv == []
