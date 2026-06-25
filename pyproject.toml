@@ -40,7 +40,7 @@ NEML2_WHEEL = "ON"
 [project]
 name = "neml2"
 # dependencies: neml2.version
-version = "3.0.3"
+version = "3.0.4"
 authors = [
   { name = "Mark Messner", email = "messner@anl.gov" },
   { name = "Gary Hu", email = "thu@anl.gov" },
