@@ -115,17 +115,20 @@ main()
     NEML2_CHECK(mixed.at(1).is_cuda());
     NEML2_CHECK(mixed.at(2).is_cuda());
 
-    // Bare (unpinned) CUDA devices are allowed when none pins an index.
-    const auto bare = parse_mpi_devices({"cuda", "cuda"});
-    NEML2_CHECK(bare.size() == 2);
+    // A single unpinned `cuda` is allowed; more than one is not.
+    const auto bare = parse_mpi_devices({"cuda"});
+    NEML2_CHECK(bare.size() == 1);
+    NEML2_CHECK(bare.front().is_cuda());
+    NEML2_CHECK(!bare.front().has_index());
 
     NEML2_CHECK_THROWS(parse_mpi_devices({}));      // empty list
     NEML2_CHECK_THROWS(parse_mpi_devices({"mps"})); // unsupported device type
 
-    // `cpu` may appear at most once.
+    // `cpu` and unpinned `cuda` each name a single device -> at most once.
     NEML2_CHECK_THROWS(parse_mpi_devices({"cpu", "cpu"}));
+    NEML2_CHECK_THROWS(parse_mpi_devices({"cuda", "cuda"}));
 
-    // If any CUDA device pins an index, all must -- and uniquely.
+    // Pinned CUDA must be unique, and bare `cuda` cannot be mixed with `cuda:N`.
     NEML2_CHECK_THROWS(parse_mpi_devices({"cuda:0", "cuda:0"})); // duplicate index
     NEML2_CHECK_THROWS(parse_mpi_devices({"cuda:0", "cuda"}));   // mixed pinned/unpinned
     NEML2_CHECK_THROWS(parse_mpi_devices({"cuda", "cuda:0"}));   // mixed (other order)

@@ -60,10 +60,10 @@ public:
   struct Config
   {
     /// Devices to choose from (CPU or CUDA), e.g. {"cuda:0", "cuda:1"} or
-    /// {"cpu"}. `cpu` may appear at most once, and if any CUDA device pins an
-    /// index then every CUDA device must pin a unique one (no mixing bare `cuda`
-    /// with `cuda:N`, no duplicate indices). At least one rank per device on each
-    /// node is required (idle devices are an error).
+    /// {"cpu"}. Each entry must denote a distinct device: `cpu` and unpinned
+    /// `cuda` may each appear at most once, pinned CUDA indices must be unique,
+    /// and bare `cuda` cannot be mixed with `cuda:N`. At least one rank per
+    /// device on each node is required (idle devices are an error).
     std::vector<std::string> devices;
     /// Per-device chunk size. Length 1 broadcasts to all devices; otherwise it
     /// must match `devices`.
@@ -97,9 +97,9 @@ mpi_device_index(std::size_t local_rank, std::size_t local_size, std::size_t nde
 
 /// Parse + validate the scheduler's device list: it must be non-empty, every
 /// entry must name a CPU or CUDA device (the only devices the dispatcher
-/// supports), `cpu` may appear at most once, and if any CUDA device pins an index
-/// then every CUDA device must pin a unique one. Free-standing and MPI-free
-/// (compiled in every build config) so it is exposed for direct unit testing
-/// without an MPI runtime.
+/// supports), and each entry must denote a distinct device -- `cpu` and unpinned
+/// `cuda` each at most once, pinned CUDA indices unique, and no mixing bare
+/// `cuda` with `cuda:N`. Free-standing and MPI-free (compiled in every build
+/// config) so it is exposed for direct unit testing without an MPI runtime.
 AOTI_EXPORT std::vector<at::Device> parse_mpi_devices(const std::vector<std::string> & devices);
 } // namespace neml2::aoti

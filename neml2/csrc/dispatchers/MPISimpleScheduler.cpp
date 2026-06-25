@@ -60,7 +60,8 @@ parse_mpi_devices(const std::vector<std::string> & devices)
   std::vector<at::Device> parsed;
   parsed.reserve(devices.size());
   std::size_t ncpu = 0;
-  bool any_cuda_indexed = false;
+  std::size_t nbare_cuda = 0;
+  std::set<int> cuda_indices;
   for (const auto & d : devices)
   {
     // at::Device(std::string) parses "cpu" / "cuda" / "cuda:N" and throws a
@@ -72,36 +73,30 @@ parse_mpi_devices(const std::vector<std::string> & devices)
             "' is not a CPU or CUDA device; only those are supported.");
     if (dev.is_cpu())
       ++ncpu;
-    else if (dev.has_index())
-      any_cuda_indexed = true;
-    parsed.push_back(dev);
-  }
-
-  // `cpu` names a single device, so it may appear at most once.
-  _assert(ncpu <= 1,
-          "MPISimpleScheduler: `cpu` may appear at most once in `devices`; it names a single "
-          "device.");
-
-  // If any CUDA device pins an index (e.g. "cuda:0"), every CUDA device must pin
-  // a *unique* index -- otherwise round-robin would map distinct ranks onto the
-  // same or an ambiguous (default) GPU. Bare "cuda" entries are allowed only when
-  // none pins an index.
-  if (any_cuda_indexed)
-  {
-    std::set<int> seen;
-    for (const auto & dev : parsed)
-    {
-      if (!dev.is_cuda())
-        continue;
-      _assert(dev.has_index(),
-              "MPISimpleScheduler: cannot mix pinned and unpinned CUDA devices; pin every CUDA "
-              "device with a unique index (e.g. cuda:0, cuda:1) or pin none.");
-      _assert(seen.insert(static_cast<int>(dev.index())).second,
+    else if (!dev.has_index())
+      ++nbare_cuda;
+    else
+      _assert(cuda_indices.insert(static_cast<int>(dev.index())).second,
               "MPISimpleScheduler: CUDA device index ",
               static_cast<int>(dev.index()),
               " appears more than once; each CUDA device must pin a unique index.");
-    }
+    parsed.push_back(dev);
   }
+
+  // Each entry must denote a distinct device, otherwise round-robin would map
+  // distinct ranks onto the same physical device. `cpu` and unpinned `cuda` each
+  // name a single device (at most once); pinned CUDA indices must be unique
+  // (checked above); and an unpinned `cuda` cannot be mixed with pinned ones --
+  // it could alias one of the pinned GPUs.
+  _assert(ncpu <= 1,
+          "MPISimpleScheduler: `cpu` may appear at most once in `devices`; it names a single "
+          "device.");
+  _assert(nbare_cuda <= 1,
+          "MPISimpleScheduler: unpinned `cuda` may appear at most once in `devices`; pin distinct "
+          "GPUs with indices (e.g. cuda:0, cuda:1) to use more than one.");
+  _assert(nbare_cuda == 0 || cuda_indices.empty(),
+          "MPISimpleScheduler: cannot mix pinned and unpinned CUDA devices; pin every CUDA device "
+          "with a unique index (e.g. cuda:0, cuda:1) or pin none.");
 
   return parsed;
 }
