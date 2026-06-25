@@ -165,10 +165,13 @@ Use `jvp` when you only need one direction of the gradient; use
 
 By default every parameter is baked into the compiled graph as a
 constant. That's fastest, but it also means you can't change them at
-runtime. To keep one mutable, promote it at compile time with `-p`:
+runtime. To keep one mutable, promote it at compile time with `-p`.
+Promoted names are fully qualified: a bare leaf is wrapped in a
+single-child `ComposedModel` at compile time (matching the eager
+runtime), so `--model elasticity` exposes its modulus as `elasticity.E`:
 
 ```{code-cell} ipython3
-!neml2-compile input.i --model elasticity --output-dir aoti_promoted -p E -d stress:strain
+!neml2-compile input.i --model elasticity --output-dir aoti_promoted -p elasticity.E -d stress:strain
 ```
 
 The promoted artifact loads the same way; the difference is that the
@@ -184,7 +187,7 @@ m = neml2.load_model("aoti_promoted/elasticity_aoti.i", "elasticity")
 # Mutate E in place on the underlying binding. The next call sees it.
 # NOTE: _inner is not stable public API; it is the only way to reach
 # the parameter surface from a HIT-loaded shim today.
-m._inner.named_parameters()["E"].fill_(100e3)
+m._inner.named_parameters()["elasticity.E"].fill_(100e3)
 (stress1,) = m(strain)
 
 print("initial E=200e3 stress[0,0]:", stress0.data[0, 0].item())

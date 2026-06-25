@@ -52,8 +52,8 @@ endif()
 add_test(
       NAME dispatcher_fixture_compile
       COMMAND ${Python3_EXECUTABLE} -m neml2.cli.aoti_compile ${_fixture_input}
-              --model model --device ${_fixture_devices} -p E -p nu
-              -d : -d stress:E -d stress:nu
+              --model model --device ${_fixture_devices} -p model.E -p model.nu
+              -d : -d stress:model.E -d stress:model.nu
               --output-dir ${_fixture_dir}
       WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
 )

@@ -800,6 +800,12 @@ DispatchedModel::output_base_shapes() const noexcept
   return _impl->active()->output_base_shapes();
 }
 
+const std::map<std::string, std::vector<int64_t>> &
+DispatchedModel::parameter_base_shapes() const noexcept
+{
+  return _impl->active()->parameter_base_shapes();
+}
+
 std::map<std::string, at::Tensor> &
 DispatchedModel::named_parameters() noexcept
 {

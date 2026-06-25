@@ -1106,6 +1106,25 @@ class Model(nn.Module, ABC):
         )
         return _param_vjp(self, typed_args, param_qnames, list(self.output_spec), dict(cotangents))
 
+    @property
+    def parameter_base_shapes(self) -> dict[str, list[int]]:
+        """Per-calibration-parameter natural base shape, keyed by qualified name.
+
+        ``{param_qname: base_shape}`` (Scalar -> ``[]``, SR2 -> ``[6]``); the keys
+        are every typed parameter (same keys as
+        :meth:`~torch.nn.Module.named_parameters` restricted to typed parameters).
+        The parameter analogue of the input/output base-shape surface and the
+        unified read-only parameter-introspection accessor the compiled routes
+        expose too (``neml2.aoti.Model`` / ``neml2::aoti::Model`` /
+        ``neml2::eager::Model`` all expose ``parameter_base_shapes``), so a
+        downstream consumer introspects the parameter surface the same way on any
+        route. (The compiled routes report only the *promoted* subset; the native
+        model carries every typed parameter live.)
+        """
+        from .param_ad import enumerate_typed_params  # noqa: PLC0415
+
+        return {q: list(cls.BASE_SHAPE) for q, cls in enumerate_typed_params(self)}
+
     def set_parameter(self, name: str, value: torch.Tensor | float | int) -> None:
         """Set a calibration parameter's value (the write side of the cross-route
         parameter surface; the compiled routes expose the same ``set_parameter``

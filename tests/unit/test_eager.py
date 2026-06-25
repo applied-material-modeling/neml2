@@ -299,11 +299,25 @@ def _rel_err(a, b):
 def test_named_parameters_lists_typed_params():
     m = _EagerModel(str(_INPUT), "model")
     np_ = m.named_parameters()
-    # LinearIsotropicElasticity exposes E and nu as scalar typed parameters.
-    assert set(np_) == set(m.param_names) == {"model.E", "model.nu"}
-    assert m.param_base_shapes == [[], []]
-    for q in m.param_names:
+    # LinearIsotropicElasticity exposes E and nu as scalar typed parameters. The
+    # unified parameter surface is the qualified-name -> base-shape map.
+    assert set(np_) == set(m.parameter_base_shapes) == {"model.E", "model.nu"}
+    assert m.parameter_base_shapes == {"model.E": [], "model.nu": []}
+    for q in m.parameter_base_shapes:
         assert tuple(np_[q].shape) == ()  # scalar params, no batch
+
+
+def test_native_model_parameter_base_shapes():
+    """``Model.parameter_base_shapes`` -- the native (py-eager) read-only parameter
+    surface -- is the qualified-name -> base-shape map (Scalars => []), keyed
+    exactly like the model's own ``named_parameters()``. The native model reports
+    its authored namespace (a bare leaf's params are ``E`` / ``nu``, matching torch
+    ``named_parameters()``); the AOTI / cpp-eager deployment routes wrap a bare leaf
+    and report ``model.E`` instead."""
+    native = neml2.load_model(str(_INPUT), "model")
+    pbs = native.parameter_base_shapes
+    assert pbs == {"E": [], "nu": []}
+    assert set(pbs) == set(dict(native.named_parameters()))
 
 
 def test_native_model_set_parameter():
@@ -351,7 +365,7 @@ def test_eager_model_set_parameter():
     """``_EagerModel.set_parameter`` forwards to the native model; the read-side
     ``named_parameters`` reflects the new value."""
     m = _EagerModel(str(_INPUT), "model")
-    q = m.param_names[0]
+    q = next(iter(m.parameter_base_shapes))
     m.set_parameter(q, torch.tensor(123.0, dtype=m.dtype, device=m.device))
     assert float(m.named_parameters()[q]) == 123.0
 
@@ -386,7 +400,7 @@ def test_param_jacobian_composed():
     for o_name in m.output_names:
         assert torch.allclose(outputs[o_name], fwd[o_name])
     for o_name, o_base in zip(m.output_names, m.output_base_shapes, strict=True):
-        for p in m.param_names:
+        for p in m.parameter_base_shapes:
             block = P[o_name][p]
             assert tuple(block.shape) == (b, *o_base)  # scalar params
             ref = _fd_param_block(m, ins, o_name, p)
@@ -635,7 +649,7 @@ def test_param_vjp_through_implicit_matches_jacobian_and_fd():
     }
     grads = m.param_vjp(inputs, cot)
 
-    p0 = {q: m.named_parameters()[q].clone() for q in m.param_names}
+    p0 = {q: m.named_parameters()[q].clone() for q in m.parameter_base_shapes}
 
     def loss():
         out = m.forward(inputs)

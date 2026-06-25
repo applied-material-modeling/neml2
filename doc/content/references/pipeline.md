@@ -65,9 +65,12 @@ changes.
 ## Stage 2 — Validate and snapshot promoted parameters
 
 Each `-p NAME` flag promotes one fully-qualified parameter or buffer
-(the same namespace `model.named_parameters(recurse=True)` exposes)
-from a baked constant to a runtime graph input. The exporter
-validates every promoted name and:
+from a baked constant to a runtime graph input. A bare (non-composed)
+leaf is first wrapped in a single-child `ComposedModel` — matching the
+eager runtime — so the promoted-name namespace is that of the wrapped
+model: `--model elasticity` qualifies its parameters as `elasticity.E`
+(a composed model's are already qualified by their child-leaf names). The
+exporter validates every promoted name and:
 
 - rejects any name that doesn't resolve;
 - rejects any name that lives inside an `ImplicitUpdate`'s equation

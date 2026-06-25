@@ -267,12 +267,18 @@ Each `-p NAME` flag promotes one entry to a runtime-flexible
 **graph input**:
 
 ```bash
-neml2-compile input.i --model elasticity -p E
+neml2-compile input.i --model elasticity -p elasticity.E
 neml2-compile input.i --model viscoplasticity -p hardening.tau0 -p flow_rate.A
 ```
 
-Names are fully qualified, exactly as `model.named_parameters(recurse=True)`
-emits them.
+Names are fully qualified. A bare (non-composed) leaf is wrapped in a
+single-child `ComposedModel` at export — matching the eager runtime
+(`neml2::eager::Model`) — so its parameters are qualified by the model name:
+`--model elasticity` exposes `elasticity.E`. A composed model's parameters are
+already qualified by their child-leaf names (e.g. `hardening.tau0`). Either way
+the names match `model.named_parameters(recurse=True)` on the model the eager
+runtime constructs, so `-p`, `metadata.parameters`, and `named_parameters()`
+agree across the AOTI and eager routes.
 
 | Aspect                          | Baked (default)                    | Promoted (`-p`)                        |
 | :------------------------------ | :--------------------------------- | :------------------------------------- |

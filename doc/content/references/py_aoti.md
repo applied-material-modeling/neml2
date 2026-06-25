@@ -39,7 +39,8 @@ binding = Model("aoti/elasticity/cpu/elasticity_meta.json")
 
 The bare runtime centers on three call paths plus introspection properties
 (`input_names`, `output_names`, `input_base_shapes`, `output_base_shapes`,
-`device`, `dtype`), a mutable `named_parameters()` map, and a
+`parameter_base_shapes` — the promoted parameters' base shapes keyed by
+qualified name, `device`, `dtype`), a mutable `named_parameters()` map, and a
 `set_parameter(name, tensor)` helper for replacing a promoted parameter
 wholesale:
 
@@ -80,7 +81,7 @@ The promoted-parameter map is mutable; the next call sees the new
 value:
 
 ```python
-binding.named_parameters()["E"].fill_(100e3)
+binding.named_parameters()["elasticity.E"].fill_(100e3)
 ```
 
 `inspect`-style diagnostics — variable names, dtypes, shapes — are

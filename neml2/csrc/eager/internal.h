@@ -29,6 +29,7 @@
 // (wheel.exclude) and from the installed FILE_SET HEADERS, so the public ABI
 // never sees pybind/Python types.
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -60,8 +61,9 @@ struct Model::Impl
   std::vector<std::string> output_names;
   std::vector<std::vector<int64_t>> input_base_shapes;
   std::vector<std::vector<int64_t>> output_base_shapes;
-  std::vector<std::string> param_names;
-  std::vector<std::vector<int64_t>> param_base_shapes;
+  // Calibration-parameter natural base shapes, keyed by qualified name (the
+  // unified parameter surface shared with aoti::Model).
+  std::map<std::string, std::vector<int64_t>> parameter_base_shapes;
   at::Device device{at::kCPU};
   at::ScalarType dtype{at::kDouble};
 };

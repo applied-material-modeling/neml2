@@ -107,6 +107,8 @@ main(int argc, char ** argv)
     DispatchedModel disp(artifact_root, scheduler);
 
     NEML2_CHECK(disp.input_names() == ref.input_names());
+    // The unified parameter surface forwards to the primary device copy.
+    NEML2_CHECK(disp.parameter_base_shapes() == ref.parameter_base_shapes());
     NEML2_CHECK(disp.device().is_cpu());
 
     // forward

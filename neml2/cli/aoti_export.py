@@ -2817,13 +2817,27 @@ def export_model_for_aoti(
         The metadata dictionary (same content as the written JSON).
     """
     from ..factory import load_input
-    from ..models.common import ImplicitUpdate
+    from ..models.common import ComposedModel, ImplicitUpdate
 
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
     factory = load_input(hit_path, pre=pre, additional_args=additional_args)
     model = factory.get_model(model_name)
+
+    # Wrap a bare (non-composed) forward leaf in ComposedModel up-front -- BEFORE
+    # promotion -- so promoted parameter names live in the SAME namespace the eager
+    # runtime reports (ComposedModel([leaf]) gives ``model.E`` for a leaf named
+    # ``model``), giving byte-identical parameter naming across the cpp-aoti and
+    # cpp-eager routes. The forward export already wraps a bare leaf for tracing
+    # (see ``_export_forward``), so the exported graph is unchanged -- this only
+    # moves the wrap ahead of name validation/promotion so ``-p`` / the recorded
+    # metadata / ``named_parameters()`` keys are the qualified ``model.E``.
+    # ImplicitUpdate (and composed-with-implicit) models keep their dedicated
+    # export path + namespace; an already-composed model is left untouched (its
+    # parameters are already qualified by their child-leaf names).
+    if not isinstance(model, ComposedModel) and not _contains_implicit(model):
+        model = ComposedModel([model])
 
     # Resolve example-batch-shape declarations: CLI/Python kwarg wins, then
     # HIT [Settings], then the (2,)/uniform default. The full per-input map
