@@ -342,7 +342,8 @@ def norm(A, eps: float = 0.0):
     """Euclidean / Frobenius norm depending on the input type.
 
     * ``norm(A: SR2, eps=0.0)`` -- Frobenius norm of a symmetric rank-2
-      tensor in Mandel packing. The ``eps`` regularizer keeps the
+      tensor in Mandel packing, computed as ``sqrt(norm_sq(A) + eps)``.
+      The ``eps`` regularizer (added unsquared under the sqrt) keeps the
       result differentiable at ``A == 0``; matches ``neml2::norm`` on
       the v2 C++ side.
     * ``norm(t.base)`` -- ``sqrt(sum_over_base(t * t))`` on a
@@ -357,7 +358,7 @@ def norm(A, eps: float = 0.0):
         return Tensor(sqrt_ad(ns.data), ns.batch_ndim, ns.sub_batch_ndim)
     sr2 = cast(SR2, A)
     sq = (sr2.data * sr2.data).sum(dim=-1)
-    return wrap_like(Scalar, sqrt_ad(sq + eps * eps), sr2)
+    return wrap_like(Scalar, sqrt_ad(sq + eps), sr2)
 
 
 def dot(a: _TensorBaseView, b: _TensorBaseView) -> Tensor:

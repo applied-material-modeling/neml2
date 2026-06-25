@@ -63,8 +63,10 @@ def test_norm_and_unit():
 
 
 def test_norm_eps_protects_zero():
+    # ``eps`` is added unsquared under the sqrt (matches v2 ``sqrt(norm_sq(a) + eps)``),
+    # so ``norm(0, eps) == sqrt(eps)``.
     z = SR2(torch.zeros(6))
-    assert torch.isclose(norm(z, eps=1e-12).data, torch.tensor(1e-12))
+    assert torch.isclose(norm(z, eps=1e-12).data, torch.tensor(1e-6))
 
 
 def test_arithmetic_and_negation():
