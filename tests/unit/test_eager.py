@@ -307,6 +307,19 @@ def test_named_parameters_lists_typed_params():
         assert tuple(np_[q].shape) == ()  # scalar params, no batch
 
 
+def test_native_model_parameter_base_shapes():
+    """``Model.parameter_base_shapes`` -- the native (py-eager) read-only parameter
+    surface -- is the qualified-name -> base-shape map (Scalars => []), keyed
+    exactly like the model's own ``named_parameters()``. The native model reports
+    its authored namespace (a bare leaf's params are ``E`` / ``nu``, matching torch
+    ``named_parameters()``); the AOTI / cpp-eager deployment routes wrap a bare leaf
+    and report ``model.E`` instead."""
+    native = neml2.load_model(str(_INPUT), "model")
+    pbs = native.parameter_base_shapes
+    assert pbs == {"E": [], "nu": []}
+    assert set(pbs) == set(dict(native.named_parameters()))
+
+
 def test_native_model_set_parameter():
     """``Model.set_parameter`` copies into the live ``nn.Parameter`` (torch
     ``no_grad``), preserving identity / dtype / grad-tracking; the next forward
