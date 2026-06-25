@@ -346,16 +346,17 @@ def norm(A, eps: float = 0.0):
       The ``eps`` regularizer (added unsquared under the sqrt) keeps the
       result differentiable at ``A == 0``; matches ``neml2::norm`` on
       the v2 C++ side.
-    * ``norm(t.base)`` -- ``sqrt(sum_over_base(t * t))`` on a
-      :class:`~neml2.types.Tensor`. Returns a ``Tensor`` with
-      ``base_ndim=0``; ``batch`` / ``sub_batch`` axes are preserved.
+    * ``norm(t.base, eps=0.0)`` -- ``sqrt(sum_over_base(t * t) + eps)`` on
+      a :class:`~neml2.types.Tensor`. The same unsquared ``eps`` regularizer
+      applies. Returns a ``Tensor`` with ``base_ndim=0``; ``batch`` /
+      ``sub_batch`` axes are preserved.
     """
     # ``sqrt_ad`` (not raw ``torch.sqrt``): this Frobenius norm is the J2 / von
     # Mises norm on the parameter-derivative path; raw sqrt's saved-output
     # backward would not lower through AOTI (pytorch/pytorch#187907).
     if isinstance(A, _TensorBaseView):
         ns = norm_sq(A)
-        return Tensor(sqrt_ad(ns.data), ns.batch_ndim, ns.sub_batch_ndim)
+        return Tensor(sqrt_ad(ns.data + eps), ns.batch_ndim, ns.sub_batch_ndim)
     sr2 = cast(SR2, A)
     sq = (sr2.data * sr2.data).sum(dim=-1)
     return wrap_like(Scalar, sqrt_ad(sq + eps), sr2)

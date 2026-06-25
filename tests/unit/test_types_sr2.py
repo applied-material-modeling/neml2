@@ -26,7 +26,7 @@ import torch
 from torch import nn
 from torch.utils import _pytree as pytree
 
-from neml2.types import SR2, Scalar, dev, norm, tr, unit, vol
+from neml2.types import SR2, Scalar, Tensor, dev, norm, tr, unit, vol
 
 
 def test_identity_packing():
@@ -67,6 +67,15 @@ def test_norm_eps_protects_zero():
     # so ``norm(0, eps) == sqrt(eps)``.
     z = SR2(torch.zeros(6))
     assert torch.isclose(norm(z, eps=1e-12).data, torch.tensor(1e-6))
+
+
+def test_norm_base_view_value_and_eps():
+    # The ``norm(t.base)`` branch reduces over the base axes and applies the
+    # same unsquared ``eps`` regularizer as the SR2 branch.
+    t = Tensor(torch.arange(6.0).reshape(2, 3), batch_ndim=1)  # base = (3,)
+    assert torch.allclose(norm(t.base).data, torch.sqrt(torch.tensor([5.0, 50.0])))
+    z = Tensor(torch.zeros(1, 3), batch_ndim=1)
+    assert torch.isclose(norm(z.base, eps=1e-12).data, torch.tensor(1e-6))
 
 
 def test_arithmetic_and_negation():
