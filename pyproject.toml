@@ -103,6 +103,11 @@ dev = [
   # CI's typecheck workflow + scripts/repair_wheel.py both call it.
   # dependencies: pybind11_stubgen.version_min
   "pybind11-stubgen>=2.5.5",
+  # Powers `neml2-compile --interactive`. Lightweight, so it lives in dev
+  # rather than as a separate optional extra; the flag guards the import and
+  # prints a `pip install questionary` hint when it is absent.
+  # dependencies: questionary.version_min
+  "questionary>=2.1.1",
   # git
   "pre-commit",
 ]
