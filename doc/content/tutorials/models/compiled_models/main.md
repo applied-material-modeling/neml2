@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-models-compiled)=
@@ -20,6 +20,18 @@ time into a self-contained package, and call the compiled version from
 another process. The compiled form runs the kernels in pre-compiled
 C++ instead of the eager PyTorch dispatcher, so it's the form to use
 once a model is locked in and you want it fast.
+
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
 
 ## The pipeline
 
@@ -43,9 +55,18 @@ runs on.
 
 ## The input file
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+```{code-cell} ipython3
+%%writefile input.i
+# Linear isotropic elasticity model used as the compilation target.
+# E  = 200 GPa, nu = 0.3 — same model as the "hello world" tutorial,
+# repeated here so this page is self-contained.
+[Models]
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients      = '200e3          0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+  []
+[]
 ```
 
 ## Compiling from the shell
@@ -103,21 +124,22 @@ from neml2.types import SR2
 
 eager = neml2.load_model("input.i", "elasticity")
 
-strain = SR2(torch.tensor(
-    [
-        [0.01,  0.0,    0.0, 0.0, 0.0, 0.0  ],
-        [0.005, -0.002, 0.0, 0.0, 0.0, 0.001],
-    ],
-    dtype=torch.float64,
-))
+strain = SR2(
+    torch.tensor(
+        [
+            [0.01, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.005, -0.002, 0.0, 0.0, 0.0, 0.001],
+        ],
+        dtype=torch.float64,
+    )
+)
 
 (stress_compiled,) = compiled(strain)
 stress_eager = eager(strain)
 
 print("compiled:", stress_compiled.data)
 print("eager   :", stress_eager.data)
-print("match   :", torch.allclose(stress_compiled.data, stress_eager.data,
-                                  rtol=1e-12, atol=1e-12))
+print("match   :", torch.allclose(stress_compiled.data, stress_eager.data, rtol=1e-12, atol=1e-12))
 ```
 
 The compiled artifact matches eager output to machine precision. The
@@ -136,11 +158,11 @@ binding today:
 
 ```{code-cell} ipython3
 # NOTE: _inner is an implementation detail, not stable public API.
-binding = compiled._inner          # the bare ``neml2.aoti.Model`` runtime
+binding = compiled._inner  # the bare ``neml2.aoti.Model`` runtime
 
 # Tangent on the input — same shape as the input itself.
 strain_t = torch.zeros_like(strain.data)
-strain_t[:, 0] = 1.0               # probe d(stress)/d(epsilon_xx)
+strain_t[:, 0] = 1.0  # probe d(stress)/d(epsilon_xx)
 
 out, jvp = binding.jvp({"strain": strain.data}, {"strain": strain_t})
 print("output[stress] :", out["stress"][:, :3])
@@ -154,7 +176,7 @@ print("output[stress] :", out["stress"][:, :3])
 # J is nested by variable pair: J[output_name][input_name] is the block
 # d(output)/d(input), shaped (batch, *output_base, *input_base).
 block = J["stress"]["strain"]
-print("J[stress][strain] :", tuple(block.shape))   # (batch, 6, 6)
+print("J[stress][strain] :", tuple(block.shape))  # (batch, 6, 6)
 print("first sample (6x6):\n", block[0])
 ```
 

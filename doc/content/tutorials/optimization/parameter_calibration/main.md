@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-optimization-calibration)=
@@ -22,15 +22,33 @@ parameters. That gradient is the only ingredient an off-the-shelf
 loss against observations, step a real optimizer, and watch the
 parameters converge back to their true values.
 
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
+
 ## Problem setup
 
 We calibrate the elastic moduli of a linear isotropic material from
 strain/stress observations. The model is parameterized by Young's
 modulus $E$ and Poisson's ratio $\nu$:
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+```{code-cell} ipython3
+%%writefile input.i
+[Models]
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    coefficients = '100e3 0.30'
+  []
+[]
 ```
 
 The starting guess in the file ($E = 100\,000$ MPa, $\nu = 0.30$) is
@@ -55,7 +73,7 @@ torch.set_default_dtype(torch.float64)
 torch.manual_seed(0)
 
 # Ground-truth parameters
-E_true = 200e3   # MPa
+E_true = 200e3  # MPa
 nu_true = 0.31
 
 truth = neml2.load_model("input.i", "elasticity")
@@ -94,8 +112,7 @@ In code:
 
 ```{code-cell} ipython3
 model = neml2.load_model("input.i", "elasticity")
-print(f"initial guess: E = {model.E.data.item():.3e},  "
-      f"nu = {model.nu.data.item():.3f}")
+print(f"initial guess: E = {model.E.data.item():.3e},  nu = {model.nu.data.item():.3f}")
 
 with torch.no_grad():
     initial_loss = ((model(strain_obs).data - stress_obs.data) ** 2).mean()
@@ -121,7 +138,7 @@ roughly scaled to the parameter's magnitude:
 ```{code-cell} ipython3
 optimizer = torch.optim.Adam(
     [
-        {"params": [model.E.data],  "lr": 5e2},   # 0.5% of E
+        {"params": [model.E.data], "lr": 5e2},  # 0.5% of E
         {"params": [model.nu.data], "lr": 2e-3},  # 0.7% of nu
     ]
 )
@@ -155,9 +172,7 @@ for i in range(n_iter):
 
     # Record diagnostics *before* the step, so the gradient corresponds
     # to the parameter values in the history.
-    gn = torch.sqrt(
-        model.E.data.grad.pow(2) + model.nu.data.grad.pow(2)
-    ).item()
+    gn = torch.sqrt(model.E.data.grad.pow(2) + model.nu.data.grad.pow(2)).item()
     loss_hist.append(loss.item())
     E_hist.append(model.E.data.item())
     nu_hist.append(model.nu.data.item())

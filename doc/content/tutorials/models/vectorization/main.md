@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-models-vectorization)=
@@ -22,13 +22,35 @@ to see how much the loop costs. The short version: when you have
 many states, stack them into one batched input and let the model
 evaluate them in a single call.
 
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
+
 ## The input file
 
 We reuse the elasticity model from the first tutorial unchanged:
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+```{code-cell} ipython3
+%%writefile input.i
+# Reuses the hello-world elasticity model from the
+# "Running your first model" tutorial. Linear isotropic elasticity
+# is a trivial map (SR2 -> SR2), which keeps the focus on *how* we
+# feed in a batch of strains rather than what the model is doing.
+[Models]
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients      = '200e3          0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+  []
+[]
 ```
 
 ```{code-cell} ipython3
@@ -109,9 +131,9 @@ t0 = time.perf_counter()
 model(strains)
 t_batch = time.perf_counter() - t0
 
-print(f"python loop: {t_loop*1e3:8.2f} ms")
-print(f"batched:     {t_batch*1e3:8.2f} ms")
-print(f"speedup:     {t_loop/t_batch:8.1f}x")
+print(f"python loop: {t_loop * 1e3:8.2f} ms")
+print(f"batched:     {t_batch * 1e3:8.2f} ms")
+print(f"speedup:     {t_loop / t_batch:8.1f}x")
 ```
 
 The cell prints the speedup — large even for a model this trivial

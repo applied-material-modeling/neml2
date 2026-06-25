@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-models-implicit-model)=
@@ -26,6 +26,18 @@ depends on the plastic strain — so the update has no closed form.
 The standard move is to write a residual that vanishes at the right
 answer and let a solver find it; in this tutorial the residual is
 assembled from leaves already in NEML2's catalog.
+
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
 
 ## The physics
 
@@ -66,9 +78,86 @@ Each line in the system above maps onto a model in NEML2's catalog,
 and the residual is the `ComposedModel` that wires them together. The
 full input file:
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+```{code-cell} ipython3
+%%writefile input.i
+[Models]
+  [eq1]
+    type = SR2LinearCombination
+    from = 'strain plastic_strain'
+    to = 'elastic_strain'
+    weights = '1 -1'
+  []
+  [eq2]
+    type = LinearIsotropicElasticity
+    coefficients      = '1e5            0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
+  []
+  [eq3]
+    type = SR2Invariant
+    invariant_type = 'VONMISES'
+    tensor = 'stress'
+    invariant = 'effective_stress'
+  []
+  [eq4]
+    type = YieldFunction
+    yield_stress = 5
+  []
+  [surface]
+    type = ComposedModel
+    models = 'eq3 eq4'
+  []
+  [eq5]
+    type = Normality
+    model = 'surface'
+    function = 'yield_function'
+    from = 'stress'
+    to = 'flow_direction'
+  []
+  [eq6]
+    type = PerzynaPlasticFlowRate
+    reference_stress = 100
+    exponent = 2
+    yield_function = 'yield_function'
+  []
+  [eq7]
+    type = AssociativePlasticFlow
+  []
+  [eq8]
+    type = SR2BackwardEulerTimeIntegration
+    variable = 'plastic_strain'
+  []
+  [system]
+    type = ComposedModel
+    models = 'eq1 eq2 surface eq5 eq6 eq7 eq8'
+  []
+  [model]
+    type = ImplicitUpdate
+    equation_system = 'eq_sys'
+    solver = 'newton'
+  []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'system'
+    unknowns = 'plastic_strain'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    rel_tol = 1e-08
+    abs_tol = 1e-10
+    max_its = 50
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
 ```
 
 The `[system]` block is the residual model. Loading it gives back a
@@ -96,11 +185,11 @@ plugs those into the algebra above and returns the residual at that
 guess:
 
 ```{code-cell} ipython3
-strain          = SR2.fill(0.01, 0.005, -0.001)   # prescribed total strain
-guess           = SR2.zeros()                     # initial guess for ε^p
+strain = SR2.fill(0.01, 0.005, -0.001)  # prescribed total strain
+guess = SR2.zeros()  # initial guess for ε^p
 plastic_strain_n = SR2.zeros()
-t               = Scalar(1.0)
-t_n             = Scalar(0.0)
+t = Scalar(1.0)
+t_n = Scalar(0.0)
 
 (residual_at_guess,) = system(strain, guess, plastic_strain_n, t, t_n)
 residual_at_guess
@@ -165,12 +254,12 @@ tolerance.
 ```{code-cell} ipython3
 N = 5
 strain_batch = torch.zeros(N, 6, dtype=torch.float64)
-strain_batch[:, 0] = torch.linspace(0.005, 0.025, N)   # ramp ε_xx
-strain_b  = SR2(strain_batch)
-guess_b   = SR2(torch.zeros(N, 6, dtype=torch.float64))
-psn_b     = SR2(torch.zeros(N, 6, dtype=torch.float64))
-t_b       = Scalar.ones(N)
-tn_b      = Scalar.zeros(N)
+strain_batch[:, 0] = torch.linspace(0.005, 0.025, N)  # ramp ε_xx
+strain_b = SR2(strain_batch)
+guess_b = SR2(torch.zeros(N, 6, dtype=torch.float64))
+psn_b = SR2(torch.zeros(N, 6, dtype=torch.float64))
+t_b = Scalar.ones(N)
+tn_b = Scalar.zeros(N)
 
 (plastic_strain_b,) = model(strain_b, guess_b, psn_b, t_b, tn_b)
 plastic_strain_b.data

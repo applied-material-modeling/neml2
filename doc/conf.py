@@ -62,6 +62,9 @@ extensions = [
     # Local: autogenerates doc/generated/syntax/** from `neml2-syntax --json`
     # before sphinx reads any source files.
     "neml2_syntax",
+    # Local: injects an "Open in Colab" badge on the executable tutorial
+    # notebooks (doc/_ext/colab_button.py).
+    "colab_button",
 ]
 
 # sphinx-copybutton: strip common shell / REPL prompts from the copied
@@ -109,19 +112,23 @@ suppress_warnings = [
     "docutils",
     "ref.python",
 ]
-# Jupytext keeps `.md` mirrors next to every executable `.ipynb` tutorial
+# Jupytext keeps a `.md` mirror next to every executable `.ipynb` tutorial
 # so they round-trip cleanly through the jupytext pre-commit hook. Sphinx
-# must not pick those up — they would double-register against the
-# notebooks and the source-of-truth for the rendered output is the
-# `.ipynb` (the only one with cell metadata + persisted execution
-# counts). Add a new exclude entry whenever a new jupytext-paired
-# notebook tutorial lands.
+# must render the `.ipynb` (the source of truth with cell metadata) and
+# ignore the mirror — otherwise the two double-register under one docname.
+# Rather than maintain the list by hand, derive it: every `main.md` that has
+# a sibling `main.ipynb` is a jupytext mirror and is excluded, while the
+# reference-only tutorial `.md` pages (no `.ipynb` sibling) keep rendering.
+_doc_root = Path(__file__).parent
+_paired_md_mirrors = sorted(
+    str(nb.with_suffix(".md").relative_to(_doc_root))
+    for nb in _doc_root.glob("content/tutorials/**/main.ipynb")
+)
 exclude_patterns = [
     "_build",
     "Thumbs.db",
     ".DS_Store",
-    "content/tutorials/optimization/deterministic/main.md",
-    "content/tutorials/optimization/statistical/main.md",
+    *_paired_md_mirrors,
 ]
 
 # ---------------------------------------------------------------------------
@@ -161,29 +168,30 @@ myst_enable_extensions = [
 ]
 myst_heading_anchors = 3
 
-# Default: don't re-execute notebooks at build time. The executable
-# `.ipynb` tutorials are committed with pre-baked outputs (enforced by
-# the `check-notebook-executed` pre-commit hook), and the syntax-catalog
-# pages have no executable cells, so a global "off" makes the usual
-# rebuild instant.
-#
-# Tutorial pages that embed live `{code-cell}` directives opt in to
-# execution via per-page front-matter:
-#
-#   ---
-#   kernelspec:
-#     display_name: Python 3
-#     language: python
-#     name: python3
-#   mystnb:
-#     execution_mode: cache
-#   ---
-#
-# `cache` reuses jupyter-cache results when the cell source is unchanged
+# Execute the cheap tutorial notebooks at build time and cache the results
 # (cache lives under `_build/.jupyter_cache/`), so editing prose around a
-# stable code cell does not re-execute it.
-nb_execution_mode = "off"
+# stable code cell does not re-execute it. Every `{code-cell}` in the docs
+# lives under `content/tutorials/`, so a global `cache` only ever runs the
+# tutorials; the syntax-catalog and reference pages have no executable cells
+# and cost nothing.
+#
+# `nb_execution_in_temp` runs each notebook in a throwaway directory: the
+# Colab-runnable tutorials create their own input files via `%%writefile`,
+# so executing in a temp dir keeps those writes (and any `neml2-compile`
+# artifacts) out of the source tree while relative `load_model("input.i")`
+# still resolves against the same cwd.
+#
+# The two *expensive* pyzag calibration notebooks are excluded from
+# execution and instead render from their committed, pre-baked outputs
+# (kept executed by the scoped `check-notebook-executed` pre-commit hook);
+# executing them needs a GPU and minutes-to-hours per run.
+nb_execution_mode = "cache"
 nb_execution_timeout = 60
+nb_execution_in_temp = True
+nb_execution_excludepatterns = [
+    "optimization/deterministic/main.ipynb",
+    "optimization/statistical/main.ipynb",
+]
 
 # ---------------------------------------------------------------------------
 # Autodoc / autosummary

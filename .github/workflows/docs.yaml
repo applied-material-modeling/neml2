@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # The live site is deployed only from a release (see deploy.yaml), the same
+  # event that publishes the wheel to PyPI (python.yaml). Building here on
+  # release lets the deploy job pick up the tagged artifact, so the public docs
+  # stay in lockstep with the `pip install neml2` release that the tutorials'
+  # "Open in Colab" notebooks run against.
+  release:
+    types: [published]
 
 # Newer commits should cancel old runs
 concurrency:
@@ -40,6 +47,12 @@ jobs:
       - name: Install NEML2 + dev extras (sphinx, shibuya, myst-nb, ...)
         run: pip install ".[dev]" -v
       - name: Build documentation (strict — warnings are errors)
+        # On a release, point the tutorials' Colab badges at the release tag so
+        # a launched notebook matches the PyPI release it `pip install`s; on
+        # push/PR builds the badges fall back to `main` (the default in
+        # doc/_ext/colab_button.py).
+        env:
+          NEML2_DOC_GIT_REF: ${{ github.event_name == 'release' && github.ref_name || 'main' }}
         run: sphinx-build -j auto -W --keep-going -b html doc doc/_build/html
       - name: Install Chromium for the math validator
         # playwright itself is in [dev] extras (needed for pyright on

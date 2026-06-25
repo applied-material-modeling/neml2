@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-models-parameters-revisited)=
@@ -19,6 +19,18 @@ You'll take a small thermo-elastic model and try four ways of
 specifying its parameters — a literal number, a shared tensor, another
 sub-model, and a runtime input. Each one is a one-line change to the
 input file.
+
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
 
 ## The physics
 
@@ -45,9 +57,38 @@ together by matching producer outputs to consumer inputs.
 
 The baseline input file sets every parameter to a numeric literal:
 
-```{literalinclude} input1.i
-:language: ini
-:caption: input1.i
+```{code-cell} ipython3
+%%writefile input1.i
+# A thermo-elastic constitutive law composed from three pieces:
+#
+#   eq1: eigenstrain  = alpha * (T - T0) * I
+#   eq2: elastic_strain = strain - eigenstrain
+#   eq3: stress = 3 K vol(elastic_strain) + 2 G dev(elastic_strain)
+#
+# Every parameter is set with a plain numeric literal.
+[Models]
+  [eq1]
+    type = ThermalEigenstrain
+    reference_temperature = '300'
+    CTE                   = '1e-6'
+  []
+  [eq2]
+    type    = SR2LinearCombination
+    from    = 'strain eigenstrain'
+    to      = 'elastic_strain'
+    weights = '1 -1'
+  []
+  [eq3]
+    type              = LinearIsotropicElasticity
+    strain            = 'elastic_strain'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    coefficients      = '2e5            0.3'
+  []
+  [eq]
+    type   = ComposedModel
+    models = 'eq1 eq2 eq3'
+  []
+[]
 ```
 
 Load it and inspect what we got:
@@ -103,9 +144,41 @@ A literal is fine for a single number, but if you want a batched
 value or you want several models to share the same value, write it
 once under `[Tensors]` and refer to it by name:
 
-```{literalinclude} input2.i
-:language: ini
-:caption: input2.i
+```{code-cell} ipython3
+%%writefile input2.i
+# Same composition as input1.i, but the CTE is read from a [Tensors]
+# entry. The named tensor is a (2, 2)-shape batched Scalar, so the whole
+# model evaluates on a (2, 2) batch.
+[Tensors]
+  [alpha]
+    type = Python
+    expr = 'Scalar(torch.tensor([[1e-6, 2e-6], [1e-5, 5e-7]], dtype=torch.float64))'
+  []
+[]
+
+[Models]
+  [eq1]
+    type = ThermalEigenstrain
+    reference_temperature = '300'
+    CTE                   = 'alpha'   # ← name of the [Tensors] entry above
+  []
+  [eq2]
+    type    = SR2LinearCombination
+    from    = 'strain eigenstrain'
+    to      = 'elastic_strain'
+    weights = '1 -1'
+  []
+  [eq3]
+    type              = LinearIsotropicElasticity
+    strain            = 'elastic_strain'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    coefficients      = '2e5            0.3'
+  []
+  [eq]
+    type   = ComposedModel
+    models = 'eq1 eq2 eq3'
+  []
+[]
 ```
 
 `alpha` is now a `(2, 2)`-batched scalar. Every entry of `eq1.alpha`
@@ -142,9 +215,68 @@ point the parameter at *another model in the file*. Here we add a
 `ScalarLinearInterpolation` that maps `temperature` to a value, and
 reference it by name:
 
-```{literalinclude} input3.i
-:language: ini
-:caption: input3.i
+```{code-cell} ipython3
+%%writefile input3.i
+# Same composition again, but now alpha(T) and E(T) are temperature-
+# dependent. We declare two ScalarLinearInterpolation sub-models and
+# point eq1/eq3 at them by name. The interpolations become children of
+# the ComposedModel, and the original "scalar" parameters eq1.alpha and
+# eq3.E disappear — they are replaced by the abscissa/ordinate
+# parameters of the interpolants.
+[Tensors]
+  [alpha_x]
+    type = Python
+    expr = 'Scalar([300., 400., 500.]).sub_batch.retag(1)'
+  []
+  [alpha_y]
+    type = Python
+    expr = 'Scalar([1e-5, 1.5e-5, 1.8e-5]).sub_batch.retag(1)'
+  []
+  [E_x]
+    type = Python
+    expr = 'Scalar([300., 350., 400., 450.]).sub_batch.retag(1)'
+  []
+  [E_y]
+    type = Python
+    expr = 'Scalar([2.0e5, 1.9e5, 1.8e5, 1.7e5]).sub_batch.retag(1)'
+  []
+[]
+
+[Models]
+  [alpha]
+    type     = ScalarLinearInterpolation
+    argument = 'temperature'
+    abscissa = 'alpha_x'
+    ordinate = 'alpha_y'
+  []
+  [E]
+    type     = ScalarLinearInterpolation
+    argument = 'temperature'
+    abscissa = 'E_x'
+    ordinate = 'E_y'
+  []
+  [eq1]
+    type                  = ThermalEigenstrain
+    reference_temperature = '300'
+    CTE                   = 'alpha'   # ← name of the [Models/alpha] sub-model
+  []
+  [eq2]
+    type    = SR2LinearCombination
+    from    = 'strain eigenstrain'
+    to      = 'elastic_strain'
+    weights = '1 -1'
+  []
+  [eq3]
+    type              = LinearIsotropicElasticity
+    strain            = 'elastic_strain'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    coefficients      = 'E              0.3'           # ← E references [Models/E]
+  []
+  [eq]
+    type   = ComposedModel
+    models = 'eq1 eq2 eq3'
+  []
+[]
 ```
 
 The composition picks up two new children and loses `eq1.alpha` and
@@ -197,9 +329,35 @@ One last twist: if you put a bare name in the parameter slot that
 doesn't match any tensor or model in the file, NEML2 promotes that
 parameter to an input — you'll supply it at call time instead.
 
-```{literalinclude} input4.i
-:language: ini
-:caption: input4.i
+```{code-cell} ipython3
+%%writefile input4.i
+# Same composition, but the CTE is now promoted to an *input variable*
+# named ``alpha`` — no provider model, no literal, no tensor. NEML2 sees
+# a bare name that does not match anything else in the file and adds an
+# input slot for it. The caller must supply ``alpha`` at evaluation time.
+[Models]
+  [eq1]
+    type = ThermalEigenstrain
+    reference_temperature = '300'
+    CTE                   = 'alpha'   # ← bare name → promoted to input variable
+  []
+  [eq2]
+    type    = SR2LinearCombination
+    from    = 'strain eigenstrain'
+    to      = 'elastic_strain'
+    weights = '1 -1'
+  []
+  [eq3]
+    type              = LinearIsotropicElasticity
+    strain            = 'elastic_strain'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    coefficients      = '2e5            0.3'
+  []
+  [eq]
+    type   = ComposedModel
+    models = 'eq1 eq2 eq3'
+  []
+[]
 ```
 
 The composition now has three inputs instead of two:

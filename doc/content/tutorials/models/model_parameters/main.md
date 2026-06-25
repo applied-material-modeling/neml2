@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-models-parameters)=
@@ -19,14 +19,35 @@ You'll pick up the `LinearIsotropicElasticity` model from
 [](tutorials-models-running-your-first-model) and read, change, and
 differentiate through its moduli from Python.
 
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
+
 ## The input file
 
 Same input file as the previous tutorial — re-used here so we can focus
 on the parameters:
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+```{code-cell} ipython3
+%%writefile input.i
+# Same linear-isotropic-elasticity model as the previous tutorial.
+# Re-used here so the focus stays on parameter access / mutation rather
+# than on a new physical setup.
+[Models]
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients      = '200e3          0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+  []
+[]
 ```
 
 ## Listing the parameters

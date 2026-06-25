@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-models-evaluation-device)=
@@ -29,11 +29,33 @@ wheel runs on whichever devices your PyTorch install supports; you
 opt in at runtime with `.to(...)`.
 :::
 
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
+
 ## The input file
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+```{code-cell} ipython3
+%%writefile input.i
+# Linear isotropic elasticity used by the evaluation-device tutorial.
+# Same model as the "running your first model" tutorial -- a small,
+# device-agnostic forward operator to demonstrate how parameters and
+# inputs are moved between CPU and CUDA.
+[Models]
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients      = '200e3          0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+  []
+[]
 ```
 
 ## Loading and inspecting placement

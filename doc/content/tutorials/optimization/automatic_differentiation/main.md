@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-optimization-autograd)=
@@ -28,15 +28,37 @@ This page walks through the mechanics: enable the gradient tape, run
 the model, build a scalar loss, call `.backward()`, and read the
 per-parameter gradient off `parameter.grad`.
 
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
+
 ## The model
 
 We reuse the linear-isotropic-elastic model from
 [](tutorials-models-running-your-first-model) so the focus stays on
 autograd rather than the physics:
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+```{code-cell} ipython3
+%%writefile input.i
+# Same linear-isotropic-elastic "elasticity" model used in the earlier
+# tutorials, repeated here so the autograd page is self-contained.
+#   E  = 200 GPa
+#   nu = 0.3
+[Models]
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients      = '200e3          0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+  []
+[]
 ```
 
 ```{code-cell} ipython3

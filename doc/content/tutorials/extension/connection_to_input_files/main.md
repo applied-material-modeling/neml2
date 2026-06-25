@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-extension-input-files)=
@@ -22,6 +22,18 @@ the work: a decorator that registers the class under a type name, and
 the `HitSchema` you already saw in
 [](tutorials-extension-arguments).
 
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
+
 ## The example model
 
 We'll reuse the projectile model from the previous tutorial — a `Vec`
@@ -32,11 +44,46 @@ $$
 $$
 
 with $\mu$ a `Scalar` parameter and $\boldsymbol{g}$ a constant `Vec`
-buffer.
+buffer. Write it out as `projectile.py`:
 
-```{literalinclude} projectile.py
-:language: python
-:caption: projectile.py
+```{code-cell} ipython3
+%%writefile projectile.py
+# A minimal NEML2 Model subclass illustrating the input-file wiring.
+#
+# Forward operator: gravity-plus-linear-drag projectile acceleration,
+#     a = g - mu * v
+# with `g` a Vec buffer (constant gravity) and `mu` a single Scalar
+# parameter. The point of this file is the *connection to HIT* — the
+# schema declaration and the `@register_neml2_object` decorator — not the
+# physics.
+
+from __future__ import annotations
+
+from neml2.factory import register_neml2_object
+from neml2.models.model import Model
+from neml2.schema import HitSchema, buffer, input, output, parameter
+from neml2.types import Scalar, Vec
+
+
+@register_neml2_object("ProjectileAcceleration")
+class ProjectileAcceleration(Model):
+    """Projectile acceleration under gravity and linear drag: a = g - mu * v."""
+
+    hit = HitSchema(
+        input("velocity", Vec, "Projectile velocity"),
+        output("acceleration", Vec, "Projectile acceleration"),
+        parameter("dynamic_viscosity", Scalar, "Drag coefficient mu", attr="mu"),
+        buffer(
+            "gravity",
+            Vec,
+            "Gravitational acceleration vector",
+            attr="g",
+            default=Vec.fill(0.0, -9.81, 0.0),
+        ),
+    )
+
+    def forward(self, velocity, *nl_params, v=None):
+        raise NotImplementedError
 ```
 
 Two things to notice:
@@ -55,9 +102,16 @@ Two things to notice:
 
 Here's a minimal HIT block that instantiates the class:
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+```{code-cell} ipython3
+%%writefile input.i
+[Models]
+  [accel]
+    type = ProjectileAcceleration
+    velocity = 'v'
+    acceleration = 'a'
+    dynamic_viscosity = 0.05
+  []
+[]
 ```
 
 Each line maps to one schema field:
@@ -80,10 +134,12 @@ it first. In a normal script that's just an `import` line; here,
 
 ```{code-cell} ipython3
 import sys
+
 sys.path.insert(0, ".")
 import projectile  # the @register_neml2_object runs at import time
 
 import neml2
+
 model = neml2.load_model("input.i", "accel")
 model
 ```
