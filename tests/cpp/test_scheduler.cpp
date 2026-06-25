@@ -66,5 +66,34 @@ main()
     NEML2_CHECK_THROWS(MPISimpleScheduler{cfg});
   }
 
+  // The comm field defaults to "use MPI_COMM_WORLD" without pulling in any MPI
+  // type at the call site.
+  {
+    MPISimpleScheduler::Config cfg;
+    NEML2_CHECK(cfg.comm == nullptr);
+  }
+
+  // mpi_device_index: per-node round-robin of the local rank over the device
+  // list. MPI-free, so it's tested directly here without an MPI runtime.
+  {
+    // m > n: 4 ranks, 2 devices -> round-robin 0,1,0,1.
+    NEML2_CHECK(mpi_device_index(0, 4, 2) == 0);
+    NEML2_CHECK(mpi_device_index(1, 4, 2) == 1);
+    NEML2_CHECK(mpi_device_index(2, 4, 2) == 0);
+    NEML2_CHECK(mpi_device_index(3, 4, 2) == 1);
+
+    // m == n: one device per rank.
+    NEML2_CHECK(mpi_device_index(0, 2, 2) == 0);
+    NEML2_CHECK(mpi_device_index(1, 2, 2) == 1);
+
+    // Uneven (3 ranks, 2 devices): both devices used, device 0 serves two ranks.
+    NEML2_CHECK(mpi_device_index(0, 3, 2) == 0);
+    NEML2_CHECK(mpi_device_index(1, 3, 2) == 1);
+    NEML2_CHECK(mpi_device_index(2, 3, 2) == 0);
+
+    // m < n: 1 rank, 2 devices -> idle GPU, which is an error.
+    NEML2_CHECK_THROWS(mpi_device_index(0, 1, 2));
+  }
+
   return 0;
 }

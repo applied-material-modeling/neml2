@@ -34,6 +34,22 @@
 
 namespace neml2::aoti
 {
+// Defined unconditionally (MPI-free) so the test suite can link it without an MPI
+// runtime. The MPI rank/size discovery under NEML2_MPI funnels into it.
+std::size_t
+mpi_device_index(std::size_t local_rank, std::size_t local_size, std::size_t ndevices)
+{
+  _assert(local_size >= ndevices,
+          "MPISimpleScheduler: this node has ",
+          local_size,
+          " rank(s) but ",
+          ndevices,
+          " device(s) were provided. Idle GPUs are not allowed; launch at least "
+          "one rank per device, or pass fewer devices.");
+  // ndevices >= 1 is guaranteed by the constructor's non-empty-devices assert.
+  return local_rank % ndevices;
+}
+
 #ifndef NEML2_MPI
 
 MPISimpleScheduler::MPISimpleScheduler(const Config & /*config*/)
@@ -47,11 +63,10 @@ MPISimpleScheduler::MPISimpleScheduler(const Config & /*config*/)
 
 namespace
 {
-// Pick this rank's device index: group the world's ranks by hostname (so ranks
-// sharing a node form one group), then use the rank *within that group* as the
-// index into the device list. Mirrors the v2 SimpleMPIScheduler assignment.
+// Group `comm`'s ranks by hostname (so ranks sharing a node form one group),
+// then round-robin the local rank over the device list via mpi_device_index.
 std::size_t
-determine_device_index(std::size_t ndevices)
+determine_device_index(MPI_Comm comm, std::size_t ndevices)
 {
   char name[MPI_MAX_PROCESSOR_NAME];
   int len = 0;
@@ -63,22 +78,19 @@ determine_device_index(std::size_t ndevices)
   const int color = static_cast<int>(h % static_cast<std::size_t>(std::numeric_limits<int>::max()));
 
   int world_rank = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+  MPI_Comm_rank(comm, &world_rank);
 
+  // Collective over `comm`: every rank in it must reach this point.
   MPI_Comm local = MPI_COMM_NULL;
-  MPI_Comm_split(MPI_COMM_WORLD, color, world_rank, &local);
+  MPI_Comm_split(comm, color, world_rank, &local);
   int local_rank = 0;
+  int local_size = 0;
   MPI_Comm_rank(local, &local_rank);
+  MPI_Comm_size(local, &local_size); // read before freeing the local comm
   MPI_Comm_free(&local);
 
-  const auto idx = static_cast<std::size_t>(local_rank);
-  _assert(idx < ndevices,
-          "MPISimpleScheduler: local MPI rank ",
-          idx,
-          " on this node exceeds the ",
-          ndevices,
-          " device(s) provided. Provide at least one device per rank on each node.");
-  return idx;
+  return mpi_device_index(
+      static_cast<std::size_t>(local_rank), static_cast<std::size_t>(local_size), ndevices);
 }
 } // namespace
 
@@ -101,8 +113,8 @@ MPISimpleScheduler::MPISimpleScheduler(const Config & config)
     _assert(dev.is_cuda(),
             "MPISimpleScheduler: device '",
             d,
-            "' is not a CUDA device. The MPI scheduler assigns one GPU per rank; "
-            "use SimpleScheduler for CPU dispatch.");
+            "' is not a CUDA device. The MPI scheduler assigns CUDA devices to "
+            "ranks; use SimpleScheduler for CPU dispatch.");
     _devices.push_back(dev);
   }
 
@@ -113,7 +125,10 @@ MPISimpleScheduler::MPISimpleScheduler(const Config & config)
           "MPISimpleScheduler: MPI has not been initialized. The host application must call "
           "MPI_Init before constructing the scheduler.");
 
-  _device_index = determine_device_index(_devices.size());
+  // Copy the handle out of the caller's MPI_Comm (sound for both an int handle
+  // and an opaque pointer); nullptr selects the world communicator.
+  MPI_Comm comm = config.comm ? *static_cast<const MPI_Comm *>(config.comm) : MPI_COMM_WORLD;
+  _device_index = determine_device_index(comm, _devices.size());
 }
 
 #endif // NEML2_MPI
