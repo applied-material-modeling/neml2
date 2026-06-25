@@ -167,6 +167,24 @@ artifact from Python, parameter promotion (`-p <name>`), and the
 trade-offs against eager mode — lives in
 [](tutorials-models-compiled).
 
+### Interactive mode (`-i` / `--interactive`)
+
+`neml2-compile`'s flag surface is wide and interdependent: the promotable
+parameter names (`-p`) and the valid `OUT:IN` derivative pairs (`-d`) only exist
+once the model is loaded and introspected. Pass `-i` / `--interactive` to be
+guided through the options with prompts populated from the model, ending on a
+review you can run, edit, or copy as a plain `neml2-compile` command:
+
+```bash
+neml2-compile -i input.i
+```
+
+The input file is required (give it on the command line so the shell completes
+the path); `--load` extensions are honored. Interactive mode is powered by
+[Questionary](https://questionary.readthedocs.io/), a lightweight dependency
+carried in the `dev` extra rather than the core install — if it is missing the
+flag prints a `pip install questionary` hint and exits.
+
 ## `neml2-stub`
 
 Regenerates `.pyi` type stubs for every pybind11 extension module in the

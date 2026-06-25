@@ -64,8 +64,23 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "metadata JSON) and emit a runnable HIT stub."
         ),
     )
+    # `input` is always required (with --interactive too: the user picks the
+    # file via shell completion, and the wizard takes it from there). Exactly one
+    # of --model/--driver is required only for a normal compile -- the wizard
+    # asks -- so the group is left optional here and enforced in main().
     parser.add_argument("input", metavar="INPUT.i", type=Path, help="HIT input file path.")
-    target = parser.add_mutually_exclusive_group(required=True)
+    parser.add_argument(
+        "-i",
+        "--interactive",
+        action="store_true",
+        help=(
+            "Launch an interactive wizard that introspects INPUT.i and walks you "
+            "through the options (model/driver, promotable parameters, derivative "
+            "pairs, devices, ...), then runs the resulting compile. Requires the "
+            "'questionary' package."
+        ),
+    )
+    target = parser.add_mutually_exclusive_group(required=False)
     target.add_argument(
         "--model",
         metavar="NAME",
@@ -508,6 +523,29 @@ def main(argv: list[str] | None = None) -> int:
     # other neml2-* CLIs use.
     args, additional_args = parser.parse_known_args(argv)
 
+    # Interactive mode: hand off to the wizard, which collects the remaining
+    # options (model/driver, parameters, derivatives, ...) for the given INPUT.i
+    # and then re-runs this command with the assembled argv. `questionary` is
+    # imported lazily so the normal compile path never depends on it.
+    if args.interactive:
+        try:
+            import questionary  # noqa: F401, PLC0415
+        except ImportError:
+            print(
+                "neml2-compile --interactive needs the 'questionary' package.\n"
+                "Install it with:  pip install questionary",
+                file=sys.stderr,
+            )
+            return 1
+        from ._compile_wizard import run_wizard  # noqa: PLC0415
+
+        return run_wizard(input_file=str(args.input), initial_load=tuple(args.load))
+
+    # Non-interactive: exactly one of --model/--driver is required (argparse
+    # leaves the group optional so --interactive can omit it).
+    if (args.model is None) == (args.driver is None):
+        parser.error("exactly one of --model / --driver is required (or use --interactive)")
+
     input_path: Path = args.input.resolve()
     if not input_path.exists():
         print(f"Error: input file not found: {input_path}", file=sys.stderr)
@@ -520,7 +558,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     # Resolve the (model_name, keep_driver) pair from --model vs --driver.
-    # argparse mutual exclusion already guarantees exactly one is set.
+    # argparse mutual exclusion already guarantees at most one is set.
     if args.driver is not None:
         try:
             model_name = driver_target_model(input_path, args.driver)

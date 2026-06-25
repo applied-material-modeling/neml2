@@ -59,6 +59,11 @@ pybind11_stubgen:
   files:
     - pyproject.toml
 
+questionary:
+  version_min: "2.1.1"
+  files:
+    - pyproject.toml
+
 jupytext:
   version: "v1.19.1"
   files:
