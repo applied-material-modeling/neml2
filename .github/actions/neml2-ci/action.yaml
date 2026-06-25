@@ -52,7 +52,10 @@ runs:
       if: ${{ runner.os == 'Linux' && inputs.cpu-torch == 'true' }}
       shell: bash
       run: |
-        pip install torch==${{ inputs.torch-version }} --index-url https://download.pytorch.org/whl/cpu
+        # --extra-index-url keeps PyPI as a fallback: --index-url alone makes the
+        # PyTorch CPU index the *only* source, so torch deps it doesn't mirror
+        # (mpmath, fsspec, ...) intermittently fail to resolve.
+        pip install torch==${{ inputs.torch-version }} --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
 
     - name: Install PyTorch + nvcc + CCCL headers (Linux, with CUDA)
       # Inductor's CUDA JIT / AOT codegen needs three things on top of

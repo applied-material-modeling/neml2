@@ -44,16 +44,20 @@ from pathlib import Path
 
 import pytest
 import torch
-import torch._dynamo  # for the trace_autograd_ops availability gate below
+
+from neml2.cli.aoti_export import _reverse_ad_aoti_unsupported_reason
 
 _SCENARIO_DIR = Path(__file__).parent
 
-# Parameter-derivative AOTI graphs compile with torch._dynamo.config.trace_autograd_ops,
-# which only exists in torch >= 2.11. Skip those cases on older torch (the compat
-# matrix still tests forward / jvp / jacobian on torch 2.10.0, which do not need it).
+# Reverse-mode-AD AOTI graphs (parameter derivatives) can't be lowered on every
+# torch: < 2.11 lacks trace_autograd_ops, and 2.11.x rejects requires_grad_()
+# under strict export. Skip those cases on the exact predicate the exporter guards
+# on, so the test gate and the runtime guard can't drift. Forward / jvp / jacobian
+# are unaffected and still run on every torch.
+_PARAM_DERIV_UNSUPPORTED = _reverse_ad_aoti_unsupported_reason()
 _REQUIRES_PARAM_DERIV_TORCH = pytest.mark.skipif(
-    not hasattr(torch._dynamo.config, "trace_autograd_ops"),
-    reason="parameter-derivative AOTI compilation requires torch >= 2.11 (trace_autograd_ops)",
+    _PARAM_DERIV_UNSUPPORTED is not None,
+    reason=f"reverse-mode AD AOTI compilation {_PARAM_DERIV_UNSUPPORTED}",
 )
 # Scenarios with a dedicated test that need domain-specific inputs the generic
 # randn-driven value/stub tests here cannot supply. ``request_ad_forward`` is a

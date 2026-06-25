@@ -123,7 +123,9 @@ jobs:
         # torch version constraint, so the pinned version sticks.
         run: |
           if [ "${{ runner.os }}" = "Linux" ]; then
-            pip install torch==${{ matrix.torch }} --index-url https://download.pytorch.org/whl/cpu
+            # --extra-index-url keeps PyPI as a fallback so torch deps the PyTorch
+            # CPU index doesn't mirror (mpmath, fsspec, ...) still resolve.
+            pip install torch==${{ matrix.torch }} --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
           else
             pip install torch==${{ matrix.torch }}
           fi
