@@ -161,18 +161,24 @@ jobs:
       # Resolve the installed package via sysconfig, NOT `import neml2`: this step
       # runs from the repo root, where the source `neml2/` would shadow the wheel
       # on sys.path and point us at a tree with no installed headers/config.
+      # torch/lib must be on LD_LIBRARY_PATH at runtime: the consumer links
+      # libtorch directly (via neml2-torch.pc / the torch::core interface), and
+      # those `-L` flags don't bake an rpath. (`import torch` is safe here -- only
+      # the source `neml2/` shadows, not torch.)
       - name: Consume via find_package(neml2)
         run: |
           PREFIX="$(python -c 'import sysconfig; print(sysconfig.get_path("platlib"))')/neml2"
+          TORCHLIB="$(python -c 'import torch, pathlib; print(pathlib.Path(torch.__file__).parent / "lib")')"
           cmake -S tests/downstream -B build/downstream -GNinja -Dneml2_DIR="$PREFIX/share/cmake/neml2"
           cmake --build build/downstream
-          LD_LIBRARY_PATH="$PREFIX/lib" ./build/downstream/consumer
+          LD_LIBRARY_PATH="$PREFIX/lib:$TORCHLIB" ./build/downstream/consumer
       - name: Consume via pkg-config
         run: |
           PREFIX="$(python -c 'import sysconfig; print(sysconfig.get_path("platlib"))')/neml2"
+          TORCHLIB="$(python -c 'import torch, pathlib; print(pathlib.Path(torch.__file__).parent / "lib")')"
           export PKG_CONFIG_PATH="$PREFIX/share/pkgconfig"
           c++ tests/downstream/main.cpp -o consumer_pc $(pkg-config --cflags --libs neml2)
-          LD_LIBRARY_PATH="$PREFIX/lib" ./consumer_pc
+          LD_LIBRARY_PATH="$PREFIX/lib:$TORCHLIB" ./consumer_pc
 
   # C++ source-based coverage (clang). Builds the runtime + tests under
   # -DCMAKE_BUILD_TYPE=Coverage, runs the dispatcher + eager ctests under
