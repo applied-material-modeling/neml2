@@ -401,7 +401,7 @@ data-aria-dark="Switch to auto color mode">
 <span id="neml2-pyzag"></span><h1>neml2.pyzag<a class="headerlink" href="#module-neml2.pyzag" title="Link to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.pyzag.NEML2PyzagModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.pyzag.</span></span><span class="sig-name descname"><span class="pre">NEML2PyzagModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/pyzag/interface.html#NEML2PyzagModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.pyzag.NEML2PyzagModel" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.pyzag.</span></span><span class="sig-name descname"><span class="pre">NEML2PyzagModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/pyzag/interface.html#NEML2PyzagModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.pyzag.NEML2PyzagModel" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NonlinearRecursiveFunction</span></code></p>
 <p>Wrap a native NEML2 <code class="xref py py-class docutils literal notranslate"><span class="pre">NonlinearSystem</span></code> as a pyzag
 <code class="docutils literal notranslate"><span class="pre">NonlinearRecursiveFunction</span></code>.</p>
@@ -410,14 +410,25 @@ data-aria-dark="Switch to auto color mode">
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sys</strong> (<a class="reference internal" href="neml2.es.html#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>) – the native NEML2 nonlinear system to wrap.</p></li>
 <li><p><strong>exclude_parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>include_parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>exclude_parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – NEML2 parameters to <em>not</em> mirror
-as torch parameters on the wrapper (and therefore not optimize
-against).</p>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>exclude_parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – NEML2 parameters to <em>not</em> mirror
+as torch parameters on the wrapper (so every <em>other</em> parameter is
+trained). Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">include_parameters</span></code>.</p></li>
+<li><p><strong>include_parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – the <em>only</em> NEML2 parameters to mirror
+as torch parameters on the wrapper (so every <em>other</em> parameter is
+held fixed). Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">exclude_parameters</span></code>.</p></li>
+</ul>
 </dd>
 </dl>
+<p><code class="docutils literal notranslate"><span class="pre">exclude_parameters</span></code> and <code class="docutils literal notranslate"><span class="pre">include_parameters</span></code> are both optional and
+mutually exclusive: omit both to train every parameter, pass
+<code class="docutils literal notranslate"><span class="pre">exclude_parameters</span></code> to train all-but-some, or pass
+<code class="docutils literal notranslate"><span class="pre">include_parameters</span></code> to train only-these. Passing both raises
+<code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
 <p>Additional <code class="docutils literal notranslate"><span class="pre">args</span></code> and <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> are forwarded to
 <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a> verbatim.</p>
 <dl class="py method">
