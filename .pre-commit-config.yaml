@@ -33,14 +33,16 @@ repos:
     hooks:
       - id: check-notebook-executed
         name: check notebook cells are executed
-        # Sphinx renders the committed ``.ipynb`` outputs verbatim
-        # (``nb_execution_mode = "off"`` in ``doc/conf.py``), so any
-        # unexecuted code cell would render with an empty output region or
-        # a stale output that no longer matches its source. Mirrors v2's
-        # check at ``doc/scripts/examples.py``.
+        # Only the two *expensive* pyzag notebooks are rendered from
+        # pre-baked outputs (excluded from build-time execution in
+        # ``doc/conf.py``), so they must stay fully executed -- an
+        # unexecuted cell would render empty or stale. The cheap tutorial
+        # notebooks are executed at build (``nb_execution_mode = "cache"``)
+        # and committed without outputs, so they are deliberately NOT
+        # checked here. Mirrors v2's check at ``doc/scripts/examples.py``.
         entry: doc/scripts/check_notebook_executed.py
         language: script
-        files: ^doc/content/tutorials/.*\.ipynb$
+        files: ^doc/content/tutorials/optimization/(deterministic|statistical)/main\.ipynb$
         pass_filenames: true
       - id: nmhit-format
         name: nmhit-format

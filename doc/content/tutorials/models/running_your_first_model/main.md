@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-models-running-your-first-model)=
@@ -30,11 +30,37 @@ of this tutorial is the workflow, not the material — the same
 `load_model` + call pattern carries over to every NEML2 model, even
 though the inputs and outputs will differ.
 
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
+
 ## The input file
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+NEML2 models are defined in a text input file. Run the cell below to write
+this tutorial's input file to disk:
+
+```{code-cell} ipython3
+%%writefile input.i
+# Minimal hello-world NEML2 input file.
+# A single linear isotropic elastic model named "elasticity":
+#   E  = 200 GPa
+#   nu = 0.3
+# Maps a symmetric strain tensor (SR2) to a symmetric stress tensor (SR2).
+[Models]
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients      = '200e3          0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+  []
+[]
 ```
 
 The `type` line picks a model from NEML2's catalog (see
@@ -49,6 +75,7 @@ named model as a Python object you can call like a function:
 
 ```{code-cell} ipython3
 import neml2
+
 model = neml2.load_model("input.i", "elasticity")
 model
 ```

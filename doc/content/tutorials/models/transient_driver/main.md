@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-models-transient-driver)=
@@ -21,6 +21,18 @@ step. In this tutorial you'll ramp a strain from zero to 5% over 50
 steps, run a perfect-viscoplastic model through that history, and
 plot the resulting stress–strain curve. The driver is configured
 from the same kind of input file you've been using.
+
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
 
 ## The recursive update
 
@@ -50,9 +62,130 @@ The `[Drivers]` block names the model to step, the prescribed time
 history, and the prescribed strain history. Time and the strain values
 are built inline in `[Tensors]`:
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+```{code-cell} ipython3
+%%writefile input.i
+# Drive a perfect-viscoplastic constitutive model through a uniaxial
+# strain history of 50 steps. The implicit-update model `model` is the
+# same kind of object that previous tutorials evaluated point-wise —
+# `TransientDriver` repeatedly calls it, threading converged state from
+# step n into step n+1.
+
+[Tensors]
+  [times]
+    type = Python
+    expr = 'Scalar.linspace(0.0, 1.0, 50)'
+  []
+  [max_strain]
+    type = Python
+    expr = 'SR2.fill(0.05, -0.025, -0.025, 0.0, 0.0, 0.0)'
+  []
+  [strains]
+    type = Python
+    expr = 'SR2(torch.linspace(0.0, 1.0, 50, dtype=torch.float64).reshape(50, 1) * max_strain.data.unsqueeze(0))'
+  []
+[]
+
+[Drivers]
+  [driver]
+    type = TransientDriver
+    model = 'model'
+    prescribed_time = 'times'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
+  []
+[]
+
+[Models]
+  [mandel_stress]
+    type = IsotropicMandelStress
+    cauchy_stress = 'stress'
+  []
+  [vonmises]
+    type = SR2Invariant
+    invariant_type = 'VONMISES'
+    tensor = 'mandel_stress'
+    invariant = 'effective_stress'
+  []
+  [yield_surface]
+    type = YieldFunction
+    yield_stress = 5
+  []
+  [flow]
+    type = ComposedModel
+    models = 'vonmises yield_surface'
+  []
+  [normality]
+    type = Normality
+    model = 'flow'
+    function = 'yield_function'
+    from = 'mandel_stress'
+    to = 'flow_direction'
+  []
+  [flow_rate]
+    type = PerzynaPlasticFlowRate
+    reference_stress = 100
+    exponent = 2
+  []
+  [Eprate]
+    type = AssociativePlasticFlow
+  []
+  [Erate]
+    type = SR2VariableRate
+    variable = 'E'
+  []
+  [Eerate]
+    type = SR2LinearCombination
+    from = 'E_rate plastic_strain_rate'
+    to = 'strain_rate'
+    weights = '1 -1'
+  []
+  [elasticity]
+    type = LinearIsotropicElasticity
+    coefficients      = '1e5           0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    rate_form = true
+  []
+  [integrate_stress]
+    type = SR2BackwardEulerTimeIntegration
+    variable = 'stress'
+  []
+  [implicit_rate]
+    type = ComposedModel
+    models = 'mandel_stress vonmises yield_surface normality flow_rate Eprate Erate Eerate elasticity integrate_stress'
+  []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+    unknowns = 'stress'
+    residuals = 'stress_residual'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'stress'
+  []
+  [model]
+    type = ImplicitUpdate
+    equation_system = 'eq_sys'
+    solver = 'newton'
+    predictor = 'predictor'
+  []
+[]
 ```
 
 A few things worth pointing out:
@@ -129,9 +262,7 @@ import torch
 
 nsteps = driver.nsteps
 times = torch.tensor([results[f"input.{i}.t"].item() for i in range(nsteps)])
-strain_xx = torch.tensor(
-    [results[f"input.{i}.E"][0].item() for i in range(nsteps)]
-)
+strain_xx = torch.tensor([results[f"input.{i}.E"][0].item() for i in range(nsteps)])
 # Step 0 has no output -> stress is the zero initial condition.
 stress_xx = torch.tensor(
     [0.0] + [results[f"output.{i}.stress"][0].item() for i in range(1, nsteps)]

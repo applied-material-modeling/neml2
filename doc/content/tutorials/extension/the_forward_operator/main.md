@@ -1,15 +1,15 @@
 ---
 jupytext:
+  formats: ipynb,md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-mystnb:
-  execution_mode: cache
 ---
 
 (tutorials-extension-forward)=
@@ -18,6 +18,18 @@ mystnb:
 The previous tutorial declared the projectile model's inputs, outputs,
 and parameters. This one fills in the math: a `forward()` method that
 turns a velocity into an acceleration.
+
+```{code-cell} ipython3
+:tags: [remove-cell]
+
+# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard
+# makes the cell a no-op everywhere else (the docs build and local Jupyter
+# already have NEML2 installed), and the cell is hidden from the rendered docs.
+import sys
+
+if "google.colab" in sys.modules:
+    !pip install -q neml2
+```
 
 ## The `forward` method
 
@@ -43,12 +55,87 @@ $$
 velocity comes in as the first positional argument. The drag
 coefficient `mu` is a *parameter*, so it is read through
 `self._get_param("mu", nl_params, Scalar)` rather than `self.mu` —
-more on that below. The whole forward is:
+more on that below. Here is the complete `projectile.py`; the
+`forward` method is the new part, dissected line by line below:
 
-```{literalinclude} projectile.py
-:language: python
-:caption: projectile.py
-:pyobject: ProjectileAcceleration.forward
+```{code-cell} ipython3
+%%writefile projectile.py
+"""Custom ``ProjectileAcceleration`` model — the running example for the
+``extension`` tutorial chain. Mirrors the C++ tutorial's projectile in
+the Python-native model surface.
+
+The equation is
+
+    a = g - mu * v
+
+where ``v`` is the projectile velocity (input), ``a`` is the
+acceleration (output), ``g`` is the gravitational acceleration vector
+(buffer; constant), and ``mu`` is the scalar dynamic viscosity
+(parameter; calibratable).
+"""
+
+from __future__ import annotations
+
+from neml2.factory import register_neml2_object
+from neml2.models.chain_rule import ChainRuleDict
+from neml2.models.model import Model
+from neml2.schema import HitSchema, buffer, input, output, parameter
+from neml2.types import Scalar, Vec
+
+
+@register_neml2_object("ProjectileAcceleration")
+class ProjectileAcceleration(Model):
+    """Newton's second law for a projectile in a viscous medium:
+    ``a = g - mu * v``.
+    """
+
+    hit = HitSchema(
+        input("velocity", Vec, "Velocity of the projectile", attr="_v_name"),
+        output("acceleration", Vec, "Acceleration of the projectile"),
+        buffer(
+            "gravitational_acceleration",
+            Vec,
+            "Gravity vector",
+            attr="g",
+            default=Vec.fill(0.0, -9.81, 0.0),
+        ),
+        parameter("dynamic_viscosity", Scalar, "Dynamic viscosity", attr="mu"),
+    )
+
+    _v_name: str
+    g: Vec
+    mu: Scalar
+
+    def forward(  # type: ignore[override]
+        self,
+        v_in: Vec,
+        *nl_params,
+        v: ChainRuleDict | None = None,
+    ):
+        # Read the drag coefficient through ``_get_param`` rather than
+        # ``self.mu``. ``_get_param`` resolves a static slot from ``self`` or
+        # a promoted runtime input from ``*nl_params``, so the same forward
+        # keeps working after ``mu`` is promoted (neml2-compile -p); a bare
+        # ``self.mu`` would be rejected by the parameter-attribute guard.
+        mu = self._get_param("mu", nl_params, Scalar)
+
+        # Compute the value: a = g - mu * v. ``self.g`` is a buffer (not a
+        # parameter), so reading it directly is fine.
+        a = self.g - mu * v_in
+
+        # Pure forward: return the typed output and stop.
+        if v is None:
+            return a
+
+        # First-order chain rule: ∂a / ∂v_in = -mu * I. The closure
+        # captures the local ``mu`` and receives an incoming tangent V
+        # (a ``Vec`` shaped like the input), returns the contribution
+        # to ∂(acceleration)/∂(seed-leaf).
+        actions = {self._v_name: lambda V: -mu * V}
+
+        # ``apply_chain_rule`` returns the v_out dict; pair it with the
+        # value so the caller can unpack ``(a, v_out)``.
+        return a, self.apply_chain_rule(v, "acceleration", actions, output=a)
 ```
 
 The first line reads the parameter:
@@ -87,15 +174,23 @@ module that registers it has been imported.
 
 The input file from the previous tutorial wires the model into HIT:
 
-```{literalinclude} input.i
-:language: ini
-:caption: input.i
+```{code-cell} ipython3
+%%writefile input.i
+[Models]
+  [accel]
+    type = ProjectileAcceleration
+    velocity = 'v'
+    acceleration = 'a'
+    dynamic_viscosity = '0.001'
+  []
+[]
 ```
 
 Import the module so the class registers, then load and call:
 
 ```{code-cell} ipython3
 import sys, os
+
 sys.path.insert(0, os.getcwd())
 
 import projectile  # registers ProjectileAcceleration with the native factory
@@ -190,9 +285,38 @@ A few things to know:
 CI. It loads the model, runs it on inputs you supply, checks the
 outputs, and cross-checks the derivatives against PyTorch's autograd:
 
-```{literalinclude} unit_test.i
-:language: ini
-:caption: unit_test.i
+```{code-cell} ipython3
+%%writefile unit_test.i
+[Tensors]
+  [v_in]
+    type = Python
+    expr = 'Vec.fill(10.0, 2.0, 0.0)'
+  []
+  [a_expected]
+    type = Python
+    expr = 'Vec.fill(-0.01, -9.812, 0.0)'
+  []
+[]
+
+[Models]
+  [accel]
+    type = ProjectileAcceleration
+    velocity = 'v'
+    acceleration = 'a'
+    dynamic_viscosity = '0.001'
+  []
+[]
+
+[Drivers]
+  [unit]
+    type = ModelUnitTest
+    model = 'accel'
+    input_Vec_names = 'v'
+    input_Vec_values = 'v_in'
+    output_Vec_names = 'a'
+    output_Vec_values = 'a_expected'
+  []
+[]
 ```
 
 ```{code-cell} ipython3
