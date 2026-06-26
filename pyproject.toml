@@ -300,6 +300,18 @@ test-requires = "pytest torch pyzag==1.1.3"
 test-command = "pytest -v {project}/tests"
 
 [tool.cibuildwheel.linux]
+# Build + test against the CPU torch on Linux. The default PyPI index serves the
+# ~2.5 GB CUDA build, but libneml2 is cuda-free by design (see the torch::cuda
+# note in CMakeLists.txt), so we only need libtorch_cpu/libc10 to compile against
+# -- the CPU wheel is ~10x smaller and far faster to install on every build. The
+# resulting wheel still runs under a cuda torch at runtime (the cuda-channel rows
+# in the compat test matrix verify that). Routing the index via env vars (rather
+# than rewriting before-build / test-requires) redirects EVERY pip invocation in
+# the build + test -- before-build, the wheel's own torch dep at test time, and
+# test-requires -- to the CPU index, with PyPI as the fallback for everything it
+# doesn't mirror (scikit-build-core, nmhit, pyzag, ...). The linux `environment`
+# replaces (does not merge with) the global one, so CMAKE_GENERATOR is repeated.
+environment = { CMAKE_GENERATOR = "Ninja", PIP_INDEX_URL = "https://download.pytorch.org/whl/cpu", PIP_EXTRA_INDEX_URL = "https://pypi.org/simple" }
 repair-wheel-command = "python {project}/scripts/repair_wheel.py {wheel} {dest_dir}"
 
 [tool.cibuildwheel.macos]
