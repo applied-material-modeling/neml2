@@ -37,7 +37,7 @@ against. The badge is injected into the rendered HTML only -- the committed
 ``.ipynb`` never contains it, so opening the notebook in Colab shows no
 self-referential badge.
 
-The two *expensive* jupytext notebooks (``optimization/deterministic`` and
+The two *expensive* notebooks (``optimization/deterministic`` and
 ``optimization/statistical``) are skipped: they are not Colab-ready (heavy
 pyzag runs, a shared ``demo_model.i`` symlink that does not survive a
 single-file Colab open) and render from pre-baked outputs.

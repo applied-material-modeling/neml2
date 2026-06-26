@@ -112,23 +112,13 @@ suppress_warnings = [
     "docutils",
     "ref.python",
 ]
-# Jupytext keeps a `.md` mirror next to every executable `.ipynb` tutorial
-# so they round-trip cleanly through the jupytext pre-commit hook. Sphinx
-# must render the `.ipynb` (the source of truth with cell metadata) and
-# ignore the mirror — otherwise the two double-register under one docname.
-# Rather than maintain the list by hand, derive it: every `main.md` that has
-# a sibling `main.ipynb` is a jupytext mirror and is excluded, while the
-# reference-only tutorial `.md` pages (no `.ipynb` sibling) keep rendering.
-_doc_root = Path(__file__).parent
-_paired_md_mirrors = sorted(
-    str(nb.with_suffix(".md").relative_to(_doc_root))
-    for nb in _doc_root.glob("content/tutorials/**/main.ipynb")
-)
+# Tutorials are notebook-only: Sphinx renders each `main.ipynb` directly.
+# The reference-only tutorial `.md` pages (no `.ipynb` sibling) render as
+# ordinary markdown. Nothing to exclude beyond the usual build cruft.
 exclude_patterns = [
     "_build",
     "Thumbs.db",
     ".DS_Store",
-    *_paired_md_mirrors,
 ]
 
 # ---------------------------------------------------------------------------

@@ -64,11 +64,6 @@ questionary:
   files:
     - pyproject.toml
 
-jupytext:
-  version: "v1.19.1"
-  files:
-    - .pre-commit-config.yaml
-
 # ---- Build tools ----
 cmake:
   version_min: "3.26.1"
