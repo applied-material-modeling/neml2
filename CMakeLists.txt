@@ -246,8 +246,9 @@ find_package(nmhit MODULE REQUIRED)
 # ----------------------------------------------------------------------------
 # libneml2 — the only C++ artifact NEML2 ships (aoti runtime + dispatchers)
 # ----------------------------------------------------------------------------
-# Free-standing: links only against torch::core (+ torch::cuda when available)
-# and nlohmann_json. Wraps torch::inductor::AOTIModelPackageLoader so the
+# Free-standing: links only against torch::core (never torch::cuda -- see the
+# target_link_libraries below) and nlohmann_json. Wraps
+# torch::inductor::AOTIModelPackageLoader so the
 # Python side can execute .pt2 artifacts produced by torch._inductor.aoti_compile_and_package
 # from C++. Source tree lives at neml2/csrc/aoti/, intentionally co-located with
 # the Python package so the C++ and Python sides of NEML2 stay in one tree.
@@ -327,9 +328,15 @@ target_link_libraries(aoti PRIVATE nmhit::nmhit)
 # The async dispatch pool (StaticHybridScheduler path) spawns std::thread workers.
 find_package(Threads REQUIRED)
 target_link_libraries(aoti PRIVATE Threads::Threads)
-if(TARGET torch::cuda)
-      target_link_libraries(aoti PUBLIC torch::cuda)
-endif()
+# Deliberately NOT linked against torch::cuda. neml2's C++ references zero cuda
+# symbols -- it reaches the GPU only through torch's device-generic dispatch,
+# which loads libtorch_cuda at runtime when a cuda tensor appears. Linking
+# torch::cuda only manufactures a hard DT_NEEDED on libc10_cuda.so that buys
+# nothing and makes `import neml2` fail for anyone on a cpu-only torch (the
+# library was previously linked whenever built against a cuda torch, so the
+# published wheel -- built against the default-index cuda torch -- could not
+# load under a cpu torch). The cpu-side torch ABI is identical across the cuda
+# and cpu builds, so one cuda-free libneml2 runs under both.
 
 # MPI scheduler: link MPI and define NEML2_MPI for the aoti TUs only. The public
 # headers are MPI-type-free, so consumers need neither the flag nor mpi.h; the
@@ -442,9 +449,9 @@ target_compile_options(eager PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(eager PUBLIC aoti torch::core)
 target_link_libraries(eager PRIVATE torch::python Python3::Module)
 target_compile_definitions(eager PRIVATE "PYBIND11_DETAILED_ERROR_MESSAGES")
-if(TARGET torch::cuda)
-      target_link_libraries(eager PUBLIC torch::cuda)
-endif()
+# No torch::cuda here either, for the same reason as the aoti target above: zero
+# cuda symbol references, so linking it would only add an unsatisfiable
+# libc10_cuda.so DT_NEEDED on cpu-only torch.
 
 # rpath:
 #  - ${INSTALL_REL_PATH} (the lib's OWN dir): libneml2_eager.so links the sibling

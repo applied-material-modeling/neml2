@@ -205,9 +205,28 @@ def cmd_expand(args) -> None:
         print(json.dumps(["cp" + p.replace(".", "") for p in pys], separators=(",", ":")))
         return
     if args.kind == "test":
+        # Default channel: every row installs a CPU-index torch at runtime.
         include = [
-            {"torch": r["torch"], "python": r["python"], "os": r["os"]} for r in combinations
+            {"torch": r["torch"], "python": r["python"], "os": r["os"], "channel": "cpu"}
+            for r in combinations
         ]
+        # cuda-runtime rows: the wheel is built against CPU torch, so additionally
+        # import + cpu-test it under a *cuda* torch to catch any ABI / DT_NEEDED
+        # skew between the two PyTorch distribution channels -- the bug class that
+        # made the AOTI binding fail to import under a cpu-only torch. cuda torch
+        # ships only for Linux, and this is a C++-ABI check that does not vary
+        # with the Python version, so cover just the Linux torch extremes at the
+        # newest Python. Full mode only (push to main / workflow_dispatch): the
+        # cuda wheel is ~2.5 GB to install, so PRs skip it for a fast signal.
+        if args.mode == "full":
+            linux = [r for r in data["combinations"] if r["os"] == "ubuntu-latest"]
+            if linux:
+                torches = sorted({r["torch"] for r in linux}, key=_ver_tuple)
+                newest_py = sorted({r["python"] for r in linux}, key=_ver_tuple)[-1]
+                for t in sorted({torches[0], torches[-1]}, key=_ver_tuple):
+                    include.append(
+                        {"torch": t, "python": newest_py, "os": "ubuntu-latest", "channel": "cuda"}
+                    )
     elif args.kind == "wheel":
         seen: set[tuple[str, str]] = set()
         include = []

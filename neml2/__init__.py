@@ -50,14 +50,35 @@ from .models.chain_rule import ChainRuleAction, ChainRuleDict, TangentAction
 # builtin anywhere else.
 from .models.compile import compile  # noqa: A004
 
-# AOTI subpackage is gated on the optional NEML2_AOTI build (the pybind
-# _aoti.so isn't present otherwise). Import for side effects so the HIT shim
-# registers "AOTIModel" with the factory; silently skip when the binding
-# wasn't built.
+# AOTI subpackage is gated on the optional NEML2_AOTI build. Import for side
+# effects so the HIT shim registers "AOTIModel" with the factory. Two failure
+# modes, treated differently:
+#   * the binding was never built (no _aoti extension on disk) -- an intentional
+#     lean build; stay silent.
+#   * the binding is on disk but fails to import -- warn, because otherwise every
+#     AOTI route goes silently missing and the only symptom is a baffling "Type
+#     'AOTIModel' is not registered" KeyError when load_model later hits a
+#     neml2-compile stub. The swallowed exception is the real diagnostic, so
+#     surface it.
 try:
     from . import aoti as _aoti_module  # noqa: F401 (registers AOTIModel)
-except ImportError:
-    pass
+except ImportError as _aoti_err:
+    from glob import glob as _glob
+
+    # Probe the filesystem (not an import) to tell "never built" from "unloadable".
+    if _glob(str(Path(__file__).parent / "aoti" / "_aoti*.so")):
+        import warnings as _warnings
+
+        _warnings.warn(
+            "NEML2's AOTI runtime binding is installed but failed to import:\n"
+            f"    {type(_aoti_err).__name__}: {_aoti_err}\n"
+            "The 'AOTIModel' HIT type is therefore not registered. Compiled "
+            "(.pt2) models will not load -- neml2.load_model on a neml2-compile "
+            "stub fails with \"Type 'AOTIModel' is not registered\", and the "
+            "neml2.aoti runtime is unavailable. The exception above is the "
+            "underlying cause.",
+            stacklevel=2,
+        )
 # Eagerly expose ``neml2.pyzag`` as an attribute so notebooks / tests
 # can write ``neml2.pyzag.NEML2PyzagModel(...)`` without an explicit
 # import. Safe to place anywhere in this file -- ``pyzag.interface``
