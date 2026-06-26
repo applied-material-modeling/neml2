@@ -59,12 +59,12 @@ class PowerDegradationFunction(Model):
     def forward(  # type: ignore[override]
         self,
         phase: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
         v2: SecondOrderChainRuleDict | None = None,
         vh: ChainRuleDict | None = None,
     ):
-        p = self._get_param("p", nl_params, Scalar)
+        p = self._get_param("p", promoted_params, Scalar)
         eta = self._eta
         one_minus_d = 1.0 - phase
         # g = (1 - d)**p * (1 - eta) + eta

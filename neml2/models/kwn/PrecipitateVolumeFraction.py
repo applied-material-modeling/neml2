@@ -57,7 +57,7 @@ class PrecipitateVolumeFraction(Model):
             Scalar,
             "Precipitate radius per size bin",
             attr="R",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
     # The reduction sums across the trailing sub-batch (size-bin) axis, so
@@ -67,16 +67,16 @@ class PrecipitateVolumeFraction(Model):
     # ``from_hit`` auto-declares the ``radius`` parameter (stored as ``R``).
     # Annotate so pyright sees the typed wrapper that ``Model.__getattr__``
     # returns; runtime resolution is via ``_get_param`` so the same code path
-    # handles both static and nl-promoted radii.
+    # handles both static and promoted radii.
     R: Scalar
 
     def forward(  # type: ignore[override]
         self,
         n: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
-        R = self._get_param("R", nl_params, Scalar)
+        R = self._get_param("R", promoted_params, Scalar)
         # ``register_typed_parameter`` only stores the raw tensor data, so a
         # per-bin radius round-trips through ``self.R`` with ``sub_batch_ndim=0``
         # even when the user declared it as a per-bin Scalar. Re-tag to match
@@ -97,7 +97,7 @@ class PrecipitateVolumeFraction(Model):
             return f
 
         # Differential pushforward. The forward is linear in n and in
-        # any nl-promoted R, so each action is the same reduction applied to
+        # any promoted R, so each action is the same reduction applied to
         # the per-bin coefficient times the input tangent:
         #   df/dn_i = (4/3) π R_i^3
         #   df/dR_i = 4 π R_i^2 n_i
@@ -110,7 +110,7 @@ class PrecipitateVolumeFraction(Model):
 
         actions["number_density"] = n_action
 
-        R_nlp = self._nl_params.get("R")
+        R_nlp = self._promoted_params.get("R")
         if R_nlp is not None:
             coef_R = 4.0 * math.pi * pow(R, 2.0) * n
 

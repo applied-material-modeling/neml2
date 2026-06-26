@@ -60,35 +60,35 @@ class WiechertElement(Model):
             Scalar,
             "Equilibrium spring modulus",
             attr="Einf",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "modulus_1",
             Scalar,
             "Spring modulus of the first Maxwell branch",
             attr="E1",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "viscosity_1",
             Scalar,
             "Dashpot viscosity of the first Maxwell branch",
             attr="eta1",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "modulus_2",
             Scalar,
             "Spring modulus of the second Maxwell branch",
             attr="E2",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "viscosity_2",
             Scalar,
             "Dashpot viscosity of the second Maxwell branch",
             attr="eta2",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -107,16 +107,16 @@ class WiechertElement(Model):
         strain: SR2,
         viscous_strain_1: SR2,
         viscous_strain_2: SR2,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
         # Mirrors ``WiechertElement::set_value`` in
         # ``src/neml2/models/solid_mechanics/viscoelasticity/WiechertElement.cxx``.
-        Einf = self._get_param("Einf", nl_params, Scalar)
-        E1 = self._get_param("E1", nl_params, Scalar)
-        eta1 = self._get_param("eta1", nl_params, Scalar)
-        E2 = self._get_param("E2", nl_params, Scalar)
-        eta2 = self._get_param("eta2", nl_params, Scalar)
+        Einf = self._get_param("Einf", promoted_params, Scalar)
+        E1 = self._get_param("E1", promoted_params, Scalar)
+        eta1 = self._get_param("eta1", promoted_params, Scalar)
+        E2 = self._get_param("E2", promoted_params, Scalar)
+        eta2 = self._get_param("eta2", promoted_params, Scalar)
 
         E = strain
         Ev1 = viscous_strain_1
@@ -146,7 +146,7 @@ class WiechertElement(Model):
         #   d Ev1_dot / d Ev1  = -(E1 / eta1) * I_SR2
         #   d Ev2_dot / d E    = (E2 / eta2) * I_SR2
         #   d Ev2_dot / d Ev2  = -(E2 / eta2) * I_SR2
-        # Parameter-direction (when promoted to a nonlinear runtime input):
+        # Parameter-direction (when promoted to a runtime input):
         #   d S       / d Einf = E
         #   d S       / d E1   = diff1
         #   d Ev1_dot / d E1   = diff1 / eta1
@@ -175,25 +175,25 @@ class WiechertElement(Model):
             "viscous_strain_2": lambda V, c=-Ev2_dot_coef: c * V,
         }
 
-        # Nonlinear-parameter promotions: each parameter that was promoted to a
+        # Promoted-parameter contributions: each parameter that was promoted to a
         # runtime input gets its own action on every output it affects, keyed by
         # the resolved input name.
-        if "Einf" in self._nl_params:
-            name = self._nl_params["Einf"].input_name
+        if "Einf" in self._promoted_params:
+            name = self._promoted_params["Einf"].input_name
             S_actions[name] = lambda V, c=E: c * V
-        if "E1" in self._nl_params:
-            name = self._nl_params["E1"].input_name
+        if "E1" in self._promoted_params:
+            name = self._promoted_params["E1"].input_name
             S_actions[name] = lambda V, c=diff1: c * V
             Ev1_actions[name] = lambda V, c=diff1 / eta1: c * V
-        if "eta1" in self._nl_params:
-            name = self._nl_params["eta1"].input_name
+        if "eta1" in self._promoted_params:
+            name = self._promoted_params["eta1"].input_name
             Ev1_actions[name] = lambda V, c=-S1 / (eta1 * eta1): c * V
-        if "E2" in self._nl_params:
-            name = self._nl_params["E2"].input_name
+        if "E2" in self._promoted_params:
+            name = self._promoted_params["E2"].input_name
             S_actions[name] = lambda V, c=diff2: c * V
             Ev2_actions[name] = lambda V, c=diff2 / eta2: c * V
-        if "eta2" in self._nl_params:
-            name = self._nl_params["eta2"].input_name
+        if "eta2" in self._promoted_params:
+            name = self._promoted_params["eta2"].input_name
             Ev2_actions[name] = lambda V, c=-S2 / (eta2 * eta2): c * V
 
         v_S = self.apply_chain_rule(v, "stress", S_actions, output=S)

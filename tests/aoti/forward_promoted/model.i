@@ -1,6 +1,6 @@
 # forward_promoted: same as forward_single. The test driver compiles this
 # with `--parameter E --parameter nu` to exercise the explicit-promotion path
-# through the NLParam machinery.
+# through the PromotedParam machinery.
 
 [Models]
   [model]

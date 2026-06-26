@@ -49,8 +49,8 @@ class PowerLawIsotropicHardeningStaticRecovery(Model):
     hit = HitSchema(
         input("isotropic_hardening", Scalar, "Isotropic hardening variable"),
         derived_output("isotropic_hardening", Scalar, attr="_h_rate", suffix="_rate"),
-        parameter("tau", Scalar, "Recovery rate", attr="tau", allow_nonlinear=True),
-        parameter("n", Scalar, "Recovery exponent", attr="n", allow_nonlinear=True),
+        parameter("tau", Scalar, "Recovery rate", attr="tau", allow_promotion=True),
+        parameter("n", Scalar, "Recovery exponent", attr="n", allow_promotion=True),
     )
 
     # ``from_hit`` auto-declares the ``tau`` / ``n`` parameters (stored as
@@ -62,13 +62,13 @@ class PowerLawIsotropicHardeningStaticRecovery(Model):
     def forward(  # type: ignore[override]
         self,
         isotropic_hardening: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Mirrors ``PowerLawIsotropicHardeningStaticRecovery::set_value`` in the C++ source.
         h = isotropic_hardening
-        tau = self._get_param("tau", nl_params, Scalar)
-        n = self._get_param("n", nl_params, Scalar)
+        tau = self._get_param("tau", promoted_params, Scalar)
+        n = self._get_param("n", promoted_params, Scalar)
 
         # h_dot = -(|h| / tau)^(n - 1) * h / tau. ``abs`` / ``pow`` on a Scalar
         # return Scalar at runtime; the explicit casts let pyright see the
@@ -96,12 +96,12 @@ class PowerLawIsotropicHardeningStaticRecovery(Model):
 
         h_name = next(iter(self.input_spec))
         actions = {h_name: lambda V, c=coef_h: c * V}
-        if "tau" in self._nl_params:
+        if "tau" in self._promoted_params:
             coef_tau = n * h * pow(tau, -1.0 - n) * pow(abs_h, nm1)
-            actions[self._nl_params["tau"].input_name] = lambda V, c=coef_tau: c * V
-        if "n" in self._nl_params:
+            actions[self._promoted_params["tau"].input_name] = lambda V, c=coef_tau: c * V
+        if "n" in self._promoted_params:
             eps = torch.finfo(h.dtype).eps
             coef_n = -h * pow(tau, -n) * pow(abs_h, nm1) * log(abs_h / tau + eps)
-            actions[self._nl_params["n"].input_name] = lambda V, c=coef_n: c * V
+            actions[self._promoted_params["n"].input_name] = lambda V, c=coef_n: c * V
 
         return h_dot, self.apply_chain_rule(v, self._h_rate, actions, output=h_dot)

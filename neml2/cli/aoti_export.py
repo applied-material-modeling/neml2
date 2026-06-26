@@ -780,9 +780,9 @@ def _freeze_remaining_parameters_to_buffers(module: nn.Module) -> None:
     Converting them to buffers makes ``torch.export`` treat them as constants
     that get baked into the lowered graph.
 
-    Call this AFTER :func:`_promote_to_nl_params` has removed any promoted
+    Call this AFTER :func:`_promote_parameters` has removed any promoted
     entries from ``_parameters``; that way only the non-promoted parameters
-    get frozen, and promoted ones still flow through the ``*nl_params``
+    get frozen, and promoted ones still flow through the ``*promoted_params``
     machinery as runtime inputs.
 
     The loaded model object is throwaway in this short-lived export process,
@@ -817,8 +817,8 @@ def _validate_promoted(model: nn.Module, promoted: set[str]) -> tuple[list[str],
     a single :class:`ImplicitUpdate`'s residual (schema v7), and (schema v7+)
     inside an implicit child of a composed model, where the multi-segment
     parameter Jacobian carrier composes ``du/dθ`` through the downstream forward
-    segments. The actual nl-param plumbing is validated downstream in
-    :func:`_promote_to_nl_params` (the holder must be a native Model with
+    segments. The actual promoted-parameter plumbing is validated downstream in
+    :func:`_promote_parameters` (the holder must be a native Model with
     ``register_typed_parameter`` storage).
 
     Returns ``(sorted_names, origin_map)`` where ``origin_map[name]`` is
@@ -848,23 +848,23 @@ def _snapshot_promoted(model: nn.Module, names: list[str]) -> dict[str, torch.Te
     return {n: available[n].detach() for n in names}
 
 
-def _promote_to_nl_params(
+def _promote_parameters(
     model: nn.Module, promoted_qnames: list[str]
 ) -> dict[str, tuple[type, nn.Module, str]]:
-    """Convert each promoted parameter into an NLParam entry on its holding leaf.
+    """Convert each promoted parameter into an PromotedParam entry on its holding leaf.
 
-    Routes promotion through the existing native-Model nl-params machinery
+    Routes promotion through the existing native-Model promoted-params machinery
     rather than reaching in and mutating attribute storage directly:
 
     1. Locate the holding submodule for *qname*; the holder must be a native
-       :class:`~neml2.model.Model` (i.e. have ``_nl_params`` and
+       :class:`~neml2.model.Model` (i.e. have ``_promoted_params`` and
        ``input_spec`` -- which is true of every leaf produced by NEML2's
        schema-driven Models).
     2. Look up the parameter's typed-wrapper class (``Scalar``, ``SR2``, ...)
        from the holder's ``_typed_storage_classes`` registry, populated at
        :meth:`register_typed_parameter` time.
     3. Delete the parameter / buffer slot, append the qname to the holder's
-       ``input_spec`` (typed via the looked-up class), and add an ``NLParam``
+       ``input_spec`` (typed via the looked-up class), and add an ``PromotedParam``
        entry keyed by the *local* attribute name with ``input_name`` set to
        the qname (qualified naming avoids collisions when two leaves both
        promote a same-local-name parameter).
@@ -875,21 +875,21 @@ def _promote_to_nl_params(
     After this call, any wrapping :class:`ComposedModel` constructed around
     these leaves automatically picks up the new inputs through its standard
     dependency-resolution + ``_coerce_to_input_type`` wrap on the call
-    boundary. The leaf's existing ``self._get_param(local, nl_params,
-    type_cls)`` call resolves to ``nl_params[tail_index]``.
+    boundary. The leaf's existing ``self._get_param(local, promoted_params,
+    type_cls)`` call resolves to ``promoted_params[tail_index]``.
     """
-    from ..models.model import NLParam  # noqa: PLC0415
+    from ..models.model import PromotedParam  # noqa: PLC0415
 
     info: dict[str, tuple[type, nn.Module, str]] = {}
     for qname in promoted_qnames:
         holder, local = _resolve_attr(model, qname)
-        # Must be a native Model with the nl-params machinery. Non-Model
+        # Must be a native Model with the promoted-params machinery. Non-Model
         # holders (e.g. plain nn.Module wrappers used internally) lack the
-        # `_nl_params`/`input_spec` plumbing.
-        if not hasattr(holder, "_nl_params") or not hasattr(holder, "input_spec"):
+        # `_promoted_params`/`input_spec` plumbing.
+        if not hasattr(holder, "_promoted_params") or not hasattr(holder, "input_spec"):
             raise ValueError(
                 f"Cannot promote {qname!r}: its holder {type(holder).__name__} is "
-                "not a native NEML2 Model with nl-params support. Promotion is "
+                "not a native NEML2 Model with promoted-params support. Promotion is "
                 "only supported for parameters declared via "
                 "register_typed_parameter (i.e. anywhere _get_param is used)."
             )
@@ -919,7 +919,7 @@ def _promote_to_nl_params(
         # Promote class-level input_spec to a per-instance copy on first
         # mutation (mirrors declare_typed_parameter's pattern). Pyright sees
         # holder as nn.Module here; we know it's a NEML2 Model with
-        # input_spec / _nl_params / _typed_storage_classes (checked above).
+        # input_spec / _promoted_params / _typed_storage_classes (checked above).
         spec: dict[str, type] = holder.input_spec  # type: ignore[attr-defined,assignment]
         if spec is type(holder).__dict__.get("input_spec"):
             spec = dict(spec)
@@ -931,14 +931,14 @@ def _promote_to_nl_params(
             )
         spec[qname] = type_cls
 
-        # Add the NLParam entry. tail_index is the slot in the holder's
-        # *nl_params pack -- count current entries so concurrent promotions
+        # Add the PromotedParam entry. tail_index is the slot in the holder's
+        # *promoted_params pack -- count current entries so concurrent promotions
         # on the same holder get distinct indices. Same type:ignore reason
         # as above (pyright sees nn.Module here).
-        nl_params: dict = holder._nl_params  # type: ignore[attr-defined,assignment]
-        nl_params[local] = NLParam(
+        promoted_params: dict = holder._promoted_params  # type: ignore[attr-defined,assignment]
+        promoted_params[local] = PromotedParam(
             input_name=qname,
-            tail_index=len(nl_params),
+            tail_index=len(promoted_params),
         )
 
         info[qname] = (type_cls, holder, local)
@@ -946,7 +946,7 @@ def _promote_to_nl_params(
 
 
 def _rebuild_after_promotion(model: Model) -> Model:
-    """Rebuild every spec-caching container after :func:`_promote_to_nl_params`.
+    """Rebuild every spec-caching container after :func:`_promote_parameters`.
 
     Promotion mutates a leaf's ``input_spec`` in place (adds the promoted
     parameter as a graph input), but every enclosing container caches its
@@ -954,7 +954,7 @@ def _rebuild_after_promotion(model: Model) -> Model:
 
     * :class:`~neml2.models.common.ComposedModel` caches ``input_spec`` /
       ``output_spec`` / ``_plan`` -- a stale plan never routes the new input to
-      the leaf, so the leaf's ``forward`` gets too few ``*nl_params`` and
+      the leaf, so the leaf's ``forward`` gets too few ``*promoted_params`` and
       :meth:`Model._get_param` raises ``IndexError`` (the symptom seen for a
       promoted weight in a top-level composed model or a ``ScalarConstantParameter``
       provider).
@@ -1371,7 +1371,7 @@ class _ParamVJPModule(nn.Module):
 def _structural_inputs(spec: dict, promoted_qnames: set[str]) -> dict:
     """Return ``spec`` filtered to entries NOT in *promoted_qnames*.
 
-    After :func:`_promote_to_nl_params` has expanded a leaf's input_spec to
+    After :func:`_promote_parameters` has expanded a leaf's input_spec to
     include the promoted qname, the wrapping ComposedModel sees both the
     structural inputs and the promoted ones as positional inputs. The
     metadata's ``inputs`` (user-facing) and per-segment ``inputs`` should
@@ -1586,8 +1586,8 @@ def _compile_forward_segment(
     derivative graph at all (forward value only); a non-empty set restricts the
     emitted blocks (and matching ``jacobian_pairs`` metadata) to that subset.
 
-    Promoted parameters are routed through the leaf's NLParam machinery
-    (see :func:`_promote_to_nl_params`), which expanded the leaf's
+    Promoted parameters are routed through the leaf's PromotedParam machinery
+    (see :func:`_promote_parameters`), which expanded the leaf's
     ``input_spec``. The fresh ``ComposedModel`` wrap below picks up the new
     inputs automatically via dependency resolution; the call boundary's
     ``_coerce_to_input_type`` wraps the raw tensor in the right
@@ -1604,7 +1604,7 @@ def _compile_forward_segment(
     promoted_snapshots = promoted_snapshots or {}
 
     # Wrap leaf models in ComposedModel so the compiled boundary is plain
-    # tensors. After _promote_to_nl_params has modified the leaves, the
+    # tensors. After _promote_parameters has modified the leaves, the
     # fresh ComposedModel below picks up the promoted inputs in its
     # input_spec via dependency resolution.
     exportable = model if isinstance(model, ComposedModel) else ComposedModel([model])
@@ -2145,7 +2145,7 @@ def _compile_implicit_segment(
     selected_param_pairs = selected_param_pairs or set()
     # Promoted parameters that live inside this segment's residual model, in
     # model.input_spec order (the canonical graph-call tail order). After the
-    # _promote_to_nl_params + _rebuild_after_promotion pass these appear
+    # _promote_parameters + _rebuild_after_promotion pass these appear
     # in system.model.input_spec but are neither unknowns nor givens.
     seg_param_inputs = [
         n
@@ -2894,14 +2894,14 @@ def export_model_for_aoti(
     promoted_names, origin = _validate_promoted(model, promoted_set)
     promoted_snapshots = _snapshot_promoted(model, promoted_names)
 
-    # Now route each promoted parameter through the leaf's NLParam machinery
-    # (delete the static slot, add `_nl_params[local] = NLParam(input_name=
+    # Now route each promoted parameter through the leaf's PromotedParam machinery
+    # (delete the static slot, add `_promoted_params[local] = PromotedParam(input_name=
     # qname, ...)`, append qname to holder's input_spec). Any ComposedModel
     # wrap downstream picks the new inputs up via dependency resolution and
     # the call boundary's `_coerce_to_input_type` wraps raw tensors in the
     # right TensorWrapper before handing them to the leaf's forward, which
-    # reads via `_get_param` from the *nl_params pack.
-    promo_info = _promote_to_nl_params(model, promoted_names)
+    # reads via `_get_param` from the *promoted_params pack.
+    promo_info = _promote_parameters(model, promoted_names)
     promoted_qnames = set(promoted_names)
     # Natural base shape (BASE_SHAPE) per promoted parameter, from its typed-wrapper
     # class. The C++ runtime uses it to split a (possibly batched) stored parameter

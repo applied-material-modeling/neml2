@@ -182,7 +182,7 @@ def test_mode1_literal_registers_static_parameter(mode1_literal):
     m = load_model(mode1_literal, "isoharden")
     assert list(m.input_spec) == ["equivalent_plastic_strain"]
     assert {n for n, _ in m.named_parameters()} == {"K"}
-    assert "K" not in m._nl_params
+    assert "K" not in m._promoted_params
     assert m.K.data.item() == pytest.approx(1000.0)
 
     eps = Scalar(torch.tensor(0.01, dtype=torch.float64))
@@ -256,13 +256,13 @@ def test_mode3_model_output_promotes_to_input(mode3_model):
 
 
 def test_mode3_records_nl_param_metadata(mode3_model):
-    """The host model's _nl_params should point at the K_model provider."""
+    """The host model's _promoted_params should point at the K_model provider."""
     f = load_input(mode3_model)
     host = f.get_model("isoharden")
-    assert "K" in host._nl_params
-    nlp = host._nl_params["K"]
-    assert nlp.input_name == "K_model"  # provider's single output name
-    assert isinstance(nlp.provider, ScalarLinearInterpolation)
+    assert "K" in host._promoted_params
+    pparam = host._promoted_params["K"]
+    assert pparam.input_name == "K_model"  # provider's single output name
+    assert isinstance(pparam.provider, ScalarLinearInterpolation)
 
 
 def test_mode3_provider_auto_included(mode3_model):
@@ -301,10 +301,10 @@ def test_mode4_bare_variable_promotes_to_input(mode4_input):
 def test_mode4_records_nl_param_without_provider(mode4_input):
     f = load_input(mode4_input)
     host = f.get_model("isoharden")
-    assert "K" in host._nl_params
-    nlp = host._nl_params["K"]
-    assert nlp.input_name == "K_input"
-    assert nlp.provider is None  # mode 4 — no provider model
+    assert "K" in host._promoted_params
+    pparam = host._promoted_params["K"]
+    assert pparam.input_name == "K_input"
+    assert pparam.provider is None  # mode 4 — no provider model
 
 
 # ---------------------------------------------------------------------------
@@ -313,8 +313,8 @@ def test_mode4_records_nl_param_without_provider(mode4_input):
 
 
 def test_unresolvable_string_without_factory_raises():
-    """A pure string spec with no factory + no nl-mode support should raise."""
+    """A pure string spec with no factory + no promotion-mode support should raise."""
     with pytest.raises(ValueError, match="cannot resolve"):
-        # ScalarLinearInterpolation's parameters use allow_nonlinear=False;
+        # ScalarLinearInterpolation's parameters use allow_promotion=False;
         # without a factory there's no tensor or model lookup to fall back on.
         ScalarLinearInterpolation(abscissa="alpha_x", ordinate="alpha_y")

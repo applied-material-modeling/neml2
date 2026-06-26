@@ -47,7 +47,7 @@ class SmearedDeltaSource(Model):
     the output ``smeared_source`` inherits the cell axis. ``magnitude`` /
     ``location`` therefore couple densely with the per-cell output -- declared in
     :attr:`list_deriv`. ``width`` and ``cell_centers`` are forward-only static
-    parameters (the C++ side allows them to be promoted to nl inputs, but the
+    parameters (the C++ side allows them to be promoted to runtime inputs, but the
     native ``ModelUnitTest`` only checks input derivatives, so we leave that
     plumbing for a follow-on).
     """
@@ -62,8 +62,8 @@ class SmearedDeltaSource(Model):
             default="state/smeared_source",
             attr="_out_name",
         ),
-        parameter("width", Scalar, "Gaussian width.", allow_nonlinear=True),
-        parameter("cell_centers", Scalar, "Cell center locations.", allow_nonlinear=True),
+        parameter("width", Scalar, "Gaussian width.", allow_promotion=True),
+        parameter("cell_centers", Scalar, "Cell center locations.", allow_promotion=True),
     )
 
     # magnitude/location are global Scalars (sub_batch=0); the output carries
@@ -79,8 +79,8 @@ class SmearedDeltaSource(Model):
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
         mag = inputs[0]
         loc = inputs[1]
-        w = self._get_param("width", nl_params=(), type_cls=Scalar)
-        centers = self._get_param("cell_centers", nl_params=(), type_cls=Scalar)
+        w = self._get_param("width", promoted_params=(), type_cls=Scalar)
+        centers = self._get_param("cell_centers", promoted_params=(), type_cls=Scalar)
 
         inv_w = 1.0 / w
         arg = (centers - loc) * inv_w  # Scalar (sub_batch=1 via align)

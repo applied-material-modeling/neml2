@@ -66,7 +66,7 @@ class HitField:
     reader: Callable[[nmhit.Node, str], Any] | None = None
     optional_reader: Callable[[nmhit.Node, str, Any], Any] | None = None
     factory_getter: str | None = None
-    allow_nonlinear: bool = False
+    allow_promotion: bool = False
     #: For ``input``/``output`` fields: a literal string appended to the
     #: HIT-resolved variable name, used to derive the conventional NEML2
     #: secondary-variable names (``~1`` for history, ``_rate`` for rates,
@@ -389,7 +389,7 @@ def parameter(
     *,
     attr: str | None = None,
     default: Any = _MISSING,
-    allow_nonlinear: bool = False,
+    allow_promotion: bool = False,
 ) -> HitField:
     return HitField(
         "parameter",
@@ -398,7 +398,7 @@ def parameter(
         doc=doc,
         default=default,
         attr=attr,
-        allow_nonlinear=allow_nonlinear,
+        allow_promotion=allow_promotion,
     )
 
 
@@ -409,7 +409,7 @@ def parameters(
     *,
     attr: str | None = None,
     default: Any = _MISSING,
-    allow_nonlinear: bool = False,
+    allow_promotion: bool = False,
 ) -> HitField:
     """Declare a *list* of parameters, one per token of a HIT list option.
 
@@ -429,7 +429,7 @@ def parameters(
         doc=doc,
         default=default,
         attr=attr,
-        allow_nonlinear=allow_nonlinear,
+        allow_promotion=allow_promotion,
     )
 
 

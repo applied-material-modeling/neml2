@@ -46,21 +46,21 @@ class SFFKPrecipitationGrowthRate(Model):
             Scalar,
             "Precipitate radius per size bin",
             attr="R",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "gibbs_free_energy_difference",
             Scalar,
             "Gibbs free energy difference",
             attr="dg",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "gas_constant",
             Scalar,
             "Gas constant",
             attr="R_g",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
     # The output is per-bin (carries the ``"bin"`` label). Inputs may be
@@ -75,7 +75,7 @@ class SFFKPrecipitationGrowthRate(Model):
     # ``from_hit`` auto-declares the three parameters (stored as R, dg, R_g).
     # Annotate so pyright sees the typed wrappers that ``Model.__getattr__``
     # returns; runtime resolution is via ``_get_param`` so the same code path
-    # handles both static and nl-promoted values.
+    # handles both static and promoted values.
     R: Scalar
     dg: Scalar
     R_g: Scalar
@@ -84,14 +84,14 @@ class SFFKPrecipitationGrowthRate(Model):
         self,
         projected_diffusivity_sum: Scalar,
         temperature: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         proj_sum = projected_diffusivity_sum
         T = temperature
-        R = self._get_param("R", nl_params, Scalar)
-        dg = self._get_param("dg", nl_params, Scalar)
-        R_g = self._get_param("R_g", nl_params, Scalar)
+        R = self._get_param("R", promoted_params, Scalar)
+        dg = self._get_param("dg", promoted_params, Scalar)
+        R_g = self._get_param("R_g", promoted_params, Scalar)
 
         # Forward: R_dot = dg / (R * R_g * T * proj_sum). Typed Scalar algebra
         # end-to-end; align_sub_batch transparently lifts sub_batch_ndim=0
@@ -131,7 +131,7 @@ class SFFKPrecipitationGrowthRate(Model):
 
         actions["temperature"] = T_action
 
-        R_nlp = self._nl_params.get("R")
+        R_nlp = self._promoted_params.get("R")
         if R_nlp is not None:
             d_rate_dR = -rate / R
 
@@ -140,7 +140,7 @@ class SFFKPrecipitationGrowthRate(Model):
 
             actions[R_nlp.input_name] = R_action
 
-        dg_nlp = self._nl_params.get("dg")
+        dg_nlp = self._promoted_params.get("dg")
         if dg_nlp is not None:
             inv_denom = 1.0 / denom
 
@@ -149,7 +149,7 @@ class SFFKPrecipitationGrowthRate(Model):
 
             actions[dg_nlp.input_name] = dg_action
 
-        R_g_nlp = self._nl_params.get("R_g")
+        R_g_nlp = self._promoted_params.get("R_g")
         if R_g_nlp is not None:
             d_rate_dRg = -rate / R_g
 

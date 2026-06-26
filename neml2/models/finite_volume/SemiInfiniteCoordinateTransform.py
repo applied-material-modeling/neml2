@@ -40,7 +40,7 @@ class SemiInfiniteCoordinateTransform(Model):
     Linear-fractional map of an input coordinate $x$ into the unit interval
     via the shift parameter $s$. The pushforward in the $x$ direction is
     $s / (x + s)^2 * V$ (the standard d/dx of x/(x+s)); $s$ is a forward-only
-    static parameter (the C++ side allows promotion to an nl input, left for a
+    static parameter (the C++ side allows promotion to a runtime input, left for a
     follow-on since the native ``ModelUnitTest`` only checks input derivatives).
     """
 
@@ -52,14 +52,14 @@ class SemiInfiniteCoordinateTransform(Model):
             "Transformed coordinate.",
             default="state/x_hat",
         ),
-        parameter("shift", Scalar, "Shift parameter.", attr="s", allow_nonlinear=True),
+        parameter("shift", Scalar, "Shift parameter.", attr="s", allow_promotion=True),
     )
 
     s: Scalar
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
         x = inputs[0]
-        s = self._get_param("s", nl_params=(), type_cls=Scalar)
+        s = self._get_param("s", promoted_params=(), type_cls=Scalar)
 
         inv = 1.0 / (x + s)
         x_hat = x * inv

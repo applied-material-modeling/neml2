@@ -48,7 +48,7 @@ class LinearKinematicHardening(Model):
             Scalar,
             "Hardening modulus",
             attr="H",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -59,19 +59,19 @@ class LinearKinematicHardening(Model):
     def forward(  # type: ignore[override]
         self,
         kinematic_plastic_strain: SR2,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> SR2 | tuple[SR2, ChainRuleDict]:
         Kp = kinematic_plastic_strain
-        H = self._get_param("H", nl_params, Scalar)
+        H = self._get_param("H", promoted_params, Scalar)
         X = H * Kp
         if v is None:
             return X
         # Differential pushforward: X = H * Kp is linear in both Kp and
         # H. The action in Kp is just H scaling the SR2 tangent; the action in
-        # H (when promoted to a nonlinear parameter input) is Kp scaling the
+        # H (when promoted to a runtime input) is Kp scaling the
         # incoming Scalar tangent.
         actions = {"kinematic_plastic_strain": lambda V, c=H: c * V}
-        if "H" in self._nl_params:
-            actions[self._nl_params["H"].input_name] = lambda V, c=Kp: c * V
+        if "H" in self._promoted_params:
+            actions[self._promoted_params["H"].input_name] = lambda V, c=Kp: c * V
         return X, self.apply_chain_rule(v, "back_stress", actions, output=X)

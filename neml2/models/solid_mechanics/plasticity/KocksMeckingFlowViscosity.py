@@ -63,21 +63,21 @@ class KocksMeckingFlowViscosity(Model):
             Scalar,
             "The Kocks-Mecking slope parameter",
             attr="A",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "B",
             Scalar,
             "The Kocks-Mecking intercept parameter",
             attr="B",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "shear_modulus",
             Scalar,
             "The shear modulus",
             attr="mu",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         option("eps0", float, "The reference strain rate", attr="_eps0"),
         option("k", float, "Boltzmann constant", attr="_k"),
@@ -107,7 +107,7 @@ class KocksMeckingFlowViscosity(Model):
     def forward(  # type: ignore[override]
         self,
         temperature: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Mirrors ``KocksMeckingFlowViscosity::set_value`` in
@@ -117,9 +117,9 @@ class KocksMeckingFlowViscosity(Model):
         # (positive). The implementation tracks the source; for typical
         # ``A < 0`` the exponent is naturally negative.
         T = temperature
-        A = self._get_param("A", nl_params, Scalar)
-        B = self._get_param("B", nl_params, Scalar)
-        mu = self._get_param("mu", nl_params, Scalar)
+        A = self._get_param("A", promoted_params, Scalar)
+        B = self._get_param("B", promoted_params, Scalar)
+        mu = self._get_param("mu", promoted_params, Scalar)
 
         # post = eps0^(k T A / (mu b^3)) = exp((k T A / (mu b^3)) * log(eps0))
         c = (self._k * T * A) / (mu * self._b3)
@@ -142,14 +142,14 @@ class KocksMeckingFlowViscosity(Model):
         actions: dict[str, ChainRuleAction] = {
             "temperature": lambda V, c=deta_dT: c * V,
         }
-        if "A" in self._nl_params:
+        if "A" in self._promoted_params:
             deta_dA = expB * self._k * T * self._log_eps0 * post / self._b3
-            actions[self._nl_params["A"].input_name] = lambda V, c=deta_dA: c * V
-        if "B" in self._nl_params:
-            actions[self._nl_params["B"].input_name] = lambda V, c=eta: c * V
-        if "mu" in self._nl_params:
+            actions[self._promoted_params["A"].input_name] = lambda V, c=deta_dA: c * V
+        if "B" in self._promoted_params:
+            actions[self._promoted_params["B"].input_name] = lambda V, c=eta: c * V
+        if "mu" in self._promoted_params:
             deta_dmu = expB * post * (1.0 - A * self._k * T * self._log_eps0 / (self._b3 * mu))
-            actions[self._nl_params["mu"].input_name] = lambda V, c=deta_dmu: c * V
+            actions[self._promoted_params["mu"].input_name] = lambda V, c=deta_dmu: c * V
 
         return eta, self.apply_chain_rule(v, self._viscosity, actions, output=eta)
 

@@ -56,7 +56,7 @@ class _ConstantParameter(Model):
     """``parameter = value`` — a single typed constant exposed as an output variable.
 
     Mirrors the C++ ``ConstantParameter<T>``. The ``value`` parameter is declared
-    with ``allow_nonlinear=True`` so it independently resolves through the four
+    with ``allow_promotion=True`` so it independently resolves through the four
     ``declare_typed_parameter`` modes (literal HIT value / ``[Tensors]`` cross-ref
     / ``[Models]`` output wiring → promoted input / bare input promotion). When
     ``value`` is statically bound (mode 1 or 2) the output simply returns it;
@@ -89,16 +89,16 @@ class _ConstantParameter(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params: TensorWrapper,
+        *promoted_params: TensorWrapper,
         v: ChainRuleDict | None = None,
         v2: SecondOrderChainRuleDict | None = None,
         vh: ChainRuleDict | None = None,
     ):
         # The model has no structural inputs: the ``*args`` pack only ever
-        # carries the optional nl-promoted ``value`` (mode 3/4). Read the
+        # carries the optional promoted ``value`` (mode 3/4). Read the
         # parameter through ``_get_param`` so both the static and promoted
         # paths return the same typed wrapper.
-        value = self._get_param("value", nl_params, self._value_type)
+        value = self._get_param("value", promoted_params, self._value_type)
         # forward: pass the value through as the output.
         out = value
         if v is None:
@@ -140,7 +140,7 @@ class ScalarConstantParameter(_ConstantParameter):
             Scalar,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -165,7 +165,7 @@ class VecConstantParameter(_ConstantParameter):
             Vec,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -190,7 +190,7 @@ class RotConstantParameter(_ConstantParameter):
             Rot,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -215,7 +215,7 @@ class WR2ConstantParameter(_ConstantParameter):
             WR2,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -240,7 +240,7 @@ class R2ConstantParameter(_ConstantParameter):
             R2,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -265,7 +265,7 @@ class SR2ConstantParameter(_ConstantParameter):
             SR2,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -290,7 +290,7 @@ class SSR4ConstantParameter(_ConstantParameter):
             SSR4,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -315,7 +315,7 @@ class MillerIndexConstantParameter(_ConstantParameter):
             MillerIndex,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 

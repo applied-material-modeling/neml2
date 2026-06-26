@@ -66,7 +66,7 @@ class SlipRule(Model):
         self,
         rss: Scalar,
         tau: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native slip rules implement the flow law

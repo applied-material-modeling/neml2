@@ -64,7 +64,7 @@ class FlowRule(Model):
     def forward(  # type: ignore[override]
         self,
         flow_rate: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native flow rules consume ``flow_rate`` and emit

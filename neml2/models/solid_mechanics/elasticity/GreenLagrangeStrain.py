@@ -47,7 +47,7 @@ class GreenLagrangeStrain(Model):
     def forward(  # type: ignore[override]
         self,
         deformation_gradient: R2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         F = deformation_gradient

@@ -57,7 +57,7 @@ class SR2ToR2(Model):
     def forward(  # type: ignore[override]
         self,
         A: SR2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         y = r2_from_sr2(A)

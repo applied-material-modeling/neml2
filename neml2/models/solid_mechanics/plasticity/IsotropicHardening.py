@@ -64,7 +64,7 @@ class IsotropicHardening(Model):
     def forward(  # type: ignore[override]
         self,
         equivalent_plastic_strain: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native isotropic-hardening leaves implement the

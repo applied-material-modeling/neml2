@@ -64,7 +64,7 @@ class DegradationFunction(Model):
     def forward(  # type: ignore[override]
         self,
         phase: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native degradation function leaves implement the

@@ -69,14 +69,14 @@ class NucleationBarrierAndCriticalRadius(Model):
             Scalar,
             "Surface energy of the precipitate",
             attr="gamma",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "total_gibbs_free_energy_difference",
             Scalar,
             "Total Gibbs free energy difference driving nucleation",
             attr="dg_total",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "molar_volume",
@@ -95,16 +95,16 @@ class NucleationBarrierAndCriticalRadius(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> tuple[Scalar, Scalar] | tuple[Scalar, Scalar, ChainRuleDict]:
-        # The model has no structural inputs: ``*nl_params`` only carries the
-        # optional nl-promoted parameters (``gamma`` and/or ``dg_total`` in
-        # mode 3/4). ``V_m`` is not declared ``allow_nonlinear`` (matching the
+        # The model has no structural inputs: ``*promoted_params`` only carries the
+        # optional promoted parameters (``gamma`` and/or ``dg_total`` in
+        # mode 3/4). ``V_m`` is not declared ``allow_promotion`` (matching the
         # C++ ctor), so it always stays static.
-        gamma = self._get_param("gamma", nl_params, Scalar)
-        dg_total = self._get_param("dg_total", nl_params, Scalar)
-        V_m = self._get_param("V_m", nl_params, Scalar)
+        gamma = self._get_param("gamma", promoted_params, Scalar)
+        dg_total = self._get_param("dg_total", promoted_params, Scalar)
+        V_m = self._get_param("V_m", promoted_params, Scalar)
 
         # Forward: R_crit = 2 gamma V_m / dg_total
         #          dg     = (16/3) pi gamma^3 V_m^2 / dg_total^2
@@ -126,19 +126,19 @@ class NucleationBarrierAndCriticalRadius(Model):
         #   ∂R_crit/∂gamma    = 2 V_m / dg_total  ⇒ action(V) = (2·V_m/dg_total)·V
         #   ∂R_crit/∂dg_total = -R_crit/dg_total  ⇒ action(V) = (-R_crit/dg_total)·V
         # Each parameter's action only fires when it has been promoted to a
-        # nonlinear input via the HIT ``[Models]`` cross-ref form. V_m is not
-        # ``allow_nonlinear`` (matching the C++).
+        # runtime input via the HIT ``[Models]`` cross-ref form. V_m is not
+        # ``allow_promotion`` (matching the C++).
         dg_actions: dict[str, ChainRuleAction] = {}
         R_actions: dict[str, ChainRuleAction] = {}
 
-        gamma_nlp = self._nl_params.get("gamma")
+        gamma_nlp = self._promoted_params.get("gamma")
         if gamma_nlp is not None:
             ddg_dgamma = 3.0 * dg / gamma
             dR_dgamma = (2.0 * V_m) / dg_total
             dg_actions[gamma_nlp.input_name] = lambda V, c=ddg_dgamma: c * V
             R_actions[gamma_nlp.input_name] = lambda V, c=dR_dgamma: c * V
 
-        dg_total_nlp = self._nl_params.get("dg_total")
+        dg_total_nlp = self._promoted_params.get("dg_total")
         if dg_total_nlp is not None:
             ddg_ddgt = -2.0 * dg / dg_total
             dR_ddgt = -R_crit / dg_total

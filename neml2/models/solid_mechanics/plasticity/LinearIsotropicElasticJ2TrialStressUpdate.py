@@ -118,9 +118,9 @@ class LinearIsotropicElasticJ2TrialStressUpdate(Model):
         # values (input/output renames) pass through to the base.
         super().__init__(**hit_values)
         if E is not None:
-            self.declare_typed_parameter("E", E, Scalar, factory=factory, allow_nonlinear=True)
+            self.declare_typed_parameter("E", E, Scalar, factory=factory, allow_promotion=True)
         if nu is not None:
-            self.declare_typed_parameter("nu", nu, Scalar, factory=factory, allow_nonlinear=True)
+            self.declare_typed_parameter("nu", nu, Scalar, factory=factory, allow_promotion=True)
 
     @classmethod
     def from_hit(
@@ -156,11 +156,11 @@ class LinearIsotropicElasticJ2TrialStressUpdate(Model):
         elastic_trial_stress: Scalar,
         equivalent_plastic_strain: Scalar,
         equivalent_plastic_strain_old: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
-        E = self._get_param("E", nl_params, Scalar)
-        nu = self._get_param("nu", nl_params, Scalar)
+        E = self._get_param("E", promoted_params, Scalar)
+        nu = self._get_param("nu", promoted_params, Scalar)
         G = self._shear_modulus(E, nu)
         three_G = 3.0 * G
         dep = equivalent_plastic_strain - equivalent_plastic_strain_old
@@ -182,14 +182,14 @@ class LinearIsotropicElasticJ2TrialStressUpdate(Model):
             "equivalent_plastic_strain": lambda V, c=-three_G: c * V,
             self._ep_old_name: lambda V, c=three_G: c * V,
         }
-        if "E" in self._nl_params:
+        if "E" in self._promoted_params:
             dG_dE = G / E
             coef_E = -3.0 * dG_dE * dep
-            actions[self._nl_params["E"].input_name] = lambda V, c=coef_E: c * V
-        if "nu" in self._nl_params:
+            actions[self._promoted_params["E"].input_name] = lambda V, c=coef_E: c * V
+        if "nu" in self._promoted_params:
             dG_dnu = -G / (1.0 + nu)
             coef_nu = -3.0 * dG_dnu * dep
-            actions[self._nl_params["nu"].input_name] = lambda V, c=coef_nu: c * V
+            actions[self._promoted_params["nu"].input_name] = lambda V, c=coef_nu: c * V
 
         return sigma, self.apply_chain_rule(v, "updated_trial_stress", actions, output=sigma)
 

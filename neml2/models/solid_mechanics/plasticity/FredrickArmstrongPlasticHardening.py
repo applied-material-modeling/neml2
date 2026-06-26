@@ -60,14 +60,14 @@ class FredrickArmstrongPlasticHardening(Model):
             Scalar,
             "Kinematic hardening coefficient",
             attr="C",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "g",
             Scalar,
             "Dynamic recovery coefficient",
             attr="g",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -82,13 +82,13 @@ class FredrickArmstrongPlasticHardening(Model):
         flow_rate: Scalar,
         flow_direction: SR2,
         back_stress: SR2,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> SR2 | tuple[SR2, ChainRuleDict]:
         # Mirrors ``FredrickArmstrongPlasticHardening::set_value`` in
         # ``src/neml2/models/solid_mechanics/plasticity/FredrickArmstrongPlasticHardening.cxx``.
-        C = self._get_param("C", nl_params, Scalar)
-        g = self._get_param("g", nl_params, Scalar)
+        C = self._get_param("C", promoted_params, Scalar)
+        g = self._get_param("g", promoted_params, Scalar)
 
         gamma_dot = flow_rate
         NM = flow_direction
@@ -117,13 +117,13 @@ class FredrickArmstrongPlasticHardening(Model):
             "flow_direction": lambda V, c=(2.0 / 3.0) * C * gamma_dot: c * V,
             "back_stress": lambda V, c=-g * gamma_dot: c * V,
         }
-        # Nonlinear-parameter promotions: each parameter that was promoted to a
+        # Promoted-parameter contributions: each parameter that was promoted to a
         # runtime input gets its own action keyed on the resolved input name.
-        if "C" in self._nl_params:
-            actions[self._nl_params["C"].input_name] = lambda V, c=(2.0 / 3.0) * NM * gamma_dot: (
-                c * V
+        if "C" in self._promoted_params:
+            actions[self._promoted_params["C"].input_name] = (
+                lambda V, c=(2.0 / 3.0) * NM * gamma_dot: c * V
             )
-        if "g" in self._nl_params:
-            actions[self._nl_params["g"].input_name] = lambda V, c=-X * gamma_dot: c * V
+        if "g" in self._promoted_params:
+            actions[self._promoted_params["g"].input_name] = lambda V, c=-X * gamma_dot: c * V
 
         return X_dot, self.apply_chain_rule(v, self._X_rate, actions, output=X_dot)

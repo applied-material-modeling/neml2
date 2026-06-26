@@ -1,5 +1,5 @@
 # Translated from tests/unit/models/finite_volume/LinearlyInterpolateToCellEdges.i.
-# cell_values is promoted to a nonlinear input (mode 4) so the JVP check has a
+# cell_values is promoted to a runtime input (mode 4) so the JVP check has a
 # tangent direction; cell_centers / cell_edges stay as static [Tensors] params.
 # All Scalars carry the cell-axis sub-batch (sub_batch_ndim=1).
 [Drivers]

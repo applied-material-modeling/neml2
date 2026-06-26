@@ -56,7 +56,7 @@ The promoted-parameter tail (``*params``) is empty in the common case (no
 ``--parameter`` targeting an attribute inside the implicit region); when
 present it lists, in graph-call order, the promoted parameters that live
 inside the implicit segment's residual model. After
-:func:`~neml2.cli.aoti_export._promote_to_nl_params` these appear in
+:func:`~neml2.cli.aoti_export._promote_parameters` these appear in
 ``system.model.input_spec`` but are neither unknowns nor givens, so the
 wrappers inject them into the per-variable state from the trailing forward
 args. ``RHS`` / ``NewtonStep`` / ``IFT`` take them as the stored scalar
@@ -133,7 +133,7 @@ class _SystemModule(nn.Module):
         self.dyn_ndim: dict[str, int] = dict(system._dynamic_batch_ndim)
         self.sub_batch_shapes = dict(system._sub_batch_shapes)
         # Promoted parameters threaded as a positional tail after the givens.
-        # After ``_promote_to_nl_params`` these are in ``model.input_spec`` but
+        # After ``_promote_parameters`` these are in ``model.input_spec`` but
         # are neither unknowns nor givens; ``_state_from_per_group_args``
         # injects them into the per-variable state from the trailing args so
         # ``_call_model_from_state`` (which iterates the full input_spec) finds

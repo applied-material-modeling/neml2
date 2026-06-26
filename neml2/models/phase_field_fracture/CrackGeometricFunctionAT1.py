@@ -47,7 +47,7 @@ class CrackGeometricFunctionAT1(Model):
     def forward(  # type: ignore[override]
         self,
         phase: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # AT-1 functional: alpha(d) = d. Identity map on the phase-field.

@@ -67,7 +67,7 @@ class AnisotropicElasticity(Model):
         self,
         strain: SR2,
         orientation: Rot,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native anisotropic elasticity leaves implement the

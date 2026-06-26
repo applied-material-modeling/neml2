@@ -84,9 +84,9 @@ class ScalarLinearInterpolation(Model):
         if len(inputs) != 1:
             raise ValueError(f"ScalarLinearInterpolation expected 1 input, got {len(inputs)}")
         x_arg = inputs[0]
-        # abscissa / ordinate are static (no allow_nonlinear); read via _get_param
+        # abscissa / ordinate are static (no allow_promotion); read via _get_param
         # so the leaf stays promotion-compatible (no direct self.<param> read in
-        # the forward). inputs[1:] is the (empty) nl_params pack.
+        # the forward). inputs[1:] is the (empty) promoted_params pack.
         abscissa = self._get_param("abscissa", inputs[1:], Scalar)
         ordinate = self._get_param("ordinate", inputs[1:], Scalar)
         out = linear_interpolation(x_arg, abscissa, ordinate)

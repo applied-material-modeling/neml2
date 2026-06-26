@@ -62,7 +62,7 @@ class _ADCube(Model):
     def __post_init__(self):
         self.request_AD()
 
-    def forward(self, x, *nl_params):  # type: ignore[override]
+    def forward(self, x, *promoted_params):  # type: ignore[override]
         return x * x * x
 
 
@@ -72,7 +72,7 @@ class _AnalyticCube(Model):
 
     hit = HitSchema(input("x", Scalar, "in"), output("y", Scalar, "out"))
 
-    def forward(self, x, *nl_params, v: ChainRuleDict | None = None):  # type: ignore[override]
+    def forward(self, x, *promoted_params, v: ChainRuleDict | None = None):  # type: ignore[override]
         y = x * x * x
         if v is None:
             return y
@@ -96,7 +96,7 @@ class _ADMix(Model):
     def __post_init__(self):
         self.request_AD()
 
-    def forward(self, a, b, *nl_params):  # type: ignore[override]
+    def forward(self, a, b, *promoted_params):  # type: ignore[override]
         return a * (b * b)
 
 
@@ -109,7 +109,7 @@ class _ADNormSq(Model):
     def __post_init__(self):
         self.request_AD()
 
-    def forward(self, x, *nl_params):  # type: ignore[override]
+    def forward(self, x, *promoted_params):  # type: ignore[override]
         return inner(x, x)
 
 
@@ -126,7 +126,7 @@ class _ADSubset(Model):
     def __post_init__(self):
         self.request_AD(inputs=["a"])
 
-    def forward(self, a, b, *nl_params):  # type: ignore[override]
+    def forward(self, a, b, *promoted_params):  # type: ignore[override]
         return a * (b * b)
 
 
@@ -136,7 +136,7 @@ class _ScaleA(Model):
 
     hit = HitSchema(input("x", Scalar, "in"), output("z", Scalar, "out"))
 
-    def forward(self, x, *nl_params, v: ChainRuleDict | None = None):  # type: ignore[override]
+    def forward(self, x, *promoted_params, v: ChainRuleDict | None = None):  # type: ignore[override]
         z = Scalar(2.0) * x
         if v is None:
             return z
@@ -152,7 +152,7 @@ class _CubeB(Model):
     def __post_init__(self):
         self.request_AD()
 
-    def forward(self, z, *nl_params):  # type: ignore[override]
+    def forward(self, z, *promoted_params):  # type: ignore[override]
         return z * z * z
 
 

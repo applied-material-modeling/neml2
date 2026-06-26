@@ -84,18 +84,18 @@ class BilinearTraction(Model):
             "critical_separation",
             Scalar,
             "Critical (damage-onset) separation. May be wired to an upstream "
-            "`CamanhoDavilaCriticalSeparation` (nonlinear-capable).",
+            "`CamanhoDavilaCriticalSeparation` (promotion-capable).",
             attr="delta_c",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "full_separation",
             Scalar,
             "Full (failure) separation. May be wired to an upstream "
             "`BenzeggaghKenaneFullSeparation` or `PowerLawFullSeparation` "
-            "(nonlinear-capable).",
+            "(promotion-capable).",
             attr="delta_f",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -118,15 +118,15 @@ class BilinearTraction(Model):
     ):
         # ``input_spec`` order: structural inputs first (declaration order from
         # the schema, minus optional inputs that HIT omitted), then promoted
-        # nl-parameters appended in declaration order. Split accordingly.
+        # promoted parameters appended in declaration order. Split accordingly.
         names = list(self.input_spec)
         if len(args) != len(names):
             raise AssertionError(
                 f"BilinearTraction.forward: got {len(args)} args, expected {len(names)}"
             )
-        n_nl = len(self._nl_params)
+        n_nl = len(self._promoted_params)
         n_struct = len(names) - n_nl
-        inputs, nl_params = args[:n_struct], args[n_struct:]
+        inputs, promoted_params = args[:n_struct], args[n_struct:]
         struct_names = names[:n_struct]
         bound = dict(zip(struct_names, inputs, strict=True))
 
@@ -145,15 +145,15 @@ class BilinearTraction(Model):
         dn_pen_name = self._dn_pen_name
         dn_pen = bound[dn_pen_name] if dn_pen_name is not None and dn_pen_name in bound else None
 
-        # Nonlinear-capable parameters: read via ``_get_param`` so the same
+        # Promotion-capable parameters: read via ``_get_param`` so the same
         # code path works whether ``delta_c`` / ``delta_f`` are static
-        # parameters or promoted to runtime nl inputs (mode 3/4).
-        # ``penalty_stiffness`` is always static (allow_nonlinear=False).
+        # parameters or promoted to runtime inputs (mode 3/4).
+        # ``penalty_stiffness`` is always static (allow_promotion=False).
         # The ``_get_param`` lookup key is the schema ``attr`` (which is the
         # ``ctor_name`` used by ``declare_typed_parameter`` in pass 2).
-        K = self._get_param("K", nl_params, Scalar)
-        delta_c = self._get_param("delta_c", nl_params, Scalar)
-        delta_f = self._get_param("delta_f", nl_params, Scalar)
+        K = self._get_param("K", promoted_params, Scalar)
+        delta_c = self._get_param("delta_c", promoted_params, Scalar)
+        delta_f = self._get_param("delta_f", promoted_params, Scalar)
 
         # -------- Bilinear damage trial value from (delta_m, delta_c, delta_f).
         # Detached masks for ``where()`` (matches C++ ``.detach()``).
@@ -267,12 +267,12 @@ class BilinearTraction(Model):
         if dn_pen_name is not None:
             traction_actions[dn_pen_name] = _dn_pen_action
 
-        # ----- Nonlinear-parameter contributions (delta_c, delta_f) — only
-        # emit when the user wired them to an upstream variable (allow_nonlinear
+        # ----- Promoted-parameter contributions (delta_c, delta_f) — only
+        # emit when the user wired them to an upstream variable (allow_promotion
         # promoted them into the input set). When supplied as literals the
         # promoted-input name is absent from ``v`` and the action is silently
         # skipped by ``apply_chain_rule``.
-        delta_c_nlp = self._nl_params.get("delta_c")
+        delta_c_nlp = self._promoted_params.get("delta_c")
         if delta_c_nlp is not None:
             dt_dinit_int = delta_f * (delta_m - delta_f) * inv_dm * inv_diff_sq
             dt_dinit = where(interior, dt_dinit_int, zero)
@@ -280,7 +280,7 @@ class BilinearTraction(Model):
             damage_actions[delta_c_nlp.input_name] = lambda V, c=dd_dinit: c * V
             traction_actions[delta_c_nlp.input_name] = _traction_via_damage(dd_dinit)
 
-        delta_f_nlp = self._nl_params.get("delta_f")
+        delta_f_nlp = self._promoted_params.get("delta_f")
         if delta_f_nlp is not None:
             dt_dfinal_int = -delta_c * (delta_m - delta_c) * inv_dm * inv_diff_sq
             dt_dfinal = where(interior, dt_dfinal_int, zero)

@@ -56,14 +56,14 @@ class KelvinVoigtElement(Model):
             Scalar,
             "Spring modulus",
             attr="K",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "viscosity",
             Scalar,
             "Dashpot viscosity",
             attr="eta",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -77,13 +77,13 @@ class KelvinVoigtElement(Model):
         self,
         strain: SR2,
         strain_rate: SR2,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> SR2 | tuple[SR2, ChainRuleDict]:
         # Mirrors ``KelvinVoigtElement::set_value`` in
         # ``src/neml2/models/solid_mechanics/viscoelasticity/KelvinVoigtElement.cxx``.
-        K = self._get_param("K", nl_params, Scalar)
-        eta = self._get_param("eta", nl_params, Scalar)
+        K = self._get_param("K", promoted_params, Scalar)
+        eta = self._get_param("eta", promoted_params, Scalar)
         E = strain
         E_dot = strain_rate
         S = K * E + eta * E_dot
@@ -100,8 +100,8 @@ class KelvinVoigtElement(Model):
             "strain": lambda V, c=K: c * V,
             self._E_dot: lambda V, c=eta: c * V,
         }
-        if "K" in self._nl_params:
-            actions[self._nl_params["K"].input_name] = lambda V, c=E: c * V
-        if "eta" in self._nl_params:
-            actions[self._nl_params["eta"].input_name] = lambda V, c=E_dot: c * V
+        if "K" in self._promoted_params:
+            actions[self._promoted_params["K"].input_name] = lambda V, c=E: c * V
+        if "eta" in self._promoted_params:
+            actions[self._promoted_params["eta"].input_name] = lambda V, c=E_dot: c * V
         return S, self.apply_chain_rule(v, "stress", actions, output=S)

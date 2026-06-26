@@ -51,7 +51,7 @@ class SingleSlipStrengthMap(Model):
         input("slip_hardening", Scalar, "The name of the evolving, scalar strength"),
         output("slip_strengths", Scalar, "Name of the slip system strengths"),
         parameter(
-            "constant_strength", Scalar, "The constant slip system strength", allow_nonlinear=True
+            "constant_strength", Scalar, "The constant slip system strength", allow_promotion=True
         ),
         dependency(
             "crystal_geometry",
@@ -74,10 +74,10 @@ class SingleSlipStrengthMap(Model):
     def forward(  # type: ignore[override]
         self,
         tau_bar: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
-        tau_const = self._get_param("constant_strength", nl_params, Scalar)
+        tau_const = self._get_param("constant_strength", promoted_params, Scalar)
         # Broadcast to per-slip: insert a length-nslip sub-batch axis at the end.
         nslip = self._cg.nslip
         out = (tau_bar + tau_const).sub_batch.expand_at(nslip, -1)

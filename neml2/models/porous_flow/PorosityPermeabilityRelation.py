@@ -60,7 +60,7 @@ class PorosityPermeabilityRelation(Model):
     def forward(  # type: ignore[override]
         self,
         porosity: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native porosity-permeability leaves implement the

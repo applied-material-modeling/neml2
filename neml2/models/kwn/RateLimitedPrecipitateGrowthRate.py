@@ -45,28 +45,28 @@ class RateLimitedPrecipitateGrowthRate(Model):
             Scalar,
             "Precipitate radius per size bin",
             attr="R",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "equilibrium_concentration",
             Scalar,
             "Equilibrium concentration in solution",
             attr="x_eq",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "concentration_difference",
             Scalar,
             "Concentration difference between precipitate and equilibrium",
             attr="dx",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "diffusivity",
             Scalar,
             "Species diffusivity in solution",
             attr="D",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
     # Conservative ``"bin"`` introduction across every edge -- see the
@@ -77,7 +77,7 @@ class RateLimitedPrecipitateGrowthRate(Model):
     # ``from_hit`` auto-declares the four parameters (stored as R, x_eq, dx, D).
     # Annotate so pyright sees the typed wrappers that ``Model.__getattr__``
     # returns; runtime resolution is via ``_get_param`` so the same code path
-    # handles both static and nl-promoted values.
+    # handles both static and promoted values.
     R: Scalar
     x_eq: Scalar
     dx: Scalar
@@ -86,13 +86,13 @@ class RateLimitedPrecipitateGrowthRate(Model):
     def forward(  # type: ignore[override]
         self,
         x: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
-        R = self._get_param("R", nl_params, Scalar)
-        x_eq = self._get_param("x_eq", nl_params, Scalar)
-        dx = self._get_param("dx", nl_params, Scalar)
-        D = self._get_param("D", nl_params, Scalar)
+        R = self._get_param("R", promoted_params, Scalar)
+        x_eq = self._get_param("x_eq", promoted_params, Scalar)
+        dx = self._get_param("dx", promoted_params, Scalar)
+        D = self._get_param("D", promoted_params, Scalar)
 
         # Forward: R_dot = (D / R) * (x - x_eq) / dx. Typed Scalar algebra
         # end-to-end; align_sub_batch transparently lifts sub_batch_ndim=0
@@ -126,7 +126,7 @@ class RateLimitedPrecipitateGrowthRate(Model):
 
         actions["current_concentration"] = x_action
 
-        x_eq_nlp = self._nl_params.get("x_eq")
+        x_eq_nlp = self._promoted_params.get("x_eq")
         if x_eq_nlp is not None:
             d_rate_dxeq = -coef / dx
 
@@ -135,7 +135,7 @@ class RateLimitedPrecipitateGrowthRate(Model):
 
             actions[x_eq_nlp.input_name] = x_eq_action
 
-        dx_nlp = self._nl_params.get("dx")
+        dx_nlp = self._promoted_params.get("dx")
         if dx_nlp is not None:
             d_rate_ddx = -coef * numer / (dx * dx)
 
@@ -144,7 +144,7 @@ class RateLimitedPrecipitateGrowthRate(Model):
 
             actions[dx_nlp.input_name] = dx_action
 
-        R_nlp = self._nl_params.get("R")
+        R_nlp = self._promoted_params.get("R")
         if R_nlp is not None:
             d_rate_dR = -coef * numer / (dx * R)
 
@@ -153,7 +153,7 @@ class RateLimitedPrecipitateGrowthRate(Model):
 
             actions[R_nlp.input_name] = R_action
 
-        D_nlp = self._nl_params.get("D")
+        D_nlp = self._promoted_params.get("D")
         if D_nlp is not None:
             d_rate_dD = numer / (R * dx)
 

@@ -49,8 +49,8 @@ class PowerLawSlipRule(Model):
         input("resolved_shears", Scalar, "Name of the resolved shear tensor"),
         input("slip_strengths", Scalar, "Name of the tensor containing the slip system strengths"),
         output("slip_rates", Scalar, "Name of the slip rate tensor"),
-        parameter("gamma0", Scalar, "Reference slip rate", allow_nonlinear=True),
-        parameter("n", Scalar, "Rate sensitivity exponent", allow_nonlinear=True),
+        parameter("gamma0", Scalar, "Reference slip rate", allow_promotion=True),
+        parameter("n", Scalar, "Rate sensitivity exponent", allow_promotion=True),
     )
 
     # Both parameters are auto-declared by ``from_hit`` — no __init__ needed.
@@ -61,11 +61,11 @@ class PowerLawSlipRule(Model):
         self,
         rss: Scalar,
         tau: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
-        gamma0 = self._get_param("gamma0", nl_params, Scalar)
-        nv = self._get_param("n", nl_params, Scalar)
+        gamma0 = self._get_param("gamma0", promoted_params, Scalar)
+        nv = self._get_param("n", promoted_params, Scalar)
         ratio = rss / tau
         abs_ratio = tensor_abs(ratio)
         # Factor the slip rate as ``g = f * ratio`` where ``f`` is the

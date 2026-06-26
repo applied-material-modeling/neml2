@@ -154,7 +154,7 @@ def test_aoti_export_reload_matches_eager(scenario: Path, tmp_path: Path):
     # Eager forward: wrap each structural input in its TensorWrapper type
     # before calling. Promoted entries (if any) stay as the leaf's static
     # parameters -- eager reads them via _get_param's static branch, no need
-    # to pass them in *nl_params order. Pass sub_batch_ndim so the leaf
+    # to pass them in *promoted_params order. Pass sub_batch_ndim so the leaf
     # sees the right axis split.
     eager_args = tuple(
         structural_spec[name](t, sub_batch_ndim=sbn) for name, (t, sbn) in inputs.items()
@@ -491,7 +491,7 @@ def test_aoti_batched_param_matches_fd_and_eager(tmp_path: Path):
 def test_aoti_provider_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     """Promote a ``ScalarConstantParameter`` PROVIDER and take its derivatives.
 
-    The provider's value feeds a consumer as a nonlinear parameter, and the
+    The provider's value feeds a consumer as a promoted parameter, and the
     dependency resolver places the promoted provider input AHEAD of the
     structural input -- so the graph's input order differs from the C++ runtime's
     structural-then-param feed. Without the spec-container rebuild + params-last

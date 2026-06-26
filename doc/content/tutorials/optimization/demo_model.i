@@ -11,7 +11,7 @@
 #     ``ScalarLinearInterpolation`` lookup sees them as sub-batched.
 #   - VoceIsotropicHardening's ``saturated_hardening`` (``R``) and
 #     ``saturation_rate`` (``d``) are read from 4-knot temperature
-#     interpolation tables -- those are nonlinear parameters in this
+#     interpolation tables -- those are promoted parameters in this
 #     model, so pyzag's calibration loop can sweep their ordinates.
 #   - The Kocks-Mecking parameters ``A`` / ``B`` / ``C`` stay as
 #     ``ScalarConstantParameter`` so they participate in calibration

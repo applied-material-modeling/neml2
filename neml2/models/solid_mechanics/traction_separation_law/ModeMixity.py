@@ -55,7 +55,7 @@ class ModeMixity(Model):
         self,
         dn: Scalar,
         ds: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Detached opening-branch mask (matches C++ ``(_dn() > 0.0).detach()``):

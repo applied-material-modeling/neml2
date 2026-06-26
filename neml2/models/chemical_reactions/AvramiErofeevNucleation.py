@@ -61,8 +61,8 @@ class AvramiErofeevNucleation(Model):
     hit = HitSchema(
         input("conversion_degree", Scalar, "Degree of conversion"),
         output("reaction_rate", Scalar, "Reaction rate"),
-        parameter("coef", Scalar, "Reaction coefficient", attr="k", allow_nonlinear=True),
-        parameter("order", Scalar, "Reaction order", attr="n", allow_nonlinear=True),
+        parameter("coef", Scalar, "Reaction coefficient", attr="k", allow_promotion=True),
+        parameter("order", Scalar, "Reaction order", attr="n", allow_promotion=True),
     )
 
     # ``from_hit`` auto-declares the ``coef`` / ``order`` parameters (stored as
@@ -74,12 +74,12 @@ class AvramiErofeevNucleation(Model):
     def forward(  # type: ignore[override]
         self,
         conversion_degree: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         a = conversion_degree
-        k = self._get_param("k", nl_params, Scalar)
-        n = self._get_param("n", nl_params, Scalar)
+        k = self._get_param("k", promoted_params, Scalar)
+        n = self._get_param("n", promoted_params, Scalar)
 
         u = 1.0 - a  # 1 - a
         mlog_u = -_log(u)  # -log(1 - a)
@@ -98,8 +98,8 @@ class AvramiErofeevNucleation(Model):
         df_dn = f * _log(mlog_u)
 
         actions = {"conversion_degree": lambda V, c=df_da: c * V}
-        if "k" in self._nl_params:
-            actions[self._nl_params["k"].input_name] = lambda V, c=df_dk: c * V
-        if "n" in self._nl_params:
-            actions[self._nl_params["n"].input_name] = lambda V, c=df_dn: c * V
+        if "k" in self._promoted_params:
+            actions[self._promoted_params["k"].input_name] = lambda V, c=df_dk: c * V
+        if "n" in self._promoted_params:
+            actions[self._promoted_params["n"].input_name] = lambda V, c=df_dn: c * V
         return f, self.apply_chain_rule(v, "reaction_rate", actions, output=f)

@@ -44,7 +44,7 @@ class SwellingAndPhaseChangeDeformationJacobian(Model):
 
     # Forward: ``J = 1 + alpha * c * vf + (1 - c) * vf * dOmega``. Linear in
     # the fluid_fraction input (action = (alpha*c + (1-c)*dOmega) * V) and,
-    # when the phase_fraction parameter is promoted to a nonlinear input, also
+    # when the phase_fraction parameter is promoted to a runtime input, also
     # linear in c (action = (alpha*vf - vf*dOmega) * V). Pure typed wrapper
     # algebra throughout: Scalar + - * handle sub-batch alignment, so
     # no torch.<op>(.data) calls appear in forward or chain-rule action bodies.
@@ -57,7 +57,7 @@ class SwellingAndPhaseChangeDeformationJacobian(Model):
             Scalar,
             "Phase fraction during the phase change. 0 means all solid, 1 means all liquid.",
             attr="c",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "swelling_coefficient",
@@ -85,13 +85,13 @@ class SwellingAndPhaseChangeDeformationJacobian(Model):
     def forward(  # type: ignore[override]
         self,
         fluid_fraction: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         vf = fluid_fraction
-        c = self._get_param("c", nl_params, Scalar)
-        alpha = self._get_param("alpha", nl_params, Scalar)
-        dOmega = self._get_param("dOmega", nl_params, Scalar)
+        c = self._get_param("c", promoted_params, Scalar)
+        alpha = self._get_param("alpha", promoted_params, Scalar)
+        dOmega = self._get_param("dOmega", promoted_params, Scalar)
         J = 1.0 + alpha * c * vf + (1.0 - c) * vf * dOmega
         if v is None:
             return J
@@ -109,9 +109,9 @@ class SwellingAndPhaseChangeDeformationJacobian(Model):
 
         actions: dict = {"fluid_fraction": fluid_fraction_action}
 
-        if "c" in self._nl_params:
+        if "c" in self._promoted_params:
             dJ_dc = alpha * vf - vf * dOmega
-            actions[self._nl_params["c"].input_name] = lambda V, coef=dJ_dc: coef * V
+            actions[self._promoted_params["c"].input_name] = lambda V, coef=dJ_dc: coef * V
 
         return J, self.apply_chain_rule(v, "jacobian", actions, output=J)
 

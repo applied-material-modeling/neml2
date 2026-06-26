@@ -113,12 +113,12 @@ class CubicElasticityTensor(Model):
         super().__init__(**hit_values)
         if G is None:
             return
-        # Declare all three coefficients as nonlinear-capable parameters so
+        # Declare all three coefficients as promotion-capable parameters so
         # they can independently be promoted to runtime inputs (mode 3/4);
         # literal HIT values stay as static buffers (mode 1).
-        self.declare_typed_parameter("G", G, Scalar, factory=factory, allow_nonlinear=True)
-        self.declare_typed_parameter("E", E, Scalar, factory=factory, allow_nonlinear=True)
-        self.declare_typed_parameter("nu", nu, Scalar, factory=factory, allow_nonlinear=True)
+        self.declare_typed_parameter("G", G, Scalar, factory=factory, allow_promotion=True)
+        self.declare_typed_parameter("E", E, Scalar, factory=factory, allow_promotion=True)
+        self.declare_typed_parameter("nu", nu, Scalar, factory=factory, allow_promotion=True)
 
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> CubicElasticityTensor:
@@ -151,12 +151,12 @@ class CubicElasticityTensor(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
-        G = self._get_param("G", nl_params, Scalar)
-        E = self._get_param("E", nl_params, Scalar)
-        nu = self._get_param("nu", nl_params, Scalar)
+        G = self._get_param("G", promoted_params, Scalar)
+        E = self._get_param("E", promoted_params, Scalar)
+        nu = self._get_param("nu", promoted_params, Scalar)
 
         # CubicElasticityConverter G_E_nu_to_C{1,2,3}:
         #   C1 = E (1 - nu) / ((1 + nu) (1 - 2 nu))
@@ -197,25 +197,25 @@ class CubicElasticityTensor(Model):
         dC2_dnu = (2.0 * nu * nu * E + E) / D2
 
         actions: dict = {}
-        if "G" in self._nl_params:
+        if "G" in self._promoted_params:
             # dC = 2 I3 * V
             def action_G(V: Scalar, _I3=I3) -> SSR4:
                 return 2.0 * V * _I3
 
-            actions[self._nl_params["G"].input_name] = action_G
-        if "E" in self._nl_params:
+            actions[self._promoted_params["G"].input_name] = action_G
+        if "E" in self._promoted_params:
             dsig_dE = (C1 / E) * I1 + (C2 / E) * I2
 
             def action_E(V: Scalar, _c=dsig_dE) -> SSR4:
                 return _c * V
 
-            actions[self._nl_params["E"].input_name] = action_E
-        if "nu" in self._nl_params:
+            actions[self._promoted_params["E"].input_name] = action_E
+        if "nu" in self._promoted_params:
             dsig_dnu = dC1_dnu * I1 + dC2_dnu * I2
 
             def action_nu(V: Scalar, _c=dsig_dnu) -> SSR4:
                 return _c * V
 
-            actions[self._nl_params["nu"].input_name] = action_nu
+            actions[self._promoted_params["nu"].input_name] = action_nu
 
         return C, self.apply_chain_rule(v, "C", actions, output=C)

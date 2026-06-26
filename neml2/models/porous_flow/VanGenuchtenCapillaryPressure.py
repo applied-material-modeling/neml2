@@ -55,14 +55,14 @@ class VanGenuchtenCapillaryPressure(Model):
             Scalar,
             "Shape parameter a",
             attr="a",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "m",
             Scalar,
             "Shape parameter m",
             attr="m",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         option(
             "log_extension",
@@ -129,12 +129,12 @@ class VanGenuchtenCapillaryPressure(Model):
     def forward(  # type: ignore[override]
         self,
         effective_saturation: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         S = effective_saturation
-        a = self._get_param("a", nl_params, Scalar)
-        m = self._get_param("m", nl_params, Scalar)
+        a = self._get_param("a", promoted_params, Scalar)
+        m = self._get_param("m", promoted_params, Scalar)
 
         Pc_base, dPc_dS_base = self._calculate_pressure(S, a, m)
 

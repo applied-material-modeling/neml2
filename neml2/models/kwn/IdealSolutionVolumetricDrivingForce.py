@@ -75,7 +75,7 @@ class IdealSolutionVolumetricDrivingForce(Model):
             "Equilibrium matrix concentrations for each species. May be supplied as constants "
             "or as outputs of upstream models (e.g. temperature-dependent interpolations).",
             attr="_x_eq_names",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameters(
             "weights",
@@ -129,17 +129,17 @@ class IdealSolutionVolumetricDrivingForce(Model):
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Split positional args: the leading structural inputs (one Scalar per
-        # current concentration) followed by the *nl_params pack of
+        # current concentration) followed by the *promoted_params pack of
         # mode-3/4-promoted parameters (equilibrium concentrations; weights are
-        # ``allow_nonlinear=False``, so they always live as static buffers).
+        # ``allow_promotion=False``, so they always live as static buffers).
         n = len(self._x_vars)
-        xs, nl_params = args[:n], args[n:]
+        xs, promoted_params = args[:n], args[n:]
         if len(xs) != n:
             raise ValueError(f"{type(self).__name__} expected {n} inputs, got {len(xs)}")
 
-        R_g = self._get_param("R_g", nl_params, Scalar)
-        x_eqs = self._get_param_list("_x_eq_names", nl_params, Scalar)
-        ws = self._get_param_list("_w_names", nl_params, Scalar)
+        R_g = self._get_param("R_g", promoted_params, Scalar)
+        x_eqs = self._get_param_list("_x_eq_names", promoted_params, Scalar)
+        ws = self._get_param_list("_w_names", promoted_params, Scalar)
 
         # Forward: Δg = R T Σ wₖ log(cₖ / cₖ_eq). Typed Scalar algebra
         # end-to-end, matching ``IdealSolutionVolumetricDrivingForce::set_value``.
@@ -177,10 +177,10 @@ class IdealSolutionVolumetricDrivingForce(Model):
             _add(x_name, lambda V, c=coef: c * V)
 
         for w, x_eq, p_name in zip(ws, x_eqs, self._x_eq_names, strict=True):
-            nlp = self._nl_params.get(p_name)
-            if nlp is not None:
+            pparam = self._promoted_params.get(p_name)
+            if pparam is not None:
                 coef = -(pref * w) / x_eq
-                _add(nlp.input_name, lambda V, c=coef: c * V)
+                _add(pparam.input_name, lambda V, c=coef: c * V)
 
         return dg, self.apply_chain_rule(v, "driving_force", actions, output=dg)
 

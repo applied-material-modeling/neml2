@@ -42,7 +42,7 @@ class ThermalDeformationJacobian(Model):
 
     # Forward: ``J = 1 + alpha * (T - T0)``. The leaf is linear in ``T``
     # (action wrt ``T`` is ``alpha * V``) and linear in ``alpha`` when promoted
-    # to a nonlinear input (action is ``(T - T0) * V``). Pure typed wrapper
+    # to a runtime input (action is ``(T - T0) * V``). Pure typed wrapper
     # algebra throughout: the Scalar ``+ - *`` operators handle
     # sub-batch alignment, so no ``torch.<op>(.data)`` calls appear in the
     # forward or chain-rule action bodies.
@@ -61,7 +61,7 @@ class ThermalDeformationJacobian(Model):
             Scalar,
             "Coefficient of thermal expansion",
             attr="alpha",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -75,12 +75,12 @@ class ThermalDeformationJacobian(Model):
     def forward(  # type: ignore[override]
         self,
         temperature: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         T = temperature
-        T0 = self._get_param("T0", nl_params, Scalar)
-        alpha = self._get_param("alpha", nl_params, Scalar)
+        T0 = self._get_param("T0", promoted_params, Scalar)
+        alpha = self._get_param("alpha", promoted_params, Scalar)
         J = 1.0 + alpha * (T - T0)
         if v is None:
             return J
@@ -94,9 +94,9 @@ class ThermalDeformationJacobian(Model):
 
         actions: dict = {"temperature": temperature_action}
 
-        if "alpha" in self._nl_params:
+        if "alpha" in self._promoted_params:
             dT = T - T0
-            actions[self._nl_params["alpha"].input_name] = lambda V, c=dT: c * V
+            actions[self._promoted_params["alpha"].input_name] = lambda V, c=dT: c * V
 
         return J, self.apply_chain_rule(v, "jacobian", actions, output=J)
 

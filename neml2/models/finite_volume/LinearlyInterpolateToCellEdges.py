@@ -45,7 +45,7 @@ class LinearlyInterpolateToCellEdges(Model):
 
     hit = HitSchema(
         parameter(
-            "cell_values", Scalar, "Cell-centered values to interpolate.", allow_nonlinear=True
+            "cell_values", Scalar, "Cell-centered values to interpolate.", allow_promotion=True
         ),
         parameter("cell_centers", Scalar, "Cell center positions."),
         parameter("cell_edges", Scalar, "Cell edge positions."),
@@ -62,7 +62,7 @@ class LinearlyInterpolateToCellEdges(Model):
     cell_edges: Scalar
     _out_name: str
 
-    def _weights(self, nl_params) -> tuple[Scalar, Scalar]:
+    def _weights(self, promoted_params) -> tuple[Scalar, Scalar]:
         """Typed stencil weights ``w_left``, ``w_right`` over the M=N-1 interior edges.
 
         ``register_typed_parameter`` stores the raw tensor data, so the
@@ -73,8 +73,8 @@ class LinearlyInterpolateToCellEdges(Model):
         through ``_get_param`` (not ``self.<attr>``) so the leaf stays
         promotion-compatible.
         """
-        centers = self._get_param("cell_centers", nl_params, Scalar).sub_batch.retag(1)
-        edges = self._get_param("cell_edges", nl_params, Scalar).sub_batch.retag(1)
+        centers = self._get_param("cell_centers", promoted_params, Scalar).sub_batch.retag(1)
+        edges = self._get_param("cell_edges", promoted_params, Scalar).sub_batch.retag(1)
         x_left = centers.sub_batch[:-1]
         x_right = centers.sub_batch[1:]
         xe_vec = edges.sub_batch[1:-1]  # interior edges, size N-1
@@ -83,16 +83,16 @@ class LinearlyInterpolateToCellEdges(Model):
         w_right = (xe_vec - x_left) * inv
         return w_left, w_right
 
-    def forward(self, *nl_params, v: ChainRuleDict | None = None):  # type: ignore[override]
-        cv_wrap = self._get_param("cell_values", nl_params, Scalar)
-        w_left, w_right = self._weights(nl_params)
+    def forward(self, *promoted_params, v: ChainRuleDict | None = None):  # type: ignore[override]
+        cv_wrap = self._get_param("cell_values", promoted_params, Scalar)
+        w_left, w_right = self._weights(promoted_params)
         q_left = cv_wrap.sub_batch[:-1]
         q_right = cv_wrap.sub_batch[1:]
         out = w_left * q_left + w_right * q_right
         if v is None:
             return out
 
-        cv_nl = self._nl_params.get("cell_values")
+        cv_nl = self._promoted_params.get("cell_values")
         if cv_nl is None:
             # cell_values is a static buffer -- no chain rule to propagate.
             return out, self.apply_chain_rule(v, self._out_name, {}, output=out)

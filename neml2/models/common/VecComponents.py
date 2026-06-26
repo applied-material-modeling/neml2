@@ -84,7 +84,7 @@ class VecComponents(Model):
     def forward(  # type: ignore[override]
         self,
         inp: Vec,
-        *nl_params: object,
+        *promoted_params: object,
         v: ChainRuleDict | None = None,
     ):
         # Forward: extract components 0, 1, 2 via the typed wrapper helper.

@@ -115,11 +115,11 @@ class IsotropicElasticityTensor(Model):
         if param_pair is None:
             return
         a, b = param_pair
-        # Declare both coefficients as nonlinear-capable parameters so they can
+        # Declare both coefficients as promotion-capable parameters so they can
         # independently be promoted to runtime inputs (mode 3/4); literal HIT
         # values stay as static buffers (mode 1).
-        self.declare_typed_parameter(a, coef0, Scalar, factory=factory, allow_nonlinear=True)
-        self.declare_typed_parameter(b, coef1, Scalar, factory=factory, allow_nonlinear=True)
+        self.declare_typed_parameter(a, coef0, Scalar, factory=factory, allow_promotion=True)
+        self.declare_typed_parameter(b, coef1, Scalar, factory=factory, allow_promotion=True)
         # Remember which two slots are populated so ``forward`` can dispatch.
         self._param_pair = param_pair
 
@@ -156,12 +156,12 @@ class IsotropicElasticityTensor(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         a, b = self._param_pair
-        c0 = self._get_param(a, nl_params, Scalar)
-        c1 = self._get_param(b, nl_params, Scalar)
+        c0 = self._get_param(a, promoted_params, Scalar)
+        c1 = self._get_param(b, promoted_params, Scalar)
 
         # Conversion table -> (K, G) and their partials w.r.t. (c0, c1).
         if (a, b) == ("K", "G"):
@@ -211,15 +211,15 @@ class IsotropicElasticityTensor(Model):
         # dK_action / dG_action above. The action is pure typed-wrapper algebra
         # in SSR4; we never form the full n_out x n_in Jacobian.
         actions: dict = {}
-        if a in self._nl_params:
-            nl_name_a = self._nl_params[a].input_name
+        if a in self._promoted_params:
+            nl_name_a = self._promoted_params[a].input_name
 
             def action_a(V: Scalar, _a=a, _Iv=Iv, _Id=Id) -> SSR4:
                 return 3.0 * dK_action(V, _a) * _Iv + 2.0 * dG_action(V, _a) * _Id
 
             actions[nl_name_a] = action_a
-        if b in self._nl_params:
-            nl_name_b = self._nl_params[b].input_name
+        if b in self._promoted_params:
+            nl_name_b = self._promoted_params[b].input_name
 
             def action_b(V: Scalar, _b=b, _Iv=Iv, _Id=Id) -> SSR4:
                 return 3.0 * dK_action(V, _b) * _Iv + 2.0 * dG_action(V, _b) * _Id

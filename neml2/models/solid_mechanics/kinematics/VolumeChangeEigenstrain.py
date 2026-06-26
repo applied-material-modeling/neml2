@@ -55,10 +55,10 @@ class VolumeChangeEigenstrain(Model):
     def forward(  # type: ignore[override]
         self,
         volume: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
-        V0 = self._get_param("V0", nl_params, Scalar)
+        V0 = self._get_param("V0", promoted_params, Scalar)
         I = SR2.identity(dtype=volume.dtype, device=volume.device)
         # Forward: eg = ((V/V0)^(1/3) - 1) * I -- typed wrapper algebra
         # (Scalar / Scalar -> Scalar; pow(Scalar, float) -> Scalar; Scalar - 1.0

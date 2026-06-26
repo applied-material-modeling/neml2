@@ -135,15 +135,15 @@ class SalehaniIraniTraction(Model):
     ):
         # ``input_spec`` order: structural inputs first (declaration order from
         # the schema, minus optional inputs that HIT omitted), then promoted
-        # nl-parameters appended in declaration order. Split accordingly.
+        # promoted parameters appended in declaration order. Split accordingly.
         names = list(self.input_spec)
         if len(args) != len(names):
             raise AssertionError(
                 f"SalehaniIraniTraction.forward: got {len(args)} args, expected {len(names)}"
             )
-        n_nl = len(self._nl_params)
+        n_nl = len(self._promoted_params)
         n_struct = len(names) - n_nl
-        inputs, nl_params = args[:n_struct], args[n_struct:]
+        inputs, promoted_params = args[:n_struct], args[n_struct:]
         struct_names = names[:n_struct]
         bound = dict(zip(struct_names, inputs, strict=True))
 
@@ -161,12 +161,12 @@ class SalehaniIraniTraction(Model):
         dn_pen_name = self._dn_pen_name
         dn_pen = bound[dn_pen_name] if dn_pen_name is not None and dn_pen_name in bound else None
 
-        # Parameters: all five are static (allow_nonlinear defaults to False).
-        delta_u0_n = self._get_param("delta_u0_n", nl_params, Scalar)
-        delta_u0_t = self._get_param("delta_u0_t", nl_params, Scalar)
-        Tmax_n = self._get_param("Tmax_n", nl_params, Scalar)
-        Tmax_t = self._get_param("Tmax_t", nl_params, Scalar)
-        Kpen = self._get_param("Kpen", nl_params, Scalar)
+        # Parameters: all five are static (allow_promotion defaults to False).
+        delta_u0_n = self._get_param("delta_u0_n", promoted_params, Scalar)
+        delta_u0_t = self._get_param("delta_u0_t", promoted_params, Scalar)
+        Tmax_n = self._get_param("Tmax_n", promoted_params, Scalar)
+        Tmax_t = self._get_param("Tmax_t", promoted_params, Scalar)
+        Kpen = self._get_param("Kpen", promoted_params, Scalar)
 
         # -------- Internal characteristic-length vector: tangential is sqrt(2) * raw.
         sqrt2 = math.sqrt(2.0)

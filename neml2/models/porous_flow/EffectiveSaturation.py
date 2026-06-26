@@ -56,7 +56,7 @@ class EffectiveSaturation(Model):
             Scalar,
             "Maximum allowable volume fraction of the fluid",
             attr="phi_max",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -70,12 +70,12 @@ class EffectiveSaturation(Model):
     def forward(  # type: ignore[override]
         self,
         fluid_fraction: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         phi = fluid_fraction
-        Sr = self._get_param("Sr", nl_params, Scalar)
-        phi_max = self._get_param("phi_max", nl_params, Scalar)
+        Sr = self._get_param("Sr", promoted_params, Scalar)
+        phi_max = self._get_param("phi_max", promoted_params, Scalar)
 
         # ``S = (phi/phi_max - Sr) / (1 - Sr)``
         one_minus_Sr = -Sr + 1.0
@@ -94,10 +94,10 @@ class EffectiveSaturation(Model):
         }
 
         # ``max_fraction`` may have been promoted to a runtime input (mode 3/4)
-        # via ``allow_nonlinear=True``. Only add a chain-rule action under its
+        # via ``allow_promotion=True``. Only add a chain-rule action under its
         # resolved external input name if it was actually promoted; otherwise
         # it's a static parameter and contributes no tangent.
-        phi_max_nl = self._nl_params.get("phi_max")
+        phi_max_nl = self._promoted_params.get("phi_max")
         if phi_max_nl is not None:
             dS_dphi_max = -phi / (phi_max * denom)
             actions[phi_max_nl.input_name] = lambda V, c=dS_dphi_max: c * V

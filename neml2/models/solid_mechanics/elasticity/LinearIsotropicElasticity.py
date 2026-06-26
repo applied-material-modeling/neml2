@@ -119,9 +119,9 @@ class LinearIsotropicElasticity(Model):
             self.input_spec = {strain_name: SR2}
             self.output_spec = {stress_name: SR2}
         if E is not None:
-            self.declare_typed_parameter("E", E, Scalar, factory=factory, allow_nonlinear=True)
+            self.declare_typed_parameter("E", E, Scalar, factory=factory, allow_promotion=True)
         if nu is not None:
-            self.declare_typed_parameter("nu", nu, Scalar, factory=factory, allow_nonlinear=True)
+            self.declare_typed_parameter("nu", nu, Scalar, factory=factory, allow_promotion=True)
 
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> LinearIsotropicElasticity:
@@ -143,7 +143,7 @@ class LinearIsotropicElasticity(Model):
     def forward(  # type: ignore[override]
         self,
         x: SR2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # ``x`` is whatever input the schema landed at the first positional
@@ -151,8 +151,8 @@ class LinearIsotropicElasticity(Model):
         # (possibly with the ``_rate`` suffix when rate_form is set). The math
         # is the same shape — vol and dev coefficients flip between K- and
         # 1/K-based when compliance is on. Mirrors C++ LinearIsotropicElasticity.cxx:52-82.
-        E = self._get_param("E", nl_params, Scalar)
-        nu = self._get_param("nu", nl_params, Scalar)
+        E = self._get_param("E", promoted_params, Scalar)
+        nu = self._get_param("nu", promoted_params, Scalar)
         K, G = self._moduli(E, nu)
         vf = 1.0 / (3.0 * K) if self._compliance else 3.0 * K
         df = 1.0 / (2.0 * G) if self._compliance else 2.0 * G
@@ -176,15 +176,15 @@ class LinearIsotropicElasticity(Model):
         #   ddf/dE     = s · df / E
         #   ddf/dnu    = -s · df / (1 + nu)
         # with s = +1 (stiffness) or -1 (compliance).
-        if "E" in self._nl_params or "nu" in self._nl_params:
+        if "E" in self._promoted_params or "nu" in self._promoted_params:
             s = -1.0 if self._compliance else 1.0
-            if "E" in self._nl_params:
+            if "E" in self._promoted_params:
                 dy_dE = s * (vf / E) * vol(x) + s * (df / E) * dev(x)
-                actions[self._nl_params["E"].input_name] = lambda V, c=dy_dE: c * V
-            if "nu" in self._nl_params:
+                actions[self._promoted_params["E"].input_name] = lambda V, c=dy_dE: c * V
+            if "nu" in self._promoted_params:
                 dy_dnu = s * (2.0 * vf / (1.0 - 2.0 * nu)) * vol(x) + (-s) * (
                     df / (1.0 + nu)
                 ) * dev(x)
-                actions[self._nl_params["nu"].input_name] = lambda V, c=dy_dnu: c * V
+                actions[self._promoted_params["nu"].input_name] = lambda V, c=dy_dnu: c * V
 
         return y, self.apply_chain_rule(v, out_name, actions, output=y)

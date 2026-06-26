@@ -46,7 +46,7 @@ class ScalarPNorm(Model):
     regularizer $\varepsilon$ comes from `neml2::machine_precision()`.
     """
 
-    # The exponent ``p`` is forward-only on the C++ side (allow_nonlinear=false)
+    # The exponent ``p`` is forward-only on the C++ side (allow_promotion=false)
     # because the C++ set_value() never assigns _to.d(*p); we keep the same
     # static-only contract here. The weights mirror the C++ buffer-or-parameter
     # toggle implicitly: every coefficient is a parameter on the native side
@@ -88,17 +88,17 @@ class ScalarPNorm(Model):
         v: ChainRuleDict | None = None,
     ):
         # Split positional inputs: the leading structural inputs (one per
-        # from-var) followed by the *nl_params pack that holds any
+        # from-var) followed by the *promoted_params pack that holds any
         # mode-3/4-promoted parameters. Only weights may promote; the
-        # exponent stays static (allow_nonlinear=False).
+        # exponent stays static (allow_promotion=False).
         n_from = len(self._from_vars)
-        inputs, nl_params = args[:n_from], args[n_from:]
-        weights = self._get_param_list("weight", nl_params, Scalar)
+        inputs, promoted_params = args[:n_from], args[n_from:]
+        weights = self._get_param_list("weight", promoted_params, Scalar)
         if len(weights) == 1:
             weights = weights * n_from
-        p = self._get_param("_p", nl_params, Scalar)
+        p = self._get_param("_p", promoted_params, Scalar)
 
-        # Sum_i w_i * |x_i|^p. With ``p`` held static (allow_nonlinear=False),
+        # Sum_i w_i * |x_i|^p. With ``p`` held static (allow_promotion=False),
         # autograd never differentiates ``pow`` w.r.t. the exponent, so the
         # ``where``-mask-and-safe-base trick the C++ side needs to guard
         # ``d/dp [x^p] = x^p log(x)`` against the log(0) singularity is

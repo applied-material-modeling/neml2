@@ -71,7 +71,7 @@ class _CopyVariable(Model):
     def forward(  # type: ignore[override]
         self,
         inp: TensorWrapper,
-        *nl_params: TensorWrapper,
+        *promoted_params: TensorWrapper,
         v: ChainRuleDict | None = None,
     ):
         # Forward: typed identity. No .data, no torch.* -- the typed wrapper

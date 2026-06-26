@@ -66,7 +66,7 @@ class IsotropicHardeningStaticRecovery(Model):
     def forward(  # type: ignore[override]
         self,
         isotropic_hardening: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native isotropic-hardening static-recovery leaves
