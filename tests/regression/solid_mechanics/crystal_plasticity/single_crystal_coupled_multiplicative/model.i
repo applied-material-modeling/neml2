@@ -79,7 +79,6 @@ result = R2(F_full.contiguous())'
     prescribed_Rot_values = 'r'
     ic_R2_names = 'Fp'
     ic_R2_values = 'Fp0'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

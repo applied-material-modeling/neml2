@@ -83,7 +83,6 @@
     ic_Scalar_names = 'slip_hardening'
     ic_Scalar_values = 'initial_slip_hardening'
 
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

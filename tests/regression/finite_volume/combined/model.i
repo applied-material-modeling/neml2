@@ -43,7 +43,6 @@
     prescribed_time = 'time'
     ic_Scalar_names = 'concentration'
     ic_Scalar_values = 'ic'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

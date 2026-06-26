@@ -79,7 +79,6 @@
     ic_Scalar_values = 'initial_dislocation_density'
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

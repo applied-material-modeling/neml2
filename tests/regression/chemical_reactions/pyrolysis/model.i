@@ -52,7 +52,6 @@ zeta = 0.05
     prescribed_Scalar_values = 'T'
     ic_Scalar_names = 'wb wc'
     ic_Scalar_values = '${wb0} ${wc0}'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

@@ -30,7 +30,6 @@ tests/regression/<submodule>/<scenario>/
     prescribed_time = 'times'
     prescribed_SR2_names = 'strain'
     prescribed_SR2_values = 'strains'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression
@@ -53,7 +52,7 @@ tests/regression/<submodule>/<scenario>/
 The two driver sub-blocks are load-bearing:
 
 - `driver` (a `TransientDriver`) runs the actual time-stepping and
-  writes `result.pt` to the scenario directory via `save_as`.
+  holds the result in memory (the committed `.i` sets no `save_as`).
 - `regression` (a `TransientRegression`) compares that result to
   `gold/result.pt` under the declared tolerances.
 
@@ -69,18 +68,19 @@ it by `type = TransientRegression`, not by name.
    neml2-inspect tests/regression/<submodule>/<scenario>/model.i model
    ```
 
-2. **Produce the gold reference** by running the driver once:
+2. **Produce the gold reference** — a deliberate, manual step. The
+   committed `.i` carries no `save_as`, so temporarily add
+   `save_as = 'result.pt'` to the `[driver]` block, run it, move the
+   output into `gold/`, then drop the `save_as` line again:
 
    ```bash
    cd tests/regression/<submodule>/<scenario>
    mkdir -p gold
-   neml2-run model.i driver       # writes result.pt
+   # 1. add `save_as = 'result.pt'` to the [driver] block, then:
+   neml2-run model.i driver
    mv result.pt gold/result.pt
+   # 2. remove the `save_as` line from [driver] again
    ```
-
-   `neml2-run` may emit a benign "missing reference" notice on the
-   first invocation because the gold isn't in place yet — ignore it,
-   write the file, try again.
 
 3. **Run the regression** to confirm the gold round-trips:
 
@@ -102,8 +102,10 @@ it by `type = TransientRegression`, not by name.
   numerical noise demands it.
 - **One scenario per directory.** The test parametrizer keys on the
   `.i` path; two `.i` files in the same directory clash.
-- **`save_as` is required** on the driver block — without it the
-  scenario produces no result file to compare against.
+- **No `save_as` in the committed `.i`.** The regression compares the
+  driver's in-memory result to `gold/result.pt`, so a `save_as` write
+  would be dead weight on every run — add it only transiently when
+  regenerating the gold (step 2).
 
 ## When to use `add-verification` instead
 

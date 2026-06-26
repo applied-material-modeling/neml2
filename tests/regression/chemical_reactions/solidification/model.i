@@ -26,7 +26,6 @@ Tf = 1700
     prescribed_Scalar_values = 'T'
     ic_Scalar_names = 'phif'
     ic_Scalar_values = '1.0'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

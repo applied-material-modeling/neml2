@@ -20,7 +20,6 @@
     prescribed_time = 'times'
     prescribed_Vec_names = 'separation'
     prescribed_Vec_values = 'jumps'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

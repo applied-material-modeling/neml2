@@ -50,7 +50,6 @@
     prescribed_time = 'times'
     prescribed_SR2_names = 'stress'
     prescribed_SR2_values = 'stress_history'
-    save_as = 'result.pt'
   []
   [verification]
     type = Verification

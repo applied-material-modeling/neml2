@@ -36,8 +36,8 @@ Key differences from C++:
   populated from the previous step's outputs (or ICs at step 0).
 - Inputs not set by force/IC/history (e.g. ``t~1`` at step 0) default to
   zero — matches the C++ "handled by the forward operator" convention.
-- ``save_as`` is parsed but ignored; results stay in memory and are read by
-  ``TransientRegression`` directly.
+- ``save_as``, when set, makes ``run()`` write :meth:`result` to that path;
+  empty (the default) leaves ``run()`` side-effect-free.
 """
 
 from __future__ import annotations
@@ -182,9 +182,9 @@ class TransientDriver(Driver):
         option(
             "save_as",
             str,
-            "Output file path. Accepted for compatibility with the C++ driver but ignored "
-            "by the native runtime; results are held in memory and retrieved via "
-            ":meth:`result`.",
+            "Output file path. When set, ``run()`` writes the result here (the same "
+            "flat dict :meth:`result` returns, via :meth:`save_result`); empty (the "
+            "default) leaves ``run()`` side-effect-free.",
             default="",
         ),
         *_typed_io_fields(),
@@ -197,12 +197,14 @@ class TransientDriver(Driver):
         time_name: str,
         prescribed: dict[str, TensorWrapper],
         ics: dict[str, TensorWrapper],
+        save_as: str = "",
     ) -> None:
         self.model = model
         self.prescribed_time = prescribed_time
         self.time_name = time_name
         self.prescribed = prescribed
         self.ics = ics
+        self.save_as = save_as
         self.nsteps = int(prescribed_time.data.shape[0])
         # Per-step input/output dicts, populated by run(). Values are typed
         # wrappers (TensorWrapper) so sub_batch_ndim propagates; the public
@@ -256,8 +258,10 @@ class TransientDriver(Driver):
         prescribed = _read_typed_pairs(node, factory, "prescribed")
         ics = _read_typed_pairs(node, factory, "ic")
 
-        # save_as is parsed but ignored; native holds results in memory.
-        _ = node.param_optional_str("save_as", "")
+        # save_as is honored by ``neml2-run`` (which writes result() to this
+        # path after the run); ``run()`` stays side-effect-free so the
+        # regression tests that call it don't litter result files.
+        save_as = node.param_optional_str("save_as", "")
 
         return cls(
             model=model,
@@ -265,6 +269,7 @@ class TransientDriver(Driver):
             time_name=time_name,
             prescribed=prescribed,
             ics=ics,
+            save_as=save_as,
         )
 
     def run(self) -> bool:
@@ -358,6 +363,14 @@ class TransientDriver(Driver):
                 # advance_step preserves sub_batch_ndim.
                 self.result_out[step][oname] = ovalue
 
+        # Persist the full trajectory when the input requests it via ``save_as``
+        # (mirrors v2, including the stdout notice). Empty by default, so a
+        # driver that is only being diffed in memory (TransientRegression /
+        # Verification) writes nothing.
+        if self.save_as:
+            self.save_result(self.save_as)
+            print(f"Results saved to {self.save_as}")
+
         return True
 
     def result(self) -> dict[str, torch.Tensor]:
@@ -375,7 +388,7 @@ class TransientDriver(Driver):
                 out[f"output.{step}.{name}"] = val.data if isinstance(val, TensorWrapper) else val
         return out
 
-    def save_gold(self, path: str | Path) -> None:
+    def save_result(self, path: str | Path) -> None:
         """Serialize ``result()`` to a ``.pt`` file as a flat ``torch.save`` dict.
 
         The dict carries the same keys as :meth:`result`:

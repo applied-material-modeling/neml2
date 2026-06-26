@@ -75,7 +75,6 @@
     prescribed_SR2_values = 'conditions control'
     prescribed_Scalar_names = 'temperature'
     prescribed_Scalar_values = 'temperatures'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

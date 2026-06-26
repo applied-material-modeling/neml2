@@ -58,7 +58,6 @@
     prescribed_R2_values = 'L'
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

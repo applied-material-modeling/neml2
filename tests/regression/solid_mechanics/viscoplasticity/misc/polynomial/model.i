@@ -82,7 +82,6 @@
     prescribed_Scalar_values = 'temperatures'
     ic_Scalar_names = 's1 s2'
     ic_Scalar_values = 's1_0 s2_0'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

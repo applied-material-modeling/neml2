@@ -68,7 +68,6 @@
     prescribed_WR2_values = 'vorticity'
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

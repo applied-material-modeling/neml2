@@ -37,7 +37,6 @@
     prescribed_time = 'times'
     prescribed_SR2_names = 'stresses_force control'
     prescribed_SR2_values = 'stresses control'
-    save_as = 'result.pt'
   []
   [verification]
     type = Verification

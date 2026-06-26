@@ -53,7 +53,6 @@ tests/verification/<submodule>/<scenario>/
     prescribed_time = 'times'
     prescribed_SR2_names = 'strain'
     prescribed_SR2_values = 'strain_ref'
-    save_as = 'result.pt'
   []
   [verification]
     type = Verification

@@ -28,7 +28,6 @@
     prescribed_time = 'times'
     prescribed_SR2_names = 'E'
     prescribed_SR2_values = 'strains'
-    save_as = 'result.pt'
   []
   [verification]
     type = Verification

@@ -31,7 +31,6 @@ oSiCm1 = 0.08
     prescribed_Scalar_values = 'alpha'
     ic_Scalar_names = 'phi_P phi_S alpha_P alpha_S'
     ic_Scalar_values = '0 0.3 0 0.05660377358'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression
