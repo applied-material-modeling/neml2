@@ -1,0 +1,21 @@
+(equationsystems-NonlinearSystem)=
+# NonlinearSystem
+
+**Source:** `es/system.py`
+
+A nonlinear system defined by a Model.
+
+## Other options
+
+`model` &mdash; `str` &middot; **required**
+: The Model defining this nonlinear system.
+
+`unknowns` &mdash; `list` &middot; **required**
+: Ordering and grouping of unknowns. Each inner list defines one variable group.
+
+`residuals` &mdash; `list`
+: Ordering and grouping of residual variables. Each inner list defines one variable group.
+
+`structure` &mdash; `list`
+: Per-group SubBatchStructure ('block' or 'dense'). One token per group, in group order. Mirrors v2's `istructure = 'BLOCK DENSE'`. BLOCK preserves sub_batch axes as intmd dims on the per-group assembled tensor (per-grain / per-cell / per-bin independence stays compact). DENSE folds sub_batch into base. Defaults to all 'dense' when omitted.
+

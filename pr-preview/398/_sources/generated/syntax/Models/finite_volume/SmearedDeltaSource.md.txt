@@ -1,0 +1,41 @@
+(models-SmearedDeltaSource)=
+# SmearedDeltaSource
+
+**Source:** `models/finite_volume/SmearedDeltaSource.py`
+
+Smeared Gaussian source for a Dirac delta distribution.
+
+$source[k] = mag * (1/w) / sqrt(2*pi) * exp(-0.5 * ((centers[k] - loc)/w)^2)$
+
+``magnitude`` and ``location`` are global Scalars (no sub-batch);
+``cell_centers`` carries the per-cell sub-batch axis (``sub_batch_ndim=1``);
+the output ``smeared_source`` inherits the cell axis. ``magnitude`` /
+``location`` therefore couple densely with the per-cell output -- declared in
+`list_deriv`. ``width`` and ``cell_centers`` are forward-only static
+parameters (the C++ side allows them to be promoted to nl inputs, but the
+native ``ModelUnitTest`` only checks input derivatives, so we leave that
+plumbing for a follow-on).
+
+## Inputs
+
+`magnitude` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Source magnitude.
+
+`location` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Source location.
+
+
+## Outputs
+
+`smeared_source` &mdash; `output` &middot; `Scalar` &middot; default `state/smeared_source`
+: Smeared Gaussian source.
+
+
+## Parameters
+
+`width` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Gaussian width.
+
+`cell_centers` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Cell center locations.
+

@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="iris" data-content_root="../../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Crystal plasticity - NEML2 3.0.4</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Traction–separation laws" href="traction_separation_law.html" /><link rel="prev" title="Plasticity" href="plasticity.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=8dd46132" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="Crystal plasticity"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../../index.html">
+      <img class="light-logo" src="../../../_static/logo_light.png" alt="NEML2" height="28" loading="lazy" />
+      <img class="dark-logo" src="../../../_static/logo_dark.png" alt="NEML2" height="28" loading="lazy" />
+      <strong>NEML2</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation/index.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../installation/install.html">Basic installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation/compatibility.html">Torch compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation/deps.html">Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/input_file.html">Input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/running_your_first_model/main.html">Running your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/model_parameters/main.html">Model parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/evaluation_device/main.html">Evaluation device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/vectorization/main.html">Vectorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/cross_referencing/main.html">Cross-referencing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/model_composition/main.html">Model composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/model_parameters_revisited/main.html">Model parameters revisited</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/implicit_model/main.html">Implicit models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/transient_driver/main.html">Transient driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/compiled_models/main.html">Compiled models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tensor_types.html">Tensor types</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Physics modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../chemical_reactions.html">Chemical reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../finite_volume.html">Finite volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phase_field_fracture.html">Phase-field fracture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../porous_flow.html">Porous flow</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Solid mechanics</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="elasticity.html">Elasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="viscoelasticity.html">Viscoelasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plasticity.html">Plasticity</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="traction_separation_law.html">Traction–separation laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kinematics.html">Kinematics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../migration/index.html">Migration guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../migration/212_300.html">Migrating from v2.x to v3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../migration/211_212.html">Migrating from v2.1.1 to v2.1.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../migration/200_210.html">Migrating from v2.0.0 to v2.1.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Deployment &amp; integration</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment/overview.html">Ways to evaluate a model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment/python.html">Python integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment/cpp.html">C++ integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment/cli.html">CLI utilities</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../development/building.html">Building from source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/quality.html">Code quality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/dependencies.html">Dependency pinning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/documentation.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/notebooks.html">Jupyter notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/submitting.html">Submitting a pull request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/benchmarking.html">Benchmarking</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../references/py_eager.html"><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/py_jit.html"><code class="docutils literal notranslate"><span class="pre">py-jit</span></code> — in-process <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/py_aoti.html"><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/pipeline.html">Compilation pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Models/index.html">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/index.html">chemical_reactions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/AvramiErofeevNucleation.html">AvramiErofeevNucleation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/ContractingGeometry.html">ContractingGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/CylindricalChannelGeometry.html">CylindricalChannelGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/DiffusionLimitedReaction.html">DiffusionLimitedReaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/EffectiveVolume.html">EffectiveVolume</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/common/index.html">common</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyRot.html">CopyRot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyVec.html">CopyVec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyWR2.html">CopyWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotConstantParameter.html">RotConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotInputParameter.html">RotInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotParameterToVariable.html">RotParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ConstantParameter.html">SR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2Determinant.html">SR2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2DynamicMean.html">SR2DynamicMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2DynamicSum.html">SR2DynamicSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2InputParameter.html">SR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2IntermediateMean.html">SR2IntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2Invariant.html">SR2Invariant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2LinearCombination.html">SR2LinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ToR2.html">SR2ToR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2VariableRate.html">SR2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SSR4ConstantParameter.html">SSR4ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SSR4InputParameter.html">SSR4InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SSR4ParameterToVariable.html">SSR4ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarBackwardEulerTimeIntegration.html">ScalarBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarBilinearInterpolation.html">ScalarBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarPNorm.html">ScalarPNorm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecComponents.html">VecComponents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecConstantParameter.html">VecConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecInputParameter.html">VecInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecParameterToVariable.html">VecParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecVariableRate.html">VecVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/WR2ConstantParameter.html">WR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/WR2ExplicitExponentialTimeIntegration.html">WR2ExplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/WR2ImplicitExponentialTimeIntegration.html">WR2ImplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/WR2InputParameter.html">WR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/WR2ParameterToVariable.html">WR2ParameterToVariable</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/SemiInfiniteCoordinateTransform.html">SemiInfiniteCoordinateTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/SmearedDeltaSource.html">SmearedDeltaSource</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/kwn/index.html">kwn</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/ChemicalGibbsFreeEnergyDifference.html">ChemicalGibbsFreeEnergyDifference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/CurrentConcentration.html">CurrentConcentration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/IdealSolutionVolumetricDrivingForce.html">IdealSolutionVolumetricDrivingForce</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/KineticFactor.html">KineticFactor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/NucleationBarrierAndCriticalRadius.html">NucleationBarrierAndCriticalRadius</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/NucleationFluxMagnitude.html">NucleationFluxMagnitude</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/PrecipitateVolumeFraction.html">PrecipitateVolumeFraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/ProjectedDiffusivitySum.html">ProjectedDiffusivitySum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/RateLimitedPrecipitateGrowthRate.html">RateLimitedPrecipitateGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/SFFKPrecipitationGrowthRate.html">SFFKPrecipitationGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/ZeldovichFactor.html">ZeldovichFactor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/index.html">phase_field_fracture</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT1.html">CrackGeometricFunctionAT1</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT2.html">CrackGeometricFunctionAT2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.html">LinearIsotropicStrainEnergyDensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/PowerDegradationFunction.html">PowerDegradationFunction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/RationalDegradationFunction.html">RationalDegradationFunction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/index.html">porous_flow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/AdvectiveStress.html">AdvectiveStress</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/BrooksCoreyCapillaryPressure.html">BrooksCoreyCapillaryPressure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/EffectiveSaturation.html">EffectiveSaturation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/ExponentialLawPermeability.html">ExponentialLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/KozenyCarmanPermeability.html">KozenyCarmanPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/PowerLawPermeability.html">PowerLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/VanGenuchtenCapillaryPressure.html">VanGenuchtenCapillaryPressure</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/index.html">traction_separation_law</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/index.html">viscoelasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/AOTIModel.html">AOTIModel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Tensors/index.html">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVSR2.html">CSVSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVScalar.html">CSVScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/Python.html">Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/EquationSystems/index.html">Equation systems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/EquationSystems/NonlinearSystem.html">NonlinearSystem</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Drivers/index.html">Drivers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Drivers/TransientDriver.html">TransientDriver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Drivers/TransientRegression.html">TransientRegression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Drivers/Verification.html">Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Data/index.html">Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Data/CubicCrystal.html">CubicCrystal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../python_api/index.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.factory.html">neml2.factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.schema.html">neml2.schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.models.model.html">neml2.models.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.models.chain_rule.html">neml2.models.chain_rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.models.resolver.html">neml2.models.resolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.types.html">neml2.types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.models.html">neml2.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.solvers.html">neml2.solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.es.html">neml2.es</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.drivers.html">neml2.drivers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.data.html">neml2.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.user_tensors.html">neml2.user_tensors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.models.export.html">neml2.models.export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.aoti.html">neml2.aoti</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.pyzag.html">neml2.pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../python_api/neml2.cli.html">neml2.cli</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#math">Math</a></li>
+<li><a class="reference internal" href="#example-model-composition">Example model composition</a></li>
+<li><a class="reference internal" href="#explanation">Explanation</a></li>
+<li><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../../index.html"><span itemprop="name">NEML2</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">Physics modules</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Solid mechanics</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="3" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Crystal plasticity</strong>
+        <meta itemprop="position" content="4" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section class="tex2jax_ignore mathjax_ignore" id="crystal-plasticity">
+<span id="modules-solid-mechanics-crystal-plasticity"></span><h1>Crystal plasticity<a class="headerlink" href="#crystal-plasticity" title="Link to this heading">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>Crystal plasticity in NEML2 is built around an incremental, rate-form view of single-crystal kinematics: a forward operator that, given the current spatial velocity gradient, integrates the elastic stretch, the lattice orientation, and any internal hardening variables forward in time. The crystal-plasticity catalog carves this physics into reusable primitives — kinematic operators (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/ElasticStrainRate.html#models-elasticstrainrate"><span class="std std-ref">ElasticStrainRate</span></a>, <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/OrientationRate.html#models-orientationrate"><span class="std std-ref">OrientationRate</span></a>, <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticDeformationRate.html#models-plasticdeformationrate"><span class="std std-ref">PlasticDeformationRate</span></a>, <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticVorticity.html#models-plasticvorticity"><span class="std std-ref">PlasticVorticity</span></a>, <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticSpatialVelocityGradient.html#models-plasticspatialvelocitygradient"><span class="std std-ref">PlasticSpatialVelocityGradient</span></a>), constitutive maps from stress to resolved shear (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/ResolvedShear.html#models-resolvedshear"><span class="std std-ref">ResolvedShear</span></a>) and from internal state to slip strength (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SingleSlipStrengthMap.html#models-singleslipstrengthmap"><span class="std std-ref">SingleSlipStrengthMap</span></a>, <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a>), slip kinetics (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PowerLawSlipRule.html#models-powerlawsliprule"><span class="std std-ref">PowerLawSlipRule</span></a>), and hardening laws (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.html#models-linearsinglesliphardeningrule"><span class="std std-ref">LinearSingleSlipHardeningRule</span></a>, <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.html#models-vocesinglesliphardeningrule"><span class="std std-ref">VoceSingleSlipHardeningRule</span></a>, <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PerSlipForestDislocationEvolution.html#models-perslipforestdislocationevolution"><span class="std std-ref">PerSlipForestDislocationEvolution</span></a>). The crystal geometry itself (slip systems, twin systems) is generated by an ancillary <a class="reference internal" href="../../../generated/syntax/Data/CubicCrystal.html#data-cubiccrystal"><span class="std std-ref">CubicCrystal</span></a> data object, so users specify Miller indices, not enumerated slip systems.</p>
+</section>
+<section id="math">
+<h2>Math<a class="headerlink" href="#math" title="Link to this heading">¶</a></h2>
+<p>The fundamental kinematics derive from the multiplicative split of the deformation gradient:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+F = F^e F^p
+\]</div>
+</div>
+<p>so that the spatial velocity gradient is</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+l = \dot{F} F^{-1} = \dot{F}^e F^{e-1} + F^e \dot{F}^p F^{p-1} F^{e-1}.
+\]</div>
+</div>
+<p>The plastic deformation <span class="math notranslate nohighlight">\(\bar{l}^p = \dot{F}^p F^{p-1}\)</span> defines the crystal-plasticity kinematics. NEML2 assumes the elastic stretch is small, <span class="math notranslate nohighlight">\(F^e = (I + \varepsilon)\,R^e\)</span>, so</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+l = \dot{\varepsilon} + \Omega^e - \Omega^e \varepsilon + \varepsilon \Omega^e + l^p + \varepsilon l^p - l^p \varepsilon,
+\]</div>
+</div>
+<p>with <span class="math notranslate nohighlight">\(l^p = R^e \bar{l}^p R^{eT}\)</span> the plastic velocity gradient pushed forward into the current configuration and <span class="math notranslate nohighlight">\(\Omega^e = \dot{R}^e R^{eT}\)</span> the elastic spin. Two further simplifications are made:</p>
+<ol class="arabic simple">
+<li><p>terms quadratic in the elastic stretch <span class="math notranslate nohighlight">\(\varepsilon\)</span> are neglected;</p></li>
+<li><p>terms quadratic in the rate of elastic stretch <span class="math notranslate nohighlight">\(\dot{\varepsilon}\)</span> are also neglected.</p></li>
+</ol>
+<p>The first holds well for metal plasticity; the second can break down at very high strain rates.</p>
+<p>Defining the current orientation as the composition of the initial lattice rotation <span class="math notranslate nohighlight">\(Q_0\)</span> with the elastic rotation, <span class="math notranslate nohighlight">\(Q = R^e Q_0\)</span>, the elastic spin reduces to <span class="math notranslate nohighlight">\(\Omega^e = \dot{Q} Q^T\)</span>. Splitting the spatial velocity gradient into symmetric and skew parts (<span class="math notranslate nohighlight">\(l = d + w\)</span>, <span class="math notranslate nohighlight">\(l^p = d^p + w^p\)</span>) and rearranging yields the two governing rate equations integrated by this module:</p>
+<div class="math-wrapper amsmath docutils container" id="equation-2d336ee0-3a92-47f9-afe5-f4a96af4157d">
+<div class="amsmath math notranslate nohighlight" id="equation-2d336ee0-3a92-47f9-afe5-f4a96af4157d">
+<span class="eqno">(18)<a class="headerlink" href="#equation-2d336ee0-3a92-47f9-afe5-f4a96af4157d" title="Permalink to this equation">¶</a></span>\[\begin{align}
+  \dot{\varepsilon} &amp;= d - d^p - \varepsilon w + w \varepsilon \\
+  \dot{Q} &amp;= \left(w - w^p - \varepsilon d^p + d^p \varepsilon\right) Q.
+\end{align}\]</div>
+</div>
+<p>The Cauchy stress closes the system via an (in general anisotropic) elastic relation rotated into the current configuration,</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\sigma = C : \varepsilon.
+\]</div>
+</div>
+<p>To close the system, the model also needs an expression for <span class="math notranslate nohighlight">\(l^p\)</span>. The catalog adopts Asaro’s slip-system decomposition,</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+l^p = \sum_{i=1}^{n_\mathrm{slip}} \dot{\gamma}_i \, Q \left(d_i \otimes n_i\right) Q^T,
+\]</div>
+</div>
+<p>where the slip rate <span class="math notranslate nohighlight">\(\dot{\gamma}_i\)</span> on each system is the user’s constitutive choice, driven by the resolved shear stress</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\tau_i = \sigma : Q \operatorname{sym}\left(d_i \otimes n_i\right) Q^T.
+\]</div>
+</div>
+<p>Internally, orientations are stored as <em>modified</em> Rodrigues parameters; conversion to a rotation matrix is available via <a class="reference internal" href="../../../generated/syntax/Models/common/RotationMatrix.html#models-rotationmatrix"><span class="std std-ref">RotationMatrix</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The catalog supports two integration strategies for the orientation equation: fully coupled implicit (integrate elastic strain, hardening, and orientation as one nonlinear system, via <a class="reference internal" href="../../../generated/syntax/Models/common/WR2ImplicitExponentialTimeIntegration.html#models-wr2implicitexponentialtimeintegration"><span class="std std-ref">WR2ImplicitExponentialTimeIntegration</span></a>) and decoupled (integrate strain and hardening first, then advance orientation with an explicit exponential update). The example below uses the coupled form.</p>
+</div>
+</section>
+<section id="example-model-composition">
+<h2>Example model composition<a class="headerlink" href="#example-model-composition" title="Link to this heading">¶</a></h2>
+<p>The input file below assembles a single-crystal model with isotropic elasticity, a power-law slip rule, Voce hardening on a single (shared) slip strength, and fully coupled implicit integration of elastic strain, hardening, and orientation. The driver sweeps 20 batched initial orientations under a constant deformation-rate / vorticity history.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-number">Listing 3 </span><span class="caption-text">tests/regression/solid_mechanics/crystal_plasticity/single_crystal_coupled/model.i</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># neml2</span>
+</span><span data-line="2"><span class="c1"># Single-crystal coupled crystal plasticity, native port of</span>
+</span><span data-line="3"><span class="c1"># tests/regression/solid_mechanics/crystal_plasticity/single_crystal_coupled/model.i.</span>
+</span><span data-line="4"><span class="c1"># Dynamic batch axis = (20,) (varying end-time / orientation); time axis = (100,).</span>
+</span><span data-line="5"><span class="k">[Tensors]</span>
+</span><span data-line="6"><span class="w">  </span><span class="c1"># end_time = LinspaceScalar(1, 10, 20) -&gt; shape (20,)</span>
+</span><span data-line="7"><span class="w">  </span><span class="k">[end_time]</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar.linspace(1.0, 10.0, 20)&#39;</span>
+</span><span data-line="10"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="11"><span class="w">  </span><span class="c1"># times = LinspaceScalar(0, end_time, 100) -&gt; shape (100, 20)</span>
+</span><span data-line="12"><span class="w">  </span><span class="k">[times]</span>
+</span><span data-line="13"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
+</span><span data-line="14"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar(end_time.data.unsqueeze(0) * torch.linspace(0.0, 1.0, 100, dtype=torch.float64).unsqueeze(-1))&#39;</span>
+</span><span data-line="15"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="16"><span class="w">  </span><span class="c1"># deformation_rate single = FillSR2(dxx=0.1, dyy=-0.05, dzz=-0.05) batched (20,)</span>
+</span><span data-line="17"><span class="w">  </span><span class="k">[deformation_rate_single]</span>
+</span><span data-line="18"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
+</span><span data-line="19"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;SR2.fill(0.1, -0.05, -0.05, 0.0, 0.0, 0.0).dynamic_batch.expand(20)&#39;</span>
+</span><span data-line="20"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="21"><span class="w">  </span><span class="c1"># deformation_rate = LinspaceSR2(d_single, d_single, 100) -&gt; shape (100, 20, 6)</span>
+</span><span data-line="22"><span class="w">  </span><span class="k">[deformation_rate]</span>
+</span><span data-line="23"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
+</span><span data-line="24"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;SR2(deformation_rate_single.data.unsqueeze(0).expand(100, 20, 6).contiguous())&#39;</span>
+</span><span data-line="25"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="26"><span class="w">  </span><span class="c1"># vorticity single = FillWR2(w1=0.1, w2=-0.05, w3=-0.05) batched (20,)</span>
+</span><span data-line="27"><span class="w">  </span><span class="k">[vorticity_single]</span>
+</span><span data-line="28"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
+</span><span data-line="29"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;WR2(torch.tensor([0.1, -0.05, -0.05], dtype=torch.float64).unsqueeze(0).expand(20, 3).contiguous())&#39;</span>
+</span><span data-line="30"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="31"><span class="w">  </span><span class="c1"># vorticity = LinspaceWR2(w_single, w_single, 100) -&gt; shape (100, 20, 3)</span>
+</span><span data-line="32"><span class="w">  </span><span class="k">[vorticity]</span>
+</span><span data-line="33"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
+</span><span data-line="34"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;WR2(vorticity_single.data.unsqueeze(0).expand(100, 20, 3).contiguous())&#39;</span>
+</span><span data-line="35"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="36">
+</span><span data-line="37"><span class="w">  </span><span class="c1"># Crystal geometry inputs: lattice parameter + slip direction + slip plane</span>
+</span><span data-line="38"><span class="w">  </span><span class="k">[a]</span>
+</span><span data-line="39"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
+</span><span data-line="40"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar(1.0)&#39;</span>
+</span><span data-line="41"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="42"><span class="w">  </span><span class="k">[sdirs]</span>
+</span><span data-line="43"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
+</span><span data-line="44"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;MillerIndex(torch.tensor([1, 1, 0], dtype=torch.int64))&#39;</span>
+</span><span data-line="45"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="46"><span class="w">  </span><span class="k">[splanes]</span>
+</span><span data-line="47"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
+</span><span data-line="48"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;MillerIndex(torch.tensor([1, 1, 1], dtype=torch.int64))&#39;</span>
+</span><span data-line="49"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="50">
+</span><span data-line="51"><span class="w">  </span><span class="c1"># Initial orientation = FillRot(R1, R2, R3, method=&#39;standard&#39;):</span>
+</span><span data-line="52"><span class="w">  </span><span class="c1"># convert standard Rodrigues r_std to modified-Rodrigues parameters via</span>
+</span><span data-line="53"><span class="w">  </span><span class="c1"># r = r_std / (sqrt(|r_std|^2 + 1) + 1). Shape (20, 3).</span>
+</span><span data-line="54"><span class="w">  </span><span class="k">[initial_orientation]</span>
+</span><span data-line="55"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
+</span><span data-line="56"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Rot((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))&#39;</span>
+</span><span data-line="57"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="58"><span class="k">[]</span>
+</span><span data-line="59">
+</span><span data-line="60"><span class="k">[Drivers]</span>
+</span><span data-line="61"><span class="w">  </span><span class="k">[driver]</span>
+</span><span data-line="62"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
+</span><span data-line="63"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model_with_stress&#39;</span>
+</span><span data-line="64"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
+</span><span data-line="65"><span class="w">    </span><span class="na">force_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;deformation_rate&#39;</span>
+</span><span data-line="66"><span class="w">    </span><span class="na">force_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;deformation_rate&#39;</span>
+</span><span data-line="67"><span class="w">    </span><span class="na">force_WR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;vorticity&#39;</span>
+</span><span data-line="68"><span class="w">    </span><span class="na">force_WR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;vorticity&#39;</span>
+</span><span data-line="69"><span class="w">    </span><span class="na">ic_Rot_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
+</span><span data-line="70"><span class="w">    </span><span class="na">ic_Rot_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;initial_orientation&#39;</span>
+</span><span data-line="71"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>
+</span><span data-line="72"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="73"><span class="w">  </span><span class="k">[regression]</span>
+</span><span data-line="74"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientRegression</span>
+</span><span data-line="75"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;driver&#39;</span>
+</span><span data-line="76"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gold/result.pt&#39;</span>
+</span><span data-line="77"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="78"><span class="k">[]</span>
+</span><span data-line="79">
+</span><span data-line="80"><span class="k">[Data]</span>
+</span><span data-line="81"><span class="w">  </span><span class="k">[crystal_geometry]</span>
+</span><span data-line="82"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CubicCrystal</span>
+</span><span data-line="83"><span class="w">    </span><span class="na">lattice_parameter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;a&#39;</span>
+</span><span data-line="84"><span class="w">    </span><span class="na">slip_directions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;sdirs&#39;</span>
+</span><span data-line="85"><span class="w">    </span><span class="na">slip_planes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;splanes&#39;</span>
+</span><span data-line="86"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="87"><span class="k">[]</span>
+</span><span data-line="88">
+</span><span data-line="89"><span class="k">[Models]</span>
+</span><span data-line="90"><span class="w">  </span><span class="k">[euler_rodrigues]</span>
+</span><span data-line="91"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">RotationMatrix</span>
+</span><span data-line="92"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
+</span><span data-line="93"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation_matrix&#39;</span>
+</span><span data-line="94"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="95"><span class="w">  </span><span class="k">[elasticity]</span>
+</span><span data-line="96"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
+</span><span data-line="97"><span class="w">    </span><span class="na">coefficients</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;1e5 0.25&#39;</span>
+</span><span data-line="98"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="99"><span class="w">    </span><span class="na">strain</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain&#39;</span>
+</span><span data-line="100"><span class="w">    </span><span class="na">stress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;cauchy_stress&#39;</span>
+</span><span data-line="101"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="102"><span class="w">  </span><span class="k">[resolved_shear]</span>
+</span><span data-line="103"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ResolvedShear</span>
+</span><span data-line="104"><span class="w">    </span><span class="na">stress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;cauchy_stress&#39;</span>
+</span><span data-line="105"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="106"><span class="w">  </span><span class="k">[elastic_stretch]</span>
+</span><span data-line="107"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ElasticStrainRate</span>
+</span><span data-line="108"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="109"><span class="w">  </span><span class="k">[plastic_spin]</span>
+</span><span data-line="110"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PlasticVorticity</span>
+</span><span data-line="111"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="112"><span class="w">  </span><span class="k">[plastic_deformation_rate]</span>
+</span><span data-line="113"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PlasticDeformationRate</span>
+</span><span data-line="114"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="115"><span class="w">  </span><span class="k">[orientation_rate]</span>
+</span><span data-line="116"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">OrientationRate</span>
+</span><span data-line="117"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="118"><span class="w">  </span><span class="k">[sum_slip_rates]</span>
+</span><span data-line="119"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SumSlipRates</span>
+</span><span data-line="120"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="121"><span class="w">  </span><span class="k">[slip_rule]</span>
+</span><span data-line="122"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PowerLawSlipRule</span>
+</span><span data-line="123"><span class="w">    </span><span class="na">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8.0</span>
+</span><span data-line="124"><span class="w">    </span><span class="na">gamma0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0e-1</span>
+</span><span data-line="125"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="126"><span class="w">  </span><span class="k">[slip_strength]</span>
+</span><span data-line="127"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SingleSlipStrengthMap</span>
+</span><span data-line="128"><span class="w">    </span><span class="na">constant_strength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span>
+</span><span data-line="129"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="130"><span class="w">  </span><span class="k">[voce_hardening]</span>
+</span><span data-line="131"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">VoceSingleSlipHardeningRule</span>
+</span><span data-line="132"><span class="w">    </span><span class="na">initial_slope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">500.0</span>
+</span><span data-line="133"><span class="w">    </span><span class="na">saturated_hardening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span>
+</span><span data-line="134"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="135"><span class="w">  </span><span class="k">[integrate_slip_hardening]</span>
+</span><span data-line="136"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
+</span><span data-line="137"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;slip_hardening&#39;</span>
+</span><span data-line="138"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="139"><span class="w">  </span><span class="k">[integrate_elastic_strain]</span>
+</span><span data-line="140"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SR2BackwardEulerTimeIntegration</span>
+</span><span data-line="141"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain&#39;</span>
+</span><span data-line="142"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="143"><span class="w">  </span><span class="k">[integrate_orientation]</span>
+</span><span data-line="144"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">WR2ImplicitExponentialTimeIntegration</span>
+</span><span data-line="145"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
+</span><span data-line="146"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="147"><span class="w">  </span><span class="k">[implicit_rate]</span>
+</span><span data-line="148"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="149"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;</span><span class="err">euler_rodrigues elasticity orientation_rate resolved_shear</span>
+</span><span data-line="150"><span class="w">              </span><span class="na">elastic_stretch plastic_deformation_rate plastic_spin</span>
+</span><span data-line="151"><span class="w">              </span><span class="na">sum_slip_rates slip_rule slip_strength voce_hardening</span>
+</span><span data-line="152"><span class="w">              </span><span class="na">integrate_slip_hardening integrate_elastic_strain integrate_orientation&#39;</span>
+</span><span data-line="153"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="154"><span class="k">[]</span>
+</span><span data-line="155">
+</span><span data-line="156"><span class="k">[EquationSystems]</span>
+</span><span data-line="157"><span class="w">  </span><span class="k">[eq_sys]</span>
+</span><span data-line="158"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
+</span><span data-line="159"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;implicit_rate&#39;</span>
+</span><span data-line="160"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain slip_hardening orientation&#39;</span>
+</span><span data-line="161"><span class="w">    </span><span class="na">residuals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain_residual slip_hardening_residual orientation_residual&#39;</span>
+</span><span data-line="162"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="163"><span class="k">[]</span>
+</span><span data-line="164">
+</span><span data-line="165"><span class="k">[Solvers]</span>
+</span><span data-line="166"><span class="w">  </span><span class="k">[newton]</span>
+</span><span data-line="167"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NewtonWithLineSearch</span>
+</span><span data-line="168"><span class="w">    </span><span class="na">max_linesearch_iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span>
+</span><span data-line="169"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;lu&#39;</span>
+</span><span data-line="170"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="171"><span class="w">  </span><span class="k">[lu]</span>
+</span><span data-line="172"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
+</span><span data-line="173"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="174"><span class="k">[]</span>
+</span><span data-line="175">
+</span><span data-line="176"><span class="k">[Models]</span>
+</span><span data-line="177"><span class="w">  </span><span class="k">[cp_warmup_1]</span>
+</span><span data-line="178"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CrystalPlasticityStrainPredictor</span>
+</span><span data-line="179"><span class="w">    </span><span class="na">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+</span><span data-line="180"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="181"><span class="w">  </span><span class="k">[cp_warmup_2]</span>
+</span><span data-line="182"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
+</span><span data-line="183"><span class="w">    </span><span class="na">unknowns_Rot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
+</span><span data-line="184"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;slip_hardening&#39;</span>
+</span><span data-line="185"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="186"><span class="w">  </span><span class="k">[predictor]</span>
+</span><span data-line="187"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="188"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;cp_warmup_1 cp_warmup_2&#39;</span>
+</span><span data-line="189"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="190"><span class="w">  </span><span class="k">[model]</span>
+</span><span data-line="191"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
+</span><span data-line="192"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
+</span><span data-line="193"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="194"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;predictor&#39;</span>
+</span><span data-line="195"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="196"><span class="w">  </span><span class="k">[model_with_stress]</span>
+</span><span data-line="197"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="198"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model elasticity&#39;</span>
+</span><span data-line="199"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain&#39;</span>
+</span><span data-line="200"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="201"><span class="k">[]</span>
+</span></pre></div>
+</div>
+</div>
+</section>
+<section id="explanation">
+<h2>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">¶</a></h2>
+<p>The input is organized into the standard NEML2 blocks: <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> builds the load history and crystal-geometry inputs, <code class="docutils literal notranslate"><span class="pre">[Data]</span></code> materializes the slip systems, <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> declares the constitutive pieces, and <code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> / <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> wrap them in an implicit update.</p>
+<p><strong>Crystal geometry.</strong> <a class="reference internal" href="../../../generated/syntax/Data/CubicCrystal.html#data-cubiccrystal"><span class="std std-ref">CubicCrystal</span></a> enumerates the cubic slip systems given a lattice parameter, a Miller-index slip direction (<code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">1</span> <span class="pre">0</span></code>), and a Miller-index slip plane (<code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">1</span> <span class="pre">1</span></code>). Downstream models pick this up by referencing the standard name (<code class="docutils literal notranslate"><span class="pre">crystal_geometry</span></code>) without the user listing individual systems.</p>
+<p><strong>Kinematic chain.</strong> Working from the lattice frame to stress:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/common/RotationMatrix.html#models-rotationmatrix"><span class="std std-ref">RotationMatrix</span></a> converts the modified-Rodrigues <code class="docutils literal notranslate"><span class="pre">orientation</span></code> to a matrix <code class="docutils literal notranslate"><span class="pre">orientation_matrix</span></code> consumed by the other operators.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/elasticity/LinearIsotropicElasticity.html#models-linearisotropicelasticity"><span class="std std-ref">LinearIsotropicElasticity</span></a> maps <code class="docutils literal notranslate"><span class="pre">elastic_strain</span></code> to <code class="docutils literal notranslate"><span class="pre">cauchy_stress</span></code> via a Young’s modulus / Poisson’s ratio pair (anisotropic crystal elasticity is supported by swapping in an anisotropic elasticity model from the <a class="reference internal" href="elasticity.html#modules-solid-mechanics-elasticity"><span class="std std-ref">Elasticity</span></a> catalog).</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/ResolvedShear.html#models-resolvedshear"><span class="std std-ref">ResolvedShear</span></a> projects <code class="docutils literal notranslate"><span class="pre">cauchy_stress</span></code> onto each slip system to produce the resolved shears <span class="math notranslate nohighlight">\(\tau_i\)</span>.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/ElasticStrainRate.html#models-elasticstrainrate"><span class="std std-ref">ElasticStrainRate</span></a> and <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/OrientationRate.html#models-orientationrate"><span class="std std-ref">OrientationRate</span></a> realize the right-hand sides of the two governing rate equations above.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticDeformationRate.html#models-plasticdeformationrate"><span class="std std-ref">PlasticDeformationRate</span></a> and <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticVorticity.html#models-plasticvorticity"><span class="std std-ref">PlasticVorticity</span></a> assemble <span class="math notranslate nohighlight">\(d^p\)</span> and <span class="math notranslate nohighlight">\(w^p\)</span> from the slip rates <span class="math notranslate nohighlight">\(\dot{\gamma}_i\)</span> (Asaro’s sum) — or use <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticSpatialVelocityGradient.html#models-plasticspatialvelocitygradient"><span class="std std-ref">PlasticSpatialVelocityGradient</span></a> directly if you need <span class="math notranslate nohighlight">\(l^p\)</span> as a single tensor.</p></li>
+</ul>
+<p><strong>Slip kinetics and hardening.</strong> Three pieces close the constitutive loop:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SingleSlipStrengthMap.html#models-singleslipstrengthmap"><span class="std std-ref">SingleSlipStrengthMap</span></a> supplies the slip strength on every system — here a single constant <code class="docutils literal notranslate"><span class="pre">50.0</span></code> shared across systems, exposed as the variable <code class="docutils literal notranslate"><span class="pre">slip_strength</span></code>.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PowerLawSlipRule.html#models-powerlawsliprule"><span class="std std-ref">PowerLawSlipRule</span></a> computes the slip rate on each system from the resolved shear and the slip strength, <span class="math notranslate nohighlight">\(\dot{\gamma}_i = \dot{\gamma}_0 \,|\tau_i/\bar{\tau}|^{n} \operatorname{sgn}(\tau_i)\)</span>, with <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">=</span> <span class="pre">8.0</span></code> and reference rate <code class="docutils literal notranslate"><span class="pre">gamma0</span> <span class="pre">=</span> <span class="pre">2e-1</span></code>.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SumSlipRates.html#models-sumsliprates"><span class="std std-ref">SumSlipRates</span></a> reduces the per-system rates to a scalar accumulated slip used as the hardening driver.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.html#models-vocesinglesliphardeningrule"><span class="std std-ref">VoceSingleSlipHardeningRule</span></a> evolves a single <code class="docutils literal notranslate"><span class="pre">slip_hardening</span></code> scalar Voce-style toward a saturation value (initial slope <code class="docutils literal notranslate"><span class="pre">500</span></code>, saturated hardening <code class="docutils literal notranslate"><span class="pre">50</span></code>). For density-based forms swap in <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PerSlipForestDislocationEvolution.html#models-perslipforestdislocationevolution"><span class="std std-ref">PerSlipForestDislocationEvolution</span></a> and <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a>; for linear hardening swap in <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.html#models-linearsinglesliphardeningrule"><span class="std std-ref">LinearSingleSlipHardeningRule</span></a>.</p></li>
+</ul>
+<p><strong>Integration and solve.</strong> Three backward-Euler-flavored integrators turn the rate equations into algebraic residuals:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html#models-sr2backwardeulertimeintegration"><span class="std std-ref">SR2BackwardEulerTimeIntegration</span></a> on <code class="docutils literal notranslate"><span class="pre">elastic_strain</span></code>,</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarBackwardEulerTimeIntegration.html#models-scalarbackwardeulertimeintegration"><span class="std std-ref">ScalarBackwardEulerTimeIntegration</span></a> on <code class="docutils literal notranslate"><span class="pre">slip_hardening</span></code>,</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/Models/common/WR2ImplicitExponentialTimeIntegration.html#models-wr2implicitexponentialtimeintegration"><span class="std std-ref">WR2ImplicitExponentialTimeIntegration</span></a> on <code class="docutils literal notranslate"><span class="pre">orientation</span></code> — an exponential map appropriate for rotations, used here in its implicit (coupled) form.</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> block names the three unknowns (<code class="docutils literal notranslate"><span class="pre">elastic_strain</span> <span class="pre">slip_hardening</span> <span class="pre">orientation</span></code>) and their residuals, and <a class="reference internal" href="../../../generated/syntax/Solvers/NewtonWithLineSearch.html#solvers-newtonwithlinesearch"><span class="std std-ref">NewtonWithLineSearch</span></a> drives them to zero with a <a class="reference internal" href="../../../generated/syntax/Solvers/DenseLU.html#solvers-denselu"><span class="std std-ref">DenseLU</span></a> inner solver.</p>
+<p><strong>Predictor.</strong> A fresh-from-elastic guess often struggles to converge for crystal plasticity, so a two-stage predictor warms the unknowns: <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/CrystalPlasticityStrainPredictor.html#models-crystalplasticitystrainpredictor"><span class="std std-ref">CrystalPlasticityStrainPredictor</span></a> seeds the elastic strain from a fraction (<code class="docutils literal notranslate"><span class="pre">scale</span> <span class="pre">=</span> <span class="pre">0.1</span></code>) of the imposed strain increment, and <a class="reference internal" href="../../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html#models-constantextrapolationpredictor"><span class="std std-ref">ConstantExtrapolationPredictor</span></a> copies the previous-step values of <code class="docutils literal notranslate"><span class="pre">orientation</span></code> and <code class="docutils literal notranslate"><span class="pre">slip_hardening</span></code> forward. Wrapped in <a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html#models-implicitupdate"><span class="std std-ref">ImplicitUpdate</span></a>, this becomes the per-step solve.</p>
+<p>The final <code class="docutils literal notranslate"><span class="pre">model_with_stress</span></code> composes the implicit update with the elasticity model and an <code class="docutils literal notranslate"><span class="pre">additional_outputs</span> <span class="pre">=</span> <span class="pre">'elastic_strain'</span></code> so the driver records both stress and strain over the load path.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you need to <em>post-process</em> an orientation (e.g. wrap the modified-Rodrigues parameters back into the fundamental zone before writing output), append a <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/FixOrientation.html#models-fixorientation"><span class="std std-ref">FixOrientation</span></a> model to the chain.</p>
+</div>
+</section>
+<section id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="elasticity.html#modules-solid-mechanics-elasticity"><span class="std std-ref">Elasticity</span></a> — anisotropic elasticity tensors to pair with the crystal kinematics here.</p></li>
+<li><p><a class="reference internal" href="plasticity.html#modules-solid-mechanics-plasticity"><span class="std std-ref">Plasticity</span></a> — the macroscopic (J2 / phenomenological) counterpart to per-slip hardening.</p></li>
+<li><p><a class="reference internal" href="kinematics.html#modules-solid-mechanics-kinematics"><span class="std std-ref">Kinematics</span></a> — finite-strain kinematic helpers (deformation-rate / vorticity definitions) that drive the example above.</p></li>
+<li><p><a class="reference internal" href="../../tutorials/models/model_composition/main.html#tutorials-models-composition"><span class="std std-ref">Model composition</span></a> — how <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code> resolves dependencies between the many primitives wired up here.</p></li>
+<li><p><a class="reference internal" href="../../tutorials/models/implicit_model/main.html#tutorials-models-implicit-model"><span class="std std-ref">Implicit models</span></a> — the residual / <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> / <code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code> pattern used to integrate the rate equations.</p></li>
+<li><p><a class="reference internal" href="../../../generated/syntax/index.html#syntax-catalog"><span class="std std-ref">Syntax catalog</span></a> — the per-type option reference, auto-generated from each model’s docstring.</p></li>
+</ul>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="plasticity.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Plasticity</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="traction_separation_law.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Traction–separation laws</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, UChicago Argonne, LLC</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../../_static/documentation_options.js?v=50b65552"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=7abfc884"></script>
+      <script src="../../../_static/shibuya.js?v=50760d75"></script>
+      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../../../_static/components/scheduler-demos.js?v=7d35ecce"></script></body>
+</html>

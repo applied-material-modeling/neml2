@@ -1,0 +1,18 @@
+(models-RotParameterToVariable)=
+# RotParameterToVariable
+
+**Source:** `models/common/ParameterToVariable.py`
+
+Rot parameter-to-variable. Mirrors ``ParameterToVariable<Rot>``.
+
+## Outputs
+
+`to` &mdash; `output` &middot; `Rot` &middot; **required**
+: The name of the variable
+
+
+## Parameters
+
+`from` &mdash; `parameter` &middot; `Rot` &middot; **required**
+: The input parameter
+

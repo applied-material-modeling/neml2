@@ -1,0 +1,47 @@
+(models-PowerLawFullSeparation)=
+# PowerLawFullSeparation
+
+**Source:** `models/solid_mechanics/traction_separation_law/PowerLawFullSeparation.py`
+
+Mixed-mode full (failure) separation under the Alfano-Crisfield power-law criterion.
+Opening:
+$\delta_f = (2(1+\beta^2)/(K \delta_c)) [(1/G_{Ic})^\eta + (\beta^2/G_{IIc})^\eta]^{-1/\eta}$,
+where $\delta_c$ is the critical
+separation supplied by an upstream `CamanhoDavilaCriticalSeparation`. Compression:
+$\delta_f = 2 G_{IIc}/S$.
+
+## Inputs
+
+`normal_separation` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Normal separation (typically the Macaulay-positive part of the normal jump; used only to determine the opening / compression branch)
+
+
+## Outputs
+
+`full_separation` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Full (failure) separation
+
+
+## Parameters
+
+`mode_mixity` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Mode-mixity ratio. May be wired to an upstream `ModeMixity` (nonlinear-capable).
+
+`critical_separation` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Critical (damage-onset) separation. May be wired to an upstream `CamanhoDavilaCriticalSeparation` (nonlinear-capable).
+
+`penalty_stiffness` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Penalty stiffness
+
+`mode_I_fracture_toughness` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Mode I critical energy release rate
+
+`mode_II_fracture_toughness` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Mode II critical energy release rate
+
+`shear_strength` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Shear strength (used in compression branch)
+
+`eta` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Power-law exponent
+
