@@ -1,0 +1,38 @@
+(models-FiniteVolumeUpwindedAdvectiveFlux)=
+# FiniteVolumeUpwindedAdvectiveFlux
+
+**Source:** `models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.py`
+
+Compute upwinded advective fluxes at cell edges.
+
+.. math::
+
+    J_e = v_e \, \bigl(H(v_e) u_{e^-} + (1 - H(v_e)) u_{e^+}\bigr)
+
+where $v_e$ is the cell-edge advection velocity, $H$ is the Heaviside
+step ($1$ when $v_e > 0$, $0$ when $v_e < 0$), and $u_{e^\pm}$ are the
+cell-averaged values on the left ($e^-$) and right ($e^+$) of edge $e$.
+The Heaviside factor selects the upwind cell -- the cell from which
+information propagates with the velocity sign.
+
+The chain rule uses the same upwind coefficient::
+
+    dv_coeff = H u_left + (1 - H) u_right
+             = u_right + H (u_left - u_right)
+
+so ``J_e = v_e * dv_coeff`` and ``d J_e / d v_e = dv_coeff``.
+
+## Inputs
+
+`u` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Cell-averaged field values.
+
+`v_edge` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Cell-edge advection velocity values.
+
+
+## Outputs
+
+`flux` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Cell-edge advective fluxes.
+

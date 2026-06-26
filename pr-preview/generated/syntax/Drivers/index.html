@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="iris" data-content_root="../../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Drivers - NEML2 3.0.3</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="TransientDriver" href="TransientDriver.html" /><link rel="prev" title="NonlinearSystem" href="../EquationSystems/NonlinearSystem.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=1b4f28a4" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="Drivers"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../../index.html">
+      <img class="light-logo" src="../../../_static/logo_light.png" alt="NEML2" height="28" loading="lazy" />
+      <img class="dark-logo" src="../../../_static/logo_dark.png" alt="NEML2" height="28" loading="lazy" />
+      <strong>NEML2</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/installation/index.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/installation/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/installation/integration.html">C++ integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/installation/compatibility.html">Torch compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/installation/deps.html">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/installation/customization.html">Building from source</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/index.html">Working with models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/input_file.html">Input files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/running_your_first_model/main.html">Running your first model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/model_parameters/main.html">Model parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/evaluation_device/main.html">Evaluation device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/vectorization/main.html">Vectorization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/cross_referencing/main.html">Cross-referencing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/model_composition/main.html">Model composition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/model_parameters_revisited/main.html">Model parameters revisited</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/implicit_model/main.html">Implicit models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/transient_driver/main.html">Transient driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/models/compiled_models/main.html">Compiled models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/index.html">Writing a custom model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/index.html">Parameter calibration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/cli_utilities.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/modules/index.html">Physics modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/chemical_reactions.html">Chemical reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/finite_volume.html">Finite volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/phase_field_fracture.html">Phase-field fracture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/porous_flow.html">Porous flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/solid_mechanics/index.html">Solid mechanics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/elasticity.html">Elasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/plasticity.html">Plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/kinematics.html">Kinematics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/migration/index.html">Migration guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/migration/212_300.html">Migrating from v2.x to v3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/migration/211_212.html">Migrating from v2.1.1 to v2.1.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/migration/200_210.html">Migrating from v2.0.0 to v2.1.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/model_compilation/index.html">Model compilation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/model_compilation/pipeline.html">Compilation pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/model_compilation/aoti_packages.html">AOTI packages</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/tensor_types.html">Tensor types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/benchmark.html">Benchmarking</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Syntax catalog</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Models/index.html">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Models/AOTIModel.html">AOTIModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/AdvectiveStress.html">AdvectiveStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ArrheniusParameter.html">ArrheniusParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/AssociativeIsotropicPlasticHardening.html">AssociativeIsotropicPlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/AssociativeJ2FlowDirection.html">AssociativeJ2FlowDirection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/AssociativeKinematicPlasticHardening.html">AssociativeKinematicPlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/AssociativePlasticFlow.html">AssociativePlasticFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/AvramiErofeevNucleation.html">AvramiErofeevNucleation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/BenzeggaghKenaneFullSeparation.html">BenzeggaghKenaneFullSeparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/BilinearTraction.html">BilinearTraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/BrooksCoreyCapillaryPressure.html">BrooksCoreyCapillaryPressure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/BurgersElement.html">BurgersElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CamanhoDavilaCriticalSeparation.html">CamanhoDavilaCriticalSeparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ChabochePlasticHardening.html">ChabochePlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ChemicalGibbsFreeEnergyDifference.html">ChemicalGibbsFreeEnergyDifference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ComposedModel.html">ComposedModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ContractingGeometry.html">ContractingGeometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CopyMillerIndex.html">CopyMillerIndex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CopyR2.html">CopyR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CopyRot.html">CopyRot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CopySR2.html">CopySR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CopySSR4.html">CopySSR4</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CopyScalar.html">CopyScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CopyVec.html">CopyVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CopyWR2.html">CopyWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CrackGeometricFunctionAT1.html">CrackGeometricFunctionAT1</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CrackGeometricFunctionAT2.html">CrackGeometricFunctionAT2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CrystalPlasticityStrainPredictor.html">CrystalPlasticityStrainPredictor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CubicElasticityTensor.html">CubicElasticityTensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CurrentConcentration.html">CurrentConcentration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/CylindricalChannelGeometry.html">CylindricalChannelGeometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/DiffusionLimitedReaction.html">DiffusionLimitedReaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/DislocationObstacleStrengthMap.html">DislocationObstacleStrengthMap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/EffectiveSaturation.html">EffectiveSaturation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/EffectiveVolume.html">EffectiveVolume</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ElasticStrainRate.html">ElasticStrainRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ExponentialLawPermeability.html">ExponentialLawPermeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/FBComplementarity.html">FBComplementarity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/FixOrientation.html">FixOrientation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/FredrickArmstrongPlasticHardening.html">FredrickArmstrongPlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/GTNYieldFunction.html">GTNYieldFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/GeneralElasticity.html">GeneralElasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/GreenLagrangeStrain.html">GreenLagrangeStrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/GursonCavitation.html">GursonCavitation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/IdealSolutionVolumetricDrivingForce.html">IdealSolutionVolumetricDrivingForce</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/IrreversibleScalar.html">IrreversibleScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/IsotropicElasticityTensor.html">IsotropicElasticityTensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/IsotropicMandelStress.html">IsotropicMandelStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/KelvinVoigtElement.html">KelvinVoigtElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/KineticFactor.html">KineticFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/KocksMeckingActivationEnergy.html">KocksMeckingActivationEnergy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/KocksMeckingFlowSwitch.html">KocksMeckingFlowSwitch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/KocksMeckingFlowViscosity.html">KocksMeckingFlowViscosity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/KocksMeckingIntercept.html">KocksMeckingIntercept</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/KocksMeckingRateSensitivity.html">KocksMeckingRateSensitivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/KocksMeckingYieldStress.html">KocksMeckingYieldStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/KozenyCarmanPermeability.html">KozenyCarmanPermeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/LinearDashpot.html">LinearDashpot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/LinearIsotropicElasticJ2TrialStressUpdate.html">LinearIsotropicElasticJ2TrialStressUpdate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/LinearIsotropicElasticity.html">LinearIsotropicElasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/LinearIsotropicHardening.html">LinearIsotropicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/LinearIsotropicStrainEnergyDensity.html">LinearIsotropicStrainEnergyDensity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/LinearKinematicHardening.html">LinearKinematicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/LinearSingleSlipHardeningRule.html">LinearSingleSlipHardeningRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/MacaulaySplit.html">MacaulaySplit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/MixedControlSetup.html">MixedControlSetup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ModeMixity.html">ModeMixity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/Normality.html">Normality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/NucleationBarrierAndCriticalRadius.html">NucleationBarrierAndCriticalRadius</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/NucleationFluxMagnitude.html">NucleationFluxMagnitude</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/OlevskySinteringStress.html">OlevskySinteringStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/OrientationRate.html">OrientationRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/OrthotropicLinearTraction.html">OrthotropicLinearTraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PerSlipForestDislocationEvolution.html">PerSlipForestDislocationEvolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PerzynaPlasticFlowRate.html">PerzynaPlasticFlowRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PhaseTransformationEigenstrain.html">PhaseTransformationEigenstrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PlasticDeformationRate.html">PlasticDeformationRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PlasticSpatialVelocityGradient.html">PlasticSpatialVelocityGradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PlasticVorticity.html">PlasticVorticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PowerDegradationFunction.html">PowerDegradationFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PowerLawFullSeparation.html">PowerLawFullSeparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PowerLawIsotropicHardeningStaticRecovery.html">PowerLawIsotropicHardeningStaticRecovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PowerLawKinematicHardeningStaticRecovery.html">PowerLawKinematicHardeningStaticRecovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PowerLawPermeability.html">PowerLawPermeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PowerLawSlipRule.html">PowerLawSlipRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/PrecipitateVolumeFraction.html">PrecipitateVolumeFraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ProjectedDiffusivitySum.html">ProjectedDiffusivitySum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/R2ConstantParameter.html">R2ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/R2Multiplication.html">R2Multiplication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/R2ToSR2.html">R2ToSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/R2ToWR2.html">R2ToWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/RateLimitedPrecipitateGrowthRate.html">RateLimitedPrecipitateGrowthRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/RationalDegradationFunction.html">RationalDegradationFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ResolvedShear.html">ResolvedShear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/RotConstantParameter.html">RotConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/RotInputParameter.html">RotInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/RotParameterToVariable.html">RotParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/RotationMatrix.html">RotationMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SFFKPrecipitationGrowthRate.html">SFFKPrecipitationGrowthRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2ConstantParameter.html">SR2ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2Determinant.html">SR2Determinant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2DynamicMean.html">SR2DynamicMean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2DynamicSum.html">SR2DynamicSum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2InputParameter.html">SR2InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2IntermediateMean.html">SR2IntermediateMean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2Invariant.html">SR2Invariant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2LinearCombination.html">SR2LinearCombination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2ToR2.html">SR2ToR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SR2VariableRate.html">SR2VariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SSR4ConstantParameter.html">SSR4ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SSR4InputParameter.html">SSR4InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SSR4ParameterToVariable.html">SSR4ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SalehaniIraniTraction.html">SalehaniIraniTraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarBackwardEulerTimeIntegration.html">ScalarBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarBilinearInterpolation.html">ScalarBilinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarMultiplication.html">ScalarMultiplication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarPNorm.html">ScalarPNorm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SemiInfiniteCoordinateTransform.html">SemiInfiniteCoordinateTransform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SingleSlipStrengthMap.html">SingleSlipStrengthMap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SlopeSaturationVoceIsotropicHardening.html">SlopeSaturationVoceIsotropicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SmearedDeltaSource.html">SmearedDeltaSource</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SumSlipRates.html">SumSlipRates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SwellingAndPhaseChangeDeformationJacobian.html">SwellingAndPhaseChangeDeformationJacobian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ThermalDeformationJacobian.html">ThermalDeformationJacobian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ThermalEigenstrain.html">ThermalEigenstrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VanGenuchtenCapillaryPressure.html">VanGenuchtenCapillaryPressure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VecComponents.html">VecComponents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VecConstantParameter.html">VecConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VecInputParameter.html">VecInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VecParameterToVariable.html">VecParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VecVariableRate.html">VecVariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VoceIsotropicHardening.html">VoceIsotropicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VoceSingleSlipHardeningRule.html">VoceSingleSlipHardeningRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VolumeAdjustDeformationGradient.html">VolumeAdjustDeformationGradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/VolumeChangeEigenstrain.html">VolumeChangeEigenstrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/WR2ConstantParameter.html">WR2ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/WR2ExplicitExponentialTimeIntegration.html">WR2ExplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/WR2ImplicitExponentialTimeIntegration.html">WR2ImplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/WR2InputParameter.html">WR2InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/WR2ParameterToVariable.html">WR2ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/WiechertElement.html">WiechertElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/YieldFunction.html">YieldFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ZeldovichFactor.html">ZeldovichFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Models/ZenerElement.html">ZenerElement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Tensors/index.html">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Tensors/CSVSR2.html">CSVSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Tensors/CSVScalar.html">CSVScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Tensors/CSVVec.html">CSVVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Tensors/CSVWR2.html">CSVWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Tensors/Python.html">Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Solvers/Newton.html">Newton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Solvers/SchurComplement.html">SchurComplement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../EquationSystems/index.html">Equation systems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../EquationSystems/NonlinearSystem.html">NonlinearSystem</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Drivers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="TransientDriver.html">TransientDriver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="TransientRegression.html">TransientRegression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Verification.html">Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Data/index.html">Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Data/CubicCrystal.html">CubicCrystal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/python_api/index.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.factory.html">neml2.factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.schema.html">neml2.schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.models.model.html">neml2.models.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.models.chain_rule.html">neml2.models.chain_rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.models.resolver.html">neml2.models.resolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.types.html">neml2.types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.models.html">neml2.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.solvers.html">neml2.solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.es.html">neml2.es</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.drivers.html">neml2.drivers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.data.html">neml2.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.user_tensors.html">neml2.user_tensors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.models.export.html">neml2.models.export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.aoti.html">neml2.aoti</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.pyzag.html">neml2.pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.cli.html">neml2.cli</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../../index.html"><span itemprop="name">NEML2</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">Syntax catalog</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Drivers</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section class="tex2jax_ignore mathjax_ignore" id="drivers">
+<span id="drivers-syntax"></span><h1>Drivers<a class="headerlink" href="#drivers" title="Link to this heading">¶</a></h1>
+<p>All registered <code class="docutils literal notranslate"><span class="pre">[Drivers]</span></code> types, autogenerated from <code class="docutils literal notranslate"><span class="pre">neml2-syntax</span> <span class="pre">--json</span></code>.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="TransientDriver.html">TransientDriver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TransientRegression.html">TransientRegression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Verification.html">Verification</a></li>
+</ul>
+</div>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="../EquationSystems/NonlinearSystem.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">NonlinearSystem</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="TransientDriver.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">TransientDriver</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, UChicago Argonne, LLC</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../../_static/documentation_options.js?v=9b3fc59f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=7abfc884"></script>
+      <script src="../../../_static/shibuya.js?v=50760d75"></script>
+      <script src="../../../_static/components/work-dispatcher.js?v=c1e866ab"></script>
+      <script src="../../../_static/components/static-hybrid-scheduler.js?v=b8078a97"></script>
+      <script src="../../../_static/components/simple-scheduler-demo.js?v=6a8f83f3"></script>
+      <script src="../../../_static/components/static-hybrid-scheduler-demo.js?v=a33d831a"></script></body>
+</html>

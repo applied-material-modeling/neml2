@@ -1,0 +1,30 @@
+(models-DumpInSmallestBin)=
+# DumpInSmallestBin
+
+**Source:** `models/finite_volume/DumpInSmallestBin.py`
+
+Dump the source magnitude into the smallest cell-center bin.
+
+``magnitude`` is a global Scalar (no sub-batch); ``cell_centers`` carries
+the per-cell sub-batch axis (``sub_batch_ndim=1``, size $N$); the output
+``dumped_source`` has the same per-cell sub-batch with first-cell value =
+``magnitude`` and zero elsewhere. ``magnitude`` therefore couples densely
+with the per-cell output -- declared in :attr:`list_deriv`.
+
+## Inputs
+
+`magnitude` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Source magnitude.
+
+
+## Outputs
+
+`dumped_source` &mdash; `output` &middot; `Scalar` &middot; default `state/dumped_source`
+: Source dumped into the smallest bin.
+
+
+## Parameters
+
+`cell_centers` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Cell center locations.
+

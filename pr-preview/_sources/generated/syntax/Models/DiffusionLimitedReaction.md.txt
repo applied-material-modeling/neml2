@@ -1,0 +1,58 @@
+(models-DiffusionLimitedReaction)=
+# DiffusionLimitedReaction
+
+**Source:** `models/chemical_reactions/DiffusionLimitedReaction.py`
+
+Diffusion-limited reaction rate for a shrinking-core product phase.
+
+Given the dimensionless inner radius :math:`r_i` and outer radius
+:math:`r_o` of the product phase, the liquid and solid reactivities
+:math:`R_l` and :math:`R_s` (both in :math:`[0, 1]`), the characteristic
+diffusion coefficient :math:`D` of the rate-limiting species, and the
+molar volume :math:`\omega` of that species, the volumetric reaction
+rate is
+
+.. math::
+
+    \dot{\alpha} = \frac{2 D R_l R_s}{\omega}
+                   \cdot \frac{r_o}{r_o - r_i + \delta}
+
+where :math:`\delta` is a small "dummy thickness" added to the product
+thickness :math:`r_o - r_i` to keep the rate finite at the start of the
+reaction.
+
+## Inputs
+
+`product_inner_radius` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Inner radius of the product phase
+
+`solid_inner_radius` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Inner radius of the solid phase
+
+`liquid_reactivity` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Reactivity of the liquid phase, between 0 and 1
+
+`solid_reactivity` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Reactivity of the solid phase, between 0 and 1
+
+
+## Outputs
+
+`reaction_rate` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Product phase substance volumetric rate of change
+
+
+## Parameters
+
+`diffusion_coefficient` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Diffusion coefficient of the rate-limiting species in the product phase
+
+
+## Other options
+
+`product_dummy_thickness` &mdash; `float` &middot; default `0.01`
+: Minimum product thickness to avoid division by 0
+
+`molar_volume` &mdash; `float` &middot; **required**
+: Molar volume of the rate-limiting (liquid) species
+

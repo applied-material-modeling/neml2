@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="iris" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Contributing - NEML2 3.0.3</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Model compilation" href="model_compilation/index.html" /><link rel="prev" title="Migrating from v2.0.0 to v2.1.0" href="migration/200_210.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=1b4f28a4" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="Contributing"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_light.png" alt="NEML2" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_dark.png" alt="NEML2" height="28" loading="lazy" />
+      <strong>NEML2</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation/index.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/integration.html">C++ integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/compatibility.html">Torch compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/deps.html">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/customization.html">Building from source</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/models/index.html">Working with models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/input_file.html">Input files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/running_your_first_model/main.html">Running your first model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/model_parameters/main.html">Model parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/evaluation_device/main.html">Evaluation device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/vectorization/main.html">Vectorization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/cross_referencing/main.html">Cross-referencing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/model_composition/main.html">Model composition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/model_parameters_revisited/main.html">Model parameters revisited</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/implicit_model/main.html">Implicit models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/transient_driver/main.html">Transient driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/models/compiled_models/main.html">Compiled models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/extension/index.html">Writing a custom model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/optimization/index.html">Parameter calibration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli_utilities.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/index.html">Physics modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules/chemical_reactions.html">Chemical reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/finite_volume.html">Finite volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/phase_field_fracture.html">Phase-field fracture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/porous_flow.html">Porous flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/solid_mechanics/index.html">Solid mechanics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/elasticity.html">Elasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/plasticity.html">Plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/kinematics.html">Kinematics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="migration/index.html">Migration guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="migration/212_300.html">Migrating from v2.x to v3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="migration/211_212.html">Migrating from v2.1.1 to v2.1.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="migration/200_210.html">Migrating from v2.0.0 to v2.1.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_compilation/index.html">Model compilation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="model_compilation/pipeline.html">Compilation pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_compilation/aoti_packages.html">AOTI packages</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tensor_types.html">Tensor types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmarking</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/syntax/index.html">Syntax catalog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../generated/syntax/Models/index.html">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/AOTIModel.html">AOTIModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/AdvectiveStress.html">AdvectiveStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ArrheniusParameter.html">ArrheniusParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/AssociativeIsotropicPlasticHardening.html">AssociativeIsotropicPlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/AssociativeJ2FlowDirection.html">AssociativeJ2FlowDirection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/AssociativeKinematicPlasticHardening.html">AssociativeKinematicPlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/AssociativePlasticFlow.html">AssociativePlasticFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/AvramiErofeevNucleation.html">AvramiErofeevNucleation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/BenzeggaghKenaneFullSeparation.html">BenzeggaghKenaneFullSeparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/BilinearTraction.html">BilinearTraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/BrooksCoreyCapillaryPressure.html">BrooksCoreyCapillaryPressure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/BurgersElement.html">BurgersElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CamanhoDavilaCriticalSeparation.html">CamanhoDavilaCriticalSeparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ChabochePlasticHardening.html">ChabochePlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ChemicalGibbsFreeEnergyDifference.html">ChemicalGibbsFreeEnergyDifference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ComposedModel.html">ComposedModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ContractingGeometry.html">ContractingGeometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CopyMillerIndex.html">CopyMillerIndex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CopyR2.html">CopyR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CopyRot.html">CopyRot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CopySR2.html">CopySR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CopySSR4.html">CopySSR4</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CopyScalar.html">CopyScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CopyVec.html">CopyVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CopyWR2.html">CopyWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CrackGeometricFunctionAT1.html">CrackGeometricFunctionAT1</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CrackGeometricFunctionAT2.html">CrackGeometricFunctionAT2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CrystalPlasticityStrainPredictor.html">CrystalPlasticityStrainPredictor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CubicElasticityTensor.html">CubicElasticityTensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CurrentConcentration.html">CurrentConcentration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/CylindricalChannelGeometry.html">CylindricalChannelGeometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/DiffusionLimitedReaction.html">DiffusionLimitedReaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/DislocationObstacleStrengthMap.html">DislocationObstacleStrengthMap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/EffectiveSaturation.html">EffectiveSaturation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/EffectiveVolume.html">EffectiveVolume</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ElasticStrainRate.html">ElasticStrainRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ExponentialLawPermeability.html">ExponentialLawPermeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/FBComplementarity.html">FBComplementarity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/FixOrientation.html">FixOrientation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/FredrickArmstrongPlasticHardening.html">FredrickArmstrongPlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/GTNYieldFunction.html">GTNYieldFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/GeneralElasticity.html">GeneralElasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/GreenLagrangeStrain.html">GreenLagrangeStrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/GursonCavitation.html">GursonCavitation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/IdealSolutionVolumetricDrivingForce.html">IdealSolutionVolumetricDrivingForce</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/IrreversibleScalar.html">IrreversibleScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/IsotropicElasticityTensor.html">IsotropicElasticityTensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/IsotropicMandelStress.html">IsotropicMandelStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/KelvinVoigtElement.html">KelvinVoigtElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/KineticFactor.html">KineticFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/KocksMeckingActivationEnergy.html">KocksMeckingActivationEnergy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/KocksMeckingFlowSwitch.html">KocksMeckingFlowSwitch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/KocksMeckingFlowViscosity.html">KocksMeckingFlowViscosity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/KocksMeckingIntercept.html">KocksMeckingIntercept</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/KocksMeckingRateSensitivity.html">KocksMeckingRateSensitivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/KocksMeckingYieldStress.html">KocksMeckingYieldStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/KozenyCarmanPermeability.html">KozenyCarmanPermeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/LinearDashpot.html">LinearDashpot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/LinearIsotropicElasticJ2TrialStressUpdate.html">LinearIsotropicElasticJ2TrialStressUpdate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/LinearIsotropicElasticity.html">LinearIsotropicElasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/LinearIsotropicHardening.html">LinearIsotropicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/LinearIsotropicStrainEnergyDensity.html">LinearIsotropicStrainEnergyDensity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/LinearKinematicHardening.html">LinearKinematicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/LinearSingleSlipHardeningRule.html">LinearSingleSlipHardeningRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/MacaulaySplit.html">MacaulaySplit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/MixedControlSetup.html">MixedControlSetup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ModeMixity.html">ModeMixity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/Normality.html">Normality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/NucleationBarrierAndCriticalRadius.html">NucleationBarrierAndCriticalRadius</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/NucleationFluxMagnitude.html">NucleationFluxMagnitude</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/OlevskySinteringStress.html">OlevskySinteringStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/OrientationRate.html">OrientationRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/OrthotropicLinearTraction.html">OrthotropicLinearTraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PerSlipForestDislocationEvolution.html">PerSlipForestDislocationEvolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PerzynaPlasticFlowRate.html">PerzynaPlasticFlowRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PhaseTransformationEigenstrain.html">PhaseTransformationEigenstrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PlasticDeformationRate.html">PlasticDeformationRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PlasticSpatialVelocityGradient.html">PlasticSpatialVelocityGradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PlasticVorticity.html">PlasticVorticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PowerDegradationFunction.html">PowerDegradationFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PowerLawFullSeparation.html">PowerLawFullSeparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PowerLawIsotropicHardeningStaticRecovery.html">PowerLawIsotropicHardeningStaticRecovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PowerLawKinematicHardeningStaticRecovery.html">PowerLawKinematicHardeningStaticRecovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PowerLawPermeability.html">PowerLawPermeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PowerLawSlipRule.html">PowerLawSlipRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/PrecipitateVolumeFraction.html">PrecipitateVolumeFraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ProjectedDiffusivitySum.html">ProjectedDiffusivitySum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/R2ConstantParameter.html">R2ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/R2Multiplication.html">R2Multiplication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/R2ToSR2.html">R2ToSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/R2ToWR2.html">R2ToWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/RateLimitedPrecipitateGrowthRate.html">RateLimitedPrecipitateGrowthRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/RationalDegradationFunction.html">RationalDegradationFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ResolvedShear.html">ResolvedShear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/RotConstantParameter.html">RotConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/RotInputParameter.html">RotInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/RotParameterToVariable.html">RotParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/RotationMatrix.html">RotationMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SFFKPrecipitationGrowthRate.html">SFFKPrecipitationGrowthRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2ConstantParameter.html">SR2ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2Determinant.html">SR2Determinant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2DynamicMean.html">SR2DynamicMean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2DynamicSum.html">SR2DynamicSum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2InputParameter.html">SR2InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2IntermediateMean.html">SR2IntermediateMean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2Invariant.html">SR2Invariant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2LinearCombination.html">SR2LinearCombination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2ToR2.html">SR2ToR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SR2VariableRate.html">SR2VariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SSR4ConstantParameter.html">SSR4ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SSR4InputParameter.html">SSR4InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SSR4ParameterToVariable.html">SSR4ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SalehaniIraniTraction.html">SalehaniIraniTraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarBackwardEulerTimeIntegration.html">ScalarBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarBilinearInterpolation.html">ScalarBilinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarMultiplication.html">ScalarMultiplication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarPNorm.html">ScalarPNorm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SemiInfiniteCoordinateTransform.html">SemiInfiniteCoordinateTransform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SingleSlipStrengthMap.html">SingleSlipStrengthMap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SlopeSaturationVoceIsotropicHardening.html">SlopeSaturationVoceIsotropicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SmearedDeltaSource.html">SmearedDeltaSource</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SumSlipRates.html">SumSlipRates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SwellingAndPhaseChangeDeformationJacobian.html">SwellingAndPhaseChangeDeformationJacobian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ThermalDeformationJacobian.html">ThermalDeformationJacobian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ThermalEigenstrain.html">ThermalEigenstrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VanGenuchtenCapillaryPressure.html">VanGenuchtenCapillaryPressure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VecComponents.html">VecComponents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VecConstantParameter.html">VecConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VecInputParameter.html">VecInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VecParameterToVariable.html">VecParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VecVariableRate.html">VecVariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VoceIsotropicHardening.html">VoceIsotropicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VoceSingleSlipHardeningRule.html">VoceSingleSlipHardeningRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VolumeAdjustDeformationGradient.html">VolumeAdjustDeformationGradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/VolumeChangeEigenstrain.html">VolumeChangeEigenstrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/WR2ConstantParameter.html">WR2ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/WR2ExplicitExponentialTimeIntegration.html">WR2ExplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/WR2ImplicitExponentialTimeIntegration.html">WR2ImplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/WR2InputParameter.html">WR2InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/WR2ParameterToVariable.html">WR2ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/WiechertElement.html">WiechertElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/YieldFunction.html">YieldFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ZeldovichFactor.html">ZeldovichFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Models/ZenerElement.html">ZenerElement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/syntax/Tensors/index.html">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Tensors/CSVSR2.html">CSVSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Tensors/CSVScalar.html">CSVScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Tensors/Python.html">Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Solvers/Newton.html">Newton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/syntax/EquationSystems/index.html">Equation systems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/EquationSystems/NonlinearSystem.html">NonlinearSystem</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/syntax/Drivers/index.html">Drivers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Drivers/TransientDriver.html">TransientDriver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Drivers/TransientRegression.html">TransientRegression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Drivers/Verification.html">Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/syntax/Data/index.html">Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../generated/syntax/Data/CubicCrystal.html">CubicCrystal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python_api/index.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.factory.html">neml2.factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.schema.html">neml2.schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.models.model.html">neml2.models.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.models.chain_rule.html">neml2.models.chain_rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.models.resolver.html">neml2.models.resolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.types.html">neml2.types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.models.html">neml2.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.solvers.html">neml2.solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.es.html">neml2.es</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.drivers.html">neml2.drivers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.data.html">neml2.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.user_tensors.html">neml2.user_tensors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.models.export.html">neml2.models.export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.aoti.html">neml2.aoti</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.pyzag.html">neml2.pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_api/neml2.cli.html">neml2.cli</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#source-setup">Source setup</a></li>
+<li><a class="reference internal" href="#pre-commit-hooks">Pre-commit hooks</a></li>
+<li><a class="reference internal" href="#tests">Tests</a></li>
+<li><a class="reference internal" href="#linting-and-formatting">Linting and formatting</a></li>
+<li><a class="reference internal" href="#type-checking">Type checking</a></li>
+<li><a class="reference internal" href="#coverage">Coverage</a></li>
+<li><a class="reference internal" href="#dependency-pinning">Dependency pinning</a></li>
+<li><a class="reference internal" href="#jupyter-notebooks">Jupyter notebooks</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#submitting-a-pull-request">Submitting a pull request</a></li>
+<li><a class="reference internal" href="#use-of-generative-ai">Use of generative AI</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">NEML2</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Contributing</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section class="tex2jax_ignore mathjax_ignore" id="contributing">
+<span id="id1"></span><h1>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">¶</a></h1>
+<p>A walkthrough of the development workflow for NEML2 contributors:
+cloning the repository, getting the tests green, the linters and type
+checkers wired into CI, the dependency-pinning machinery, and how to
+build the docs locally.</p>
+<p>If you are extending NEML2 with a new model, the
+<a class="reference internal" href="tutorials/extension/index.html#tutorials-extension"><span class="std std-ref">Writing a custom model</span></a> tutorials cover that side of the workflow
+in depth.</p>
+<section id="source-setup">
+<h2>Source setup<a class="headerlink" href="#source-setup" title="Link to this heading">¶</a></h2>
+<p>Clone and install the package in editable mode with the dev extras:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">git<span class="w"> </span>clone<span class="w"> </span>https://github.com/applied-material-modeling/neml2.git
+</span><span data-line="2"><span class="nb">cd</span><span class="w"> </span>neml2
+</span><span data-line="3">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>-v
+</span></pre></div>
+</div>
+<p>This drives <a class="reference external" href="https://scikit-build-core.readthedocs.io/">scikit-build-core</a>
+to compile the C++ extension and lays down the developer toolchain
+(<code class="docutils literal notranslate"><span class="pre">pytest</span></code>, <code class="docutils literal notranslate"><span class="pre">ruff</span></code>, <code class="docutils literal notranslate"><span class="pre">pyright</span></code>, <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code>, <code class="docutils literal notranslate"><span class="pre">sphinx</span></code>, …). The <code class="docutils literal notranslate"><span class="pre">-v</span></code> flag
+streams the CMake / Ninja output, which is useful when something fails
+to compile.</p>
+<p>If you only need C++ source builds (no Python install), see the preset
+table in <a class="reference internal" href="installation/customization.html#build-customization"><span class="std std-ref">Building from source</span></a>.</p>
+</section>
+<section id="pre-commit-hooks">
+<h2>Pre-commit hooks<a class="headerlink" href="#pre-commit-hooks" title="Link to this heading">¶</a></h2>
+<p>Install the hooks once per checkout:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pre-commit<span class="w"> </span>install
+</span></pre></div>
+</div>
+<p>From then on, every <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span></code> runs the configured hooks. The full
+set (<code class="docutils literal notranslate"><span class="pre">.pre-commit-config.yaml</span></code>):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">clang-format</span></code> — C++ formatter for files under <code class="docutils literal notranslate"><span class="pre">neml2/csrc/</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ruff</span></code> (lint with <code class="docutils literal notranslate"><span class="pre">--fix</span></code>, Python only) and <code class="docutils literal notranslate"><span class="pre">ruff-format</span></code> (Python plus
+notebook code cells) — Python lint + formatter.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nmhit-format</span></code> — formatter for HIT input files (<code class="docutils literal notranslate"><span class="pre">*.i</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">jupytext</span> <span class="pre">--sync</span></code> — keeps notebook <code class="docutils literal notranslate"><span class="pre">*.ipynb</span></code> files and their paired
+<code class="docutils literal notranslate"><span class="pre">*.md</span></code> mirrors in lockstep.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">check-notebook-executed</span></code> — fails if any code cell in a tracked
+<code class="docutils literal notranslate"><span class="pre">.ipynb</span></code> lacks an <code class="docutils literal notranslate"><span class="pre">execution_count</span></code>. Sphinx renders the committed
+outputs as-is, so re-run the notebook end-to-end before committing.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">check-copyright</span></code> — adds or refreshes the MIT copyright header on
+source files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">check-dependencies</span></code> — verifies that every version string flagged
+with <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">dependencies:</span> <span class="pre">&lt;DEP&gt;.&lt;FIELD&gt;</span></code> matches the canonical value in
+<code class="docutils literal notranslate"><span class="pre">scripts/dependencies.yaml</span></code> (see <a class="reference internal" href="#contributing-deps"><span class="std std-ref">Dependency pinning</span></a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">check-compat-matrix</span></code> / <code class="docutils literal notranslate"><span class="pre">render-compat-matrix</span></code> — keep the torch
+compatibility table in <code class="docutils literal notranslate"><span class="pre">doc/content/installation/compatibility.md</span></code>
+in sync with <code class="docutils literal notranslate"><span class="pre">compatibility.yaml</span></code>.</p></li>
+</ul>
+<p>Run the whole battery against the working tree at any time:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</span></pre></div>
+</div>
+</section>
+<section id="tests">
+<span id="contributing-tests"></span><h2>Tests<a class="headerlink" href="#tests" title="Link to this heading">¶</a></h2>
+<p>The test suite is <code class="docutils literal notranslate"><span class="pre">pytest</span></code>-driven and lives under <code class="docutils literal notranslate"><span class="pre">tests/</span></code>. Run the
+full suite:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pytest<span class="w"> </span>-v<span class="w"> </span>tests/
+</span></pre></div>
+</div>
+<p>Run a single file directly:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pytest<span class="w"> </span>-v<span class="w"> </span>tests/unit/test_factory.py
+</span></pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">tests/</span></code> tree has five top-level buckets — <code class="docutils literal notranslate"><span class="pre">unit/</span></code>, <code class="docutils literal notranslate"><span class="pre">models/</span></code>,
+<code class="docutils literal notranslate"><span class="pre">regression/</span></code>, <code class="docutils literal notranslate"><span class="pre">verification/</span></code>, and <code class="docutils literal notranslate"><span class="pre">aoti/</span></code> — each documented further
+below. The <a class="reference external" href="https://docs.pytest.org/en/stable/how-to/usage.html">pytest usage guide</a>
+documents the rich selector syntax (<code class="docutils literal notranslate"><span class="pre">-k</span> <span class="pre">expr</span></code>, <code class="docutils literal notranslate"><span class="pre">--lf</span></code>, parametrized
+test IDs, marker filters, …).</p>
+<p>The AOTI compile suite under <code class="docutils literal notranslate"><span class="pre">tests/aoti/</span></code> triggers an Inductor
+compile per scenario (noticeably slower than the rest of the suite)
+and runs by default; skip it with <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">--ignore=tests/aoti</span> <span class="pre">tests/</span></code>
+when you want the fast subset for an inner edit loop.</p>
+<p>VS Code users can drive the suite through the
+<a class="reference external" href="https://github.com/Microsoft/vscode-python">Python extension</a>; set
+<code class="docutils literal notranslate"><span class="pre">python.testing.pytestEnabled</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code> and point <code class="docutils literal notranslate"><span class="pre">pytestArgs</span></code> at
+<code class="docutils literal notranslate"><span class="pre">${workspaceFolder}/tests</span></code>.</p>
+</section>
+<section id="linting-and-formatting">
+<h2>Linting and formatting<a class="headerlink" href="#linting-and-formatting" title="Link to this heading">¶</a></h2>
+<p>Both linters run automatically through pre-commit, but you can invoke
+them directly:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ruff<span class="w"> </span>check<span class="w"> </span>.<span class="w">                 </span><span class="c1"># lint (with auto-fix: `ruff check --fix .`)</span>
+</span><span data-line="2">ruff<span class="w"> </span>format<span class="w"> </span>.<span class="w">                </span><span class="c1"># format</span>
+</span></pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">[tool.ruff]</span></code> section of <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> pins the enabled rule
+families (<code class="docutils literal notranslate"><span class="pre">E</span></code>, <code class="docutils literal notranslate"><span class="pre">F</span></code>, <code class="docutils literal notranslate"><span class="pre">W</span></code>, <code class="docutils literal notranslate"><span class="pre">I</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, <code class="docutils literal notranslate"><span class="pre">UP</span></code>) and configures <code class="docutils literal notranslate"><span class="pre">ruff</span> <span class="pre">format</span></code> as
+the canonical Python formatter. The <code class="docutils literal notranslate"><span class="pre">lint</span></code> job in
+<code class="docutils literal notranslate"><span class="pre">.github/workflows/python.yaml</span></code> gates every PR.</p>
+<p>For C++ formatting, ensure your editor or IDE picks up the
+<code class="docutils literal notranslate"><span class="pre">.clang-format</span></code> file at the repository root. The pre-commit hook covers
+the same files (<code class="docutils literal notranslate"><span class="pre">*.cxx</span></code>, <code class="docutils literal notranslate"><span class="pre">*.h</span></code>) on commit.</p>
+</section>
+<section id="type-checking">
+<h2>Type checking<a class="headerlink" href="#type-checking" title="Link to this heading">¶</a></h2>
+<p>Python type checking is performed by
+<a class="reference external" href="https://microsoft.github.io/pyright/">pyright</a>. The default scope
+(set in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> <code class="docutils literal notranslate"><span class="pre">[tool.pyright]</span></code>) is <code class="docutils literal notranslate"><span class="pre">neml2</span></code>, <code class="docutils literal notranslate"><span class="pre">tests</span></code>,
+<code class="docutils literal notranslate"><span class="pre">benchmark</span></code>, <code class="docutils literal notranslate"><span class="pre">scripts</span></code>, and <code class="docutils literal notranslate"><span class="pre">doc</span></code>. Run from the repository root:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pyright<span class="w">                      </span><span class="c1"># check everything in scope</span>
+</span><span data-line="2">pyright<span class="w"> </span>neml2/types<span class="w">          </span><span class="c1"># restrict to one subpath</span>
+</span></pre></div>
+</div>
+<p>CI runs <code class="docutils literal notranslate"><span class="pre">pyright</span></code> against the editable install (the <code class="docutils literal notranslate"><span class="pre">typecheck</span></code> job in
+<code class="docutils literal notranslate"><span class="pre">.github/workflows/python.yaml</span></code>); the editable install resolves
+<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">neml2.*</span></code> to the in-tree source, so pyright generally sees the
+same sources the test suite does.</p>
+</section>
+<section id="coverage">
+<h2>Coverage<a class="headerlink" href="#coverage" title="Link to this heading">¶</a></h2>
+<p>Python branch + line coverage is measured by <code class="docutils literal notranslate"><span class="pre">coverage.py</span></code> via the
+<code class="docutils literal notranslate"><span class="pre">pytest-cov</span></code> plugin (both pinned in the <code class="docutils literal notranslate"><span class="pre">[dev]</span></code> extras). Configuration
+lives in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> under <code class="docutils literal notranslate"><span class="pre">[tool.coverage.run]</span></code> /
+<code class="docutils literal notranslate"><span class="pre">[tool.coverage.report]</span></code>; the package source is <code class="docutils literal notranslate"><span class="pre">neml2/</span></code> and the
+runner uses branch coverage on top of line coverage.</p>
+<p>Local workflow:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pytest<span class="w"> </span>--cov<span class="w"> </span>tests/unit<span class="w"> </span>tests/models<span class="w"> </span>tests/aoti<span class="w">          </span><span class="c1"># terminal summary</span>
+</span><span data-line="2">pytest<span class="w"> </span>--cov<span class="w"> </span>--cov-report<span class="o">=</span>html<span class="w"> </span>tests/unit<span class="w"> </span>tests/models<span class="w"> </span>tests/aoti<span class="w">  </span><span class="c1"># → htmlcov/index.html</span>
+</span><span data-line="3">pytest<span class="w"> </span>-n<span class="w"> </span>auto<span class="w"> </span>--cov<span class="w"> </span>tests/unit<span class="w"> </span>tests/models<span class="w"> </span>tests/aoti<span class="w">  </span><span class="c1"># parallel (xdist-safe)</span>
+</span></pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">tests/regression/</span></code> and <code class="docutils literal notranslate"><span class="pre">tests/verification/</span></code> are deliberately omitted
+— their end-to-end runs duplicate coverage the unit and model suites
+already provide while multiplying the run time. The <code class="docutils literal notranslate"><span class="pre">coverage</span></code> CI job in
+<code class="docutils literal notranslate"><span class="pre">.github/workflows/python.yaml</span></code> runs the same subset and uploads the
+raw report as a workflow artifact.</p>
+</section>
+<section id="dependency-pinning">
+<span id="contributing-deps"></span><h2>Dependency pinning<a class="headerlink" href="#dependency-pinning" title="Link to this heading">¶</a></h2>
+<p>Versions of third-party dependencies are tracked in
+<code class="docutils literal notranslate"><span class="pre">scripts/dependencies.yaml</span></code> and propagated into source files
+(<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, <code class="docutils literal notranslate"><span class="pre">.github/workflows/*.yaml</span></code>, doc snippets, …) via
+inline annotations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># dependencies: torch.version_min</span>
+</span><span data-line="2"><span class="s2">&quot;torch&gt;=2.10.0&quot;</span><span class="p">,</span>
+</span></pre></div>
+</div>
+<p>The annotation line above the version literal tells the
+<code class="docutils literal notranslate"><span class="pre">scripts/dep_manager.py</span></code> tool which <code class="docutils literal notranslate"><span class="pre">scripts/dependencies.yaml</span></code> entry
+owns the value. Use the tool rather than editing version strings by
+hand:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">python<span class="w"> </span>scripts/dep_manager.py<span class="w"> </span>check<span class="w">                   </span><span class="c1"># CI-equivalent verify</span>
+</span><span data-line="2">python<span class="w"> </span>scripts/dep_manager.py<span class="w"> </span>list<span class="w">                    </span><span class="c1"># show all tracked deps</span>
+</span><span data-line="3">python<span class="w"> </span>scripts/dep_manager.py<span class="w"> </span>bump<span class="w"> </span>torch.version_min<span class="w"> </span><span class="m">2</span>.11.0<span class="w">   </span><span class="c1"># update + propagate</span>
+</span></pre></div>
+</div>
+<p>The torch compatibility matrix in <code class="docutils literal notranslate"><span class="pre">compatibility.yaml</span></code> is governed by
+its own tool, <code class="docutils literal notranslate"><span class="pre">scripts/compat_matrix.py</span></code>. Both tools are wired into
+pre-commit so a typo will be caught at commit time.</p>
+</section>
+<section id="jupyter-notebooks">
+<h2>Jupyter notebooks<a class="headerlink" href="#jupyter-notebooks" title="Link to this heading">¶</a></h2>
+<p>Executable notebooks live next to the tutorial markdown that frames
+them (currently
+<code class="docutils literal notranslate"><span class="pre">doc/content/tutorials/optimization/{deterministic,statistical}/main.ipynb</span></code>).
+Each notebook subfolder is self-contained: the notebook, its paired
+markdown mirror, and any HIT input file it loads (e.g. the shared
+<code class="docutils literal notranslate"><span class="pre">doc/content/tutorials/optimization/demo_model.i</span></code> referenced from both
+calibration notebooks via <code class="docutils literal notranslate"><span class="pre">../demo_model.i</span></code>).</p>
+<p>The paired-text workflow keeps notebooks reviewable and reproducible:</p>
+<ol class="arabic simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code> files are marked as binary in <code class="docutils literal notranslate"><span class="pre">.gitattributes</span></code> —
+their git diffs would otherwise be unreadable noise on metadata.</p></li>
+<li><p>Each <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code> is paired with a MyST markdown mirror via the
+<code class="docutils literal notranslate"><span class="pre">jupytext</span></code> pre-commit hook (<code class="docutils literal notranslate"><span class="pre">.jupytext.toml</span></code>). The <code class="docutils literal notranslate"><span class="pre">.md</span></code> is the
+review surface; PR diffs show meaningful cell-level changes.</p></li>
+<li><p><strong>Edit the <code class="docutils literal notranslate"><span class="pre">.ipynb</span></code>, never the paired <code class="docutils literal notranslate"><span class="pre">.md</span></code>.</strong> The hook regenerates
+the markdown.</p></li>
+<li><p>After modifying a notebook, run all cells before committing — the
+<code class="docutils literal notranslate"><span class="pre">check-notebook-executed</span></code> pre-commit hook blocks commits with
+unexecuted code cells. Sphinx renders notebooks into the docs with
+pre-baked outputs (no re-execution at build time), so a notebook
+with stale outputs ships stale outputs. The nightly <code class="docutils literal notranslate"><span class="pre">notebooks.yaml</span></code>
+workflow re-runs every notebook end-to-end and catches drift between
+PRs.</p></li>
+</ol>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h2>
+<p>The doc pipeline is <code class="docutils literal notranslate"><span class="pre">sphinx-build</span></code> driven by <code class="docutils literal notranslate"><span class="pre">doc/conf.py</span></code>, wrapped by
+<code class="docutils literal notranslate"><span class="pre">doc/scripts/build.sh</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>-v<span class="w">               </span><span class="c1"># sphinx + extensions land here</span>
+</span><span data-line="2">doc/scripts/build.sh<span class="w">                     </span><span class="c1"># build to doc/_build/html</span>
+</span><span data-line="3">xdg-open<span class="w"> </span>doc/_build/html/index.html<span class="w">      </span><span class="c1"># macOS: `open ...`</span>
+</span></pre></div>
+</div>
+<p>The wrapper runs <code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">-j</span> <span class="pre">auto</span> <span class="pre">-W</span> <span class="pre">--keep-going</span></code> with the
+jupyter-cache pre-create workaround that lets parallel myst-nb workers
+build without racing. <code class="docutils literal notranslate"><span class="pre">--help</span></code> lists every flag; the useful ones:
+<code class="docutils literal notranslate"><span class="pre">--clean</span></code> for a cold rebuild, <code class="docutils literal notranslate"><span class="pre">--serve</span></code> to start <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">http.server</span></code>
+on <code class="docutils literal notranslate"><span class="pre">127.0.0.1:8765</span></code> (prints the SSH-tunnel command), <code class="docutils literal notranslate"><span class="pre">--port</span></code>,
+<code class="docutils literal notranslate"><span class="pre">--dest</span></code>, <code class="docutils literal notranslate"><span class="pre">--no-strict</span></code>.</p>
+<p>For live preview during editing:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">sphinx-autobuild<span class="w"> </span>doc<span class="w"> </span>doc/_build/html
+</span></pre></div>
+</div>
+<p>This serves at <code class="docutils literal notranslate"><span class="pre">http://127.0.0.1:8000/</span></code> and rebuilds whenever anything
+under <code class="docutils literal notranslate"><span class="pre">doc/</span></code> changes.</p>
+<p>The syntax catalog under <code class="docutils literal notranslate"><span class="pre">/generated/syntax/</span></code> is regenerated from
+<code class="docutils literal notranslate"><span class="pre">neml2-syntax</span> <span class="pre">--json</span></code> on every build via a dedicated Sphinx extension.</p>
+</section>
+<section id="submitting-a-pull-request">
+<h2>Submitting a pull request<a class="headerlink" href="#submitting-a-pull-request" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://docs.github.com/en/get-started/quickstart/fork-a-repo">Fork</a>
+the repository on GitHub, then branch off <code class="docutils literal notranslate"><span class="pre">main</span></code> in your fork.</p></li>
+<li><p>Make your change, with tests where applicable.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">run</span> <span class="pre">--all-files</span></code> and <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">-v</span> <span class="pre">tests/</span></code> locally.</p></li>
+<li><p>Push and open a PR against the upstream <code class="docutils literal notranslate"><span class="pre">main</span></code>. CI will run the
+same lint + test + typecheck matrix you ran locally, plus the
+wheel-build / torch-compat matrix defined in <code class="docutils literal notranslate"><span class="pre">.github/workflows/</span></code>.</p></li>
+<li><p>Address review feedback by pushing new commits on top. Once a
+reviewer is in the PR, please don’t force-push — it makes the
+round-over-round diff hard to follow. The maintainer will squash
+or rebase at merge time.</p></li>
+</ol>
+</section>
+<section id="use-of-generative-ai">
+<h2>Use of generative AI<a class="headerlink" href="#use-of-generative-ai" title="Link to this heading">¶</a></h2>
+<p>Contributions written with help from large language models or other
+generative-AI tools are welcome. Two ground rules:</p>
+<ol class="arabic">
+<li><p><strong>Disclose.</strong> Make it clear which parts of the change came from an
+AI tool. The two accepted forms are:</p>
+<ul class="simple">
+<li><p>A <code class="docutils literal notranslate"><span class="pre">Co-authored-by:</span></code> trailer on the relevant commit(s) naming the
+tool — e.g. <code class="docutils literal notranslate"><span class="pre">Co-authored-by:</span> <span class="pre">Claude</span> <span class="pre">&lt;noreply&#64;anthropic.com&gt;</span></code>.</p></li>
+<li><p>A short note in the PR description identifying which files or
+sections were AI-assisted.</p></li>
+</ul>
+<p>Either is fine; pick the one that fits the granularity of the help.
+Boilerplate-level autocomplete (a few-token IDE suggestion) doesn’t
+need to be called out.</p>
+</li>
+<li><p><strong>You own the result.</strong> Whoever opens the PR — not the AI — is
+responsible for the merged change: that it is correct, that it
+follows project conventions, that the tests cover it, and that the
+license and provenance of any embedded snippets are clean. Treat
+AI output the way you’d treat any other draft you didn’t write:
+read it carefully, run the tests, and rewrite anything you’d want
+changed in code review.</p></li>
+</ol>
+<p>This policy is intentionally permissive. If the volume or quality of
+AI-assisted PRs changes the calculus, we’ll revisit.</p>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="migration/200_210.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Migrating from v2.0.0 to v2.1.0</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="model_compilation/index.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Model compilation</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, UChicago Argonne, LLC</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=9b3fc59f"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=7abfc884"></script>
+      <script src="../_static/shibuya.js?v=50760d75"></script>
+      <script src="../_static/components/work-dispatcher.js?v=c1e866ab"></script>
+      <script src="../_static/components/static-hybrid-scheduler.js?v=b8078a97"></script>
+      <script src="../_static/components/simple-scheduler-demo.js?v=6a8f83f3"></script>
+      <script src="../_static/components/static-hybrid-scheduler-demo.js?v=a33d831a"></script></body>
+</html>

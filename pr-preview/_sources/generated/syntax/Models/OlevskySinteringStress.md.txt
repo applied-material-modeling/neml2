@@ -1,0 +1,30 @@
+(models-OlevskySinteringStress)=
+# OlevskySinteringStress
+
+**Source:** `models/solid_mechanics/plasticity/OlevskySinteringStress.py`
+
+Define the Olevsky-Skorohod sintering stress to be used in conjunction with poroplasticity
+yield functions such as the GTNYieldFunction. The sintering stress is defined as
+$\sigma_s = 3 \dfrac{\gamma}{r} \phi^2$, where $\gamma$ is the surface tension,
+$r$ is the size of the particles/powders, and $\phi$ is the void fraction.
+
+## Inputs
+
+`void_fraction` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Void fraction
+
+
+## Outputs
+
+`sintering_stress` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Sintering stress
+
+
+## Parameters
+
+`surface_tension` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Surface tension
+
+`particle_radius` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Particle radius
+

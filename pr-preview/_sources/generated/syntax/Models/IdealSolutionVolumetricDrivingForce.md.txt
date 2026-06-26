@@ -1,0 +1,45 @@
+(models-IdealSolutionVolumetricDrivingForce)=
+# IdealSolutionVolumetricDrivingForce
+
+**Source:** `models/kwn/IdealSolutionVolumetricDrivingForce.py`
+
+Ideal-solution volumetric Gibbs free energy of precipitation.
+
+Computes the molar Gibbs free energy of precipitation under the
+ideal-solution approximation,
+
+.. math::
+
+    \Delta g = R T \sum_k w_k \ln(c_k / c_k^{\mathrm{eq}}),
+
+where the sum runs over the species participating in the precipitate and
+:math:`w_k` are user-supplied stoichiometric weights (default 1, matching
+the Hu--Cocks "product of all components" convention for compound
+precipitates).
+
+## Inputs
+
+`temperature` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Temperature
+
+`current_concentrations` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Current matrix concentrations for each species participating in the precipitate
+
+
+## Outputs
+
+`driving_force` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Molar Gibbs free energy of precipitation
+
+
+## Parameters
+
+`gas_constant` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Universal gas constant
+
+`equilibrium_concentrations` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Equilibrium matrix concentrations for each species. May be supplied as constants or as outputs of upstream models (e.g. temperature-dependent interpolations).
+
+`weights` &mdash; `parameter` &middot; `Scalar` &middot; default `1`
+: Stoichiometric weights for each species. If a single entry is supplied, the same weight is used for every species. Default is unit weights for every species, matching the Hu--Cocks compound-precipitate convention.
+

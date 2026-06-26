@@ -1,0 +1,36 @@
+(models-KineticFactor)=
+# KineticFactor
+
+**Source:** `models/kwn/KineticFactor.py`
+
+Nucleation kinetic factor.
+
+Computes :math:`\beta = 4\pi \, (N_a / V_m)^{4/3} \, R_{\mathrm{crit}}^2 /
+\mathrm{sum}`, where :math:`R_{\mathrm{crit}}` is the critical radius for
+nucleation, :math:`\mathrm{sum}` is the projected diffusivity sum,
+:math:`V_m` is the molar volume of the precipitate, and :math:`N_a` is
+Avogadro's number.
+
+## Inputs
+
+`critical_radius` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Critical radius for nucleation
+
+`projected_diffusivity_sum` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Projected diffusivity sum
+
+
+## Outputs
+
+`kinetic_factor` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Kinetic factor for nucleation
+
+
+## Parameters
+
+`molar_volume` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Molar volume of the precipitate
+
+`avogadro_number` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Avogadro's number
+

@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1078" width="600" height="1078" role="img" aria-label="neml2-compile AOTI compilation pipeline">
+<title>neml2-compile compilation pipeline</title>
+<defs>
+<marker id="ah" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+<path class="ah" d="M0,0 L6,3 L0,6 Z"/>
+</marker>
+</defs>
+<style>text { font-family:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.mono { font-family: ui-monospace,'SF Mono', Menlo, Consolas, monospace; font-size: 0.92em; }
+.t { fill:#1c2024; } .m { fill:#62656c; } .sub { fill:#8b8d98; letter-spacing:.02em; }
+.ttl { fill:#5b5bd6; letter-spacing:.08em; }
+.bx  { fill:#ffffff; stroke:#d9d9e0; stroke-width:1.4; }
+.bxa { fill:#ffffff; stroke:#5b5bd6; stroke-width:1.8; }
+.stp { fill:#ffffff; stroke:#e3e3e9; stroke-width:1.2; }
+.io  { fill:#f1f1fb; stroke:#d2d2ea; stroke-width:1.3; }
+.cont{ fill:#f7f7fb; stroke:#dadae3; stroke-width:1.3; stroke-dasharray:5 4; }
+.ln  { stroke:#bcbccb; stroke-width:1.6; }
+.ah  { fill:#bcbccb; }
+.badge { fill:#5b5bd6; } .bt { fill:#ffffff; }
+@media (prefers-color-scheme: dark) {
+  .t { fill:#ecedef; } .m { fill:#9fa3ab; } .sub { fill:#8a8d96; }
+  .ttl { fill:#ada4ff; }
+  .bx  { fill:#202127; stroke:#34373f; }
+  .bxa { fill:#202127; stroke:#9d92f0; }
+  .stp { fill:#1c1d22; stroke:#33363d; }
+  .io  { fill:#1c1d2b; stroke:#3a3a55; }
+  .cont{ fill:#17181d; stroke:#2c2f36; }
+  .ln  { stroke:#474b53; } .ah { fill:#474b53; }
+  .badge { fill:#7c75e8; }
+}</style>
+<rect x="203.0" y="28" width="230" height="54" rx="10" class="io"/>
+<text x="318" y="51.0" class="t" font-size="13.5" text-anchor="middle" font-weight="600">HIT input file</text>
+<text x="318" y="68.0" class="m" font-size="10.5" text-anchor="middle"><tspan class="mono">model.i</tspan></text>
+<line x1="318" y1="84" x2="318" y2="100" class="ln" marker-end="url(#ah)"/>
+<rect x="193.0" y="102" width="250" height="58" rx="10" class="bxa"/>
+<text x="318" y="127.0" class="t" font-size="13.5" text-anchor="middle" font-weight="600">neml2-compile</text>
+<text x="318" y="144.0" class="m" font-size="10.5" text-anchor="middle"><tspan class="mono">aoti_compile.main</tspan></text>
+<line x1="318" y1="162" x2="318" y2="178" class="ln"/>
+<line x1="176" y1="178" x2="462" y2="178" class="ln"/>
+<line x1="176" y1="178" x2="176" y2="196" class="ln" marker-end="url(#ah)"/>
+<line x1="462" y1="178" x2="462" y2="196" class="ln" marker-end="url(#ah)"/>
+<rect x="24" y="196" width="300" height="628" rx="14" class="cont"/>
+<text x="40" y="218" class="ttl" font-size="11" text-anchor="start" font-weight="700">SUBSYSTEM 1</text>
+<text x="132" y="218" class="sub mono" font-size="11" text-anchor="start">export_model_for_aoti</text>
+<rect x="36.0" y="230" width="280" height="60" rx="10" class="stp"/>
+<circle cx="36.0" cy="260.0" r="13" class="badge"/>
+<text x="36.0" y="264.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">1</text>
+<text x="58.0" y="255" class="t" font-size="12.5" text-anchor="start" font-weight="600">Load the model</text>
+<text x="58.0" y="273" class="m" font-size="10" text-anchor="start">factory.get_model → live nn.Module</text>
+<rect x="36.0" y="304" width="280" height="60" rx="10" class="stp"/>
+<circle cx="36.0" cy="334.0" r="13" class="badge"/>
+<text x="36.0" y="338.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">2</text>
+<text x="58.0" y="329" class="t" font-size="12.5" text-anchor="start" font-weight="600">Validate + snapshot params</text>
+<text x="58.0" y="347" class="m" font-size="10" text-anchor="start">promoted params (-p NAME), record values</text>
+<rect x="36.0" y="378" width="280" height="60" rx="10" class="stp"/>
+<circle cx="36.0" cy="408.0" r="13" class="badge"/>
+<text x="36.0" y="412.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">3</text>
+<text x="58.0" y="403" class="t" font-size="12.5" text-anchor="start" font-weight="600">Re-route through NLParam</text>
+<text x="58.0" y="421" class="m" font-size="10" text-anchor="start">promoted params become graph inputs</text>
+<rect x="36.0" y="452" width="280" height="60" rx="10" class="stp"/>
+<circle cx="36.0" cy="482.0" r="13" class="badge"/>
+<text x="36.0" y="486.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">4</text>
+<text x="58.0" y="477" class="t" font-size="12.5" text-anchor="start" font-weight="600">Freeze params → buffers</text>
+<text x="58.0" y="495" class="m" font-size="10" text-anchor="start">remaining params baked as constants</text>
+<rect x="36.0" y="526" width="280" height="60" rx="10" class="stp"/>
+<circle cx="36.0" cy="556.0" r="13" class="badge"/>
+<text x="36.0" y="560.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">5</text>
+<text x="58.0" y="551" class="t" font-size="12.5" text-anchor="start" font-weight="600">Seed sub-batch shapes</text>
+<text x="58.0" y="569" class="m" font-size="10" text-anchor="start">from [Drivers] example inputs</text>
+<rect x="36.0" y="600" width="280" height="60" rx="10" class="stp"/>
+<circle cx="36.0" cy="630.0" r="13" class="badge"/>
+<text x="36.0" y="634.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">6</text>
+<text x="58.0" y="625" class="t" font-size="12.5" text-anchor="start" font-weight="600">Partition into segments</text>
+<text x="58.0" y="643" class="m" font-size="10" text-anchor="start">split at every ImplicitUpdate</text>
+<rect x="36.0" y="674" width="280" height="60" rx="10" class="stp"/>
+<circle cx="36.0" cy="704.0" r="13" class="badge"/>
+<text x="36.0" y="708.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">7</text>
+<text x="58.0" y="699" class="t" font-size="12.5" text-anchor="start" font-weight="600">Trace · lower · package</text>
+<text x="58.0" y="717" class="m" font-size="10" text-anchor="start">torch.export + AOTI · ELF stack patch</text>
+<line x1="176" y1="290" x2="176" y2="304" class="ln" marker-end="url(#ah)"/>
+<line x1="176" y1="364" x2="176" y2="378" class="ln" marker-end="url(#ah)"/>
+<line x1="176" y1="438" x2="176" y2="452" class="ln" marker-end="url(#ah)"/>
+<line x1="176" y1="512" x2="176" y2="526" class="ln" marker-end="url(#ah)"/>
+<line x1="176" y1="586" x2="176" y2="600" class="ln" marker-end="url(#ah)"/>
+<line x1="176" y1="660" x2="176" y2="674" class="ln" marker-end="url(#ah)"/>
+<line x1="176" y1="734" x2="176" y2="746" class="ln"/>
+<line x1="109" y1="746" x2="243" y2="746" class="ln"/>
+<line x1="109" y1="746" x2="109" y2="756" class="ln" marker-end="url(#ah)"/>
+<line x1="243" y1="746" x2="243" y2="756" class="ln" marker-end="url(#ah)"/>
+<rect x="44.0" y="756" width="130" height="52" rx="10" class="io"/>
+<text x="109" y="778.0" class="t" font-size="12" text-anchor="middle" font-weight="600">.pt2 graphs</text>
+<text x="109" y="795.0" class="m" font-size="9.5" text-anchor="middle">one per segment</text>
+<rect x="178.0" y="756" width="130" height="52" rx="10" class="io"/>
+<text x="243" y="778.0" class="t" font-size="12" text-anchor="middle" font-weight="600">metadata JSON</text>
+<text x="243" y="795.0" class="m" font-size="9.5" text-anchor="middle">the on-disk spec</text>
+<line x1="109" y1="808" x2="109" y2="820" class="ln"/>
+<line x1="243" y1="808" x2="243" y2="820" class="ln"/>
+<line x1="109" y1="820" x2="243" y2="820" class="ln"/>
+<line x1="176" y1="820" x2="176" y2="856" class="ln"/>
+<rect x="348" y="196" width="228" height="176" rx="14" class="cont"/>
+<text x="362" y="218" class="ttl" font-size="11" text-anchor="start" font-weight="700">SUBSYSTEM 2</text>
+<text x="454" y="218" class="sub mono" font-size="11" text-anchor="start">emit_aoti_stub</text>
+<rect x="362.0" y="230" width="200" height="58" rx="10" class="bx"/>
+<text x="462" y="255.0" class="t" font-size="13.5" text-anchor="middle" font-weight="600">emit_aoti_stub</text>
+<text x="462" y="272.0" class="m" font-size="10.5" text-anchor="middle">rewrite the source HIT file</text>
+<line x1="462" y1="288" x2="462" y2="308" class="ln" marker-end="url(#ah)"/>
+<rect x="362.0" y="308" width="200" height="52" rx="10" class="io"/>
+<text x="462" y="330.0" class="t" font-size="13" text-anchor="middle" font-weight="600">&lt;name&gt;_aoti.i</text>
+<text x="462" y="347.0" class="m" font-size="10" text-anchor="middle"><tspan class="mono">type = AOTIModel</tspan> shim</text>
+<line x1="462" y1="360" x2="462" y2="856" class="ln"/>
+<line x1="176" y1="856" x2="462" y2="856" class="ln"/>
+<line x1="318" y1="856" x2="318" y2="872" class="ln" marker-end="url(#ah)"/>
+<rect x="188.0" y="872" width="260" height="50" rx="10" class="bx"/>
+<text x="318" y="893.0" class="t" font-size="13" text-anchor="middle" font-weight="600">neml2.load_model</text>
+<text x="318" y="910.0" class="m" font-size="10.5" text-anchor="middle">loads the shim</text>
+<line x1="318" y1="922" x2="318" y2="940" class="ln" marker-end="url(#ah)"/>
+<rect x="180.0" y="942" width="276" height="60" rx="10" class="bxa"/>
+<text x="318" y="968.0" class="t" font-size="13.5" text-anchor="middle" font-weight="600">neml2::aoti::Model</text>
+<text x="318" y="985.0" class="m" font-size="10.5" text-anchor="middle">dispatches each call to its .pt2</text>
+<text x="318" y="1026" class="m" font-size="9.5" text-anchor="middle">Both branches converge at load time: the shim points at the metadata,</text>
+<text x="318" y="1040" class="m" font-size="9.5" text-anchor="middle">which the runtime reads to dispatch each call to the matching .pt2 graph.</text>
+<text x="318" y="1058" class="sub" font-size="9.5" text-anchor="middle">Implicit segment → rhs · step · ift (+predictor)      Forward segment → value (+jvp)</text>
+</svg>

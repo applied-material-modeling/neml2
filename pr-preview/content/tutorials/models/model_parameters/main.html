@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="iris" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Model parameters - NEML2 3.0.3</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Evaluation device" href="../evaluation_device/main.html" /><link rel="prev" title="Running your first model" href="../running_your_first_model/main.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=1b4f28a4" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="Model parameters"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../../../index.html">
+      <img class="light-logo" src="../../../../_static/logo_light.png" alt="NEML2" height="28" loading="lazy" />
+      <img class="dark-logo" src="../../../../_static/logo_dark.png" alt="NEML2" height="28" loading="lazy" />
+      <strong>NEML2</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation/integration.html">C++ integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation/compatibility.html">Torch compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation/deps.html">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation/customization.html">Building from source</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Working with models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../input_file.html">Input files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../running_your_first_model/main.html">Running your first model</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Model parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../evaluation_device/main.html">Evaluation device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../vectorization/main.html">Vectorization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cross_referencing/main.html">Cross-referencing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../model_composition/main.html">Model composition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../model_parameters_revisited/main.html">Model parameters revisited</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../implicit_model/main.html">Implicit models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../transient_driver/main.html">Transient driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../compiled_models/main.html">Compiled models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension/index.html">Writing a custom model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../extension/connection_to_input_files/main.html">Connecting to input files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../extension/model_composition/main.html">Composing with existing models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../optimization/index.html">Parameter calibration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../optimization/parameter_calibration/main.html">Parameter calibration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../optimization/deterministic/main.html">Deterministic material model calibration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../optimization/statistical/main.html">Statistical material model learning</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli_utilities.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">Physics modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/chemical_reactions.html">Chemical reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/finite_volume.html">Finite volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/phase_field_fracture.html">Phase-field fracture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/porous_flow.html">Porous flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../modules/solid_mechanics/elasticity.html">Elasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../modules/solid_mechanics/plasticity.html">Plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../modules/solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../modules/solid_mechanics/kinematics.html">Kinematics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../migration/index.html">Migration guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../migration/212_300.html">Migrating from v2.x to v3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../migration/211_212.html">Migrating from v2.1.1 to v2.1.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../migration/200_210.html">Migrating from v2.0.0 to v2.1.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../model_compilation/index.html">Model compilation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../model_compilation/pipeline.html">Compilation pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../model_compilation/aoti_packages.html">AOTI packages</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tensor_types.html">Tensor types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../benchmark.html">Benchmarking</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../generated/syntax/index.html">Syntax catalog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Models/index.html">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/AOTIModel.html">AOTIModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/AdvectiveStress.html">AdvectiveStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ArrheniusParameter.html">ArrheniusParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/AssociativeIsotropicPlasticHardening.html">AssociativeIsotropicPlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/AssociativeJ2FlowDirection.html">AssociativeJ2FlowDirection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/AssociativeKinematicPlasticHardening.html">AssociativeKinematicPlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/AssociativePlasticFlow.html">AssociativePlasticFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/AvramiErofeevNucleation.html">AvramiErofeevNucleation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/BenzeggaghKenaneFullSeparation.html">BenzeggaghKenaneFullSeparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/BilinearTraction.html">BilinearTraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/BrooksCoreyCapillaryPressure.html">BrooksCoreyCapillaryPressure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/BurgersElement.html">BurgersElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CamanhoDavilaCriticalSeparation.html">CamanhoDavilaCriticalSeparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ChabochePlasticHardening.html">ChabochePlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ChemicalGibbsFreeEnergyDifference.html">ChemicalGibbsFreeEnergyDifference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ComposedModel.html">ComposedModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ContractingGeometry.html">ContractingGeometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CopyMillerIndex.html">CopyMillerIndex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CopyR2.html">CopyR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CopyRot.html">CopyRot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CopySR2.html">CopySR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CopySSR4.html">CopySSR4</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CopyScalar.html">CopyScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CopyVec.html">CopyVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CopyWR2.html">CopyWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CrackGeometricFunctionAT1.html">CrackGeometricFunctionAT1</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CrackGeometricFunctionAT2.html">CrackGeometricFunctionAT2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CrystalPlasticityStrainPredictor.html">CrystalPlasticityStrainPredictor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CubicElasticityTensor.html">CubicElasticityTensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CurrentConcentration.html">CurrentConcentration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/CylindricalChannelGeometry.html">CylindricalChannelGeometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/DiffusionLimitedReaction.html">DiffusionLimitedReaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/DislocationObstacleStrengthMap.html">DislocationObstacleStrengthMap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/EffectiveSaturation.html">EffectiveSaturation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/EffectiveVolume.html">EffectiveVolume</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ElasticStrainRate.html">ElasticStrainRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ExponentialLawPermeability.html">ExponentialLawPermeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/FBComplementarity.html">FBComplementarity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/FixOrientation.html">FixOrientation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/FredrickArmstrongPlasticHardening.html">FredrickArmstrongPlasticHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/GTNYieldFunction.html">GTNYieldFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/GeneralElasticity.html">GeneralElasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/GreenLagrangeStrain.html">GreenLagrangeStrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/GursonCavitation.html">GursonCavitation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/IdealSolutionVolumetricDrivingForce.html">IdealSolutionVolumetricDrivingForce</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/IrreversibleScalar.html">IrreversibleScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/IsotropicElasticityTensor.html">IsotropicElasticityTensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/IsotropicMandelStress.html">IsotropicMandelStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/KelvinVoigtElement.html">KelvinVoigtElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/KineticFactor.html">KineticFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/KocksMeckingActivationEnergy.html">KocksMeckingActivationEnergy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/KocksMeckingFlowSwitch.html">KocksMeckingFlowSwitch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/KocksMeckingFlowViscosity.html">KocksMeckingFlowViscosity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/KocksMeckingIntercept.html">KocksMeckingIntercept</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/KocksMeckingRateSensitivity.html">KocksMeckingRateSensitivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/KocksMeckingYieldStress.html">KocksMeckingYieldStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/KozenyCarmanPermeability.html">KozenyCarmanPermeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/LinearDashpot.html">LinearDashpot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/LinearIsotropicElasticJ2TrialStressUpdate.html">LinearIsotropicElasticJ2TrialStressUpdate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/LinearIsotropicElasticity.html">LinearIsotropicElasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/LinearIsotropicHardening.html">LinearIsotropicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/LinearIsotropicStrainEnergyDensity.html">LinearIsotropicStrainEnergyDensity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/LinearKinematicHardening.html">LinearKinematicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/LinearSingleSlipHardeningRule.html">LinearSingleSlipHardeningRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/MacaulaySplit.html">MacaulaySplit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/MixedControlSetup.html">MixedControlSetup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ModeMixity.html">ModeMixity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/Normality.html">Normality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/NucleationBarrierAndCriticalRadius.html">NucleationBarrierAndCriticalRadius</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/NucleationFluxMagnitude.html">NucleationFluxMagnitude</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/OlevskySinteringStress.html">OlevskySinteringStress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/OrientationRate.html">OrientationRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/OrthotropicLinearTraction.html">OrthotropicLinearTraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PerSlipForestDislocationEvolution.html">PerSlipForestDislocationEvolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PerzynaPlasticFlowRate.html">PerzynaPlasticFlowRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PhaseTransformationEigenstrain.html">PhaseTransformationEigenstrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PlasticDeformationRate.html">PlasticDeformationRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PlasticSpatialVelocityGradient.html">PlasticSpatialVelocityGradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PlasticVorticity.html">PlasticVorticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PowerDegradationFunction.html">PowerDegradationFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PowerLawFullSeparation.html">PowerLawFullSeparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PowerLawIsotropicHardeningStaticRecovery.html">PowerLawIsotropicHardeningStaticRecovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PowerLawKinematicHardeningStaticRecovery.html">PowerLawKinematicHardeningStaticRecovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PowerLawPermeability.html">PowerLawPermeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PowerLawSlipRule.html">PowerLawSlipRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/PrecipitateVolumeFraction.html">PrecipitateVolumeFraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ProjectedDiffusivitySum.html">ProjectedDiffusivitySum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/R2ConstantParameter.html">R2ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/R2Multiplication.html">R2Multiplication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/R2ToSR2.html">R2ToSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/R2ToWR2.html">R2ToWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/RateLimitedPrecipitateGrowthRate.html">RateLimitedPrecipitateGrowthRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/RationalDegradationFunction.html">RationalDegradationFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ResolvedShear.html">ResolvedShear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/RotConstantParameter.html">RotConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/RotInputParameter.html">RotInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/RotParameterToVariable.html">RotParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/RotationMatrix.html">RotationMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SFFKPrecipitationGrowthRate.html">SFFKPrecipitationGrowthRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2ConstantParameter.html">SR2ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2Determinant.html">SR2Determinant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2DynamicMean.html">SR2DynamicMean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2DynamicSum.html">SR2DynamicSum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2InputParameter.html">SR2InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2IntermediateMean.html">SR2IntermediateMean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2Invariant.html">SR2Invariant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2LinearCombination.html">SR2LinearCombination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2ToR2.html">SR2ToR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SR2VariableRate.html">SR2VariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SSR4ConstantParameter.html">SSR4ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SSR4InputParameter.html">SSR4InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SSR4ParameterToVariable.html">SSR4ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SalehaniIraniTraction.html">SalehaniIraniTraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarBackwardEulerTimeIntegration.html">ScalarBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarBilinearInterpolation.html">ScalarBilinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarMultiplication.html">ScalarMultiplication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarPNorm.html">ScalarPNorm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SemiInfiniteCoordinateTransform.html">SemiInfiniteCoordinateTransform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SingleSlipStrengthMap.html">SingleSlipStrengthMap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SlopeSaturationVoceIsotropicHardening.html">SlopeSaturationVoceIsotropicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SmearedDeltaSource.html">SmearedDeltaSource</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SumSlipRates.html">SumSlipRates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SwellingAndPhaseChangeDeformationJacobian.html">SwellingAndPhaseChangeDeformationJacobian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ThermalDeformationJacobian.html">ThermalDeformationJacobian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ThermalEigenstrain.html">ThermalEigenstrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VanGenuchtenCapillaryPressure.html">VanGenuchtenCapillaryPressure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VecComponents.html">VecComponents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VecConstantParameter.html">VecConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VecInputParameter.html">VecInputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VecParameterToVariable.html">VecParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VecVariableRate.html">VecVariableRate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VoceIsotropicHardening.html">VoceIsotropicHardening</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VoceSingleSlipHardeningRule.html">VoceSingleSlipHardeningRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VolumeAdjustDeformationGradient.html">VolumeAdjustDeformationGradient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/VolumeChangeEigenstrain.html">VolumeChangeEigenstrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/WR2ConstantParameter.html">WR2ConstantParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/WR2ExplicitExponentialTimeIntegration.html">WR2ExplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/WR2ImplicitExponentialTimeIntegration.html">WR2ImplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/WR2InputParameter.html">WR2InputParameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/WR2ParameterToVariable.html">WR2ParameterToVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/WiechertElement.html">WiechertElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/YieldFunction.html">YieldFunction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ZeldovichFactor.html">ZeldovichFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/ZenerElement.html">ZenerElement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Tensors/index.html">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Tensors/CSVSR2.html">CSVSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Tensors/CSVScalar.html">CSVScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Tensors/Python.html">Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/EquationSystems/index.html">Equation systems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/EquationSystems/NonlinearSystem.html">NonlinearSystem</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Drivers/index.html">Drivers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Drivers/TransientDriver.html">TransientDriver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Drivers/TransientRegression.html">TransientRegression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Drivers/Verification.html">Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Data/index.html">Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Data/CubicCrystal.html">CubicCrystal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../python_api/index.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.factory.html">neml2.factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.schema.html">neml2.schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.models.model.html">neml2.models.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.models.chain_rule.html">neml2.models.chain_rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.models.resolver.html">neml2.models.resolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.types.html">neml2.types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.models.html">neml2.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.solvers.html">neml2.solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.es.html">neml2.es</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.drivers.html">neml2.drivers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.data.html">neml2.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.user_tensors.html">neml2.user_tensors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.models.export.html">neml2.models.export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.aoti.html">neml2.aoti</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.pyzag.html">neml2.pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../python_api/neml2.cli.html">neml2.cli</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#the-input-file">The input file</a></li>
+<li><a class="reference internal" href="#listing-the-parameters">Listing the parameters</a></li>
+<li><a class="reference internal" href="#reading-a-parameter-by-name">Reading a parameter by name</a></li>
+<li><a class="reference internal" href="#changing-a-parameter">Changing a parameter</a><ul>
+<li><a class="reference internal" href="#in-place-on-data">In place, on <code class="docutils literal notranslate"><span class="pre">.data</span></code></a></li>
+<li><a class="reference internal" href="#rebinding-the-attribute">Rebinding the attribute</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#freezing-a-parameter">Freezing a parameter</a></li>
+<li><a class="reference internal" href="#parameters-flow-into-outputs">Parameters flow into outputs</a></li>
+<li><a class="reference internal" href="#differentiating-through-parameters">Differentiating through parameters</a></li>
+<li><a class="reference internal" href="#where-to-go-next">Where to go next</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../../../index.html"><span itemprop="name">NEML2</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../index.html"><span itemprop="name">Tutorials</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">Working with models</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="3" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Model parameters</strong>
+        <meta itemprop="position" content="4" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section class="tex2jax_ignore mathjax_ignore" id="model-parameters">
+<span id="tutorials-models-parameters"></span><h1>Model parameters<a class="headerlink" href="#model-parameters" title="Link to this heading">¶</a></h1>
+<p>You’ll pick up the <code class="docutils literal notranslate"><span class="pre">LinearIsotropicElasticity</span></code> model from
+<a class="reference internal" href="../running_your_first_model/main.html#tutorials-models-running-your-first-model"><span class="std std-ref">Running your first model</span></a> and read, change, and
+differentiate through its moduli from Python.</p>
+<section id="the-input-file">
+<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">¶</a></h2>
+<p>Same input file as the previous tutorial — re-used here so we can focus
+on the parameters:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-number">Listing 3 </span><span class="caption-text">input.i</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Same linear-isotropic-elasticity model as the previous tutorial.</span>
+</span><span data-line="2"><span class="c1"># Re-used here so the focus stays on parameter access / mutation rather</span>
+</span><span data-line="3"><span class="c1"># than on a new physical setup.</span>
+</span><span data-line="4"><span class="k">[Models]</span>
+</span><span data-line="5"><span class="w">  </span><span class="k">[elasticity]</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
+</span><span data-line="7"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;200e3          0.3&#39;</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="9"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="10"><span class="k">[]</span>
+</span></pre></div>
+</div>
+</div>
+</section>
+<section id="listing-the-parameters">
+<h2>Listing the parameters<a class="headerlink" href="#listing-the-parameters" title="Link to this heading">¶</a></h2>
+<p>A NEML2 model is a <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>, so <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> works
+the same way it does for any PyTorch model:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
+</span><span data-line="6">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">E: 200000.0
+</span><span data-line="2">nu: 0.3
+</span></pre></div>
+</div>
+</div>
+</div>
+<p>The two parameters <code class="docutils literal notranslate"><span class="pre">E</span></code> and <code class="docutils literal notranslate"><span class="pre">nu</span></code> correspond to the two <code class="docutils literal notranslate"><span class="pre">coefficients</span></code>
+we passed in the input file.</p>
+</section>
+<section id="reading-a-parameter-by-name">
+<h2>Reading a parameter by name<a class="headerlink" href="#reading-a-parameter-by-name" title="Link to this heading">¶</a></h2>
+<p>Each parameter is also exposed as a Python attribute on the model.
+Reading <code class="docutils literal notranslate"><span class="pre">model.E</span></code> returns a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> — one of NEML2’s typed tensor
+wrappers (see <a class="reference internal" href="../../../tensor_types.html#tensor-types"><span class="std std-ref">Tensor types</span></a> for the full list):</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E  =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="p">)</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nu =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">E  = Scalar(data=Parameter containing:
+</span><span data-line="2">tensor(200000., dtype=torch.float64, requires_grad=True), sub_batch_ndim=0, sub_batch_state=(), sub_batch_meta=(), k_ndim=0, k_state=(), k_pairing=())
+</span><span data-line="3">nu = Scalar(data=Parameter containing:
+</span><span data-line="4">tensor(0.3000, dtype=torch.float64, requires_grad=True), sub_batch_ndim=0, sub_batch_state=(), sub_batch_meta=(), k_ndim=0, k_state=(), k_pairing=())
+</span></pre></div>
+</div>
+</div>
+</div>
+<p>The underlying <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code> lives at <code class="docutils literal notranslate"><span class="pre">.data</span></code>. Use <code class="docutils literal notranslate"><span class="pre">.data</span></code>
+when you need the raw <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code> — for example to pull out a
+numerical value with <code class="docutils literal notranslate"><span class="pre">.item()</span></code>. (This is user-facing; library code
+stays on the typed wrappers.)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E  =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nu =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">E  = 200000.0
+</span><span data-line="2">nu = 0.3
+</span></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="changing-a-parameter">
+<h2>Changing a parameter<a class="headerlink" href="#changing-a-parameter" title="Link to this heading">¶</a></h2>
+<p>There are two ways to change a parameter at runtime. Pick based on
+whether you want to keep the existing <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code> (and any
+optimizer state attached to it) or replace it outright.</p>
+<section id="in-place-on-data">
+<h3>In place, on <code class="docutils literal notranslate"><span class="pre">.data</span></code><a class="headerlink" href="#in-place-on-data" title="Link to this heading">¶</a></h3>
+<p>In-place mutation keeps the same <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code> object. Leaf tensors
+that require grad can’t be mutated in place directly — autograd would
+lose the history. Wrap the mutation in <code class="docutils literal notranslate"><span class="pre">torch.no_grad()</span></code> to tell
+PyTorch you’re intentionally side-stepping the graph for this
+assignment:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+</span><span data-line="4">    <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">150e3</span><span class="p">)</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">E = 150000.0
+</span></pre></div>
+</div>
+</div>
+</div>
+<p>Use this inside an optimization loop — the optimizer holds a
+reference to the underlying <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code> (the one
+<code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> returns), and in-place mutation through <code class="docutils literal notranslate"><span class="pre">.data</span></code>
+writes back to that same Parameter.</p>
+</section>
+<section id="rebinding-the-attribute">
+<h3>Rebinding the attribute<a class="headerlink" href="#rebinding-the-attribute" title="Link to this heading">¶</a></h3>
+<p>Assigning a fresh <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code> swaps the slot wholesale:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nu =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">nu = 0.25
+</span></pre></div>
+</div>
+</div>
+</div>
+<p>Reach for this when the new parameter has different properties — a
+different dtype, a different <code class="docutils literal notranslate"><span class="pre">requires_grad</span></code>, or a batched shape
+(see <a class="reference internal" href="../model_parameters_revisited/main.html#tutorials-models-parameters-revisited"><span class="std std-ref">Model parameters revisited</span></a> for batched parameter
+values, or <a class="reference internal" href="../vectorization/main.html#tutorials-models-vectorization"><span class="std std-ref">Vectorization</span></a> for batched inputs).
+Rebinding invalidates any optimizer that was tracking the old
+<code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code>, so re-create the optimizer afterwards if there was
+one.</p>
+</section>
+</section>
+<section id="freezing-a-parameter">
+<h2>Freezing a parameter<a class="headerlink" href="#freezing-a-parameter" title="Link to this heading">¶</a></h2>
+<p>Toggle <code class="docutils literal notranslate"><span class="pre">requires_grad</span></code> off and the parameter is excluded from
+autodiff — its gradient stays <code class="docutils literal notranslate"><span class="pre">None</span></code> through a backward pass, and any
+optimizer tracking it will leave it alone:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E.requires_grad =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">E.requires_grad = False
+</span></pre></div>
+</div>
+</div>
+</div>
+<p>Use this to hold one modulus fixed while calibrating the other —
+see <a class="reference internal" href="../../optimization/parameter_calibration/main.html#tutorials-optimization-calibration"><span class="std std-ref">Parameter calibration</span></a> for the full workflow.</p>
+</section>
+<section id="parameters-flow-into-outputs">
+<h2>Parameters flow into outputs<a class="headerlink" href="#parameters-flow-into-outputs" title="Link to this heading">¶</a></h2>
+<p>Changing a parameter changes the next evaluation’s output. Reload the
+model so the state is clean, then evaluate it once, halve <code class="docutils literal notranslate"><span class="pre">E</span></code>, and
+evaluate again:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SR2</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">strain</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E = 200e3 -&gt;&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="n">model</span><span class="o">.</span><span class="n">E</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">100e3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E = 100e3 -&gt;&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">E = 200e3 -&gt; tensor([2692.3076, 1153.8462, 1153.8462,    0.0000,    0.0000,    0.0000],
+</span><span data-line="2">       grad_fn=&lt;AddBackward0&gt;)
+</span><span data-line="3">E = 100e3 -&gt; tensor([1346.1538,  576.9231,  576.9231,    0.0000,    0.0000,    0.0000],
+</span><span data-line="4">       grad_fn=&lt;AddBackward0&gt;)
+</span></pre></div>
+</div>
+</div>
+</div>
+<p>For linear elasticity the stress scales linearly with <span class="math notranslate nohighlight">\(E\)</span>, so the
+second row is exactly half the first. Any parameter change shows up on
+the next forward call — no need to re-load the input file.</p>
+</section>
+<section id="differentiating-through-parameters">
+<h2>Differentiating through parameters<a class="headerlink" href="#differentiating-through-parameters" title="Link to this heading">¶</a></h2>
+<p>Autodiff flows through NEML2 parameters just like it does through any
+other <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> weight. Backward from a scalar reduction of the
+output gives gradients on each parameter:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="n">strain</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">stress</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">stress</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dL/dE  =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span><span data-line="8"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dL/dnu =&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">dL/dE  = 0.02499999979940744
+</span><span data-line="2">dL/dnu = 24999.999386098603
+</span></pre></div>
+</div>
+</div>
+</div>
+<p>This is what calibration workflows build on — embed the model in a
+larger PyTorch graph, define a loss against experimental data, and
+optimize the moduli with any <code class="docutils literal notranslate"><span class="pre">torch.optim</span></code> optimizer.
+<a class="reference internal" href="../../optimization/automatic_differentiation/main.html#tutorials-optimization-autograd"><span class="std std-ref">Automatic differentiation</span></a> and
+<a class="reference internal" href="../../optimization/parameter_calibration/main.html#tutorials-optimization-calibration"><span class="std std-ref">Parameter calibration</span></a> walk the full pipeline; for
+calibration through a time-stepped transient, see
+<a class="reference internal" href="../../optimization/pyzag.html#tutorials-optimization-pyzag"><span class="std std-ref">Recurrent calibration with pyzag</span></a>.</p>
+</section>
+<section id="where-to-go-next">
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>A parameter doesn’t have to be a literal — it can also be supplied
+by another model, promoted to an input on the host, or shared
+across siblings in a <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code>. See
+<a class="reference internal" href="../model_parameters_revisited/main.html#tutorials-models-parameters-revisited"><span class="std std-ref">Model parameters revisited</span></a>.</p></li>
+<li><p>Real material models compose several pieces (elasticity, hardening,
+flow rule, …), each contributing its own parameters. The mechanism
+is the subject of <a class="reference internal" href="../cross_referencing/main.html#tutorials-models-cross-referencing"><span class="std std-ref">Cross-referencing</span></a> and
+<a class="reference internal" href="../model_composition/main.html#tutorials-models-composition"><span class="std std-ref">Model composition</span></a>.</p></li>
+<li><p>Batched evaluation — both over the inputs and over the parameters
+themselves — is covered in <a class="reference internal" href="../vectorization/main.html#tutorials-models-vectorization"><span class="std std-ref">Vectorization</span></a>.</p></li>
+<li><p>Once you’re comfortable reading and mutating parameters, the
+<a class="reference internal" href="../../optimization/index.html#tutorials-optimization"><span class="std std-ref">Parameter calibration</span></a> tutorials cover calibrating them
+against experimental data via PyTorch autograd.</p></li>
+</ul>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="../running_your_first_model/main.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Running your first model</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="../evaluation_device/main.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Evaluation device</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, UChicago Argonne, LLC</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../../../_static/documentation_options.js?v=9b3fc59f"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=7abfc884"></script>
+      <script src="../../../../_static/shibuya.js?v=50760d75"></script>
+      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../../../../_static/components/work-dispatcher.js?v=c1e866ab"></script>
+      <script src="../../../../_static/components/static-hybrid-scheduler.js?v=b8078a97"></script>
+      <script src="../../../../_static/components/simple-scheduler-demo.js?v=6a8f83f3"></script>
+      <script src="../../../../_static/components/static-hybrid-scheduler-demo.js?v=a33d831a"></script></body>
+</html>

@@ -1,0 +1,37 @@
+(models-CurrentConcentration)=
+# CurrentConcentration
+
+**Source:** `models/kwn/CurrentConcentration.py`
+
+Compute the current matrix concentration from precipitate volume fractions.
+
+For :math:`N` precipitate species with volume fractions :math:`f_i` and
+(constant) precipitate concentrations :math:`x_i^p`, the matrix
+concentration is
+
+.. math::
+
+    x = \frac{x_0 - \sum_i f_i x_i^p}{1 - \sum_i f_i}
+
+where :math:`x_0` is the initial concentration in solution.
+
+## Inputs
+
+`precipitate_volume_fractions` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Precipitate volume fraction variables
+
+
+## Outputs
+
+`current_concentration` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Current concentration in solution
+
+
+## Parameters
+
+`initial_concentration` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Initial concentration in solution
+
+`precipitate_concentrations` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Precipitate concentrations
+
