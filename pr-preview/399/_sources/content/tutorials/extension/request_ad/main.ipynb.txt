@@ -1,0 +1,379 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "intro",
+   "metadata": {},
+   "source": [
+    "(tutorials-extension-request-ad)=\n",
+    "# Auto-deriving the chain rule with `request_AD`\n",
+    "\n",
+    "The [previous tutorial](tutorials-extension-forward) hand-wrote the\n",
+    "projectile's first derivative — the `actions` closure `lambda V: -mu *\n",
+    "V` encoding $\\partial\\boldsymbol{a}/\\partial\\boldsymbol{v} = -\\mu I$.\n",
+    "That is the right call when the local Jacobian is simple. But when it\n",
+    "isn't — a constitutive law with many coupled terms, or a trained\n",
+    "machine-learning surrogate we would never differentiate by hand — NEML2\n",
+    "can derive the chain rule for us by reverse-mode automatic\n",
+    "differentiation.\n",
+    "\n",
+    "In this tutorial, we'll re-implement the *same* projectile model, but\n",
+    "let `request_AD` supply the derivative: we write only the value\n",
+    "`forward`, and the auto-derived chain rule comes out identical to the\n",
+    "hand-written one."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "id": "colab",
+   "metadata": {
+    "tags": [
+     "remove-cell"
+    ]
+   },
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard\n",
+    "# makes the cell a no-op everywhere else (the docs build and local Jupyter\n",
+    "# already have NEML2 installed), and the cell is hidden from the rendered docs.\n",
+    "import sys\n",
+    "\n",
+    "if \"google.colab\" in sys.modules:\n",
+    "    !pip install -q neml2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "declare",
+   "metadata": {},
+   "source": [
+    "## Declaring `request_AD`\n",
+    "\n",
+    "A leaf opts in by calling `self.request_AD()` once at construction (in\n",
+    "`__post_init__`), then writing a value-only `forward` — no `v=` branch,\n",
+    "no `actions`. Everything else is unchanged: the same schema, the same\n",
+    "`_get_param` read, the same physics. Here is the re-implemented\n",
+    "`projectile.py`:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "id": "writeproj",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "%%writefile projectile.py\n",
+    "\"\"\"Custom ``ProjectileAcceleration`` model — re-implemented with ``request_AD``.\n",
+    "\n",
+    "Same model as the forward-operator tutorial (``a = g - mu * v``), but instead of\n",
+    "hand-writing the chain rule we declare ``request_AD`` and write only the value\n",
+    "``forward``; NEML2 supplies the first-order chain rule by reverse-mode autodiff.\n",
+    "\"\"\"\n",
+    "\n",
+    "from __future__ import annotations\n",
+    "\n",
+    "from neml2.factory import register_neml2_object\n",
+    "from neml2.models.model import Model\n",
+    "from neml2.schema import HitSchema, buffer, input, output, parameter\n",
+    "from neml2.types import Scalar, Vec\n",
+    "\n",
+    "\n",
+    "@register_neml2_object(\"ProjectileAcceleration\")\n",
+    "class ProjectileAcceleration(Model):\n",
+    "    \"\"\"Newton's second law for a projectile in a viscous medium, ``a = g - mu * v``,\n",
+    "    with the chain rule auto-derived by ``request_AD``.\n",
+    "    \"\"\"\n",
+    "\n",
+    "    hit = HitSchema(\n",
+    "        input(\"velocity\", Vec, \"Velocity of the projectile\", attr=\"_v_name\"),\n",
+    "        output(\"acceleration\", Vec, \"Acceleration of the projectile\"),\n",
+    "        buffer(\n",
+    "            \"gravitational_acceleration\",\n",
+    "            Vec,\n",
+    "            \"Gravity vector\",\n",
+    "            attr=\"g\",\n",
+    "            default=Vec.fill(0.0, -9.81, 0.0),\n",
+    "        ),\n",
+    "        parameter(\"dynamic_viscosity\", Scalar, \"Dynamic viscosity\", attr=\"mu\"),\n",
+    "    )\n",
+    "\n",
+    "    _v_name: str\n",
+    "    g: Vec\n",
+    "    mu: Scalar\n",
+    "\n",
+    "    def __post_init__(self):\n",
+    "        # Opt into auto-derived derivatives. With no arguments this covers every\n",
+    "        # (output, input) pair -- here the single pair d(acceleration)/d(velocity).\n",
+    "        # Pass outputs=[...] / inputs=[...] to auto-derive only a subset.\n",
+    "        self.request_AD()\n",
+    "\n",
+    "    def forward(self, v_in: Vec, *nl_params):  # type: ignore[override]\n",
+    "        # Read the drag coefficient through ``_get_param`` (promotion-compatible),\n",
+    "        # exactly as in the hand-written version.\n",
+    "        mu = self._get_param(\"mu\", nl_params, Scalar)\n",
+    "\n",
+    "        # Value only: a = g - mu * v. No ``v=`` branch, no ``actions`` -- the\n",
+    "        # framework differentiates this forward by reverse-mode AD.\n",
+    "        return self.g - mu * v_in"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "dissect",
+   "metadata": {},
+   "source": [
+    "Two changes from the hand-written version:\n",
+    "\n",
+    "- **`__post_init__` calls `self.request_AD()`.** With no arguments it\n",
+    "  covers every `(output, input)` pair — here\n",
+    "  $\\partial\\boldsymbol{a}/\\partial\\boldsymbol{v}$. Pass `outputs=[...]`\n",
+    "  / `inputs=[...]` to auto-derive only a subset and hand-write the rest.\n",
+    "- **`forward` returns only the value.** No `v=None` keyword, no\n",
+    "  `apply_chain_rule`. The framework intercepts the call, runs the value\n",
+    "  forward under reverse-mode autograd, and assembles the first-order\n",
+    "  chain rule from the result.\n",
+    "\n",
+    "The parameter is still read through `_get_param` (promotion-compatible,\n",
+    "exactly as before), and `self.g` is still a buffer read directly."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "id": "writein",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "%%writefile input.i\n",
+    "[Models]\n",
+    "  [accel]\n",
+    "    type = ProjectileAcceleration\n",
+    "    velocity = 'v'\n",
+    "    acceleration = 'a'\n",
+    "    dynamic_viscosity = '0.001'\n",
+    "  []\n",
+    "[]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "loadmd",
+   "metadata": {},
+   "source": [
+    "Load and evaluate it exactly as we would any built-in type — the value\n",
+    "forward behaves identically to the hand-written model:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "id": "load",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "import sys, os\n",
+    "\n",
+    "sys.path.insert(0, os.getcwd())\n",
+    "\n",
+    "import projectile  # registers ProjectileAcceleration with the native factory\n",
+    "import neml2\n",
+    "\n",
+    "model = neml2.load_model(\"input.i\", \"accel\")\n",
+    "model"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "id": "value",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "import torch\n",
+    "from neml2.types import Vec\n",
+    "\n",
+    "vel = Vec.fill(10.0, 2.0, 0.0)\n",
+    "accel = model(vel)\n",
+    "accel"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "valmd",
+   "metadata": {},
+   "source": [
+    "The value is $\\boldsymbol{g} - \\mu \\boldsymbol{v} = (0, -9.81, 0) -\n",
+    "0.001 \\cdot (10, 2, 0) = (-0.01, -9.812, 0)$ — identical to the\n",
+    "hand-written model, as it must be.\n",
+    "\n",
+    "## First derivatives, for free\n",
+    "\n",
+    "We never wrote a `v=` branch, yet the model hands back directional\n",
+    "derivatives just like the analytic one. Seed the identity on the\n",
+    "velocity input and read off the full Jacobian column\n",
+    "$\\partial\\boldsymbol{a}/\\partial\\boldsymbol{v}$:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "id": "jvp",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# The same identity-seed idiom as the hand-written tutorial — only now the\n",
+    "# Jacobian column is auto-derived rather than hand-coded.\n",
+    "seed = Vec(torch.eye(3, dtype=torch.float64))\n",
+    "accel, v_out = model(vel, v={\"v\": {\"velocity_leaf\": seed}})\n",
+    "v_out[\"a\"][\"velocity_leaf\"].data"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "jvpmd",
+   "metadata": {},
+   "source": [
+    "This is exactly the $-\\mu I = -0.001\\, I_3$ we hand-wrote last time —\n",
+    "`request_AD` reproduced it from the value forward alone.\n",
+    "\n",
+    "## Verifying with `ModelUnitTest`\n",
+    "\n",
+    "The same `ModelUnitTest` harness pins the auto-derived model. It\n",
+    "cross-checks every JVP against PyTorch's autograd, so a positive\n",
+    "`JVP checks` count is independent confirmation that the auto-derived\n",
+    "chain rule is correct — not merely self-consistent:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "id": "writeut",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "%%writefile unit_test.i\n",
+    "[Tensors]\n",
+    "  [v_in]\n",
+    "    type = Python\n",
+    "    expr = 'Vec.fill(10.0, 2.0, 0.0)'\n",
+    "  []\n",
+    "  [a_expected]\n",
+    "    type = Python\n",
+    "    expr = 'Vec.fill(-0.01, -9.812, 0.0)'\n",
+    "  []\n",
+    "[]\n",
+    "\n",
+    "[Models]\n",
+    "  [accel]\n",
+    "    type = ProjectileAcceleration\n",
+    "    velocity = 'v'\n",
+    "    acceleration = 'a'\n",
+    "    dynamic_viscosity = '0.001'\n",
+    "  []\n",
+    "[]\n",
+    "\n",
+    "[Drivers]\n",
+    "  [unit]\n",
+    "    type = ModelUnitTest\n",
+    "    model = 'accel'\n",
+    "    input_Vec_names = 'v'\n",
+    "    input_Vec_values = 'v_in'\n",
+    "    output_Vec_names = 'a'\n",
+    "    output_Vec_values = 'a_expected'\n",
+    "  []\n",
+    "[]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "id": "runut",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "from neml2.drivers.ModelUnitTest import ModelUnitTest\n",
+    "\n",
+    "report = ModelUnitTest.from_file(\"unit_test.i\").run()\n",
+    "print(f\"value checks: {report.value_checks}, JVP checks: {report.jvp_checks}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "surrogate",
+   "metadata": {},
+   "source": [
+    "## Where this really pays off: an ML surrogate\n",
+    "\n",
+    "The projectile's $-\\mu I$ was easy to hand-write — `request_AD` only\n",
+    "saved us a few lines. The real payoff is a forward operator whose\n",
+    "Jacobian we would *never* want to derive by hand: a trained\n",
+    "`torch.nn.Module` surrogate. The pattern is identical — declare\n",
+    "`request_AD`, write only the value forward (now a network call):\n",
+    "\n",
+    "```python\n",
+    "class MySurrogate(Model):\n",
+    "    hit = HitSchema(...)            # same input/output declarations as usual\n",
+    "\n",
+    "    def __post_init__(self):\n",
+    "        self.net = ...              # a trained torch.nn.Module\n",
+    "        self.request_AD()           # auto-derive d(output)/d(input) for all pairs\n",
+    "\n",
+    "    def forward(self, x, *nl_params):\n",
+    "        return type(x)(self.net(x.data))   # value only -- no `v=`, no `actions`\n",
+    "```\n",
+    "\n",
+    "The auto-derived chain rule is indistinguishable from a hand-written\n",
+    "one and behaves identically on **every route** — eager (`py-eager` /\n",
+    "`cpp-eager`) and AOT-compiled (`py-aoti` / `cpp-aoti` / `cpp-dispatch`).\n",
+    "It slots into the same forward-mode chain-rule graph the framework\n",
+    "already uses: neighbouring analytic leaves keep their hand-written\n",
+    "`actions`, and only the request_AD leaf's reverse-mode local Jacobian\n",
+    "is traced inline (and lowered through AOTInductor on the compiled\n",
+    "routes). The `tests/regression/_fixtures/SurrogateFlowRate.py` fixture\n",
+    "is a worked example wrapping a Python surrogate as a NEML2 flow rate.\n",
+    "\n",
+    "A few things to know:\n",
+    "\n",
+    "- **First-order only.** `request_AD` supplies the `v=` channel\n",
+    "  ($\\partial\\,\\text{out}/\\partial\\,\\text{in}$). A leaf that must\n",
+    "  provide the second-order chain rule (i.e. one used inside a\n",
+    "  `Normality` wrap) still hand-writes it.\n",
+    "- **Reverse-mode under the hood.** It is the one autodiff that survives\n",
+    "  `torch.export` → AOTInductor. If our differentiated path uses a\n",
+    "  saved-output op (`exp` / `sqrt` / `tanh` / reciprocal), route it\n",
+    "  through the AOTI-safe variants in `neml2.types.functions` (e.g.\n",
+    "  `exp_ad`) so the compiled routes lower (see the upstream-bug note in\n",
+    "  that module); eager is unaffected.\n",
+    "- **AOTI compile.** Pass `-d` to `neml2-compile` to bake the derivative\n",
+    "  graph, exactly as for an analytic model — `request_AD` changes *how*\n",
+    "  the Jacobian is computed, not *whether* it is compiled. This holds\n",
+    "  even for a request_AD leaf inside an `ImplicitUpdate` residual: the\n",
+    "  Newton-step / implicit-function-theorem graphs differentiate the\n",
+    "  residual (which contains the leaf) and lower the same way."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "next",
+   "metadata": {},
+   "source": [
+    "## Where to go next\n",
+    "\n",
+    "- The next tutorial, [](tutorials-extension-composition), shows how to\n",
+    "  glue several models together so a dependency resolver wires their\n",
+    "  inputs and outputs and threads the chain rule for us."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

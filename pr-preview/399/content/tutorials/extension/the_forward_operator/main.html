@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>The forward operator - NEML2 3.0.4</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Composing with existing models" href="../model_composition/main.html" /><link rel="prev" title="Connecting to input files" href="../connection_to_input_files/main.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>The forward operator - NEML2 3.0.4</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Auto-deriving the chain rule with request_AD" href="../request_ad/main.html" /><link rel="prev" title="Connecting to input files" href="../connection_to_input_files/main.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -84,6 +84,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../connection_to_input_files/main.html">Connecting to input files</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">The forward operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../request_ad/main.html">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../model_composition/main.html">Composing with existing models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../optimization/parameter_calibration/main.html">Parameter calibration</a></li>
@@ -358,7 +359,6 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#implementation">Implementation</a></li>
 <li><a class="reference internal" href="#evaluation">Evaluation</a></li>
 <li><a class="reference internal" href="#first-derivatives">First derivatives</a></li>
-<li><a class="reference internal" href="#auto-deriving-the-chain-rule-with-request-ad">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></a></li>
 <li><a class="reference internal" href="#driving-the-model-from-a-unit-test-input">Driving the model from a unit-test input</a></li>
 <li><a class="reference internal" href="#where-to-go-next">Where to go next</a></li>
 </ul>
@@ -634,54 +634,6 @@ the velocity input and the JVP comes back through <code class="docutils literal 
 <p>This matches the analytical <span class="math notranslate nohighlight">\(\partial \boldsymbol{a}/\partial
 \boldsymbol{v} = -\mu I = -0.001\, I_3\)</span> exactly.</p>
 </section>
-<section id="auto-deriving-the-chain-rule-with-request-ad">
-<h2>Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code><a class="headerlink" href="#auto-deriving-the-chain-rule-with-request-ad" title="Link to this heading">¶</a></h2>
-<p>Hand-writing <code class="docutils literal notranslate"><span class="pre">actions</span></code> is the right call when the local Jacobian is simple, like
-the projectile’s <span class="math notranslate nohighlight">\(-\mu I\)</span>. But sometimes it isn’t — a constitutive law with many
-coupled terms, or a <strong>machine-learning surrogate</strong> (a trained <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>)
-whose derivative we would never want to differentiate by hand. For those, a leaf
-can declare <code class="docutils literal notranslate"><span class="pre">request_AD()</span></code> and write <em>only</em> the value forward; the framework
-supplies the first-order chain rule for us by reverse-mode automatic
-differentiation:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">class</span><span class="w"> </span><span class="nc">MySurrogate</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-</span><span data-line="2">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>            <span class="c1"># same input/output declarations as usual</span>
-</span><span data-line="3">
-</span><span data-line="4">    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span data-line="5">        <span class="bp">self</span><span class="o">.</span><span class="n">request_AD</span><span class="p">()</span>           <span class="c1"># auto-derive d(output)/d(input) for all pairs</span>
-</span><span data-line="6">
-</span><span data-line="7">    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">nl_params</span><span class="p">):</span>
-</span><span data-line="8">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>     <span class="c1"># value only -- no `v=` branch, no `actions`</span>
-</span></pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">request_AD()</span></code> with no arguments covers every <code class="docutils literal notranslate"><span class="pre">(output,</span> <span class="pre">input)</span></code> pair; pass
-<code class="docutils literal notranslate"><span class="pre">outputs=[...]</span></code> / <code class="docutils literal notranslate"><span class="pre">inputs=[...]</span></code> to auto-derive only a subset and hand-write the
-rest. The result is indistinguishable from a hand-written chain rule and behaves
-identically on <strong>every route</strong> — eager (<code class="docutils literal notranslate"><span class="pre">py-eager</span></code> / <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>) and
-AOT-compiled (<code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> / <code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> / <code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code>). It slots into the <em>same</em>
-forward-mode chain-rule graph the framework already uses: neighbouring analytic
-leaves keep their hand-written <code class="docutils literal notranslate"><span class="pre">actions</span></code>, and only the request_AD leaf’s
-reverse-mode local Jacobian is traced inline (and lowered through AOTInductor on
-the compiled routes). The <code class="docutils literal notranslate"><span class="pre">tests/regression/_fixtures/SurrogateFlowRate.py</span></code> fixture
-is a worked example wrapping a Python surrogate as a NEML2 flow rate.</p>
-<p>A few things to know:</p>
-<ul class="simple">
-<li><p><strong>First-order only.</strong> <code class="docutils literal notranslate"><span class="pre">request_AD</span></code> supplies the <code class="docutils literal notranslate"><span class="pre">v=</span></code> channel
-(<span class="math notranslate nohighlight">\(\partial\,\text{out}/\partial\,\text{in}\)</span>). A leaf that must provide the
-second-order chain rule (i.e. one used inside a <code class="docutils literal notranslate"><span class="pre">Normality</span></code> wrap) still
-hand-writes it.</p></li>
-<li><p><strong>Reverse-mode under the hood.</strong> It is the one autodiff that survives
-<code class="docutils literal notranslate"><span class="pre">torch.export</span></code> → AOTInductor. If our differentiated path uses a saved-output
-op (<code class="docutils literal notranslate"><span class="pre">exp</span></code> / <code class="docutils literal notranslate"><span class="pre">sqrt</span></code> / <code class="docutils literal notranslate"><span class="pre">tanh</span></code> / reciprocal), route it through the AOTI-safe
-variants in <code class="docutils literal notranslate"><span class="pre">neml2.types.functions</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">exp_ad</span></code>) so the compiled routes
-lower (see the upstream-bug note in that module); eager is unaffected.</p></li>
-<li><p><strong>AOTI compile.</strong> Pass <code class="docutils literal notranslate"><span class="pre">-d</span></code> to <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> to bake the derivative graph,
-exactly as for an analytic model — <code class="docutils literal notranslate"><span class="pre">request_AD</span></code> changes <em>how</em> the Jacobian is
-computed, not <em>whether</em> it is compiled. This holds even for a request_AD leaf
-inside an <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> residual: the Newton-step / implicit-function-theorem
-graphs differentiate the residual (which contains the leaf) and lower the same
-way.</p></li>
-</ul>
-</section>
 <section id="driving-the-model-from-a-unit-test-input">
 <h2>Driving the model from a unit-test input<a class="headerlink" href="#driving-the-model-from-a-unit-test-input" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code> is the usual way to pin a custom model’s behavior in
@@ -751,9 +703,9 @@ was skipped, not that it failed silently.</p>
 <section id="where-to-go-next">
 <h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>The next tutorial, <a class="reference internal" href="../model_composition/main.html#tutorials-extension-composition"><span class="std std-ref">Composing with existing models</span></a>, shows how to
-glue several models together so a dependency resolver wires their
-inputs and outputs and threads the chain rule for us.</p></li>
+<li><p>The next tutorial, <a class="reference internal" href="../request_ad/main.html#tutorials-extension-request-ad"><span class="std std-ref">Auto-deriving the chain rule with request_AD</span></a>, lets NEML2
+derive the chain rule for us by automatic differentiation — the same
+projectile, but with no hand-written <code class="docutils literal notranslate"><span class="pre">actions</span></code> at all.</p></li>
 </ul>
 </section>
 </section>
@@ -770,10 +722,10 @@ inputs and outputs and threads the chain rule for us.</p></li>
         <span>Previous</span><div class="title">Connecting to input files</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="../model_composition/main.html">
+    <a href="../request_ad/main.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">Composing with existing models</div>
+        <div class="title">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>

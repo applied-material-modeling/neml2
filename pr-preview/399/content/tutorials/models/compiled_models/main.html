@@ -84,6 +84,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../extension/connection_to_input_files/main.html">Connecting to input files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension/request_ad/main.html">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../extension/model_composition/main.html">Composing with existing models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../optimization/parameter_calibration/main.html">Parameter calibration</a></li>
@@ -406,22 +407,24 @@ C++ instead of the eager PyTorch dispatcher, so it’s the form to use
 once a model is locked in and we want it fast.</p>
 <section id="the-pipeline">
 <h2>The pipeline<a class="headerlink" href="#the-pipeline" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">input.i ──► neml2-compile ──► elasticity_aoti.i             (standalone drop-in stub)
-</span><span data-line="2">                              elasticity/
-</span><span data-line="3">                                cpu/  elasticity_meta.json   (variable layout, dtype, device)
-</span><span data-line="4">                                      elasticity.pt2         (AOTI-compiled kernels)
-</span><span data-line="5">                                      elasticity_jvp.pt2     (per-pair Jacobian graph; only with -d)
-</span></pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> emits one artifact folder per device (<code class="docutils literal notranslate"><span class="pre">elasticity/&lt;device&gt;/</span></code>)
-plus a single standalone <code class="docutils literal notranslate"><span class="pre">elasticity_aoti.i</span></code> stub next to it. The stub is a
-copy of the original input with the <code class="docutils literal notranslate"><span class="pre">[Models]/elasticity</span></code> block replaced by an
-<code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> shim that points at the artifact folder via an absolute
-<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> — everything else (drivers, settings, tensors) is copied through
-verbatim, so the stub is a drop-in replacement anywhere a <code class="docutils literal notranslate"><span class="pre">Driver</span></code> consumes a
-model by name. Compiling for several devices at once (<code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code>) adds
-more <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolders; the loader picks the one matching the device it
-runs on.</p>
+<p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">input.i</span> <span class="pre">--model</span> <span class="pre">elasticity</span></code> turns the eager model into a
+self-contained package and emits:</p>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">elasticity_aoti.i</span></code></strong> — a standalone drop-in <em>stub</em>: a copy of the input
+with the <code class="docutils literal notranslate"><span class="pre">[Models]/elasticity</span></code> block swapped for an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> shim that
+points at the artifact folder via an absolute <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code>. Everything
+else (drivers, settings, tensors) is copied through verbatim, so the stub is
+a drop-in replacement anywhere a <code class="docutils literal notranslate"><span class="pre">Driver</span></code> consumes the model by name.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">elasticity/&lt;device&gt;/</span></code></strong> — one artifact folder per device, holding:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">elasticity_meta.json</span></code> — variable layout, dtype, device</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">elasticity.pt2</span></code> — the AOTI-compiled <code class="docutils literal notranslate"><span class="pre">forward</span></code> kernels</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">elasticity_jvp.pt2</span></code> — the per-pair <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> graph (only with <code class="docutils literal notranslate"><span class="pre">-d</span></code>)</p></li>
+</ul>
+</li>
+</ul>
+<p>Compiling for several devices at once (<code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code>) adds more
+<code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolders; the loader picks the one matching the device it runs on.</p>
 </section>
 <section id="the-input-file">
 <h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">¶</a></h2>
@@ -580,25 +583,20 @@ batch size from 1 to roughly a million without recompilation.</p>
 </section>
 <section id="jacobian-and-jacobian-vector-product">
 <h2>Jacobian and Jacobian-vector product<a class="headerlink" href="#jacobian-and-jacobian-vector-product" title="Link to this heading">¶</a></h2>
-<p>Alongside <code class="docutils literal notranslate"><span class="pre">forward</span></code>, the compiled artifact also exposes <code class="docutils literal notranslate"><span class="pre">jvp</span></code> (outputs
-plus a directional derivative <code class="docutils literal notranslate"><span class="pre">J</span> <span class="pre">&#64;</span> <span class="pre">v</span></code>) and <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> (outputs plus the
-per-variable Jacobian blocks). Both live on the underlying C++ binding
-(<code class="docutils literal notranslate"><span class="pre">neml2.aoti.Model</span></code>). The HIT-loaded shim stores that binding on its
-<code class="docutils literal notranslate"><span class="pre">_inner</span></code> attribute — this attribute is <strong>not stable public API</strong> and may
-be renamed in a future release, but it is the only way to reach the
-binding today:</p>
+<p>Alongside <code class="docutils literal notranslate"><span class="pre">forward</span></code>, the compiled model also exposes <code class="docutils literal notranslate"><span class="pre">jvp</span></code> (outputs plus
+a directional derivative <code class="docutils literal notranslate"><span class="pre">J</span> <span class="pre">&#64;</span> <span class="pre">v</span></code>) and <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> (outputs plus the
+per-variable Jacobian blocks). Both take and return plain
+<code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">tensor}</span></code> dicts — the same sensitivity surface the eager runtime
+offers:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># NOTE: _inner is an implementation detail, not stable public API.</span>
-</span><span data-line="2"><span class="n">binding</span> <span class="o">=</span> <span class="n">compiled</span><span class="o">.</span><span class="n">_inner</span>  <span class="c1"># the bare ``neml2.aoti.Model`` runtime</span>
-</span><span data-line="3">
-</span><span data-line="4"><span class="c1"># Tangent on the input — same shape as the input itself.</span>
-</span><span data-line="5"><span class="n">strain_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-</span><span data-line="6"><span class="n">strain_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># probe d(stress)/d(epsilon_xx)</span>
-</span><span data-line="7">
-</span><span data-line="8"><span class="n">out</span><span class="p">,</span> <span class="n">jvp</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">jvp</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain_t</span><span class="p">})</span>
-</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;output[stress] :&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">][:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span>
-</span><span data-line="10"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;J @ v [stress] :&quot;</span><span class="p">,</span> <span class="n">jvp</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">][:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Tangent on the input — same shape as the input itself.</span>
+</span><span data-line="2"><span class="n">strain_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">strain_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># probe d(stress)/d(epsilon_xx)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="n">out</span><span class="p">,</span> <span class="n">jvp</span> <span class="o">=</span> <span class="n">compiled</span><span class="o">.</span><span class="n">jvp</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain_t</span><span class="p">})</span>
+</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;output[stress] :&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">][:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span>
+</span><span data-line="7"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;J @ v [stress] :&quot;</span><span class="p">,</span> <span class="n">jvp</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">][:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span>
 </span></pre></div>
 </div>
 </div>
@@ -613,7 +611,7 @@ binding today:</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">out</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">})</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">out</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">compiled</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">strain</span><span class="o">.</span><span class="n">data</span><span class="p">})</span>
 </span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;output[stress] :&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">][:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="c1"># J is nested by variable pair: J[output_name][input_name] is the block</span>

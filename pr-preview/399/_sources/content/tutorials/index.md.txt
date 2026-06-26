@@ -47,6 +47,7 @@ tutorials build one such model from scratch on a single running example.
 extension/argument_declaration/main
 extension/connection_to_input_files/main
 extension/the_forward_operator/main
+extension/request_ad/main
 extension/model_composition/main
 ```
 

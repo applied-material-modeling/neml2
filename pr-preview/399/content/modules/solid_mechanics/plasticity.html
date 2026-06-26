@@ -84,6 +84,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/request_ad/main.html">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
@@ -502,9 +503,9 @@ power-law overstress relation,</p>
 <h3>Effective stress and yield function<a class="headerlink" href="#effective-stress-and-yield-function" title="Link to this heading">¶</a></h3>
 <p>For classical <span class="math notranslate nohighlight">\(J_2\)</span> plasticity the effective stress is the von Mises norm of
 the deviatoric (over-)stress,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-37f4fdcc-c0d2-4f37-b9c1-493b84e800a6">
-<div class="amsmath math notranslate nohighlight" id="equation-37f4fdcc-c0d2-4f37-b9c1-493b84e800a6">
-<span class="eqno">(16)<a class="headerlink" href="#equation-37f4fdcc-c0d2-4f37-b9c1-493b84e800a6" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-a6963ad0-defe-4d5d-8ecc-f7ed44d094bd">
+<div class="amsmath math notranslate nohighlight" id="equation-a6963ad0-defe-4d5d-8ecc-f7ed44d094bd">
+<span class="eqno">(16)<a class="headerlink" href="#equation-a6963ad0-defe-4d5d-8ecc-f7ed44d094bd" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \bar{\sigma} &amp;= \sqrt{3 J_2},                                                \\
   J_2          &amp;= \tfrac{1}{2}\,\mathrm{dev}\,\boldsymbol{\Xi}\,:\,
                   \mathrm{dev}\,\boldsymbol{\Xi},                              \\
@@ -525,9 +526,9 @@ f^p = \bar{\sigma} - \sigma_y - k(\bar{\varepsilon}^p).
 <h3>Associative flow<a class="headerlink" href="#associative-flow" title="Link to this heading">¶</a></h3>
 <p>Associative flow rules derive the rates of the plastic strain and internal
 variables from the maximum-dissipation principle,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-f6c3c237-8c3f-4296-9580-6529ef099d43">
-<div class="amsmath math notranslate nohighlight" id="equation-f6c3c237-8c3f-4296-9580-6529ef099d43">
-<span class="eqno">(17)<a class="headerlink" href="#equation-f6c3c237-8c3f-4296-9580-6529ef099d43" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-f82b9c30-8ac4-45ed-8cf7-a4f6c55f964d">
+<div class="amsmath math notranslate nohighlight" id="equation-f82b9c30-8ac4-45ed-8cf7-a4f6c55f964d">
+<span class="eqno">(17)<a class="headerlink" href="#equation-f82b9c30-8ac4-45ed-8cf7-a4f6c55f964d" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \dot{\boldsymbol{\varepsilon}}^p &amp;= \dot{\gamma}\,
         \frac{\partial f^p}{\partial \boldsymbol{\sigma}},                     \\
   \dot{\bar{\varepsilon}}^p        &amp;= -\dot{\gamma}\,

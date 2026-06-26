@@ -84,6 +84,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/request_ad/main.html">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
@@ -639,16 +640,16 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="243"><span class="sd">        ``v`` / ``v2`` / ``vh`` (the native chain-rule hooks) are accepted</span>
 </span><span data-line="244"><span class="sd">        only for signature compatibility with other native models; passing</span>
 </span><span data-line="245"><span class="sd">        them is rejected because the AOTI graph&#39;s JVP path is structurally</span>
-</span><span data-line="246"><span class="sd">        different (it&#39;s a separate ``_jvp.pt2`` graph, accessed via the</span>
-</span><span data-line="247"><span class="sd">        binding&#39;s ``jvp()`` / ``jacobian()`` methods rather than the typed</span>
+</span><span data-line="246"><span class="sd">        different (it&#39;s a separate ``_jvp.pt2`` graph, exposed via the</span>
+</span><span data-line="247"><span class="sd">        :meth:`jvp` / :meth:`jacobian` methods rather than the typed</span>
 </span><span data-line="248"><span class="sd">        chain-rule protocol). Drivers that don&#39;t need sensitivities -- e.g.</span>
 </span><span data-line="249"><span class="sd">        ``TransientDriver``, ``TransientRegression`` -- work as-is.</span>
 </span><span data-line="250"><span class="sd">        &quot;&quot;&quot;</span>
 </span><span data-line="251">        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">v2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="252">            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
 </span><span data-line="253">                <span class="s2">&quot;AOTIModel does not support the native chain-rule v=/v2=/vh= &quot;</span>
-</span><span data-line="254">                <span class="s2">&quot;arguments. Use the underlying binding&#39;s jvp() or jacobian() &quot;</span>
-</span><span data-line="255">                <span class="s2">&quot;methods (self._inner) for sensitivities.&quot;</span>
+</span><span data-line="254">                <span class="s2">&quot;arguments. Use the jvp() / jacobian() methods for sensitivities &quot;</span>
+</span><span data-line="255">                <span class="s2">&quot;(the AOTI derivative graph is a separate compiled artifact).&quot;</span>
 </span><span data-line="256">            <span class="p">)</span>
 </span><span data-line="257">
 </span><span data-line="258">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">):</span>
@@ -755,22 +756,61 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="359">        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">out_wrappers</span><span class="p">)</span></div>
 
 </span><span data-line="360">
-</span><span data-line="361">    <span class="k">def</span><span class="w"> </span><span class="nf">_broadcast_to_common_batch</span><span class="p">(</span>
+<div class="viewcode-block" id="AOTIModel.jvp">
+<a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.jvp">[docs]</a>
+</span><span data-line="361">    <span class="k">def</span><span class="w"> </span><span class="nf">jvp</span><span class="p">(</span>
 </span><span data-line="362">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="363">        <span class="n">raw_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="364">        <span class="n">per_input_sub_ndim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-</span><span data-line="365">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">]:</span>
-</span><span data-line="366"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Bring every input tensor to its declared ``(*dyn, *sub, *base)`` shape,</span>
-</span><span data-line="367"><span class="sd">        with the dynamic-batch axes broadcast to a single common shape.</span>
-</span><span data-line="368">
-</span><span data-line="369"><span class="sd">        Thin wrapper over the shared</span>
-</span><span data-line="370"><span class="sd">        :func:`neml2.types._boundary.broadcast_to_common_batch`; see there for</span>
-</span><span data-line="371"><span class="sd">        the (dyn, sub, base) per-input split rationale. The per-input</span>
-</span><span data-line="372"><span class="sd">        ``sub_batch_ndim`` is resolved from the caller&#39;s typed wrapper instance</span>
-</span><span data-line="373"><span class="sd">        (or the legacy metadata ``sub_batch_shape`` when the caller passes a</span>
-</span><span data-line="374"><span class="sd">        raw tensor) before this call.</span>
-</span><span data-line="375"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="376">        <span class="k">return</span> <span class="n">broadcast_to_common_batch</span><span class="p">(</span><span class="n">raw_inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">per_input_sub_ndim</span><span class="p">)</span></div>
+</span><span data-line="363">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="364">        <span class="n">tangents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="365">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="366">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+</span><span data-line="367"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Outputs + the directional derivative ``J @ v`` from the compiled</span>
+</span><span data-line="368"><span class="sd">        ``jvp`` graph.</span>
+</span><span data-line="369">
+</span><span data-line="370"><span class="sd">        ``inputs`` / ``tangents`` are ``{variable_name: tensor}`` dicts (same</span>
+</span><span data-line="371"><span class="sd">        keys as :attr:`input_spec`); ``tangents`` carries the seed direction</span>
+</span><span data-line="372"><span class="sd">        per input. Returns ``(outputs, jvp)`` keyed by output name -- the same</span>
+</span><span data-line="373"><span class="sd">        raw-tensor surface the eager runtime exposes. Requires the artifact to</span>
+</span><span data-line="374"><span class="sd">        carry the derivative graph (compiled with ``neml2-compile ... -d</span>
+</span><span data-line="375"><span class="sd">        OUT:IN``); otherwise the underlying binding raises.</span>
+</span><span data-line="376"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="377">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">jvp</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">tangents</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
+
+</span><span data-line="378">
+<div class="viewcode-block" id="AOTIModel.jacobian">
+<a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.jacobian">[docs]</a>
+</span><span data-line="379">    <span class="k">def</span><span class="w"> </span><span class="nf">jacobian</span><span class="p">(</span>
+</span><span data-line="380">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="381">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="382">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="383">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
+</span><span data-line="384"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Outputs + the per-(output, input) Jacobian blocks from the compiled</span>
+</span><span data-line="385"><span class="sd">        ``jacobian`` graph.</span>
+</span><span data-line="386">
+</span><span data-line="387"><span class="sd">        ``inputs`` is a ``{variable_name: tensor}`` dict. Returns</span>
+</span><span data-line="388"><span class="sd">        ``(outputs, J)`` where ``J[out][in]`` is the block ``d(out)/d(in)``,</span>
+</span><span data-line="389"><span class="sd">        shaped ``(batch, *out_base, *in_base)``. Like :meth:`jvp`, needs an</span>
+</span><span data-line="390"><span class="sd">        artifact compiled with ``-d``.</span>
+</span><span data-line="391"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="392">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
+
+</span><span data-line="393">
+</span><span data-line="394">    <span class="k">def</span><span class="w"> </span><span class="nf">_broadcast_to_common_batch</span><span class="p">(</span>
+</span><span data-line="395">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="396">        <span class="n">raw_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="397">        <span class="n">per_input_sub_ndim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+</span><span data-line="398">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">]:</span>
+</span><span data-line="399"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Bring every input tensor to its declared ``(*dyn, *sub, *base)`` shape,</span>
+</span><span data-line="400"><span class="sd">        with the dynamic-batch axes broadcast to a single common shape.</span>
+</span><span data-line="401">
+</span><span data-line="402"><span class="sd">        Thin wrapper over the shared</span>
+</span><span data-line="403"><span class="sd">        :func:`neml2.types._boundary.broadcast_to_common_batch`; see there for</span>
+</span><span data-line="404"><span class="sd">        the (dyn, sub, base) per-input split rationale. The per-input</span>
+</span><span data-line="405"><span class="sd">        ``sub_batch_ndim`` is resolved from the caller&#39;s typed wrapper instance</span>
+</span><span data-line="406"><span class="sd">        (or the legacy metadata ``sub_batch_shape`` when the caller passes a</span>
+</span><span data-line="407"><span class="sd">        raw tensor) before this call.</span>
+</span><span data-line="408"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="409">        <span class="k">return</span> <span class="n">broadcast_to_common_batch</span><span class="p">(</span><span class="n">raw_inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">per_input_sub_ndim</span><span class="p">)</span></div>
 
 </span></pre></div>
         </article><button class="back-to-top" type="button">
