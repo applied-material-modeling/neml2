@@ -31,6 +31,7 @@
 // (eventually) eager paths.
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 #include <ATen/core/Tensor.h>
@@ -54,6 +55,12 @@ struct NewtonResult
   std::vector<at::Tensor> u;
   bool converged = false;
   std::size_t iterations = 0;
+  /// Per-iteration convergence log lines (populated only when
+  /// ``SolverConfig::collect_log`` is set). Each entry is a preformatted
+  /// ``ITERATION ...`` or ``LS ITERATION ...`` line, identical to the
+  /// ``NEML2_AOTI_TRACE_NEWTON`` stderr trace, so a Python caller can print
+  /// the same convergence history without parsing stderr.
+  std::vector<std::string> log;
 };
 
 /// Per-group Newton-Raphson solver with optional backtracking line search.

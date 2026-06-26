@@ -128,10 +128,10 @@ result = R2(F_full.contiguous())
     type = TransientDriver
     model = 'model_with_pk2_stress'
     prescribed_time = 'times'
-    force_R2_names = 'F'
-    force_R2_values = 'F'
-    force_Rot_names = 'r'
-    force_Rot_values = 'r'
+    prescribed_R2_names = 'F'
+    prescribed_R2_values = 'F'
+    prescribed_Rot_names = 'r'
+    prescribed_Rot_values = 'r'
     ic_R2_names = 'Fp'
     ic_R2_values = 'Fp0'
   []

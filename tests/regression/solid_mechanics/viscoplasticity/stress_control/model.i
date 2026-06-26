@@ -23,8 +23,8 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'S'
-    force_SR2_values = 'stresses'
+    prescribed_SR2_names = 'S'
+    prescribed_SR2_values = 'stresses'
     save_as = 'result.pt'
   []
   [regression]

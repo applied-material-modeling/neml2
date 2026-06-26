@@ -71,10 +71,10 @@
     model = 'model'
     prescribed_time = 'times'
 
-    force_SR2_names = 'prescribed control'
-    force_SR2_values = 'prescribed control'
-    force_WR2_names = 'vorticity'
-    force_WR2_values = 'vorticity'
+    prescribed_SR2_names = 'prescribed control'
+    prescribed_SR2_values = 'prescribed control'
+    prescribed_WR2_names = 'vorticity'
+    prescribed_WR2_values = 'vorticity'
 
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'

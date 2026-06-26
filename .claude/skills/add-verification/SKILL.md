@@ -51,8 +51,8 @@ tests/verification/<submodule>/<scenario>/
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'strain'
-    force_SR2_values = 'strain_ref'
+    prescribed_SR2_names = 'strain'
+    prescribed_SR2_values = 'strain_ref'
     save_as = 'result.pt'
   []
   [verification]

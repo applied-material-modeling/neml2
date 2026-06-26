@@ -79,6 +79,13 @@ class Newton:
             "Maximum number of iterations allowed before issuing an error/exception",
             default=25,
         ),
+        option(
+            "verbose",
+            bool,
+            "Print the Newton convergence history (per-iteration residual norms, "
+            "including any line-search sub-iterations) after each solve",
+            default=False,
+        ),
     )
 
     @classmethod
@@ -88,7 +95,10 @@ class Newton:
         atol = node.param_optional_float("abs_tol", 1.0e-10)
         rtol = node.param_optional_float("rel_tol", 1.0e-8)
         miters = int(node.param_optional_int("max_its", 25))
-        return cls(linear_solver=linear_solver, atol=atol, rtol=rtol, miters=miters)
+        verbose = node.param_optional_bool("verbose", False)
+        return cls(
+            linear_solver=linear_solver, atol=atol, rtol=rtol, miters=miters, verbose=verbose
+        )
 
     def __init__(
         self,
@@ -165,18 +175,30 @@ class Newton:
                 out = step(*u_raws, *g_raws)
                 return list(out[:n_u]), list(out[n_u:])
 
-            u_star, converged, iterations = newton_solve_eager(
+            u_star, converged, iterations, log = newton_solve_eager(
                 residual_fn=residual_fn,
                 step_fn=step_fn,
                 unknown_layout=_group_layout_descriptor(system.ulayout),
                 residual_layout=_group_layout_descriptor(system.blayout),
                 u0=u0_raws,
+                # collect_log is eager-only (it controls returning the
+                # convergence history to Python); the shared ``_solver_config``
+                # also feeds the compiled path's ``set_solver_config``, which
+                # has no such option.
+                collect_log=self.verbose,
                 **self._solver_config(),
             )
             system.set_u_from_group_raws(u_star)
 
+        # ``verbose`` surfaces the convergence history the C++ loop collected
+        # (``collect_log`` above). Printing from Python keeps it in the
+        # notebook-captured stream, unlike the C++ ``NEML2_AOTI_TRACE_NEWTON``
+        # stderr trace.
+        if self.verbose and log:
+            print("\n".join(log))
+
         ret = RetCode.SUCCESS if converged else RetCode.MAXITER
-        return NonlinearResult(ret, iterations)
+        return NonlinearResult(ret, iterations, log=tuple(log))
 
 
 __all__ = ["Newton"]

@@ -35,8 +35,8 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'stresses_force control'
-    force_SR2_values = 'stresses control'
+    prescribed_SR2_names = 'stresses_force control'
+    prescribed_SR2_values = 'stresses control'
     save_as = 'result.pt'
   []
   [verification]

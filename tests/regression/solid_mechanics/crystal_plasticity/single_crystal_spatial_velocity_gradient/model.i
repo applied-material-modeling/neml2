@@ -54,8 +54,8 @@
     type = TransientDriver
     model = 'model_with_stress'
     prescribed_time = 'times'
-    force_R2_names = 'spatial_velocity_gradient'
-    force_R2_values = 'L'
+    prescribed_R2_names = 'spatial_velocity_gradient'
+    prescribed_R2_values = 'L'
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     save_as = 'result.pt'

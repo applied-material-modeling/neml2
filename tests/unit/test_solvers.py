@@ -151,3 +151,38 @@ def test_newton_with_linesearch_rejects_bad_linesearch_type():
 
     with pytest.raises(ValueError, match="linesearch_type"):
         NewtonWithLineSearch(linesearch_type="HERMES")
+
+
+def _scalar_system():
+    sys = ModelNonlinearSystem(ScalarResidual(), unknowns=[["x"]])
+    sys.initialize(
+        u=SparseVector(sys.ulayout, {"x": Scalar(torch.tensor([1.0, 2.0], dtype=torch.float64))}),
+        g=SparseVector(sys.glayout, {"c": Scalar(torch.tensor([4.0, 9.0], dtype=torch.float64))}),
+    )
+    return sys
+
+
+def test_newton_quiet_by_default():
+    """Without ``verbose`` the solver records no convergence log."""
+    result = Newton(atol=1e-12, rtol=1e-12, miters=20).solve(_scalar_system())
+    assert result.ret is RetCode.SUCCESS
+    assert result.log == ()
+
+
+def test_newton_verbose_collects_convergence_log():
+    """``verbose=True`` records one ``ITERATION`` line per step with a
+    monotonically non-increasing residual norm."""
+    import re
+
+    result = Newton(atol=1e-12, rtol=1e-12, miters=20, verbose=True).solve(_scalar_system())
+
+    assert result.ret is RetCode.SUCCESS
+    assert len(result.log) >= 2
+    assert all(line.startswith("ITERATION") for line in result.log)
+    norms = []
+    for line in result.log:
+        m = re.search(r"\|R\| = ([\d.eE+-]+)", line)
+        assert m is not None
+        norms.append(float(m.group(1)))
+    assert all(a >= b for a, b in zip(norms, norms[1:], strict=False))  # non-increasing
+    assert norms[-1] < norms[0]  # actually made progress

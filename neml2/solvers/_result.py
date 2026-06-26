@@ -44,6 +44,10 @@ class NonlinearResult:
 
     ret: RetCode
     iterations: int
+    #: Per-iteration convergence history (``ITERATION ...`` / ``LS ITERATION
+    #: ...`` lines, max-norm over the batch), populated only when the solver's
+    #: ``verbose`` flag is set; empty otherwise.
+    log: tuple[str, ...] = ()
 
 
 __all__ = ["RetCode", "NonlinearResult"]
