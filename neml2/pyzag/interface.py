@@ -131,8 +131,17 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
     Keyword Args:
         exclude_parameters (list of str): NEML2 parameters to *not* mirror
-            as torch parameters on the wrapper (and therefore not optimize
-            against).
+            as torch parameters on the wrapper (so every *other* parameter is
+            trained). Mutually exclusive with ``include_parameters``.
+        include_parameters (list of str): the *only* NEML2 parameters to mirror
+            as torch parameters on the wrapper (so every *other* parameter is
+            held fixed). Mutually exclusive with ``exclude_parameters``.
+
+    ``exclude_parameters`` and ``include_parameters`` are both optional and
+    mutually exclusive: omit both to train every parameter, pass
+    ``exclude_parameters`` to train all-but-some, or pass
+    ``include_parameters`` to train only-these. Passing both raises
+    ``ValueError``.
 
     Additional ``args`` and ``kwargs`` are forwarded to
     :class:`torch.nn.Module` verbatim.
@@ -143,9 +152,16 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         sys: ModelNonlinearSystem,
         *args,
         exclude_parameters: list[str] | None = None,
+        include_parameters: list[str] | None = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+
+        if exclude_parameters is not None and include_parameters is not None:
+            raise ValueError(
+                "exclude_parameters and include_parameters are mutually exclusive; "
+                "pass at most one (omit both to train all parameters)."
+            )
 
         if not isinstance(sys, ModelNonlinearSystem):
             raise TypeError(
@@ -173,7 +189,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         self._setup_maps()
         self._check_model()
-        self._setup_parameters(exclude_parameters if exclude_parameters is not None else [])
+        self._setup_parameters(exclude_parameters, include_parameters)
 
     @property
     def lookback(self) -> int:
@@ -294,10 +310,20 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
             if snv in gvars:
                 self._sn_to_g_name[snv] = snv
 
-    def _setup_parameters(self, exclude_parameters: list[str]):
+    def _setup_parameters(
+        self,
+        exclude_parameters: list[str] | None,
+        include_parameters: list[str] | None,
+    ):
         """Mirror each HIT-named NEML2 model parameter as a
         ``torch.nn.Parameter`` on the wrapper with a flat ``<hit_name>_<leaf>``
         key (e.g. ``elasticity_E``, ``flow_rate_eta``, ``Eerate_weight_0``).
+
+        ``exclude_parameters`` / ``include_parameters`` (validated mutually
+        exclusive in :meth:`__init__`) choose which of those flat names become
+        trainable: with ``include_parameters`` only the listed names are
+        mirrored, with ``exclude_parameters`` every name *but* the listed ones
+        is mirrored, and with neither every parameter is mirrored.
 
         Why not just expose ``self.sys.model.named_parameters()`` verbatim?
 
@@ -334,12 +360,16 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
             if hit_name and hit_name.isidentifier():
                 hit_modules[id(module)] = hit_name
 
+        exclude = set(exclude_parameters or [])
+        include = None if include_parameters is None else set(include_parameters)
+
         # ``_param_targets`` is the runtime sync table: wrapper-side flat
         # name → (owning submodule, leaf attribute name on that submodule).
         # ``_update_parameter_values`` walks this to push values back.
         self.parameter_names: list[str] = []
         self._param_targets: dict[str, tuple[torch.nn.Module, str]] = {}
         registered: set[str] = set()
+        available: set[str] = set()
 
         for module in self.sys.model.modules():
             mod_hit = hit_modules.get(id(module))
@@ -347,17 +377,36 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                 continue
             for leaf_name, param in module.named_parameters(recurse=False):
                 flat = f"{mod_hit}_{leaf_name}"
-                if flat in exclude_parameters or flat in registered:
-                    # ``in exclude_parameters`` handles the user's opt-out;
-                    # ``in registered`` guards against accidental collisions
-                    # if two HIT blocks share a name + parameter (pathological,
-                    # but cheap to defend against).
+                available.add(flat)
+                # ``in registered`` guards against accidental collisions if two
+                # HIT blocks share a name + parameter (pathological, but cheap
+                # to defend against). Then apply the user's selection: an
+                # ``include`` list mirrors only those names; otherwise mirror
+                # everything except the ``exclude`` list.
+                if flat in registered:
+                    continue
+                if include is not None:
+                    if flat not in include:
+                        continue
+                elif flat in exclude:
                     continue
                 registered.add(flat)
                 self.parameter_names.append(flat)
                 param.requires_grad_(True)
                 self.register_parameter(flat, torch.nn.Parameter(param.detach().clone()))
                 self._param_targets[flat] = (module, leaf_name)
+
+        # A typo in ``include_parameters`` would silently train fewer
+        # parameters than intended, so reject names that don't exist.
+        # (``exclude_parameters`` stays lenient: an over-broad exclude list is
+        # harmless, and downstream callers have long relied on that.)
+        if include is not None:
+            unknown = include - available
+            if unknown:
+                raise ValueError(
+                    f"include_parameters contains unknown parameter(s): {sorted(unknown)}. "
+                    f"Available parameters: {sorted(available)}."
+                )
 
     def _update_parameter_values(self):
         """Bind the wrapper's (possibly reparameterized) parameter tensors
