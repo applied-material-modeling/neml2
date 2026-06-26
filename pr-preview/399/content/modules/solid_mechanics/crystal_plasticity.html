@@ -433,9 +433,9 @@ l = \dot{\varepsilon} + \Omega^e - \Omega^e \varepsilon + \varepsilon \Omega^e +
 </ol>
 <p>The first holds well for metal plasticity; the second can break down at very high strain rates.</p>
 <p>Defining the current orientation as the composition of the initial lattice rotation <span class="math notranslate nohighlight">\(Q_0\)</span> with the elastic rotation, <span class="math notranslate nohighlight">\(Q = R^e Q_0\)</span>, the elastic spin reduces to <span class="math notranslate nohighlight">\(\Omega^e = \dot{Q} Q^T\)</span>. Splitting the spatial velocity gradient into symmetric and skew parts (<span class="math notranslate nohighlight">\(l = d + w\)</span>, <span class="math notranslate nohighlight">\(l^p = d^p + w^p\)</span>) and rearranging yields the two governing rate equations integrated by this module:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-0e2d89fb-4fc5-496d-b7f9-a44b065477c4">
-<div class="amsmath math notranslate nohighlight" id="equation-0e2d89fb-4fc5-496d-b7f9-a44b065477c4">
-<span class="eqno">(18)<a class="headerlink" href="#equation-0e2d89fb-4fc5-496d-b7f9-a44b065477c4" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-bf626cbd-8f19-4296-872f-6ad3f44ae891">
+<div class="amsmath math notranslate nohighlight" id="equation-bf626cbd-8f19-4296-872f-6ad3f44ae891">
+<span class="eqno">(18)<a class="headerlink" href="#equation-bf626cbd-8f19-4296-872f-6ad3f44ae891" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \dot{\varepsilon} &amp;= d - d^p - \varepsilon w + w \varepsilon \\
   \dot{Q} &amp;= \left(w - w^p - \varepsilon d^p + d^p \varepsilon\right) Q.
 \end{align}\]</div>
@@ -542,137 +542,136 @@ l^p = \sum_{i=1}^{n_\mathrm{slip}} \dot{\gamma}_i \, Q \left(d_i \otimes n_i\rig
 </span><span data-line="68"><span class="w">    </span><span class="na">prescribed_WR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;vorticity&#39;</span>
 </span><span data-line="69"><span class="w">    </span><span class="na">ic_Rot_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
 </span><span data-line="70"><span class="w">    </span><span class="na">ic_Rot_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;initial_orientation&#39;</span>
-</span><span data-line="71"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>
-</span><span data-line="72"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="73"><span class="w">  </span><span class="k">[regression]</span>
-</span><span data-line="74"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientRegression</span>
-</span><span data-line="75"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;driver&#39;</span>
-</span><span data-line="76"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gold/result.pt&#39;</span>
-</span><span data-line="77"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="78"><span class="k">[]</span>
-</span><span data-line="79">
-</span><span data-line="80"><span class="k">[Data]</span>
-</span><span data-line="81"><span class="w">  </span><span class="k">[crystal_geometry]</span>
-</span><span data-line="82"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CubicCrystal</span>
-</span><span data-line="83"><span class="w">    </span><span class="na">lattice_parameter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;a&#39;</span>
-</span><span data-line="84"><span class="w">    </span><span class="na">slip_directions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;sdirs&#39;</span>
-</span><span data-line="85"><span class="w">    </span><span class="na">slip_planes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;splanes&#39;</span>
-</span><span data-line="86"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="87"><span class="k">[]</span>
-</span><span data-line="88">
-</span><span data-line="89"><span class="k">[Models]</span>
-</span><span data-line="90"><span class="w">  </span><span class="k">[euler_rodrigues]</span>
-</span><span data-line="91"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">RotationMatrix</span>
-</span><span data-line="92"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
-</span><span data-line="93"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation_matrix&#39;</span>
-</span><span data-line="94"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="95"><span class="w">  </span><span class="k">[elasticity]</span>
-</span><span data-line="96"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
-</span><span data-line="97"><span class="w">    </span><span class="na">coefficients</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;1e5 0.25&#39;</span>
-</span><span data-line="98"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
-</span><span data-line="99"><span class="w">    </span><span class="na">strain</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain&#39;</span>
-</span><span data-line="100"><span class="w">    </span><span class="na">stress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;cauchy_stress&#39;</span>
-</span><span data-line="101"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="102"><span class="w">  </span><span class="k">[resolved_shear]</span>
-</span><span data-line="103"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ResolvedShear</span>
-</span><span data-line="104"><span class="w">    </span><span class="na">stress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;cauchy_stress&#39;</span>
-</span><span data-line="105"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="106"><span class="w">  </span><span class="k">[elastic_stretch]</span>
-</span><span data-line="107"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ElasticStrainRate</span>
-</span><span data-line="108"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="109"><span class="w">  </span><span class="k">[plastic_spin]</span>
-</span><span data-line="110"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PlasticVorticity</span>
-</span><span data-line="111"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="112"><span class="w">  </span><span class="k">[plastic_deformation_rate]</span>
-</span><span data-line="113"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PlasticDeformationRate</span>
-</span><span data-line="114"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="115"><span class="w">  </span><span class="k">[orientation_rate]</span>
-</span><span data-line="116"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">OrientationRate</span>
-</span><span data-line="117"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="118"><span class="w">  </span><span class="k">[sum_slip_rates]</span>
-</span><span data-line="119"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SumSlipRates</span>
-</span><span data-line="120"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="121"><span class="w">  </span><span class="k">[slip_rule]</span>
-</span><span data-line="122"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PowerLawSlipRule</span>
-</span><span data-line="123"><span class="w">    </span><span class="na">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8.0</span>
-</span><span data-line="124"><span class="w">    </span><span class="na">gamma0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0e-1</span>
-</span><span data-line="125"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="126"><span class="w">  </span><span class="k">[slip_strength]</span>
-</span><span data-line="127"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SingleSlipStrengthMap</span>
-</span><span data-line="128"><span class="w">    </span><span class="na">constant_strength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span>
-</span><span data-line="129"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="130"><span class="w">  </span><span class="k">[voce_hardening]</span>
-</span><span data-line="131"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">VoceSingleSlipHardeningRule</span>
-</span><span data-line="132"><span class="w">    </span><span class="na">initial_slope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">500.0</span>
-</span><span data-line="133"><span class="w">    </span><span class="na">saturated_hardening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span>
-</span><span data-line="134"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="135"><span class="w">  </span><span class="k">[integrate_slip_hardening]</span>
-</span><span data-line="136"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
-</span><span data-line="137"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;slip_hardening&#39;</span>
-</span><span data-line="138"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="139"><span class="w">  </span><span class="k">[integrate_elastic_strain]</span>
-</span><span data-line="140"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SR2BackwardEulerTimeIntegration</span>
-</span><span data-line="141"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain&#39;</span>
-</span><span data-line="142"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="143"><span class="w">  </span><span class="k">[integrate_orientation]</span>
-</span><span data-line="144"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">WR2ImplicitExponentialTimeIntegration</span>
-</span><span data-line="145"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
-</span><span data-line="146"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="147"><span class="w">  </span><span class="k">[implicit_rate]</span>
-</span><span data-line="148"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="149"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;</span><span class="err">euler_rodrigues elasticity orientation_rate resolved_shear</span>
-</span><span data-line="150"><span class="w">              </span><span class="na">elastic_stretch plastic_deformation_rate plastic_spin</span>
-</span><span data-line="151"><span class="w">              </span><span class="na">sum_slip_rates slip_rule slip_strength voce_hardening</span>
-</span><span data-line="152"><span class="w">              </span><span class="na">integrate_slip_hardening integrate_elastic_strain integrate_orientation&#39;</span>
-</span><span data-line="153"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="154"><span class="k">[]</span>
-</span><span data-line="155">
-</span><span data-line="156"><span class="k">[EquationSystems]</span>
-</span><span data-line="157"><span class="w">  </span><span class="k">[eq_sys]</span>
-</span><span data-line="158"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
-</span><span data-line="159"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;implicit_rate&#39;</span>
-</span><span data-line="160"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain slip_hardening orientation&#39;</span>
-</span><span data-line="161"><span class="w">    </span><span class="na">residuals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain_residual slip_hardening_residual orientation_residual&#39;</span>
-</span><span data-line="162"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="163"><span class="k">[]</span>
-</span><span data-line="164">
-</span><span data-line="165"><span class="k">[Solvers]</span>
-</span><span data-line="166"><span class="w">  </span><span class="k">[newton]</span>
-</span><span data-line="167"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NewtonWithLineSearch</span>
-</span><span data-line="168"><span class="w">    </span><span class="na">max_linesearch_iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span>
-</span><span data-line="169"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;lu&#39;</span>
-</span><span data-line="170"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="171"><span class="w">  </span><span class="k">[lu]</span>
-</span><span data-line="172"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
-</span><span data-line="173"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="174"><span class="k">[]</span>
-</span><span data-line="175">
-</span><span data-line="176"><span class="k">[Models]</span>
-</span><span data-line="177"><span class="w">  </span><span class="k">[cp_warmup_1]</span>
-</span><span data-line="178"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CrystalPlasticityStrainPredictor</span>
-</span><span data-line="179"><span class="w">    </span><span class="na">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
-</span><span data-line="180"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="181"><span class="w">  </span><span class="k">[cp_warmup_2]</span>
-</span><span data-line="182"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
-</span><span data-line="183"><span class="w">    </span><span class="na">unknowns_Rot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
-</span><span data-line="184"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;slip_hardening&#39;</span>
-</span><span data-line="185"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="186"><span class="w">  </span><span class="k">[predictor]</span>
-</span><span data-line="187"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="188"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;cp_warmup_1 cp_warmup_2&#39;</span>
-</span><span data-line="189"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="190"><span class="w">  </span><span class="k">[model]</span>
-</span><span data-line="191"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="192"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
-</span><span data-line="193"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
-</span><span data-line="194"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;predictor&#39;</span>
-</span><span data-line="195"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="196"><span class="w">  </span><span class="k">[model_with_stress]</span>
-</span><span data-line="197"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="198"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model elasticity&#39;</span>
-</span><span data-line="199"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain&#39;</span>
-</span><span data-line="200"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="201"><span class="k">[]</span>
+</span><span data-line="71"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="72"><span class="w">  </span><span class="k">[regression]</span>
+</span><span data-line="73"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientRegression</span>
+</span><span data-line="74"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;driver&#39;</span>
+</span><span data-line="75"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gold/result.pt&#39;</span>
+</span><span data-line="76"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="77"><span class="k">[]</span>
+</span><span data-line="78">
+</span><span data-line="79"><span class="k">[Data]</span>
+</span><span data-line="80"><span class="w">  </span><span class="k">[crystal_geometry]</span>
+</span><span data-line="81"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CubicCrystal</span>
+</span><span data-line="82"><span class="w">    </span><span class="na">lattice_parameter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;a&#39;</span>
+</span><span data-line="83"><span class="w">    </span><span class="na">slip_directions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;sdirs&#39;</span>
+</span><span data-line="84"><span class="w">    </span><span class="na">slip_planes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;splanes&#39;</span>
+</span><span data-line="85"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="86"><span class="k">[]</span>
+</span><span data-line="87">
+</span><span data-line="88"><span class="k">[Models]</span>
+</span><span data-line="89"><span class="w">  </span><span class="k">[euler_rodrigues]</span>
+</span><span data-line="90"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">RotationMatrix</span>
+</span><span data-line="91"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
+</span><span data-line="92"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation_matrix&#39;</span>
+</span><span data-line="93"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="94"><span class="w">  </span><span class="k">[elasticity]</span>
+</span><span data-line="95"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
+</span><span data-line="96"><span class="w">    </span><span class="na">coefficients</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;1e5 0.25&#39;</span>
+</span><span data-line="97"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
+</span><span data-line="98"><span class="w">    </span><span class="na">strain</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain&#39;</span>
+</span><span data-line="99"><span class="w">    </span><span class="na">stress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;cauchy_stress&#39;</span>
+</span><span data-line="100"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="101"><span class="w">  </span><span class="k">[resolved_shear]</span>
+</span><span data-line="102"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ResolvedShear</span>
+</span><span data-line="103"><span class="w">    </span><span class="na">stress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;cauchy_stress&#39;</span>
+</span><span data-line="104"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="105"><span class="w">  </span><span class="k">[elastic_stretch]</span>
+</span><span data-line="106"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ElasticStrainRate</span>
+</span><span data-line="107"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="108"><span class="w">  </span><span class="k">[plastic_spin]</span>
+</span><span data-line="109"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PlasticVorticity</span>
+</span><span data-line="110"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="111"><span class="w">  </span><span class="k">[plastic_deformation_rate]</span>
+</span><span data-line="112"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PlasticDeformationRate</span>
+</span><span data-line="113"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="114"><span class="w">  </span><span class="k">[orientation_rate]</span>
+</span><span data-line="115"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">OrientationRate</span>
+</span><span data-line="116"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="117"><span class="w">  </span><span class="k">[sum_slip_rates]</span>
+</span><span data-line="118"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SumSlipRates</span>
+</span><span data-line="119"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="120"><span class="w">  </span><span class="k">[slip_rule]</span>
+</span><span data-line="121"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PowerLawSlipRule</span>
+</span><span data-line="122"><span class="w">    </span><span class="na">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8.0</span>
+</span><span data-line="123"><span class="w">    </span><span class="na">gamma0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0e-1</span>
+</span><span data-line="124"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="125"><span class="w">  </span><span class="k">[slip_strength]</span>
+</span><span data-line="126"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SingleSlipStrengthMap</span>
+</span><span data-line="127"><span class="w">    </span><span class="na">constant_strength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span>
+</span><span data-line="128"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="129"><span class="w">  </span><span class="k">[voce_hardening]</span>
+</span><span data-line="130"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">VoceSingleSlipHardeningRule</span>
+</span><span data-line="131"><span class="w">    </span><span class="na">initial_slope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">500.0</span>
+</span><span data-line="132"><span class="w">    </span><span class="na">saturated_hardening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span>
+</span><span data-line="133"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="134"><span class="w">  </span><span class="k">[integrate_slip_hardening]</span>
+</span><span data-line="135"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
+</span><span data-line="136"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;slip_hardening&#39;</span>
+</span><span data-line="137"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="138"><span class="w">  </span><span class="k">[integrate_elastic_strain]</span>
+</span><span data-line="139"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SR2BackwardEulerTimeIntegration</span>
+</span><span data-line="140"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain&#39;</span>
+</span><span data-line="141"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="142"><span class="w">  </span><span class="k">[integrate_orientation]</span>
+</span><span data-line="143"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">WR2ImplicitExponentialTimeIntegration</span>
+</span><span data-line="144"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
+</span><span data-line="145"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="146"><span class="w">  </span><span class="k">[implicit_rate]</span>
+</span><span data-line="147"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="148"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;</span><span class="err">euler_rodrigues elasticity orientation_rate resolved_shear</span>
+</span><span data-line="149"><span class="w">              </span><span class="na">elastic_stretch plastic_deformation_rate plastic_spin</span>
+</span><span data-line="150"><span class="w">              </span><span class="na">sum_slip_rates slip_rule slip_strength voce_hardening</span>
+</span><span data-line="151"><span class="w">              </span><span class="na">integrate_slip_hardening integrate_elastic_strain integrate_orientation&#39;</span>
+</span><span data-line="152"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="153"><span class="k">[]</span>
+</span><span data-line="154">
+</span><span data-line="155"><span class="k">[EquationSystems]</span>
+</span><span data-line="156"><span class="w">  </span><span class="k">[eq_sys]</span>
+</span><span data-line="157"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
+</span><span data-line="158"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;implicit_rate&#39;</span>
+</span><span data-line="159"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain slip_hardening orientation&#39;</span>
+</span><span data-line="160"><span class="w">    </span><span class="na">residuals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain_residual slip_hardening_residual orientation_residual&#39;</span>
+</span><span data-line="161"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="162"><span class="k">[]</span>
+</span><span data-line="163">
+</span><span data-line="164"><span class="k">[Solvers]</span>
+</span><span data-line="165"><span class="w">  </span><span class="k">[newton]</span>
+</span><span data-line="166"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NewtonWithLineSearch</span>
+</span><span data-line="167"><span class="w">    </span><span class="na">max_linesearch_iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span>
+</span><span data-line="168"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;lu&#39;</span>
+</span><span data-line="169"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="170"><span class="w">  </span><span class="k">[lu]</span>
+</span><span data-line="171"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
+</span><span data-line="172"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="173"><span class="k">[]</span>
+</span><span data-line="174">
+</span><span data-line="175"><span class="k">[Models]</span>
+</span><span data-line="176"><span class="w">  </span><span class="k">[cp_warmup_1]</span>
+</span><span data-line="177"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CrystalPlasticityStrainPredictor</span>
+</span><span data-line="178"><span class="w">    </span><span class="na">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+</span><span data-line="179"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="180"><span class="w">  </span><span class="k">[cp_warmup_2]</span>
+</span><span data-line="181"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
+</span><span data-line="182"><span class="w">    </span><span class="na">unknowns_Rot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;orientation&#39;</span>
+</span><span data-line="183"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;slip_hardening&#39;</span>
+</span><span data-line="184"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="185"><span class="w">  </span><span class="k">[predictor]</span>
+</span><span data-line="186"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="187"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;cp_warmup_1 cp_warmup_2&#39;</span>
+</span><span data-line="188"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="189"><span class="w">  </span><span class="k">[model]</span>
+</span><span data-line="190"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
+</span><span data-line="191"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
+</span><span data-line="192"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="193"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;predictor&#39;</span>
+</span><span data-line="194"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="195"><span class="w">  </span><span class="k">[model_with_stress]</span>
+</span><span data-line="196"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="197"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model elasticity&#39;</span>
+</span><span data-line="198"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elastic_strain&#39;</span>
+</span><span data-line="199"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="200"><span class="k">[]</span>
 </span></pre></div>
 </div>
 </div>

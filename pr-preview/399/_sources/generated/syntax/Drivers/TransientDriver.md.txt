@@ -19,7 +19,7 @@ Mirrors C++ ``TransientDriver``. See module docstring for differences.
 : Name of the model input that receives the per-step time value.
 
 `save_as` &mdash; `str`
-: Output file path. Accepted for compatibility with the C++ driver but ignored by the native runtime; results are held in memory and retrieved via `result`.
+: Output file path. When set, ``run()`` writes the result here (the same flat dict `result` returns, via `save_result`); empty (the default) leaves ``run()`` side-effect-free.
 
 `prescribed_Scalar_names` &mdash; `list`
 : Scalar variable names assigned a prescribed value.

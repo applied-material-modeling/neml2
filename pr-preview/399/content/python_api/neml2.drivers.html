@@ -359,7 +359,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.drivers.TransientDriver.hit"><code class="docutils literal notranslate">hit</span></code></a></li>
 <li><a class="reference internal" href="#neml2.drivers.TransientDriver.result"><code class="docutils literal notranslate">result()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.drivers.TransientDriver.run"><code class="docutils literal notranslate">run()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.drivers.TransientDriver.save_gold"><code class="docutils literal notranslate">save_gold()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.drivers.TransientDriver.save_result"><code class="docutils literal notranslate">save_result()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.drivers.TransientRegression"><code class="docutils literal notranslate"><span class="pre">TransientRegression</span></code></a><ul>
@@ -416,7 +416,7 @@ data-aria-dark="Switch to auto color mode">
 from HIT input.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.drivers.TransientDriver">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.drivers.</span></span><span class="sig-name descname"><span class="pre">TransientDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prescribed_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prescribed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ics</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/drivers/TransientDriver.html#TransientDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.drivers.TransientDriver" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.drivers.</span></span><span class="sig-name descname"><span class="pre">TransientDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prescribed_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prescribed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_as</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/drivers/TransientDriver.html#TransientDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.drivers.TransientDriver" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Driver</span></code></p>
 <p>Drive a model over a prescribed time history.</p>
 <p>Mirrors C++ <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>. See module docstring for differences.</p>
@@ -428,6 +428,7 @@ from HIT input.</p>
 <li><p><strong>time_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
 <li><p><strong>prescribed</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
 <li><p><strong>ics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
+<li><p><strong>save_as</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -478,8 +479,8 @@ are unwrapped to raw <code class="docutils literal notranslate"><span class="pre
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="neml2.drivers.TransientDriver.save_gold">
-<span class="sig-name descname"><span class="pre">save_gold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/drivers/TransientDriver.html#TransientDriver.save_gold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.drivers.TransientDriver.save_gold" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="neml2.drivers.TransientDriver.save_result">
+<span class="sig-name descname"><span class="pre">save_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/drivers/TransientDriver.html#TransientDriver.save_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.drivers.TransientDriver.save_result" title="Link to this definition">¶</a></dt>
 <dd><p>Serialize <code class="docutils literal notranslate"><span class="pre">result()</span></code> to a <code class="docutils literal notranslate"><span class="pre">.pt</span></code> file as a flat <code class="docutils literal notranslate"><span class="pre">torch.save</span></code> dict.</p>
 <p>The dict carries the same keys as <a class="reference internal" href="#neml2.drivers.TransientDriver.result" title="neml2.drivers.TransientDriver.result"><code class="xref py py-meth docutils literal notranslate"><span class="pre">result()</span></code></a>:
 <code class="docutils literal notranslate"><span class="pre">input.&lt;step&gt;.&lt;var&gt;</span></code> / <code class="docutils literal notranslate"><span class="pre">output.&lt;step&gt;.&lt;var&gt;</span></code>, each mapping to a

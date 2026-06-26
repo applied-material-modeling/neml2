@@ -434,9 +434,9 @@ chemical-reactions types slot into that machinery.</p>
 <p>A reaction mechanism is a constitutive relation between the conversion
 degree <span class="math notranslate nohighlight">\(\alpha \in [0, 1]\)</span> and the reaction rate
 <span class="math notranslate nohighlight">\(\dot{\alpha} = f(\alpha)\)</span>. The three mechanisms in this module are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-197e94e3-5be3-4c4c-aecc-3978f101ffb4">
-<div class="amsmath math notranslate nohighlight" id="equation-197e94e3-5be3-4c4c-aecc-3978f101ffb4">
-<span class="eqno">(4)<a class="headerlink" href="#equation-197e94e3-5be3-4c4c-aecc-3978f101ffb4" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-01cc2d8d-04e2-42fe-a78a-f6326bb63662">
+<div class="amsmath math notranslate nohighlight" id="equation-01cc2d8d-04e2-42fe-a78a-f6326bb63662">
+<span class="eqno">(4)<a class="headerlink" href="#equation-01cc2d8d-04e2-42fe-a78a-f6326bb63662" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \dot{\alpha} &amp;= k \, (1 - \alpha)^n
   &amp;&amp;\text{(contracting geometry)} \\
 \dot{\alpha} &amp;= k \, (1 - \alpha) \, \bigl(-\ln(1 - \alpha)\bigr)^n
@@ -538,117 +538,116 @@ binder, char, gas, and open pore.</p>
 </span><span data-line="52"><span class="w">    </span><span class="na">prescribed_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
 </span><span data-line="53"><span class="w">    </span><span class="na">ic_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb wc&#39;</span>
 </span><span data-line="54"><span class="w">    </span><span class="na">ic_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${wb0} ${wc0}&#39;</span>
-</span><span data-line="55"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>
-</span><span data-line="56"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="57"><span class="w">  </span><span class="k">[regression]</span>
-</span><span data-line="58"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientRegression</span>
-</span><span data-line="59"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;driver&#39;</span>
-</span><span data-line="60"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gold/result.pt&#39;</span>
-</span><span data-line="61"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="62"><span class="k">[]</span>
-</span><span data-line="63">
-</span><span data-line="64"><span class="k">[Models]</span>
-</span><span data-line="65"><span class="w">  </span><span class="k">[reaction_coef]</span>
-</span><span data-line="66"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ArrheniusParameter</span>
-</span><span data-line="67"><span class="w">    </span><span class="na">reference_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${k0}&#39;</span>
-</span><span data-line="68"><span class="w">    </span><span class="na">activation_energy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${Q}&#39;</span>
-</span><span data-line="69"><span class="w">    </span><span class="na">ideal_gas_constant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${R}&#39;</span>
-</span><span data-line="70"><span class="w">    </span><span class="na">temperature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
-</span><span data-line="71"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="72"><span class="w">  </span><span class="k">[reaction_rate]</span>
-</span><span data-line="73"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ContractingGeometry</span>
-</span><span data-line="74"><span class="w">    </span><span class="na">coef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction_coef&#39;</span>
-</span><span data-line="75"><span class="w">    </span><span class="na">order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${n}&#39;</span>
-</span><span data-line="76"><span class="w">    </span><span class="na">conversion_degree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
-</span><span data-line="77"><span class="w">    </span><span class="na">reaction_rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
-</span><span data-line="78"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="79"><span class="w">  </span><span class="k">[reaction_ode]</span>
-</span><span data-line="80"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
-</span><span data-line="81"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
-</span><span data-line="82"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="83"><span class="w">  </span><span class="k">[reaction]</span>
-</span><span data-line="84"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="85"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction_coef reaction_rate reaction_ode&#39;</span>
-</span><span data-line="86"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="87"><span class="k">[]</span>
-</span><span data-line="88">
-</span><span data-line="89"><span class="k">[EquationSystems]</span>
-</span><span data-line="90"><span class="w">  </span><span class="k">[eq_sys]</span>
-</span><span data-line="91"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
-</span><span data-line="92"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction&#39;</span>
-</span><span data-line="93"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
-</span><span data-line="94"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="95"><span class="k">[]</span>
-</span><span data-line="96">
-</span><span data-line="97"><span class="k">[Solvers]</span>
-</span><span data-line="98"><span class="w">  </span><span class="k">[newton]</span>
-</span><span data-line="99"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
-</span><span data-line="100"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;lu&#39;</span>
-</span><span data-line="101"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="102"><span class="w">  </span><span class="k">[lu]</span>
-</span><span data-line="103"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
-</span><span data-line="104"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="105"><span class="k">[]</span>
-</span><span data-line="106">
-</span><span data-line="107"><span class="k">[Models]</span>
-</span><span data-line="108"><span class="w">  </span><span class="k">[predictor]</span>
-</span><span data-line="109"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
-</span><span data-line="110"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
-</span><span data-line="111"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="112"><span class="w">  </span><span class="k">[solve_reaction]</span>
-</span><span data-line="113"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="114"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
-</span><span data-line="115"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
-</span><span data-line="116"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;predictor&#39;</span>
-</span><span data-line="117"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="118"><span class="w">  </span><span class="k">[binder_rate]</span>
-</span><span data-line="119"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
-</span><span data-line="120"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
-</span><span data-line="121"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;-1&#39;</span>
-</span><span data-line="122"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb_rate&#39;</span>
-</span><span data-line="123"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="124"><span class="w">  </span><span class="k">[char_rate]</span>
-</span><span data-line="125"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
-</span><span data-line="126"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
-</span><span data-line="127"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${Y}&#39;</span>
-</span><span data-line="128"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wc_rate&#39;</span>
-</span><span data-line="129"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="130"><span class="w">  </span><span class="k">[gas_rate]</span>
-</span><span data-line="131"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
-</span><span data-line="132"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb_rate wc_rate&#39;</span>
-</span><span data-line="133"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;-0.2 -0.2&#39;</span>
-</span><span data-line="134"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wg_rate&#39;</span>
-</span><span data-line="135"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="136"><span class="w">  </span><span class="k">[open_pore_rate]</span>
-</span><span data-line="137"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
-</span><span data-line="138"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
-</span><span data-line="139"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${zeta}&#39;</span>
-</span><span data-line="140"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;phio_rate&#39;</span>
-</span><span data-line="141"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="142"><span class="w">  </span><span class="k">[binder]</span>
-</span><span data-line="143"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
-</span><span data-line="144"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb&#39;</span>
-</span><span data-line="145"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="146"><span class="w">  </span><span class="k">[char]</span>
-</span><span data-line="147"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
-</span><span data-line="148"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wc&#39;</span>
-</span><span data-line="149"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="150"><span class="w">  </span><span class="k">[gas]</span>
-</span><span data-line="151"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
-</span><span data-line="152"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wg&#39;</span>
-</span><span data-line="153"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="154"><span class="w">  </span><span class="k">[open_pore]</span>
-</span><span data-line="155"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
-</span><span data-line="156"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;phio&#39;</span>
-</span><span data-line="157"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="158"><span class="w">  </span><span class="k">[model]</span>
-</span><span data-line="159"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="160"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;</span><span class="err">solve_reaction reaction_rate</span>
-</span><span data-line="161"><span class="w">              </span><span class="na">binder_rate char_rate gas_rate open_pore_rate</span>
-</span><span data-line="162"><span class="w">              </span><span class="na">binder char gas open_pore&#39;</span>
-</span><span data-line="163"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
-</span><span data-line="164"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="165"><span class="k">[]</span>
+</span><span data-line="55"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="56"><span class="w">  </span><span class="k">[regression]</span>
+</span><span data-line="57"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientRegression</span>
+</span><span data-line="58"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;driver&#39;</span>
+</span><span data-line="59"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gold/result.pt&#39;</span>
+</span><span data-line="60"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="61"><span class="k">[]</span>
+</span><span data-line="62">
+</span><span data-line="63"><span class="k">[Models]</span>
+</span><span data-line="64"><span class="w">  </span><span class="k">[reaction_coef]</span>
+</span><span data-line="65"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ArrheniusParameter</span>
+</span><span data-line="66"><span class="w">    </span><span class="na">reference_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${k0}&#39;</span>
+</span><span data-line="67"><span class="w">    </span><span class="na">activation_energy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${Q}&#39;</span>
+</span><span data-line="68"><span class="w">    </span><span class="na">ideal_gas_constant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${R}&#39;</span>
+</span><span data-line="69"><span class="w">    </span><span class="na">temperature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
+</span><span data-line="70"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="71"><span class="w">  </span><span class="k">[reaction_rate]</span>
+</span><span data-line="72"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ContractingGeometry</span>
+</span><span data-line="73"><span class="w">    </span><span class="na">coef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction_coef&#39;</span>
+</span><span data-line="74"><span class="w">    </span><span class="na">order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${n}&#39;</span>
+</span><span data-line="75"><span class="w">    </span><span class="na">conversion_degree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
+</span><span data-line="76"><span class="w">    </span><span class="na">reaction_rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
+</span><span data-line="77"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="78"><span class="w">  </span><span class="k">[reaction_ode]</span>
+</span><span data-line="79"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
+</span><span data-line="80"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
+</span><span data-line="81"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="82"><span class="w">  </span><span class="k">[reaction]</span>
+</span><span data-line="83"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="84"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction_coef reaction_rate reaction_ode&#39;</span>
+</span><span data-line="85"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="86"><span class="k">[]</span>
+</span><span data-line="87">
+</span><span data-line="88"><span class="k">[EquationSystems]</span>
+</span><span data-line="89"><span class="w">  </span><span class="k">[eq_sys]</span>
+</span><span data-line="90"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
+</span><span data-line="91"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction&#39;</span>
+</span><span data-line="92"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
+</span><span data-line="93"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="94"><span class="k">[]</span>
+</span><span data-line="95">
+</span><span data-line="96"><span class="k">[Solvers]</span>
+</span><span data-line="97"><span class="w">  </span><span class="k">[newton]</span>
+</span><span data-line="98"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
+</span><span data-line="99"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;lu&#39;</span>
+</span><span data-line="100"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="101"><span class="w">  </span><span class="k">[lu]</span>
+</span><span data-line="102"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
+</span><span data-line="103"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="104"><span class="k">[]</span>
+</span><span data-line="105">
+</span><span data-line="106"><span class="k">[Models]</span>
+</span><span data-line="107"><span class="w">  </span><span class="k">[predictor]</span>
+</span><span data-line="108"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
+</span><span data-line="109"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
+</span><span data-line="110"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="111"><span class="w">  </span><span class="k">[solve_reaction]</span>
+</span><span data-line="112"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
+</span><span data-line="113"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
+</span><span data-line="114"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="115"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;predictor&#39;</span>
+</span><span data-line="116"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="117"><span class="w">  </span><span class="k">[binder_rate]</span>
+</span><span data-line="118"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
+</span><span data-line="119"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
+</span><span data-line="120"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;-1&#39;</span>
+</span><span data-line="121"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb_rate&#39;</span>
+</span><span data-line="122"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="123"><span class="w">  </span><span class="k">[char_rate]</span>
+</span><span data-line="124"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
+</span><span data-line="125"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
+</span><span data-line="126"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${Y}&#39;</span>
+</span><span data-line="127"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wc_rate&#39;</span>
+</span><span data-line="128"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="129"><span class="w">  </span><span class="k">[gas_rate]</span>
+</span><span data-line="130"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
+</span><span data-line="131"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb_rate wc_rate&#39;</span>
+</span><span data-line="132"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;-0.2 -0.2&#39;</span>
+</span><span data-line="133"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wg_rate&#39;</span>
+</span><span data-line="134"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="135"><span class="w">  </span><span class="k">[open_pore_rate]</span>
+</span><span data-line="136"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
+</span><span data-line="137"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
+</span><span data-line="138"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${zeta}&#39;</span>
+</span><span data-line="139"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;phio_rate&#39;</span>
+</span><span data-line="140"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="141"><span class="w">  </span><span class="k">[binder]</span>
+</span><span data-line="142"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
+</span><span data-line="143"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb&#39;</span>
+</span><span data-line="144"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="145"><span class="w">  </span><span class="k">[char]</span>
+</span><span data-line="146"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
+</span><span data-line="147"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wc&#39;</span>
+</span><span data-line="148"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="149"><span class="w">  </span><span class="k">[gas]</span>
+</span><span data-line="150"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
+</span><span data-line="151"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wg&#39;</span>
+</span><span data-line="152"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="153"><span class="w">  </span><span class="k">[open_pore]</span>
+</span><span data-line="154"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
+</span><span data-line="155"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;phio&#39;</span>
+</span><span data-line="156"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="157"><span class="w">  </span><span class="k">[model]</span>
+</span><span data-line="158"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="159"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;</span><span class="err">solve_reaction reaction_rate</span>
+</span><span data-line="160"><span class="w">              </span><span class="na">binder_rate char_rate gas_rate open_pore_rate</span>
+</span><span data-line="161"><span class="w">              </span><span class="na">binder char gas open_pore&#39;</span>
+</span><span data-line="162"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
+</span><span data-line="163"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="164"><span class="k">[]</span>
 </span></pre></div>
 </div>
 <section id="explanation">

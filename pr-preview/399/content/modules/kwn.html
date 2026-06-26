@@ -498,9 +498,9 @@ growth rate vanishes as <span class="math notranslate nohighlight">\(x^\infty_\s
 <p>The more general <strong>SFFK</strong> form (Svoboda–Fischer–Fratzl–Kozeschnik)
 handles multi-component diffusion in the dilute, diffusion-limited
 regime,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-694ea3a2-55bb-4f22-b96e-b5c818b8d643">
-<div class="amsmath math notranslate nohighlight" id="equation-694ea3a2-55bb-4f22-b96e-b5c818b8d643">
-<span class="eqno">(6)<a class="headerlink" href="#equation-694ea3a2-55bb-4f22-b96e-b5c818b8d643" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-12b78439-b14d-4c2a-8012-468721796411">
+<div class="amsmath math notranslate nohighlight" id="equation-12b78439-b14d-4c2a-8012-468721796411">
+<span class="eqno">(6)<a class="headerlink" href="#equation-12b78439-b14d-4c2a-8012-468721796411" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \dot{R}^{(j)} &amp;= \frac{1}{R^{(j)}} \,
   \frac{\Delta G^{(j)}_{\text{chem}}
       + \Delta G^{(j)}_{\text{surf}}
@@ -513,9 +513,9 @@ S^{(j)} &amp;= \sum_{k \in \mathcal{S}_j}
 <p>with <span class="math notranslate nohighlight">\(\Delta x^{(j)}_k = x^{(j)}_k - x^{*,(j)}_k\)</span> and <span class="math notranslate nohighlight">\(D_k\)</span> the matrix
 diffusivity of species <span class="math notranslate nohighlight">\(k\)</span>. The driving force is split into chemical,
 surface, and elastic contributions:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-ef6c3222-a4db-4c9c-a13d-46c89953b242">
-<div class="amsmath math notranslate nohighlight" id="equation-ef6c3222-a4db-4c9c-a13d-46c89953b242">
-<span class="eqno">(7)<a class="headerlink" href="#equation-ef6c3222-a4db-4c9c-a13d-46c89953b242" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-387a7027-0a1a-4263-a6a0-28fc32115da2">
+<div class="amsmath math notranslate nohighlight" id="equation-387a7027-0a1a-4263-a6a0-28fc32115da2">
+<span class="eqno">(7)<a class="headerlink" href="#equation-387a7027-0a1a-4263-a6a0-28fc32115da2" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \Delta G^{(j)}_{\text{chem}} &amp;=
   \sum_{k \in \mathcal{S}_j} \Delta x^{(j)}_k
   \bigl[\mu^{\text{matrix}}_k(x^\infty) - \mu^{\text{equil},(j)}_k\bigr],
@@ -547,9 +547,9 @@ J^{(j)}_{\text{nuc}} =
 \]</div>
 </div>
 <p>with the classical-nucleation-theory expressions</p>
-<div class="math-wrapper amsmath docutils container" id="equation-b84c1dca-3e99-4d8f-84c8-1f188a7f5f5b">
-<div class="amsmath math notranslate nohighlight" id="equation-b84c1dca-3e99-4d8f-84c8-1f188a7f5f5b">
-<span class="eqno">(8)<a class="headerlink" href="#equation-b84c1dca-3e99-4d8f-84c8-1f188a7f5f5b" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-c1cbc958-8ef0-4a09-a9d0-ce410a3b7400">
+<div class="amsmath math notranslate nohighlight" id="equation-c1cbc958-8ef0-4a09-a9d0-ce410a3b7400">
+<span class="eqno">(8)<a class="headerlink" href="#equation-c1cbc958-8ef0-4a09-a9d0-ce410a3b7400" title="Permalink to this equation">¶</a></span>\[\begin{align}
 R^{(j)}_{\text{crit}} &amp;=
   \frac{2 \gamma^{(j)} V_m^{(j)}}{\Delta g^{(j)}_v}, \\
 \Delta G^{*,(j)} &amp;=
@@ -743,144 +743,143 @@ advanced in time by an <code class="docutils literal notranslate"><span class="p
 </span><span data-line="91"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;time&#39;</span>
 </span><span data-line="92"><span class="w">    </span><span class="na">ic_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
 </span><span data-line="93"><span class="w">    </span><span class="na">ic_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;ic&#39;</span>
-</span><span data-line="94"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>
-</span><span data-line="95"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="96"><span class="w">  </span><span class="k">[regression]</span>
-</span><span data-line="97"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientRegression</span>
-</span><span data-line="98"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;driver&#39;</span>
-</span><span data-line="99"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gold/result.pt&#39;</span>
-</span><span data-line="100"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="101"><span class="k">[]</span>
-</span><span data-line="102">
-</span><span data-line="103"><span class="k">[EquationSystems]</span>
-</span><span data-line="104"><span class="w">  </span><span class="k">[eq_sys]</span>
-</span><span data-line="105"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
-</span><span data-line="106"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;implicit_rate&#39;</span>
-</span><span data-line="107"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
-</span><span data-line="108"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="109"><span class="k">[]</span>
-</span><span data-line="110">
-</span><span data-line="111"><span class="k">[Solvers]</span>
-</span><span data-line="112"><span class="w">  </span><span class="k">[newton]</span>
-</span><span data-line="113"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
-</span><span data-line="114"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;lu&#39;</span>
-</span><span data-line="115"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="116"><span class="w">  </span><span class="k">[lu]</span>
-</span><span data-line="117"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
-</span><span data-line="118"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="119"><span class="k">[]</span>
-</span><span data-line="120">
-</span><span data-line="121"><span class="k">[Models]</span>
-</span><span data-line="122"><span class="w">  </span><span class="k">[input_temperature]</span>
-</span><span data-line="123"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarConstantParameter</span>
-</span><span data-line="124"><span class="w">    </span><span class="na">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">${T}</span>
-</span><span data-line="125"><span class="w">    </span><span class="na">parameter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;forces/T&#39;</span>
-</span><span data-line="126"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="127"><span class="w">  </span><span class="k">[volume_fraction]</span>
-</span><span data-line="128"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PrecipitateVolumeFraction</span>
-</span><span data-line="129"><span class="w">    </span><span class="na">radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;true_centers&#39;</span>
-</span><span data-line="130"><span class="w">    </span><span class="na">number_density</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;true_number_density&#39;</span>
-</span><span data-line="131"><span class="w">    </span><span class="na">volume_fraction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;vf&#39;</span>
-</span><span data-line="132"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="133"><span class="w">  </span><span class="k">[x_Cu]</span>
-</span><span data-line="134"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CurrentConcentration</span>
-</span><span data-line="135"><span class="w">    </span><span class="na">initial_concentration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;x0_Cu&#39;</span>
-</span><span data-line="136"><span class="w">    </span><span class="na">precipitate_volume_fractions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;vf&#39;</span>
-</span><span data-line="137"><span class="w">    </span><span class="na">precipitate_concentrations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;xp_Cu&#39;</span>
-</span><span data-line="138"><span class="w">    </span><span class="na">current_concentration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;x_Cu&#39;</span>
-</span><span data-line="139"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="140">
-</span><span data-line="141"><span class="w">  </span><span class="k">[chemical_potential_difference]</span>
-</span><span data-line="142"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearInterpolation</span>
-</span><span data-line="143"><span class="w">    </span><span class="na">argument</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;x_Cu&#39;</span>
-</span><span data-line="144"><span class="w">    </span><span class="na">abscissa</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;X_Cu_vary&#39;</span>
-</span><span data-line="145"><span class="w">    </span><span class="na">ordinate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;chem_diff&#39;</span>
-</span><span data-line="146"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="147">
-</span><span data-line="148"><span class="w">  </span><span class="k">[diffusivity_sum]</span>
-</span><span data-line="149"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ProjectedDiffusivitySum</span>
-</span><span data-line="150"><span class="w">    </span><span class="na">concentration_differences</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">${diff_FCC_Cu}</span>
-</span><span data-line="151"><span class="w">    </span><span class="na">diffusivities</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">${D}</span>
-</span><span data-line="152"><span class="w">    </span><span class="na">far_field_concentrations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;x_Cu&#39;</span>
-</span><span data-line="153"><span class="w">    </span><span class="na">projected_diffusivity_sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;diff_sum&#39;</span>
-</span><span data-line="154"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="155"><span class="w">  </span><span class="k">[growth_rate]</span>
-</span><span data-line="156"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SFFKPrecipitationGrowthRate</span>
-</span><span data-line="157"><span class="w">    </span><span class="na">radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;true_centers&#39;</span>
-</span><span data-line="158"><span class="w">    </span><span class="na">projected_diffusivity_sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;diff_sum&#39;</span>
-</span><span data-line="159"><span class="w">    </span><span class="na">gibbs_free_energy_difference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">chemical_potential_difference</span>
-</span><span data-line="160"><span class="w">    </span><span class="na">temperature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;forces/T&#39;</span>
-</span><span data-line="161"><span class="w">    </span><span class="na">gas_constant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8.314</span>
-</span><span data-line="162"><span class="w">    </span><span class="na">growth_rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;growth_rate&#39;</span>
-</span><span data-line="163"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="164">
-</span><span data-line="165"><span class="w">  </span><span class="k">[scaled_cell_velocity]</span>
-</span><span data-line="166"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarMultiplication</span>
-</span><span data-line="167"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;growth_rate&#39;</span>
-</span><span data-line="168"><span class="w">    </span><span class="na">scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;center_inverse_jacobian&#39;</span>
-</span><span data-line="169"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;internal/scaled_cell_velocity&#39;</span>
-</span><span data-line="170"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="171"><span class="w">  </span><span class="k">[advection_velocity]</span>
-</span><span data-line="172"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearlyInterpolateToCellEdges</span>
-</span><span data-line="173"><span class="w">    </span><span class="na">cell_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;internal/scaled_cell_velocity&#39;</span>
-</span><span data-line="174"><span class="w">    </span><span class="na">cell_centers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;centers&#39;</span>
-</span><span data-line="175"><span class="w">    </span><span class="na">cell_edges</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;edges&#39;</span>
-</span><span data-line="176"><span class="w">    </span><span class="na">edge_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;v_edge&#39;</span>
-</span><span data-line="177"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="178"><span class="w">  </span><span class="k">[advective_flux]</span>
-</span><span data-line="179"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FiniteVolumeUpwindedAdvectiveFlux</span>
-</span><span data-line="180"><span class="w">    </span><span class="na">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
-</span><span data-line="181"><span class="w">    </span><span class="na">v_edge</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;v_edge&#39;</span>
-</span><span data-line="182"><span class="w">    </span><span class="na">flux</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;J&#39;</span>
-</span><span data-line="183"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="184"><span class="w">  </span><span class="k">[left_bc]</span>
-</span><span data-line="185"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FiniteVolumeAppendBoundaryCondition</span>
-</span><span data-line="186"><span class="w">    </span><span class="na">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;J&#39;</span>
-</span><span data-line="187"><span class="w">    </span><span class="na">bc_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
-</span><span data-line="188"><span class="w">    </span><span class="na">side</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;left&#39;</span>
-</span><span data-line="189"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="190"><span class="w">  </span><span class="k">[right_bc]</span>
-</span><span data-line="191"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FiniteVolumeAppendBoundaryCondition</span>
-</span><span data-line="192"><span class="w">    </span><span class="na">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;J_with_bc_left&#39;</span>
-</span><span data-line="193"><span class="w">    </span><span class="na">bc_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
-</span><span data-line="194"><span class="w">    </span><span class="na">side</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;right&#39;</span>
-</span><span data-line="195"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="196"><span class="w">  </span><span class="k">[flux_divergence]</span>
-</span><span data-line="197"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FiniteVolumeGradient</span>
-</span><span data-line="198"><span class="w">    </span><span class="na">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;J_with_bc_left_with_bc_right&#39;</span>
-</span><span data-line="199"><span class="w">    </span><span class="na">dx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;dx&#39;</span>
-</span><span data-line="200"><span class="w">    </span><span class="na">grad_u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density_rate&#39;</span>
-</span><span data-line="201"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="202"><span class="w">  </span><span class="k">[integrate_u]</span>
-</span><span data-line="203"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
-</span><span data-line="204"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
-</span><span data-line="205"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="206"><span class="w">  </span><span class="k">[implicit_rate]</span>
-</span><span data-line="207"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="208"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;input_temperature growth_rate scaled_cell_velocity advection_velocity advective_flux left_bc right_bc flux_divergence integrate_u unscale volume_fraction x_Cu diffusivity_sum&#39;</span>
-</span><span data-line="209"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="210"><span class="w">  </span><span class="k">[predictor]</span>
-</span><span data-line="211"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
-</span><span data-line="212"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
-</span><span data-line="213"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="214"><span class="w">  </span><span class="k">[model_scaled]</span>
-</span><span data-line="215"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="216"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
-</span><span data-line="217"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
-</span><span data-line="218"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;predictor&#39;</span>
-</span><span data-line="219"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="220"><span class="w">  </span><span class="k">[unscale]</span>
-</span><span data-line="221"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarMultiplication</span>
-</span><span data-line="222"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
-</span><span data-line="223"><span class="w">    </span><span class="na">scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;center_inverse_jacobian&#39;</span>
-</span><span data-line="224"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;true_number_density&#39;</span>
-</span><span data-line="225"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="226"><span class="w">  </span><span class="k">[model]</span>
-</span><span data-line="227"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="228"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model_scaled unscale volume_fraction x_Cu&#39;</span>
-</span><span data-line="229"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density true_number_density vf x_Cu&#39;</span>
-</span><span data-line="230"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="231"><span class="k">[]</span>
+</span><span data-line="94"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="95"><span class="w">  </span><span class="k">[regression]</span>
+</span><span data-line="96"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientRegression</span>
+</span><span data-line="97"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;driver&#39;</span>
+</span><span data-line="98"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gold/result.pt&#39;</span>
+</span><span data-line="99"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="100"><span class="k">[]</span>
+</span><span data-line="101">
+</span><span data-line="102"><span class="k">[EquationSystems]</span>
+</span><span data-line="103"><span class="w">  </span><span class="k">[eq_sys]</span>
+</span><span data-line="104"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
+</span><span data-line="105"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;implicit_rate&#39;</span>
+</span><span data-line="106"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
+</span><span data-line="107"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="108"><span class="k">[]</span>
+</span><span data-line="109">
+</span><span data-line="110"><span class="k">[Solvers]</span>
+</span><span data-line="111"><span class="w">  </span><span class="k">[newton]</span>
+</span><span data-line="112"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
+</span><span data-line="113"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;lu&#39;</span>
+</span><span data-line="114"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="115"><span class="w">  </span><span class="k">[lu]</span>
+</span><span data-line="116"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
+</span><span data-line="117"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="118"><span class="k">[]</span>
+</span><span data-line="119">
+</span><span data-line="120"><span class="k">[Models]</span>
+</span><span data-line="121"><span class="w">  </span><span class="k">[input_temperature]</span>
+</span><span data-line="122"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarConstantParameter</span>
+</span><span data-line="123"><span class="w">    </span><span class="na">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">${T}</span>
+</span><span data-line="124"><span class="w">    </span><span class="na">parameter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;forces/T&#39;</span>
+</span><span data-line="125"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="126"><span class="w">  </span><span class="k">[volume_fraction]</span>
+</span><span data-line="127"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PrecipitateVolumeFraction</span>
+</span><span data-line="128"><span class="w">    </span><span class="na">radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;true_centers&#39;</span>
+</span><span data-line="129"><span class="w">    </span><span class="na">number_density</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;true_number_density&#39;</span>
+</span><span data-line="130"><span class="w">    </span><span class="na">volume_fraction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;vf&#39;</span>
+</span><span data-line="131"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="132"><span class="w">  </span><span class="k">[x_Cu]</span>
+</span><span data-line="133"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CurrentConcentration</span>
+</span><span data-line="134"><span class="w">    </span><span class="na">initial_concentration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;x0_Cu&#39;</span>
+</span><span data-line="135"><span class="w">    </span><span class="na">precipitate_volume_fractions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;vf&#39;</span>
+</span><span data-line="136"><span class="w">    </span><span class="na">precipitate_concentrations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;xp_Cu&#39;</span>
+</span><span data-line="137"><span class="w">    </span><span class="na">current_concentration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;x_Cu&#39;</span>
+</span><span data-line="138"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="139">
+</span><span data-line="140"><span class="w">  </span><span class="k">[chemical_potential_difference]</span>
+</span><span data-line="141"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearInterpolation</span>
+</span><span data-line="142"><span class="w">    </span><span class="na">argument</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;x_Cu&#39;</span>
+</span><span data-line="143"><span class="w">    </span><span class="na">abscissa</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;X_Cu_vary&#39;</span>
+</span><span data-line="144"><span class="w">    </span><span class="na">ordinate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;chem_diff&#39;</span>
+</span><span data-line="145"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="146">
+</span><span data-line="147"><span class="w">  </span><span class="k">[diffusivity_sum]</span>
+</span><span data-line="148"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ProjectedDiffusivitySum</span>
+</span><span data-line="149"><span class="w">    </span><span class="na">concentration_differences</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">${diff_FCC_Cu}</span>
+</span><span data-line="150"><span class="w">    </span><span class="na">diffusivities</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">${D}</span>
+</span><span data-line="151"><span class="w">    </span><span class="na">far_field_concentrations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;x_Cu&#39;</span>
+</span><span data-line="152"><span class="w">    </span><span class="na">projected_diffusivity_sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;diff_sum&#39;</span>
+</span><span data-line="153"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="154"><span class="w">  </span><span class="k">[growth_rate]</span>
+</span><span data-line="155"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SFFKPrecipitationGrowthRate</span>
+</span><span data-line="156"><span class="w">    </span><span class="na">radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;true_centers&#39;</span>
+</span><span data-line="157"><span class="w">    </span><span class="na">projected_diffusivity_sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;diff_sum&#39;</span>
+</span><span data-line="158"><span class="w">    </span><span class="na">gibbs_free_energy_difference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">chemical_potential_difference</span>
+</span><span data-line="159"><span class="w">    </span><span class="na">temperature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;forces/T&#39;</span>
+</span><span data-line="160"><span class="w">    </span><span class="na">gas_constant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8.314</span>
+</span><span data-line="161"><span class="w">    </span><span class="na">growth_rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;growth_rate&#39;</span>
+</span><span data-line="162"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="163">
+</span><span data-line="164"><span class="w">  </span><span class="k">[scaled_cell_velocity]</span>
+</span><span data-line="165"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarMultiplication</span>
+</span><span data-line="166"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;growth_rate&#39;</span>
+</span><span data-line="167"><span class="w">    </span><span class="na">scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;center_inverse_jacobian&#39;</span>
+</span><span data-line="168"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;internal/scaled_cell_velocity&#39;</span>
+</span><span data-line="169"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="170"><span class="w">  </span><span class="k">[advection_velocity]</span>
+</span><span data-line="171"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearlyInterpolateToCellEdges</span>
+</span><span data-line="172"><span class="w">    </span><span class="na">cell_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;internal/scaled_cell_velocity&#39;</span>
+</span><span data-line="173"><span class="w">    </span><span class="na">cell_centers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;centers&#39;</span>
+</span><span data-line="174"><span class="w">    </span><span class="na">cell_edges</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;edges&#39;</span>
+</span><span data-line="175"><span class="w">    </span><span class="na">edge_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;v_edge&#39;</span>
+</span><span data-line="176"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="177"><span class="w">  </span><span class="k">[advective_flux]</span>
+</span><span data-line="178"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FiniteVolumeUpwindedAdvectiveFlux</span>
+</span><span data-line="179"><span class="w">    </span><span class="na">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
+</span><span data-line="180"><span class="w">    </span><span class="na">v_edge</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;v_edge&#39;</span>
+</span><span data-line="181"><span class="w">    </span><span class="na">flux</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;J&#39;</span>
+</span><span data-line="182"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="183"><span class="w">  </span><span class="k">[left_bc]</span>
+</span><span data-line="184"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FiniteVolumeAppendBoundaryCondition</span>
+</span><span data-line="185"><span class="w">    </span><span class="na">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;J&#39;</span>
+</span><span data-line="186"><span class="w">    </span><span class="na">bc_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+</span><span data-line="187"><span class="w">    </span><span class="na">side</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;left&#39;</span>
+</span><span data-line="188"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="189"><span class="w">  </span><span class="k">[right_bc]</span>
+</span><span data-line="190"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FiniteVolumeAppendBoundaryCondition</span>
+</span><span data-line="191"><span class="w">    </span><span class="na">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;J_with_bc_left&#39;</span>
+</span><span data-line="192"><span class="w">    </span><span class="na">bc_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+</span><span data-line="193"><span class="w">    </span><span class="na">side</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;right&#39;</span>
+</span><span data-line="194"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="195"><span class="w">  </span><span class="k">[flux_divergence]</span>
+</span><span data-line="196"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FiniteVolumeGradient</span>
+</span><span data-line="197"><span class="w">    </span><span class="na">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;J_with_bc_left_with_bc_right&#39;</span>
+</span><span data-line="198"><span class="w">    </span><span class="na">dx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;dx&#39;</span>
+</span><span data-line="199"><span class="w">    </span><span class="na">grad_u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density_rate&#39;</span>
+</span><span data-line="200"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="201"><span class="w">  </span><span class="k">[integrate_u]</span>
+</span><span data-line="202"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
+</span><span data-line="203"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
+</span><span data-line="204"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="205"><span class="w">  </span><span class="k">[implicit_rate]</span>
+</span><span data-line="206"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="207"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;input_temperature growth_rate scaled_cell_velocity advection_velocity advective_flux left_bc right_bc flux_divergence integrate_u unscale volume_fraction x_Cu diffusivity_sum&#39;</span>
+</span><span data-line="208"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="209"><span class="w">  </span><span class="k">[predictor]</span>
+</span><span data-line="210"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
+</span><span data-line="211"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
+</span><span data-line="212"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="213"><span class="w">  </span><span class="k">[model_scaled]</span>
+</span><span data-line="214"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
+</span><span data-line="215"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
+</span><span data-line="216"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="217"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;predictor&#39;</span>
+</span><span data-line="218"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="219"><span class="w">  </span><span class="k">[unscale]</span>
+</span><span data-line="220"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarMultiplication</span>
+</span><span data-line="221"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density&#39;</span>
+</span><span data-line="222"><span class="w">    </span><span class="na">scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;center_inverse_jacobian&#39;</span>
+</span><span data-line="223"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;true_number_density&#39;</span>
+</span><span data-line="224"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="225"><span class="w">  </span><span class="k">[model]</span>
+</span><span data-line="226"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="227"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model_scaled unscale volume_fraction x_Cu&#39;</span>
+</span><span data-line="228"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;number_density true_number_density vf x_Cu&#39;</span>
+</span><span data-line="229"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="230"><span class="k">[]</span>
 </span></pre></div>
 </div>
 <section id="walkthrough">

@@ -413,9 +413,8 @@ next state:</p>
 </div>
 <p>When NEML2 is coupled to an external PDE solver, that loop lives outside
 NEML2 — the host solver supplies the new prescribed variables and asks NEML2 for the
-new state. For self-contained workflows (verification, regression tests,
-parameter calibration, plotting a stress–strain curve),
-<code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code> keeps everything inside NEML2.</p>
+new state. For self-contained workflows like parameter calibration or plotting a
+stress–strain curve, <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code> keeps everything inside NEML2.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For training and adjoint-style sensitivities through a transient,
@@ -593,7 +592,7 @@ file:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;neml2.drivers.TransientDriver.TransientDriver at 0x7f897a8d1750&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;neml2.drivers.TransientDriver.TransientDriver at 0x7fd7c50a9720&gt;
 </span></pre></div>
 </div>
 </div>
@@ -723,7 +722,7 @@ same strings <a class="reference internal" href="../../../../generated/syntax/Dr
 memory:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">driver</span><span class="o">.</span><span class="n">save_gold</span><span class="p">(</span><span class="s2">&quot;result.pt&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">driver</span><span class="o">.</span><span class="n">save_result</span><span class="p">(</span><span class="s2">&quot;result.pt&quot;</span><span class="p">)</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">loaded</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;result.pt&quot;</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;entry count:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">loaded</span><span class="p">))</span>
@@ -738,9 +737,6 @@ memory:</p>
 </div>
 </div>
 </div>
-<p>This is the same format the regression suite’s
-<a class="reference internal" href="../../../../generated/syntax/Drivers/TransientRegression.html#drivers-transientregression"><span class="std std-ref"><code class="docutils literal notranslate"><span class="pre">TransientRegression</span></code></span></a> consumes for
-its <code class="docutils literal notranslate"><span class="pre">gold/result.pt</span></code> references.</p>
 </section>
 <section id="where-to-go-next">
 <h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>

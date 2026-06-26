@@ -407,7 +407,7 @@ data-aria-dark="Switch to auto color mode">
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">time</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · default <code class="docutils literal notranslate"><span class="pre">t</span></code></dt><dd><p>Name of the model input that receives the per-step time value.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">save_as</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>Output file path. Accepted for compatibility with the C++ driver but ignored by the native runtime; results are held in memory and retrieved via <code class="docutils literal notranslate"><span class="pre">result</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">save_as</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>Output file path. When set, <code class="docutils literal notranslate"><span class="pre">run()</span></code> writes the result here (the same flat dict <code class="docutils literal notranslate"><span class="pre">result</span></code> returns, via <code class="docutils literal notranslate"><span class="pre">save_result</span></code>); empty (the default) leaves <code class="docutils literal notranslate"><span class="pre">run()</span></code> side-effect-free.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">prescribed_Scalar_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Scalar variable names assigned a prescribed value.</p>
 </dd>

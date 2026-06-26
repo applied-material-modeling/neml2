@@ -416,7 +416,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="27"><span class="sd">Wraps a paired :class:`TransientDriver`, runs it, then diffs the in-memory</span>
 </span><span data-line="28"><span class="sd">result dict against a gold ``.pt`` reference. The reader (:func:`_load_gold`)</span>
 </span><span data-line="29"><span class="sd">handles both the new plain-``torch.save``-dict format that the Python</span>
-</span><span data-line="30"><span class="sd">:meth:`TransientDriver.save_gold` now emits and the legacy TorchScript-</span>
+</span><span data-line="30"><span class="sd">:meth:`TransientDriver.save_result` now emits and the legacy TorchScript-</span>
 </span><span data-line="31"><span class="sd">module format produced by the retired C++ regression pipeline (most existing</span>
 </span><span data-line="32"><span class="sd">on-disk goldens are still in the legacy format).</span>
 </span><span data-line="33">
@@ -451,11 +451,11 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="62"><span class="sd">    Supports two on-disk formats:</span>
 </span><span data-line="63">
 </span><span data-line="64"><span class="sd">    - **New** — a plain ``torch.save({...})`` dict written by</span>
-</span><span data-line="65"><span class="sd">      :meth:`TransientDriver.save_gold`. Loaded via</span>
+</span><span data-line="65"><span class="sd">      :meth:`TransientDriver.save_result`. Loaded via</span>
 </span><span data-line="66"><span class="sd">      ``torch.load(..., weights_only=True)``.</span>
 </span><span data-line="67"><span class="sd">    - **Legacy** — a TorchScript ``nn.Module`` of registered buffers</span>
 </span><span data-line="68"><span class="sd">      produced by the retired C++ pipeline (and by older Python</span>
-</span><span data-line="69"><span class="sd">      ``save_gold`` writes). Loaded via ``torch.jit.load`` and flattened</span>
+</span><span data-line="69"><span class="sd">      ``save_result`` writes). Loaded via ``torch.jit.load`` and flattened</span>
 </span><span data-line="70"><span class="sd">      via ``state_dict()`` — NOT ``named_buffers`` (the C++ driver shares</span>
 </span><span data-line="71"><span class="sd">      storage between ``output.&lt;k&gt;.X`` and ``input.&lt;k+1&gt;.X~1``, and</span>
 </span><span data-line="72"><span class="sd">      ``named_buffers`` with the default ``remove_duplicate=True`` drops</span>

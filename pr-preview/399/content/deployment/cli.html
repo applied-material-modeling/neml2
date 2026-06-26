@@ -532,6 +532,7 @@ sweep — without writing any Python.</p>
 success and returns a zero exit code, so a clean run looks empty in
 CI. (Drivers can still print their own progress.)</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">$ neml2-run input.i driver
+</span><span data-line="2">Results saved to result.pt
 </span></pre></div>
 </div>
 <p>The trailing-token convention lets you tweak scalar options without
@@ -539,6 +540,7 @@ editing the file — anything after the two declared positionals is
 forwarded to the HIT parser as an override. The same convention works
 for <code class="docutils literal notranslate"><span class="pre">neml2-inspect</span></code> and <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">$ neml2-run input.i driver Drivers/driver/save_as:=other.pt
+</span><span data-line="2">Results saved to other.pt
 </span></pre></div>
 </div>
 <p>List-valued overrides (e.g. swapping <code class="docutils literal notranslate"><span class="pre">coefficients</span> <span class="pre">=</span> <span class="pre">'200e3</span> <span class="pre">0.3'</span></code> for
