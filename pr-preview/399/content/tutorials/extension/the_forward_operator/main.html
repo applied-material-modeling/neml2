@@ -423,7 +423,7 @@ Until we need derivatives, we can leave it alone; calls without
 <p><code class="docutils literal notranslate"><span class="pre">self.g</span></code> is the gravity vector (a buffer, read directly), and the
 velocity comes in as the first positional argument. The drag
 coefficient <code class="docutils literal notranslate"><span class="pre">mu</span></code> is a <em>parameter</em>, so it is read through
-<code class="docutils literal notranslate"><span class="pre">self._get_param(&quot;mu&quot;,</span> <span class="pre">nl_params,</span> <span class="pre">Scalar)</span></code> rather than <code class="docutils literal notranslate"><span class="pre">self.mu</span></code> —
+<code class="docutils literal notranslate"><span class="pre">self._get_param(&quot;mu&quot;,</span> <span class="pre">promoted_params,</span> <span class="pre">Scalar)</span></code> rather than <code class="docutils literal notranslate"><span class="pre">self.mu</span></code> —
 more on that below. Here is the complete <code class="docutils literal notranslate"><span class="pre">projectile.py</span></code>; the
 <code class="docutils literal notranslate"><span class="pre">forward</span></code> method is the new part, dissected line by line below:</p>
 <div class="cell docutils container">
@@ -478,15 +478,15 @@ more on that below. Here is the complete <code class="docutils literal notransla
 </span><span data-line="48">    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
 </span><span data-line="49">        <span class="bp">self</span><span class="p">,</span>
 </span><span data-line="50">        <span class="n">v_in</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
-</span><span data-line="51">        <span class="o">*</span><span class="n">nl_params</span><span class="p">,</span>
+</span><span data-line="51">        <span class="o">*</span><span class="n">promoted_params</span><span class="p">,</span>
 </span><span data-line="52">        <span class="n">v</span><span class="p">:</span> <span class="n">ChainRuleDict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="53">    <span class="p">):</span>
 </span><span data-line="54">        <span class="c1"># Read the drag coefficient through ``_get_param`` rather than</span>
 </span><span data-line="55">        <span class="c1"># ``self.mu``. ``_get_param`` resolves a static slot from ``self`` or</span>
-</span><span data-line="56">        <span class="c1"># a promoted runtime input from ``*nl_params``, so the same forward</span>
+</span><span data-line="56">        <span class="c1"># a promoted runtime input from ``*promoted_params``, so the same forward</span>
 </span><span data-line="57">        <span class="c1"># keeps working after ``mu`` is promoted (neml2-compile -p); a bare</span>
 </span><span data-line="58">        <span class="c1"># ``self.mu`` would be rejected by the parameter-attribute guard.</span>
-</span><span data-line="59">        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_param</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="n">nl_params</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">)</span>
+</span><span data-line="59">        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_param</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="n">promoted_params</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">)</span>
 </span><span data-line="60">
 </span><span data-line="61">        <span class="c1"># Compute the value: a = g - mu * v. ``self.g`` is a buffer (not a</span>
 </span><span data-line="62">        <span class="c1"># parameter), so reading it directly is fine.</span>
@@ -515,17 +515,17 @@ more on that below. Here is the complete <code class="docutils literal notransla
 </div>
 </div>
 <p>The first line reads the parameter:
-<code class="docutils literal notranslate"><span class="pre">mu</span> <span class="pre">=</span> <span class="pre">self._get_param(&quot;mu&quot;,</span> <span class="pre">nl_params,</span> <span class="pre">Scalar)</span></code>. Always read a
+<code class="docutils literal notranslate"><span class="pre">mu</span> <span class="pre">=</span> <span class="pre">self._get_param(&quot;mu&quot;,</span> <span class="pre">promoted_params,</span> <span class="pre">Scalar)</span></code>. Always read a
 <em>parameter</em> this way inside <code class="docutils literal notranslate"><span class="pre">forward</span></code> — never as <code class="docutils literal notranslate"><span class="pre">self.mu</span></code>. A bare
 <code class="docutils literal notranslate"><span class="pre">self.mu</span></code> is rejected by a runtime guard, because it bypasses
 <code class="docutils literal notranslate"><span class="pre">_get_param</span></code>’s static-or-promoted dispatch: the moment <code class="docutils literal notranslate"><span class="pre">mu</span></code> is
 promoted to a runtime input (<code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">-p</span></code>) the static
 <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code> no longer exists and the attribute read breaks.
 <code class="docutils literal notranslate"><span class="pre">_get_param</span></code> works for both static and promoted parameters — it pulls
-the value from <code class="docutils literal notranslate"><span class="pre">self</span></code> when static and from the <code class="docutils literal notranslate"><span class="pre">*nl_params</span></code> pack when
+the value from <code class="docutils literal notranslate"><span class="pre">self</span></code> when static and from the <code class="docutils literal notranslate"><span class="pre">*promoted_params</span></code> pack when
 promoted — so the leaf stays promotion-compatible. (Buffers like
 <code class="docutils literal notranslate"><span class="pre">self.g</span></code> are <em>not</em> parameters, so reading them directly is fine.) That
-is also why the signature is <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">forward(self,</span> <span class="pre">v_in,</span> <span class="pre">*nl_params,</span> <span class="pre">v=None)</span></code>: the <code class="docutils literal notranslate"><span class="pre">*nl_params</span></code> pack is where promoted parameters arrive.</p>
+is also why the signature is <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">forward(self,</span> <span class="pre">v_in,</span> <span class="pre">*promoted_params,</span> <span class="pre">v=None)</span></code>: the <code class="docutils literal notranslate"><span class="pre">*promoted_params</span></code> pack is where promoted parameters arrive.</p>
 <p>The next line is the physics: <code class="docutils literal notranslate"><span class="pre">Vec</span> <span class="pre">-</span> <span class="pre">Scalar</span> <span class="pre">*</span> <span class="pre">Vec</span></code> gives back a <code class="docutils literal notranslate"><span class="pre">Vec</span></code>,
 batched or not. If <code class="docutils literal notranslate"><span class="pre">v</span> <span class="pre">is</span> <span class="pre">None</span></code> (the usual case) the method returns and
 we’re done.</p>

@@ -24,10 +24,10 @@ Compression: $\delta_f = 2 G_{IIc}/S$ (pure-shear closed form).
 ## Parameters
 
 `mode_mixity` &mdash; `parameter` &middot; `Scalar` &middot; **required**
-: Mode-mixity ratio. May be wired to an upstream `ModeMixity` (nonlinear-capable).
+: Mode-mixity ratio. May be wired to an upstream `ModeMixity` (promotion-capable).
 
 `critical_separation` &mdash; `parameter` &middot; `Scalar` &middot; **required**
-: Critical (damage-onset) separation. May be wired to an upstream `CamanhoDavilaCriticalSeparation` (nonlinear-capable).
+: Critical (damage-onset) separation. May be wired to an upstream `CamanhoDavilaCriticalSeparation` (promotion-capable).
 
 `penalty_stiffness` &mdash; `parameter` &middot; `Scalar` &middot; **required**
 : Penalty stiffness

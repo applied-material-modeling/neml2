@@ -410,7 +410,7 @@ data-aria-dark="Switch to auto color mode">
 the output <code class="docutils literal notranslate"><span class="pre">smeared_source</span></code> inherits the cell axis. <code class="docutils literal notranslate"><span class="pre">magnitude</span></code> /
 <code class="docutils literal notranslate"><span class="pre">location</span></code> therefore couple densely with the per-cell output – declared in
 <code class="docutils literal notranslate"><span class="pre">list_deriv</span></code>. <code class="docutils literal notranslate"><span class="pre">width</span></code> and <code class="docutils literal notranslate"><span class="pre">cell_centers</span></code> are forward-only static
-parameters (the C++ side allows them to be promoted to nl inputs, but the
+parameters (the C++ side allows them to be promoted to runtime inputs, but the
 native <code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code> only checks input derivatives, so we leave that
 plumbing for a follow-on).</p>
 <section id="inputs">

@@ -1170,9 +1170,9 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="780"><span class="sd">    Converting them to buffers makes ``torch.export`` treat them as constants</span>
 </span><span data-line="781"><span class="sd">    that get baked into the lowered graph.</span>
 </span><span data-line="782">
-</span><span data-line="783"><span class="sd">    Call this AFTER :func:`_promote_to_nl_params` has removed any promoted</span>
+</span><span data-line="783"><span class="sd">    Call this AFTER :func:`_promote_parameters` has removed any promoted</span>
 </span><span data-line="784"><span class="sd">    entries from ``_parameters``; that way only the non-promoted parameters</span>
-</span><span data-line="785"><span class="sd">    get frozen, and promoted ones still flow through the ``*nl_params``</span>
+</span><span data-line="785"><span class="sd">    get frozen, and promoted ones still flow through the ``*promoted_params``</span>
 </span><span data-line="786"><span class="sd">    machinery as runtime inputs.</span>
 </span><span data-line="787">
 </span><span data-line="788"><span class="sd">    The loaded model object is throwaway in this short-lived export process,</span>
@@ -1207,8 +1207,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="817"><span class="sd">    a single :class:`ImplicitUpdate`&#39;s residual (schema v7), and (schema v7+)</span>
 </span><span data-line="818"><span class="sd">    inside an implicit child of a composed model, where the multi-segment</span>
 </span><span data-line="819"><span class="sd">    parameter Jacobian carrier composes ``du/dθ`` through the downstream forward</span>
-</span><span data-line="820"><span class="sd">    segments. The actual nl-param plumbing is validated downstream in</span>
-</span><span data-line="821"><span class="sd">    :func:`_promote_to_nl_params` (the holder must be a native Model with</span>
+</span><span data-line="820"><span class="sd">    segments. The actual promoted-parameter plumbing is validated downstream in</span>
+</span><span data-line="821"><span class="sd">    :func:`_promote_parameters` (the holder must be a native Model with</span>
 </span><span data-line="822"><span class="sd">    ``register_typed_parameter`` storage).</span>
 </span><span data-line="823">
 </span><span data-line="824"><span class="sd">    Returns ``(sorted_names, origin_map)`` where ``origin_map[name]`` is</span>
@@ -1238,23 +1238,23 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="848">    <span class="k">return</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">available</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">}</span>
 </span><span data-line="849">
 </span><span data-line="850">
-</span><span data-line="851"><span class="k">def</span><span class="w"> </span><span class="nf">_promote_to_nl_params</span><span class="p">(</span>
+</span><span data-line="851"><span class="k">def</span><span class="w"> </span><span class="nf">_promote_parameters</span><span class="p">(</span>
 </span><span data-line="852">    <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">promoted_qnames</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 </span><span data-line="853"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-</span><span data-line="854"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert each promoted parameter into an NLParam entry on its holding leaf.</span>
+</span><span data-line="854"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert each promoted parameter into an PromotedParam entry on its holding leaf.</span>
 </span><span data-line="855">
-</span><span data-line="856"><span class="sd">    Routes promotion through the existing native-Model nl-params machinery</span>
+</span><span data-line="856"><span class="sd">    Routes promotion through the existing native-Model promoted-params machinery</span>
 </span><span data-line="857"><span class="sd">    rather than reaching in and mutating attribute storage directly:</span>
 </span><span data-line="858">
 </span><span data-line="859"><span class="sd">    1. Locate the holding submodule for *qname*; the holder must be a native</span>
-</span><span data-line="860"><span class="sd">       :class:`~neml2.model.Model` (i.e. have ``_nl_params`` and</span>
+</span><span data-line="860"><span class="sd">       :class:`~neml2.model.Model` (i.e. have ``_promoted_params`` and</span>
 </span><span data-line="861"><span class="sd">       ``input_spec`` -- which is true of every leaf produced by NEML2&#39;s</span>
 </span><span data-line="862"><span class="sd">       schema-driven Models).</span>
 </span><span data-line="863"><span class="sd">    2. Look up the parameter&#39;s typed-wrapper class (``Scalar``, ``SR2``, ...)</span>
 </span><span data-line="864"><span class="sd">       from the holder&#39;s ``_typed_storage_classes`` registry, populated at</span>
 </span><span data-line="865"><span class="sd">       :meth:`register_typed_parameter` time.</span>
 </span><span data-line="866"><span class="sd">    3. Delete the parameter / buffer slot, append the qname to the holder&#39;s</span>
-</span><span data-line="867"><span class="sd">       ``input_spec`` (typed via the looked-up class), and add an ``NLParam``</span>
+</span><span data-line="867"><span class="sd">       ``input_spec`` (typed via the looked-up class), and add an ``PromotedParam``</span>
 </span><span data-line="868"><span class="sd">       entry keyed by the *local* attribute name with ``input_name`` set to</span>
 </span><span data-line="869"><span class="sd">       the qname (qualified naming avoids collisions when two leaves both</span>
 </span><span data-line="870"><span class="sd">       promote a same-local-name parameter).</span>
@@ -1265,21 +1265,21 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="875"><span class="sd">    After this call, any wrapping :class:`ComposedModel` constructed around</span>
 </span><span data-line="876"><span class="sd">    these leaves automatically picks up the new inputs through its standard</span>
 </span><span data-line="877"><span class="sd">    dependency-resolution + ``_coerce_to_input_type`` wrap on the call</span>
-</span><span data-line="878"><span class="sd">    boundary. The leaf&#39;s existing ``self._get_param(local, nl_params,</span>
-</span><span data-line="879"><span class="sd">    type_cls)`` call resolves to ``nl_params[tail_index]``.</span>
+</span><span data-line="878"><span class="sd">    boundary. The leaf&#39;s existing ``self._get_param(local, promoted_params,</span>
+</span><span data-line="879"><span class="sd">    type_cls)`` call resolves to ``promoted_params[tail_index]``.</span>
 </span><span data-line="880"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="881">    <span class="kn">from</span><span class="w"> </span><span class="nn">..models.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">NLParam</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="881">    <span class="kn">from</span><span class="w"> </span><span class="nn">..models.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">PromotedParam</span>  <span class="c1"># noqa: PLC0415</span>
 </span><span data-line="882">
 </span><span data-line="883">    <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
 </span><span data-line="884">    <span class="k">for</span> <span class="n">qname</span> <span class="ow">in</span> <span class="n">promoted_qnames</span><span class="p">:</span>
 </span><span data-line="885">        <span class="n">holder</span><span class="p">,</span> <span class="n">local</span> <span class="o">=</span> <span class="n">_resolve_attr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">qname</span><span class="p">)</span>
-</span><span data-line="886">        <span class="c1"># Must be a native Model with the nl-params machinery. Non-Model</span>
+</span><span data-line="886">        <span class="c1"># Must be a native Model with the promoted-params machinery. Non-Model</span>
 </span><span data-line="887">        <span class="c1"># holders (e.g. plain nn.Module wrappers used internally) lack the</span>
-</span><span data-line="888">        <span class="c1"># `_nl_params`/`input_spec` plumbing.</span>
-</span><span data-line="889">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">holder</span><span class="p">,</span> <span class="s2">&quot;_nl_params&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">holder</span><span class="p">,</span> <span class="s2">&quot;input_spec&quot;</span><span class="p">):</span>
+</span><span data-line="888">        <span class="c1"># `_promoted_params`/`input_spec` plumbing.</span>
+</span><span data-line="889">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">holder</span><span class="p">,</span> <span class="s2">&quot;_promoted_params&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">holder</span><span class="p">,</span> <span class="s2">&quot;input_spec&quot;</span><span class="p">):</span>
 </span><span data-line="890">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
 </span><span data-line="891">                <span class="sa">f</span><span class="s2">&quot;Cannot promote </span><span class="si">{</span><span class="n">qname</span><span class="si">!r}</span><span class="s2">: its holder </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">holder</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is &quot;</span>
-</span><span data-line="892">                <span class="s2">&quot;not a native NEML2 Model with nl-params support. Promotion is &quot;</span>
+</span><span data-line="892">                <span class="s2">&quot;not a native NEML2 Model with promoted-params support. Promotion is &quot;</span>
 </span><span data-line="893">                <span class="s2">&quot;only supported for parameters declared via &quot;</span>
 </span><span data-line="894">                <span class="s2">&quot;register_typed_parameter (i.e. anywhere _get_param is used).&quot;</span>
 </span><span data-line="895">            <span class="p">)</span>
@@ -1309,7 +1309,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="919">        <span class="c1"># Promote class-level input_spec to a per-instance copy on first</span>
 </span><span data-line="920">        <span class="c1"># mutation (mirrors declare_typed_parameter&#39;s pattern). Pyright sees</span>
 </span><span data-line="921">        <span class="c1"># holder as nn.Module here; we know it&#39;s a NEML2 Model with</span>
-</span><span data-line="922">        <span class="c1"># input_spec / _nl_params / _typed_storage_classes (checked above).</span>
+</span><span data-line="922">        <span class="c1"># input_spec / _promoted_params / _typed_storage_classes (checked above).</span>
 </span><span data-line="923">        <span class="n">spec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="n">holder</span><span class="o">.</span><span class="n">input_spec</span>  <span class="c1"># type: ignore[attr-defined,assignment]</span>
 </span><span data-line="924">        <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="n">holder</span><span class="p">)</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_spec&quot;</span><span class="p">):</span>
 </span><span data-line="925">            <span class="n">spec</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
@@ -1321,14 +1321,14 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="931">            <span class="p">)</span>
 </span><span data-line="932">        <span class="n">spec</span><span class="p">[</span><span class="n">qname</span><span class="p">]</span> <span class="o">=</span> <span class="n">type_cls</span>
 </span><span data-line="933">
-</span><span data-line="934">        <span class="c1"># Add the NLParam entry. tail_index is the slot in the holder&#39;s</span>
-</span><span data-line="935">        <span class="c1"># *nl_params pack -- count current entries so concurrent promotions</span>
+</span><span data-line="934">        <span class="c1"># Add the PromotedParam entry. tail_index is the slot in the holder&#39;s</span>
+</span><span data-line="935">        <span class="c1"># *promoted_params pack -- count current entries so concurrent promotions</span>
 </span><span data-line="936">        <span class="c1"># on the same holder get distinct indices. Same type:ignore reason</span>
 </span><span data-line="937">        <span class="c1"># as above (pyright sees nn.Module here).</span>
-</span><span data-line="938">        <span class="n">nl_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">holder</span><span class="o">.</span><span class="n">_nl_params</span>  <span class="c1"># type: ignore[attr-defined,assignment]</span>
-</span><span data-line="939">        <span class="n">nl_params</span><span class="p">[</span><span class="n">local</span><span class="p">]</span> <span class="o">=</span> <span class="n">NLParam</span><span class="p">(</span>
+</span><span data-line="938">        <span class="n">promoted_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">holder</span><span class="o">.</span><span class="n">_promoted_params</span>  <span class="c1"># type: ignore[attr-defined,assignment]</span>
+</span><span data-line="939">        <span class="n">promoted_params</span><span class="p">[</span><span class="n">local</span><span class="p">]</span> <span class="o">=</span> <span class="n">PromotedParam</span><span class="p">(</span>
 </span><span data-line="940">            <span class="n">input_name</span><span class="o">=</span><span class="n">qname</span><span class="p">,</span>
-</span><span data-line="941">            <span class="n">tail_index</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">nl_params</span><span class="p">),</span>
+</span><span data-line="941">            <span class="n">tail_index</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">promoted_params</span><span class="p">),</span>
 </span><span data-line="942">        <span class="p">)</span>
 </span><span data-line="943">
 </span><span data-line="944">        <span class="n">info</span><span class="p">[</span><span class="n">qname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">holder</span><span class="p">,</span> <span class="n">local</span><span class="p">)</span>
@@ -1336,7 +1336,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="946">
 </span><span data-line="947">
 </span><span data-line="948"><span class="k">def</span><span class="w"> </span><span class="nf">_rebuild_after_promotion</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Model</span><span class="p">:</span>
-</span><span data-line="949"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Rebuild every spec-caching container after :func:`_promote_to_nl_params`.</span>
+</span><span data-line="949"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Rebuild every spec-caching container after :func:`_promote_parameters`.</span>
 </span><span data-line="950">
 </span><span data-line="951"><span class="sd">    Promotion mutates a leaf&#39;s ``input_spec`` in place (adds the promoted</span>
 </span><span data-line="952"><span class="sd">    parameter as a graph input), but every enclosing container caches its</span>
@@ -1344,7 +1344,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="954">
 </span><span data-line="955"><span class="sd">    * :class:`~neml2.models.common.ComposedModel` caches ``input_spec`` /</span>
 </span><span data-line="956"><span class="sd">      ``output_spec`` / ``_plan`` -- a stale plan never routes the new input to</span>
-</span><span data-line="957"><span class="sd">      the leaf, so the leaf&#39;s ``forward`` gets too few ``*nl_params`` and</span>
+</span><span data-line="957"><span class="sd">      the leaf, so the leaf&#39;s ``forward`` gets too few ``*promoted_params`` and</span>
 </span><span data-line="958"><span class="sd">      :meth:`Model._get_param` raises ``IndexError`` (the symptom seen for a</span>
 </span><span data-line="959"><span class="sd">      promoted weight in a top-level composed model or a ``ScalarConstantParameter``</span>
 </span><span data-line="960"><span class="sd">      provider).</span>
@@ -1761,7 +1761,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1371"><span class="k">def</span><span class="w"> </span><span class="nf">_structural_inputs</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">promoted_qnames</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 </span><span data-line="1372"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return ``spec`` filtered to entries NOT in *promoted_qnames*.</span>
 </span><span data-line="1373">
-</span><span data-line="1374"><span class="sd">    After :func:`_promote_to_nl_params` has expanded a leaf&#39;s input_spec to</span>
+</span><span data-line="1374"><span class="sd">    After :func:`_promote_parameters` has expanded a leaf&#39;s input_spec to</span>
 </span><span data-line="1375"><span class="sd">    include the promoted qname, the wrapping ComposedModel sees both the</span>
 </span><span data-line="1376"><span class="sd">    structural inputs and the promoted ones as positional inputs. The</span>
 </span><span data-line="1377"><span class="sd">    metadata&#39;s ``inputs`` (user-facing) and per-segment ``inputs`` should</span>
@@ -1976,8 +1976,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1586"><span class="sd">    derivative graph at all (forward value only); a non-empty set restricts the</span>
 </span><span data-line="1587"><span class="sd">    emitted blocks (and matching ``jacobian_pairs`` metadata) to that subset.</span>
 </span><span data-line="1588">
-</span><span data-line="1589"><span class="sd">    Promoted parameters are routed through the leaf&#39;s NLParam machinery</span>
-</span><span data-line="1590"><span class="sd">    (see :func:`_promote_to_nl_params`), which expanded the leaf&#39;s</span>
+</span><span data-line="1589"><span class="sd">    Promoted parameters are routed through the leaf&#39;s PromotedParam machinery</span>
+</span><span data-line="1590"><span class="sd">    (see :func:`_promote_parameters`), which expanded the leaf&#39;s</span>
 </span><span data-line="1591"><span class="sd">    ``input_spec``. The fresh ``ComposedModel`` wrap below picks up the new</span>
 </span><span data-line="1592"><span class="sd">    inputs automatically via dependency resolution; the call boundary&#39;s</span>
 </span><span data-line="1593"><span class="sd">    ``_coerce_to_input_type`` wraps the raw tensor in the right</span>
@@ -1994,7 +1994,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="1604">    <span class="n">promoted_snapshots</span> <span class="o">=</span> <span class="n">promoted_snapshots</span> <span class="ow">or</span> <span class="p">{}</span>
 </span><span data-line="1605">
 </span><span data-line="1606">    <span class="c1"># Wrap leaf models in ComposedModel so the compiled boundary is plain</span>
-</span><span data-line="1607">    <span class="c1"># tensors. After _promote_to_nl_params has modified the leaves, the</span>
+</span><span data-line="1607">    <span class="c1"># tensors. After _promote_parameters has modified the leaves, the</span>
 </span><span data-line="1608">    <span class="c1"># fresh ComposedModel below picks up the promoted inputs in its</span>
 </span><span data-line="1609">    <span class="c1"># input_spec via dependency resolution.</span>
 </span><span data-line="1610">    <span class="n">exportable</span> <span class="o">=</span> <span class="n">model</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">ComposedModel</span><span class="p">)</span> <span class="k">else</span> <span class="n">ComposedModel</span><span class="p">([</span><span class="n">model</span><span class="p">])</span>
@@ -2535,7 +2535,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="2145">    <span class="n">selected_param_pairs</span> <span class="o">=</span> <span class="n">selected_param_pairs</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">()</span>
 </span><span data-line="2146">    <span class="c1"># Promoted parameters that live inside this segment&#39;s residual model, in</span>
 </span><span data-line="2147">    <span class="c1"># model.input_spec order (the canonical graph-call tail order). After the</span>
-</span><span data-line="2148">    <span class="c1"># _promote_to_nl_params + _rebuild_after_promotion pass these appear</span>
+</span><span data-line="2148">    <span class="c1"># _promote_parameters + _rebuild_after_promotion pass these appear</span>
 </span><span data-line="2149">    <span class="c1"># in system.model.input_spec but are neither unknowns nor givens.</span>
 </span><span data-line="2150">    <span class="n">seg_param_inputs</span> <span class="o">=</span> <span class="p">[</span>
 </span><span data-line="2151">        <span class="n">n</span>
@@ -3286,14 +3286,14 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="2894">    <span class="n">promoted_names</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="n">_validate_promoted</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">promoted_set</span><span class="p">)</span>
 </span><span data-line="2895">    <span class="n">promoted_snapshots</span> <span class="o">=</span> <span class="n">_snapshot_promoted</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">promoted_names</span><span class="p">)</span>
 </span><span data-line="2896">
-</span><span data-line="2897">    <span class="c1"># Now route each promoted parameter through the leaf&#39;s NLParam machinery</span>
-</span><span data-line="2898">    <span class="c1"># (delete the static slot, add `_nl_params[local] = NLParam(input_name=</span>
+</span><span data-line="2897">    <span class="c1"># Now route each promoted parameter through the leaf&#39;s PromotedParam machinery</span>
+</span><span data-line="2898">    <span class="c1"># (delete the static slot, add `_promoted_params[local] = PromotedParam(input_name=</span>
 </span><span data-line="2899">    <span class="c1"># qname, ...)`, append qname to holder&#39;s input_spec). Any ComposedModel</span>
 </span><span data-line="2900">    <span class="c1"># wrap downstream picks the new inputs up via dependency resolution and</span>
 </span><span data-line="2901">    <span class="c1"># the call boundary&#39;s `_coerce_to_input_type` wraps raw tensors in the</span>
 </span><span data-line="2902">    <span class="c1"># right TensorWrapper before handing them to the leaf&#39;s forward, which</span>
-</span><span data-line="2903">    <span class="c1"># reads via `_get_param` from the *nl_params pack.</span>
-</span><span data-line="2904">    <span class="n">promo_info</span> <span class="o">=</span> <span class="n">_promote_to_nl_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">promoted_names</span><span class="p">)</span>
+</span><span data-line="2903">    <span class="c1"># reads via `_get_param` from the *promoted_params pack.</span>
+</span><span data-line="2904">    <span class="n">promo_info</span> <span class="o">=</span> <span class="n">_promote_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">promoted_names</span><span class="p">)</span>
 </span><span data-line="2905">    <span class="n">promoted_qnames</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">promoted_names</span><span class="p">)</span>
 </span><span data-line="2906">    <span class="c1"># Natural base shape (BASE_SHAPE) per promoted parameter, from its typed-wrapper</span>
 </span><span data-line="2907">    <span class="c1"># class. The C++ runtime uses it to split a (possibly batched) stored parameter</span>

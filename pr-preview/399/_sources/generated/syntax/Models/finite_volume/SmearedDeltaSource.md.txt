@@ -12,7 +12,7 @@ $source[k] = mag * (1/w) / sqrt(2*pi) * exp(-0.5 * ((centers[k] - loc)/w)^2)$
 the output ``smeared_source`` inherits the cell axis. ``magnitude`` /
 ``location`` therefore couple densely with the per-cell output -- declared in
 `list_deriv`. ``width`` and ``cell_centers`` are forward-only static
-parameters (the C++ side allows them to be promoted to nl inputs, but the
+parameters (the C++ side allows them to be promoted to runtime inputs, but the
 native ``ModelUnitTest`` only checks input derivatives, so we leave that
 plumbing for a follow-on).
 

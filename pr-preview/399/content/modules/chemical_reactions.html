@@ -435,9 +435,9 @@ chemical-reactions types slot into that machinery.</p>
 <p>A reaction mechanism is a constitutive relation between the conversion
 degree <span class="math notranslate nohighlight">\(\alpha \in [0, 1]\)</span> and the reaction rate
 <span class="math notranslate nohighlight">\(\dot{\alpha} = f(\alpha)\)</span>. The three mechanisms in this module are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-b34de7a3-99ab-494d-a9b3-2f6278fbf472">
-<div class="amsmath math notranslate nohighlight" id="equation-b34de7a3-99ab-494d-a9b3-2f6278fbf472">
-<span class="eqno">(4)<a class="headerlink" href="#equation-b34de7a3-99ab-494d-a9b3-2f6278fbf472" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-c5795de0-b3df-4c55-ae5c-25b68e29c66d">
+<div class="amsmath math notranslate nohighlight" id="equation-c5795de0-b3df-4c55-ae5c-25b68e29c66d">
+<span class="eqno">(4)<a class="headerlink" href="#equation-c5795de0-b3df-4c55-ae5c-25b68e29c66d" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \dot{\alpha} &amp;= k \, (1 - \alpha)^n
   &amp;&amp;\text{(contracting geometry)} \\
 \dot{\alpha} &amp;= k \, (1 - \alpha) \, \bigl(-\ln(1 - \alpha)\bigr)^n
@@ -662,7 +662,7 @@ temperature-dependent rate constant <span class="math notranslate nohighlight">\
 <code class="docutils literal notranslate"><span class="pre">T</span></code> force.</p></li>
 <li><p><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/ContractingGeometry.html#models-contractinggeometry"><span class="std std-ref">ContractingGeometry</span></a> (<code class="docutils literal notranslate"><span class="pre">reaction_rate</span></code>) maps the current
 <span class="math notranslate nohighlight">\(\alpha\)</span> to <span class="math notranslate nohighlight">\(\dot{\alpha} = k (1 - \alpha)^n\)</span> using that coefficient
-as a nonlinear parameter and the constant order <span class="math notranslate nohighlight">\(n\)</span>.</p></li>
+as a promoted parameter and the constant order <span class="math notranslate nohighlight">\(n\)</span>.</p></li>
 <li><p><a class="reference internal" href="../../generated/syntax/Models/common/ScalarBackwardEulerTimeIntegration.html#models-scalarbackwardeulertimeintegration"><span class="std std-ref">ScalarBackwardEulerTimeIntegration</span></a> (<code class="docutils literal notranslate"><span class="pre">reaction_ode</span></code>) writes
 the residual <span class="math notranslate nohighlight">\(\alpha_{n+1} - \alpha_n - \Delta t \, \dot{\alpha} = 0\)</span>
 that the Newton solver consumes via the <code class="docutils literal notranslate"><span class="pre">eq_sys</span></code>

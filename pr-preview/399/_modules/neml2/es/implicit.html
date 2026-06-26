@@ -446,7 +446,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="56"><span class="sd">``--parameter`` targeting an attribute inside the implicit region); when</span>
 </span><span data-line="57"><span class="sd">present it lists, in graph-call order, the promoted parameters that live</span>
 </span><span data-line="58"><span class="sd">inside the implicit segment&#39;s residual model. After</span>
-</span><span data-line="59"><span class="sd">:func:`~neml2.cli.aoti_export._promote_to_nl_params` these appear in</span>
+</span><span data-line="59"><span class="sd">:func:`~neml2.cli.aoti_export._promote_parameters` these appear in</span>
 </span><span data-line="60"><span class="sd">``system.model.input_spec`` but are neither unknowns nor givens, so the</span>
 </span><span data-line="61"><span class="sd">wrappers inject them into the per-variable state from the trailing forward</span>
 </span><span data-line="62"><span class="sd">args. ``RHS`` / ``NewtonStep`` / ``IFT`` take them as the stored scalar</span>
@@ -523,7 +523,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="133">        <span class="bp">self</span><span class="o">.</span><span class="n">dyn_ndim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">_dynamic_batch_ndim</span><span class="p">)</span>
 </span><span data-line="134">        <span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_shapes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">_sub_batch_shapes</span><span class="p">)</span>
 </span><span data-line="135">        <span class="c1"># Promoted parameters threaded as a positional tail after the givens.</span>
-</span><span data-line="136">        <span class="c1"># After ``_promote_to_nl_params`` these are in ``model.input_spec`` but</span>
+</span><span data-line="136">        <span class="c1"># After ``_promote_parameters`` these are in ``model.input_spec`` but</span>
 </span><span data-line="137">        <span class="c1"># are neither unknowns nor givens; ``_state_from_per_group_args``</span>
 </span><span data-line="138">        <span class="c1"># injects them into the per-variable state from the trailing args so</span>
 </span><span data-line="139">        <span class="c1"># ``_call_model_from_state`` (which iterates the full input_spec) finds</span>

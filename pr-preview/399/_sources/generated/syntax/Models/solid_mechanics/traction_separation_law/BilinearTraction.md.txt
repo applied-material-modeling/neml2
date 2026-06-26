@@ -46,8 +46,8 @@ internal to this model and does not require an external
 : Penalty stiffness
 
 `critical_separation` &mdash; `parameter` &middot; `Scalar` &middot; **required**
-: Critical (damage-onset) separation. May be wired to an upstream `CamanhoDavilaCriticalSeparation` (nonlinear-capable).
+: Critical (damage-onset) separation. May be wired to an upstream `CamanhoDavilaCriticalSeparation` (promotion-capable).
 
 `full_separation` &mdash; `parameter` &middot; `Scalar` &middot; **required**
-: Full (failure) separation. May be wired to an upstream `BenzeggaghKenaneFullSeparation` or `PowerLawFullSeparation` (nonlinear-capable).
+: Full (failure) separation. May be wired to an upstream `BenzeggaghKenaneFullSeparation` or `PowerLawFullSeparation` (promotion-capable).
 

@@ -23,7 +23,7 @@ Compression branch: $\delta_c = \delta_{s0}$.
 ## Parameters
 
 `mode_mixity` &mdash; `parameter` &middot; `Scalar` &middot; **required**
-: Mode-mixity ratio. May be wired to an upstream `ModeMixity` (nonlinear-capable).
+: Mode-mixity ratio. May be wired to an upstream `ModeMixity` (promotion-capable).
 
 `penalty_stiffness` &mdash; `parameter` &middot; `Scalar` &middot; **required**
 : Penalty stiffness K

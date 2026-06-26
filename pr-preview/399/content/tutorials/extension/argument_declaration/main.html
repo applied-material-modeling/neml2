@@ -451,7 +451,7 @@ to a helper from <code class="docutils literal notranslate"><span class="pre">ne
 </span><span data-line="22">        <span class="p">),</span>
 </span><span data-line="23">    <span class="p">)</span>
 </span><span data-line="24">
-</span><span data-line="25">    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="o">*</span><span class="n">nl_params</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span data-line="25">    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="o">*</span><span class="n">promoted_params</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span data-line="26">        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </span></pre></div>
 </div>
@@ -464,7 +464,7 @@ to a helper from <code class="docutils literal notranslate"><span class="pre">ne
 <li><p>The third argument is the field’s docstring — it shows up in the
 auto-generated syntax catalog.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">attr=&quot;mu&quot;</span></code> on the parameter names its storage slot. <strong>Inside
-<code class="docutils literal notranslate"><span class="pre">forward</span></code></strong> read it through <code class="docutils literal notranslate"><span class="pre">self._get_param(&quot;mu&quot;,</span> <span class="pre">nl_params,</span> <span class="pre">Scalar)</span></code> — reading <code class="docutils literal notranslate"><span class="pre">self.mu</span></code> directly there is rejected, because it
+<code class="docutils literal notranslate"><span class="pre">forward</span></code></strong> read it through <code class="docutils literal notranslate"><span class="pre">self._get_param(&quot;mu&quot;,</span> <span class="pre">promoted_params,</span> <span class="pre">Scalar)</span></code> — reading <code class="docutils literal notranslate"><span class="pre">self.mu</span></code> directly there is rejected, because it
 bypasses parameter promotion (see the note below). Outside <code class="docutils literal notranslate"><span class="pre">forward</span></code>
 (for inspection) <code class="docutils literal notranslate"><span class="pre">self.mu</span></code> is fine.</p></li>
 <li><p>A <code class="docutils literal notranslate"><span class="pre">buffer</span></code> is a constant that travels with the model (e.g., goes to
@@ -554,7 +554,7 @@ attribute it should be exposed under (<code class="docutils literal notranslate"
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">default=...</span></code> makes the parameter optional in the input file — if
 the user omits it, the schema default is used.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">allow_nonlinear=True</span></code> lets the parameter be promoted to a runtime
+<li><p><code class="docutils literal notranslate"><span class="pre">allow_promotion=True</span></code> lets the parameter be promoted to a runtime
 input — useful when we want to drive the parameter from another
 model’s output. See <a class="reference internal" href="../model_composition/main.html#tutorials-extension-composition"><span class="std std-ref">Composing with existing models</span></a> for the
 details.</p></li>
@@ -566,13 +566,13 @@ Greek-letter conventions and we’d rather not spell out
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>Inside <code class="docutils literal notranslate"><span class="pre">forward</span></code>, read a parameter through
-<code class="docutils literal notranslate"><span class="pre">self._get_param(&quot;mu&quot;,</span> <span class="pre">nl_params,</span> <span class="pre">Scalar)</span></code> — not <code class="docutils literal notranslate"><span class="pre">self.mu</span></code>.</strong> A bare
+<code class="docutils literal notranslate"><span class="pre">self._get_param(&quot;mu&quot;,</span> <span class="pre">promoted_params,</span> <span class="pre">Scalar)</span></code> — not <code class="docutils literal notranslate"><span class="pre">self.mu</span></code>.</strong> A bare
 <code class="docutils literal notranslate"><span class="pre">self.mu</span></code> inside <code class="docutils literal notranslate"><span class="pre">forward</span></code> is rejected by a runtime guard: it bypasses
 parameter promotion, so it would break the moment the parameter is
 promoted to a runtime input (<code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">-p</span></code>), when the static
 <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code> no longer exists. <code class="docutils literal notranslate"><span class="pre">_get_param</span></code> works for both static
 and promoted parameters, which is why <code class="docutils literal notranslate"><span class="pre">forward</span></code>’s signature carries the
-<code class="docutils literal notranslate"><span class="pre">*nl_params</span></code> pack (<code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">forward(self,</span> <span class="pre">velocity,</span> <span class="pre">*nl_params,</span> <span class="pre">v=None)</span></code>):
+<code class="docutils literal notranslate"><span class="pre">*promoted_params</span></code> pack (<code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">forward(self,</span> <span class="pre">velocity,</span> <span class="pre">*promoted_params,</span> <span class="pre">v=None)</span></code>):
 promoted parameters arrive there. Buffers are not affected — a buffer
 like <code class="docutils literal notranslate"><span class="pre">self.g</span></code> is read directly. The next tutorial,
 <a class="reference internal" href="../the_forward_operator/main.html#tutorials-extension-forward"><span class="std std-ref">The forward operator</span></a>, shows this in a real <code class="docutils literal notranslate"><span class="pre">forward</span></code> body.</p>

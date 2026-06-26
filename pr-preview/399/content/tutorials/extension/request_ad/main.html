@@ -461,10 +461,10 @@ no <code class="docutils literal notranslate"><span class="pre">actions</span></
 </span><span data-line="43">        <span class="c1"># Pass outputs=[...] / inputs=[...] to auto-derive only a subset.</span>
 </span><span data-line="44">        <span class="bp">self</span><span class="o">.</span><span class="n">request_AD</span><span class="p">()</span>
 </span><span data-line="45">
-</span><span data-line="46">    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_in</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="o">*</span><span class="n">nl_params</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
+</span><span data-line="46">    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_in</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="o">*</span><span class="n">promoted_params</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
 </span><span data-line="47">        <span class="c1"># Read the drag coefficient through ``_get_param`` (promotion-compatible),</span>
 </span><span data-line="48">        <span class="c1"># exactly as in the hand-written version.</span>
-</span><span data-line="49">        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_param</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="n">nl_params</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">)</span>
+</span><span data-line="49">        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_param</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="n">promoted_params</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">)</span>
 </span><span data-line="50">
 </span><span data-line="51">        <span class="c1"># Value only: a = g - mu * v. No ``v=`` branch, no ``actions`` -- the</span>
 </span><span data-line="52">        <span class="c1"># framework differentiates this forward by reverse-mode AD.</span>
@@ -660,7 +660,7 @@ Jacobian we would <em>never</em> want to derive by hand: a trained
 </span><span data-line="5">        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="o">...</span>              <span class="c1"># a trained torch.nn.Module</span>
 </span><span data-line="6">        <span class="bp">self</span><span class="o">.</span><span class="n">request_AD</span><span class="p">()</span>           <span class="c1"># auto-derive d(output)/d(input) for all pairs</span>
 </span><span data-line="7">
-</span><span data-line="8">    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">nl_params</span><span class="p">):</span>
+</span><span data-line="8">    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">promoted_params</span><span class="p">):</span>
 </span><span data-line="9">        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>   <span class="c1"># value only -- no `v=`, no `actions`</span>
 </span></pre></div>
 </div>

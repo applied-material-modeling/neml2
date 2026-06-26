@@ -458,7 +458,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="66">    <span class="n">reader</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span data-line="67">    <span class="n">optional_reader</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span data-line="68">    <span class="n">factory_getter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="69">    <span class="n">allow_nonlinear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span data-line="69">    <span class="n">allow_promotion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 </span><span data-line="70">    <span class="c1">#: For ``input``/``output`` fields: a literal string appended to the</span>
 </span><span data-line="71">    <span class="c1">#: HIT-resolved variable name, used to derive the conventional NEML2</span>
 </span><span data-line="72">    <span class="c1">#: secondary-variable names (``~1`` for history, ``_rate`` for rates,</span>
@@ -808,7 +808,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="389">    <span class="o">*</span><span class="p">,</span>
 </span><span data-line="390">    <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="391">    <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_MISSING</span><span class="p">,</span>
-</span><span data-line="392">    <span class="n">allow_nonlinear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span data-line="392">    <span class="n">allow_promotion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 </span><span data-line="393"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HitField</span><span class="p">:</span>
 </span><span data-line="394">    <span class="k">return</span> <span class="n">HitField</span><span class="p">(</span>
 </span><span data-line="395">        <span class="s2">&quot;parameter&quot;</span><span class="p">,</span>
@@ -817,7 +817,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="398">        <span class="n">doc</span><span class="o">=</span><span class="n">doc</span><span class="p">,</span>
 </span><span data-line="399">        <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span>
 </span><span data-line="400">        <span class="n">attr</span><span class="o">=</span><span class="n">attr</span><span class="p">,</span>
-</span><span data-line="401">        <span class="n">allow_nonlinear</span><span class="o">=</span><span class="n">allow_nonlinear</span><span class="p">,</span>
+</span><span data-line="401">        <span class="n">allow_promotion</span><span class="o">=</span><span class="n">allow_promotion</span><span class="p">,</span>
 </span><span data-line="402">    <span class="p">)</span></div>
 
 </span><span data-line="403">
@@ -831,7 +831,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="409">    <span class="o">*</span><span class="p">,</span>
 </span><span data-line="410">    <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="411">    <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_MISSING</span><span class="p">,</span>
-</span><span data-line="412">    <span class="n">allow_nonlinear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span data-line="412">    <span class="n">allow_promotion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 </span><span data-line="413"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HitField</span><span class="p">:</span>
 </span><span data-line="414"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Declare a *list* of parameters, one per token of a HIT list option.</span>
 </span><span data-line="415">
@@ -851,7 +851,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="429">        <span class="n">doc</span><span class="o">=</span><span class="n">doc</span><span class="p">,</span>
 </span><span data-line="430">        <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span>
 </span><span data-line="431">        <span class="n">attr</span><span class="o">=</span><span class="n">attr</span><span class="p">,</span>
-</span><span data-line="432">        <span class="n">allow_nonlinear</span><span class="o">=</span><span class="n">allow_nonlinear</span><span class="p">,</span>
+</span><span data-line="432">        <span class="n">allow_promotion</span><span class="o">=</span><span class="n">allow_promotion</span><span class="p">,</span>
 </span><span data-line="433">    <span class="p">)</span></div>
 
 </span><span data-line="434">

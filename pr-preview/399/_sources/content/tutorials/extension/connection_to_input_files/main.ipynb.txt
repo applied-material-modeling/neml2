@@ -96,7 +96,7 @@
     "        ),\n",
     "    )\n",
     "\n",
-    "    def forward(self, velocity, *nl_params, v=None):\n",
+    "    def forward(self, velocity, *promoted_params, v=None):\n",
     "        raise NotImplementedError"
    ]
   },

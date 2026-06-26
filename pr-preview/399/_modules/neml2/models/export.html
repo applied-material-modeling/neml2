@@ -686,7 +686,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="294">    <span class="c1"># nested tuple &quot;argument&quot;, while each named positional parameter stays a</span>
 </span><span data-line="295">    <span class="c1"># top-level entry. Forward signatures come in three shapes:</span>
 </span><span data-line="296">    <span class="c1">#   * pure ``*inputs``                     → every example feeds the pack</span>
-</span><span data-line="297">    <span class="c1">#   * named positionals + ``*nl_params``   → first N examples are named,</span>
+</span><span data-line="297">    <span class="c1">#   * named positionals + ``*promoted_params``   → first N examples are named,</span>
 </span><span data-line="298">    <span class="c1">#                                            the remainder feed the pack</span>
 </span><span data-line="299">    <span class="c1">#   * named positionals only               → flat 1:1 with the examples</span>
 </span><span data-line="300">    <span class="c1"># so we split the example inputs at the number of named positional params.</span>

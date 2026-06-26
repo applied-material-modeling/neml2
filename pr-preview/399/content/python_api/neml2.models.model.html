@@ -382,11 +382,11 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.models.model.Model.set_parameter"><code class="docutils literal notranslate">set_parameter()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#neml2.models.model.NLParam"><code class="docutils literal notranslate"><span class="pre">NLParam</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.models.model.NLParam.input_name"><code class="docutils literal notranslate">input_name</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.NLParam.provider"><code class="docutils literal notranslate">provider</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.NLParam.provider_output"><code class="docutils literal notranslate">provider_output</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.NLParam.tail_index"><code class="docutils literal notranslate">tail_index</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.PromotedParam"><code class="docutils literal notranslate"><span class="pre">PromotedParam</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.models.model.PromotedParam.input_name"><code class="docutils literal notranslate">input_name</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.PromotedParam.provider"><code class="docutils literal notranslate">provider</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.PromotedParam.provider_output"><code class="docutils literal notranslate">provider_output</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.PromotedParam.tail_index"><code class="docutils literal notranslate">tail_index</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.models.model.SecondOrderChainRuleAction"><code class="docutils literal notranslate"><span class="pre">SecondOrderChainRuleAction</span></code></a></li>
@@ -651,7 +651,7 @@ literal nor a <code class="docutils literal notranslate"><span class="pre">[Tens
 
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.models.model.Model.declare_typed_parameter">
-<span class="sig-name descname"><span class="pre">declare_typed_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_cls</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_nonlinear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#Model.declare_typed_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.Model.declare_typed_parameter" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">declare_typed_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_cls</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_promotion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#Model.declare_typed_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.Model.declare_typed_parameter" title="Link to this definition">¶</a></dt>
 <dd><p>Resolve <em>spec</em> and register it as a parameter or promote it to an input.</p>
 <p>Python mirror of C++ <code class="docutils literal notranslate"><span class="pre">ParameterStore::declare_parameter</span></code>
 (<code class="docutils literal notranslate"><span class="pre">src/neml2/models/ParameterStore.cxx</span></code>). Resolution order:</p>
@@ -665,10 +665,10 @@ an already-loaded literal/batched value).</p></li>
 a typed parameter (mode 1, literal HIT value).</p></li>
 <li><p>If a <em>factory</em> is available, try <code class="docutils literal notranslate"><span class="pre">factory.get_tensor(spec)</span></code> —
 register as a typed parameter (mode 2, <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> cross-ref).</p></li>
-<li><p>If <em>allow_nonlinear</em>: parse the string as a variable specifier
+<li><p>If <em>allow_promotion</em>: parse the string as a variable specifier
 (<code class="docutils literal notranslate"><span class="pre">model_name</span></code> / <code class="docutils literal notranslate"><span class="pre">model_name.var</span></code> / <code class="docutils literal notranslate"><span class="pre">var</span></code>). If it matches a
 <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> entry, pull the provider and record the input
-promotion + provider in <code class="docutils literal notranslate"><span class="pre">_nl_params</span></code> (mode 3). Otherwise treat
+promotion + provider in <code class="docutils literal notranslate"><span class="pre">_promoted_params</span></code> (mode 3). Otherwise treat
 the string as a bare variable name and add the input without a
 provider (mode 4).</p></li>
 </ol>
@@ -678,16 +678,16 @@ provider (mode 4).</p></li>
 entry keyed by the chosen input variable name (the provider’s output
 name in mode 3, or the bare variable name in mode 4), appended after
 the fixed structural inputs. Inside <code class="docutils literal notranslate"><span class="pre">forward</span></code> — declared as
-<code class="docutils literal notranslate"><span class="pre">forward(self,</span> <span class="pre">&lt;structural</span> <span class="pre">inputs...&gt;,</span> <span class="pre">*nl_params)</span></code> — fetch the value
+<code class="docutils literal notranslate"><span class="pre">forward(self,</span> <span class="pre">&lt;structural</span> <span class="pre">inputs...&gt;,</span> <span class="pre">*promoted_params)</span></code> — fetch the value
 with <code class="xref py py-meth docutils literal notranslate"><span class="pre">_get_param()</span></code>, which resolves a static slot from <code class="docutils literal notranslate"><span class="pre">self</span></code> or
-a promoted slot from the <code class="docutils literal notranslate"><span class="pre">*nl_params</span></code> pack uniformly.</p>
+a promoted slot from the <code class="docutils literal notranslate"><span class="pre">*promoted_params</span></code> pack uniformly.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
 <li><p><strong>type_cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><em>type</em></a><em>[</em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper"><em>TensorWrapper</em></a><em>]</em>)</p></li>
 <li><p><strong>factory</strong> (<em>_NativeInputFile</em><em> | </em><em>None</em>)</p></li>
-<li><p><strong>allow_nonlinear</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>allow_promotion</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -972,18 +972,18 @@ cannot resize into – the parameter is <strong>replaced</strong> with a fresh
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="neml2.models.model.NLParam">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.models.model.</span></span><span class="sig-name descname"><span class="pre">NLParam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tail_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#NLParam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.NLParam" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="neml2.models.model.PromotedParam">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.models.model.</span></span><span class="sig-name descname"><span class="pre">PromotedParam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tail_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#PromotedParam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.PromotedParam" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Marker for a parameter resolved to a runtime input (modes 3 + 4).</p>
 <p>Records the input variable name added to the host’s <code class="docutils literal notranslate"><span class="pre">input_spec</span></code>, the
-parameter’s position within <code class="docutils literal notranslate"><span class="pre">forward</span></code>’s <code class="docutils literal notranslate"><span class="pre">*nl_params</span></code> pack, and — for
+parameter’s position within <code class="docutils literal notranslate"><span class="pre">forward</span></code>’s <code class="docutils literal notranslate"><span class="pre">*promoted_params</span></code> pack, and — for
 mode 3 — the provider model + its output variable name so the parent
 <code class="xref py py-class docutils literal notranslate"><span class="pre">ComposedModel</span></code> can auto-pull the provider
-into the dependency graph (mirroring the C++ <code class="docutils literal notranslate"><span class="pre">_nl_params</span></code> bookkeeping
+into the dependency graph (mirroring the C++ <code class="docutils literal notranslate"><span class="pre">_promoted_params</span></code> bookkeeping
 in <code class="docutils literal notranslate"><span class="pre">ParameterStore.cxx::resolve_tensor_name</span></code>).</p>
 <p><code class="docutils literal notranslate"><span class="pre">tail_index</span></code> is the zero-based slot of this parameter inside the
-<code class="docutils literal notranslate"><span class="pre">*nl_params</span></code> pack passed to <code class="xref py py-meth docutils literal notranslate"><span class="pre">Model._get_param()</span></code>. Promoted parameters
+<code class="docutils literal notranslate"><span class="pre">*promoted_params</span></code> pack passed to <code class="xref py py-meth docutils literal notranslate"><span class="pre">Model._get_param()</span></code>. Promoted parameters
 are appended to <code class="docutils literal notranslate"><span class="pre">input_spec</span></code> in declaration order, immediately after the
 fixed structural inputs, so this index is simply the number of parameters
 already promoted when this one was declared.</p>
@@ -999,23 +999,23 @@ already promoted when this one was declared.</p>
 </dd>
 </dl>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.models.model.NLParam.input_name">
-<span class="sig-name descname"><span class="pre">input_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#neml2.models.model.NLParam.input_name" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="neml2.models.model.PromotedParam.input_name">
+<span class="sig-name descname"><span class="pre">input_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#neml2.models.model.PromotedParam.input_name" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.models.model.NLParam.provider">
-<span class="sig-name descname"><span class="pre">provider</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#neml2.models.model.Model" title="neml2.models.model.Model"><span class="pre">Model</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#neml2.models.model.NLParam.provider" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="neml2.models.model.PromotedParam.provider">
+<span class="sig-name descname"><span class="pre">provider</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#neml2.models.model.Model" title="neml2.models.model.Model"><span class="pre">Model</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#neml2.models.model.PromotedParam.provider" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.models.model.NLParam.provider_output">
-<span class="sig-name descname"><span class="pre">provider_output</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#neml2.models.model.NLParam.provider_output" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="neml2.models.model.PromotedParam.provider_output">
+<span class="sig-name descname"><span class="pre">provider_output</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#neml2.models.model.PromotedParam.provider_output" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.models.model.NLParam.tail_index">
-<span class="sig-name descname"><span class="pre">tail_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#neml2.models.model.NLParam.tail_index" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="neml2.models.model.PromotedParam.tail_index">
+<span class="sig-name descname"><span class="pre">tail_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#neml2.models.model.PromotedParam.tail_index" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

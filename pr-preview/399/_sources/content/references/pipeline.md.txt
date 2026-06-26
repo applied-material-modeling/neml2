@@ -87,18 +87,18 @@ before any rewriting. Those tensors land in the metadata's
 
 This stage transitions each promoted name from a static field on the
 leaf to a graph input the caller supplies on every invocation. The
-exporter routes promotion through the leaf's existing nonlinear-parameter
+exporter routes promotion through the leaf's existing promoted-parameter
 machinery rather than reaching in and mutating attribute storage
 directly: it deletes the static slot, appends the qualified name to
 the leaf's input spec (typed via the wrapper class recorded when the
-parameter was declared), and registers a nonlinear-parameter entry
+parameter was declared), and registers a promoted-parameter entry
 keyed by that name.
 
 Once that's done, the next `ComposedModel` wrap downstream picks the
 new inputs up through normal dependency resolution; the call boundary
 re-wraps the incoming raw tensor in the right typed wrapper before
 handing it to the leaf's `forward`. The leaf implementation is
-unchanged — the nonlinear-parameter pack abstracts the "baked vs
+unchanged — the promoted-parameter pack abstracts the "baked vs
 promoted" distinction away.
 
 ## Stage 4 — Freeze remaining parameters to buffers
