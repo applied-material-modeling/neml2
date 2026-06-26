@@ -1,0 +1,283 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "0a1178d3",
+   "metadata": {},
+   "source": [
+    "(tutorials-extension-input-files)=\n",
+    "# Connecting to input files\n",
+    "\n",
+    "In this tutorial, we'll take a `Model` subclass we wrote ourselves and make it\n",
+    "loadable from an HIT input file, the same way the built-in models in\n",
+    "[](tutorials-models-running-your-first-model) are. Two ingredients do\n",
+    "the work: a decorator that registers the class under a type name, and\n",
+    "the `HitSchema` we already saw in\n",
+    "[](tutorials-extension-arguments)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "f4433f3e",
+   "metadata": {
+    "tags": [
+     "remove-cell"
+    ]
+   },
+   "outputs": [],
+   "source": [
+    "# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard\n",
+    "# makes the cell a no-op everywhere else (the docs build and local Jupyter\n",
+    "# already have NEML2 installed), and the cell is hidden from the rendered docs.\n",
+    "import sys\n",
+    "\n",
+    "if \"google.colab\" in sys.modules:\n",
+    "    !pip install -q neml2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e724070e",
+   "metadata": {},
+   "source": [
+    "## The example model\n",
+    "\n",
+    "We'll reuse the projectile model from the previous tutorial — a `Vec`\n",
+    "velocity in, a `Vec` acceleration out, under gravity plus linear drag:\n",
+    "\n",
+    "$$\n",
+    "\\boldsymbol{a} \\;=\\; \\boldsymbol{g} \\;-\\; \\mu\\, \\boldsymbol{v},\n",
+    "$$\n",
+    "\n",
+    "with $\\mu$ a `Scalar` parameter and $\\boldsymbol{g}$ a constant `Vec`\n",
+    "buffer. Write it out as `projectile.py`:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "55037205",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%writefile projectile.py\n",
+    "# A minimal NEML2 Model subclass illustrating the input-file wiring.\n",
+    "#\n",
+    "# Forward operator: gravity-plus-linear-drag projectile acceleration,\n",
+    "#     a = g - mu * v\n",
+    "# with `g` a Vec buffer (constant gravity) and `mu` a single Scalar\n",
+    "# parameter. The point of this file is the *connection to HIT* — the\n",
+    "# schema declaration and the `@register_neml2_object` decorator — not the\n",
+    "# physics.\n",
+    "\n",
+    "from __future__ import annotations\n",
+    "\n",
+    "from neml2.factory import register_neml2_object\n",
+    "from neml2.models.model import Model\n",
+    "from neml2.schema import HitSchema, buffer, input, output, parameter\n",
+    "from neml2.types import Scalar, Vec\n",
+    "\n",
+    "\n",
+    "@register_neml2_object(\"ProjectileAcceleration\")\n",
+    "class ProjectileAcceleration(Model):\n",
+    "    \"\"\"Projectile acceleration under gravity and linear drag: a = g - mu * v.\"\"\"\n",
+    "\n",
+    "    hit = HitSchema(\n",
+    "        input(\"velocity\", Vec, \"Projectile velocity\"),\n",
+    "        output(\"acceleration\", Vec, \"Projectile acceleration\"),\n",
+    "        parameter(\"dynamic_viscosity\", Scalar, \"Drag coefficient mu\", attr=\"mu\"),\n",
+    "        buffer(\n",
+    "            \"gravity\",\n",
+    "            Vec,\n",
+    "            \"Gravitational acceleration vector\",\n",
+    "            attr=\"g\",\n",
+    "            default=Vec.fill(0.0, -9.81, 0.0),\n",
+    "        ),\n",
+    "    )\n",
+    "\n",
+    "    def forward(self, velocity, *nl_params, v=None):\n",
+    "        raise NotImplementedError"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3523d848",
+   "metadata": {},
+   "source": [
+    "Two things to notice:\n",
+    "\n",
+    "1. **`@register_neml2_object(\"ProjectileAcceleration\")`** is what\n",
+    "   makes `type = ProjectileAcceleration` work in an input file. The\n",
+    "   string is the HIT type name; by convention it matches the Python\n",
+    "   class name, but it doesn't have to.\n",
+    "2. **`hit = HitSchema(...)`** lists the options the input block\n",
+    "   accepts. Each `input` / `output` / `parameter` / `buffer` entry\n",
+    "   becomes one HIT option of the same name. See\n",
+    "   [](tutorials-extension-arguments) for the full set of field\n",
+    "   helpers and what they accept.\n",
+    "\n",
+    "## The input file\n",
+    "\n",
+    "Here's a minimal HIT block that instantiates the class:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "c5cc59b0",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%writefile input.i\n",
+    "[Models]\n",
+    "  [accel]\n",
+    "    type = ProjectileAcceleration\n",
+    "    velocity = 'v'\n",
+    "    acceleration = 'a'\n",
+    "    dynamic_viscosity = 0.05\n",
+    "  []\n",
+    "[]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b33827aa",
+   "metadata": {},
+   "source": [
+    "Each line maps to one schema field:\n",
+    "\n",
+    "- `type = ProjectileAcceleration` picks the class out of the registry.\n",
+    "- `velocity = 'v'` and `acceleration = 'a'` rename the input/output\n",
+    "  variables — without these lines the canonical names (`velocity`,\n",
+    "  `acceleration`) are used.\n",
+    "- `dynamic_viscosity = 0.05` sets the parameter value. It lands on\n",
+    "  the instance as `self.mu` (the attribute we asked for via\n",
+    "  `attr=\"mu\"`).\n",
+    "\n",
+    "## Loading and inspecting\n",
+    "\n",
+    "`load_model` looks up the type name in a registry that's populated\n",
+    "as a side effect of importing our module — so we need to import\n",
+    "it first. In a normal script that's just an `import` line; here,\n",
+    "`projectile.py` sits next to `input.i`, so we add the directory to\n",
+    "`sys.path` and import it."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "849f3e3e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import sys\n",
+    "\n",
+    "sys.path.insert(0, \".\")\n",
+    "import projectile  # the @register_neml2_object runs at import time\n",
+    "\n",
+    "import neml2\n",
+    "\n",
+    "model = neml2.load_model(\"input.i\", \"accel\")\n",
+    "model"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "21c8e3eb",
+   "metadata": {},
+   "source": [
+    "The renames from the input file show up in `input_spec` and\n",
+    "`output_spec`:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "bd3b4a22",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model.input_spec, model.output_spec"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "61948b6f",
+   "metadata": {},
+   "source": [
+    "The canonical names (`velocity`, `acceleration`) were replaced by the\n",
+    "HIT values (`v`, `a`). These are the names sibling models in a\n",
+    "`ComposedModel` would use to wire to ours — see\n",
+    "[](tutorials-extension-composition).\n",
+    "\n",
+    "The parameter is exposed under the `attr` name we picked:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "dce4785b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model.mu"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4dba4d31",
+   "metadata": {},
+   "source": [
+    "## Debugging \"not registered\" errors\n",
+    "\n",
+    "If `load_model` raises a `KeyError` mentioning *\"not registered in\n",
+    "NativeRegistry\"*, the module holding `@register_neml2_object` was\n",
+    "almost certainly never imported. Fix the import (or reorder imports)\n",
+    "so the decorator runs first. To confirm a type is registered, ask\n",
+    "`neml2-syntax`:\n",
+    "\n",
+    "```bash\n",
+    "neml2-syntax --load ./projectile.py --type ProjectileAcceleration\n",
+    "```\n",
+    "\n",
+    "## Loading the extension from the CLI\n",
+    "\n",
+    "To use our custom model from the `neml2-*` shell tools, pass\n",
+    "`--load` pointing at the file (or a dotted module name on\n",
+    "`sys.path`). The flag runs the import before the input file is\n",
+    "parsed, so the registered type is ready by the time `load_model` is\n",
+    "called:\n",
+    "\n",
+    "```bash\n",
+    "neml2-run --load ./projectile.py input.i driver\n",
+    "neml2-inspect --load ./projectile.py input.i accel\n",
+    "```\n",
+    "\n",
+    "Repeat `--load` for multiple extensions — they import in the given\n",
+    "order, so later modules can depend on names registered earlier. See\n",
+    "[](cli-utilities) for the full list of tools.\n",
+    "\n",
+    "## Where to go next\n",
+    "\n",
+    "- [](tutorials-extension-arguments) covers the schema fields in\n",
+    "  detail — typed inputs, options, parameters that can be promoted to\n",
+    "  runtime inputs.\n",
+    "- [](tutorials-extension-forward) is the next step: fill in\n",
+    "  `forward()` so the model actually computes something.\n",
+    "- Once our model loads, we'll usually want to compose it with\n",
+    "  others inside a single `[Models]` block — see\n",
+    "  [](tutorials-extension-composition)."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
