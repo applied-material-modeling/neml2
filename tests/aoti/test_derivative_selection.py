@@ -24,8 +24,10 @@
 
 """End-to-end tests for selectable derivative pairs (``neml2-compile -d``).
 
-These compile real artifacts and drive ``neml2.aoti.Model`` (the C++ binding),
-checking the runtime contract against the eager chain rule
+These compile real artifacts and drive the public
+:class:`~neml2.aoti.AOTIModel` shim's ``jvp`` / ``jacobian`` (which delegate to
+``neml2.aoti.Model``, the C++ binding), checking the runtime contract against
+the eager chain rule
 (:class:`neml2.eager._EagerModel`): default-off raises, a selected pair returns
 only that pair and matches eager, batch-independent blocks come back unbatched,
 and the composed-model reachability prune stays numerically correct.
@@ -67,12 +69,13 @@ def _f64():
 
 
 def _compile(tmp_path: Path, hit: Path, name: str, derivatives):
-    from neml2.aoti import Model
+    from neml2.aoti import AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
 
     out = tmp_path / "art"
     export_model_for_aoti(hit, name, out, derivatives=derivatives)
-    return Model(str(out / f"{name}_meta.json"))
+    # Drive the public AOTIModel shim; its jvp/jacobian delegate to the binding.
+    return AOTIModel(str(out / f"{name}_meta.json"))
 
 
 def _rand_inputs(eager, B=5):
@@ -132,7 +135,7 @@ def test_constant_jacobian_block_returned_unbatched(tmp_path):
     batch axis), regardless of the runtime batch size."""
     import json
 
-    from neml2.aoti import Model
+    from neml2.aoti import AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
 
     out = tmp_path / "art"
@@ -143,7 +146,7 @@ def test_constant_jacobian_block_returned_unbatched(tmp_path):
     assert (pair["out_var"], pair["in_var"]) == ("stress", "strain")
     assert pair["batch_independent"] is True
 
-    m = Model(str(out / "model_meta.json"))
+    m = AOTIModel(str(out / "model_meta.json"))
     for B in (1, 7):
         _, J = m.jacobian({"strain": torch.randn(B, 6, dtype=torch.float64) * 1e-2})
         # Unbatched: natural (6, 6), no leading batch axis, independent of B.

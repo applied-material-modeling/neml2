@@ -243,16 +243,16 @@ class AOTIModel(nn.Module):
         ``v`` / ``v2`` / ``vh`` (the native chain-rule hooks) are accepted
         only for signature compatibility with other native models; passing
         them is rejected because the AOTI graph's JVP path is structurally
-        different (it's a separate ``_jvp.pt2`` graph, accessed via the
-        binding's ``jvp()`` / ``jacobian()`` methods rather than the typed
+        different (it's a separate ``_jvp.pt2`` graph, exposed via the
+        :meth:`jvp` / :meth:`jacobian` methods rather than the typed
         chain-rule protocol). Drivers that don't need sensitivities -- e.g.
         ``TransientDriver``, ``TransientRegression`` -- work as-is.
         """
         if v is not None or v2 is not None or vh is not None:
             raise NotImplementedError(
                 "AOTIModel does not support the native chain-rule v=/v2=/vh= "
-                "arguments. Use the underlying binding's jvp() or jacobian() "
-                "methods (self._inner) for sensitivities."
+                "arguments. Use the jvp() / jacobian() methods for sensitivities "
+                "(the AOTI derivative graph is a separate compiled artifact)."
             )
 
         if len(args) != len(self.input_spec):
@@ -357,6 +357,39 @@ class AOTIModel(nn.Module):
             # load-bearing on static-base wrappers, set them here.
             out_wrappers.append(type_cls(raw, sub_batch_ndim=sub_n))
         return tuple(out_wrappers)
+
+    def jvp(
+        self,
+        inputs: dict[str, torch.Tensor],
+        tangents: dict[str, torch.Tensor],
+        param_overrides: dict[str, torch.Tensor] | None = None,
+    ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
+        """Outputs + the directional derivative ``J @ v`` from the compiled
+        ``jvp`` graph.
+
+        ``inputs`` / ``tangents`` are ``{variable_name: tensor}`` dicts (same
+        keys as :attr:`input_spec`); ``tangents`` carries the seed direction
+        per input. Returns ``(outputs, jvp)`` keyed by output name -- the same
+        raw-tensor surface the eager runtime exposes. Requires the artifact to
+        carry the derivative graph (compiled with ``neml2-compile ... -d
+        OUT:IN``); otherwise the underlying binding raises.
+        """
+        return self._inner.jvp(inputs, tangents, param_overrides or {})
+
+    def jacobian(
+        self,
+        inputs: dict[str, torch.Tensor],
+        param_overrides: dict[str, torch.Tensor] | None = None,
+    ) -> tuple[dict[str, torch.Tensor], dict[str, dict[str, torch.Tensor]]]:
+        """Outputs + the per-(output, input) Jacobian blocks from the compiled
+        ``jacobian`` graph.
+
+        ``inputs`` is a ``{variable_name: tensor}`` dict. Returns
+        ``(outputs, J)`` where ``J[out][in]`` is the block ``d(out)/d(in)``,
+        shaped ``(batch, *out_base, *in_base)``. Like :meth:`jvp`, needs an
+        artifact compiled with ``-d``.
+        """
+        return self._inner.jacobian(inputs, param_overrides or {})
 
     def _broadcast_to_common_batch(
         self,
