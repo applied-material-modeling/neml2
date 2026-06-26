@@ -142,10 +142,14 @@ jobs:
         # dependencies: pyzag.version
         run: pip install pytest "pyzag==1.1.3"
       - name: Confirm import + torch version under test
-        # `import neml2` deliberately SWALLOWS a failed AOTI-binding import (it is
-        # optional), so it alone would stay green even when libneml2 cannot load
-        # against this torch. Explicitly import the binding to assert it loaded --
-        # this is the line that catches the cpu-only / cross-channel ABI bug.
+        # Run from a neutral dir, NOT the repo root: the checked-out source tree
+        # has a `neml2/` package with no compiled `_aoti` extension, and CWD on
+        # sys.path would shadow the installed wheel we mean to test. `import neml2`
+        # deliberately SWALLOWS a failed AOTI-binding import (it is optional), so
+        # it alone would stay green even when libneml2 cannot load against this
+        # torch -- explicitly import the binding to assert it loaded. This is the
+        # line that catches the cpu-only / cross-channel ABI bug.
+        working-directory: ${{ runner.temp }}
         run: |
           python - <<'EOF'
           import torch, neml2
