@@ -128,14 +128,15 @@ foreach(_pc neml2 neml2-core)
       )
 endforeach()
 
-if(NOT SKBUILD_STATE STREQUAL "editable")
-      install(
-            FILES
-            ${NEML2_BINARY_DIR}/neml2${NEML2_PKGCONFIG_SUFFIX}.pc
-            ${NEML2_BINARY_DIR}/neml2-core${NEML2_PKGCONFIG_SUFFIX}.pc
-            ${NEML2_BINARY_DIR}/neml2-torch.pc
-            ${NEML2_BINARY_DIR}/neml2-nlohmann-json.pc
-            DESTINATION share/pkgconfig
-            COMPONENT libneml2
-      )
-endif()
+# Shipped in both the wheel and an editable install (the latter into the source
+# tree via INSTALL_SHAREDIR). The .pc files are relocatable -- prefix is derived
+# from ${pcfiledir} at `pkg-config` time -- so they work from wherever they land.
+install(
+      FILES
+      ${NEML2_BINARY_DIR}/neml2${NEML2_PKGCONFIG_SUFFIX}.pc
+      ${NEML2_BINARY_DIR}/neml2-core${NEML2_PKGCONFIG_SUFFIX}.pc
+      ${NEML2_BINARY_DIR}/neml2-torch.pc
+      ${NEML2_BINARY_DIR}/neml2-nlohmann-json.pc
+      DESTINATION ${INSTALL_SHAREDIR}/pkgconfig
+      COMPONENT libneml2
+)

@@ -14,68 +14,71 @@ LibTorch.
 ```shell
 git clone -b main https://github.com/applied-material-modeling/neml2.git
 cd neml2
-pip install -e ".[dev]" -v
+
+# Build + runtime prerequisites (skip any you already have).
+pip install torch nmhit scikit-build-core cmake ninja
+
+# Editable install.
+pip install -e ".[dev]" -v --no-build-isolation
 ```
 
-This drives [scikit-build-core](https://scikit-build-core.readthedocs.io/)
-to build the bundled C++ runtime and lays down an editable Python
-install plus everything the dev workflow needs (pytest, pre-commit,
-sphinx, …).
+`--no-build-isolation` builds against the `torch` already in your
+environment, so `torch` and `nmhit` must be installed first.
 
-## CMake presets
+CMake and Ninja are also required. They are available from most system
+package managers if you prefer not to use the pip builds above — for
+example `apt install cmake ninja-build`, `brew install cmake ninja`, or
+`conda install -c conda-forge cmake ninja`.
 
-For pure C++ development (the wheel build is invoked separately by
-`pip`), `CMakePresets.json` defines two presets, each serving a
-different purpose:
+`pip install -e ".[dev]"` is the only build command you need; there are
+no CMake presets to invoke. An editable build:
 
-`dev` — the day-to-day build preset
-: Debug build of `libneml2_aoti` (the compiled-model runtime).
-  The pybind extension modules are not included (`NEML2_WHEEL=OFF`);
-  use `pip install -e ".[dev]"` to rebuild those.
-  This is the preset for iterating on C++ sources:
+- compiles at `RelWithDebInfo` (optimized, with debug symbols);
+- builds the C++ test executables (run them with `ctest`, below);
+- generates `compile_commands.json` and symlinks it to the repo root for
+  clangd / clang-tidy;
+- drops a stable `build/editable` symlink to the build tree.
 
-  ```shell
-  cmake --preset dev -S .
-  cmake --build --preset dev
-  ```
-
-`cc` — a configure-only preset for tooling
-: Configures with `CMAKE_EXPORT_COMPILE_COMMANDS=ON` and
-  `NEML2_WHEEL=ON` so the resulting `compile_commands.json` covers
-  both the C++ runtime sources and the pybind extension `.cpp` files.
-  A `compile_commands.json` symlink is created in the repo root for
-  clangd / clang-tidy / other static-analysis tools to pick up.
-  This preset is configure-only; there is no corresponding build step.
-
-  ```shell
-  cmake --preset cc -S .
-  ```
-
-## One-off CMake variable overrides
-
-The presets cover the vast majority of cases. For a single-shot
-override (for example, switching the build type or pointing at a
-custom LibTorch), append `-D<NAME>=<VALUE>` to the configure line in
-the usual way:
+## Running the C++ tests
 
 ```shell
-cmake --preset dev -DCMAKE_BUILD_TYPE=RelWithDebInfo -S .
+ctest --test-dir build/editable -L dispatcher    # dispatcher / scheduler tests
+ctest --test-dir build/editable -L eager         # embedded-Python eager test
+ctest --test-dir build/editable -L benchmark     # benchmark smoke tests
 ```
 
-## Custom LibTorch
+The Python suite runs under `pytest` — see [](contributing-tests).
 
-If you want to build NEML2 against a libtorch other than the one shipped
-by the active Python environment's `torch` package, set `torch_ROOT`
-before configuring:
+## Build-type and other overrides
+
+Pass `--config-settings` to override a default for one install. A full
+Debug build:
 
 ```shell
-cmake --preset dev -Dtorch_ROOT=/path/to/libtorch -S .
+pip install -e ".[dev]" --no-build-isolation \
+    --config-settings=cmake.build-type=Debug
 ```
 
-Equivalent environment variables and the active Python's `torch`
-site-packages are also consulted; see the bundled `Findtorch.cmake`
-module for the full discovery procedure.
+A Coverage / ThreadSanitizer build (clang), then run the C++ tests:
 
-## Running the test suite
+```shell
+CC=clang CXX=clang++ pip install -e ".[dev]" --no-build-isolation \
+    --config-settings=cmake.build-type=Coverage
+ctest --test-dir build/editable -L "dispatcher|eager"
+```
 
-See [](contributing-tests) in the contributing guide.
+Build against a libtorch other than the active environment's `torch`:
+
+```shell
+pip install -e ".[dev]" --no-build-isolation \
+    --config-settings=cmake.define.torch_ROOT=/path/to/libtorch
+```
+
+## Iterating on the C++ runtime
+
+While editing the C++ sources, rebuild the editable build tree directly
+for a fast incremental compile (no `pip` round-trip):
+
+```shell
+cmake --build build/editable
+```

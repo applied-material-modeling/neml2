@@ -67,39 +67,44 @@ These three rules reinforce each other. Rule 1 forces functions to produce typed
 ## Build & develop
 
 ```bash
-pip install -e ".[dev]" -v       # editable + dev extras (pytest, pre-commit, sphinx, ...)
+pip install torch nmhit scikit-build-core cmake ninja   # build prerequisites (see note)
+pip install -e ".[dev]" -v --no-build-isolation
 ```
 
-This drives a `scikit-build-core` build of the small AOTI C++ runtime under `build/<wheel_tag>/`, then installs the Python package in editable mode. Python source edits take effect immediately; touching anything under `neml2/csrc/` or `CMakeLists.txt` requires a re-`pip install` to rebuild the runtime.
+This drives a `scikit-build-core` build of the C++ runtime under `build/<wheel_tag>/` (stable `build/editable` symlink), then installs the Python package in editable mode. Python source edits take effect immediately; touching anything under `neml2/csrc/` or `CMakeLists.txt` needs a re-`pip install` — or `cmake --build build/editable` for a fast incremental C++ rebuild. There are **no CMake presets**: `pip install -e` is the single build entry point.
 
-Package versions and pinned deps live in `dependencies.yaml` — use `python scripts/dep_manager.py {check|list|bump DEP.FIELD VALUE}` rather than editing version strings by hand. Files reference their dep with a `# dependencies: NAME.FIELD` annotation immediately above the version literal. The torch compatibility matrix (`compatibility.yaml`) is a separate registry checked against the same `dependencies.yaml` torch entry — keep them in sync via `python scripts/compat_matrix.py {seed|check|render}`.
+**Why the manual prerequisites + `--no-build-isolation`.** `torch` and `nmhit` are declared as *runtime* deps in `[project.dependencies]`, but pip installs runtime deps *after* it builds the wheel — and the C++ build needs libtorch + libnmhit (CMake `find_package`) *during* the build. They can't move to `build-system.requires` either: `libneml2.so`'s rpath resolves libtorch from the sibling `torch/` package at runtime, so neml2 must compile against the *same* torch you run, not an isolated build-env copy. So the build has to see your environment's torch/nmhit — hence pre-installing them and `--no-build-isolation` (which, in turn, requires the build backend — scikit-build-core + cmake + ninja — to be present too). This mirrors cibuildwheel (`build-frontend = build --no-isolation` + a `before-build` install).
 
-### C++ AOTI runtime (rarely needed)
+An editable install builds at `RelWithDebInfo` and additionally compiles the C++ test executables (the `cpp_tests` aggregate target) and emits `compile_commands.json` (symlinked to the repo root); a shipped wheel (`SKBUILD_STATE != editable`) stays lean (`Release`, no tests). The editable-vs-wheel split is declared via `[[tool.scikit-build.overrides]] if.state = "editable"` in `pyproject.toml`.
+
+Package versions and pinned deps live in `dependencies.yaml` — use `python scripts/dep_manager.py {check|list|bump DEP.FIELD VALUE}` rather than editing version strings by hand. Files reference their dep with a `# dependencies: NAME.FIELD` annotation immediately above the version literal. The torch compatibility matrix (`compatibility.yaml`) is a separate registry checked against the same `dependencies.yaml` torch entry — keep them in sync via `python scripts/compat_matrix.py {seed|check|render}`. **Never hardcode a dependency version in prose or documentation** (no "CMake ≥ 3.26", no "torch 2.12") — reference the dependency by name; the pinned value lives only in `dependencies.yaml` and the annotated literals, so a bump never has to chase prose.
+
+### C++ tests + instrumented builds
+
+The C++ test executables build with the editable install; run them by ctest label against `build/editable`:
 
 ```bash
-cmake --preset dev               # configure (Debug)
-cmake --build --preset dev       # build libneml2
-cmake --preset cc                # configure-only; exports compile_commands.json for clangd
+ctest --test-dir build/editable -L dispatcher    # scheduler / dispatcher tests
+ctest --test-dir build/editable -L eager         # embedded-Python eager test
+ctest --test-dir build/editable -L benchmark     # benchmark smoke tests
 ```
 
-Only two presets exist: `dev` (build) and `cc` (compile-commands-only, no `cmake --build`). The wheel build that `pip install` drives uses `cmake.build-type = "Release"` internally — there is no developer-facing `release` preset.
-
-Two instrumentation build types extend the `dev` preset for the C++ test suite (clang or gcc; selecting the type is the opt-in, and both are off the wheel path):
+The instrumented build types go through the same entry point via `--config-settings`:
 
 ```bash
-# Coverage (clang source-based): build, then run the dispatcher + eager tests + report
-CC=clang CXX=clang++ cmake --preset dev -DCMAKE_BUILD_TYPE=Coverage -S .
-cmake --build build/dev --target aoti test_dispatcher eager test_eager ...   # + the other test_* targets
-scripts/cpp_coverage.sh build/dev                            # runs the `dispatcher|eager` labels -> coverage.lcov
+# Coverage (clang source-based) -> coverage.lcov
+CC=clang CXX=clang++ pip install -e ".[dev]" --no-build-isolation \
+  --config-settings=cmake.build-type=Coverage
+scripts/cpp_coverage.sh build/editable                       # runs the `dispatcher|eager` labels
 
 # ThreadSanitizer (guards the async dispatch pool)
-CC=clang CXX=clang++ cmake --preset dev -DCMAKE_BUILD_TYPE=ThreadSanitizer -S .
-cmake --build build/dev --target aoti test_dispatcher ...
+CC=clang CXX=clang++ pip install -e ".[dev]" --no-build-isolation \
+  --config-settings=cmake.build-type=ThreadSanitizer
 OMP_NUM_THREADS=1 TSAN_OPTIONS="suppressions=tests/cpp/tsan_suppressions.txt ignore_noninstrumented_modules=1" \
-  ctest --test-dir build/dev -L dispatcher
+  ctest --test-dir build/editable -L dispatcher
 ```
 
-The pip `libtorch` is not TSan-instrumented, so `ignore_noninstrumented_modules=1` + `tests/cpp/tsan_suppressions.txt` silence torch's own reports; neml2's code is still checked. CI runs both on ubuntu+clang (the `coverage` and `tsan` jobs in `.github/workflows/cpp.yaml`); C++ coverage uploads to Codecov under the informational `cpp` flag.
+The pip `libtorch` is not TSan-instrumented, so `ignore_noninstrumented_modules=1` + `tests/cpp/tsan_suppressions.txt` silence torch's own reports; neml2's code is still checked. CI runs both on ubuntu+clang (the `cpp-coverage` and `tsan` jobs in `.github/workflows/cpp.yaml`); C++ coverage uploads to Codecov under the informational `cpp` flag.
 
 ## Tests
 

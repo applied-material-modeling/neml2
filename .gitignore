@@ -63,6 +63,13 @@ htmlcov
 *.lo.d
 *.dylib
 
+# Editable-install C++ artifacts laid into the source tree by `pip install -e`
+# (the wheel ships the same set under site-packages/neml2/). The lib/ and bin/
+# contents are already covered by the *.so rules above; these carry the public
+# headers and the generated pkg-config / CMake package config.
+/neml2/include/
+/neml2/share/
+
 # Miscellaneous
 *.pdf
 *.gv

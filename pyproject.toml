@@ -36,6 +36,24 @@ wheel.exclude = ["neml2/csrc/**"]
 
 [tool.scikit-build.cmake.define]
 NEML2_WHEEL = "ON"
+# Always emit compile_commands.json (cheap; only the build tree, never the wheel).
+# The editable build symlinks it to the repo root for clangd.
+CMAKE_EXPORT_COMPILE_COMMANDS = "ON"
+
+# Editable installs are the contributor entry point: `pip install -e ".[dev]"` is
+# the *only* build command a developer runs (there are no CMake presets). Relative
+# to a shipped wheel, an editable build additionally
+#   * builds at RelWithDebInfo (optimized + debug symbols; full Debug is available
+#     via `--config-settings=cmake.build-type=Debug`), and
+#   * compiles the C++ test executables (the `cpp_tests` aggregate target) so they
+#     can be run with `ctest --test-dir build/editable` and no separate configure.
+# The shipped wheel keeps the lean defaults above (Release, ship-only targets).
+# (Only top-level keys here -- an override of cmake.define would replace, not merge,
+# the table above and drop NEML2_WHEEL.)
+[[tool.scikit-build.overrides]]
+if.state = "editable"
+cmake.build-type = "RelWithDebInfo"
+build.targets = ["aoti", "eager", "pyneml2", "cpp_tests"]
 
 [project]
 name = "neml2"
@@ -209,6 +227,17 @@ reportMissingModuleSource = "none"
 # `ModuleNotFoundError: No module named 'neml2.aoti._aoti'` once any AOTI
 # test actually runs. importlib mode leaves sys.path alone.
 addopts = "--import-mode=importlib"
+
+# pyzag lowers torch._functorch.config.donated_buffer process-wide and announces it
+# at solver construction (expected -- see pyzag 1.1.3). It is a pyzag-owned notice
+# fired from several pyzag-test solver constructions (once per worker process), so
+# it is silenced here for the whole suite rather than wrapped at each call site.
+# The torch-internal deprecations are handled separately -- silenced at the exact
+# call that provokes them via neml2/_warnings.py (shared by the library compile path
+# and the tests) -- so no warning pattern is spelled in two places.
+filterwarnings = [
+  'ignore:pyzag lowered torch\._functorch\.config\.donated_buffer:UserWarning',
+]
 
 # Coverage. The ``coverage`` job in .github/workflows/python.yaml runs
 # ``pytest --cov`` over the fast lane (excluding tests/regression +
