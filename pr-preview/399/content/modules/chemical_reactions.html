@@ -434,9 +434,9 @@ chemical-reactions types slot into that machinery.</p>
 <p>A reaction mechanism is a constitutive relation between the conversion
 degree <span class="math notranslate nohighlight">\(\alpha \in [0, 1]\)</span> and the reaction rate
 <span class="math notranslate nohighlight">\(\dot{\alpha} = f(\alpha)\)</span>. The three mechanisms in this module are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-a2649464-9a28-4562-b9b4-b9893ce1b4a4">
-<div class="amsmath math notranslate nohighlight" id="equation-a2649464-9a28-4562-b9b4-b9893ce1b4a4">
-<span class="eqno">(4)<a class="headerlink" href="#equation-a2649464-9a28-4562-b9b4-b9893ce1b4a4" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-197e94e3-5be3-4c4c-aecc-3978f101ffb4">
+<div class="amsmath math notranslate nohighlight" id="equation-197e94e3-5be3-4c4c-aecc-3978f101ffb4">
+<span class="eqno">(4)<a class="headerlink" href="#equation-197e94e3-5be3-4c4c-aecc-3978f101ffb4" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \dot{\alpha} &amp;= k \, (1 - \alpha)^n
   &amp;&amp;\text{(contracting geometry)} \\
 \dot{\alpha} &amp;= k \, (1 - \alpha) \, \bigl(-\ln(1 - \alpha)\bigr)^n
@@ -534,8 +534,8 @@ binder, char, gas, and open pore.</p>
 </span><span data-line="48"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
 </span><span data-line="49"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model&#39;</span>
 </span><span data-line="50"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
-</span><span data-line="51"><span class="w">    </span><span class="na">force_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
-</span><span data-line="52"><span class="w">    </span><span class="na">force_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
+</span><span data-line="51"><span class="w">    </span><span class="na">prescribed_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
+</span><span data-line="52"><span class="w">    </span><span class="na">prescribed_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
 </span><span data-line="53"><span class="w">    </span><span class="na">ic_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb wc&#39;</span>
 </span><span data-line="54"><span class="w">    </span><span class="na">ic_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${wb0} ${wc0}&#39;</span>
 </span><span data-line="55"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>

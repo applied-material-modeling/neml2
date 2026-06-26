@@ -402,25 +402,25 @@ sub-model, and a runtime input. Each one is a one-line change to the
 input file.</p>
 <section id="the-physics">
 <h2>The physics<a class="headerlink" href="#the-physics" title="Link to this heading">¶</a></h2>
-<p>The toy constitutive law has a thermal eigenstrain feeding linear
-elasticity:</p>
+<p>The toy constitutive law chains three steps — a thermal eigenstrain, an
+elastic-strain split, then linear elasticity:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[
-  \boldsymbol{\varepsilon}^g = \alpha (T - T_0)\,\boldsymbol{I},
-  \qquad
-  \boldsymbol{\varepsilon}^e = \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^g,
-  \qquad
-  \boldsymbol{\sigma}
-    = 3K\,\operatorname{vol}\boldsymbol{\varepsilon}^e
+\[\begin{split}
+\begin{aligned}
+  \boldsymbol{\varepsilon}^g &amp;= \alpha (T - T_0)\,\boldsymbol{I}, \\
+  \boldsymbol{\varepsilon}^e &amp;= \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^g, \\
+  \boldsymbol{\sigma} &amp;= 3K\,\operatorname{vol}\boldsymbol{\varepsilon}^e
     + 2G\,\operatorname{dev}\boldsymbol{\varepsilon}^e,
-\]</div>
+\end{aligned}
+\end{split}\]</div>
 </div>
 <p>with the moduli expressed through Young’s modulus <span class="math notranslate nohighlight">\(E\)</span> and Poisson’s
-ratio <span class="math notranslate nohighlight">\(\nu\)</span>. NEML2 ships one model per equation —
-<code class="docutils literal notranslate"><span class="pre">ThermalEigenstrain</span></code>, <code class="docutils literal notranslate"><span class="pre">SR2LinearCombination</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">LinearIsotropicElasticity</span></code> — and a <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code> glues them
-together by matching producer outputs to consumer inputs.</p>
+ratio <span class="math notranslate nohighlight">\(\nu\)</span>. The input file below implements one model per line —
+<code class="docutils literal notranslate"><span class="pre">eq1</span></code> (<code class="docutils literal notranslate"><span class="pre">ThermalEigenstrain</span></code>), <code class="docutils literal notranslate"><span class="pre">eq2</span></code> (<code class="docutils literal notranslate"><span class="pre">SR2LinearCombination</span></code>), and
+<code class="docutils literal notranslate"><span class="pre">eq3</span></code> (<code class="docutils literal notranslate"><span class="pre">LinearIsotropicElasticity</span></code>) — and a <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code> glues
+<code class="docutils literal notranslate"><span class="pre">eq1</span></code>, <code class="docutils literal notranslate"><span class="pre">eq2</span></code>, <code class="docutils literal notranslate"><span class="pre">eq3</span></code> together by matching producer outputs to consumer
+inputs.</p>
 </section>
 <section id="parameters-from-literals">
 <h2>Parameters from literals<a class="headerlink" href="#parameters-from-literals" title="Link to this heading">¶</a></h2>
@@ -641,11 +641,24 @@ can do.</p>
 <section id="parameters-as-sub-model-outputs">
 <h2>Parameters as sub-model outputs<a class="headerlink" href="#parameters-as-sub-model-outputs" title="Link to this heading">¶</a></h2>
 <p>A <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> value is still static — it doesn’t change as the model
-runs. For thermomechanical coupling we want <span class="math notranslate nohighlight">\(\alpha(T)\)</span> and <span class="math notranslate nohighlight">\(E(T)\)</span> to
-be computed from the current temperature on each call. To do that,
-point the parameter at <em>another model in the file</em>. Here we add a
-<code class="docutils literal notranslate"><span class="pre">ScalarLinearInterpolation</span></code> that maps <code class="docutils literal notranslate"><span class="pre">temperature</span></code> to a value, and
-reference it by name:</p>
+runs. For thermomechanical coupling we want the same constitutive law,
+but with the eigenstrain coefficient and the elastic moduli (highlighted)
+computed from the current temperature on every call:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{aligned}
+  \boldsymbol{\varepsilon}^g &amp;= \textcolor{blue}{\alpha(T)}\,(T - T_0)\,\boldsymbol{I}, \\
+  \boldsymbol{\varepsilon}^e &amp;= \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^g, \\
+  \boldsymbol{\sigma} &amp;= 3\,\textcolor{blue}{K(T)}\,\operatorname{vol}\boldsymbol{\varepsilon}^e
+    + 2\,\textcolor{blue}{G(T)}\,\operatorname{dev}\boldsymbol{\varepsilon}^e,
+\end{aligned}
+\end{split}\]</div>
+</div>
+<p>with <span class="math notranslate nohighlight">\(K(T)\)</span> and <span class="math notranslate nohighlight">\(G(T)\)</span> following from a temperature-dependent <span class="math notranslate nohighlight">\(E(T)\)</span>
+(Poisson’s ratio stays fixed). To do that, point each parameter at
+<em>another model in the file</em>: we add a <code class="docutils literal notranslate"><span class="pre">ScalarLinearInterpolation</span></code> that
+maps <code class="docutils literal notranslate"><span class="pre">temperature</span></code> to a value, and reference it by name:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">%%writefile</span> input3.i

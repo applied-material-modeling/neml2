@@ -354,8 +354,8 @@ data-aria-dark="Switch to auto color mode">
       <i class="i-lucide close"></i>
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
-<li><a class="reference internal" href="#referring-to-a-model-from-a-driver">Referring to a model from a driver</a></li>
 <li><a class="reference internal" href="#referring-to-a-tensor-from-a-model">Referring to a tensor from a model</a></li>
+<li><a class="reference internal" href="#referring-to-a-model-from-another-model">Referring to a model from another model</a></li>
 <li><a class="reference internal" href="#where-to-go-next">Where to go next</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
@@ -393,68 +393,13 @@ data-aria-dark="Switch to auto color mode">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="cross-referencing">
 <span id="tutorials-models-cross-referencing"></span><h1>Cross-referencing<a class="headerlink" href="#cross-referencing" title="Link to this heading">¶</a></h1>
-<p>In this tutorial, we’ll wire a driver to a model and a model to its
-tensor inputs by name — the basic glue that lets an input file hold
-more than one object. Anywhere a field expects an object name, we can
-write the name of another section in the file.</p>
-<section id="referring-to-a-model-from-a-driver">
-<h2>Referring to a model from a driver<a class="headerlink" href="#referring-to-a-model-from-a-driver" title="Link to this heading">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code> is a driver that evaluates a model against a fixed
-input. Its <code class="docutils literal notranslate"><span class="pre">model</span></code> option takes the <em>name</em> of a model declared
-elsewhere in the file:</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Drivers]</span>
-</span><span data-line="2"><span class="w">  </span><span class="k">[unit]</span>
-</span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s">ModelUnitTest</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elasticity&#39;</span><span class="w">                  </span><span class="c1"># ← name of the [Models] entry below</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">input_SR2_names</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strain&#39;</span>
-</span><span data-line="6"><span class="w">    </span><span class="na">input_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strain_value&#39;</span><span class="w">     </span><span class="c1"># ← name of the [Tensors] entry below</span>
-</span><span data-line="7"><span class="w">    </span><span class="na">output_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;stress&#39;</span>
-</span><span data-line="8"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="9"><span class="k">[]</span>
-</span><span data-line="10">
-</span><span data-line="11"><span class="k">[Tensors]</span>
-</span><span data-line="12"><span class="w">  </span><span class="k">[strain_value]</span>
-</span><span data-line="13"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="14"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)&#39;</span>
-</span><span data-line="15"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="16"><span class="k">[]</span>
-</span><span data-line="17">
-</span><span data-line="18"><span class="k">[Models]</span>
-</span><span data-line="19"><span class="w">  </span><span class="k">[elasticity]</span>
-</span><span data-line="20"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">LinearIsotropicElasticity</span>
-</span><span data-line="21"><span class="w">    </span><span class="na">coefficients</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;200e3          0.3&#39;</span>
-</span><span data-line="22"><span class="w">    </span><span class="na">coefficient_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;YOUNGS_MODULUS POISSONS_RATIO&#39;</span>
-</span><span data-line="23"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="24"><span class="k">[]</span>
-</span></pre></div>
-</div>
-<p>Two cross-references in one block: <code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">'elasticity'</span></code> names the
-<code class="docutils literal notranslate"><span class="pre">[Models]</span></code> entry to evaluate, and <code class="docutils literal notranslate"><span class="pre">input_SR2_values</span> <span class="pre">=</span> <span class="pre">'strain_value'</span></code>
-names the <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> entry that supplies the input. <code class="docutils literal notranslate"><span class="pre">input_SR2_names</span></code>
-and <code class="docutils literal notranslate"><span class="pre">input_SR2_values</span></code> are parallel lists — one entry per input — and
-every entry in <code class="docutils literal notranslate"><span class="pre">_values</span></code> is either a <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> reference or (for
-<code class="docutils literal notranslate"><span class="pre">Scalar</span></code> inputs) an inline number.</p>
-<p>Other drivers work the same way:</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Drivers]</span>
-</span><span data-line="2"><span class="w">  </span><span class="k">[run]</span>
-</span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;chaboche_voce_perzyna&#39;</span><span class="w">                   </span><span class="c1"># ← name of the [Models] entry</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">prescribed_time</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span><span class="w">                        </span><span class="c1"># ← name of a [Tensors] entry</span>
-</span><span data-line="6"><span class="w">    </span><span class="na">force_SR2_names</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;E&#39;</span>
-</span><span data-line="7"><span class="w">    </span><span class="na">force_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strains&#39;</span><span class="w">                      </span><span class="c1"># ← name of a [Tensors] entry</span>
-</span><span data-line="8"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="9"><span class="k">[]</span>
-</span></pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">prescribed_time</span> <span class="pre">=</span> <span class="pre">'times'</span></code> is itself a cross-reference — <code class="docutils literal notranslate"><span class="pre">times</span></code> is
-the name of a <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> entry. Driving forces are supplied as
-parallel <code class="docutils literal notranslate"><span class="pre">force_&lt;Type&gt;_names</span></code> / <code class="docutils literal notranslate"><span class="pre">force_&lt;Type&gt;_values</span></code> lists, where
-each value token is again a <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> name (or an inline literal for
-<code class="docutils literal notranslate"><span class="pre">Scalar</span></code>).</p>
-</section>
+<p>In this tutorial, we’ll wire a model to its tensor inputs and to other
+models by name — the basic glue that lets an input file hold more than
+one object. Anywhere a field expects an object name, we can write the
+name of another section in the file.</p>
 <section id="referring-to-a-tensor-from-a-model">
 <h2>Referring to a tensor from a model<a class="headerlink" href="#referring-to-a-tensor-from-a-model" title="Link to this heading">¶</a></h2>
-<p>When a model field expects a tensor value, we can also point it at a
+<p>When a model field expects a tensor value, we can point it at a
 <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> entry by name:</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Tensors]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[E]</span>
@@ -502,6 +447,38 @@ or a CSV file rather than a bare number.</p>
 </span></pre></div>
 </div>
 <p>Once declared, every model that references <code class="docutils literal notranslate"><span class="pre">T_controls</span></code> shares it.</p>
+</section>
+<section id="referring-to-a-model-from-another-model">
+<h2>Referring to a model from another model<a class="headerlink" href="#referring-to-a-model-from-another-model" title="Link to this heading">¶</a></h2>
+<p>Some models operate on <em>another model</em> rather than on a tensor, and
+their model-valued field takes the name of a <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> entry the same
+way. <code class="docutils literal notranslate"><span class="pre">Normality</span></code> is one: it differentiates a scalar-valued function
+produced by another model. Here it wraps the von Mises stress invariant
+to produce the associated flow direction
+<span class="math notranslate nohighlight">\(\boldsymbol{N} = \partial \sigma_\mathrm{eff} / \partial \boldsymbol{\sigma}\)</span>:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Models]</span>
+</span><span data-line="2"><span class="w">  </span><span class="k">[vonmises]</span>
+</span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">SR2Invariant</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">invariant_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;VONMISES&#39;</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">tensor</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;mandel_stress&#39;</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">invariant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;effective_stress&#39;</span>
+</span><span data-line="7"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="8"><span class="w">  </span><span class="k">[normality]</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Normality</span>
+</span><span data-line="10"><span class="w">    </span><span class="na">model</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;vonmises&#39;</span><span class="w">          </span><span class="c1"># ← name of the [Models] entry above</span>
+</span><span data-line="11"><span class="w">    </span><span class="na">function</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;effective_stress&#39;</span><span class="w">  </span><span class="c1"># the scalar output of `vonmises` to differentiate</span>
+</span><span data-line="12"><span class="w">    </span><span class="na">from</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;mandel_stress&#39;</span>
+</span><span data-line="13"><span class="w">    </span><span class="na">to</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;flow_direction&#39;</span>
+</span><span data-line="14"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="15"><span class="k">[]</span>
+</span></pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">'vonmises'</span></code> is the cross-reference: <code class="docutils literal notranslate"><span class="pre">normality</span></code> doesn’t redefine
+the invariant, it points at the existing <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> entry by name and
+differentiates its <code class="docutils literal notranslate"><span class="pre">effective_stress</span></code> output. Note that <code class="docutils literal notranslate"><span class="pre">function</span></code>,
+<code class="docutils literal notranslate"><span class="pre">from</span></code>, and <code class="docutils literal notranslate"><span class="pre">to</span></code> are <em>variable</em> names, not section names — they pick out
+inputs and outputs by the variables a model produces and consumes, which
+is the wiring mechanism the next tutorial builds on.</p>
 </section>
 <section id="where-to-go-next">
 <h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
@@ -559,5 +536,7 @@ its children together — see <a class="reference internal" href="../model_compo
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../../_static/copybutton.js?v=7abfc884"></script>
       <script src="../../../../_static/shibuya.js?v=50760d75"></script>
+      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../../../../_static/components/scheduler-demos.js?v=7d35ecce"></script></body>
 </html>

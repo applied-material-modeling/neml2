@@ -143,16 +143,11 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "import subprocess\n",
+    "# `neml2-inspect` is a thin CLI over neml2 -- import its entry point and call\n",
+    "# it in-process so the resolved graph prints inline.\n",
+    "from neml2.cli.inspect import main as inspect_main\n",
     "\n",
-    "print(\n",
-    "    subprocess.run(\n",
-    "        [\"neml2-inspect\", \"input.i\", \"eq\"],\n",
-    "        capture_output=True,\n",
-    "        text=True,\n",
-    "        check=True,\n",
-    "    ).stdout\n",
-    ")"
+    "_ = inspect_main([\"input.i\", \"eq\"])"
    ]
   },
   {
@@ -221,8 +216,9 @@
    "id": "c9d3732a",
    "metadata": {},
    "source": [
-    "To evaluate, pass the inputs as an `{name: SR2}` dict to\n",
-    "`call_by_name`:"
+    "To evaluate, call it like any other model — inputs positional, in\n",
+    "`input_spec` order. A `ComposedModel` hands its outputs back as a tuple\n",
+    "(in `output_spec` order), so we unpack the single `b_rate`:"
    ]
   },
   {
@@ -234,7 +230,8 @@
    "source": [
     "a = SR2(torch.tensor([0.1, 0.05, -0.03, 0.02, 0.06, 0.03]))\n",
     "b = SR2(torch.tensor([100.0, 20.0, 10.0, 5.0, -30.0, -20.0]))\n",
-    "eq.call_by_name({\"a\": a, \"b\": b})"
+    "(b_rate,) = eq(a, b)\n",
+    "b_rate"
    ]
   },
   {
@@ -245,6 +242,10 @@
     "Under the hood it ran `eq1`, then `eq2`, then `eq3` (the only order\n",
     "that respects the dependencies), threaded the intermediate scalars\n",
     "into `eq3`'s weight slots, and returned `b_rate`.\n",
+    "\n",
+    "If we'd rather pass and receive values by name — handy when a model has\n",
+    "many inputs — `eq.call_by_name({\"a\": a, \"b\": b})` runs the same\n",
+    "evaluation with name-keyed dicts on both ends.\n",
     "\n",
     "## The same thing without `ComposedModel`\n",
     "\n",

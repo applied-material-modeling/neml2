@@ -375,6 +375,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li><a class="reference internal" href="#neml2.solvers.NonlinearResult"><code class="docutils literal notranslate"><span class="pre">NonlinearResult</span></code></a><ul>
 <li><a class="reference internal" href="#neml2.solvers.NonlinearResult.iterations"><code class="docutils literal notranslate">iterations</span></code></a></li>
+<li><a class="reference internal" href="#neml2.solvers.NonlinearResult.log"><code class="docutils literal notranslate">log</span></code></a></li>
 <li><a class="reference internal" href="#neml2.solvers.NonlinearResult.ret"><code class="docutils literal notranslate">ret</span></code></a></li>
 </ul>
 </li>
@@ -592,7 +593,7 @@ back into the system.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.solvers.NonlinearResult">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.solvers.</span></span><span class="sig-name descname"><span class="pre">NonlinearResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ret</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/solvers/_result.html#NonlinearResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.solvers.NonlinearResult" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.solvers.</span></span><span class="sig-name descname"><span class="pre">NonlinearResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ret</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/solvers/_result.html#NonlinearResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.solvers.NonlinearResult" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Result metadata returned by a nonlinear solve.</p>
 <dl class="field-list simple">
@@ -600,6 +601,7 @@ back into the system.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ret</strong> (<a class="reference internal" href="#neml2.solvers.RetCode" title="neml2.solvers._result.RetCode"><em>RetCode</em></a>)</p></li>
 <li><p><strong>iterations</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>log</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -607,6 +609,14 @@ back into the system.</p>
 <dt class="sig sig-object py" id="neml2.solvers.NonlinearResult.iterations">
 <span class="sig-name descname"><span class="pre">iterations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#neml2.solvers.NonlinearResult.iterations" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.solvers.NonlinearResult.log">
+<span class="sig-name descname"><span class="pre">log</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.solvers.NonlinearResult.log" title="Link to this definition">¶</a></dt>
+<dd><p>Per-iteration convergence history (<code class="docutils literal notranslate"><span class="pre">ITERATION</span> <span class="pre">...</span></code> / <code class="docutils literal notranslate"><span class="pre">LS</span> <span class="pre">ITERATION</span>
+<span class="pre">...</span></code> lines, max-norm over the batch), populated only when the solver’s
+<code class="docutils literal notranslate"><span class="pre">verbose</span></code> flag is set; empty otherwise.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.solvers.NonlinearResult.ret">

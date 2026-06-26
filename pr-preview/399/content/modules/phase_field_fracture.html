@@ -436,9 +436,9 @@ energy density per unit volume reads</p>
 </div>
 <p>The Karush–Kuhn–Tucker (KKT) conditions for irreversible phase-field
 evolution read</p>
-<div class="math-wrapper amsmath docutils container" id="equation-837e74ba-0e5e-4f40-aa5a-18fc41010fee">
-<div class="amsmath math notranslate nohighlight" id="equation-837e74ba-0e5e-4f40-aa5a-18fc41010fee">
-<span class="eqno">(9)<a class="headerlink" href="#equation-837e74ba-0e5e-4f40-aa5a-18fc41010fee" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-50ecc50d-ecb8-48be-b4b0-f46cb3422c42">
+<div class="amsmath math notranslate nohighlight" id="equation-50ecc50d-ecb8-48be-b4b0-f46cb3422c42">
+<span class="eqno">(9)<a class="headerlink" href="#equation-50ecc50d-ecb8-48be-b4b0-f46cb3422c42" title="Permalink to this equation">¶</a></span>\[\begin{align}
   f &amp;= \eta\, \dot{d} + \frac{\partial \psi}{\partial d} \ge 0, \\
   \dot{d} &amp;\ge 0, \\
   f\, \dot{d} &amp;= 0,
@@ -528,8 +528,8 @@ with the Fischer–Burmeister complementarity solver:</p>
 </span><span data-line="6"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
 </span><span data-line="7"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model&#39;</span>
 </span><span data-line="8"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
-</span><span data-line="9"><span class="w">    </span><span class="na">force_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;E&#39;</span>
-</span><span data-line="10"><span class="w">    </span><span class="na">force_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strains&#39;</span>
+</span><span data-line="9"><span class="w">    </span><span class="na">prescribed_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;E&#39;</span>
+</span><span data-line="10"><span class="w">    </span><span class="na">prescribed_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strains&#39;</span>
 </span><span data-line="11"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>
 </span><span data-line="12"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="13"><span class="w">  </span><span class="k">[regression]</span>

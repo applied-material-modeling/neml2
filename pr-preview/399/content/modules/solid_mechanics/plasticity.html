@@ -502,9 +502,9 @@ power-law overstress relation,</p>
 <h3>Effective stress and yield function<a class="headerlink" href="#effective-stress-and-yield-function" title="Link to this heading">¶</a></h3>
 <p>For classical <span class="math notranslate nohighlight">\(J_2\)</span> plasticity the effective stress is the von Mises norm of
 the deviatoric (over-)stress,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-42738739-301f-4886-a736-3928bc218490">
-<div class="amsmath math notranslate nohighlight" id="equation-42738739-301f-4886-a736-3928bc218490">
-<span class="eqno">(16)<a class="headerlink" href="#equation-42738739-301f-4886-a736-3928bc218490" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-c60d61e8-2cfd-445d-bd9a-b9556bb92255">
+<div class="amsmath math notranslate nohighlight" id="equation-c60d61e8-2cfd-445d-bd9a-b9556bb92255">
+<span class="eqno">(16)<a class="headerlink" href="#equation-c60d61e8-2cfd-445d-bd9a-b9556bb92255" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \bar{\sigma} &amp;= \sqrt{3 J_2},                                                \\
   J_2          &amp;= \tfrac{1}{2}\,\mathrm{dev}\,\boldsymbol{\Xi}\,:\,
                   \mathrm{dev}\,\boldsymbol{\Xi},                              \\
@@ -525,9 +525,9 @@ f^p = \bar{\sigma} - \sigma_y - k(\bar{\varepsilon}^p).
 <h3>Associative flow<a class="headerlink" href="#associative-flow" title="Link to this heading">¶</a></h3>
 <p>Associative flow rules derive the rates of the plastic strain and internal
 variables from the maximum-dissipation principle,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-923f77c8-c68e-40eb-9dd4-147101b185a9">
-<div class="amsmath math notranslate nohighlight" id="equation-923f77c8-c68e-40eb-9dd4-147101b185a9">
-<span class="eqno">(17)<a class="headerlink" href="#equation-923f77c8-c68e-40eb-9dd4-147101b185a9" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-ef3886c8-fda6-4aab-ba65-a92d37ff13df">
+<div class="amsmath math notranslate nohighlight" id="equation-ef3886c8-fda6-4aab-ba65-a92d37ff13df">
+<span class="eqno">(17)<a class="headerlink" href="#equation-ef3886c8-fda6-4aab-ba65-a92d37ff13df" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \dot{\boldsymbol{\varepsilon}}^p &amp;= \dot{\gamma}\,
         \frac{\partial f^p}{\partial \boldsymbol{\sigma}},                     \\
   \dot{\bar{\varepsilon}}^p        &amp;= -\dot{\gamma}\,
@@ -578,8 +578,8 @@ the Fischer-Burmeister consistency condition.</p>
 </span><span data-line="23"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
 </span><span data-line="24"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model&#39;</span>
 </span><span data-line="25"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
-</span><span data-line="26"><span class="w">    </span><span class="na">force_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;E&#39;</span>
-</span><span data-line="27"><span class="w">    </span><span class="na">force_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strains&#39;</span>
+</span><span data-line="26"><span class="w">    </span><span class="na">prescribed_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;E&#39;</span>
+</span><span data-line="27"><span class="w">    </span><span class="na">prescribed_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strains&#39;</span>
 </span><span data-line="28"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>
 </span><span data-line="29"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="30"><span class="w">  </span><span class="k">[regression]</span>

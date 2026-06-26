@@ -409,65 +409,65 @@ data-aria-dark="Switch to auto color mode">
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">save_as</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>Output file path. Accepted for compatibility with the C++ driver but ignored by the native runtime; results are held in memory and retrieved via <code class="docutils literal notranslate"><span class="pre">result</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_Scalar_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Scalar variable names assigned a driving force value.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_Scalar_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Scalar variable names assigned a prescribed value.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_Scalar_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Scalar driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">force_Scalar_names</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_Scalar_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Scalar prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">prescribed_Scalar_names</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_Scalar_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Scalar variable names assigned an initial condition value.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_Scalar_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Scalar initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">ic_Scalar_names</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_Vec_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Vec variable names assigned a driving force value.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_Vec_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Vec variable names assigned a prescribed value.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_Vec_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Vec driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">force_Vec_names</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_Vec_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Vec prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">prescribed_Vec_names</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_Vec_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Vec variable names assigned an initial condition value.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_Vec_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Vec initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">ic_Vec_names</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_SR2_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SR2 variable names assigned a driving force value.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_SR2_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SR2 variable names assigned a prescribed value.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_SR2_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SR2 driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">force_SR2_names</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_SR2_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SR2 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">prescribed_SR2_names</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_SR2_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SR2 variable names assigned an initial condition value.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_SR2_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SR2 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">ic_SR2_names</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_WR2_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>WR2 variable names assigned a driving force value.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_WR2_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>WR2 variable names assigned a prescribed value.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_WR2_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>WR2 driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">force_WR2_names</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_WR2_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>WR2 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">prescribed_WR2_names</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_WR2_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>WR2 variable names assigned an initial condition value.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_WR2_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>WR2 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">ic_WR2_names</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_R2_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>R2 variable names assigned a driving force value.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_R2_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>R2 variable names assigned a prescribed value.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_R2_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>R2 driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">force_R2_names</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_R2_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>R2 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">prescribed_R2_names</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_R2_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>R2 variable names assigned an initial condition value.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_R2_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>R2 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">ic_R2_names</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_Rot_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Rot variable names assigned a driving force value.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_Rot_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Rot variable names assigned a prescribed value.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_Rot_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Rot driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">force_Rot_names</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_Rot_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Rot prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">prescribed_Rot_names</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_Rot_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Rot variable names assigned an initial condition value.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_Rot_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Rot initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">ic_Rot_names</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_SSR4_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SSR4 variable names assigned a driving force value.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_SSR4_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SSR4 variable names assigned a prescribed value.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_SSR4_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SSR4 driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">force_SSR4_names</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_SSR4_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SSR4 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">prescribed_SSR4_names</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_SSR4_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SSR4 variable names assigned an initial condition value.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_SSR4_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>SSR4 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">ic_SSR4_names</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_MillerIndex_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>MillerIndex variable names assigned a driving force value.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_MillerIndex_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>MillerIndex variable names assigned a prescribed value.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">force_MillerIndex_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>MillerIndex driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">force_MillerIndex_names</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">prescribed_MillerIndex_values</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>MillerIndex prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match <code class="docutils literal notranslate"><span class="pre">prescribed_MillerIndex_names</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ic_MillerIndex_names</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>MillerIndex variable names assigned an initial condition value.</p>
 </dd>

@@ -409,9 +409,9 @@ assembled from leaves already in NEML2’s catalog.</p>
 <section id="the-physics">
 <h2>The physics<a class="headerlink" href="#the-physics" title="Link to this heading">¶</a></h2>
 <p>The Perzyna viscoplastic update we will solve is, in continuous form,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-d51a5d40-0dab-4488-9d5d-1fd9a2fad2aa">
-<div class="amsmath math notranslate nohighlight" id="equation-d51a5d40-0dab-4488-9d5d-1fd9a2fad2aa">
-<span class="eqno">(2)<a class="headerlink" href="#equation-d51a5d40-0dab-4488-9d5d-1fd9a2fad2aa" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-35554c7c-a03a-448b-b512-e48c4a0e0799">
+<div class="amsmath math notranslate nohighlight" id="equation-35554c7c-a03a-448b-b512-e48c4a0e0799">
+<span class="eqno">(2)<a class="headerlink" href="#equation-35554c7c-a03a-448b-b512-e48c4a0e0799" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \boldsymbol{\varepsilon}^e &amp;= \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^p, \\
   \boldsymbol{\sigma} &amp;= 3K\,\operatorname{vol}\boldsymbol{\varepsilon}^e
                        + 2G\,\operatorname{dev}\boldsymbol{\varepsilon}^e, \\
@@ -521,12 +521,13 @@ full input file:</p>
 </span><span data-line="71">    <span class="n">rel_tol</span> <span class="o">=</span> <span class="mf">1e-08</span>
 </span><span data-line="72">    <span class="n">abs_tol</span> <span class="o">=</span> <span class="mf">1e-10</span>
 </span><span data-line="73">    <span class="n">max_its</span> <span class="o">=</span> <span class="mi">50</span>
-</span><span data-line="74">    <span class="n">linear_solver</span> <span class="o">=</span> <span class="s1">&#39;lu&#39;</span>
-</span><span data-line="75">  <span class="p">[]</span>
-</span><span data-line="76">  <span class="p">[</span><span class="n">lu</span><span class="p">]</span>
-</span><span data-line="77">    <span class="nb">type</span> <span class="o">=</span> <span class="n">DenseLU</span>
-</span><span data-line="78">  <span class="p">[]</span>
-</span><span data-line="79"><span class="p">[]</span>
+</span><span data-line="74">    <span class="n">verbose</span> <span class="o">=</span> <span class="n">true</span>                 <span class="c1"># print the Newton convergence history</span>
+</span><span data-line="75">    <span class="n">linear_solver</span> <span class="o">=</span> <span class="s1">&#39;lu&#39;</span>
+</span><span data-line="76">  <span class="p">[]</span>
+</span><span data-line="77">  <span class="p">[</span><span class="n">lu</span><span class="p">]</span>
+</span><span data-line="78">    <span class="nb">type</span> <span class="o">=</span> <span class="n">DenseLU</span>
+</span><span data-line="79">  <span class="p">[]</span>
+</span><span data-line="80"><span class="p">[]</span>
 </span></pre></div>
 </div>
 </div>
@@ -672,7 +673,9 @@ guess to start from.</p>
 </div>
 </div>
 <p>Calling <code class="docutils literal notranslate"><span class="pre">model</span></code> runs the Newton solve and returns the converged
-plastic strain:</p>
+plastic strain. Because the <code class="docutils literal notranslate"><span class="pre">[newton]</span></code> block sets <code class="docutils literal notranslate"><span class="pre">verbose</span> <span class="pre">=</span> <span class="pre">true</span></code>, the
+solve also prints its convergence history — the residual norm <code class="docutils literal notranslate"><span class="pre">|R|</span></code>
+driving toward zero one Newton iteration at a time:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="p">(</span><span class="n">plastic_strain</span><span class="p">,)</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">plastic_strain_n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">t_n</span><span class="p">)</span>
@@ -681,6 +684,18 @@ plastic strain:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">ITERATION   0, |R| = 3.540990e+01, |R0| = 3.540990e+01
+</span><span data-line="2">ITERATION   1, |R| = 8.850542e+00, |R0| = 3.540990e+01
+</span><span data-line="3">ITERATION   2, |R| = 2.210703e+00, |R0| = 3.540990e+01
+</span><span data-line="4">ITERATION   3, |R| = 5.507485e-01, |R0| = 3.540990e+01
+</span><span data-line="5">ITERATION   4, |R| = 1.357799e-01, |R0| = 3.540990e+01
+</span><span data-line="6">ITERATION   5, |R| = 3.211516e-02, |R0| = 3.540990e+01
+</span><span data-line="7">ITERATION   6, |R| = 6.470185e-03, |R0| = 3.540990e+01
+</span><span data-line="8">ITERATION   7, |R| = 7.366970e-04, |R0| = 3.540990e+01
+</span><span data-line="9">ITERATION   8, |R| = 1.601343e-05, |R0| = 3.540990e+01
+</span><span data-line="10">ITERATION   9, |R| = 8.269535e-09, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">SR2(data=tensor([ 0.0052,  0.0003, -0.0055,  0.0000,  0.0000,  0.0000],
 </span><span data-line="2">       grad_fn=&lt;_ImplicitUpdateFnBackward&gt;), sub_batch_ndim=0, sub_batch_state=(), sub_batch_meta=(), k_ndim=0, k_state=(), k_pairing=())
 </span></pre></div>
@@ -725,8 +740,9 @@ tolerance.</p>
 </span><span data-line="7"><span class="n">t_b</span> <span class="o">=</span> <span class="n">Scalar</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
 </span><span data-line="8"><span class="n">tn_b</span> <span class="o">=</span> <span class="n">Scalar</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="p">(</span><span class="n">plastic_strain_b</span><span class="p">,)</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">strain_b</span><span class="p">,</span> <span class="n">guess_b</span><span class="p">,</span> <span class="n">psn_b</span><span class="p">,</span> <span class="n">t_b</span><span class="p">,</span> <span class="n">tn_b</span><span class="p">)</span>
-</span><span data-line="11"><span class="n">plastic_strain_b</span><span class="o">.</span><span class="n">data</span>
+</span><span data-line="10"><span class="n">model</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># one convergence log was enough; quiet the rest</span>
+</span><span data-line="11"><span class="p">(</span><span class="n">plastic_strain_b</span><span class="p">,)</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">strain_b</span><span class="p">,</span> <span class="n">guess_b</span><span class="p">,</span> <span class="n">psn_b</span><span class="p">,</span> <span class="n">t_b</span><span class="p">,</span> <span class="n">tn_b</span><span class="p">)</span>
+</span><span data-line="12"><span class="n">plastic_strain_b</span><span class="o">.</span><span class="n">data</span>
 </span></pre></div>
 </div>
 </div>
@@ -771,16 +787,11 @@ the plastic-strain answer, and call <code class="docutils literal notranslate"><
 </span><span data-line="6"><span class="n">eqv_plastic_strain</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">))</span> <span class="o">*</span> <span class="n">ps</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
 </span><span data-line="7"><span class="n">eqv_plastic_strain</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
 </span><span data-line="8">
-</span><span data-line="9"><span class="nb">float</span><span class="p">(</span><span class="n">eqv_plastic_strain</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">alpha</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
+</span><span data-line="9"><span class="nb">float</span><span class="p">(</span><span class="n">eqv_plastic_strain</span><span class="o">.</span><span class="n">detach</span><span class="p">()),</span> <span class="nb">float</span><span class="p">(</span><span class="n">alpha</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/tmp/ipykernel_3367/205733107.py:9: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
-</span><span data-line="2">Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:838.)
-</span><span data-line="3">  float(eqv_plastic_strain), float(alpha.grad)
-</span></pre></div>
-</div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">(0.006223590888647602, 0.006312596842231734)
 </span></pre></div>
 </div>

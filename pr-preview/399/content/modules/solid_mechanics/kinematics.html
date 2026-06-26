@@ -451,9 +451,9 @@ volume, phase fraction), NEML2 adopts the standard cumulative form</p>
 <span class="math notranslate nohighlight">\(\boldsymbol{I}\)</span> is the rank-2 identity. The three concrete leaves
 in the catalog differ only in how <span class="math notranslate nohighlight">\(\varepsilon^{*}_v\)</span> depends on its
 driver:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-97830845-327b-493c-ab61-09e9eebfe269">
-<div class="amsmath math notranslate nohighlight" id="equation-97830845-327b-493c-ab61-09e9eebfe269">
-<span class="eqno">(21)<a class="headerlink" href="#equation-97830845-327b-493c-ab61-09e9eebfe269" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-fef78193-127f-4d01-9587-0af932fb8091">
+<div class="amsmath math notranslate nohighlight" id="equation-fef78193-127f-4d01-9587-0af932fb8091">
+<span class="eqno">(21)<a class="headerlink" href="#equation-fef78193-127f-4d01-9587-0af932fb8091" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;\varepsilon^{*}_v = \alpha\,(T - T_0), \\
 \text{Volume change:}\quad &amp;\varepsilon^{*}_v = \left(\dfrac{V}{V_0}\right)^{1/3} - 1, \\
 \text{Phase transformation:}\quad &amp;\varepsilon^{*}_v = \Delta V \, f.
@@ -483,9 +483,9 @@ in inelastic flows.</p>
 a scalar deformation Jacobian <span class="math notranslate nohighlight">\(J^{*}\)</span> — the determinant of the
 volumetric correction to be removed from the total deformation
 gradient:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-f945288d-eecc-4e40-a671-9fbed94537ba">
-<div class="amsmath math notranslate nohighlight" id="equation-f945288d-eecc-4e40-a671-9fbed94537ba">
-<span class="eqno">(22)<a class="headerlink" href="#equation-f945288d-eecc-4e40-a671-9fbed94537ba" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-9f33baa3-7d44-48e8-8860-16068ccf9d0f">
+<div class="amsmath math notranslate nohighlight" id="equation-9f33baa3-7d44-48e8-8860-16068ccf9d0f">
+<span class="eqno">(22)<a class="headerlink" href="#equation-9f33baa3-7d44-48e8-8860-16068ccf9d0f" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;J^{*} = 1 + \alpha\,(T - T_0), \\
 \text{Swelling + phase change:}\quad &amp;J^{*} = 1 + \alpha\,c\,\phi^{f}
 + (1-c)\,\phi^{f}\,\Delta\Omega.
@@ -578,10 +578,10 @@ strain after both plastic and thermal contributions are removed:</p>
 </span><span data-line="57"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
 </span><span data-line="58"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model&#39;</span>
 </span><span data-line="59"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
-</span><span data-line="60"><span class="w">    </span><span class="na">force_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;E&#39;</span>
-</span><span data-line="61"><span class="w">    </span><span class="na">force_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strains&#39;</span>
-</span><span data-line="62"><span class="w">    </span><span class="na">force_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;temperature&#39;</span>
-</span><span data-line="63"><span class="w">    </span><span class="na">force_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;temperatures&#39;</span>
+</span><span data-line="60"><span class="w">    </span><span class="na">prescribed_SR2_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;E&#39;</span>
+</span><span data-line="61"><span class="w">    </span><span class="na">prescribed_SR2_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;strains&#39;</span>
+</span><span data-line="62"><span class="w">    </span><span class="na">prescribed_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;temperature&#39;</span>
+</span><span data-line="63"><span class="w">    </span><span class="na">prescribed_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;temperatures&#39;</span>
 </span><span data-line="64"><span class="w">    </span><span class="na">ic_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;void_fraction&#39;</span>
 </span><span data-line="65"><span class="w">    </span><span class="na">ic_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;f0&#39;</span>
 </span><span data-line="66"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>

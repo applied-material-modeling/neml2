@@ -405,14 +405,14 @@ plot the resulting stress–strain curve. The driver is configured
 from the same kind of input file we’ve been using.</p>
 <section id="the-recursive-update">
 <h2>The recursive update<a class="headerlink" href="#the-recursive-update" title="Link to this heading">¶</a></h2>
-<p>Each step takes the previous state and the new forces and produces the
+<p>Each step takes the previous state <code class="docutils literal notranslate"><span class="pre">s</span></code> and the new prescribed variables <code class="docutils literal notranslate"><span class="pre">g</span></code> (the <em>given</em> values) and produces the
 next state:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
-</span><span data-line="2">    <span class="n">s</span><span class="p">[</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+</span><span data-line="2">    <span class="n">s</span><span class="p">[</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">g</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
 </span></pre></div>
 </div>
 <p>When NEML2 is coupled to an external PDE solver, that loop lives outside
-NEML2 — the host solver supplies the new forces and asks NEML2 for the
+NEML2 — the host solver supplies the new prescribed variables and asks NEML2 for the
 new state. For self-contained workflows (verification, regression tests,
 parameter calibration, plotting a stress–strain curve),
 <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code> keeps everything inside NEML2.</p>
@@ -457,8 +457,8 @@ are built inline in <code class="docutils literal notranslate"><span class="pre"
 </span><span data-line="25">    <span class="nb">type</span> <span class="o">=</span> <span class="n">TransientDriver</span>
 </span><span data-line="26">    <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;model&#39;</span>
 </span><span data-line="27">    <span class="n">prescribed_time</span> <span class="o">=</span> <span class="s1">&#39;times&#39;</span>
-</span><span data-line="28">    <span class="n">force_SR2_names</span> <span class="o">=</span> <span class="s1">&#39;E&#39;</span>
-</span><span data-line="29">    <span class="n">force_SR2_values</span> <span class="o">=</span> <span class="s1">&#39;strains&#39;</span>
+</span><span data-line="28">    <span class="n">prescribed_SR2_names</span> <span class="o">=</span> <span class="s1">&#39;E&#39;</span>
+</span><span data-line="29">    <span class="n">prescribed_SR2_values</span> <span class="o">=</span> <span class="s1">&#39;strains&#39;</span>
 </span><span data-line="30">  <span class="p">[]</span>
 </span><span data-line="31"><span class="p">[]</span>
 </span><span data-line="32">
@@ -566,10 +566,10 @@ are built inline in <code class="docutils literal notranslate"><span class="pre"
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">prescribed_time</span></code> has shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code> — one time value per step. <code class="docutils literal notranslate"><span class="pre">N</span></code>
 sets the number of steps.</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">force_*_names</span></code> / <code class="docutils literal notranslate"><span class="pre">force_*_values</span></code> pair wires a model input (here
+<li><p>The <code class="docutils literal notranslate"><span class="pre">prescribed_*_names</span></code> / <code class="docutils literal notranslate"><span class="pre">prescribed_*_values</span></code> pair wires a model input (here
 the strain <code class="docutils literal notranslate"><span class="pre">E</span></code>) to a tensor block that supplies its values at every
-step. Each force tensor must carry a leading axis of length <code class="docutils literal notranslate"><span class="pre">N</span></code>.</p></li>
-<li><p>Anything not listed as a prescribed force or initial condition starts
+step. Each prescribed tensor must carry a leading axis of length <code class="docutils literal notranslate"><span class="pre">N</span></code>.</p></li>
+<li><p>Anything not listed as a prescribed variable or initial condition starts
 at zero — so stress starts at zero at step 0.</p></li>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> block builds a 50-step time vector <span class="math notranslate nohighlight">\(t \in [0, 1]\)</span> and a
@@ -593,25 +593,25 @@ file:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;neml2.drivers.TransientDriver.TransientDriver at 0x7fae61a696c0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;neml2.drivers.TransientDriver.TransientDriver at 0x7f897a8d1750&gt;
 </span></pre></div>
 </div>
 </div>
 </div>
 <p>The driver carries the parsed model, the prescribed-time tensor, and
-the prescribed forces. The number of steps comes from the leading axis
+the prescribed variables. The number of steps comes from the leading axis
 of <code class="docutils literal notranslate"><span class="pre">prescribed_time</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nsteps        =&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
-</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;forces        =&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">driver</span><span class="o">.</span><span class="n">forces</span><span class="p">))</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;prescribed    =&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">driver</span><span class="o">.</span><span class="n">prescribed</span><span class="p">))</span>
 </span><span data-line="3"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wrapped model =&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">driver</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">nsteps        = 50
-</span><span data-line="2">forces        = [&#39;E&#39;]
+</span><span data-line="2">prescribed    = [&#39;E&#39;]
 </span><span data-line="3">wrapped model = ImplicitUpdate
 </span></pre></div>
 </div>
@@ -636,7 +636,7 @@ state into the next step:</p>
 <h2>Reading the per-step output<a class="headerlink" href="#reading-the-per-step-output" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">driver.result()</span></code> returns a flat dict keyed by
 <code class="docutils literal notranslate"><span class="pre">input.&lt;step&gt;.&lt;variable&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">output.&lt;step&gt;.&lt;variable&gt;</span></code>. Step 0 holds
-only the prescribed forces (the model isn’t called at step 0); every
+only the prescribed variables (the model isn’t called at step 0); every
 later step holds what the model returned:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -746,8 +746,8 @@ its <code class="docutils literal notranslate"><span class="pre">gold/result.pt<
 <h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>To prescribe stress instead of strain, swap which variable the
-<code class="docutils literal notranslate"><span class="pre">force_*</span></code> block supplies; the rest of the workflow is unchanged.</p></li>
-<li><p>Give <code class="docutils literal notranslate"><span class="pre">prescribed_time</span></code> and the force tensors a <em>trailing</em> batch axis
+<code class="docutils literal notranslate"><span class="pre">prescribed_*</span></code> block supplies; the rest of the workflow is unchanged.</p></li>
+<li><p>Give <code class="docutils literal notranslate"><span class="pre">prescribed_time</span></code> and the prescribed tensors a <em>trailing</em> batch axis
 and the driver will sweep that axis in parallel — useful for
 parameter or initial-condition sweeps. See
 <a class="reference internal" href="../vectorization/main.html#tutorials-models-vectorization"><span class="std std-ref">Vectorization</span></a> for the batching rules.</p></li>
