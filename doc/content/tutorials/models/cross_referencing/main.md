@@ -1,10 +1,10 @@
 (tutorials-models-cross-referencing)=
 # Cross-referencing
 
-You'll wire a driver to a model and a model to its tensor inputs by
-name — the basic glue that lets an input file hold more than one
-object. Anywhere a field expects an object name, you can write the
-name of another section in the file.
+In this tutorial, we'll wire a driver to a model and a model to its
+tensor inputs by name — the basic glue that lets an input file hold
+more than one object. Anywhere a field expects an object name, we can
+write the name of another section in the file.
 
 ## Referring to a model from a driver
 
@@ -68,7 +68,7 @@ each value token is again a `[Tensors]` name (or an inline literal for
 
 ## Referring to a tensor from a model
 
-When a model field expects a tensor value, you can also point it at a
+When a model field expects a tensor value, we can also point it at a
 `[Tensors]` entry by name:
 
 ```ini
@@ -106,8 +106,8 @@ tensor inputs still need a `[Tensors]` entry.)
 []
 ```
 
-So when would you go through `[Tensors]`? When the literal won't do —
-typically because you want to share the value across several models,
+So when would we go through `[Tensors]`? When the literal won't do —
+typically because we want to share the value across several models,
 or because it comes from a torch expression like `torch.linspace(...)`
 or a CSV file rather than a bare number.
 
