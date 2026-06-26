@@ -330,7 +330,7 @@ def test_native_model_set_parameter():
     p = dict(native.named_parameters())["E"]
 
     native.set_parameter("E", torch.tensor(200.0, dtype=torch.float64))
-    assert float(dict(native.named_parameters())["E"]) == 200.0
+    assert float(dict(native.named_parameters())["E"].detach()) == 200.0
     # In-place copy: same Parameter object, still grad-tracking.
     assert dict(native.named_parameters())["E"] is p
     assert p.requires_grad
@@ -652,8 +652,10 @@ def test_param_vjp_through_implicit_matches_jacobian_and_fd():
     p0 = {q: m.named_parameters()[q].clone() for q in m.parameter_base_shapes}
 
     def loss():
-        out = m.forward(inputs)
-        return float(sum((out[o] * cot[o]).sum() for o in m.output_names))
+        # Finite-difference probe: a plain scalar value, no autograd needed.
+        with torch.no_grad():
+            out = m.forward(inputs)
+            return float(sum((out[o] * cot[o]).sum() for o in m.output_names))
 
     checks = [
         "model0.return_map.surface.yield_surface.sy",

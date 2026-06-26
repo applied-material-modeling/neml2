@@ -43,7 +43,10 @@ foreach(_lib IN LISTS _aoti_interface_libs)
       endif()
 endforeach()
 list(REMOVE_DUPLICATES NEML2_PKGCONFIG_LIB_TARGETS)
-set(NEML2_PKGCONFIG_LIBS "-L\${libdir}")
+# Bake an rpath to our own libdir so a pkg-config consumer resolves libneml2 at
+# runtime without LD_LIBRARY_PATH (pkg-config expands ${libdir} to the absolute
+# install location).
+set(NEML2_PKGCONFIG_LIBS "-L\${libdir} -Wl,-rpath,\${libdir}")
 foreach(_lib_target IN LISTS NEML2_PKGCONFIG_LIB_TARGETS)
       # External targets (torch::core, nlohmann_json::nlohmann_json) don't
       # ship a TARGET_FILE_BASE_NAME — skip them; their flags travel through
@@ -73,14 +76,23 @@ function(neml2_pkgconfig_generate_dep_pc)
       configure_file(${_tpl} ${NEML2_BINARY_DIR}/${ARG_OUTPUT_NAME}.pc @ONLY)
 endfunction()
 
-# neml2-torch.pc (torch is always external; we never bundle libtorch)
-get_filename_component(_torch_link_dir "${torch_LIBRARY}" DIRECTORY)
-set(_torch_pc_libs "-L${_torch_link_dir} -lc10 -ltorch -ltorch_cpu")
+# neml2-torch.pc (torch is always external; we never bundle libtorch). Locate
+# torch's lib dir RELATIVE to this .pc for a wheel install: neml2 and torch are
+# siblings in site-packages -- the same assumption libneml2's own $ORIGIN rpath
+# relies on -- so the shipped .pc resolves to the *user's* torch, not the build
+# machine's. An editable .pc lives in the source tree (torch is not a sibling),
+# so it bakes the discovered absolute path, which is this machine's torch. An
+# rpath is emitted alongside -L so a pkg-config consumer needs no LD_LIBRARY_PATH.
+if(NEML2_EDITABLE)
+      get_filename_component(_torch_pc_libdir "${torch_LIBRARY}" DIRECTORY)
+else()
+      # <prefix>/share/pkgconfig/neml2-torch.pc -> three levels up is site-packages,
+      # then torch/lib (the sibling torch package).
+      set(_torch_pc_libdir "\${pcfiledir}/../../../torch/lib")
+endif()
+set(_torch_pc_libs "-L${_torch_pc_libdir} -Wl,-rpath,${_torch_pc_libdir} -lc10 -ltorch -ltorch_cpu")
 if(TARGET torch::cuda)
-      get_filename_component(_c10_cuda_link_dir "${c10_cuda_LIBRARY}" DIRECTORY)
-      if(NOT _c10_cuda_link_dir STREQUAL _torch_link_dir)
-            string(APPEND _torch_pc_libs " -L${_c10_cuda_link_dir}")
-      endif()
+      # The pip torch wheel ships the CUDA libs in the same lib dir as c10.
       string(APPEND _torch_pc_libs " -lc10_cuda -ltorch_cuda -ltorch_cuda_linalg")
 endif()
 neml2_pkgconfig_generate_dep_pc(
@@ -128,14 +140,15 @@ foreach(_pc neml2 neml2-core)
       )
 endforeach()
 
-if(NOT SKBUILD_STATE STREQUAL "editable")
-      install(
-            FILES
-            ${NEML2_BINARY_DIR}/neml2${NEML2_PKGCONFIG_SUFFIX}.pc
-            ${NEML2_BINARY_DIR}/neml2-core${NEML2_PKGCONFIG_SUFFIX}.pc
-            ${NEML2_BINARY_DIR}/neml2-torch.pc
-            ${NEML2_BINARY_DIR}/neml2-nlohmann-json.pc
-            DESTINATION share/pkgconfig
-            COMPONENT libneml2
-      )
-endif()
+# Shipped in both the wheel and an editable install (the latter into the source
+# tree via INSTALL_SHAREDIR). The .pc files are relocatable -- prefix is derived
+# from ${pcfiledir} at `pkg-config` time -- so they work from wherever they land.
+install(
+      FILES
+      ${NEML2_BINARY_DIR}/neml2${NEML2_PKGCONFIG_SUFFIX}.pc
+      ${NEML2_BINARY_DIR}/neml2-core${NEML2_PKGCONFIG_SUFFIX}.pc
+      ${NEML2_BINARY_DIR}/neml2-torch.pc
+      ${NEML2_BINARY_DIR}/neml2-nlohmann-json.pc
+      DESTINATION ${INSTALL_SHAREDIR}/pkgconfig
+      COMPONENT libneml2
+)

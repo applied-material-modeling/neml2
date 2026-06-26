@@ -103,11 +103,20 @@ def _allow_counts() -> dict[str, int]:
 
 def _enter_forward() -> None:
     """Open a forward window (called by ``Model.__call__``)."""
+    # While tracing the guard is inert (see :func:`_armed`), so this depth
+    # bookkeeping is dead -- and mutating a module-global inside a traced forward
+    # makes Dynamo emit a "side effects in model.forward" warning. Skip it; the
+    # enter/exit pair stays balanced because ``is_compiling()`` is stable for the
+    # whole call.
+    if torch.compiler.is_compiling():
+        return
     _state.depth = _depth() + 1
 
 
 def _exit_forward() -> None:
     """Close a forward window. Clamped at 0 so it stays balanced under errors."""
+    if torch.compiler.is_compiling():
+        return
     _state.depth = max(0, _depth() - 1)
 
 
@@ -121,12 +130,14 @@ def _armed(category: str) -> bool:
     graph. Disabling the guard under compilation lets those graphs lower without the
     ``@contextmanager`` escape hatches (which Dynamo cannot trace through its block
     stack), at no loss of protection: an invalid model trips the guard the moment it
-    runs eager, long before anyone exports it. ``is_compiling()`` is only consulted
-    on the would-arm path (depth > 0, category not allowed), so eager has no extra
-    cost on the common path.
+    runs eager, long before anyone exports it. ``is_compiling()`` is checked *first*
+    so that under compile this predicate touches no ``_state`` at all -- a traced read
+    of the module-global would otherwise show up as a Dynamo "side effects" warning.
+    The guard check itself only runs when a guarded op is attempted, so the extra
+    ``is_compiling()`` call on the eager path is not on any hot loop.
     """
     return (
-        _depth() > 0 and _allow_counts().get(category, 0) == 0 and not torch.compiler.is_compiling()
+        not torch.compiler.is_compiling() and _depth() > 0 and _allow_counts().get(category, 0) == 0
     )
 
 
@@ -175,6 +186,12 @@ def _allow_param_attr() -> Generator[None, None, None]:
     """Internal escape hatch: permit registered-parameter attribute reads for the
     duration of the block. Used by :meth:`Model._get_param`, the one sanctioned
     reader, so its own ``getattr(self, name)`` is not rejected by the guard."""
+    # Under compile the guard is inert (see :func:`_armed`); skip the counter so
+    # ``_state`` stays untouched while tracing and Dynamo emits no "side effects"
+    # warning.
+    if torch.compiler.is_compiling():
+        yield
+        return
     counts = _allow_counts()
     counts[_PARAM_ATTR] = counts.get(_PARAM_ATTR, 0) + 1
     try:
@@ -197,6 +214,13 @@ def _require_reason(reason: str) -> None:
 @contextmanager
 def _allow(category: str, reason: str) -> Generator[None, None, None]:
     _require_reason(reason)
+    # Under compile the guard is inert (see :func:`_armed`), so this counter only
+    # matters in eager. Skip it while tracing: the lifted call (e.g. a request_AD
+    # ``autograd.grad``) still runs in the ``yield`` body, but ``_state`` stays
+    # untouched so Dynamo emits no "side effects in model.forward" warning.
+    if torch.compiler.is_compiling():
+        yield
+        return
     counts = _allow_counts()
     counts[category] = counts.get(category, 0) + 1
     try:

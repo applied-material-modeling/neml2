@@ -93,6 +93,18 @@ add_executable(test_eager test_eager.cpp)
 # libneml2_eager embeds; libneml2_eager itself links only Python3::Module.
 target_link_libraries(test_eager PRIVATE eager aoti Python3::Python)
 target_compile_options(test_eager PRIVATE -Wall -Wextra)
+# libneml2_eager deliberately leaves the torch_python (+ CPython) symbols undefined
+# for the host process to supply at load time, so the wheel never has to ship
+# libpython. Linking that .so into an executable therefore needs the linker to
+# tolerate those undefined refs (resolved at runtime via BUILD_RPATH to torch/lib +
+# the linked libpython). Most system linkers allow this by default, but some -- e.g.
+# conda's compiler-compat ld used by the pip build -- default to
+# --no-allow-shlib-undefined and must be told explicitly.
+if(APPLE)
+      target_link_options(test_eager PRIVATE LINKER:-undefined,dynamic_lookup)
+else()
+      target_link_options(test_eager PRIVATE LINKER:--allow-shlib-undefined)
+endif()
 # RUNPATH is not transitive, so the test exe's own rpath must reach libneml2 +
 # torch + libpython.
 get_filename_component(_py_bindir "${Python3_EXECUTABLE}" DIRECTORY)

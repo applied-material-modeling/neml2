@@ -44,6 +44,7 @@ from __future__ import annotations
 import torch
 
 import neml2.types.functions  # noqa: F401  -- registers neml2::opaque_pow
+from neml2._warnings import TORCH_TREESPEC_LEAFSPEC, ignore_warnings
 
 
 class _Pow(torch.nn.Module):
@@ -53,7 +54,10 @@ class _Pow(torch.nn.Module):
 
 def _post_decomposition_ops() -> list[str]:
     x = torch.rand(8, dtype=torch.float64)
-    ep = torch.export.export(_Pow(), (x,)).run_decompositions()
+    # export()/run_decompositions() deepcopies a pytree, tripping torch's own
+    # deprecated isinstance(treespec, LeafSpec) call (neml2 never calls it).
+    with ignore_warnings(TORCH_TREESPEC_LEAFSPEC):
+        ep = torch.export.export(_Pow(), (x,)).run_decompositions()
     return [str(n.target) for n in ep.graph.nodes if n.op == "call_function"]
 
 

@@ -208,13 +208,20 @@ def _compile_forward_in_place(model: Model, opts: dict[str, Any]) -> None:
     ``export.py`` is separate and keeps the guard armed). The model body itself is
     still proven banned-op-free by the AOTI export tests.
     """
+    from .._warnings import TORCH_JIT_PY314, ignore_warnings  # noqa: PLC0415
     from ._guard import allow_autograd  # noqa: PLC0415
 
     if getattr(model, _COMPILED_MARK, False):
         return  # already compiled; avoid double-wrapping
 
     original_forward = model.forward  # bound method, captured before replacement
-    compiled_forward = torch.compile(original_forward, **opts)
+    # torch.compile eagerly imports torch._inductor.compile_fx (to read the compiler
+    # config), which pulls in torch.utils.mkldnn -- and on Python 3.14 that warns
+    # about torch's own deprecated torch.jit.script_method (neml2 never calls it).
+    # Suppress that one torch-internal line; the spec is shared with the AOTI path
+    # via neml2/_warnings.py.
+    with ignore_warnings(TORCH_JIT_PY314):
+        compiled_forward = torch.compile(original_forward, **opts)
 
     def _forward(*args: Any, **kwargs: Any) -> Any:
         with allow_autograd(
