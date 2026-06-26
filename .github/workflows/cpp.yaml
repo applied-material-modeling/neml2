@@ -158,15 +158,18 @@ jobs:
           pip install scikit-build-core ninja
           pip wheel . --no-deps --no-build-isolation -w dist
           pip install dist/*.whl
+      # Resolve the installed package via sysconfig, NOT `import neml2`: this step
+      # runs from the repo root, where the source `neml2/` would shadow the wheel
+      # on sys.path and point us at a tree with no installed headers/config.
       - name: Consume via find_package(neml2)
         run: |
-          PREFIX=$(python -c "import neml2, pathlib; print(pathlib.Path(neml2.__file__).parent)")
+          PREFIX="$(python -c 'import sysconfig; print(sysconfig.get_path("platlib"))')/neml2"
           cmake -S tests/downstream -B build/downstream -GNinja -Dneml2_DIR="$PREFIX/share/cmake/neml2"
           cmake --build build/downstream
           LD_LIBRARY_PATH="$PREFIX/lib" ./build/downstream/consumer
       - name: Consume via pkg-config
         run: |
-          PREFIX=$(python -c "import neml2, pathlib; print(pathlib.Path(neml2.__file__).parent)")
+          PREFIX="$(python -c 'import sysconfig; print(sysconfig.get_path("platlib"))')/neml2"
           export PKG_CONFIG_PATH="$PREFIX/share/pkgconfig"
           c++ tests/downstream/main.cpp -o consumer_pc $(pkg-config --cflags --libs neml2)
           LD_LIBRARY_PATH="$PREFIX/lib" ./consumer_pc
