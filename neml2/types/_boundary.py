@@ -161,12 +161,23 @@ def contract_jacobian_block(
     The ``request_AD`` boundary: reverse-mode autograd yields a dense local
     Jacobian ``block`` of shape ``(*B, *out_base, *in_base)`` (see
     :func:`neml2.models.input_ad.local_input_jacobians`); ``v`` is the incoming
-    first-order tangent of the *input* type, carrying a single leading K (seed)
-    axis (``k_ndim == 1``): ``(K, *B, *in_base)``. Returns ``J @ v`` summed over
-    the input base, broadcast over K and the batch -- the contribution to the
-    output tangent as an ``out_type`` wrapper with the same single K axis
-    preserved: ``(K, *B, *out_base)``. :meth:`~neml2.models.model.Model.apply_chain_rule`
-    accumulates these across input edges.
+    first-order tangent of the *input* type. Two seed conventions are accepted,
+    matching exactly what a hand-written chain-rule action accepts -- this is
+    what makes a ``request_AD`` leaf indistinguishable from a hand-written one
+    at the ``v=`` boundary:
+
+    - **Leading-K** (``k_ndim == 1``): ``v`` is ``(K, *B, *in_base)`` -- a stack
+      of ``K`` directional seeds (e.g. an identity seed read off a whole
+      Jacobian column-by-column). The result keeps the same single K axis:
+      ``(K, *B, *out_base)``.
+    - **Single-direction** (``k_ndim == 0``): ``v`` is ``(*B, *in_base)`` -- one
+      directional seed, as ``ModelUnitTest`` and the ``Vec(eye(n))`` idiom send.
+      The result has no K axis: ``(*B, *out_base)``.
+
+    Either way the contraction is ``J @ v`` summed over the input base and
+    broadcast over the batch (and K, when present).
+    :meth:`~neml2.models.model.Model.apply_chain_rule` accumulates the
+    contributions across input edges.
 
     Plain-batch only (``v.sub_batch_ndim == 0``): the request_AD primitive does
     not yet thread sub-batch structure through the AD-derived block.
@@ -181,10 +192,10 @@ def contract_jacobian_block(
             f"cannot contract a sub-batched tangent ({type(v).__name__} with "
             f"sub_batch_ndim={v.sub_batch_ndim})."
         )
-    if v.k_ndim != 1:
+    if v.k_ndim not in (0, 1):
         raise NotImplementedError(
-            "contract_jacobian_block expects a single leading K axis (k_ndim=1), "
-            f"got k_ndim={v.k_ndim}."
+            "contract_jacobian_block expects a single-direction (k_ndim=0) or "
+            f"single leading-K (k_ndim=1) tangent, got k_ndim={v.k_ndim}."
         )
     in_base = tuple(int(s) for s in type(v).BASE_SHAPE)
     out_base = tuple(int(s) for s in out_type.BASE_SHAPE)
@@ -194,15 +205,26 @@ def contract_jacobian_block(
     n_out = 1
     for s in out_base:
         n_out *= s
-    vd = v.data  # noqa: data-ok request_AD autograd boundary  (K, *B, *in_base)
-    v_batch = vd.shape[1 : vd.ndim - len(in_base)]
-    v_flat = vd.reshape(vd.shape[0], *v_batch, n_in)
+    vd = v.data  # noqa: data-ok request_AD autograd boundary
     nb = block.ndim - len(out_base) - len(in_base)
-    block_flat = block.reshape(*block.shape[:nb], n_out, n_in)
-    # (1, *Bblk, n_out, n_in) @ (K, *Bv, n_in, 1) -> (K, *B, n_out, 1) -> (K, *B, n_out)
-    res = (block_flat.unsqueeze(0) @ v_flat.unsqueeze(-1)).squeeze(-1)
+    block_flat = block.reshape(*block.shape[:nb], n_out, n_in)  # (*Bblk, n_out, n_in)
+    if v.k_ndim == 1:
+        # Leading-K: vd is (K, *Bv, *in_base). Keep the K axis through the matmul
+        # by giving the block a singleton K (broadcast across all seeds).
+        v_batch = vd.shape[1 : vd.ndim - len(in_base)]
+        v_flat = vd.reshape(vd.shape[0], *v_batch, n_in)
+        # (1, *Bblk, n_out, n_in) @ (K, *Bv, n_in, 1) -> (K, *B, n_out, 1) -> (K, *B, n_out)
+        res = (block_flat.unsqueeze(0) @ v_flat.unsqueeze(-1)).squeeze(-1)
+        res = res.reshape(*res.shape[:-1], *out_base)
+        return out_type(res, k_ndim=1, k_state=v.k_state, k_pairing=v.k_pairing)
+    # Single-direction: vd is (*Bv, *in_base), no K axis. matmul broadcasts the
+    # block's batch against the tangent's; the result carries no K axis either.
+    v_batch = vd.shape[: vd.ndim - len(in_base)]
+    v_flat = vd.reshape(*v_batch, n_in)
+    # (*Bblk, n_out, n_in) @ (*Bv, n_in, 1) -> (*B, n_out, 1) -> (*B, n_out)
+    res = (block_flat @ v_flat.unsqueeze(-1)).squeeze(-1)
     res = res.reshape(*res.shape[:-1], *out_base)
-    return out_type(res, k_ndim=1, k_state=v.k_state, k_pairing=v.k_pairing)
+    return out_type(res)
 
 
 def unwrap_outputs(
