@@ -30,12 +30,17 @@ Colab badge inserted just below its page title. The badge links to
 
     https://colab.research.google.com/github/<repo>/blob/<ref>/doc/<docname>.ipynb
 
-The git ``<ref>`` comes from the ``NEML2_DOC_GIT_REF`` environment variable
-(default ``main``); the release-deploy CI job sets it to the release tag so a
-launched notebook always matches the ``pip install neml2`` release it runs
-against. The badge is injected into the rendered HTML only -- the committed
-``.ipynb`` never contains it, so opening the notebook in Colab shows no
-self-referential badge.
+The git ``<ref>`` comes from the ``NEML2_DOC_GIT_REF`` environment variable.
+The badge is **only emitted when that ref is a release tag** (``vX.Y.Z``); on
+any other build -- ``main`` (the ``dev/`` doc site), a PR preview, or a local
+build -- it is suppressed. The reason is that a launched Colab notebook runs
+``pip install neml2``, which resolves to the latest *PyPI release*; a badge on a
+``main``/``dev`` build would open a notebook whose code does not match the
+installed release. The release-deploy CI job sets the ref from the project
+version (``v$(dep_manager.py get neml2.version)``), so a released site's badge
+points at exactly that tag -- the minor's latest patch. The badge is injected
+into the rendered HTML only -- the committed ``.ipynb`` never contains it, so
+opening the notebook in Colab shows no self-referential badge.
 
 The two *expensive* notebooks (``optimization/deterministic`` and
 ``optimization/statistical``) are skipped: they are not Colab-ready (heavy
@@ -46,11 +51,17 @@ single-file Colab open) and render from pre-baked outputs.
 from __future__ import annotations
 
 import os
+import re
 
 from docutils import nodes
 
 #: ``owner/repo`` slug used to build the Colab GitHub URL.
 DEFAULT_REPO = "applied-material-modeling/neml2"
+
+#: A release tag (``v3.0.4``). The Colab badge is emitted only when
+#: ``NEML2_DOC_GIT_REF`` matches this -- i.e. a released doc site, never a
+#: ``main``/``dev`` or PR-preview build (see module docstring).
+_RELEASE_TAG_RE = re.compile(r"^v\d+\.\d+\.\d+")
 
 #: Tutorial docnames (relative to ``doc/``, no suffix) that must NOT get a
 #: badge even though they are ``.ipynb`` -- the expensive, non-Colab notebooks.
@@ -87,8 +98,13 @@ def _inject_badge(app, doctree):
     if not str(env.doc2path(docname)).endswith(".ipynb"):
         return
 
-    repo = getattr(app.config, "colab_repo", DEFAULT_REPO)
+    # Only released doc sites get a badge: a Colab notebook `pip install`s the
+    # latest PyPI release, so a badge on a main/dev/PR build would mismatch.
     ref = os.environ.get("NEML2_DOC_GIT_REF", "main")
+    if not _RELEASE_TAG_RE.match(ref):
+        return
+
+    repo = getattr(app.config, "colab_repo", DEFAULT_REPO)
     raw = nodes.raw("", _badge_html(_colab_url(repo, ref, docname)), format="html")
 
     # Place the badge immediately after the page title (index 0 of the first

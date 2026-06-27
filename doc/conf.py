@@ -223,14 +223,18 @@ html_css_files = [
     "css/custom.css",
 ]
 
-# Custom JS, loaded on every page. It is inert until a `.scheduler-demo` div
-# exists in the rendered HTML, so the cost of loading it globally is zero on
-# pages that don't use it. Self-contained (no jQuery, no anime.js; animates via
-# the Web Animations API) and a *classic* script wrapped in an IIFE -- NOT an ES
-# module, because the doc-render validator (check_doc_render.py) opens pages over
-# file://, where browsers block module loading under the CORS null-origin rule.
+# Custom JS, loaded on every page. Each is inert when its trigger is absent, so
+# the cost of loading globally is zero on pages that don't use it. All are
+# *classic* scripts wrapped in an IIFE -- NOT ES modules, because the doc-render
+# validator (check_doc_render.py) opens pages over file://, where browsers block
+# module loading under the CORS null-origin rule.
+#   - scheduler-demos.js: animates `.scheduler-demo` divs (Web Animations API).
+#   - version-banner.js: on the multi-version gh-pages site, prepends an
+#     "old/dev documentation" banner by comparing the URL's version segment
+#     against /<repo>/versions.json; no-op on local/file:// builds.
 html_js_files = [
     "components/scheduler-demos.js",
+    "components/version-banner.js",
 ]
 
 html_logo = "asset/logo_light.png"

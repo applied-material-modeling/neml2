@@ -17,9 +17,18 @@ jobs:
           ref: gh-pages
       - name: Delete preview
         run: |
-          git rm -r --cached pr-preview/${{ github.event.number }}
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          PREVIEW="pr-preview/${{ github.event.number }}"
+          if [ ! -e "$PREVIEW" ]; then
+            echo "No preview at $PREVIEW (never built or already removed); nothing to do."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git rm -r "$PREVIEW"
+          if git diff --cached --quiet; then
+            echo "No staged changes; nothing to commit."
+            exit 0
+          fi
           git commit -m 'Remove preview for PR #${{ github.event.number }}'
           git push origin gh-pages
       - name: Comment on the pull request
@@ -28,4 +37,4 @@ jobs:
           header: preview-link
           message: |
             Documentation preview removed.
-            To view the documentation, please visit the [main documentation page](https://applied-material-modeling.github.io/neml2).
+            If this PR was merged, its changes are now in the [development documentation](https://applied-material-modeling.github.io/neml2/dev/); the latest release is at the [stable documentation](https://applied-material-modeling.github.io/neml2/stable/).

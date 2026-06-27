@@ -1,7 +1,9 @@
 <img src="doc/asset/logo_light.png#gh-light-mode-only" class="logo-light" alt="Logo" style="width: 35%">
 <img src="doc/asset/logo_dark.png#gh-dark-mode-only" class="logo-dark" alt="Logo" style="width: 35%">
 
-[![Documentation](https://github.com/applied-material-modeling/neml2/actions/workflows/docs.yaml/badge.svg?branch=main)](https://applied-material-modeling.github.io/neml2/) [![C++ backend testing](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yaml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yaml) [![Python package testing](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yaml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yaml) [![codecov](https://codecov.io/github/applied-material-modeling/neml2/graph/badge.svg?token=255X5XDISB)](https://codecov.io/github/applied-material-modeling/neml2) [![PyPI](https://img.shields.io/pypi/v/neml2)](https://pypi.org/project/neml2/)
+[![Documentation](https://github.com/applied-material-modeling/neml2/actions/workflows/docs.yaml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/docs.yaml) [![C++ backend testing](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yaml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yaml) [![Python package testing](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yaml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yaml) [![codecov](https://codecov.io/github/applied-material-modeling/neml2/graph/badge.svg?token=255X5XDISB)](https://codecov.io/github/applied-material-modeling/neml2) [![PyPI](https://img.shields.io/pypi/v/neml2)](https://pypi.org/project/neml2/)
+
+[![docs - stable](https://img.shields.io/badge/docs-stable-blue)](https://applied-material-modeling.github.io/neml2/stable/) [![docs - dev](https://img.shields.io/badge/docs-dev-orange)](https://applied-material-modeling.github.io/neml2/dev/)
 
 ## Overview
 
@@ -27,7 +29,7 @@ NEML2 is provided as open source software under a MIT [license](https://raw.gith
 pip install neml2
 ```
 
-The wheel ships everything a C++ consumer needs too — `libneml2.so`, the public headers, and the CMake config files all land under your `site-packages/neml2/`. See the [installation guide](https://applied-material-modeling.github.io/neml2/content/installation/install.html) for finer control over the torch variant (CPU / CUDA / ROCm) and the C++ integration guide for `find_package(neml2)` wiring.
+The wheel ships everything a C++ consumer needs too — `libneml2.so`, the public headers, and the CMake config files all land under your `site-packages/neml2/`. See the [installation guide](https://applied-material-modeling.github.io/neml2/stable/content/installation/install.html) for finer control over the torch variant (CPU / CUDA / ROCm) and the C++ integration guide for `find_package(neml2)` wiring.
 
 **Developer source build** (only when contributing to the bundled C++ AOTI runtime):
 
@@ -37,7 +39,7 @@ cd neml2
 pip install -e ".[dev]"
 ```
 
-Once NEML2 is installed, the [deployment overview](https://applied-material-modeling.github.io/neml2/content/deployment/overview.html) walks through the different ways to evaluate a model, and the [tutorials](https://applied-material-modeling.github.io/neml2/content/tutorials/index.html) cover the commonly used APIs.
+Once NEML2 is installed, the [deployment overview](https://applied-material-modeling.github.io/neml2/stable/content/deployment/overview.html) walks through the different ways to evaluate a model, and the [tutorials](https://applied-material-modeling.github.io/neml2/stable/content/tutorials/index.html) cover the commonly used APIs.
 
 ### Features and design philosophy
 
