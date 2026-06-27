@@ -17,11 +17,14 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Never deploy a build that failed or was cancelled.
+    if: github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Show upstream workflow information
         run: |
           echo "upstream workflow: ${{ github.event.workflow_run.name }}"
           echo "upstream event:    ${{ github.event.workflow_run.event }}"
+          echo "upstream branch:   ${{ github.event.workflow_run.head_branch }}"
           echo "upstream id:       ${{ github.event.workflow_run.id }}"
           echo "upstream sha:      ${{ github.event.workflow_run.head_sha }}"
       - uses: actions/checkout@v7
@@ -32,7 +35,7 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # PR preview
+      # --- PR preview: pull_request builds -> pr-preview/<N>/ ---
       - name: Deploy preview to GitHub Pages
         if: github.event.workflow_run.event == 'pull_request'
         uses: JamesIves/github-pages-deploy-action@v4.8.0
@@ -49,16 +52,34 @@ jobs:
           message: |
             Documentation preview: <https://applied-material-modeling.github.io/neml2/pr-preview/${{ github.event.workflow_run.pull_requests[0].number }}>
 
-      # Deploy to GitHub Pages, on release only. The live site then tracks the
-      # released package (and the tag the Colab badges point to) rather than
-      # every push to main, keeping the "Open in Colab" tutorials in lockstep
-      # with the `pip install neml2` release. Pushes to main still build the
-      # docs (for validation) but do not redeploy.
-      - name: Deploy to GitHub Pages
-        if: github.event.workflow_run.event == 'release'
+      # --- Dev site: pushes to main -> dev/ ---
+      # Every push to main publishes the in-development docs to dev/. These carry
+      # no "Open in Colab" badges (docs.yaml leaves the ref at `main`), because a
+      # Colab notebook pip-installs the latest *released* package, not main.
+      - name: Deploy dev site to GitHub Pages
+        if: github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
         uses: JamesIves/github-pages-deploy-action@v4.8.0
         with:
           branch: gh-pages
           folder: site/html
-          clean-exclude: pr-preview
-          single-commit: true
+          target-folder: dev
+
+      # --- Versioned release: release / manual rebuild -> stable/ (+ v<minor>/) ---
+      # A custom script rather than the JamesIves action, so it can rename
+      # stable/ -> the frozen v<minor>/ on a minor bump, maintain versions.json
+      # and the root redirect, and never disturb sibling folders. The version is
+      # read from the artifact's _buildinfo.json (dep_manager-sourced at build
+      # time), so this needs neither a neml2 install nor the git tag.
+      - name: Check out gh-pages branch
+        if: github.event.workflow_run.event == 'release' || github.event.workflow_run.event == 'workflow_dispatch'
+        uses: actions/checkout@v7
+        with:
+          ref: gh-pages
+          path: _ghpages
+          fetch-depth: 0
+      - name: Deploy versioned site to GitHub Pages
+        if: github.event.workflow_run.event == 'release' || github.event.workflow_run.event == 'workflow_dispatch'
+        run: |
+          VERSION="$(python3 -c 'import json; print(json.load(open("site/html/_buildinfo.json"))["version"])')"
+          echo "Deploying documentation version $VERSION"
+          bash doc/scripts/deploy_versioned.sh --site site/html --version "$VERSION" --pages _ghpages
