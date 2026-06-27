@@ -30,6 +30,7 @@ models/model_parameters_revisited/main
 models/implicit_model/main
 models/transient_driver/main
 models/compiled_models/main
+models/compilation_internals/main
 ```
 
 (tutorials-extension)=
