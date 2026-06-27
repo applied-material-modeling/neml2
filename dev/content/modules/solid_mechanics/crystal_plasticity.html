@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Crystal plasticity - NEML2 3.0.4</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Traction–separation laws" href="traction_separation_law.html" /><link rel="prev" title="Plasticity" href="plasticity.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Crystal plasticity - NEML2 3.0.5</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Traction–separation laws" href="traction_separation_law.html" /><link rel="prev" title="Plasticity" href="plasticity.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
@@ -435,9 +435,9 @@ l = \dot{\varepsilon} + \Omega^e - \Omega^e \varepsilon + \varepsilon \Omega^e +
 </ol>
 <p>The first holds well for metal plasticity; the second can break down at very high strain rates.</p>
 <p>Defining the current orientation as the composition of the initial lattice rotation <span class="math notranslate nohighlight">\(Q_0\)</span> with the elastic rotation, <span class="math notranslate nohighlight">\(Q = R^e Q_0\)</span>, the elastic spin reduces to <span class="math notranslate nohighlight">\(\Omega^e = \dot{Q} Q^T\)</span>. Splitting the spatial velocity gradient into symmetric and skew parts (<span class="math notranslate nohighlight">\(l = d + w\)</span>, <span class="math notranslate nohighlight">\(l^p = d^p + w^p\)</span>) and rearranging yields the two governing rate equations integrated by this module:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-40f39ed1-db2a-4a1e-afa6-5a5797a351eb">
-<div class="amsmath math notranslate nohighlight" id="equation-40f39ed1-db2a-4a1e-afa6-5a5797a351eb">
-<span class="eqno">(18)<a class="headerlink" href="#equation-40f39ed1-db2a-4a1e-afa6-5a5797a351eb" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-4c528960-5f30-4f33-b3d5-a900236e7dd3">
+<div class="amsmath math notranslate nohighlight" id="equation-4c528960-5f30-4f33-b3d5-a900236e7dd3">
+<span class="eqno">(18)<a class="headerlink" href="#equation-4c528960-5f30-4f33-b3d5-a900236e7dd3" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \dot{\varepsilon} &amp;= d - d^p - \varepsilon w + w \varepsilon \\
   \dot{Q} &amp;= \left(w - w^p - \varepsilon d^p + d^p \varepsilon\right) Q.
 \end{align}\]</div>
@@ -767,7 +767,7 @@ l^p = \sum_{i=1}^{n_\mathrm{slip}} \dot{\gamma}_i \, Q \left(d_i \otimes n_i\rig
     </div>
   </div>
 </footer>
-      <script src="../../../_static/documentation_options.js?v=50b65552"></script>
+      <script src="../../../_static/documentation_options.js?v=f4ced14b"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
