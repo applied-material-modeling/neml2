@@ -91,7 +91,6 @@ D = 297794
     prescribed_time = 'time'
     ic_Scalar_names = 'number_density'
     ic_Scalar_values = 'ic'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

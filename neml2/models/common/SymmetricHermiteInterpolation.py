@@ -67,11 +67,11 @@ class SymmetricHermiteInterpolation(Model):
     def forward(  # type: ignore[override]
         self,
         argument: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
-        x0 = self._get_param("x0", nl_params, Scalar)
-        x1 = self._get_param("x1", nl_params, Scalar)
+        x0 = self._get_param("x0", promoted_params, Scalar)
+        x1 = self._get_param("x1", promoted_params, Scalar)
         eps = torch.finfo(argument.dtype).eps
         dx = x1 - x0
         scale = 1.0 / dx

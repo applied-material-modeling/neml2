@@ -92,7 +92,7 @@ class LinearIsotropicStrainEnergyDensity(Model):
     # K (bulk modulus) and G (shear modulus) are the canonical (K, G) pair the
     # C++ IsotropicElasticityConverter always returns; extracted from the
     # (coefficients, coefficient_types) HIT list and declared explicitly in
-    # from_hit so each may be promoted to a nonlinear input.
+    # from_hit so each may be promoted to a runtime input.
     K: Scalar
     G: Scalar
     _decomposition: str
@@ -110,9 +110,9 @@ class LinearIsotropicStrainEnergyDensity(Model):
         # in from_hit and declared explicitly here so each can be promoted.
         super().__init__(**hit_values)
         if K is not None:
-            self.declare_typed_parameter("K", K, Scalar, factory=factory, allow_nonlinear=True)
+            self.declare_typed_parameter("K", K, Scalar, factory=factory, allow_promotion=True)
         if G is not None:
-            self.declare_typed_parameter("G", G, Scalar, factory=factory, allow_nonlinear=True)
+            self.declare_typed_parameter("G", G, Scalar, factory=factory, allow_promotion=True)
 
     @classmethod
     def from_hit(
@@ -160,13 +160,13 @@ class LinearIsotropicStrainEnergyDensity(Model):
     def forward(  # type: ignore[override]
         self,
         strain: SR2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
         v2: SecondOrderChainRuleDict | None = None,
         vh: ChainRuleDict | None = None,
     ):
-        K = self._get_param("K", nl_params, Scalar)
-        G = self._get_param("G", nl_params, Scalar)
+        K = self._get_param("K", promoted_params, Scalar)
+        G = self._get_param("G", promoted_params, Scalar)
 
         if self._decomposition == "NONE":
             psie_active, psie_inactive, strain_action = self._no_decomposition(strain, K, G)

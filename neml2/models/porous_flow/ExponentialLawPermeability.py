@@ -76,13 +76,13 @@ class ExponentialLawPermeability(Model):
     def forward(  # type: ignore[override]
         self,
         porosity: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         phi = porosity
-        K0 = self._get_param("K0", nl_params, Scalar)
-        phi0 = self._get_param("phi0", nl_params, Scalar)
-        a = self._get_param("a", nl_params, Scalar)
+        K0 = self._get_param("K0", promoted_params, Scalar)
+        phi0 = self._get_param("phi0", promoted_params, Scalar)
+        a = self._get_param("a", promoted_params, Scalar)
 
         # K = K0 * exp(-a * (phi - phi0)) -- typed Scalar algebra end to end.
         arg = -a * (phi - phi0)

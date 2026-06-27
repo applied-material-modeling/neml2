@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -201,19 +202,38 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
   const int trace_level = trace_env ? std::atoi(trace_env) : 0;
   const bool trace = trace_level >= 1;
   const bool verbose = trace_level >= 2;
+  const bool collect = _cfg.collect_log;
+
+  // Per-iteration convergence log. Each line is built once and sent to stderr
+  // (the env-var trace) and/or recorded into the result (collect_log), so the
+  // two sinks can never diverge. Building a line forces a scalar d2h sync, so
+  // it is skipped entirely unless one of the sinks is active.
+  std::vector<std::string> log;
+  const auto emit_log = [&](const std::string & line)
+  {
+    if (verbose)
+      std::cerr << line << std::endl;
+    if (collect)
+      log.push_back(line);
+  };
+
+  if (verbose || collect)
+  {
+    std::ostringstream oss;
+    oss << "ITERATION " << std::setw(3) << 0 << ", |R| = " << std::scientific
+        << b0_norm.max().item<double>() << ", |R0| = " << std::scientific
+        << b0_norm.max().item<double>();
+    emit_log(oss.str());
+  }
 
   if (check_converged(b0_norm, b0_norm, _cfg.atol, _cfg.rtol))
   {
     if (trace)
       std::cerr << "[aoti newton]iters=0 (converged at predictor) "
                 << "b0_norm=" << b0_norm.max().item<double>() << std::endl;
-    return {std::move(u), /*converged=*/true, /*iterations=*/0};
+    return {std::move(u), /*converged=*/true, /*iterations=*/0, std::move(log)};
   }
   std::size_t reached = _cfg.miters;
-  if (verbose)
-    std::cerr << "ITERATION " << std::setw(3) << 0 << ", |R| = " << std::scientific
-              << b0_norm.max().item<double>() << ", |R0| = " << std::scientific
-              << b0_norm.max().item<double>() << std::endl;
   for (std::size_t i = 1; i < _cfg.miters; ++i)
   {
     // step() returns (du_groups, b_curr_groups). We already have b_outs from
@@ -270,13 +290,15 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
         else // BACKTRACKING
           crit = nb_curr_sq - 2.0 * _cfg.ls_c * alpha * b_dot_du;
 
-        if (verbose)
-          std::cerr << "     LS ITERATION " << std::setw(3) << k_ls
-                    << ", min(alpha) = " << std::scientific << alpha.min().item<double>()
-                    << ", max(||R||) = " << std::scientific
-                    << nb_trial_sq.sqrt().max().item<double>()
-                    << ", min(||Rc||) = " << std::scientific << crit.sqrt().min().item<double>()
-                    << std::endl;
+        if (verbose || collect)
+        {
+          std::ostringstream oss;
+          oss << "     LS ITERATION " << std::setw(3) << k_ls
+              << ", min(alpha) = " << std::scientific << alpha.min().item<double>()
+              << ", max(||R||) = " << std::scientific << nb_trial_sq.sqrt().max().item<double>()
+              << ", min(||Rc||) = " << std::scientific << crit.sqrt().min().item<double>();
+          emit_log(oss.str());
+        }
 
         const auto stop = at::logical_or(nb_trial_sq <= crit, nb_trial_sq <= _cfg.atol * _cfg.atol);
         if (stop.all().item<bool>())
@@ -290,10 +312,14 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
 
     const auto b_norm_sq = pergroup_norm_sq(b_outs, residual_layout);
     const auto b_norm = b_norm_sq.sqrt();
-    if (verbose)
-      std::cerr << "ITERATION " << std::setw(3) << i << ", |R| = " << std::scientific
-                << b_norm.max().item<double>() << ", |R0| = " << std::scientific
-                << b0_norm.max().item<double>() << std::endl;
+    if (verbose || collect)
+    {
+      std::ostringstream oss;
+      oss << "ITERATION " << std::setw(3) << i << ", |R| = " << std::scientific
+          << b_norm.max().item<double>() << ", |R0| = " << std::scientific
+          << b0_norm.max().item<double>();
+      emit_log(oss.str());
+    }
     const auto status = check_stop(b_norm, b0_norm, _cfg.atol, _cfg.rtol);
     if (status == StopStatus::Diverged)
       throw ConvergenceError("AOTI Newton diverged at iter " + std::to_string(i) +
@@ -306,7 +332,7 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
         std::cerr << "[aoti newton]iters=" << i << " (converged) "
                   << "b0_norm=" << b0_norm.max().item<double>()
                   << " b_norm=" << b_norm.max().item<double>() << std::endl;
-      return {std::move(u), /*converged=*/true, /*iterations=*/i};
+      return {std::move(u), /*converged=*/true, /*iterations=*/i, std::move(log)};
     }
   }
 

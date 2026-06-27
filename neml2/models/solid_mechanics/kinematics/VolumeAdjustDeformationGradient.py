@@ -55,7 +55,7 @@ class VolumeAdjustDeformationGradient(Model):
         self,
         F: R2,
         J: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
         # Forward: Fe = F * J^(-1/3) -- typed wrapper algebra

@@ -63,7 +63,7 @@ class PhaseTransformationEigenstrain(Model):
         self,
         phase_fraction: Scalar,
         volume_fraction_change: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         f = phase_fraction

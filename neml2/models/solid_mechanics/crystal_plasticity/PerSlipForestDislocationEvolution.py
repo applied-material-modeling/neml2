@@ -47,8 +47,8 @@ class PerSlipForestDislocationEvolution(Model):
         input("dislocation_density", Scalar, "Per-slip dislocation density"),
         input("slip_rates", Scalar, "Per-slip system slip rates"),
         derived_output("dislocation_density", Scalar, attr="_rho_rate", suffix="_rate"),
-        parameter("k1", Scalar, "Hardening coefficient", attr="k1", allow_nonlinear=True),
-        parameter("k2", Scalar, "Recovery coefficient", attr="k2", allow_nonlinear=True),
+        parameter("k1", Scalar, "Hardening coefficient", attr="k1", allow_promotion=True),
+        parameter("k2", Scalar, "Recovery coefficient", attr="k2", allow_promotion=True),
     )
 
     # ``from_hit`` auto-declares the two parameters and the derived
@@ -61,12 +61,12 @@ class PerSlipForestDislocationEvolution(Model):
         self,
         rho: Scalar,
         gamma_dot: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Mirrors ``PerSlipForestDislocationEvolution::set_value`` in the C++ source.
-        k1 = self._get_param("k1", nl_params, Scalar)
-        k2 = self._get_param("k2", nl_params, Scalar)
+        k1 = self._get_param("k1", promoted_params, Scalar)
+        k2 = self._get_param("k2", promoted_params, Scalar)
 
         sqrt_rho = sqrt(rho)
         abs_gamma = abs(gamma_dot)
@@ -90,9 +90,11 @@ class PerSlipForestDislocationEvolution(Model):
             "dislocation_density": lambda V, c=d_drho: c * V,
             "slip_rates": lambda V, c=d_dgamma: c * V,
         }
-        if "k1" in self._nl_params:
-            actions[self._nl_params["k1"].input_name] = lambda V, c=sqrt_rho * abs_gamma: c * V
-        if "k2" in self._nl_params:
-            actions[self._nl_params["k2"].input_name] = lambda V, c=-rho * abs_gamma: c * V
+        if "k1" in self._promoted_params:
+            actions[self._promoted_params["k1"].input_name] = lambda V, c=sqrt_rho * abs_gamma: (
+                c * V
+            )
+        if "k2" in self._promoted_params:
+            actions[self._promoted_params["k2"].input_name] = lambda V, c=-rho * abs_gamma: c * V
 
         return rho_dot, self.apply_chain_rule(v, self._rho_rate, actions, output=rho_dot)

@@ -1,7 +1,7 @@
 # Translated from tests/unit/models/kwn/NucleationBarrierAndCriticalRadius.i.
 # The C++ fixture has no structural inputs (the model exposes only parameters).
 # The native ModelUnitTest requires at least one JVP comparison, so promote the
-# two ``allow_nonlinear`` parameters (``surface_energy``,
+# two ``allow_promotion`` parameters (``surface_energy``,
 # ``total_gibbs_free_energy_difference``) to runtime inputs (mode-4
 # ``declare_typed_parameter``) by giving them bare variable names; the driver
 # then supplies them via input_Scalar_values. This matches the C++ test's

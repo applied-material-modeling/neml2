@@ -70,7 +70,7 @@ class EffectiveVolume(Model):
             Scalar,
             "Reference mass of the composite",
             attr="M",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameters(
             "densities",
@@ -103,12 +103,12 @@ class EffectiveVolume(Model):
         **_,
     ):
         # Inputs arrive positionally in ``input_spec`` declaration order, then
-        # the *nl_params pack. The optional ``open_volume_fraction`` entry is
+        # the *promoted_params pack. The optional ``open_volume_fraction`` entry is
         # popped from ``input_spec`` when HIT didn't name it — pair the present
         # subset with the surviving names.
         names = list(self.input_spec)
         n_in = len(names)
-        inputs, nl_params = args[:n_in], args[n_in:]
+        inputs, promoted_params = args[:n_in], args[n_in:]
         if len(inputs) != n_in:
             raise AssertionError(
                 f"EffectiveVolume.forward: got {len(inputs)} inputs, expected {n_in}"
@@ -119,8 +119,8 @@ class EffectiveVolume(Model):
         phio_name = self._phio_name
         phio = bound[phio_name] if phio_name is not None and phio_name in bound else None
 
-        M = self._get_param("M", nl_params, Scalar)
-        rhos = self._get_param_list("_rho_names", nl_params, Scalar)
+        M = self._get_param("M", promoted_params, Scalar)
+        rhos = self._get_param_list("_rho_names", promoted_params, Scalar)
 
         # sum = Σ_i (w_i / rho_i)
         terms = [w / rho for w, rho in zip(ws, rhos, strict=True)]

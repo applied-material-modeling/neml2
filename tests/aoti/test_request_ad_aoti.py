@@ -57,7 +57,7 @@ _INS = ("vonmises_stress", "temperature")
 
 @_REQUIRES_AUTOGRAD_LOWERING
 def test_request_ad_aoti_jacobian_matches_eager_and_fd(tmp_path: Path):
-    from neml2.aoti import Model as AOTIModel
+    from neml2.aoti import AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
     from neml2.eager import _EagerModel
 
@@ -92,10 +92,13 @@ def test_request_ad_aoti_jacobian_matches_eager_and_fd(tmp_path: Path):
             f"jacobian d({_OUT})/d({i}) aoti vs eager mismatch"
         )
 
-    # Finite-difference cross-check on d(ep)/d(vonmises_stress).
+    # Finite-difference cross-check on d(ep)/d(vonmises_stress). The shim's
+    # public ``forward`` is typed-positional (it plays the native Model role);
+    # the raw-dict forward used here for a quick numeric probe is the binding
+    # handle's interface, matching the raw-dict ``jacobian`` above.
     eps = 1.0
-    fp = aoti.forward({"vonmises_stress": vm + eps, "temperature": T})[_OUT]
-    fm = aoti.forward({"vonmises_stress": vm - eps, "temperature": T})[_OUT]
+    fp = aoti._inner.forward({"vonmises_stress": vm + eps, "temperature": T})[_OUT]
+    fm = aoti._inner.forward({"vonmises_stress": vm - eps, "temperature": T})[_OUT]
     fd = (fp - fm) / (2 * eps)
     assert torch.allclose(jac_aoti[_OUT]["vonmises_stress"], fd, rtol=1e-4, atol=1e-6)
 
@@ -132,7 +135,7 @@ def _implicit_inputs(b: int = 4):
 
 @_REQUIRES_AUTOGRAD_LOWERING
 def test_request_ad_in_implicit_residual_matches_eager(tmp_path: Path):
-    from neml2.aoti import Model as AOTIModel
+    from neml2.aoti import AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
     from neml2.eager import _EagerModel
 

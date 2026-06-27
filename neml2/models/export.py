@@ -294,7 +294,7 @@ def compile_model(
     # nested tuple "argument", while each named positional parameter stays a
     # top-level entry. Forward signatures come in three shapes:
     #   * pure ``*inputs``                     → every example feeds the pack
-    #   * named positionals + ``*nl_params``   → first N examples are named,
+    #   * named positionals + ``*promoted_params``   → first N examples are named,
     #                                            the remainder feed the pack
     #   * named positionals only               → flat 1:1 with the examples
     # so we split the example inputs at the number of named positional params.

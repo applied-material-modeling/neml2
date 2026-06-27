@@ -52,14 +52,14 @@ class KocksMeckingYieldStress(Model):
             Scalar,
             "The Kocks-Mecking horizontal intercept",
             attr="C",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "shear_modulus",
             Scalar,
             "The shear modulus",
             attr="mu",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -70,15 +70,15 @@ class KocksMeckingYieldStress(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
         v2: SecondOrderChainRuleDict | None = None,
         vh: ChainRuleDict | None = None,
     ):
         # Mirrors ``KocksMeckingYieldStress::set_value`` in
         # ``src/neml2/models/solid_mechanics/plasticity/KocksMeckingYieldStress.cxx``.
-        C = self._get_param("C", nl_params, Scalar)
-        mu = self._get_param("mu", nl_params, Scalar)
+        C = self._get_param("C", promoted_params, Scalar)
+        mu = self._get_param("mu", promoted_params, Scalar)
 
         # tau = mu * exp(C)
         eC = exp(C)
@@ -94,10 +94,10 @@ class KocksMeckingYieldStress(Model):
         #   dtau / d mu = exp(C)
         #   dtau / d C  = mu * exp(C) = tau
         actions_1: dict[str, ChainRuleAction] = {}
-        if "mu" in self._nl_params:
-            actions_1[self._nl_params["mu"].input_name] = lambda V, c=eC: c * V
-        if "C" in self._nl_params:
-            actions_1[self._nl_params["C"].input_name] = lambda V, c=tau: c * V
+        if "mu" in self._promoted_params:
+            actions_1[self._promoted_params["mu"].input_name] = lambda V, c=eC: c * V
+        if "C" in self._promoted_params:
+            actions_1[self._promoted_params["C"].input_name] = lambda V, c=tau: c * V
 
         if v2 is None and vh is None:
             return tau, self.apply_chain_rule(v, "yield_stress", actions_1, output=tau)
@@ -111,11 +111,11 @@ class KocksMeckingYieldStress(Model):
         # (NO leading seed dim) and returns a primal-shape Scalar bilinear;
         # the framework iterates the (N_a, N_b) seed-pair outer.
         actions_2: dict = {}
-        if "C" in self._nl_params:
-            cname = self._nl_params["C"].input_name
+        if "C" in self._promoted_params:
+            cname = self._promoted_params["C"].input_name
             actions_2[(cname, cname)] = lambda Va, Vb, c=tau: c * Va * Vb
-            if "mu" in self._nl_params:
-                mname = self._nl_params["mu"].input_name
+            if "mu" in self._promoted_params:
+                mname = self._promoted_params["mu"].input_name
                 actions_2[(cname, mname)] = lambda Va, Vb, c=eC: c * Va * Vb
                 actions_2[(mname, cname)] = lambda Va, Vb, c=eC: c * Va * Vb
 

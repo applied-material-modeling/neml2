@@ -57,21 +57,21 @@ class ZenerElement(Model):
             Scalar,
             "Equilibrium spring modulus",
             attr="Einf",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "maxwell_modulus",
             Scalar,
             "Maxwell branch spring modulus",
             attr="EM",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "maxwell_viscosity",
             Scalar,
             "Maxwell branch dashpot viscosity",
             attr="etaM",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -88,14 +88,14 @@ class ZenerElement(Model):
         self,
         strain: SR2,
         viscous_strain: SR2,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
         # Mirrors ``ZenerElement::set_value`` in
         # ``src/neml2/models/solid_mechanics/viscoelasticity/ZenerElement.cxx``.
-        Einf = self._get_param("Einf", nl_params, Scalar)
-        EM = self._get_param("EM", nl_params, Scalar)
-        etaM = self._get_param("etaM", nl_params, Scalar)
+        Einf = self._get_param("Einf", promoted_params, Scalar)
+        EM = self._get_param("EM", promoted_params, Scalar)
+        etaM = self._get_param("etaM", promoted_params, Scalar)
         E = strain
         Ev = viscous_strain
         # Maxwell branch stress: SM = EM * (E - Ev)
@@ -127,14 +127,14 @@ class ZenerElement(Model):
             "strain": lambda V, c=EM_over_etaM: c * V,
             "viscous_strain": lambda V, c=EM_over_etaM: -(c * V),
         }
-        if "Einf" in self._nl_params:
-            actions_S[self._nl_params["Einf"].input_name] = lambda V, c=E: c * V
-        if "EM" in self._nl_params:
-            ext = self._nl_params["EM"].input_name
+        if "Einf" in self._promoted_params:
+            actions_S[self._promoted_params["Einf"].input_name] = lambda V, c=E: c * V
+        if "EM" in self._promoted_params:
+            ext = self._promoted_params["EM"].input_name
             actions_S[ext] = lambda V, c=Ediff: c * V
             actions_Ev_dot[ext] = lambda V, c=Ediff, e=etaM: (c / e) * V
-        if "etaM" in self._nl_params:
-            ext = self._nl_params["etaM"].input_name
+        if "etaM" in self._promoted_params:
+            ext = self._promoted_params["etaM"].input_name
             actions_Ev_dot[ext] = lambda V, c=SM, e=etaM: -((c / (e * e)) * V)
 
         # "stress" and "strain" / "viscous_strain" canonical keys translate

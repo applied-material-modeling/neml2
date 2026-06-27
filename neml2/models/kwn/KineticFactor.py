@@ -55,14 +55,14 @@ class KineticFactor(Model):
             Scalar,
             "Molar volume of the precipitate",
             attr="V_m",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "avogadro_number",
             Scalar,
             "Avogadro's number",
             attr="N_a",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -77,13 +77,13 @@ class KineticFactor(Model):
         self,
         critical_radius: Scalar,
         projected_diffusivity_sum: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         R = critical_radius
         s = projected_diffusivity_sum
-        V_m = self._get_param("V_m", nl_params, Scalar)
-        N_a = self._get_param("N_a", nl_params, Scalar)
+        V_m = self._get_param("V_m", promoted_params, Scalar)
+        N_a = self._get_param("N_a", promoted_params, Scalar)
 
         # Forward: β = 4π (N_a / V_m)^(4/3) R² / sum. Typed Scalar algebra
         # end-to-end, matching ``KineticFactor::set_value``. ``pow`` is
@@ -102,7 +102,7 @@ class KineticFactor(Model):
         #   ∂β/∂V_m  = -(4/3) β / V_m   ⇒ action(V) = (-(4/3)β/V_m) · V
         #   ∂β/∂N_a  = +(4/3) β / N_a   ⇒ action(V) = (+(4/3)β/N_a) · V
         # The parameter actions only fire when the parameter has been promoted
-        # to a nonlinear input via the HIT ``[Models]`` cross-ref form.
+        # to a runtime input via the HIT ``[Models]`` cross-ref form.
         dbeta_dR = 2.0 * beta / R
         dbeta_ds = -beta / s
         actions: dict[str, ChainRuleAction] = {
@@ -110,12 +110,12 @@ class KineticFactor(Model):
             "projected_diffusivity_sum": lambda V, c=dbeta_ds: c * V,
         }
 
-        V_m_nlp = self._nl_params.get("V_m")
+        V_m_nlp = self._promoted_params.get("V_m")
         if V_m_nlp is not None:
             dbeta_dVm = -(4.0 / 3.0) * beta / V_m
             actions[V_m_nlp.input_name] = lambda V, c=dbeta_dVm: c * V
 
-        N_a_nlp = self._nl_params.get("N_a")
+        N_a_nlp = self._promoted_params.get("N_a")
         if N_a_nlp is not None:
             dbeta_dNa = (4.0 / 3.0) * beta / N_a
             actions[N_a_nlp.input_name] = lambda V, c=dbeta_dNa: c * V

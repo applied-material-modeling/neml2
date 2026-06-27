@@ -97,10 +97,10 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'strain'
-    force_SR2_values = 'strains'
-    force_Scalar_names = 'temperature'
-    force_Scalar_values = 'temperatures'
+    prescribed_SR2_names = 'strain'
+    prescribed_SR2_values = 'strains'
+    prescribed_Scalar_names = 'temperature'
+    prescribed_Scalar_values = 'temperatures'
     ic_Scalar_names = 'void_fraction'
     ic_Scalar_values = 'f0'
   []

@@ -73,7 +73,6 @@ final_center = 0.625
     prescribed_time = 'time'
     ic_Scalar_names = 'concentration'
     ic_Scalar_values = 'ic'
-    save_as = 'result.pt'
   []
   [verification]
     type = Verification

@@ -1,6 +1,6 @@
 ---
 name: add-tutorial
-description: Author a new NEML2 tutorial page under `doc/content/tutorials/`. Tutorials are self-contained, Colab-runnable Jupyter notebooks (jupytext-paired `main.ipynb`+`main.md`) with executable `{code-cell}` blocks; they create their own input files in-notebook via `%%writefile` (no sibling files, no `{literalinclude}`) and carry an auto-injected "Open in Colab" badge. Trigger on phrases like "add a tutorial for X", "write a tutorial about Y", "I need a notebook-style doc page demonstrating Z". For static reference pages without executable cells, see `add-doc` instead.
+description: Author a new NEML2 tutorial page under `doc/content/tutorials/`. Tutorials are self-contained, Colab-runnable Jupyter notebooks (`main.ipynb`, no jupytext pairing) with executable code cells; they create their own input files in-notebook via `%%writefile` (no sibling files, no `{literalinclude}`) and carry an auto-injected "Open in Colab" badge. Trigger on phrases like "add a tutorial for X", "write a tutorial about Y", "I need a notebook-style doc page demonstrating Z". For static reference pages without executable cells, see `add-doc` instead.
 ---
 
 # add-tutorial
@@ -14,8 +14,8 @@ NEML2 and writes out any input files it needs, rather than relying on
 sibling files that only exist in the repo.
 
 Tutorials sit under `doc/content/tutorials/{models,extension,
-optimization}/<name>/` as a directory containing a jupytext-paired
-`main.ipynb` + `main.md`.
+optimization}/<name>/` as a directory containing a single
+self-contained `main.ipynb`.
 
 ## Voice (most important rule)
 
@@ -69,53 +69,49 @@ jargon or assumed a missing prerequisite.
 
 ```
 doc/content/tutorials/<section>/<name>/
-├── main.ipynb   — the rendered + Colab-launched notebook (source of truth)
-└── main.md      — jupytext mirror (myst); edit this, sync to the .ipynb
+└── main.ipynb   — the rendered + Colab-launched notebook (the only file)
 ```
 
 **No sibling files.** Anything the notebook loads (`input.i`,
 `projectile.py`, …) is created *inside* the notebook with a
-`%%writefile` cell — there is nothing on disk next to `main.md` for
+`%%writefile` cell — there is nothing on disk next to `main.ipynb` for
 Colab to miss. Do **not** add an `input.i` file or use
 `{literalinclude}` (the directive does not render in Colab).
 
-Author in `main.md`, then generate the paired notebook:
+Author `main.ipynb` directly — it is a real Jupyter notebook (no
+jupytext pairing, no `.md` mirror). Draft it in Jupyter, or construct it
+with `nbformat`; the cell-by-cell template below shows what goes in each
+cell. Commit it with **no outputs** (the docs build executes the
+notebook; only the two expensive optimization notebooks are committed
+pre-executed). `ruff-format` formats the `.ipynb` code cells via the
+pre-commit hook.
 
-```bash
-cd doc/content/tutorials/<section>/<name>
-python -m jupytext --set-formats ipynb,md:myst --sync main.md
+## Notebook metadata
+
+A real `.ipynb` needs only a valid `kernelspec` in its notebook
+metadata — myst-nb reads the code cells natively, so there is no
+front-matter to add:
+
+```json
+"metadata": {
+ "kernelspec": {
+  "display_name": "Python 3",
+  "language": "python",
+  "name": "python3"
+ }
+}
 ```
 
-Commit **both** `main.ipynb` and `main.md`, with **no outputs** (the
-docs build executes the notebook; only the two expensive optimization
-notebooks are committed pre-executed). The jupytext pre-commit hook
-keeps the pair in sync; `ruff-format` will format the `.ipynb` code
-cells (re-run the `--sync` afterwards if you format by hand).
-
-## Required front-matter (mandatory)
-
-Without the `jupytext` block, myst-nb silently drops `{code-cell}`
-directives and the page renders the prose only.
-
-```yaml
----
-jupytext:
-  formats: ipynb,md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
-    format_version: 0.13
-kernelspec:
-  display_name: Python 3
-  language: python
-  name: python3
----
-```
-
-Do **not** add a `mystnb.execution_mode` key — execution is controlled
-globally in `doc/conf.py` (`nb_execution_mode = "cache"`).
+Do **not** set a per-notebook execution mode
+(`metadata.mystnb.execution_mode`) — execution is controlled globally in
+`doc/conf.py` (`nb_execution_mode = "cache"`).
 
 ## Body structure
+
+The template below shows the notebook's cells in order — a markdown cell
+for each prose block, a code cell for each `{code-cell}`. It is written
+in MyST-markdown form for readability; the committed artifact is the
+equivalent `.ipynb`.
 
 ````markdown
 (tutorials-<section>-<name>)=
@@ -193,8 +189,8 @@ restates the code, drop this section.
   temp dir (`nb_execution_in_temp = True`), so a `%%writefile input.i`
   cell must run *before* the `load_model("input.i", ...)` that reads it;
   both resolve against that temp cwd. Never assume a file exists on disk.
-- **Code cells**: triple-backtick `{code-cell} ipython3` form, language
-  **must be `ipython3`** (`python` parses but doesn't execute).
+- **Code cells** run under the Python 3 kernel. (In the MyST template
+  above they appear as `{code-cell} ipython3` fences.)
 - **Cross-references**: `[](label)` MyST short form. Common labels:
   - Tutorials: `tutorials-models-<name>`,
     `tutorials-extension-<name>`, `tutorials-optimization-<name>`.
@@ -213,8 +209,7 @@ restates the code, drop this section.
   `d=$(mktemp -d); cp main.ipynb "$d"; (cd "$d" && python -m jupyter nbconvert --to notebook --execute main.ipynb --output o.ipynb)`.
   It must run with no siblings present. (Or build the docs.)
 - **Toctree wiring**: add `<section>/<name>/main` to the corresponding
-  `index.md` toctree. Sphinx renders the `.ipynb` and ignores the paired
-  `.md` (excluded automatically in `conf.py`).
+  `index.md` toctree. Sphinx renders the `.ipynb` directly.
 
 ## Execution model
 
@@ -237,4 +232,4 @@ neml2` it runs matches the deployed page.
   matter gotcha catalog.
 - `add-doc` for static reference pages (no code cells).
 - Exemplar tutorial:
-  `doc/content/tutorials/models/running_your_first_model/main.md`.
+  `doc/content/tutorials/models/running_your_first_model/main.ipynb`.

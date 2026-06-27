@@ -19,19 +19,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  notebook-sync:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          # jupytext in pre-commit mode reads git commit timestamps to
-          # decide which file to regenerate from.
-          fetch-depth: 0
-      - uses: pre-commit/action@v3.0.1
-        with:
-          extra_args: jupytext --all-files --show-diff-on-failure -v
-
   documentation:
     runs-on: ubuntu-latest
     steps:

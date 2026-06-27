@@ -36,8 +36,8 @@ Key differences from C++:
   populated from the previous step's outputs (or ICs at step 0).
 - Inputs not set by force/IC/history (e.g. ``t~1`` at step 0) default to
   zero — matches the C++ "handled by the forward operator" convention.
-- ``save_as`` is parsed but ignored; results stay in memory and are read by
-  ``TransientRegression`` directly.
+- ``save_as``, when set, makes ``run()`` write :meth:`result` to that path;
+  empty (the default) leaves ``run()`` side-effect-free.
 """
 
 from __future__ import annotations
@@ -57,7 +57,7 @@ if TYPE_CHECKING:
     from ..factory import _NativeInputFile
     from ..models.model import Model
 
-#: HIT ``force_<Type>_*`` / ``ic_<Type>_*`` tag -> native wrapper class. Mirrors
+#: HIT ``prescribed_<Type>_*`` / ``ic_<Type>_*`` tag -> native wrapper class. Mirrors
 #: ``testing._TYPE_MAP`` (and the C++ ``FOR_ALL_TENSORBASE`` macro expansion).
 _TYPE_MAP: dict[str, type[TensorWrapper]] = {
     "Scalar": Scalar,
@@ -120,19 +120,19 @@ def _read_typed_pairs(
 
 
 def _typed_io_fields() -> tuple[HitField, ...]:
-    """Build documentation fields for the ``force_<Type>_*`` / ``ic_<Type>_*``
+    """Build documentation fields for the ``prescribed_<Type>_*`` / ``ic_<Type>_*``
     name/value pairs that ``_read_typed_pairs`` ingests at parse time.
 
     Each typed wrapper (Scalar, Vec, SR2, ...) maps to four optional list
-    options: ``force_<T>_names`` paired with ``force_<T>_values`` and the same
-    pair under ``ic_<T>_*`` for initial conditions. The schema doesn't drive
+    options: ``prescribed_<T>_names`` paired with ``prescribed_<T>_values`` and
+    the same pair under ``ic_<T>_*`` for initial conditions. The schema doesn't drive
     parsing here (the driver overrides ``from_hit``) — it exists so
     ``neml2-syntax`` can render the full HIT surface.
     """
     fields: list[HitField] = []
     for type_name in _TYPE_MAP:
         for prefix, prefix_doc, article in (
-            ("force", "driving force", "a"),
+            ("prescribed", "prescribed", "a"),
             ("ic", "initial condition", "an"),
         ):
             fields.append(
@@ -164,7 +164,7 @@ class TransientDriver(Driver):
     """
 
     # Documentation-only schema; ``from_hit`` below owns the parsing because
-    # ``force_<Type>_*`` / ``ic_<Type>_*`` are a wide product of optional list
+    # ``prescribed_<Type>_*`` / ``ic_<Type>_*`` are a wide product of optional list
     # options that the typed Model-style schema can't express directly.
     hit = HitSchema(
         dependency("model", "get_model", "The Model to drive over the time history."),
@@ -182,9 +182,9 @@ class TransientDriver(Driver):
         option(
             "save_as",
             str,
-            "Output file path. Accepted for compatibility with the C++ driver but ignored "
-            "by the native runtime; results are held in memory and retrieved via "
-            ":meth:`result`.",
+            "Output file path. When set, ``run()`` writes the result here (the same "
+            "flat dict :meth:`result` returns, via :meth:`save_result`); empty (the "
+            "default) leaves ``run()`` side-effect-free.",
             default="",
         ),
         *_typed_io_fields(),
@@ -195,14 +195,16 @@ class TransientDriver(Driver):
         model: Model,
         prescribed_time: Scalar,
         time_name: str,
-        forces: dict[str, TensorWrapper],
+        prescribed: dict[str, TensorWrapper],
         ics: dict[str, TensorWrapper],
+        save_as: str = "",
     ) -> None:
         self.model = model
         self.prescribed_time = prescribed_time
         self.time_name = time_name
-        self.forces = forces
+        self.prescribed = prescribed
         self.ics = ics
+        self.save_as = save_as
         self.nsteps = int(prescribed_time.data.shape[0])
         # Per-step input/output dicts, populated by run(). Values are typed
         # wrappers (TensorWrapper) so sub_batch_ndim propagates; the public
@@ -215,10 +217,11 @@ class TransientDriver(Driver):
         # Every force should be present in input_spec (or it would never be
         # picked up); same for IC names that match an output_spec key.
         spec = self.model.input_spec
-        for name in self.forces:
+        for name in self.prescribed:
             if name not in spec:
                 raise ValueError(
-                    f"TransientDriver force {name!r} is not in model.input_spec {list(spec)}"
+                    f"TransientDriver prescribed variable {name!r} is not in "
+                    f"model.input_spec {list(spec)}"
                 )
         # ICs may reference history vars (input_spec) or step-0 outputs (output_spec).
         for name in self.ics:
@@ -229,11 +232,11 @@ class TransientDriver(Driver):
                 )
         # Driving forces must carry a leading time-step dim of the same size as
         # prescribed_time's leading dim.
-        for name, force in self.forces.items():
-            if force.data.shape[0] != self.nsteps:
+        for name, val in self.prescribed.items():
+            if val.data.shape[0] != self.nsteps:
                 raise ValueError(
-                    f"TransientDriver force {name!r} has leading shape "
-                    f"{force.data.shape[0]} but prescribed_time has {self.nsteps}"
+                    f"TransientDriver prescribed variable {name!r} has leading shape "
+                    f"{val.data.shape[0]} but prescribed_time has {self.nsteps}"
                 )
 
     @classmethod
@@ -252,18 +255,21 @@ class TransientDriver(Driver):
                     f"{type(prescribed_time).__name__}, expected Scalar"
                 )
 
-        forces = _read_typed_pairs(node, factory, "force")
+        prescribed = _read_typed_pairs(node, factory, "prescribed")
         ics = _read_typed_pairs(node, factory, "ic")
 
-        # save_as is parsed but ignored; native holds results in memory.
-        _ = node.param_optional_str("save_as", "")
+        # save_as is honored by ``neml2-run`` (which writes result() to this
+        # path after the run); ``run()`` stays side-effect-free so the
+        # regression tests that call it don't litter result files.
+        save_as = node.param_optional_str("save_as", "")
 
         return cls(
             model=model,
             prescribed_time=prescribed_time,
             time_name=time_name,
-            forces=forces,
+            prescribed=prescribed,
             ics=ics,
+            save_as=save_as,
         )
 
     def run(self) -> bool:
@@ -281,7 +287,7 @@ class TransientDriver(Driver):
             # Slice the typed wrapper so sub_batch_ndim is preserved per step.
             if self.time_name in spec:
                 cur_in[self.time_name] = _slice_typed(self.prescribed_time, step)
-            for fname, fval in self.forces.items():
+            for fname, fval in self.prescribed.items():
                 cur_in[fname] = _slice_typed(fval, step)
 
             # ICs apply only at step 0. history-bearing IC keys (``X~k``) land
@@ -357,6 +363,14 @@ class TransientDriver(Driver):
                 # advance_step preserves sub_batch_ndim.
                 self.result_out[step][oname] = ovalue
 
+        # Persist the full trajectory when the input requests it via ``save_as``
+        # (mirrors v2, including the stdout notice). Empty by default, so a
+        # driver that is only being diffed in memory (TransientRegression /
+        # Verification) writes nothing.
+        if self.save_as:
+            self.save_result(self.save_as)
+            print(f"Results saved to {self.save_as}")
+
         return True
 
     def result(self) -> dict[str, torch.Tensor]:
@@ -374,7 +388,7 @@ class TransientDriver(Driver):
                 out[f"output.{step}.{name}"] = val.data if isinstance(val, TensorWrapper) else val
         return out
 
-    def save_gold(self, path: str | Path) -> None:
+    def save_result(self, path: str | Path) -> None:
         """Serialize ``result()`` to a ``.pt`` file as a flat ``torch.save`` dict.
 
         The dict carries the same keys as :meth:`result`:

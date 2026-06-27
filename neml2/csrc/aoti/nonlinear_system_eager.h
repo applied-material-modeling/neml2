@@ -48,9 +48,11 @@ namespace neml2::aoti
 /// ``step_fn(list[Tensor] u) -> (list[Tensor] du, list[Tensor] b)`` are Python
 /// callables that already bind the givens + linear solver (e.g. RHS /
 /// NewtonStep). ``unknown_layout`` / ``residual_layout`` are ``(structure,
-/// sub_batch_shape)`` per group. Returns ``(u_solved, converged, iterations)``.
-/// Must be called with the GIL held (it invokes the Python callables inline).
-std::tuple<std::vector<at::Tensor>, bool, std::size_t>
+/// sub_batch_shape)`` per group. Returns ``(u_solved, converged, iterations,
+/// log)`` where ``log`` is the per-iteration convergence history (empty unless
+/// ``cfg.collect_log`` is set). Must be called with the GIL held (it invokes
+/// the Python callables inline).
+std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
 run_eager_newton(const SolverConfig & cfg,
                  pybind11::object residual_fn,
                  pybind11::object step_fn,

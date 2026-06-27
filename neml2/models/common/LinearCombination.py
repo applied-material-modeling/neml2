@@ -42,9 +42,9 @@ class _LinearCombination(Model):
 
     Mirrors the C++ ``LinearCombination<T>``. ``offset`` is the constant $b$
     added to the final summation (default ``0``, i.e. no offset). Both weights
-    and offset are tracked as ``Scalar`` parameters with ``allow_nonlinear=True``,
+    and offset are tracked as ``Scalar`` parameters with ``allow_promotion=True``,
     so each can independently resolve as a literal HIT value, a ``[Tensors]``
-    cross-reference, or a runtime-promoted nl input (modes 1 / 2 / 3 / 4 —
+    cross-reference, or a runtime-promoted input (modes 1 / 2 / 3 / 4 —
     the same scheme as any other ``declare_typed_parameter`` call). This is
     intentionally less configurable than the C++ ``offset_as_parameter`` /
     ``weight_as_parameter`` knobs: every coefficient is a parameter by default
@@ -76,7 +76,7 @@ class _LinearCombination(Model):
             "weight is broadcast across every from-variable.",
             default=["1"],
             attr="weight",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "offset",
@@ -84,7 +84,7 @@ class _LinearCombination(Model):
             "The constant coefficient added to the final summation",
             default="0",
             attr="offset",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -109,16 +109,16 @@ class _LinearCombination(Model):
         vh: ChainRuleDict | None = None,
     ):
         # Split positional inputs: the leading structural inputs (one per
-        # from-var) followed by the *nl_params pack that holds any
+        # from-var) followed by the *promoted_params pack that holds any
         # mode-3/4-promoted parameters.
         n_from = len(self._from_vars)
-        inputs, nl_params = args[:n_from], args[n_from:]
+        inputs, promoted_params = args[:n_from], args[n_from:]
         if len(inputs) != n_from:
             raise ValueError(f"{type(self).__name__} expected {n_from} inputs, got {len(inputs)}")
-        weights = self._get_param_list("weight", nl_params, Scalar)
+        weights = self._get_param_list("weight", promoted_params, Scalar)
         if len(weights) == 1:
             weights = weights * n_from
-        offset = self._get_param("offset", nl_params, Scalar)
+        offset = self._get_param("offset", promoted_params, Scalar)
 
         result = weights[0] * inputs[0]
         for w, x in zip(weights[1:], inputs[1:], strict=True):

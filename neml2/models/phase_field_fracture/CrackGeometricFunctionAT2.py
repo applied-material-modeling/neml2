@@ -52,7 +52,7 @@ class CrackGeometricFunctionAT2(Model):
     def forward(  # type: ignore[override]
         self,
         phase: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
         v2: SecondOrderChainRuleDict | None = None,
         vh: ChainRuleDict | None = None,

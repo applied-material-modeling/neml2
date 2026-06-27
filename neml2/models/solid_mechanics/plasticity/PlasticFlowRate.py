@@ -65,7 +65,7 @@ class PlasticFlowRate(Model):
     def forward(  # type: ignore[override]
         self,
         yield_function: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native plastic-flow-rate leaves implement the

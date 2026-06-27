@@ -53,14 +53,14 @@ class BrooksCoreyCapillaryPressure(Model):
             Scalar,
             "The threshold entry pressure",
             attr="Pt",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "exponent",
             Scalar,
             "The shape parameter p",
             attr="p",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         option(
             "log_extension",
@@ -107,12 +107,12 @@ class BrooksCoreyCapillaryPressure(Model):
     def forward(  # type: ignore[override]
         self,
         effective_saturation: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         S = effective_saturation
-        Pt = self._get_param("Pt", nl_params, Scalar)
-        p = self._get_param("p", nl_params, Scalar)
+        Pt = self._get_param("Pt", promoted_params, Scalar)
+        p = self._get_param("p", promoted_params, Scalar)
 
         # ``Pc = Pt * S^(-1/p)`` and its derivative ``dPc/dS = -Pt/p *
         # S^(-1/p - 1)`` — typed Scalar algebra end to end, matching

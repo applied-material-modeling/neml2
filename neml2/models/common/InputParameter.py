@@ -74,7 +74,7 @@ class _InputParameter(Model):
     def forward(  # type: ignore[override]
         self,
         variable: TensorWrapper,
-        *nl_params: TensorWrapper,
+        *promoted_params: TensorWrapper,
         v: ChainRuleDict | None = None,
     ):
         # Forward: typed identity. No .data, no torch.* -- the typed wrapper

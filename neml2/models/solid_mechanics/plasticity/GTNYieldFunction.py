@@ -77,7 +77,7 @@ class GTNYieldFunction(Model):
             Scalar,
             "Yield stress",
             attr="sy",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "q1",
@@ -85,21 +85,21 @@ class GTNYieldFunction(Model):
             "Parameter controlling the balance/competition between plastic flow and "
             "void evolution.",
             attr="q1",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "q2",
             Scalar,
             "Void evolution rate",
             attr="q2",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "q3",
             Scalar,
             "Pore pressure",
             attr="q3",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -119,19 +119,19 @@ class GTNYieldFunction(Model):
         vh: ChainRuleDict | None = None,
     ):
         # Inputs arrive positionally in ``input_spec`` declaration order, then
-        # the *nl_params pack. The optional ``isotropic_hardening`` entry is
+        # the *promoted_params pack. The optional ``isotropic_hardening`` entry is
         # popped from ``input_spec`` when HIT didn't name it; pair the present
         # subset with the surviving names.
         # Promotion bookkeeping: when a structural parameter (``q1``/``q2``/
-        # ``q3``/``sy``) is promoted to a nonlinear-parameter input via the
+        # ``q3``/``sy``) is promoted to a runtime input via the
         # HIT ``q1 = '<model>'`` form, the promoted input is appended to
-        # ``input_spec`` (see ``Model.declare_nonlinear_parameter``). Subtract
-        # the promoted count so the structural inputs and the nl_params tail
+        # ``input_spec`` (see ``Model.declare_typed_parameter``). Subtract
+        # the promoted count so the structural inputs and the promoted_params tail
         # land in their respective slices.
         names = list(self.input_spec)
-        n_in = len(names) - len(self._nl_params)
+        n_in = len(names) - len(self._promoted_params)
         names = names[:n_in]
-        inputs, nl_params = args[:n_in], args[n_in:]
+        inputs, promoted_params = args[:n_in], args[n_in:]
         if len(inputs) != n_in:
             raise AssertionError(
                 f"GTNYieldFunction.forward: got {len(inputs)} inputs, expected {n_in}"
@@ -146,10 +146,10 @@ class GTNYieldFunction(Model):
         h_name = self._h_name
         h: Scalar | None = bound[h_name] if h_name is not None and h_name in bound else None
 
-        sy = self._get_param("sy", nl_params, Scalar)
-        q1 = self._get_param("q1", nl_params, Scalar)
-        q2 = self._get_param("q2", nl_params, Scalar)
-        q3 = self._get_param("q3", nl_params, Scalar)
+        sy = self._get_param("sy", promoted_params, Scalar)
+        q1 = self._get_param("q1", promoted_params, Scalar)
+        q2 = self._get_param("q2", promoted_params, Scalar)
+        q3 = self._get_param("q3", promoted_params, Scalar)
 
         # Flow stress (depending on whether isotropic hardening is provided).
         sf = sy + h if h is not None else sy
@@ -187,26 +187,26 @@ class GTNYieldFunction(Model):
         if h is not None and h_name is not None:
             actions_1[h_name] = lambda V, c=coef_h: c * V
 
-        # Nonlinear-parameter promotions: each parameter that was promoted to a
+        # Promoted-parameter contributions: each parameter that was promoted to a
         # runtime input gets its own action keyed on the resolved input name.
         sy_name: str | None = None
         q1_name: str | None = None
         q2_name: str | None = None
         q3_name: str | None = None
-        if "sy" in self._nl_params:
-            sy_name = self._nl_params["sy"].input_name
+        if "sy" in self._promoted_params:
+            sy_name = self._promoted_params["sy"].input_name
             # ``sy`` shares the same coefficient as the hardening derivative.
             actions_1[sy_name] = lambda V, c=coef_h: c * V
-        if "q1" in self._nl_params:
-            q1_name = self._nl_params["q1"].input_name
+        if "q1" in self._promoted_params:
+            q1_name = self._promoted_params["q1"].input_name
             coef_q1 = 2.0 * phi * cosh_a
             actions_1[q1_name] = lambda V, c=coef_q1: c * V
-        if "q2" in self._nl_params:
-            q2_name = self._nl_params["q2"].input_name
+        if "q2" in self._promoted_params:
+            q2_name = self._promoted_params["q2"].input_name
             coef_q2 = q1 * phi * sp / sf * sinh_a
             actions_1[q2_name] = lambda V, c=coef_q2: c * V
-        if "q3" in self._nl_params:
-            q3_name = self._nl_params["q3"].input_name
+        if "q3" in self._promoted_params:
+            q3_name = self._promoted_params["q3"].input_name
             coef_q3 = -(phi**2)
             actions_1[q3_name] = lambda V, c=coef_q3: c * V
 
@@ -220,7 +220,7 @@ class GTNYieldFunction(Model):
         #
         # Hessian entries (mirrors C++ ``set_value`` ``d2out_din2`` branch in
         # ``GTNYieldFunction.cxx``). Variables: se, sp, phi (always); h, sy,
-        # q1, q2, q3 (when nl-promoted / hardening is present). Cross terms
+        # q1, q2, q3 (when promoted / hardening is present). Cross terms
         # registered symmetrically in BOTH orders — the framework iterates the
         # outer-product (a, b) over actions_2 and treats absent pairs as zero
         # (rather than recovering symmetry); upstream chain expressions stay

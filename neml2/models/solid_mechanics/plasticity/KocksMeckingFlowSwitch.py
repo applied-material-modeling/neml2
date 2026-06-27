@@ -61,7 +61,7 @@ class KocksMeckingFlowSwitch(Model):
             Scalar,
             "Critical value of activation energy",
             attr="g0",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         option(
             "sharpness",
@@ -85,7 +85,7 @@ class KocksMeckingFlowSwitch(Model):
         activation_energy: Scalar,
         rate_independent_flow_rate: Scalar,
         rate_dependent_flow_rate: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Mirrors ``KocksMeckingFlowSwitch::set_value`` in
@@ -95,7 +95,7 @@ class KocksMeckingFlowSwitch(Model):
         g = activation_energy
         ri = rate_independent_flow_rate
         rd = rate_dependent_flow_rate
-        g0 = self._get_param("g0", nl_params, Scalar)
+        g0 = self._get_param("g0", promoted_params, Scalar)
         sharp = self.sharp
 
         arg = sharp * (g - g0)
@@ -120,7 +120,7 @@ class KocksMeckingFlowSwitch(Model):
             "rate_independent_flow_rate": lambda V, c=one_minus_sig: c * V,
             "rate_dependent_flow_rate": lambda V, c=sig: c * V,
         }
-        if "g0" in self._nl_params:
-            actions[self._nl_params["g0"].input_name] = lambda V, c=-d_dg: c * V
+        if "g0" in self._promoted_params:
+            actions[self._promoted_params["g0"].input_name] = lambda V, c=-d_dg: c * V
 
         return gamma_dot, self.apply_chain_rule(v, "flow_rate", actions, output=gamma_dot)

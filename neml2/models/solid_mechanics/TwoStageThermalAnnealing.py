@@ -67,12 +67,12 @@ class _TwoStageThermalAnnealing(Model):
         base_rate: TensorWrapper,
         base: TensorWrapper,
         temperature: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
-        T1 = self._get_param("T1", nl_params, Scalar)
-        T2 = self._get_param("T2", nl_params, Scalar)
-        tau = self._get_param("tau", nl_params, Scalar)
+        T1 = self._get_param("T1", promoted_params, Scalar)
+        T2 = self._get_param("T2", promoted_params, Scalar)
+        tau = self._get_param("tau", promoted_params, Scalar)
 
         # Region masks as Scalar 0/1 indicators. ``lt`` returns a Scalar
         # boolean tensor; ``where`` selects between the typed Scalar branches.

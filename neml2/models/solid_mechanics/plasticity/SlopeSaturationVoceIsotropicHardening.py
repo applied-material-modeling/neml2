@@ -60,14 +60,14 @@ class SlopeSaturationVoceIsotropicHardening(Model):
             Scalar,
             "Saturated isotropic hardening",
             attr="R",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "initial_hardening_rate",
             Scalar,
             "Initial hardening rate",
             attr="theta0",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -82,15 +82,15 @@ class SlopeSaturationVoceIsotropicHardening(Model):
         self,
         flow_rate: Scalar,
         isotropic_hardening: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Mirrors ``SlopeSaturationVoceIsotropicHardening::set_value`` in
         # ``src/neml2/models/solid_mechanics/plasticity/SlopeSaturationVoceIsotropicHardening.cxx``.
         gamma_dot = flow_rate
         h = isotropic_hardening
-        R = self._get_param("R", nl_params, Scalar)
-        theta0 = self._get_param("theta0", nl_params, Scalar)
+        R = self._get_param("R", promoted_params, Scalar)
+        theta0 = self._get_param("theta0", promoted_params, Scalar)
 
         # h_dot = sign(R) * theta0 * (1 - h / R) * gamma_dot
         sR = sign(R)
@@ -117,11 +117,11 @@ class SlopeSaturationVoceIsotropicHardening(Model):
             "flow_rate": lambda V, c=coef_gamma_dot: c * V,
             "isotropic_hardening": lambda V, c=coef_h: c * V,
         }
-        if "R" in self._nl_params:
+        if "R" in self._promoted_params:
             coef_R = gamma_dot * h * sR * theta0 / (R * R)
-            actions[self._nl_params["R"].input_name] = lambda V, c=coef_R: c * V
-        if "theta0" in self._nl_params:
+            actions[self._promoted_params["R"].input_name] = lambda V, c=coef_R: c * V
+        if "theta0" in self._promoted_params:
             coef_theta0 = sR * one_minus_h_over_R * gamma_dot
-            actions[self._nl_params["theta0"].input_name] = lambda V, c=coef_theta0: c * V
+            actions[self._promoted_params["theta0"].input_name] = lambda V, c=coef_theta0: c * V
 
         return h_dot, self.apply_chain_rule(v, self._h_rate, actions, output=h_dot)

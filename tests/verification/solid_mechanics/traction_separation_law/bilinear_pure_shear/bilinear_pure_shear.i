@@ -27,9 +27,8 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_Vec_names = 'separation'
-    force_Vec_values = 'jumps'
-    save_as = 'result.pt'
+    prescribed_Vec_names = 'separation'
+    prescribed_Vec_values = 'jumps'
   []
   [verification]
     type = Verification

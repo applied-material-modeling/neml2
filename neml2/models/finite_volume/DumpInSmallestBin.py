@@ -53,7 +53,7 @@ class DumpInSmallestBin(Model):
             "Source dumped into the smallest bin.",
             default="state/dumped_source",
         ),
-        parameter("cell_centers", Scalar, "Cell center locations.", allow_nonlinear=True),
+        parameter("cell_centers", Scalar, "Cell center locations.", allow_promotion=True),
     )
 
     # magnitude is a global Scalar (sub_batch=0); the output carries the
@@ -68,7 +68,9 @@ class DumpInSmallestBin(Model):
         # its declared sub_batch_ndim metadata (the tensor is stored as a bare
         # nn.Parameter and re-wrapped with sub_batch_ndim=0 on access), so
         # retag here to view that trailing axis as the per-cell sub-batch.
-        centers = self._get_param("cell_centers", nl_params=(), type_cls=Scalar).sub_batch.retag(1)
+        centers = self._get_param(
+            "cell_centers", promoted_params=(), type_cls=Scalar
+        ).sub_batch.retag(1)
         N = int(centers.sub_batch_shape[-1])
 
         # Promote mag (sub_batch=0) to a per-cell Scalar of size 1 along a new

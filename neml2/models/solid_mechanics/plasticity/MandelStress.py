@@ -63,7 +63,7 @@ class MandelStress(Model):
     def forward(  # type: ignore[override]
         self,
         cauchy_stress: SR2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native Mandel-stress leaves implement the forward

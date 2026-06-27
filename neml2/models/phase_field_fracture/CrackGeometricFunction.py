@@ -60,7 +60,7 @@ class CrackGeometricFunction(Model):
     def forward(  # type: ignore[override]
         self,
         phase: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native crack geometric function leaves implement

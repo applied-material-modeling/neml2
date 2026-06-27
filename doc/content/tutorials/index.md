@@ -1,8 +1,8 @@
 (tutorials)=
 # Tutorials
 
-End-to-end walkthroughs of NEML2, grouped by what you're trying to do:
-run and compose existing models, extend NEML2 with a model of your own,
+End-to-end walkthroughs of NEML2, grouped by what we're trying to do:
+run and compose existing models, extend NEML2 with a model of our own,
 or calibrate model parameters against data.
 
 (tutorials-models)=
@@ -10,7 +10,7 @@ or calibrate model parameters against data.
 
 NEML2 ships a large collection of material models that can be used on
 their own or composed into more complex ones. The wiring lives entirely
-in a text-based [input file](tutorials-models-input-file), so you don't
+in a text-based [input file](tutorials-models-input-file), so we don't
 need to write Python or C++ glue to put models together. These tutorials
 walk through the everyday workflow of loading, evaluating, and composing
 existing models.
@@ -30,12 +30,13 @@ models/model_parameters_revisited/main
 models/implicit_model/main
 models/transient_driver/main
 models/compiled_models/main
+models/compilation_internals/main
 ```
 
 (tutorials-extension)=
 ## Extension
 
-When the built-in library doesn't cover what you need, you can add your
+When the built-in library doesn't cover what we need, we can add our
 own model as a small Python class deriving from `Model`, plug it into an
 input file like any registered type, and optionally compile it. These
 tutorials build one such model from scratch on a single running example.
@@ -47,6 +48,7 @@ tutorials build one such model from scratch on a single running example.
 extension/argument_declaration/main
 extension/connection_to_input_files/main
 extension/the_forward_operator/main
+extension/request_ad/main
 extension/model_composition/main
 ```
 

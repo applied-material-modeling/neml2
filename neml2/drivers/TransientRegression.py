@@ -27,7 +27,7 @@
 Wraps a paired :class:`TransientDriver`, runs it, then diffs the in-memory
 result dict against a gold ``.pt`` reference. The reader (:func:`_load_gold`)
 handles both the new plain-``torch.save``-dict format that the Python
-:meth:`TransientDriver.save_gold` now emits and the legacy TorchScript-
+:meth:`TransientDriver.save_result` now emits and the legacy TorchScript-
 module format produced by the retired C++ regression pipeline (most existing
 on-disk goldens are still in the legacy format).
 
@@ -62,11 +62,11 @@ def _load_gold(path: Path) -> dict[str, torch.Tensor]:
     Supports two on-disk formats:
 
     - **New** — a plain ``torch.save({...})`` dict written by
-      :meth:`TransientDriver.save_gold`. Loaded via
+      :meth:`TransientDriver.save_result`. Loaded via
       ``torch.load(..., weights_only=True)``.
     - **Legacy** — a TorchScript ``nn.Module`` of registered buffers
       produced by the retired C++ pipeline (and by older Python
-      ``save_gold`` writes). Loaded via ``torch.jit.load`` and flattened
+      ``save_result`` writes). Loaded via ``torch.jit.load`` and flattened
       via ``state_dict()`` — NOT ``named_buffers`` (the C++ driver shares
       storage between ``output.<k>.X`` and ``input.<k+1>.X~1``, and
       ``named_buffers`` with the default ``remove_duplicate=True`` drops

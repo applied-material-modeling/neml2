@@ -98,6 +98,56 @@ def test_change_parameter_shape():
     assert _bound(module, leaf).shape == ()
 
 
+def test_default_trains_all_parameters():
+    """With neither list, every HIT-named parameter is mirrored."""
+    pwd = Path(__file__).parent
+    nmodel = load_nonlinear_system(pwd / "models" / "correct_model.i", "eq_sys")
+    pmodel = NEML2PyzagModel(nmodel)
+    assert set(dict(pmodel.named_parameters()).keys()) == {
+        "elasticity_E",
+        "elasticity_nu",
+        "flow_rate_eta",
+        "flow_rate_n",
+        "isoharden_K",
+        "yield_surface_sy",
+        *_LINCOMB_INTERNAL_PARAMS,
+    }
+
+
+def test_include_parameters():
+    """``include_parameters`` mirrors *only* the listed names — here the exact
+    complement of the ``exclude_parameters`` set used in ``test_definition``."""
+    pwd = Path(__file__).parent
+    nmodel = load_nonlinear_system(pwd / "models" / "correct_model.i", "eq_sys")
+    targets = [
+        "elasticity_E",
+        "flow_rate_eta",
+        "flow_rate_n",
+        "isoharden_K",
+        "yield_surface_sy",
+    ]
+    pmodel = NEML2PyzagModel(nmodel, include_parameters=targets)
+    assert set(dict(pmodel.named_parameters()).keys()) == set(targets)
+
+
+def test_include_and_exclude_are_mutually_exclusive():
+    pwd = Path(__file__).parent
+    nmodel = load_nonlinear_system(pwd / "models" / "correct_model.i", "eq_sys")
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        NEML2PyzagModel(
+            nmodel,
+            include_parameters=["elasticity_E"],
+            exclude_parameters=["elasticity_nu"],
+        )
+
+
+def test_include_unknown_parameter_raises():
+    pwd = Path(__file__).parent
+    nmodel = load_nonlinear_system(pwd / "models" / "correct_model.i", "eq_sys")
+    with pytest.raises(ValueError, match="unknown parameter"):
+        NEML2PyzagModel(nmodel, include_parameters=["elasticity_E", "not_a_param"])
+
+
 # Per-scenario tolerance for `assert torch.allclose(gold, native)` in
 # `test_compare`. The gold trajectories were baked by the (now-retired) C++
 # pipeline, so any difference between C++ and native floating-point order

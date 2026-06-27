@@ -54,7 +54,7 @@ A `.data` access elsewhere means one of:
 - The caller is about to do raw `torch.*` arithmetic and rewrap, dropping labels/state/meta and reconstructing them by guess. This is the root cause of metadata-loss bugs.
 - A wrapper primitive is missing. Add it.
 
-The same framework boundaries (AOTI shim, `torch.autograd.Function`, eager embed bridge) are the only exceptions, and even there the unwrap is encapsulated in a helper inside `neml2/types/` (the shared boundary helpers live in `neml2/types/_boundary.py`), not done ad hoc at the call site. Genuine framework-boundary unwraps in those exception files bear a `# noqa: data-ok` marker explaining why.
+The same framework boundaries (AOTI shim, `torch.autograd.Function`, eager embed bridge) are the only exceptions, and even there the unwrap is encapsulated in a helper inside `neml2/types/` (the shared boundary helpers live in `neml2/types/_boundary.py`), not done ad hoc at the call site. Genuine framework-boundary unwraps in those exception files bear a `# data-ok` marker explaining why.
 
 ### 3. Fix the root cause; never patch the call site
 
@@ -215,6 +215,6 @@ When adding a new submodule under `neml2/models/<domain>/`, append the import to
 - Type-checked with `pyright` against the installed package (CI: the `typecheck` job).
 - Math in docstrings uses MyST dollarmath (`$x$` inline, `$$...$$` display); MyST `dollarmath` and `amsmath` extensions are enabled in `doc/conf.py`. Code references stay in `` `backticks` ``; the difference matters for rendering in the syntax catalog.
 - HIT inputs use the `nmhit` Python parser (also a pre-commit `nmhit-format` hook). The format itself is unchanged from v2.
-- Notebooks under `doc/content/tutorials/**.ipynb` are paired with `.md` mirrors via `jupytext --sync` (pre-commit hook); `.jupytext.toml` declares the format pairing. Edit the `.ipynb`, never the paired `.md`.
+- Tutorials under `doc/content/tutorials/**/main.ipynb` are notebook-only (no jupytext pairing — edit the `.ipynb` directly; review via GitHub's notebook diff). Cheap tutorials are executed at build time (`nb_execution_mode = "cache"`) and committed without outputs; the two expensive pyzag notebooks (`optimization/{deterministic,statistical}`) are committed pre-baked, excluded from build-time execution, and kept current by the `check-notebook-executed` hook. Reference tutorial pages with no `.ipynb` (e.g. `index.md`, `models/input_file.md`) are plain markdown.
 - Copyright headers are checked by a pre-commit hook (`python scripts/check_copyright.py`); the script auto-fixes missing headers.
 - Avoid editing files in `build/`, `installed/`, or `doc/_build/`, `doc/generated/` — those are generated. `scripts/clobber.sh [dir]` removes git-ignored files if a build gets wedged.

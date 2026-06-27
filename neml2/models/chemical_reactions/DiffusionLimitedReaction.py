@@ -65,7 +65,7 @@ class DiffusionLimitedReaction(Model):
             Scalar,
             "Diffusion coefficient of the rate-limiting species in the product phase",
             attr="D",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         option(
             "product_dummy_thickness",
@@ -97,14 +97,14 @@ class DiffusionLimitedReaction(Model):
         solid_inner_radius: Scalar,
         liquid_reactivity: Scalar,
         solid_reactivity: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         ri = product_inner_radius
         ro = solid_inner_radius
         R_l = liquid_reactivity
         R_s = solid_reactivity
-        D = self._get_param("D", nl_params, Scalar)
+        D = self._get_param("D", promoted_params, Scalar)
         delta = self.delta
         omega = self.omega
 
@@ -138,8 +138,8 @@ class DiffusionLimitedReaction(Model):
             "liquid_reactivity": lambda V, c=drate_dRl: c * V,
             "solid_reactivity": lambda V, c=drate_dRs: c * V,
         }
-        if "D" in self._nl_params:
-            actions[self._nl_params["D"].input_name] = lambda V, c=drate_dD: c * V
+        if "D" in self._promoted_params:
+            actions[self._promoted_params["D"].input_name] = lambda V, c=drate_dD: c * V
         return rate, self.apply_chain_rule(v, "reaction_rate", actions, output=rate)
 
 

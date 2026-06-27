@@ -59,7 +59,7 @@ class YieldFunction(Model):
             attr="_h_name",
         ),
         output("yield_function", Scalar, "Yield function"),
-        parameter("yield_stress", Scalar, "Yield stress", attr="sy", allow_nonlinear=True),
+        parameter("yield_stress", Scalar, "Yield stress", attr="sy", allow_promotion=True),
     )
 
     # ``from_hit`` auto-declares the ``yield_stress`` parameter (stored as
@@ -89,10 +89,10 @@ class YieldFunction(Model):
                 f"{n_structural} structural inputs"
             )
         structural = dict(zip(names[:n_structural], inputs[:n_structural], strict=True))
-        nl_params = inputs[n_structural:]
+        promoted_params = inputs[n_structural:]
 
         effective_stress = structural[self._s_name]
-        sy = self._get_param("sy", nl_params, Scalar)
+        sy = self._get_param("sy", promoted_params, Scalar)
         c = self._SQRT_2_3
         f = c * (effective_stress - sy)
         if self._h_name is not None:
@@ -105,8 +105,8 @@ class YieldFunction(Model):
         }
         if self._h_name is not None:
             actions_1[self._h_name] = lambda V, c_=c: -c_ * V
-        if "sy" in self._nl_params:
-            sy_input_name = self._nl_params["sy"].input_name
+        if "sy" in self._promoted_params:
+            sy_input_name = self._promoted_params["sy"].input_name
             actions_1[sy_input_name] = lambda V, c_=c: -c_ * V
         # Linear in every input ⇒ second derivatives are zero (no actions_2).
         return f, *self.propagate_tangents(v, "yield_function", actions_1, output=f, v2=v2, vh=vh)

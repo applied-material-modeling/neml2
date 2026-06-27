@@ -55,7 +55,7 @@ class ZeldovichFactor(Model):
             Scalar,
             "Surface energy of the precipitate",
             attr="gamma",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "molar_volume",
@@ -89,15 +89,15 @@ class ZeldovichFactor(Model):
         self,
         critical_radius: Scalar,
         temperature: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         R = critical_radius
         T = temperature
-        gamma = self._get_param("gamma", nl_params, Scalar)
-        V_m = self._get_param("V_m", nl_params, Scalar)
-        N_a = self._get_param("N_a", nl_params, Scalar)
-        k = self._get_param("k", nl_params, Scalar)
+        gamma = self._get_param("gamma", promoted_params, Scalar)
+        V_m = self._get_param("V_m", promoted_params, Scalar)
+        N_a = self._get_param("N_a", promoted_params, Scalar)
+        k = self._get_param("k", promoted_params, Scalar)
 
         # Forward: Z = V_m / (2π N_a R²) · sqrt(γ / (k T)). Typed Scalar
         # algebra end-to-end, matching ``ZeldovichFactor::set_value``.
@@ -113,8 +113,8 @@ class ZeldovichFactor(Model):
         #   ∂Z/∂T     = -Z / (2T)     ⇒ action(V) = (-Z/(2T)) · V
         #   ∂Z/∂gamma = +Z / (2γ)     ⇒ action(V) = (+Z/(2γ)) · V
         # The gamma action only fires when the parameter has been promoted to a
-        # nonlinear input via the HIT ``[Models]`` cross-ref form. V_m, N_a,
-        # and k are not declared ``allow_nonlinear`` (matching the C++).
+        # runtime input via the HIT ``[Models]`` cross-ref form. V_m, N_a,
+        # and k are not declared ``allow_promotion`` (matching the C++).
         dZ_dR = -2.0 * Z / R
         dZ_dT = -0.5 * Z / T
         actions: dict[str, ChainRuleAction] = {
@@ -122,7 +122,7 @@ class ZeldovichFactor(Model):
             "temperature": lambda V, c=dZ_dT: c * V,
         }
 
-        gamma_nlp = self._nl_params.get("gamma")
+        gamma_nlp = self._promoted_params.get("gamma")
         if gamma_nlp is not None:
             dZ_dgamma = 0.5 * Z / gamma
             actions[gamma_nlp.input_name] = lambda V, c=dZ_dgamma: c * V

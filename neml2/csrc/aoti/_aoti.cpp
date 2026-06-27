@@ -277,7 +277,8 @@ Empty when the model was compiled with no ``--parameter`` flags.
          const std::string & ls_type,
          std::size_t ls_max_iters,
          double ls_cutback,
-         double ls_c)
+         double ls_c,
+         bool collect_log)
       {
         neml2::aoti::SolverConfig cfg;
         cfg.atol = atol;
@@ -287,6 +288,7 @@ Empty when the model was compiled with no ``--parameter`` flags.
         cfg.ls_max_iters = ls_max_iters;
         cfg.ls_cutback = ls_cutback;
         cfg.ls_c = ls_c;
+        cfg.collect_log = collect_log;
         return neml2::aoti::run_eager_newton(cfg,
                                              std::move(residual_fn),
                                              std::move(step_fn),
@@ -306,6 +308,7 @@ Empty when the model was compiled with no ``--parameter`` flags.
       py::arg("ls_max_iters"),
       py::arg("ls_cutback"),
       py::arg("ls_c"),
+      py::arg("collect_log") = false,
       R"(
 Run the shared C++ Newton solver over an eager (Python-delegating) system.
 

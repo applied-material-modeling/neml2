@@ -213,7 +213,7 @@ class TabulatedPolynomialModel(Model):
         T: Scalar,
         s1: Scalar,
         s2: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
         ep_dot_raw, s1_dot_raw, s2_dot_raw = self._forward_raw(s.data, T.data, s1.data, s2.data)

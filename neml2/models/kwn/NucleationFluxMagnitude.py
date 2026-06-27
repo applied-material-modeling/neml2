@@ -59,7 +59,7 @@ class NucleationFluxMagnitude(Model):
             Scalar,
             "Nucleation site density",
             attr="N0",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "boltzmann_constant",
@@ -81,15 +81,15 @@ class NucleationFluxMagnitude(Model):
         kinetic_factor: Scalar,
         nucleation_barrier: Scalar,
         temperature: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         Z = zeldovich_factor
         beta = kinetic_factor
         dg = nucleation_barrier
         T = temperature
-        N0 = self._get_param("N0", nl_params, Scalar)
-        k = self._get_param("k", nl_params, Scalar)
+        N0 = self._get_param("N0", promoted_params, Scalar)
+        k = self._get_param("k", promoted_params, Scalar)
 
         # Forward: J = Z · β · N0 · exp(-Δg / (k T))
         kT = k * T
@@ -107,7 +107,7 @@ class NucleationFluxMagnitude(Model):
         #   ∂J/∂Δg  = -prefactor · exp_raw / (kT) ⇒ action(V) = (-J/(kT)) · V
         #   ∂J/∂T   = prefactor · exp_raw · Δg / (k T²) ⇒ action(V) = (J·Δg/(k·T²)) · V
         #   ∂J/∂N0  = Z · β · exp_raw             ⇒ action(V) = (Z·β·exp_raw) · V
-        # The N0 action only fires when N0 has been promoted to a nonlinear
+        # The N0 action only fires when N0 has been promoted to a runtime
         # input via the HIT ``[Models]`` cross-ref form.
         dJ_dZ = beta * N0 * exp_raw
         dJ_dbeta = Z * N0 * exp_raw
@@ -121,7 +121,7 @@ class NucleationFluxMagnitude(Model):
             "temperature": lambda V, c=dJ_dT: c * V,
         }
 
-        N0_nlp = self._nl_params.get("N0")
+        N0_nlp = self._promoted_params.get("N0")
         if N0_nlp is not None:
             dJ_dN0 = Z * beta * exp_raw
             actions[N0_nlp.input_name] = lambda V, c=dJ_dN0: c * V

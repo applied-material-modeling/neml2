@@ -377,7 +377,7 @@ class ImplicitUpdate(Model):
         # tensors. We extract `.data` here as the framework-boundary unwrap
         # (CLAUDE.md rule 2 exception) and rewrap on exit using the typed
         # source-of-truth from `self.system.u().disassemble()`.
-        raw_inputs = tuple(t.data for t in typed_inputs)  # noqa: data-ok autograd.Function boundary
+        raw_inputs = tuple(t.data for t in typed_inputs)  # data-ok autograd.Function boundary
         params = tuple(self.parameters())
         raw_outputs = _ImplicitUpdateFn.apply(
             self, len(raw_inputs), input_sbn, *raw_inputs, *params
@@ -489,7 +489,7 @@ class _ImplicitUpdateFn(torch.autograd.Function):
         # (CLAUDE.md rule 2); the caller in ``ImplicitUpdate.forward``
         # rewraps using ``system.u().disassemble()`` as the typed source.
         u_star = tuple(
-            solved[name].data.detach()  # noqa: data-ok autograd.Function boundary
+            solved[name].data.detach()  # data-ok autograd.Function boundary
             for name in owner.system.unknown_names
         )
 

@@ -52,7 +52,7 @@ class KocksMeckingActivationEnergy(Model):
             Scalar,
             "The shear modulus",
             attr="mu",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         option("eps0", float, "Reference strain rate", attr="_eps0"),
         option("k", float, "The Boltzmann constant", attr="_k"),
@@ -78,7 +78,7 @@ class KocksMeckingActivationEnergy(Model):
         self,
         temperature: Scalar,
         strain_rate: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Mirrors ``KocksMeckingActivationEnergy::set_value`` in
@@ -86,7 +86,7 @@ class KocksMeckingActivationEnergy(Model):
         # ``g = (k * T) / (mu * b^3) * log(eps0 / eps_dot)``.
         T = temperature
         eps_dot = strain_rate
-        mu = self._get_param("mu", nl_params, Scalar)
+        mu = self._get_param("mu", promoted_params, Scalar)
 
         log_ratio = log(Scalar.from_value(self._eps0, like=eps_dot) / eps_dot)
         denom = mu * self._b3
@@ -108,9 +108,9 @@ class KocksMeckingActivationEnergy(Model):
             "temperature": lambda V, c=dg_dT: c * V,
             "strain_rate": lambda V, c=dg_deps: c * V,
         }
-        if "mu" in self._nl_params:
+        if "mu" in self._promoted_params:
             dg_dmu = -self._k * T / (self._b3 * mu * mu) * log_ratio
-            actions[self._nl_params["mu"].input_name] = lambda V, c=dg_dmu: c * V
+            actions[self._promoted_params["mu"].input_name] = lambda V, c=dg_dmu: c * V
 
         return g, self.apply_chain_rule(v, "activation_energy", actions, output=g)
 

@@ -44,7 +44,7 @@ class LinearSingleSlipHardeningRule(Model):
         input("slip_hardening", Scalar, "Name of current values of slip hardening"),
         input("sum_slip_rates", Scalar, "Name of tensor containing the sum of the slip rates"),
         output("slip_hardening_rate", Scalar, "Name of the slip hardening rate"),
-        parameter("hardening_slope", Scalar, "Hardening rate", allow_nonlinear=True),
+        parameter("hardening_slope", Scalar, "Hardening rate", allow_promotion=True),
     )
 
     # Auto-declared by ``from_hit`` — no __init__ needed.
@@ -54,10 +54,10 @@ class LinearSingleSlipHardeningRule(Model):
         self,
         tau: Scalar,
         sg: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
-        theta = self._get_param("hardening_slope", nl_params, Scalar)
+        theta = self._get_param("hardening_slope", promoted_params, Scalar)
         out = theta * sg
         if v is None:
             return out

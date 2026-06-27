@@ -68,28 +68,28 @@ class BurgersElement(Model):
             Scalar,
             "Maxwell branch spring modulus",
             attr="EM",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "maxwell_viscosity",
             Scalar,
             "Maxwell branch dashpot viscosity",
             attr="etaM",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "kelvin_modulus",
             Scalar,
             "Kelvin-Voigt branch spring modulus",
             attr="EK",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "kelvin_viscosity",
             Scalar,
             "Kelvin-Voigt branch dashpot viscosity",
             attr="etaK",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -107,15 +107,15 @@ class BurgersElement(Model):
         strain: SR2,
         maxwell_viscous_strain: SR2,
         kelvin_voigt_strain: SR2,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
         # Mirrors ``BurgersElement::set_value`` in
         # ``src/neml2/models/solid_mechanics/viscoelasticity/BurgersElement.cxx``.
-        EM = self._get_param("EM", nl_params, Scalar)
-        etaM = self._get_param("etaM", nl_params, Scalar)
-        EK_p = self._get_param("EK", nl_params, Scalar)
-        etaK = self._get_param("etaK", nl_params, Scalar)
+        EM = self._get_param("EM", promoted_params, Scalar)
+        etaM = self._get_param("etaM", promoted_params, Scalar)
+        EK_p = self._get_param("EK", promoted_params, Scalar)
+        etaK = self._get_param("etaK", promoted_params, Scalar)
 
         E = strain
         EvM = maxwell_viscous_strain
@@ -143,7 +143,7 @@ class BurgersElement(Model):
         #   d EK_dot  / d E      = (EM / etaK) * I_SR2
         #   d EK_dot  / d EvM    = -(EM / etaK) * I_SR2
         #   d EK_dot  / d EK     = -((EM + EK_p) / etaK) * I_SR2
-        # Parameter-direction (when promoted to a nonlinear runtime input):
+        # Parameter-direction (when promoted to a runtime input):
         #   d S       / d EM     = Eel
         #   d EvM_dot / d EM     = Eel / etaM
         #   d EK_dot  / d EM     = Eel / etaK
@@ -173,22 +173,22 @@ class BurgersElement(Model):
             "kelvin_voigt_strain": lambda V, c=-EK_dot_coef_EK: c * V,
         }
 
-        # Nonlinear-parameter promotions: each parameter that was promoted to a
+        # Promoted-parameter contributions: each parameter that was promoted to a
         # runtime input gets its own action on every output it affects, keyed by
         # the resolved input name.
-        if "EM" in self._nl_params:
-            name = self._nl_params["EM"].input_name
+        if "EM" in self._promoted_params:
+            name = self._promoted_params["EM"].input_name
             S_actions[name] = lambda V, c=Eel: c * V
             EvM_actions[name] = lambda V, c=Eel / etaM: c * V
             EK_actions[name] = lambda V, c=Eel / etaK: c * V
-        if "etaM" in self._nl_params:
-            name = self._nl_params["etaM"].input_name
+        if "etaM" in self._promoted_params:
+            name = self._promoted_params["etaM"].input_name
             EvM_actions[name] = lambda V, c=-S / (etaM * etaM): c * V
-        if "EK" in self._nl_params:
-            name = self._nl_params["EK"].input_name
+        if "EK" in self._promoted_params:
+            name = self._promoted_params["EK"].input_name
             EK_actions[name] = lambda V, c=-EK_var / etaK: c * V
-        if "etaK" in self._nl_params:
-            name = self._nl_params["etaK"].input_name
+        if "etaK" in self._promoted_params:
+            name = self._promoted_params["etaK"].input_name
             EK_actions[name] = lambda V, c=-(S - EK_p * EK_var) / (etaK * etaK): c * V
 
         v_S = self.apply_chain_rule(v, "stress", S_actions, output=S)

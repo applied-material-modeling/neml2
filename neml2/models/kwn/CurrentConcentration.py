@@ -65,14 +65,14 @@ class CurrentConcentration(Model):
             Scalar,
             "Initial concentration in solution",
             attr="x0",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameters(
             "precipitate_concentrations",
             Scalar,
             "Precipitate concentrations",
             attr="_xp_names",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -106,16 +106,16 @@ class CurrentConcentration(Model):
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Split positional args: the leading structural inputs (one Scalar per
-        # precipitate volume fraction) followed by the *nl_params pack of
+        # precipitate volume fraction) followed by the *promoted_params pack of
         # mode-3/4-promoted parameters (initial concentration and/or any of the
         # per-species precipitate concentrations).
         n = len(self._f_vars)
-        fs, nl_params = args[:n], args[n:]
+        fs, promoted_params = args[:n], args[n:]
         if len(fs) != n:
             raise ValueError(f"{type(self).__name__} expected {n} inputs, got {len(fs)}")
 
-        x0 = self._get_param("x0", nl_params, Scalar)
-        xps = self._get_param_list("_xp_names", nl_params, Scalar)
+        x0 = self._get_param("x0", promoted_params, Scalar)
+        xps = self._get_param_list("_xp_names", promoted_params, Scalar)
 
         # Forward: x = (x0 - Σ fᵢ xᵢ^p) / (1 - Σ fᵢ). Typed Scalar algebra
         # end-to-end, matching ``CurrentConcentration::set_value``.
@@ -138,7 +138,7 @@ class CurrentConcentration(Model):
         #   ∂x/∂x0    = +1 / denom
         #   ∂x/∂xᵢ^p  = -fᵢ / denom
         # The parameter actions only fire when the parameter has been promoted
-        # to a nonlinear input via the HIT ``[Models]`` cross-ref form. Use
+        # to a runtime input via the HIT ``[Models]`` cross-ref form. Use
         # the post-divide identity ``(numer - denom · xp) / denom² = (x - xp)
         # / denom`` to avoid recomputing the squared denominator.
         inv_denom = 1.0 / denom
@@ -158,15 +158,15 @@ class CurrentConcentration(Model):
             coef = (x - xp) * inv_denom
             _add(f_name, lambda V, c=coef: c * V)
 
-        x0_nlp = self._nl_params.get("x0")
+        x0_nlp = self._promoted_params.get("x0")
         if x0_nlp is not None:
             _add(x0_nlp.input_name, lambda V, c=inv_denom: c * V)
 
         for f, p_name in zip(fs, self._xp_names, strict=True):
-            nlp = self._nl_params.get(p_name)
-            if nlp is not None:
+            pparam = self._promoted_params.get(p_name)
+            if pparam is not None:
                 coef = -f * inv_denom
-                _add(nlp.input_name, lambda V, c=coef: c * V)
+                _add(pparam.input_name, lambda V, c=coef: c * V)
 
         return x, self.apply_chain_rule(v, "current_concentration", actions, output=x)
 

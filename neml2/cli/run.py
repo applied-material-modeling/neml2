@@ -88,6 +88,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         load_user_extensions(args.load)
         factory = load_input(args.input, additional_args=additional_args)
+        # ``run()`` writes its output to disk iff the driver's ``save_as`` is
+        # set (TransientDriver); nothing CLI-specific to do here.
         factory.get_driver(args.driver).run()
     except Exception as exc:  # noqa: BLE001
         print(f"Error: {exc}", file=sys.stderr)

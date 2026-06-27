@@ -44,10 +44,10 @@ class DislocationObstacleStrengthMap(Model):
     hit = HitSchema(
         input("dislocation_density", Scalar, "Per-slip dislocation density"),
         output("slip_strengths", Scalar, "Name of the slip system strengths"),
-        parameter("constant_strength", Scalar, "Constant strength offset", allow_nonlinear=True),
-        parameter("alpha", Scalar, "Interaction coefficient", allow_nonlinear=True),
-        parameter("mu", Scalar, "Shear modulus", allow_nonlinear=True),
-        parameter("b", Scalar, "Burgers vector", allow_nonlinear=True),
+        parameter("constant_strength", Scalar, "Constant strength offset", allow_promotion=True),
+        parameter("alpha", Scalar, "Interaction coefficient", allow_promotion=True),
+        parameter("mu", Scalar, "Shear modulus", allow_promotion=True),
+        parameter("b", Scalar, "Burgers vector", allow_promotion=True),
     )
 
     # ``from_hit`` auto-declares the four parameters via the schema.
@@ -59,15 +59,15 @@ class DislocationObstacleStrengthMap(Model):
     def forward(  # type: ignore[override]
         self,
         rho: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Mirrors ``DislocationObstacleStrengthMap::set_value`` in the C++ source:
         #   tau = tau_const + alpha * mu * b * sqrt(rho)
-        tau_const = self._get_param("constant_strength", nl_params, Scalar)
-        alpha = self._get_param("alpha", nl_params, Scalar)
-        mu = self._get_param("mu", nl_params, Scalar)
-        b = self._get_param("b", nl_params, Scalar)
+        tau_const = self._get_param("constant_strength", promoted_params, Scalar)
+        alpha = self._get_param("alpha", promoted_params, Scalar)
+        mu = self._get_param("mu", promoted_params, Scalar)
+        b = self._get_param("b", promoted_params, Scalar)
 
         sqrt_rho = sqrt(rho)
         coeff = alpha * mu * b
@@ -89,13 +89,19 @@ class DislocationObstacleStrengthMap(Model):
         actions: dict[str, ChainRuleAction] = {
             "dislocation_density": lambda V, c=d_drho: c * V,
         }
-        if "constant_strength" in self._nl_params:
-            actions[self._nl_params["constant_strength"].input_name] = lambda V: V
-        if "alpha" in self._nl_params:
-            actions[self._nl_params["alpha"].input_name] = lambda V, c=mu * b * sqrt_rho: c * V
-        if "mu" in self._nl_params:
-            actions[self._nl_params["mu"].input_name] = lambda V, c=alpha * b * sqrt_rho: c * V
-        if "b" in self._nl_params:
-            actions[self._nl_params["b"].input_name] = lambda V, c=alpha * mu * sqrt_rho: c * V
+        if "constant_strength" in self._promoted_params:
+            actions[self._promoted_params["constant_strength"].input_name] = lambda V: V
+        if "alpha" in self._promoted_params:
+            actions[self._promoted_params["alpha"].input_name] = lambda V, c=mu * b * sqrt_rho: (
+                c * V
+            )
+        if "mu" in self._promoted_params:
+            actions[self._promoted_params["mu"].input_name] = lambda V, c=alpha * b * sqrt_rho: (
+                c * V
+            )
+        if "b" in self._promoted_params:
+            actions[self._promoted_params["b"].input_name] = lambda V, c=alpha * mu * sqrt_rho: (
+                c * V
+            )
 
         return tau, self.apply_chain_rule(v, "slip_strengths", actions, output=tau)

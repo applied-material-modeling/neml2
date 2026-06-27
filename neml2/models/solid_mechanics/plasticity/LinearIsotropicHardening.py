@@ -48,7 +48,7 @@ class LinearIsotropicHardening(Model):
             Scalar,
             "Hardening modulus",
             attr="K",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -59,11 +59,11 @@ class LinearIsotropicHardening(Model):
     def forward(  # type: ignore[override]
         self,
         equivalent_plastic_strain: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         eps = equivalent_plastic_strain
-        K = self._get_param("K", nl_params, Scalar)
+        K = self._get_param("K", promoted_params, Scalar)
         h = K * eps
         if v is None:
             return h
@@ -71,6 +71,6 @@ class LinearIsotropicHardening(Model):
         # Scalar coefficient scaling the incoming Scalar tangent. Leading-K means
         # K / eps broadcast against the tangent's K axis automatically.
         actions = {"equivalent_plastic_strain": lambda V, c=K: c * V}
-        if "K" in self._nl_params:
-            actions[self._nl_params["K"].input_name] = lambda V, c=eps: c * V
+        if "K" in self._promoted_params:
+            actions[self._promoted_params["K"].input_name] = lambda V, c=eps: c * V
         return h, self.apply_chain_rule(v, "isotropic_hardening", actions, output=h)

@@ -60,7 +60,7 @@ class FiniteVolumeGradient(Model):
             Scalar,
             "Cell-edge prefactor values (defaults to 1).",
             default="1.0",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -71,13 +71,13 @@ class FiniteVolumeGradient(Model):
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
         u_wrap = inputs[0]
-        nl_params = inputs[1:]
-        pf_wrap = self._get_param("prefactor", nl_params, Scalar)
+        promoted_params = inputs[1:]
+        pf_wrap = self._get_param("prefactor", promoted_params, Scalar)
         # All typed: ``inv_dx`` via Scalar.__rtruediv__, neighbour
         # differences via sub_batch slicing on the cell axis. The chain
         # rule path reuses ``coeff`` so the value and pushforward share
         # the same materialised stencil weights.
-        inv_dx = 1.0 / self._get_param("dx", nl_params, Scalar)
+        inv_dx = 1.0 / self._get_param("dx", promoted_params, Scalar)
         coeff = pf_wrap * inv_dx
         u_left = u_wrap.sub_batch[:-1]
         u_right = u_wrap.sub_batch[1:]
@@ -99,7 +99,7 @@ class FiniteVolumeGradient(Model):
 
         actions: dict[str, ChainRuleAction] = {self._u_name: u_action}
 
-        pf_nl = self._nl_params.get("prefactor")
+        pf_nl = self._promoted_params.get("prefactor")
         if pf_nl is not None:
             # d(grad)/d(prefactor) = -du / dx (the partial w.r.t. the
             # prefactor scaling factor); the action multiplies the

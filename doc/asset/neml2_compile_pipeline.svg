@@ -55,7 +55,7 @@
 <rect x="36.0" y="378" width="280" height="60" rx="10" class="stp"/>
 <circle cx="36.0" cy="408.0" r="13" class="badge"/>
 <text x="36.0" y="412.0" class="bt" font-size="12.5" text-anchor="middle" font-weight="700">3</text>
-<text x="58.0" y="403" class="t" font-size="12.5" text-anchor="start" font-weight="600">Re-route through NLParam</text>
+<text x="58.0" y="403" class="t" font-size="12.5" text-anchor="start" font-weight="600">Re-route through PromotedParam</text>
 <text x="58.0" y="421" class="m" font-size="10" text-anchor="start">promoted params become graph inputs</text>
 <rect x="36.0" y="452" width="280" height="60" rx="10" class="stp"/>
 <circle cx="36.0" cy="482.0" r="13" class="badge"/>

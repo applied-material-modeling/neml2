@@ -30,11 +30,10 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'E'
-    force_SR2_values = 'strains'
+    prescribed_SR2_names = 'E'
+    prescribed_SR2_values = 'strains'
     ic_Scalar_names = 'void_fraction'
     ic_Scalar_values = 'f0'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

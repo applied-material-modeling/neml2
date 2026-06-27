@@ -66,7 +66,7 @@ class StrainEnergyDensity(Model):
     def forward(  # type: ignore[override]
         self,
         strain: SR2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native strain-energy-density leaves implement the

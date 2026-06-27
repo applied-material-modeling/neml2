@@ -16,7 +16,6 @@ sdist.exclude = [
   ".gitattributes",
   ".gitignore",
   ".gitmodules",
-  ".jupytext.toml",
   ".pre-commit-config.yaml",
   "scripts",
   "notebooks",

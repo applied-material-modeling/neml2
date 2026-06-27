@@ -37,7 +37,7 @@ The C++ side assigns ``_var = _input_param`` (forward) -- no derivative is
 materialised because the ``from`` slot is declared as a *parameter*, not an
 input variable. The native equivalent is wrapper-algebra identity
 ``to = from`` with a closed-form identity pushforward ``action(V) = V`` for
-the nl-promoted case (modes 3/4 of ``declare_typed_parameter``). When the
+the promoted case (modes 3/4 of ``declare_typed_parameter``). When the
 parameter stays statically bound (modes 1/2) the chain-rule dict simply has
 no entry for it and ``apply_chain_rule`` returns the structural-zero output
 that mirrors the C++ "no Jacobian" behavior.
@@ -66,7 +66,7 @@ class _ParameterToVariable(Model):
     """``to = from`` -- expose a parameter as an output variable.
 
     Mirrors the C++ ``ParameterToVariable<T>``. The ``from`` parameter is
-    declared with ``allow_nonlinear=True`` so it independently resolves
+    declared with ``allow_promotion=True`` so it independently resolves
     through the four ``declare_typed_parameter`` modes (literal HIT value /
     ``[Tensors]`` cross-ref / ``[Models]`` output wiring -> promoted input /
     bare input promotion). When ``from`` is statically bound the output
@@ -92,14 +92,14 @@ class _ParameterToVariable(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params: TensorWrapper,
+        *promoted_params: TensorWrapper,
         v: ChainRuleDict | None = None,
     ):
-        # The model has no structural inputs: the ``*nl_params`` pack only
-        # ever carries the optional nl-promoted ``param`` (mode 3/4). Read
+        # The model has no structural inputs: the ``*promoted_params`` pack only
+        # ever carries the optional promoted ``param`` (mode 3/4). Read
         # the parameter through ``_get_param`` so both the static and
         # promoted paths return the same typed wrapper.
-        from_val = self._get_param("param", nl_params, self._value_type)
+        from_val = self._get_param("param", promoted_params, self._value_type)
         # forward: identity pass-through -- the typed mirror of the C++
         # ``_var = _input_param`` assignment.
         out = from_val
@@ -132,7 +132,7 @@ class ScalarParameterToVariable(_ParameterToVariable):
             Scalar,
             "The input parameter",
             attr="param",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -151,7 +151,7 @@ class VecParameterToVariable(_ParameterToVariable):
             Vec,
             "The input parameter",
             attr="param",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -170,7 +170,7 @@ class RotParameterToVariable(_ParameterToVariable):
             Rot,
             "The input parameter",
             attr="param",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -189,7 +189,7 @@ class WR2ParameterToVariable(_ParameterToVariable):
             WR2,
             "The input parameter",
             attr="param",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -208,7 +208,7 @@ class R2ParameterToVariable(_ParameterToVariable):
             R2,
             "The input parameter",
             attr="param",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -227,7 +227,7 @@ class SR2ParameterToVariable(_ParameterToVariable):
             SR2,
             "The input parameter",
             attr="param",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -246,7 +246,7 @@ class SSR4ParameterToVariable(_ParameterToVariable):
             SSR4,
             "The input parameter",
             attr="param",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -265,7 +265,7 @@ class MillerIndexParameterToVariable(_ParameterToVariable):
             MillerIndex,
             "The input parameter",
             attr="param",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 

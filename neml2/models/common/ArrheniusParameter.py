@@ -68,14 +68,14 @@ class ArrheniusParameter(Model):
     def forward(  # type: ignore[override]
         self,
         temperature: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
         v2: SecondOrderChainRuleDict | None = None,
         vh: ChainRuleDict | None = None,
     ):
         T = temperature
-        p0 = self._get_param("p0", nl_params, Scalar)
-        Q = self._get_param("Q", nl_params, Scalar)
+        p0 = self._get_param("p0", promoted_params, Scalar)
+        Q = self._get_param("Q", promoted_params, Scalar)
         R = self.R  # float option, not a registered parameter
         p = p0 * exp(-Q / R / T)
         if v is None:

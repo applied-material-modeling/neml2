@@ -49,11 +49,11 @@ class GeneralElasticity(Model):
     via Euler-Rodrigues. Mirrors C++ ``GeneralElasticity`` in
     ``src/neml2/models/solid_mechanics/elasticity/GeneralElasticity.cxx``.
     $T$ is a parameter (HIT option ``elastic_stiffness_tensor``); declared
-    nonlinear-capable to mirror the C++ ``declare_parameter`` flag, but Taylor
+    promotion-capable to mirror the C++ ``declare_parameter`` flag, but Taylor
     uses it as a plain buffer.
 
     Chain-rule actions cover ``strain``, ``orientation``, and the parameter
-    $T$ (the last only when promoted to a nonlinear input).
+    $T$ (the last only when promoted to a runtime input).
     """
 
     hit = HitSchema(
@@ -65,7 +65,7 @@ class GeneralElasticity(Model):
             SSR4,
             "Elastic stiffness tensor",
             attr="T",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -77,10 +77,10 @@ class GeneralElasticity(Model):
         self,
         strain: SR2,
         orientation: Rot,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
-        T = self._get_param("T", nl_params, SSR4)
+        T = self._get_param("T", promoted_params, SSR4)
         R = euler_rodrigues(orientation)
         T_rot = rotate(T, R)
         stress = T_rot @ strain

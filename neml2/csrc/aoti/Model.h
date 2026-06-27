@@ -56,6 +56,12 @@ struct SolverConfig
   std::size_t ls_max_iters = 1;
   double ls_cutback = 2.0;
   double ls_c = 1.0e-3;
+  /// When true, the Newton solve records its per-iteration convergence log
+  /// (the same `ITERATION ...` / `LS ITERATION ...` lines as the
+  /// `NEML2_AOTI_TRACE_NEWTON` stderr trace) into `NewtonResult::log` so a
+  /// caller can surface it as data. Off by default -- it forces a scalar
+  /// device->host sync per iteration, so it is opt-in.
+  bool collect_log = false;
 };
 
 /// A variable-pair Jacobian: `J[out_name][in_name]` is the unflattened block

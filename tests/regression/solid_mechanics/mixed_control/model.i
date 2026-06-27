@@ -40,9 +40,8 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'fixed_values control'
-    force_SR2_values = 'conditions control'
-    save_as = 'result.pt'
+    prescribed_SR2_names = 'fixed_values control'
+    prescribed_SR2_values = 'conditions control'
   []
   [regression]
     type = TransientRegression

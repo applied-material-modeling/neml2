@@ -48,14 +48,14 @@ class VoceIsotropicHardening(Model):
             Scalar,
             "Saturated isotropic hardening",
             attr="R",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "saturation_rate",
             Scalar,
             "Hardening saturation rate",
             attr="d",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -67,14 +67,14 @@ class VoceIsotropicHardening(Model):
     def forward(  # type: ignore[override]
         self,
         equivalent_plastic_strain: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Mirrors ``VoceIsotropicHardening::set_value`` in
         # ``src/neml2/models/solid_mechanics/plasticity/VoceIsotropicHardening.cxx``.
         eps = equivalent_plastic_strain
-        R = self._get_param("R", nl_params, Scalar)
-        d = self._get_param("d", nl_params, Scalar)
+        R = self._get_param("R", promoted_params, Scalar)
+        d = self._get_param("d", promoted_params, Scalar)
 
         # h = R * (1 - exp(-d * eps))
         e = exp(-d * eps)
@@ -93,10 +93,10 @@ class VoceIsotropicHardening(Model):
         #   dh / d d   = eps * R * exp(-d * eps)
         coef_eps = R * d * e
         actions = {"equivalent_plastic_strain": lambda V, c=coef_eps: c * V}
-        if "R" in self._nl_params:
-            actions[self._nl_params["R"].input_name] = lambda V, c=(-e + 1.0): c * V
-        if "d" in self._nl_params:
+        if "R" in self._promoted_params:
+            actions[self._promoted_params["R"].input_name] = lambda V, c=(-e + 1.0): c * V
+        if "d" in self._promoted_params:
             coef_d = eps * R * e
-            actions[self._nl_params["d"].input_name] = lambda V, c=coef_d: c * V
+            actions[self._promoted_params["d"].input_name] = lambda V, c=coef_d: c * V
 
         return h, self.apply_chain_rule(v, "isotropic_hardening", actions, output=h)

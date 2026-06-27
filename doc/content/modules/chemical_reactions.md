@@ -103,7 +103,7 @@ contribution:
   `T` force.
 - [](models-ContractingGeometry) (`reaction_rate`) maps the current
   $\alpha$ to $\dot{\alpha} = k (1 - \alpha)^n$ using that coefficient
-  as a nonlinear parameter and the constant order $n$.
+  as a promoted parameter and the constant order $n$.
 - [](models-ScalarBackwardEulerTimeIntegration) (`reaction_ode`) writes
   the residual $\alpha_{n+1} - \alpha_n - \Delta t \, \dot{\alpha} = 0$
   that the Newton solver consumes via the `eq_sys`

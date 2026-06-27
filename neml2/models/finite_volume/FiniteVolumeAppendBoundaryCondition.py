@@ -90,7 +90,7 @@ class FiniteVolumeAppendBoundaryCondition(Model):
         self.input_spec = {self._input_name: Scalar}
         self.output_spec = {self._output_name: Scalar}
 
-    def _bc_tail(self, template: Scalar, nl_params) -> Scalar:
+    def _bc_tail(self, template: Scalar, promoted_params) -> Scalar:
         """Typed (*template_dyn, 1) Scalar carrying the parameter ``bc_value``.
 
         The tail mirrors ``template``'s dynamic batch (broadcast) plus a
@@ -100,10 +100,10 @@ class FiniteVolumeAppendBoundaryCondition(Model):
         to stay promotion-compatible) lifts it to the boundary value.
         """
         zero = Scalar.zeros_like(template, sub_batch_shape=(1,))
-        return zero + self._get_param("bc_value", nl_params, Scalar)
+        return zero + self._get_param("bc_value", promoted_params, Scalar)
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
-        (u_wrap,) = inputs  # bc_value is static (not promotable) -> no nl_params
+        (u_wrap,) = inputs  # bc_value is static (not promotable) -> no promoted_params
         # Value path: bc_tail carries the parameter value, then cat
         # along the cell axis (sub-batch dim 0 for a Scalar with
         # sub_batch_ndim=1).

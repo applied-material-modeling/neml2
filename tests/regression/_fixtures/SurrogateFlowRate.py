@@ -131,12 +131,12 @@ class SurrogateFlowRate(Model):
         # Auto-derive the first-order chain rule for both structural inputs.
         self.request_AD()
 
-    def forward(self, s: Scalar, T: Scalar, *nl_params: Scalar):  # type: ignore[override]
+    def forward(self, s: Scalar, T: Scalar, *promoted_params: Scalar):  # type: ignore[override]
         # ML-surrogate raw-tensor boundary: the network consumes/produces raw
         # ``torch.Tensor``; unwrap to feed it and re-wrap the result. request_AD
         # differentiates straight through this boundary (the grad-tracking input
         # leaf it swaps in is exactly ``s.data`` / ``T.data``).
-        out = self._surrogate(s.data, T.data)  # noqa: data-ok ML-surrogate boundary
+        out = self._surrogate(s.data, T.data)  # data-ok ML-surrogate boundary
         return Scalar(out)
 
 
