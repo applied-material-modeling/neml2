@@ -409,10 +409,12 @@ Eager and single-device: no dispatch happens here.</p>
 populated from the metadata’s <code class="docutils literal notranslate"><span class="pre">var_type</span></code> fields; <code class="docutils literal notranslate"><span class="pre">__call__</span></code> takes
 <code class="docutils literal notranslate"><span class="pre">TensorWrapper</span></code> positional args in <code class="docutils literal notranslate"><span class="pre">input_spec</span></code> order, unwraps them
 to raw tensors, runs the AOTI <code class="docutils literal notranslate"><span class="pre">forward</span></code> graph, and wraps each output
-back in its declared type. Promoted parameters (if any) live on the
-underlying binding’s <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> and are <em>not</em> part of
-<code class="docutils literal notranslate"><span class="pre">input_spec</span></code> – the caller mutates them in place via
-<code class="docutils literal notranslate"><span class="pre">self._inner.named_parameters()</span></code> to drive runtime-flexible behavior.</p>
+back in its declared type. Promoted parameters (if any) are <em>not</em> part of
+<code class="docutils literal notranslate"><span class="pre">input_spec</span></code>; they are reachable through <code class="docutils literal notranslate"><span class="pre">named_parameters</span></code> (a
+mutable dict) and <code class="docutils literal notranslate"><span class="pre">set_parameter</span></code>. The full sensitivity surface –
+<code class="docutils literal notranslate"><span class="pre">jvp</span></code>, <code class="docutils literal notranslate"><span class="pre">jacobian</span></code>, <code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code>, <code class="docutils literal notranslate"><span class="pre">param_vjp</span></code> –
+is forwarded to the binding so the py-aoti route matches the others
+(<a class="reference external" href="http://CLAUDE.md">CLAUDE.md</a> “six evaluation routes” parity).</p>
 <section id="other-options">
 <h2>Other options<a class="headerlink" href="#other-options" title="Link to this heading">¶</a></h2>
 <dl class="simple myst">

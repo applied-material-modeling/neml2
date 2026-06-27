@@ -363,6 +363,10 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.aoti.AOTIModel.hit"><code class="docutils literal notranslate">hit</span></code></a></li>
 <li><a class="reference internal" href="#neml2.aoti.AOTIModel.jacobian"><code class="docutils literal notranslate">jacobian()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.aoti.AOTIModel.jvp"><code class="docutils literal notranslate">jvp()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.aoti.AOTIModel.named_parameters"><code class="docutils literal notranslate">named_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.aoti.AOTIModel.param_jacobian"><code class="docutils literal notranslate">param_jacobian()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.aoti.AOTIModel.param_vjp"><code class="docutils literal notranslate">param_vjp()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.aoti.AOTIModel.set_parameter"><code class="docutils literal notranslate">set_parameter()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.aoti.ConvergenceError"><code class="docutils literal notranslate"><span class="pre">ConvergenceError</span></code></a></li>
@@ -460,10 +464,12 @@ Eager and single-device: no dispatch happens here.</p>
 populated from the metadata’s <code class="docutils literal notranslate"><span class="pre">var_type</span></code> fields; <code class="docutils literal notranslate"><span class="pre">__call__</span></code> takes
 <code class="docutils literal notranslate"><span class="pre">TensorWrapper</span></code> positional args in <code class="docutils literal notranslate"><span class="pre">input_spec</span></code> order, unwraps them
 to raw tensors, runs the AOTI <code class="docutils literal notranslate"><span class="pre">forward</span></code> graph, and wraps each output
-back in its declared type. Promoted parameters (if any) live on the
-underlying binding’s <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> and are <em>not</em> part of
-<code class="docutils literal notranslate"><span class="pre">input_spec</span></code> – the caller mutates them in place via
-<code class="docutils literal notranslate"><span class="pre">self._inner.named_parameters()</span></code> to drive runtime-flexible behavior.</p>
+back in its declared type. Promoted parameters (if any) are <em>not</em> part of
+<code class="docutils literal notranslate"><span class="pre">input_spec</span></code>; they are reachable through <a class="reference internal" href="#neml2.aoti.AOTIModel.named_parameters" title="neml2.aoti.AOTIModel.named_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">named_parameters()</span></code></a> (a
+mutable dict) and <a class="reference internal" href="#neml2.aoti.AOTIModel.set_parameter" title="neml2.aoti.AOTIModel.set_parameter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_parameter()</span></code></a>. The full sensitivity surface –
+<a class="reference internal" href="#neml2.aoti.AOTIModel.jvp" title="neml2.aoti.AOTIModel.jvp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">jvp()</span></code></a>, <a class="reference internal" href="#neml2.aoti.AOTIModel.jacobian" title="neml2.aoti.AOTIModel.jacobian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">jacobian()</span></code></a>, <a class="reference internal" href="#neml2.aoti.AOTIModel.param_jacobian" title="neml2.aoti.AOTIModel.param_jacobian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">param_jacobian()</span></code></a>, <a class="reference internal" href="#neml2.aoti.AOTIModel.param_vjp" title="neml2.aoti.AOTIModel.param_vjp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">param_vjp()</span></code></a> –
+is forwarded to the binding so the py-aoti route matches the others
+(CLAUDE.md “six evaluation routes” parity).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>meta_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>Path</em>)</p>
@@ -564,6 +570,93 @@ carry the derivative graph (compiled with <code class="docutils literal notransl
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a>], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.aoti.AOTIModel.named_parameters">
+<span class="sig-name descname"><span class="pre">named_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/aoti/_shim.html#AOTIModel.named_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.aoti.AOTIModel.named_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>The promoted parameters as a mutable <code class="docutils literal notranslate"><span class="pre">{qualified_name:</span> <span class="pre">tensor}</span></code> dict.</p>
+<p>Overrides <code class="docutils literal notranslate"><span class="pre">nn.Module.named_parameters</span></code> – whose <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">Parameter)</span></code>
+iterator would be empty here, since the shim registers no
+<code class="docutils literal notranslate"><span class="pre">nn.Parameter``s</span> <span class="pre">of</span> <span class="pre">its</span> <span class="pre">own</span> <span class="pre">(the</span> <span class="pre">calibratable</span> <span class="pre">values</span> <span class="pre">live</span> <span class="pre">in</span> <span class="pre">the</span>
+<span class="pre">compiled</span> <span class="pre">binding).</span> <span class="pre">This</span> <span class="pre">returns</span> <span class="pre">the</span> <span class="pre">binding's</span> <span class="pre">promoted-parameter</span> <span class="pre">surface,</span>
+<span class="pre">the</span> <span class="pre">same</span> <span class="pre">dict</span> <span class="pre">the</span> <span class="pre">eager</span> <span class="pre">runtime</span> <span class="pre">and</span> <span class="pre">the</span> <span class="pre">C++</span> <span class="pre">routes</span> <span class="pre">expose.</span> <span class="pre">Entries</span> <span class="pre">may</span> <span class="pre">be</span>
+<span class="pre">mutated</span> <span class="pre">in</span> <span class="pre">place</span> <span class="pre">(``m.named_parameters()[&quot;elasticity.E&quot;].fill_(...)</span></code>) or
+replaced via <a class="reference internal" href="#neml2.aoti.AOTIModel.set_parameter" title="neml2.aoti.AOTIModel.set_parameter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_parameter()</span></code></a>; the change is seen on the next call.
+Only parameters promoted at compile time (<code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">...</span> <span class="pre">-p</span> <span class="pre">NAME</span></code>)
+appear – with none promoted the dict is empty.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.aoti.AOTIModel.param_jacobian">
+<span class="sig-name descname"><span class="pre">param_jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/aoti/_shim.html#AOTIModel.param_jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.aoti.AOTIModel.param_jacobian" title="Link to this definition">¶</a></dt>
+<dd><p>Outputs + the per-(output, parameter) Jacobian blocks <code class="docutils literal notranslate"><span class="pre">d(out)/d(param)</span></code>.</p>
+<p>The reverse-mode parameter-derivative counterpart to <a class="reference internal" href="#neml2.aoti.AOTIModel.jacobian" title="neml2.aoti.AOTIModel.jacobian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">jacobian()</span></code></a>
+(mirrors <a class="reference internal" href="neml2.models.model.html#neml2.models.model.Model.param_jacobian" title="neml2.models.model.Model.param_jacobian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">neml2.models.model.Model.param_jacobian()</span></code></a> on the other
+routes): <code class="docutils literal notranslate"><span class="pre">inputs</span></code> is a <code class="docutils literal notranslate"><span class="pre">{variable_name:</span> <span class="pre">tensor}</span></code> dict and the result
+is <code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">P)</span></code> with <code class="docutils literal notranslate"><span class="pre">P[out][param]</span></code> the block <code class="docutils literal notranslate"><span class="pre">d(out)/d(param)</span></code>,
+keyed by qualified promoted-parameter name (see <a class="reference internal" href="#neml2.aoti.AOTIModel.named_parameters" title="neml2.aoti.AOTIModel.named_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">named_parameters()</span></code></a>).
+Needs an artifact with the parameter promoted (<code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">...</span> <span class="pre">-p</span>
+<span class="pre">NAME</span></code>) and its derivative graph (<code class="docutils literal notranslate"><span class="pre">-d</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a><em>]</em>)</p></li>
+<li><p><strong>param_overrides</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a>], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a>]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.aoti.AOTIModel.param_vjp">
+<span class="sig-name descname"><span class="pre">param_vjp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cotangents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/aoti/_shim.html#AOTIModel.param_vjp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.aoti.AOTIModel.param_vjp" title="Link to this definition">¶</a></dt>
+<dd><p>Reverse-mode parameter VJP – <code class="docutils literal notranslate"><span class="pre">cotangent</span></code> contracted with <code class="docutils literal notranslate"><span class="pre">d(out)/d(param)</span></code>.</p>
+<p>The reverse-mode counterpart to <a class="reference internal" href="#neml2.aoti.AOTIModel.param_jacobian" title="neml2.aoti.AOTIModel.param_jacobian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">param_jacobian()</span></code></a> (mirrors
+<a class="reference internal" href="neml2.models.model.html#neml2.models.model.Model.param_vjp" title="neml2.models.model.Model.param_vjp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">neml2.models.model.Model.param_vjp()</span></code></a>): <code class="docutils literal notranslate"><span class="pre">inputs</span></code> is a
+<code class="docutils literal notranslate"><span class="pre">{variable_name:</span> <span class="pre">tensor}</span></code> dict, <code class="docutils literal notranslate"><span class="pre">cotangents</span></code> is keyed by output name,
+and the result is keyed by qualified promoted-parameter name. Needs a
+<code class="docutils literal notranslate"><span class="pre">-p</span></code> / <code class="docutils literal notranslate"><span class="pre">-d</span></code> artifact.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a><em>]</em>)</p></li>
+<li><p><strong>cotangents</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a><em>]</em>)</p></li>
+<li><p><strong>param_overrides</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.aoti.AOTIModel.set_parameter">
+<span class="sig-name descname"><span class="pre">set_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/aoti/_shim.html#AOTIModel.set_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.aoti.AOTIModel.set_parameter" title="Link to this definition">¶</a></dt>
+<dd><p>Replace a promoted parameter’s value (forwarded to the binding).</p>
+<p><code class="docutils literal notranslate"><span class="pre">name</span></code> is a qualified promoted-parameter name (a key of
+<a class="reference internal" href="#neml2.aoti.AOTIModel.named_parameters" title="neml2.aoti.AOTIModel.named_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">named_parameters()</span></code></a>); <code class="docutils literal notranslate"><span class="pre">value</span></code> must match the artifact’s pinned
+device/dtype. The new value is used on the next forward / derivative call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>

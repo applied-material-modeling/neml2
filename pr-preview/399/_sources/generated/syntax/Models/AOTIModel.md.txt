@@ -16,10 +16,12 @@ Plays the native-Model role: ``input_spec`` and ``output_spec`` are
 populated from the metadata's ``var_type`` fields; ``__call__`` takes
 ``TensorWrapper`` positional args in ``input_spec`` order, unwraps them
 to raw tensors, runs the AOTI ``forward`` graph, and wraps each output
-back in its declared type. Promoted parameters (if any) live on the
-underlying binding's ``named_parameters()`` and are *not* part of
-``input_spec`` -- the caller mutates them in place via
-``self._inner.named_parameters()`` to drive runtime-flexible behavior.
+back in its declared type. Promoted parameters (if any) are *not* part of
+``input_spec``; they are reachable through `named_parameters` (a
+mutable dict) and `set_parameter`. The full sensitivity surface --
+`jvp`, `jacobian`, `param_jacobian`, `param_vjp` --
+is forwarded to the binding so the py-aoti route matches the others
+(CLAUDE.md "six evaluation routes" parity).
 
 ## Other options
 
