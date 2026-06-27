@@ -1,0 +1,119 @@
+(drivers-TransientDriver)=
+# TransientDriver
+
+**Source:** `drivers/TransientDriver.py`
+
+Drive a model over a prescribed time history.
+
+Mirrors C++ ``TransientDriver``. See module docstring for differences.
+
+## Other options
+
+`model` &mdash; `str` &middot; **required**
+: The Model to drive over the time history.
+
+`prescribed_time` &mdash; `str` &middot; **required**
+: [Tensors] block name of a Scalar whose leading axis is the per-step time history.
+
+`time` &mdash; `str` &middot; default `t`
+: Name of the model input that receives the per-step time value.
+
+`save_as` &mdash; `str`
+: Output file path. When set, ``run()`` writes the result here (the same flat dict `result` returns, via `save_result`); empty (the default) leaves ``run()`` side-effect-free.
+
+`prescribed_Scalar_names` &mdash; `list`
+: Scalar variable names assigned a prescribed value.
+
+`prescribed_Scalar_values` &mdash; `list`
+: Scalar prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_Scalar_names``.
+
+`ic_Scalar_names` &mdash; `list`
+: Scalar variable names assigned an initial condition value.
+
+`ic_Scalar_values` &mdash; `list`
+: Scalar initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_Scalar_names``.
+
+`prescribed_Vec_names` &mdash; `list`
+: Vec variable names assigned a prescribed value.
+
+`prescribed_Vec_values` &mdash; `list`
+: Vec prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_Vec_names``.
+
+`ic_Vec_names` &mdash; `list`
+: Vec variable names assigned an initial condition value.
+
+`ic_Vec_values` &mdash; `list`
+: Vec initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_Vec_names``.
+
+`prescribed_SR2_names` &mdash; `list`
+: SR2 variable names assigned a prescribed value.
+
+`prescribed_SR2_values` &mdash; `list`
+: SR2 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_SR2_names``.
+
+`ic_SR2_names` &mdash; `list`
+: SR2 variable names assigned an initial condition value.
+
+`ic_SR2_values` &mdash; `list`
+: SR2 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_SR2_names``.
+
+`prescribed_WR2_names` &mdash; `list`
+: WR2 variable names assigned a prescribed value.
+
+`prescribed_WR2_values` &mdash; `list`
+: WR2 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_WR2_names``.
+
+`ic_WR2_names` &mdash; `list`
+: WR2 variable names assigned an initial condition value.
+
+`ic_WR2_values` &mdash; `list`
+: WR2 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_WR2_names``.
+
+`prescribed_R2_names` &mdash; `list`
+: R2 variable names assigned a prescribed value.
+
+`prescribed_R2_values` &mdash; `list`
+: R2 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_R2_names``.
+
+`ic_R2_names` &mdash; `list`
+: R2 variable names assigned an initial condition value.
+
+`ic_R2_values` &mdash; `list`
+: R2 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_R2_names``.
+
+`prescribed_Rot_names` &mdash; `list`
+: Rot variable names assigned a prescribed value.
+
+`prescribed_Rot_values` &mdash; `list`
+: Rot prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_Rot_names``.
+
+`ic_Rot_names` &mdash; `list`
+: Rot variable names assigned an initial condition value.
+
+`ic_Rot_values` &mdash; `list`
+: Rot initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_Rot_names``.
+
+`prescribed_SSR4_names` &mdash; `list`
+: SSR4 variable names assigned a prescribed value.
+
+`prescribed_SSR4_values` &mdash; `list`
+: SSR4 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_SSR4_names``.
+
+`ic_SSR4_names` &mdash; `list`
+: SSR4 variable names assigned an initial condition value.
+
+`ic_SSR4_values` &mdash; `list`
+: SSR4 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_SSR4_names``.
+
+`prescribed_MillerIndex_names` &mdash; `list`
+: MillerIndex variable names assigned a prescribed value.
+
+`prescribed_MillerIndex_values` &mdash; `list`
+: MillerIndex prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_MillerIndex_names``.
+
+`ic_MillerIndex_names` &mdash; `list`
+: MillerIndex variable names assigned an initial condition value.
+
+`ic_MillerIndex_values` &mdash; `list`
+: MillerIndex initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_MillerIndex_names``.
+

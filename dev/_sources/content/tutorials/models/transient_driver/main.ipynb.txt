@@ -1,0 +1,437 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "c533774d",
+   "metadata": {},
+   "source": [
+    "(tutorials-models-transient-driver)=\n",
+    "# Transient driver\n",
+    "\n",
+    "A `TransientDriver` walks a constitutive model through a prescribed\n",
+    "load history, feeding each step's converged state into the next\n",
+    "step. In this tutorial we'll ramp a strain from zero to 5% over 50\n",
+    "steps, run a perfect-viscoplastic model through that history, and\n",
+    "plot the resulting stress–strain curve. The driver is configured\n",
+    "from the same kind of input file we've been using."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "21570bb8",
+   "metadata": {
+    "tags": [
+     "remove-cell"
+    ]
+   },
+   "outputs": [],
+   "source": [
+    "# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard\n",
+    "# makes the cell a no-op everywhere else (the docs build and local Jupyter\n",
+    "# already have NEML2 installed), and the cell is hidden from the rendered docs.\n",
+    "import sys\n",
+    "\n",
+    "if \"google.colab\" in sys.modules:\n",
+    "    !pip install -q neml2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9a924751",
+   "metadata": {},
+   "source": [
+    "## The recursive update\n",
+    "\n",
+    "Each step takes the previous state `s` and the new prescribed variables `g` (the *given* values) and produces the\n",
+    "next state:\n",
+    "\n",
+    "```python\n",
+    "for n in range(N):\n",
+    "    s[n + 1] = model(g[n + 1], s[n], g[n])\n",
+    "```\n",
+    "\n",
+    "When NEML2 is coupled to an external PDE solver, that loop lives outside\n",
+    "NEML2 — the host solver supplies the new prescribed variables and asks NEML2 for the\n",
+    "new state. For self-contained workflows like parameter calibration or plotting a\n",
+    "stress–strain curve, `TransientDriver` keeps everything inside NEML2.\n",
+    "\n",
+    ":::{note}\n",
+    "For training and adjoint-style sensitivities through a transient,\n",
+    "prefer [`pyzag`](https://github.com/applied-material-modeling/pyzag),\n",
+    "which performs the same recursive update in a much more efficient fashion.\n",
+    ":::\n",
+    "\n",
+    "## The input file\n",
+    "\n",
+    "The `[Drivers]` block names the model to step, the prescribed time\n",
+    "history, and the prescribed strain history. Time and the strain values\n",
+    "are built inline in `[Tensors]`:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "34df074d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%writefile input.i\n",
+    "# Drive a perfect-viscoplastic constitutive model through a uniaxial\n",
+    "# strain history of 50 steps. The implicit-update model `model` is the\n",
+    "# same kind of object that previous tutorials evaluated point-wise —\n",
+    "# `TransientDriver` repeatedly calls it, threading converged state from\n",
+    "# step n into step n+1.\n",
+    "\n",
+    "[Tensors]\n",
+    "  [times]\n",
+    "    type = Python\n",
+    "    expr = 'Scalar.linspace(0.0, 1.0, 50)'\n",
+    "  []\n",
+    "  [max_strain]\n",
+    "    type = Python\n",
+    "    expr = 'SR2.fill(0.05, -0.025, -0.025, 0.0, 0.0, 0.0)'\n",
+    "  []\n",
+    "  [strains]\n",
+    "    type = Python\n",
+    "    expr = 'SR2(torch.linspace(0.0, 1.0, 50, dtype=torch.float64).reshape(50, 1) * max_strain.data.unsqueeze(0))'\n",
+    "  []\n",
+    "[]\n",
+    "\n",
+    "[Drivers]\n",
+    "  [driver]\n",
+    "    type = TransientDriver\n",
+    "    model = 'model'\n",
+    "    prescribed_time = 'times'\n",
+    "    prescribed_SR2_names = 'E'\n",
+    "    prescribed_SR2_values = 'strains'\n",
+    "  []\n",
+    "[]\n",
+    "\n",
+    "[Models]\n",
+    "  [mandel_stress]\n",
+    "    type = IsotropicMandelStress\n",
+    "    cauchy_stress = 'stress'\n",
+    "  []\n",
+    "  [vonmises]\n",
+    "    type = SR2Invariant\n",
+    "    invariant_type = 'VONMISES'\n",
+    "    tensor = 'mandel_stress'\n",
+    "    invariant = 'effective_stress'\n",
+    "  []\n",
+    "  [yield_surface]\n",
+    "    type = YieldFunction\n",
+    "    yield_stress = 5\n",
+    "  []\n",
+    "  [flow]\n",
+    "    type = ComposedModel\n",
+    "    models = 'vonmises yield_surface'\n",
+    "  []\n",
+    "  [normality]\n",
+    "    type = Normality\n",
+    "    model = 'flow'\n",
+    "    function = 'yield_function'\n",
+    "    from = 'mandel_stress'\n",
+    "    to = 'flow_direction'\n",
+    "  []\n",
+    "  [flow_rate]\n",
+    "    type = PerzynaPlasticFlowRate\n",
+    "    reference_stress = 100\n",
+    "    exponent = 2\n",
+    "  []\n",
+    "  [Eprate]\n",
+    "    type = AssociativePlasticFlow\n",
+    "  []\n",
+    "  [Erate]\n",
+    "    type = SR2VariableRate\n",
+    "    variable = 'E'\n",
+    "  []\n",
+    "  [Eerate]\n",
+    "    type = SR2LinearCombination\n",
+    "    from = 'E_rate plastic_strain_rate'\n",
+    "    to = 'strain_rate'\n",
+    "    weights = '1 -1'\n",
+    "  []\n",
+    "  [elasticity]\n",
+    "    type = LinearIsotropicElasticity\n",
+    "    coefficients      = '1e5           0.3'\n",
+    "    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'\n",
+    "    rate_form = true\n",
+    "  []\n",
+    "  [integrate_stress]\n",
+    "    type = SR2BackwardEulerTimeIntegration\n",
+    "    variable = 'stress'\n",
+    "  []\n",
+    "  [implicit_rate]\n",
+    "    type = ComposedModel\n",
+    "    models = 'mandel_stress vonmises yield_surface normality flow_rate Eprate Erate Eerate elasticity integrate_stress'\n",
+    "  []\n",
+    "[]\n",
+    "\n",
+    "[EquationSystems]\n",
+    "  [eq_sys]\n",
+    "    type = NonlinearSystem\n",
+    "    model = 'implicit_rate'\n",
+    "    unknowns = 'stress'\n",
+    "    residuals = 'stress_residual'\n",
+    "  []\n",
+    "[]\n",
+    "\n",
+    "[Solvers]\n",
+    "  [newton]\n",
+    "    type = Newton\n",
+    "    linear_solver = 'lu'\n",
+    "  []\n",
+    "  [lu]\n",
+    "    type = DenseLU\n",
+    "  []\n",
+    "[]\n",
+    "\n",
+    "[Models]\n",
+    "  [predictor]\n",
+    "    type = ConstantExtrapolationPredictor\n",
+    "    unknowns_SR2 = 'stress'\n",
+    "  []\n",
+    "  [model]\n",
+    "    type = ImplicitUpdate\n",
+    "    equation_system = 'eq_sys'\n",
+    "    solver = 'newton'\n",
+    "    predictor = 'predictor'\n",
+    "  []\n",
+    "[]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "73b48fb0",
+   "metadata": {},
+   "source": [
+    "A few things worth pointing out:\n",
+    "\n",
+    "- `prescribed_time` has shape `(N,)` — one time value per step. `N`\n",
+    "  sets the number of steps.\n",
+    "- The `prescribed_*_names` / `prescribed_*_values` pair wires a model input (here\n",
+    "  the strain `E`) to a tensor block that supplies its values at every\n",
+    "  step. Each prescribed tensor must carry a leading axis of length `N`.\n",
+    "- Anything not listed as a prescribed variable or initial condition starts\n",
+    "  at zero — so stress starts at zero at step 0.\n",
+    "\n",
+    "The `[Tensors]` block builds a 50-step time vector $t \\in [0, 1]$ and a\n",
+    "matching strain history that ramps linearly to a peak uniaxial strain\n",
+    "of $\\varepsilon_{xx} = 5\\%$ with lateral contractions consistent with\n",
+    "isochoric deformation. See [](tutorials-models-cross-referencing) for\n",
+    "more examples of the `type = Python` block.\n",
+    "\n",
+    "## Building and running the driver\n",
+    "\n",
+    "`load_input(path).get_driver(name)` builds the driver from the input\n",
+    "file:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "68c99b8a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import neml2\n",
+    "\n",
+    "factory = neml2.load_input(\"input.i\")\n",
+    "driver = factory.get_driver(\"driver\")\n",
+    "driver"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9adc6d1f",
+   "metadata": {},
+   "source": [
+    "The driver carries the parsed model, the prescribed-time tensor, and\n",
+    "the prescribed variables. The number of steps comes from the leading axis\n",
+    "of `prescribed_time`:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "169cc094",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print(\"nsteps        =\", driver.nsteps)\n",
+    "print(\"prescribed    =\", list(driver.prescribed))\n",
+    "print(\"wrapped model =\", type(driver.model).__name__)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d37bd393",
+   "metadata": {},
+   "source": [
+    "`driver.run()` executes the time loop, threading each step's converged\n",
+    "state into the next step:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "80e4745d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "driver.run()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "af227126",
+   "metadata": {},
+   "source": [
+    "## Reading the per-step output\n",
+    "\n",
+    "`driver.result()` returns a flat dict keyed by\n",
+    "`input.<step>.<variable>` and `output.<step>.<variable>`. Step 0 holds\n",
+    "only the prescribed variables (the model isn't called at step 0); every\n",
+    "later step holds what the model returned:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "0470f9ca",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "results = driver.result()\n",
+    "print(\"total entries:\", len(results))\n",
+    "print(\"step 0  keys:\", [k for k in results if k.startswith(\"input.0.\")])\n",
+    "print(\"step 1  inputs:\", [k for k in results if k.startswith(\"input.1.\")])\n",
+    "print(\"step 1  outputs:\", [k for k in results if k.startswith(\"output.1.\")])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4e3e0748",
+   "metadata": {},
+   "source": [
+    "(Aside on the `~k` syntax: a variable name ending in `~k` denotes\n",
+    "its value from `k` steps back — `E~1` is the previous step's strain,\n",
+    "`t~1` the previous step's time. The model sees both `E` and `E~1`\n",
+    "and computes a strain rate internally.)\n",
+    "\n",
+    "Pulling per-step strain and stress out as 1-D tensors is a simple\n",
+    "comprehension:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "24715743",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import torch\n",
+    "\n",
+    "nsteps = driver.nsteps\n",
+    "times = torch.tensor([results[f\"input.{i}.t\"].item() for i in range(nsteps)])\n",
+    "strain_xx = torch.tensor([results[f\"input.{i}.E\"][0].item() for i in range(nsteps)])\n",
+    "# Step 0 has no output -> stress is the zero initial condition.\n",
+    "stress_xx = torch.tensor(\n",
+    "    [0.0] + [results[f\"output.{i}.stress\"][0].item() for i in range(1, nsteps)]\n",
+    ")\n",
+    "print(f\"max strain_xx = {strain_xx.max().item():.4f}\")\n",
+    "print(f\"max stress_xx = {stress_xx.max().item():.2f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "663b940e",
+   "metadata": {},
+   "source": [
+    "(Index `[0]` picks the first Mandel slot of the `SR2` payload, which is\n",
+    "the $xx$ component.)\n",
+    "\n",
+    "## Plotting the stress–strain curve\n",
+    "\n",
+    "With per-step `strain_xx` and `stress_xx` in hand, the curve is just a\n",
+    "`matplotlib` call. `matplotlib` is available in the `[dev]` extras\n",
+    "(`pip install -e \".[dev]\"`):"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "89601a35",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "fig, ax = plt.subplots(figsize=(5, 4))\n",
+    "ax.plot(strain_xx, stress_xx, \"C0o-\", markersize=3)\n",
+    "ax.set_xlabel(r\"$\\varepsilon_{xx}$\")\n",
+    "ax.set_ylabel(r\"$\\sigma_{xx}$\")\n",
+    "ax.grid(True, alpha=0.3)\n",
+    "fig.tight_layout()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d5b109a4",
+   "metadata": {},
+   "source": [
+    "The initial linear segment is purely elastic. Once the von Mises stress\n",
+    "exceeds the yield surface the Perzyna flow rule activates and the\n",
+    "stress plateaus at the rate-dependent overstress level — a textbook\n",
+    "perfect-viscoplastic response.\n",
+    "\n",
+    "## Saving the trajectory to disk\n",
+    "\n",
+    "The full result dict can be saved to a single `.pt` file, keyed by the\n",
+    "same strings [`driver.result()`](drivers-TransientDriver) returns in\n",
+    "memory:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e64d52f5",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "driver.save_result(\"result.pt\")\n",
+    "\n",
+    "loaded = torch.load(\"result.pt\", weights_only=True)\n",
+    "print(\"entry count:\", len(loaded))\n",
+    "print(\"a few keys :\", list(loaded)[:4])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a6cf3d2b",
+   "metadata": {},
+   "source": [
+    "## Where to go next\n",
+    "\n",
+    "- To prescribe stress instead of strain, swap which variable the\n",
+    "  `prescribed_*` block supplies; the rest of the workflow is unchanged.\n",
+    "- Give `prescribed_time` and the prescribed tensors a *trailing* batch axis\n",
+    "  and the driver will sweep that axis in parallel — useful for\n",
+    "  parameter or initial-condition sweeps. See\n",
+    "  [](tutorials-models-vectorization) for the batching rules.\n",
+    "- For gradient-based training through a transient response, see\n",
+    "  [`pyzag`](https://github.com/applied-material-modeling/pyzag)."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
