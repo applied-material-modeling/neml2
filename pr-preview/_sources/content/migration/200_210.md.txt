@@ -53,7 +53,7 @@ So the migration is:
 - `ImplicitUpdate` now points to `equation_system`.
 
 `type = NonlinearSystem` resolves to the model-backed nonlinear-system
-implementation (`ModelNonlinearSystem`), which interprets:
+implementation, which interprets:
 
 - input `state` as unknowns,
 - output `residual` as residual equations,
@@ -62,8 +62,9 @@ implementation (`ModelNonlinearSystem`), which interprets:
 (linear-solver)=
 ### Nonlinear solvers now reference a linear solver
 
-In v2.1.0, nonlinear solvers own a linear solver and require
-`linear_solver` in their options.
+In v2.1.0, nonlinear solvers accept a `linear_solver` option that
+selects the linear algebra backend for each Newton iteration.
+When omitted, the solver defaults to `DenseLU`.
 
 ```ini
 [Solvers]
@@ -72,7 +73,7 @@ In v2.1.0, nonlinear solvers own a linear solver and require
     abs_tol = 1e-10
     rel_tol = 1e-8
     max_its = 50
-    linear_solver = 'lu'
+    linear_solver = 'lu'   # optional; DenseLU is used when absent
   []
   [lu]
     type = DenseLU
@@ -83,14 +84,6 @@ In v2.1.0, nonlinear solvers own a linear solver and require
 This `linear_solver` link controls how each nonlinear iteration solves
 the linearized system, which was previously internal to the nonlinear
 solver implementation.
-
-### Optional scheduler hookup in drivers
-
-When work dispatching is enabled, drivers can reference schedulers
-directly:
-
-- `scheduler = <name under [Schedulers]>`
-- `async_dispatch = true|false`
 
 ### Settings defaults / keys changed
 
@@ -108,29 +101,25 @@ directly:
 
 `runner` was replaced by dedicated tools.
 
-| v2.0.0 command                       | v2.1.0 replacement                         |
-| :----------------------------------- | :----------------------------------------- |
-| `runner input.i driver`              | `neml2-run input.i driver`                 |
-| `runner input.i driver --diagnose`   | `neml2-diagnose input.i --driver driver`   |
-| `runner input.i driver --time`       | `neml2-time input.i driver`                |
+| v2.0.0 command                     | v2.1.0 replacement             |
+| :--------------------------------- | :----------------------------- |
+| `runner input.i driver`            | `neml2-run input.i driver`     |
 
-New in v2.1.0: `neml2-inspect input.i model`, plus `neml2-syntax` for
-catalog browsing.
+New in v2.1.0: `neml2-inspect input.i model` for wiring inspection, and
+`neml2-syntax` for catalog browsing.
+
+Note: `neml2-diagnose` and `neml2-time` that shipped with v2.1.0 were
+removed in the v3 rewrite. See [](212_300.md) for the current tool set.
 
 ## Build system and integration
 
-- CMake minimum changed from `3.28` to `3.26`.
+- CMake minimum changed to `3.26`.
 - `cmake-variants.yaml` workflow was replaced by `CMakePresets.json`.
-- `NEML2_RUNNER` → `NEML2_TOOLS`.
-- New common toggles: `NEML2_WORK_DISPATCHER`, `NEML2_JSON`, `NEML2_CSV`.
-- Removed: `NEML2_PYBIND`, `NEML2_DOC`, `NEML2_CLANG_TIDY`,
-  `NEML2_CLANG_TIDY_PATH`.
-- Installable components split: `libneml2` (core + headers) and
-  `libneml2-bin` (utility binaries).
-- `pkg-config` integration is supported; the file name is
-  config-dependent (`neml2.pc` for Release, `neml2_<CONFIG>.pc`
-  otherwise).
 - CMake config-package integration: `find_package(neml2 CONFIG)`,
   link target `neml2::neml2`.
+- `pkg-config` integration is supported (`neml2.pc`).
 - Python build backend moved from setuptools+custom `setup.py` to
   `scikit-build-core`.
+
+See [](212_300.md) for subsequent build-system changes introduced in the
+v3 rewrite.

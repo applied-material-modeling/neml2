@@ -19,13 +19,13 @@ Mirrors C++ ``TransientDriver``. See module docstring for differences.
 : Name of the model input that receives the per-step time value.
 
 `save_as` &mdash; `str`
-: Output file path. Accepted for compatibility with the C++ driver but ignored by the native runtime; results are held in memory and retrieved via :meth:`result`.
+: Output file path. When set, ``run()`` writes the result here (the same flat dict `result` returns, via `save_result`); empty (the default) leaves ``run()`` side-effect-free.
 
-`force_Scalar_names` &mdash; `list`
-: Scalar variable names assigned a driving force value.
+`prescribed_Scalar_names` &mdash; `list`
+: Scalar variable names assigned a prescribed value.
 
-`force_Scalar_values` &mdash; `list`
-: Scalar driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``force_Scalar_names``.
+`prescribed_Scalar_values` &mdash; `list`
+: Scalar prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_Scalar_names``.
 
 `ic_Scalar_names` &mdash; `list`
 : Scalar variable names assigned an initial condition value.
@@ -33,11 +33,11 @@ Mirrors C++ ``TransientDriver``. See module docstring for differences.
 `ic_Scalar_values` &mdash; `list`
 : Scalar initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_Scalar_names``.
 
-`force_Vec_names` &mdash; `list`
-: Vec variable names assigned a driving force value.
+`prescribed_Vec_names` &mdash; `list`
+: Vec variable names assigned a prescribed value.
 
-`force_Vec_values` &mdash; `list`
-: Vec driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``force_Vec_names``.
+`prescribed_Vec_values` &mdash; `list`
+: Vec prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_Vec_names``.
 
 `ic_Vec_names` &mdash; `list`
 : Vec variable names assigned an initial condition value.
@@ -45,11 +45,11 @@ Mirrors C++ ``TransientDriver``. See module docstring for differences.
 `ic_Vec_values` &mdash; `list`
 : Vec initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_Vec_names``.
 
-`force_SR2_names` &mdash; `list`
-: SR2 variable names assigned a driving force value.
+`prescribed_SR2_names` &mdash; `list`
+: SR2 variable names assigned a prescribed value.
 
-`force_SR2_values` &mdash; `list`
-: SR2 driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``force_SR2_names``.
+`prescribed_SR2_values` &mdash; `list`
+: SR2 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_SR2_names``.
 
 `ic_SR2_names` &mdash; `list`
 : SR2 variable names assigned an initial condition value.
@@ -57,11 +57,11 @@ Mirrors C++ ``TransientDriver``. See module docstring for differences.
 `ic_SR2_values` &mdash; `list`
 : SR2 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_SR2_names``.
 
-`force_WR2_names` &mdash; `list`
-: WR2 variable names assigned a driving force value.
+`prescribed_WR2_names` &mdash; `list`
+: WR2 variable names assigned a prescribed value.
 
-`force_WR2_values` &mdash; `list`
-: WR2 driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``force_WR2_names``.
+`prescribed_WR2_values` &mdash; `list`
+: WR2 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_WR2_names``.
 
 `ic_WR2_names` &mdash; `list`
 : WR2 variable names assigned an initial condition value.
@@ -69,11 +69,11 @@ Mirrors C++ ``TransientDriver``. See module docstring for differences.
 `ic_WR2_values` &mdash; `list`
 : WR2 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_WR2_names``.
 
-`force_R2_names` &mdash; `list`
-: R2 variable names assigned a driving force value.
+`prescribed_R2_names` &mdash; `list`
+: R2 variable names assigned a prescribed value.
 
-`force_R2_values` &mdash; `list`
-: R2 driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``force_R2_names``.
+`prescribed_R2_values` &mdash; `list`
+: R2 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_R2_names``.
 
 `ic_R2_names` &mdash; `list`
 : R2 variable names assigned an initial condition value.
@@ -81,11 +81,11 @@ Mirrors C++ ``TransientDriver``. See module docstring for differences.
 `ic_R2_values` &mdash; `list`
 : R2 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_R2_names``.
 
-`force_Rot_names` &mdash; `list`
-: Rot variable names assigned a driving force value.
+`prescribed_Rot_names` &mdash; `list`
+: Rot variable names assigned a prescribed value.
 
-`force_Rot_values` &mdash; `list`
-: Rot driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``force_Rot_names``.
+`prescribed_Rot_values` &mdash; `list`
+: Rot prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_Rot_names``.
 
 `ic_Rot_names` &mdash; `list`
 : Rot variable names assigned an initial condition value.
@@ -93,11 +93,11 @@ Mirrors C++ ``TransientDriver``. See module docstring for differences.
 `ic_Rot_values` &mdash; `list`
 : Rot initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_Rot_names``.
 
-`force_SSR4_names` &mdash; `list`
-: SSR4 variable names assigned a driving force value.
+`prescribed_SSR4_names` &mdash; `list`
+: SSR4 variable names assigned a prescribed value.
 
-`force_SSR4_values` &mdash; `list`
-: SSR4 driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``force_SSR4_names``.
+`prescribed_SSR4_values` &mdash; `list`
+: SSR4 prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_SSR4_names``.
 
 `ic_SSR4_names` &mdash; `list`
 : SSR4 variable names assigned an initial condition value.
@@ -105,11 +105,11 @@ Mirrors C++ ``TransientDriver``. See module docstring for differences.
 `ic_SSR4_values` &mdash; `list`
 : SSR4 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_SSR4_names``.
 
-`force_MillerIndex_names` &mdash; `list`
-: MillerIndex variable names assigned a driving force value.
+`prescribed_MillerIndex_names` &mdash; `list`
+: MillerIndex variable names assigned a prescribed value.
 
-`force_MillerIndex_values` &mdash; `list`
-: MillerIndex driving force tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``force_MillerIndex_names``.
+`prescribed_MillerIndex_values` &mdash; `list`
+: MillerIndex prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_MillerIndex_names``.
 
 `ic_MillerIndex_names` &mdash; `list`
 : MillerIndex variable names assigned an initial condition value.

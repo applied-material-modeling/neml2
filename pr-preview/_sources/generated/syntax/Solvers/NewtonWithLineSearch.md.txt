@@ -19,6 +19,9 @@ The Newton-Raphson solver with line search.
 `max_its` &mdash; `int` &middot; default `25`
 : Maximum number of iterations allowed before issuing an error/exception
 
+`verbose` &mdash; `bool` &middot; default `False`
+: Print the Newton convergence history (per-iteration residual norms, including any line-search sub-iterations) after each solve
+
 `linesearch_type` &mdash; `str` &middot; default `BACKTRACKING`
 : The type of linesearch used. Options are BACKTRACKING and STRONG_WOLFE.
 

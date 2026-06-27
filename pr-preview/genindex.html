@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="./">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Index - NEML2 3.0.3</title><link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Index - NEML2 3.0.4</title><link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=e1a1ceaf" />
@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="_static/print.css?v=20ff2c19" />
-    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=1b4f28a4" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=8ed54ede" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -105,7 +105,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.align_sub_batch">align_sub_batch() (in module neml2.types)</a>
 </li>
-      <li><a href="content/python_api/neml2.schema.html#neml2.schema.HitField.allow_nonlinear">allow_nonlinear (neml2.schema.HitField attribute)</a>
+      <li><a href="content/python_api/neml2.schema.html#neml2.schema.HitField.allow_promotion">allow_promotion (neml2.schema.HitField attribute)</a>
 </li>
       <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel">AOTIModel (class in neml2.aoti)</a>
 </li>
@@ -269,7 +269,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.consumed_items">consumed_items (neml2.models.model.Model property)</a>
 </li>
-      <li><a href="content/python_api/neml2.solvers.html#neml2.solvers.Newton.converged">converged() (neml2.solvers.Newton method)</a>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.ConvergenceError">ConvergenceError</a>
 </li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.cosh">cosh() (in module neml2.types)</a>
 </li>
@@ -381,14 +381,18 @@ data-aria-dark="Switch to auto color mode">
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="content/python_api/neml2.es.html#neml2.es.IFT.emitted_pairs">emitted_pairs() (neml2.es.IFT method)</a>
+</li>
+      <li><a href="content/python_api/neml2.es.html#neml2.es.ParamIFT.emitted_param_pairs">emitted_param_pairs() (neml2.es.ParamIFT method)</a>
+</li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.PrimitiveTensor.empty">empty() (neml2.types.PrimitiveTensor class method)</a>
 </li>
       <li><a href="content/python_api/neml2.models.chain_rule.html#neml2.models.chain_rule.equalize_tangent_K">equalize_tangent_K() (in module neml2.models.chain_rule)</a>
 </li>
-      <li><a href="content/python_api/neml2.types.html#neml2.types.euler_rodrigues">euler_rodrigues() (in module neml2.types)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="content/python_api/neml2.types.html#neml2.types.euler_rodrigues">euler_rodrigues() (in module neml2.types)</a>
+</li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.exp">exp() (in module neml2.types)</a>
 </li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.exp_map">exp_map() (in module neml2.types)</a>
@@ -427,6 +431,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="content/python_api/neml2.es.html#neml2.es.IFT.forward">(neml2.es.IFT method)</a>
 </li>
         <li><a href="content/python_api/neml2.es.html#neml2.es.NewtonStep.forward">(neml2.es.NewtonStep method)</a>
+</li>
+        <li><a href="content/python_api/neml2.es.html#neml2.es.ParamIFT.forward">(neml2.es.ParamIFT method)</a>
 </li>
         <li><a href="content/python_api/neml2.es.html#neml2.es.RHS.forward">(neml2.es.RHS method)</a>
 </li>
@@ -585,11 +591,11 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="content/python_api/neml2.schema.html#neml2.schema.input">input() (in module neml2.schema)</a>
 </li>
-      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.NLParam.input_name">input_name (neml2.models.model.NLParam attribute)</a>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.input_base_shapes">input_base_shapes (neml2.aoti.Model property)</a>
+</li>
+      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.PromotedParam.input_name">input_name (neml2.models.model.PromotedParam attribute)</a>
 </li>
       <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.input_names">input_names (neml2.aoti.Model property)</a>
-</li>
-      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.input_sizes">input_sizes (neml2.aoti.Model property)</a>
 </li>
       <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.input_spec">input_spec (neml2.models.model.Model attribute)</a>
 
@@ -613,14 +619,22 @@ data-aria-dark="Switch to auto color mode">
 <h2 id="J">J</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.jacobian">jacobian() (neml2.aoti.Model method)</a>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.jacobian">jacobian() (neml2.aoti.AOTIModel method)</a>
+
+      <ul>
+        <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.jacobian">(neml2.aoti.Model method)</a>
 </li>
-      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.jvp">jvp() (neml2.aoti.Model method)</a>
+      </ul></li>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.jvp">jvp() (neml2.aoti.AOTIModel method)</a>
+
+      <ul>
+        <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.jvp">(neml2.aoti.Model method)</a>
 </li>
-      <li><a href="content/python_api/neml2.types.html#neml2.types.jvp_compose">jvp_compose() (in module neml2.types)</a>
-</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="content/python_api/neml2.types.html#neml2.types.jvp_compose">jvp_compose() (in module neml2.types)</a>
+</li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.jvp_euler_rodrigues">jvp_euler_rodrigues() (in module neml2.types)</a>
 </li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.jvp_exp_map">jvp_exp_map() (in module neml2.types)</a>
@@ -735,15 +749,17 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="content/python_api/neml2.factory.html#neml2.factory.load_input">load_input() (in module neml2.factory)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="content/python_api/neml2.factory.html#neml2.factory.load_model">load_model() (in module neml2.factory)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="content/python_api/neml2.factory.html#neml2.factory.load_nonlinear_system">load_nonlinear_system() (in module neml2.factory)</a>
 </li>
       <li><a href="content/python_api/neml2.models.export.html#neml2.models.export.load_package">load_package() (in module neml2.models.export)</a>
 </li>
       <li><a href="content/python_api/neml2.factory.html#neml2.factory.load_string">load_string() (in module neml2.factory)</a>
+</li>
+      <li><a href="content/python_api/neml2.solvers.html#neml2.solvers.NonlinearResult.log">log (neml2.solvers.NonlinearResult attribute)</a>
 </li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.log">log() (in module neml2.types)</a>
 </li>
@@ -826,8 +842,12 @@ data-aria-dark="Switch to auto color mode">
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="content/python_api/neml2.schema.html#neml2.schema.HitField.name">name (neml2.schema.HitField attribute)</a>
 </li>
-      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.named_parameters">named_parameters() (neml2.aoti.Model method)</a>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.named_parameters">named_parameters() (neml2.aoti.AOTIModel method)</a>
+
+      <ul>
+        <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.named_parameters">(neml2.aoti.Model method)</a>
 </li>
+      </ul></li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.Tensor.ndim">ndim (neml2.types.Tensor property)</a>
 
       <ul>
@@ -911,6 +931,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="content/python_api/neml2.models.resolver.html#module-neml2.models.resolver">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     neml2.pyzag
 
@@ -918,8 +940,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="content/python_api/neml2.pyzag.html#module-neml2.pyzag">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     neml2.schema
 
@@ -961,8 +981,6 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2PyzagModel.nforce">nforce (neml2.pyzag.NEML2PyzagModel property)</a>
 </li>
       <li><a href="content/python_api/neml2.es.html#neml2.es.AxisLayout.ngroup">ngroup (neml2.es.AxisLayout property)</a>
-</li>
-      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.NLParam">NLParam (class in neml2.models.model)</a>
 </li>
       <li><a href="content/python_api/neml2.solvers.html#neml2.solvers.NonlinearResult">NonlinearResult (class in neml2.solvers)</a>
 </li>
@@ -1012,11 +1030,11 @@ data-aria-dark="Switch to auto color mode">
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="content/python_api/neml2.schema.html#neml2.schema.output">output() (in module neml2.schema)</a>
 </li>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.output_base_shapes">output_base_shapes (neml2.aoti.Model property)</a>
+</li>
       <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.output_names">output_names (neml2.aoti.Model property)</a>
 </li>
       <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.output_priorities">output_priorities (neml2.models.model.Model attribute)</a>
-</li>
-      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.output_sizes">output_sizes (neml2.aoti.Model property)</a>
 </li>
       <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.output_spec">output_spec (neml2.models.model.Model attribute)</a>
 
@@ -1032,9 +1050,35 @@ data-aria-dark="Switch to auto color mode">
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.param_jacobian">param_jacobian() (neml2.aoti.AOTIModel method)</a>
+
+      <ul>
+        <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.param_jacobian">(neml2.aoti.Model method)</a>
+</li>
+        <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.param_jacobian">(neml2.models.model.Model method)</a>
+</li>
+      </ul></li>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.param_vjp">param_vjp() (neml2.aoti.AOTIModel method)</a>
+
+      <ul>
+        <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.param_vjp">(neml2.aoti.Model method)</a>
+</li>
+        <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.param_vjp">(neml2.models.model.Model method)</a>
+</li>
+      </ul></li>
       <li><a href="content/python_api/neml2.schema.html#neml2.schema.parameter">parameter() (in module neml2.schema)</a>
 </li>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.parameter_base_shapes">parameter_base_shapes (neml2.aoti.Model property)</a>
+
+      <ul>
+        <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.parameter_base_shapes">(neml2.models.model.Model property)</a>
+</li>
+      </ul></li>
       <li><a href="content/python_api/neml2.schema.html#neml2.schema.parameters">parameters() (in module neml2.schema)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="content/python_api/neml2.es.html#neml2.es.ParamIFT">ParamIFT (class in neml2.es)</a>
 </li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.pow">pow() (in module neml2.types)</a>
 </li>
@@ -1042,15 +1086,15 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="content/python_api/neml2.schema.html#neml2.schema.HitField.priority">priority (neml2.schema.HitField attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.PromotedParam">PromotedParam (class in neml2.models.model)</a>
+</li>
       <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.propagate_tangents">propagate_tangents() (neml2.models.model.Model method)</a>
 </li>
       <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.provided_items">provided_items (neml2.models.model.Model property)</a>
 </li>
-      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.NLParam.provider">provider (neml2.models.model.NLParam attribute)</a>
+      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.PromotedParam.provider">provider (neml2.models.model.PromotedParam attribute)</a>
 </li>
-      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.NLParam.provider_output">provider_output (neml2.models.model.NLParam attribute)</a>
+      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.PromotedParam.provider_output">provider_output (neml2.models.model.PromotedParam attribute)</a>
 </li>
       <li><a href="content/python_api/neml2.user_tensors.html#neml2.user_tensors.PythonTensor">PythonTensor (class in neml2.user_tensors)</a>
 </li>
@@ -1068,6 +1112,8 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="content/python_api/neml2.schema.html#neml2.schema.HitField.reader">reader (neml2.schema.HitField attribute)</a>
 </li>
+      <li><a href="content/python_api/neml2.types.html#neml2.types.reciprocal">reciprocal() (in module neml2.types)</a>
+</li>
       <li><a href="content/python_api/neml2.factory.html#neml2.factory.register_neml2_object">register_neml2_object() (in module neml2.factory)</a>
 </li>
       <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.register_submodule">register_submodule() (in module neml2.models.model)</a>
@@ -1078,12 +1124,14 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="content/python_api/neml2.schema.html#neml2.schema.HitSchema.reject_unknown_fields">reject_unknown_fields() (neml2.schema.HitSchema method)</a>
 </li>
-      <li><a href="content/python_api/neml2.schema.html#neml2.schema.HitField.required">required (neml2.schema.HitField property)</a>
+      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.request_AD">request_AD() (neml2.models.model.Model method)</a>
 </li>
-      <li><a href="content/python_api/neml2.models.resolver.html#neml2.models.resolver.DependencyResolver.resolve">resolve() (neml2.models.resolver.DependencyResolver method)</a>
+      <li><a href="content/python_api/neml2.schema.html#neml2.schema.HitField.required">required (neml2.schema.HitField property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="content/python_api/neml2.models.resolver.html#neml2.models.resolver.DependencyResolver.resolve">resolve() (neml2.models.resolver.DependencyResolver method)</a>
+</li>
       <li><a href="content/python_api/neml2.drivers.html#neml2.drivers.TransientDriver.result">result() (neml2.drivers.TransientDriver method)</a>
 </li>
       <li><a href="content/python_api/neml2.solvers.html#neml2.solvers.NonlinearResult.ret">ret (neml2.solvers.NonlinearResult attribute)</a>
@@ -1116,7 +1164,7 @@ data-aria-dark="Switch to auto color mode">
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="content/python_api/neml2.drivers.html#neml2.drivers.TransientDriver.save_gold">save_gold() (neml2.drivers.TransientDriver method)</a>
+      <li><a href="content/python_api/neml2.drivers.html#neml2.drivers.TransientDriver.save_result">save_result() (neml2.drivers.TransientDriver method)</a>
 </li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.Scalar">Scalar (class in neml2.types)</a>
 </li>
@@ -1162,7 +1210,15 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="content/python_api/neml2.es.html#neml2.es.ModelNonlinearSystem.set_g">(neml2.es.ModelNonlinearSystem method)</a>
 </li>
       </ul></li>
-      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.set_parameter">set_parameter() (neml2.aoti.Model method)</a>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.set_parameter">set_parameter() (neml2.aoti.AOTIModel method)</a>
+
+      <ul>
+        <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.set_parameter">(neml2.aoti.Model method)</a>
+</li>
+        <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.Model.set_parameter">(neml2.models.model.Model method)</a>
+</li>
+      </ul></li>
+      <li><a href="content/python_api/neml2.aoti.html#neml2.aoti.Model.set_solver_config">set_solver_config() (neml2.aoti.Model method)</a>
 </li>
       <li><a href="content/python_api/neml2.es.html#neml2.es.LinearSystem.set_u">set_u() (neml2.es.LinearSystem method)</a>
 
@@ -1170,6 +1226,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="content/python_api/neml2.es.html#neml2.es.ModelNonlinearSystem.set_u">(neml2.es.ModelNonlinearSystem method)</a>
 </li>
       </ul></li>
+      <li><a href="content/python_api/neml2.es.html#neml2.es.ModelNonlinearSystem.set_u_from_group_raws">set_u_from_group_raws() (neml2.es.ModelNonlinearSystem method)</a>
+</li>
       <li><a href="content/python_api/neml2.es.html#neml2.es.LinearSystem.setup_blayout">setup_blayout() (neml2.es.LinearSystem method)</a>
 
       <ul>
@@ -1222,12 +1280,12 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.sqrt">sqrt() (in module neml2.types)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="content/python_api/neml2.types.html#neml2.types.SR2">SR2 (class in neml2.types)</a>
 </li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.SSR4">SSR4 (class in neml2.types)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="content/python_api/neml2.types.html#neml2.types.stack">stack() (in module neml2.types)</a>
 </li>
       <li><a href="content/python_api/neml2.es.html#neml2.es.AxisLayout.storage_size">storage_size() (neml2.es.AxisLayout method)</a>
@@ -1336,7 +1394,7 @@ data-aria-dark="Switch to auto color mode">
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.NLParam.tail_index">tail_index (neml2.models.model.NLParam attribute)</a>
+      <li><a href="content/python_api/neml2.models.model.html#neml2.models.model.PromotedParam.tail_index">tail_index (neml2.models.model.PromotedParam attribute)</a>
 </li>
       <li><a href="content/python_api/neml2.models.chain_rule.html#neml2.models.chain_rule.TangentAction">TangentAction (in module neml2.models.chain_rule)</a>
 
@@ -1402,20 +1460,14 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="content/python_api/neml2.es.html#neml2.es.ModelNonlinearSystem.u">(neml2.es.ModelNonlinearSystem method)</a>
 </li>
       </ul></li>
-      <li><a href="content/python_api/neml2.es.html#neml2.es.LinearSystem.ulayout">ulayout (neml2.es.LinearSystem property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="content/python_api/neml2.es.html#neml2.es.LinearSystem.ulayout">ulayout (neml2.es.LinearSystem property)</a>
+</li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.Tensor.unflatten_base">unflatten_base() (neml2.types.Tensor method)</a>
 </li>
       <li><a href="content/python_api/neml2.types.html#neml2.types.unit">unit() (in module neml2.types)</a>
 </li>
-      <li><a href="content/python_api/neml2.solvers.html#neml2.solvers.Newton.update">update() (neml2.solvers.Newton method)</a>
-
-      <ul>
-        <li><a href="content/python_api/neml2.solvers.html#neml2.solvers.NewtonWithLineSearch.update">(neml2.solvers.NewtonWithLineSearch method)</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -1524,14 +1576,12 @@ data-aria-dark="Switch to auto color mode">
     </div>
   </div>
 </footer>
-      <script src="_static/documentation_options.js?v=9b3fc59f"></script>
+      <script src="_static/documentation_options.js?v=50b65552"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="_static/copybutton.js?v=7abfc884"></script>
       <script src="_static/shibuya.js?v=50760d75"></script>
-      <script src="_static/components/work-dispatcher.js?v=c1e866ab"></script>
-      <script src="_static/components/static-hybrid-scheduler.js?v=b8078a97"></script>
-      <script src="_static/components/simple-scheduler-demo.js?v=6a8f83f3"></script>
-      <script src="_static/components/static-hybrid-scheduler-demo.js?v=a33d831a"></script></body>
+      <script src="_static/components/scheduler-demos.js?v=7d35ecce"></script>
+      <script src="_static/components/version-banner.js?v=62c7e18e"></script></body>
 </html>

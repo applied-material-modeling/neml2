@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Chemical reactions - NEML2 3.0.3</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Finite volume" href="finite_volume.html" /><link rel="prev" title="Physics modules" href="index.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Chemical reactions - NEML2 3.0.4</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Finite volume" href="finite_volume.html" /><link rel="prev" title="Physics modules" href="index.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=1b4f28a4" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=8ed54ede" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -64,47 +64,37 @@ data-aria-dark="Switch to auto color mode">
         <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../installation/install.html">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../installation/integration.html">C++ integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation/install.html">Basic installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation/compatibility.html">Torch compatibility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation/deps.html">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../installation/customization.html">Building from source</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/index.html">Working with models</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/input_file.html">Input files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/running_your_first_model/main.html">Running your first model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/model_parameters/main.html">Model parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/evaluation_device/main.html">Evaluation device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/vectorization/main.html">Vectorization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/cross_referencing/main.html">Cross-referencing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/model_composition/main.html">Model composition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/model_parameters_revisited/main.html">Model parameters revisited</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/implicit_model/main.html">Implicit models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/transient_driver/main.html">Transient driver</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/models/compiled_models/main.html">Compiled models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/input_file.html">Input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/running_your_first_model/main.html">Running your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/model_parameters/main.html">Model parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/evaluation_device/main.html">Evaluation device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/vectorization/main.html">Vectorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/cross_referencing/main.html">Cross-referencing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/model_composition/main.html">Model composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/model_parameters_revisited/main.html">Model parameters revisited</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/implicit_model/main.html">Implicit models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/transient_driver/main.html">Transient driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/compiled_models/main.html">Compiled models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/compilation_internals/main.html">How compilation works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/request_ad/main.html">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/index.html">Writing a custom model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/index.html">Parameter calibration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../cli_utilities.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tensor_types.html">Tensor types</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Physics modules</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Chemical reactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="finite_volume.html">Finite volume</a></li>
@@ -129,201 +119,179 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">Development</span></p>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Deployment &amp; integration</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../model_compilation/index.html">Model compilation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../model_compilation/pipeline.html">Compilation pipeline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../model_compilation/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/overview.html">Ways to evaluate a model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../tensor_types.html">Tensor types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../benchmark.html">Benchmarking</a></li>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development/building.html">Building from source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/quality.html">Code quality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/dependencies.html">Dependency pinning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/documentation.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/notebooks.html">Jupyter notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/submitting.html">Submitting a pull request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/benchmarking.html">Benchmarking</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../references/py_eager.html"><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/py_jit.html"><code class="docutils literal notranslate"><span class="pre">py-jit</span></code> — in-process <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/py_aoti.html"><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/index.html">chemical_reactions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/AvramiErofeevNucleation.html">AvramiErofeevNucleation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/ContractingGeometry.html">ContractingGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/CylindricalChannelGeometry.html">CylindricalChannelGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/DiffusionLimitedReaction.html">DiffusionLimitedReaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/EffectiveVolume.html">EffectiveVolume</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/common/index.html">common</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyRot.html">CopyRot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyVec.html">CopyVec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyWR2.html">CopyWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotConstantParameter.html">RotConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotInputParameter.html">RotInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotParameterToVariable.html">RotParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ConstantParameter.html">SR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2Determinant.html">SR2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2DynamicMean.html">SR2DynamicMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2DynamicSum.html">SR2DynamicSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2InputParameter.html">SR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateMean.html">SR2IntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2Invariant.html">SR2Invariant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2LinearCombination.html">SR2LinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ToR2.html">SR2ToR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2VariableRate.html">SR2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4ConstantParameter.html">SSR4ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4InputParameter.html">SSR4InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4ParameterToVariable.html">SSR4ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarBackwardEulerTimeIntegration.html">ScalarBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarBilinearInterpolation.html">ScalarBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarPNorm.html">ScalarPNorm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecComponents.html">VecComponents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecConstantParameter.html">VecConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecInputParameter.html">VecInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecParameterToVariable.html">VecParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecVariableRate.html">VecVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ConstantParameter.html">WR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ExplicitExponentialTimeIntegration.html">WR2ExplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ImplicitExponentialTimeIntegration.html">WR2ImplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2InputParameter.html">WR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ParameterToVariable.html">WR2ParameterToVariable</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/SemiInfiniteCoordinateTransform.html">SemiInfiniteCoordinateTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/SmearedDeltaSource.html">SmearedDeltaSource</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/kwn/index.html">kwn</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ChemicalGibbsFreeEnergyDifference.html">ChemicalGibbsFreeEnergyDifference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/CurrentConcentration.html">CurrentConcentration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/IdealSolutionVolumetricDrivingForce.html">IdealSolutionVolumetricDrivingForce</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/KineticFactor.html">KineticFactor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/NucleationBarrierAndCriticalRadius.html">NucleationBarrierAndCriticalRadius</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/NucleationFluxMagnitude.html">NucleationFluxMagnitude</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/PrecipitateVolumeFraction.html">PrecipitateVolumeFraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ProjectedDiffusivitySum.html">ProjectedDiffusivitySum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/RateLimitedPrecipitateGrowthRate.html">RateLimitedPrecipitateGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/SFFKPrecipitationGrowthRate.html">SFFKPrecipitationGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ZeldovichFactor.html">ZeldovichFactor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/index.html">phase_field_fracture</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT1.html">CrackGeometricFunctionAT1</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT2.html">CrackGeometricFunctionAT2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.html">LinearIsotropicStrainEnergyDensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/PowerDegradationFunction.html">PowerDegradationFunction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/RationalDegradationFunction.html">RationalDegradationFunction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/index.html">porous_flow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/AdvectiveStress.html">AdvectiveStress</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/BrooksCoreyCapillaryPressure.html">BrooksCoreyCapillaryPressure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/EffectiveSaturation.html">EffectiveSaturation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/ExponentialLawPermeability.html">ExponentialLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/KozenyCarmanPermeability.html">KozenyCarmanPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/PowerLawPermeability.html">PowerLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/VanGenuchtenCapillaryPressure.html">VanGenuchtenCapillaryPressure</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/traction_separation_law/index.html">traction_separation_law</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/viscoelasticity/index.html">viscoelasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/AOTIModel.html">AOTIModel</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/AdvectiveStress.html">AdvectiveStress</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ArrheniusParameter.html">ArrheniusParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/AssociativeIsotropicPlasticHardening.html">AssociativeIsotropicPlasticHardening</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/AssociativeJ2FlowDirection.html">AssociativeJ2FlowDirection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/AssociativeKinematicPlasticHardening.html">AssociativeKinematicPlasticHardening</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/AssociativePlasticFlow.html">AssociativePlasticFlow</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/AvramiErofeevNucleation.html">AvramiErofeevNucleation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/BenzeggaghKenaneFullSeparation.html">BenzeggaghKenaneFullSeparation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/BilinearTraction.html">BilinearTraction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/BrooksCoreyCapillaryPressure.html">BrooksCoreyCapillaryPressure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/BurgersElement.html">BurgersElement</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CamanhoDavilaCriticalSeparation.html">CamanhoDavilaCriticalSeparation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ChabochePlasticHardening.html">ChabochePlasticHardening</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ChemicalGibbsFreeEnergyDifference.html">ChemicalGibbsFreeEnergyDifference</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ComposedModel.html">ComposedModel</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ContractingGeometry.html">ContractingGeometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CopyMillerIndex.html">CopyMillerIndex</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CopyR2.html">CopyR2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CopyRot.html">CopyRot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CopySR2.html">CopySR2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CopySSR4.html">CopySSR4</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CopyScalar.html">CopyScalar</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CopyVec.html">CopyVec</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CopyWR2.html">CopyWR2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CrackGeometricFunctionAT1.html">CrackGeometricFunctionAT1</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CrackGeometricFunctionAT2.html">CrackGeometricFunctionAT2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CrystalPlasticityStrainPredictor.html">CrystalPlasticityStrainPredictor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CubicElasticityTensor.html">CubicElasticityTensor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CurrentConcentration.html">CurrentConcentration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/CylindricalChannelGeometry.html">CylindricalChannelGeometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/DiffusionLimitedReaction.html">DiffusionLimitedReaction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/DislocationObstacleStrengthMap.html">DislocationObstacleStrengthMap</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/EffectiveSaturation.html">EffectiveSaturation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/EffectiveVolume.html">EffectiveVolume</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ElasticStrainRate.html">ElasticStrainRate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ExponentialLawPermeability.html">ExponentialLawPermeability</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/FBComplementarity.html">FBComplementarity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/FixOrientation.html">FixOrientation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/FredrickArmstrongPlasticHardening.html">FredrickArmstrongPlasticHardening</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/GTNYieldFunction.html">GTNYieldFunction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/GeneralElasticity.html">GeneralElasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/GreenLagrangeStrain.html">GreenLagrangeStrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/GursonCavitation.html">GursonCavitation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/IdealSolutionVolumetricDrivingForce.html">IdealSolutionVolumetricDrivingForce</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ImplicitUpdate.html">ImplicitUpdate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/IrreversibleScalar.html">IrreversibleScalar</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/IsotropicElasticityTensor.html">IsotropicElasticityTensor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/IsotropicMandelStress.html">IsotropicMandelStress</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/KelvinVoigtElement.html">KelvinVoigtElement</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/KineticFactor.html">KineticFactor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/KocksMeckingActivationEnergy.html">KocksMeckingActivationEnergy</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/KocksMeckingFlowSwitch.html">KocksMeckingFlowSwitch</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/KocksMeckingFlowViscosity.html">KocksMeckingFlowViscosity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/KocksMeckingIntercept.html">KocksMeckingIntercept</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/KocksMeckingRateSensitivity.html">KocksMeckingRateSensitivity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/KocksMeckingYieldStress.html">KocksMeckingYieldStress</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/KozenyCarmanPermeability.html">KozenyCarmanPermeability</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/LinearDashpot.html">LinearDashpot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/LinearIsotropicElasticJ2TrialStressUpdate.html">LinearIsotropicElasticJ2TrialStressUpdate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/LinearIsotropicElasticity.html">LinearIsotropicElasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/LinearIsotropicHardening.html">LinearIsotropicHardening</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/LinearIsotropicStrainEnergyDensity.html">LinearIsotropicStrainEnergyDensity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/LinearKinematicHardening.html">LinearKinematicHardening</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/LinearSingleSlipHardeningRule.html">LinearSingleSlipHardeningRule</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/MacaulaySplit.html">MacaulaySplit</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/MixedControlSetup.html">MixedControlSetup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ModeMixity.html">ModeMixity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/Normality.html">Normality</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/NucleationBarrierAndCriticalRadius.html">NucleationBarrierAndCriticalRadius</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/NucleationFluxMagnitude.html">NucleationFluxMagnitude</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/OlevskySinteringStress.html">OlevskySinteringStress</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/OrientationRate.html">OrientationRate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/OrthotropicLinearTraction.html">OrthotropicLinearTraction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PerSlipForestDislocationEvolution.html">PerSlipForestDislocationEvolution</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PerzynaPlasticFlowRate.html">PerzynaPlasticFlowRate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PhaseTransformationEigenstrain.html">PhaseTransformationEigenstrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PlasticDeformationRate.html">PlasticDeformationRate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PlasticSpatialVelocityGradient.html">PlasticSpatialVelocityGradient</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PlasticVorticity.html">PlasticVorticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PowerDegradationFunction.html">PowerDegradationFunction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PowerLawFullSeparation.html">PowerLawFullSeparation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PowerLawIsotropicHardeningStaticRecovery.html">PowerLawIsotropicHardeningStaticRecovery</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PowerLawKinematicHardeningStaticRecovery.html">PowerLawKinematicHardeningStaticRecovery</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PowerLawPermeability.html">PowerLawPermeability</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PowerLawSlipRule.html">PowerLawSlipRule</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/PrecipitateVolumeFraction.html">PrecipitateVolumeFraction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ProjectedDiffusivitySum.html">ProjectedDiffusivitySum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/R2ConstantParameter.html">R2ConstantParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/R2Determinant.html">R2Determinant</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/R2InputParameter.html">R2InputParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/R2Multiplication.html">R2Multiplication</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/R2ToSR2.html">R2ToSR2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/R2ToWR2.html">R2ToWR2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/R2VariableRate.html">R2VariableRate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/RateLimitedPrecipitateGrowthRate.html">RateLimitedPrecipitateGrowthRate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/RationalDegradationFunction.html">RationalDegradationFunction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ResolvedShear.html">ResolvedShear</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/RotConstantParameter.html">RotConstantParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/RotInputParameter.html">RotInputParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/RotParameterToVariable.html">RotParameterToVariable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/RotationMatrix.html">RotationMatrix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SFFKPrecipitationGrowthRate.html">SFFKPrecipitationGrowthRate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2ConstantParameter.html">SR2ConstantParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2Determinant.html">SR2Determinant</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2DynamicMean.html">SR2DynamicMean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2DynamicSum.html">SR2DynamicSum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2InputParameter.html">SR2InputParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2IntermediateMean.html">SR2IntermediateMean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2Invariant.html">SR2Invariant</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2LinearCombination.html">SR2LinearCombination</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2ToR2.html">SR2ToR2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SR2VariableRate.html">SR2VariableRate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SSR4ConstantParameter.html">SSR4ConstantParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SSR4InputParameter.html">SSR4InputParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SSR4ParameterToVariable.html">SSR4ParameterToVariable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SalehaniIraniTraction.html">SalehaniIraniTraction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarBackwardEulerTimeIntegration.html">ScalarBackwardEulerTimeIntegration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarBilinearInterpolation.html">ScalarBilinearInterpolation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarInputParameter.html">ScalarInputParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarMultiplication.html">ScalarMultiplication</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarPNorm.html">ScalarPNorm</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ScalarVariableRate.html">ScalarVariableRate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SemiInfiniteCoordinateTransform.html">SemiInfiniteCoordinateTransform</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SingleSlipStrengthMap.html">SingleSlipStrengthMap</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SlopeSaturationVoceIsotropicHardening.html">SlopeSaturationVoceIsotropicHardening</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SmearedDeltaSource.html">SmearedDeltaSource</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SumSlipRates.html">SumSlipRates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SwellingAndPhaseChangeDeformationJacobian.html">SwellingAndPhaseChangeDeformationJacobian</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ThermalDeformationJacobian.html">ThermalDeformationJacobian</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ThermalEigenstrain.html">ThermalEigenstrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VanGenuchtenCapillaryPressure.html">VanGenuchtenCapillaryPressure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VecComponents.html">VecComponents</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VecConstantParameter.html">VecConstantParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VecInputParameter.html">VecInputParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VecParameterToVariable.html">VecParameterToVariable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VecVariableRate.html">VecVariableRate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VoceIsotropicHardening.html">VoceIsotropicHardening</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VoceSingleSlipHardeningRule.html">VoceSingleSlipHardeningRule</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VolumeAdjustDeformationGradient.html">VolumeAdjustDeformationGradient</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/VolumeChangeEigenstrain.html">VolumeChangeEigenstrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/WR2ConstantParameter.html">WR2ConstantParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/WR2ExplicitExponentialTimeIntegration.html">WR2ExplicitExponentialTimeIntegration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/WR2ImplicitExponentialTimeIntegration.html">WR2ImplicitExponentialTimeIntegration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/WR2InputParameter.html">WR2InputParameter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/WR2ParameterToVariable.html">WR2ParameterToVariable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/WiechertElement.html">WiechertElement</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/YieldFunction.html">YieldFunction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ZeldovichFactor.html">ZeldovichFactor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/ZenerElement.html">ZenerElement</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Tensors/index.html">Tensors</a><ul>
@@ -445,33 +413,32 @@ fracture) can consume.</p>
 <p>The catalog carves the domain into two layers:</p>
 <ul class="simple">
 <li><p><strong>Reaction mechanisms</strong> — typed maps <span class="math notranslate nohighlight">\(\alpha \mapsto \dot{\alpha}\)</span>
-for a single reacting phase. <a class="reference internal" href="../../generated/syntax/Models/AvramiErofeevNucleation.html#models-avramierofeevnucleation"><span class="std std-ref">AvramiErofeevNucleation</span></a>,
-<a class="reference internal" href="../../generated/syntax/Models/ContractingGeometry.html#models-contractinggeometry"><span class="std std-ref">ContractingGeometry</span></a>, and <a class="reference internal" href="../../generated/syntax/Models/DiffusionLimitedReaction.html#models-diffusionlimitedreaction"><span class="std std-ref">DiffusionLimitedReaction</span></a>
+for a single reacting phase. <a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/AvramiErofeevNucleation.html#models-avramierofeevnucleation"><span class="std std-ref">AvramiErofeevNucleation</span></a>,
+<a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/ContractingGeometry.html#models-contractinggeometry"><span class="std std-ref">ContractingGeometry</span></a>, and <a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/DiffusionLimitedReaction.html#models-diffusionlimitedreaction"><span class="std std-ref">DiffusionLimitedReaction</span></a>
 are the three concrete leaves; they share the canonical
-<code class="docutils literal notranslate"><span class="pre">conversion_degree</span></code> / <code class="docutils literal notranslate"><span class="pre">reaction_rate</span></code> variable names defined by the
-abstract <code class="docutils literal notranslate"><span class="pre">ReactionMechanism</span></code> base.</p></li>
+<code class="docutils literal notranslate"><span class="pre">conversion_degree</span></code> / <code class="docutils literal notranslate"><span class="pre">reaction_rate</span></code> variable names, so they can be
+swapped interchangeably in a composed model.</p></li>
 <li><p><strong>Geometry and volume bridges</strong> — kinematic primitives that turn
 the reaction state into the volumetric quantities other modules need.
-<a class="reference internal" href="../../generated/syntax/Models/CylindricalChannelGeometry.html#models-cylindricalchannelgeometry"><span class="std std-ref">CylindricalChannelGeometry</span></a> gives the dimensionless inner
+<a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/CylindricalChannelGeometry.html#models-cylindricalchannelgeometry"><span class="std std-ref">CylindricalChannelGeometry</span></a> gives the dimensionless inner
 and outer radii of a cylindrical shrinking-core product;
-<a class="reference internal" href="../../generated/syntax/Models/EffectiveVolume.html#models-effectivevolume"><span class="std std-ref">EffectiveVolume</span></a> sums per-component mass-fraction /
+<a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/EffectiveVolume.html#models-effectivevolume"><span class="std std-ref">EffectiveVolume</span></a> sums per-component mass-fraction /
 density contributions into the total composite volume so the
 reaction’s control mass can be tied into a control-volume framework.</p></li>
 </ul>
 <p>Time integration, predictors, Arrhenius temperature dependence,
-linear combinations, and the implicit Newton solve live under
-<code class="docutils literal notranslate"><span class="pre">common/</span></code> and the solver/predictor packages. The example below
-shows how the chemical-reactions primitives slot into that
-machinery.</p>
+linear combinations, and the implicit Newton solve are provided by
+NEML2’s shared primitives. The example below shows how the
+chemical-reactions types slot into that machinery.</p>
 </section>
 <section id="math">
 <h2>Math<a class="headerlink" href="#math" title="Link to this heading">¶</a></h2>
 <p>A reaction mechanism is a constitutive relation between the conversion
 degree <span class="math notranslate nohighlight">\(\alpha \in [0, 1]\)</span> and the reaction rate
 <span class="math notranslate nohighlight">\(\dot{\alpha} = f(\alpha)\)</span>. The three mechanisms in this module are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-231eb25c-3945-4943-9e0f-533e508fc30f">
-<div class="amsmath math notranslate nohighlight" id="equation-231eb25c-3945-4943-9e0f-533e508fc30f">
-<span class="eqno">(4)<a class="headerlink" href="#equation-231eb25c-3945-4943-9e0f-533e508fc30f" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-d8511fbb-05b6-4950-8a79-b13c81dcaf28">
+<div class="amsmath math notranslate nohighlight" id="equation-d8511fbb-05b6-4950-8a79-b13c81dcaf28">
+<span class="eqno">(4)<a class="headerlink" href="#equation-d8511fbb-05b6-4950-8a79-b13c81dcaf28" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \dot{\alpha} &amp;= k \, (1 - \alpha)^n
   &amp;&amp;\text{(contracting geometry)} \\
 \dot{\alpha} &amp;= k \, (1 - \alpha) \, \bigl(-\ln(1 - \alpha)\bigr)^n
@@ -569,121 +536,120 @@ binder, char, gas, and open pore.</p>
 </span><span data-line="48"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientDriver</span>
 </span><span data-line="49"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;model&#39;</span>
 </span><span data-line="50"><span class="w">    </span><span class="na">prescribed_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;times&#39;</span>
-</span><span data-line="51"><span class="w">    </span><span class="na">force_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
-</span><span data-line="52"><span class="w">    </span><span class="na">force_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
+</span><span data-line="51"><span class="w">    </span><span class="na">prescribed_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
+</span><span data-line="52"><span class="w">    </span><span class="na">prescribed_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
 </span><span data-line="53"><span class="w">    </span><span class="na">ic_Scalar_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb wc&#39;</span>
 </span><span data-line="54"><span class="w">    </span><span class="na">ic_Scalar_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${wb0} ${wc0}&#39;</span>
-</span><span data-line="55"><span class="w">    </span><span class="na">save_as</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;result.pt&#39;</span>
-</span><span data-line="56"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="57"><span class="w">  </span><span class="k">[regression]</span>
-</span><span data-line="58"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientRegression</span>
-</span><span data-line="59"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;driver&#39;</span>
-</span><span data-line="60"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gold/result.pt&#39;</span>
-</span><span data-line="61"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="62"><span class="k">[]</span>
-</span><span data-line="63">
-</span><span data-line="64"><span class="k">[Models]</span>
-</span><span data-line="65"><span class="w">  </span><span class="k">[reaction_coef]</span>
-</span><span data-line="66"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ArrheniusParameter</span>
-</span><span data-line="67"><span class="w">    </span><span class="na">reference_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${k0}&#39;</span>
-</span><span data-line="68"><span class="w">    </span><span class="na">activation_energy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${Q}&#39;</span>
-</span><span data-line="69"><span class="w">    </span><span class="na">ideal_gas_constant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${R}&#39;</span>
-</span><span data-line="70"><span class="w">    </span><span class="na">temperature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
-</span><span data-line="71"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="72"><span class="w">  </span><span class="k">[reaction_rate]</span>
-</span><span data-line="73"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ContractingGeometry</span>
-</span><span data-line="74"><span class="w">    </span><span class="na">coef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction_coef&#39;</span>
-</span><span data-line="75"><span class="w">    </span><span class="na">order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${n}&#39;</span>
-</span><span data-line="76"><span class="w">    </span><span class="na">conversion_degree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
-</span><span data-line="77"><span class="w">    </span><span class="na">reaction_rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
-</span><span data-line="78"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="79"><span class="w">  </span><span class="k">[reaction_ode]</span>
-</span><span data-line="80"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
-</span><span data-line="81"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
-</span><span data-line="82"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="83"><span class="w">  </span><span class="k">[reaction]</span>
-</span><span data-line="84"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="85"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction_coef reaction_rate reaction_ode&#39;</span>
-</span><span data-line="86"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="87"><span class="k">[]</span>
-</span><span data-line="88">
-</span><span data-line="89"><span class="k">[EquationSystems]</span>
-</span><span data-line="90"><span class="w">  </span><span class="k">[eq_sys]</span>
-</span><span data-line="91"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
-</span><span data-line="92"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction&#39;</span>
-</span><span data-line="93"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
-</span><span data-line="94"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="95"><span class="k">[]</span>
-</span><span data-line="96">
-</span><span data-line="97"><span class="k">[Solvers]</span>
-</span><span data-line="98"><span class="w">  </span><span class="k">[newton]</span>
-</span><span data-line="99"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
-</span><span data-line="100"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;lu&#39;</span>
-</span><span data-line="101"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="102"><span class="w">  </span><span class="k">[lu]</span>
-</span><span data-line="103"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
-</span><span data-line="104"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="105"><span class="k">[]</span>
-</span><span data-line="106">
-</span><span data-line="107"><span class="k">[Models]</span>
-</span><span data-line="108"><span class="w">  </span><span class="k">[predictor]</span>
-</span><span data-line="109"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
-</span><span data-line="110"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
-</span><span data-line="111"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="112"><span class="w">  </span><span class="k">[solve_reaction]</span>
-</span><span data-line="113"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
-</span><span data-line="114"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
-</span><span data-line="115"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
-</span><span data-line="116"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;predictor&#39;</span>
-</span><span data-line="117"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="118"><span class="w">  </span><span class="k">[binder_rate]</span>
-</span><span data-line="119"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
-</span><span data-line="120"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
-</span><span data-line="121"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;-1&#39;</span>
-</span><span data-line="122"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb_rate&#39;</span>
-</span><span data-line="123"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="124"><span class="w">  </span><span class="k">[char_rate]</span>
-</span><span data-line="125"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
-</span><span data-line="126"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
-</span><span data-line="127"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${Y}&#39;</span>
-</span><span data-line="128"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wc_rate&#39;</span>
-</span><span data-line="129"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="130"><span class="w">  </span><span class="k">[gas_rate]</span>
-</span><span data-line="131"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
-</span><span data-line="132"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb_rate wc_rate&#39;</span>
-</span><span data-line="133"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;-0.2 -0.2&#39;</span>
-</span><span data-line="134"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wg_rate&#39;</span>
-</span><span data-line="135"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="136"><span class="w">  </span><span class="k">[open_pore_rate]</span>
-</span><span data-line="137"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
-</span><span data-line="138"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
-</span><span data-line="139"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${zeta}&#39;</span>
-</span><span data-line="140"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;phio_rate&#39;</span>
-</span><span data-line="141"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="142"><span class="w">  </span><span class="k">[binder]</span>
-</span><span data-line="143"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
-</span><span data-line="144"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb&#39;</span>
-</span><span data-line="145"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="146"><span class="w">  </span><span class="k">[char]</span>
-</span><span data-line="147"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
-</span><span data-line="148"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wc&#39;</span>
-</span><span data-line="149"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="150"><span class="w">  </span><span class="k">[gas]</span>
-</span><span data-line="151"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
-</span><span data-line="152"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wg&#39;</span>
-</span><span data-line="153"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="154"><span class="w">  </span><span class="k">[open_pore]</span>
-</span><span data-line="155"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
-</span><span data-line="156"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;phio&#39;</span>
-</span><span data-line="157"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="158"><span class="w">  </span><span class="k">[model]</span>
-</span><span data-line="159"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
-</span><span data-line="160"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;</span><span class="err">solve_reaction reaction_rate</span>
-</span><span data-line="161"><span class="w">              </span><span class="na">binder_rate char_rate gas_rate open_pore_rate</span>
-</span><span data-line="162"><span class="w">              </span><span class="na">binder char gas open_pore&#39;</span>
-</span><span data-line="163"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
-</span><span data-line="164"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="165"><span class="k">[]</span>
+</span><span data-line="55"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="56"><span class="w">  </span><span class="k">[regression]</span>
+</span><span data-line="57"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TransientRegression</span>
+</span><span data-line="58"><span class="w">    </span><span class="na">driver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;driver&#39;</span>
+</span><span data-line="59"><span class="w">    </span><span class="na">reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;gold/result.pt&#39;</span>
+</span><span data-line="60"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="61"><span class="k">[]</span>
+</span><span data-line="62">
+</span><span data-line="63"><span class="k">[Models]</span>
+</span><span data-line="64"><span class="w">  </span><span class="k">[reaction_coef]</span>
+</span><span data-line="65"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ArrheniusParameter</span>
+</span><span data-line="66"><span class="w">    </span><span class="na">reference_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${k0}&#39;</span>
+</span><span data-line="67"><span class="w">    </span><span class="na">activation_energy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${Q}&#39;</span>
+</span><span data-line="68"><span class="w">    </span><span class="na">ideal_gas_constant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${R}&#39;</span>
+</span><span data-line="69"><span class="w">    </span><span class="na">temperature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;T&#39;</span>
+</span><span data-line="70"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="71"><span class="w">  </span><span class="k">[reaction_rate]</span>
+</span><span data-line="72"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ContractingGeometry</span>
+</span><span data-line="73"><span class="w">    </span><span class="na">coef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction_coef&#39;</span>
+</span><span data-line="74"><span class="w">    </span><span class="na">order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${n}&#39;</span>
+</span><span data-line="75"><span class="w">    </span><span class="na">conversion_degree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
+</span><span data-line="76"><span class="w">    </span><span class="na">reaction_rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
+</span><span data-line="77"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="78"><span class="w">  </span><span class="k">[reaction_ode]</span>
+</span><span data-line="79"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarBackwardEulerTimeIntegration</span>
+</span><span data-line="80"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
+</span><span data-line="81"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="82"><span class="w">  </span><span class="k">[reaction]</span>
+</span><span data-line="83"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="84"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction_coef reaction_rate reaction_ode&#39;</span>
+</span><span data-line="85"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="86"><span class="k">[]</span>
+</span><span data-line="87">
+</span><span data-line="88"><span class="k">[EquationSystems]</span>
+</span><span data-line="89"><span class="w">  </span><span class="k">[eq_sys]</span>
+</span><span data-line="90"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NonlinearSystem</span>
+</span><span data-line="91"><span class="w">    </span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;reaction&#39;</span>
+</span><span data-line="92"><span class="w">    </span><span class="na">unknowns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
+</span><span data-line="93"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="94"><span class="k">[]</span>
+</span><span data-line="95">
+</span><span data-line="96"><span class="k">[Solvers]</span>
+</span><span data-line="97"><span class="w">  </span><span class="k">[newton]</span>
+</span><span data-line="98"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
+</span><span data-line="99"><span class="w">    </span><span class="na">linear_solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;lu&#39;</span>
+</span><span data-line="100"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="101"><span class="w">  </span><span class="k">[lu]</span>
+</span><span data-line="102"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DenseLU</span>
+</span><span data-line="103"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="104"><span class="k">[]</span>
+</span><span data-line="105">
+</span><span data-line="106"><span class="k">[Models]</span>
+</span><span data-line="107"><span class="w">  </span><span class="k">[predictor]</span>
+</span><span data-line="108"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ConstantExtrapolationPredictor</span>
+</span><span data-line="109"><span class="w">    </span><span class="na">unknowns_Scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
+</span><span data-line="110"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="111"><span class="w">  </span><span class="k">[solve_reaction]</span>
+</span><span data-line="112"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ImplicitUpdate</span>
+</span><span data-line="113"><span class="w">    </span><span class="na">equation_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;eq_sys&#39;</span>
+</span><span data-line="114"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="115"><span class="w">    </span><span class="na">predictor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;predictor&#39;</span>
+</span><span data-line="116"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="117"><span class="w">  </span><span class="k">[binder_rate]</span>
+</span><span data-line="118"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
+</span><span data-line="119"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
+</span><span data-line="120"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;-1&#39;</span>
+</span><span data-line="121"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb_rate&#39;</span>
+</span><span data-line="122"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="123"><span class="w">  </span><span class="k">[char_rate]</span>
+</span><span data-line="124"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
+</span><span data-line="125"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
+</span><span data-line="126"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${Y}&#39;</span>
+</span><span data-line="127"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wc_rate&#39;</span>
+</span><span data-line="128"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="129"><span class="w">  </span><span class="k">[gas_rate]</span>
+</span><span data-line="130"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
+</span><span data-line="131"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb_rate wc_rate&#39;</span>
+</span><span data-line="132"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;-0.2 -0.2&#39;</span>
+</span><span data-line="133"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wg_rate&#39;</span>
+</span><span data-line="134"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="135"><span class="w">  </span><span class="k">[open_pore_rate]</span>
+</span><span data-line="136"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarLinearCombination</span>
+</span><span data-line="137"><span class="w">    </span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha_rate&#39;</span>
+</span><span data-line="138"><span class="w">    </span><span class="na">weights</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;${zeta}&#39;</span>
+</span><span data-line="139"><span class="w">    </span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;phio_rate&#39;</span>
+</span><span data-line="140"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="141"><span class="w">  </span><span class="k">[binder]</span>
+</span><span data-line="142"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
+</span><span data-line="143"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wb&#39;</span>
+</span><span data-line="144"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="145"><span class="w">  </span><span class="k">[char]</span>
+</span><span data-line="146"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
+</span><span data-line="147"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wc&#39;</span>
+</span><span data-line="148"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="149"><span class="w">  </span><span class="k">[gas]</span>
+</span><span data-line="150"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
+</span><span data-line="151"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;wg&#39;</span>
+</span><span data-line="152"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="153"><span class="w">  </span><span class="k">[open_pore]</span>
+</span><span data-line="154"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ScalarForwardEulerTimeIntegration</span>
+</span><span data-line="155"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;phio&#39;</span>
+</span><span data-line="156"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="157"><span class="w">  </span><span class="k">[model]</span>
+</span><span data-line="158"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ComposedModel</span>
+</span><span data-line="159"><span class="w">    </span><span class="na">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;</span><span class="err">solve_reaction reaction_rate</span>
+</span><span data-line="160"><span class="w">              </span><span class="na">binder_rate char_rate gas_rate open_pore_rate</span>
+</span><span data-line="161"><span class="w">              </span><span class="na">binder char gas open_pore&#39;</span>
+</span><span data-line="162"><span class="w">    </span><span class="na">additional_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;alpha&#39;</span>
+</span><span data-line="163"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="164"><span class="k">[]</span>
 </span></pre></div>
 </div>
 <section id="explanation">
@@ -692,34 +658,35 @@ binder, char, gas, and open pore.</p>
 <code class="docutils literal notranslate"><span class="pre">reaction_ode</span></code> composed as <code class="docutils literal notranslate"><span class="pre">reaction</span></code> — is the entire chemical-reactions
 contribution:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="../../generated/syntax/Models/ArrheniusParameter.html#models-arrheniusparameter"><span class="std std-ref">ArrheniusParameter</span></a> (<code class="docutils literal notranslate"><span class="pre">reaction_coef</span></code>) computes the
+<li><p><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html#models-arrheniusparameter"><span class="std std-ref">ArrheniusParameter</span></a> (<code class="docutils literal notranslate"><span class="pre">reaction_coef</span></code>) computes the
 temperature-dependent rate constant <span class="math notranslate nohighlight">\(k(T) = k_0 \exp(-Q/RT)\)</span> from the
 <code class="docutils literal notranslate"><span class="pre">T</span></code> force.</p></li>
-<li><p><a class="reference internal" href="../../generated/syntax/Models/ContractingGeometry.html#models-contractinggeometry"><span class="std std-ref">ContractingGeometry</span></a> (<code class="docutils literal notranslate"><span class="pre">reaction_rate</span></code>) maps the current
+<li><p><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/ContractingGeometry.html#models-contractinggeometry"><span class="std std-ref">ContractingGeometry</span></a> (<code class="docutils literal notranslate"><span class="pre">reaction_rate</span></code>) maps the current
 <span class="math notranslate nohighlight">\(\alpha\)</span> to <span class="math notranslate nohighlight">\(\dot{\alpha} = k (1 - \alpha)^n\)</span> using that coefficient
-as a nonlinear parameter and the constant order <span class="math notranslate nohighlight">\(n\)</span>.</p></li>
-<li><p><a class="reference internal" href="../../generated/syntax/Models/ScalarBackwardEulerTimeIntegration.html#models-scalarbackwardeulertimeintegration"><span class="std std-ref">ScalarBackwardEulerTimeIntegration</span></a> (<code class="docutils literal notranslate"><span class="pre">reaction_ode</span></code>) writes
+as a promoted parameter and the constant order <span class="math notranslate nohighlight">\(n\)</span>.</p></li>
+<li><p><a class="reference internal" href="../../generated/syntax/Models/common/ScalarBackwardEulerTimeIntegration.html#models-scalarbackwardeulertimeintegration"><span class="std std-ref">ScalarBackwardEulerTimeIntegration</span></a> (<code class="docutils literal notranslate"><span class="pre">reaction_ode</span></code>) writes
 the residual <span class="math notranslate nohighlight">\(\alpha_{n+1} - \alpha_n - \Delta t \, \dot{\alpha} = 0\)</span>
 that the Newton solver consumes via the <code class="docutils literal notranslate"><span class="pre">eq_sys</span></code>
-<a class="reference internal" href="../../generated/syntax/Models/ImplicitUpdate.html#models-implicitupdate"><span class="std std-ref">ImplicitUpdate</span></a> block.</p></li>
+<a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html#models-implicitupdate"><span class="std std-ref">ImplicitUpdate</span></a> block.</p></li>
 </ul>
 <p>The remaining blocks downstream of <code class="docutils literal notranslate"><span class="pre">solve_reaction</span></code> are conservation
-relations and time integration from <code class="docutils literal notranslate"><span class="pre">common/</span></code>:
-the four <a class="reference internal" href="../../generated/syntax/Models/ScalarLinearCombination.html#models-scalarlinearcombination"><span class="std std-ref">ScalarLinearCombination</span></a> blocks (<code class="docutils literal notranslate"><span class="pre">binder_rate</span></code>,
+relations and time integration from NEML2’s shared primitives:
+the four <a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearCombination.html#models-scalarlinearcombination"><span class="std std-ref">ScalarLinearCombination</span></a> blocks (<code class="docutils literal notranslate"><span class="pre">binder_rate</span></code>,
 <code class="docutils literal notranslate"><span class="pre">char_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">gas_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">open_pore_rate</span></code>) implement conservation
 relations such as <span class="math notranslate nohighlight">\(\dot{\omega}_c = Y \, \dot{\alpha}\)</span> (with <span class="math notranslate nohighlight">\(Y\)</span> the
 char yield) and <span class="math notranslate nohighlight">\(\dot{\omega}_g = -\mu (\dot{\omega}_b + \dot{\omega}_c)\)</span>
 with <span class="math notranslate nohighlight">\(\mu\)</span> the trapped-gas fraction, and four
-<a class="reference internal" href="../../generated/syntax/Models/ScalarForwardEulerTimeIntegration.html#models-scalarforwardeulertimeintegration"><span class="std std-ref">ScalarForwardEulerTimeIntegration</span></a> blocks advance the mass /
+<a class="reference internal" href="../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html#models-scalarforwardeulertimeintegration"><span class="std std-ref">ScalarForwardEulerTimeIntegration</span></a> blocks advance the mass /
 volume fractions in time. The
-<a class="reference internal" href="../../generated/syntax/Models/ConstantExtrapolationPredictor.html#models-constantextrapolationpredictor"><span class="std std-ref">ConstantExtrapolationPredictor</span></a> seeds the Newton iterate at
+<a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html#models-constantextrapolationpredictor"><span class="std std-ref">ConstantExtrapolationPredictor</span></a> seeds the Newton iterate at
 each step.</p>
 <p>Variable names flow through the composition by string match: the
 mechanism produces <code class="docutils literal notranslate"><span class="pre">alpha_rate</span></code>, which the linear combinations consume
 and rename into <code class="docutils literal notranslate"><span class="pre">wb_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">wc_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">wg_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">phio_rate</span></code>; the
 time integrators then pair those rates with the state variables <code class="docutils literal notranslate"><span class="pre">wb</span></code>,
-<code class="docutils literal notranslate"><span class="pre">wc</span></code>, <code class="docutils literal notranslate"><span class="pre">wg</span></code>, <code class="docutils literal notranslate"><span class="pre">phio</span></code> declared in the driver’s initial conditions. The
-final <code class="docutils literal notranslate"><span class="pre">model</span></code> <a class="reference internal" href="../../generated/syntax/Models/ComposedModel.html#models-composedmodel"><span class="std std-ref">ComposedModel</span></a> glues the implicit solve, the
+<code class="docutils literal notranslate"><span class="pre">wc</span></code>, <code class="docutils literal notranslate"><span class="pre">wg</span></code>, <code class="docutils literal notranslate"><span class="pre">phio</span></code>; the driver’s initial conditions initialize <code class="docutils literal notranslate"><span class="pre">wb</span></code> and
+<code class="docutils literal notranslate"><span class="pre">wc</span></code> explicitly, while <code class="docutils literal notranslate"><span class="pre">wg</span></code> and <code class="docutils literal notranslate"><span class="pre">phio</span></code> start from zero. The
+final <code class="docutils literal notranslate"><span class="pre">model</span></code> <a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html#models-composedmodel"><span class="std std-ref">ComposedModel</span></a> glues the implicit solve, the
 rate computations, and the explicit integrations into one forward
 operator that the <a class="reference internal" href="../../generated/syntax/Drivers/TransientDriver.html#drivers-transientdriver"><span class="std std-ref">TransientDriver</span></a> walks over the
 prescribed <code class="docutils literal notranslate"><span class="pre">times</span></code> history. <code class="docutils literal notranslate"><span class="pre">additional_outputs</span> <span class="pre">=</span> <span class="pre">'alpha'</span></code> keeps the
@@ -728,9 +695,9 @@ downstream.</p>
 <p>The companion reactive-infiltration regression scenario under
 <code class="docutils literal notranslate"><span class="pre">tests/regression/chemical_reactions/reactive_infiltration/</span></code> follows
 a similar pattern but swaps in
-<a class="reference internal" href="../../generated/syntax/Models/CylindricalChannelGeometry.html#models-cylindricalchannelgeometry"><span class="std std-ref">CylindricalChannelGeometry</span></a> +
-<a class="reference internal" href="../../generated/syntax/Models/DiffusionLimitedReaction.html#models-diffusionlimitedreaction"><span class="std std-ref">DiffusionLimitedReaction</span></a>, uses
-<a class="reference internal" href="../../generated/syntax/Models/HermiteSmoothStep.html#models-hermitesmoothstep"><span class="std std-ref">HermiteSmoothStep</span></a> to give the liquid and solid
+<a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/CylindricalChannelGeometry.html#models-cylindricalchannelgeometry"><span class="std std-ref">CylindricalChannelGeometry</span></a> +
+<a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/DiffusionLimitedReaction.html#models-diffusionlimitedreaction"><span class="std std-ref">DiffusionLimitedReaction</span></a>, uses
+<a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html#models-hermitesmoothstep"><span class="std std-ref">HermiteSmoothStep</span></a> to give the liquid and solid
 reactivities <span class="math notranslate nohighlight">\(R_l(\phi_L)\)</span> and <span class="math notranslate nohighlight">\(R_s(\phi_S)\)</span> a smooth on/off
 behaviour, and Newton-solves on the volume fractions
 <span class="math notranslate nohighlight">\((\phi_P, \phi_S)\)</span> instead of <span class="math notranslate nohighlight">\(\alpha\)</span>.</p>
@@ -797,7 +764,7 @@ above.</p></li>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=9b3fc59f"></script>
+      <script src="../../_static/documentation_options.js?v=50b65552"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -805,8 +772,6 @@ above.</p></li>
       <script src="../../_static/shibuya.js?v=50760d75"></script>
       <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
       <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-      <script src="../../_static/components/work-dispatcher.js?v=c1e866ab"></script>
-      <script src="../../_static/components/static-hybrid-scheduler.js?v=b8078a97"></script>
-      <script src="../../_static/components/simple-scheduler-demo.js?v=6a8f83f3"></script>
-      <script src="../../_static/components/static-hybrid-scheduler-demo.js?v=a33d831a"></script></body>
+      <script src="../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
+      <script src="../../_static/components/version-banner.js?v=62c7e18e"></script></body>
 </html>

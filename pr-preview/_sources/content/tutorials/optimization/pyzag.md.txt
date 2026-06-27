@@ -15,7 +15,7 @@ previous one, so the time loop becomes a long autograd chain.
 
 ## Why plain PyTorch struggles at this scale
 
-Two things go wrong if you try to backpropagate through the full
+Two things go wrong if we try to backpropagate through the full
 unrolled time loop with vanilla autograd:
 
 1. **Memory.** Backward AD stores every intermediate tensor from every
@@ -69,7 +69,7 @@ they're readable without re-execution:
   stress–strain comparison plots against the synthetic data.
 - [](statistical/main) — extends the same setup to a hierarchical
   Bayesian fit with Stochastic Variational Inference via
-  [`pyro`](https://pyro.ai/), so you get parameter posteriors instead
+  [`pyro`](https://pyro.ai/), so we get parameter posteriors instead
   of point estimates.
 
 For the underlying algorithms (chunked adjoint derivation, predictors,

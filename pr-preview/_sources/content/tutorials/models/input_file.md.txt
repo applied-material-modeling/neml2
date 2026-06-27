@@ -1,13 +1,14 @@
 (tutorials-models-input-file)=
 # Input files
 
-You'll learn enough of NEML2's input-file syntax to read and write the
-files you'll see throughout the rest of the tutorials. The same file
+In this tutorial, we'll learn enough of NEML2's input-file syntax to
+read and write the files we'll see throughout the rest of the
+tutorials. The same file
 is parsed by Python (`neml2.load_input`) and by the CLI tools
 (`neml2-run`, `neml2-inspect`, …).
 
 NEML2 uses the [HIT](https://github.com/applied-material-modeling/neml2-hit)
-format. This tutorial covers the syntax you'll use day-to-day; the
+format. This tutorial covers the syntax we'll use day-to-day; the
 [HIT README](https://github.com/applied-material-modeling/neml2-hit/blob/main/README.md)
 is the authoritative reference for the rest.
 

@@ -42,21 +42,21 @@ single install serves both Python and C++ consumers — see
 [](install).
 
 If you previously built from source against a custom LibTorch, the
-source-build flow still works through `pip install -e .` and the
-`dev` / `cc` CMake presets; see [](build-customization).
+source-build flow runs through `pip install -e .` (point it at your
+libtorch with `--config-settings=cmake.define.torch_ROOT=...`); see
+[](build-customization).
 
 ### Removed CMake presets
 
-The preset list collapsed to `dev` and `cc`. The build flavors that
-used to live in CMakePresets.json (`release`, `asan`, `tsan`,
-`coverage`, `profiling`, …) were removed:
+`CMakePresets.json` is gone — `pip install -e` is the single build entry
+point, with no preset to remember:
 
-- The wheel build that `pip install` drives uses `cmake.build-type =
-  "Release"` internally — there's no developer-facing `release`
-  preset to invoke directly.
-- Sanitizer / coverage flavors are no longer wired into presets.
-  Re-add them through `CMakeUserPresets.json` if you need them
-  locally.
+- The editable install builds the runtime, the bindings, and the C++
+  test executables at `RelWithDebInfo`; a shipped wheel uses `Release`.
+  Override either with `--config-settings=cmake.build-type=...`.
+- The sanitizer / coverage flavors run through the same install
+  (`--config-settings=cmake.build-type=Coverage`, …); see
+  [](build-customization).
 
 ### Removed CMake options
 
@@ -67,8 +67,8 @@ for itself. JSON and CSV support are always on.
 
 ### Removed CLI tools
 
-`neml2-diagnose`, `neml2-time`, and `neml2-stub` were removed. The
-remaining CLI surface is:
+`neml2-diagnose` and `neml2-time` were removed. The remaining CLI
+surface is:
 
 | Tool             | Purpose                                              |
 | :--------------- | :--------------------------------------------------- |
@@ -76,6 +76,7 @@ remaining CLI surface is:
 | `neml2-inspect`  | Print the structural summary of a model.             |
 | `neml2-syntax`   | Browse the registered-object catalog.                |
 | `neml2-compile`  | Export a model to an AOT-Inductor package.           |
+| `neml2-stub`     | Regenerate `.pyi` stubs for the pybind11 extensions. |
 
 See [](cli-utilities) for the full reference.
 
@@ -109,13 +110,18 @@ is now an AOT-Inductor (AOTI) package built with `neml2-compile`:
 neml2-compile input.i --model elasticity
 ```
 
-The package is a `.pt2` of pre-compiled kernels, an
-`_meta.json` sidecar, an `_jvp.pt2` for Jacobian-vector products, and
-a drop-in HIT stub (`_aoti.i`) that wraps the artifact in an
-`AOTIModel` shim. The artifact loads in milliseconds from either
-Python or C++ without re-parsing the input file. See
-[](tutorials-models-compiled) for the round-trip walkthrough and
-[](aoti-packages) for the package-format reference.
+The output layout is per-device: `neml2-compile` writes the compiled
+kernels and a `_meta.json` into `<output-dir>/<model>/<device>/`, and
+places a standalone HIT stub `<output-dir>/<model>_aoti.i` next to the
+`<model>/` folder. The stub points at the artifact folder via an
+absolute path; the loader picks the subfolder for the running device
+automatically. Passing `--device cpu cuda` emits both `cpu/` and
+`cuda/` subfolders under the same `<model>/` folder, ready for the C++
+multi-device dispatcher. The stub is not relocatable without
+recompiling (the artifact path is absolute). The artifact loads in
+milliseconds from either Python or C++ without re-parsing the input
+file. See [](tutorials-models-compiled) for the round-trip walkthrough
+and [](aoti-packages) for the package-format reference.
 
 ## Input-file changes
 
@@ -185,12 +191,18 @@ previously named a constructor type.
 
 ### Scheduler / dispatcher input wiring
 
-The work-dispatcher subsystem (`[Schedulers]`, `scheduler = '<name>'`
-on driver blocks, MPI work-splitting) is not yet shipped in v3.0.
-Drivers evaluate the full batch in one call on the active device.
+The work-dispatcher is back, but **C++-only and not input-file-wired**.
 Drop the `scheduler = '<name>'` option and any `[Schedulers]` block
-from your input files; the per-device sweep that pyzag / your own
-loop performs is the multi-device path for the time being.
+from your input files — the v2 HIT surface is gone. In v3 dispatch is
+a feature of the compiled C++ runtime: `neml2-compile --device cpu cuda`
+emits one artifact per device, and `neml2::aoti::load_model(stub, name,
+scheduler)` runs a batch across them via `SimpleScheduler` /
+`MPISimpleScheduler`, configured in C++ source rather than the `.i`. See
+[](model-dispatch).
+
+Python (`neml2.load_model`, `neml2-run`) stays eager and single-device;
+the per-device sweep that pyzag / your own loop performs remains the
+Python multi-device path.
 
 ## Python API surface
 
@@ -228,6 +240,6 @@ pip install ".[dev]" -v
 doc/scripts/build.sh
 ```
 
-See [](contributing) for the contributor view of the build (including
-the `--clean` / `--serve` / `--port` flags exposed by the wrapper) and
-[](build-customization) for the source-build view.
+See [](building-docs) for the contributor view of the doc build
+(including the `--clean` / `--serve` / `--port` flags exposed by the
+wrapper) and [](build-customization) for the source-build view.

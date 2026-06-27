@@ -14,7 +14,7 @@ avoids HIT's restriction on nested quotes.
 
 The expression's value (``torch.Tensor`` or a ``TensorWrapper`` subclass)
 is returned verbatim; the call site (typically
-:meth:`neml2.model.Model.declare_typed_parameter` mode 2) is responsible
+`neml2.model.Model.declare_typed_parameter` mode 2) is responsible
 for wrapping a raw tensor into a typed wrapper if needed.
 
 ## Other options

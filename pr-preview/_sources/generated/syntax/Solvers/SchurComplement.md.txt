@@ -8,8 +8,8 @@ Schur complement linear solver. Solves a block-partitioned system
 block.
 
 The six-step factorisation reads naturally on top of the
-:class:`~neml2.types.Tensor`-backed :class:`AssembledMatrix` /
-:class:`AssembledVector` arithmetic -- ``A_pp.solve(...)``,
+`Tensor`-backed `AssembledMatrix` /
+`AssembledVector` arithmetic -- ``A_pp.solve(...)``,
 ``A_sp @ Y``, ``A_ss - A_sp @ Y`` all forward to the typed primitive.
 
 ## Other options
