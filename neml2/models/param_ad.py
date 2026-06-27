@@ -49,7 +49,7 @@ the module functionally -- no module mutation, no per-leaf edits.
 
 Framework boundary (CLAUDE.md "Hard rules" 1 & 2): like
 :mod:`neml2.types._boundary`, this is a sanctioned raw-tensor / autograd site.
-The ``.data`` reads below are the autograd boundary and bear ``# noqa: data-ok``.
+The ``.data`` reads below are the autograd boundary and bear ``# data-ok``.
 The reverse-mode ``autograd.grad`` runs at forward-depth 0 (after the model's
 ``forward`` returns), so the :mod:`neml2.models._guard` AD ban is never armed --
 no ``allow_autograd`` region is needed.
@@ -218,7 +218,7 @@ def param_jacobian(
         typed_outs = result if isinstance(result, tuple) else (result,)
 
         for o_typed, o_name in zip(typed_outs, output_names, strict=True):
-            odata = o_typed.data  # noqa: data-ok autograd boundary  (*batch, *out_base)
+            odata = o_typed.data  # data-ok autograd boundary  (*batch, *out_base)
             o_base = tuple(int(s) for s in output_spec[o_name].BASE_SHAPE)
             n_out = 1
             for s in o_base:
@@ -294,8 +294,8 @@ def param_vjp(
         loss: torch.Tensor | None = None
         for o_typed, o_name in zip(typed_outs, output_names, strict=True):
             w = cotangents[o_name]
-            wdata = w.data if hasattr(w, "data") else w  # noqa: data-ok autograd boundary
-            term = (o_typed.data * wdata).sum()  # noqa: data-ok autograd boundary
+            wdata = w.data if hasattr(w, "data") else w  # data-ok autograd boundary
+            term = (o_typed.data * wdata).sum()  # data-ok autograd boundary
             loss = term if loss is None else loss + term
         assert loss is not None  # at least one output -> at least one term
         grads = torch.autograd.grad(loss, leaf_list, retain_graph=False, allow_unused=True)

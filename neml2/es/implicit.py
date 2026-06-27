@@ -278,7 +278,7 @@ def _vector_to_per_group_raws(vec: AssembledVector) -> tuple[torch.Tensor, ...]:
     boundary -- the legitimate framework-imposed exception case from
     CLAUDE.md rule 2.
     """
-    return tuple(t.data for t in vec.tensors)  # noqa: data-ok AOTI
+    return tuple(t.data for t in vec.tensors)  # data-ok AOTI
 
 
 class RHS(_SystemModule):
@@ -385,7 +385,7 @@ class IFT(_SystemModule):
         # Emit per-(unknown, given) raw blocks in the canonical order. The
         # ``.data`` reads are the legitimate AOTI segment-output boundary.
         return tuple(
-            cells[u][g].data  # noqa: data-ok AOTI
+            cells[u][g].data  # data-ok AOTI
             for (u, g) in self.emitted_pairs()
         )
 
@@ -531,7 +531,7 @@ class ParamIFT(_SystemModule):
         param_leaves: list[torch.Tensor] = []
         for type_cls, raw in zip(self.param_types, param_raws, strict=True):
             # (*batch, *param_base); .data is the AOTI input boundary unwrap.
-            r = raw.data if isinstance(raw, type_cls) else raw  # noqa: data-ok AOTI
+            r = raw.data if isinstance(raw, type_cls) else raw  # data-ok AOTI
             param_leaves.append(r.clone().requires_grad_(True))
 
         # Reconstruct the typed per-variable state by plain narrow / reshape.
@@ -566,7 +566,7 @@ class ParamIFT(_SystemModule):
         # ``.data`` reads are the AOTI boundary unwrap (this file is the export
         # boundary; the residual values carry the autograd graph through .data).
         r_parts = [
-            out_state[rname].data.reshape(*batch, st)  # noqa: data-ok AOTI
+            out_state[rname].data.reshape(*batch, st)  # data-ok AOTI
             for rname, st in self._r_flat
         ]
         r_flat = torch.cat(r_parts, dim=-1) if len(r_parts) > 1 else r_parts[0]

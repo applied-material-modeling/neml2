@@ -136,7 +136,7 @@ class SurrogateFlowRate(Model):
         # ``torch.Tensor``; unwrap to feed it and re-wrap the result. request_AD
         # differentiates straight through this boundary (the grad-tracking input
         # leaf it swaps in is exactly ``s.data`` / ``T.data``).
-        out = self._surrogate(s.data, T.data)  # noqa: data-ok ML-surrogate boundary
+        out = self._surrogate(s.data, T.data)  # data-ok ML-surrogate boundary
         return Scalar(out)
 
 

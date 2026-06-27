@@ -205,7 +205,7 @@ def contract_jacobian_block(
     n_out = 1
     for s in out_base:
         n_out *= s
-    vd = v.data  # noqa: data-ok request_AD autograd boundary
+    vd = v.data  # data-ok request_AD autograd boundary
     nb = block.ndim - len(out_base) - len(in_base)
     block_flat = block.reshape(*block.shape[:nb], n_out, n_in)  # (*Bblk, n_out, n_in)
     if v.k_ndim == 1:
@@ -241,7 +241,7 @@ def unwrap_outputs(
     docstring + CLAUDE.md "Hard rules / Rule 1").
     """
     return {
-        name: wrapper.data  # noqa: data-ok eager embed boundary
+        name: wrapper.data  # data-ok eager embed boundary
         for name, wrapper in zip(output_names, typed_outs, strict=True)
     }
 
@@ -269,10 +269,10 @@ def assemble_jvp_outputs(
         contribs = v_out.get(name, {})
         if not contribs:
             # Same (*batch, *out_base) shape as the value output, all zeros.
-            out[name] = torch.zeros_like(typed_out.data)  # noqa: data-ok eager embed boundary
+            out[name] = torch.zeros_like(typed_out.data)  # data-ok eager embed boundary
             continue
         # (1, *batch, *out_base) -> (*batch, *out_base), summed over seeded inputs.
-        blocks = [b.data.squeeze(0) for b in contribs.values()]  # noqa: data-ok eager embed boundary
+        blocks = [b.data.squeeze(0) for b in contribs.values()]  # data-ok eager embed boundary
         out[name] = blocks[0] if len(blocks) == 1 else torch.stack(blocks, 0).sum(0)
     return out
 

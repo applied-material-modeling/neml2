@@ -2212,7 +2212,7 @@ def _compile_implicit_segment(
                 sb = layout.sub_batch_shape(name)
                 typed_values[name] = type_cls(raw, sub_batch_ndim=len(sb))
         vec = AssembledVector.from_dict(layout, typed_values)
-        return [t.data for t in vec.tensors]  # noqa: data-ok AOTI
+        return [t.data for t in vec.tensors]  # data-ok AOTI
 
     u_group_examples = _per_group_examples(system.ulayout, _example_for_unknown)
     g_group_examples = _per_group_examples(system.glayout, _example_for_given)

@@ -54,7 +54,7 @@ A `.data` access elsewhere means one of:
 - The caller is about to do raw `torch.*` arithmetic and rewrap, dropping labels/state/meta and reconstructing them by guess. This is the root cause of metadata-loss bugs.
 - A wrapper primitive is missing. Add it.
 
-The same framework boundaries (AOTI shim, `torch.autograd.Function`, eager embed bridge) are the only exceptions, and even there the unwrap is encapsulated in a helper inside `neml2/types/` (the shared boundary helpers live in `neml2/types/_boundary.py`), not done ad hoc at the call site. Genuine framework-boundary unwraps in those exception files bear a `# noqa: data-ok` marker explaining why.
+The same framework boundaries (AOTI shim, `torch.autograd.Function`, eager embed bridge) are the only exceptions, and even there the unwrap is encapsulated in a helper inside `neml2/types/` (the shared boundary helpers live in `neml2/types/_boundary.py`), not done ad hoc at the call site. Genuine framework-boundary unwraps in those exception files bear a `# data-ok` marker explaining why.
 
 ### 3. Fix the root cause; never patch the call site
 
