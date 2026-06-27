@@ -1,0 +1,18 @@
+(models-ScalarToDiagonalSR2)=
+# ScalarToDiagonalSR2
+
+**Source:** `models/common/ScalarToDiagonalSR2.py`
+
+Create a diagonal symmetric rank 2 tensor with values filled by a scalar.
+
+## Inputs
+
+`input` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Scalar to convert
+
+
+## Outputs
+
+`output` &mdash; `output` &middot; `SR2` &middot; **required**
+: Output diagonal symmetric second order tensor
+

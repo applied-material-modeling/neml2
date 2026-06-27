@@ -1,0 +1,26 @@
+(models-WR2ExplicitExponentialTimeIntegration)=
+# WR2ExplicitExponentialTimeIntegration
+
+**Source:** `models/common/WR2ExplicitExponentialTimeIntegration.py`
+
+Perform explicit discrete exponential time integration of a rotation. The
+update can be written as $s = \exp\left[ (t-t_n)\dot{s}\right] \circ s_n$,
+where $\circ$ denotes the rotation operator.
+
+## Inputs
+
+`time` &mdash; `input` &middot; `Scalar` &middot; default `t`
+: Time
+
+
+## Outputs
+
+`variable` &mdash; `output` &middot; `Rot` &middot; **required**
+: Variable being integrated
+
+
+## Other options
+
+`rate` &mdash; `str`
+: Name of the variable rate.
+
