@@ -81,6 +81,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/implicit_model/main.html">Implicit models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/transient_driver/main.html">Transient driver</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/compiled_models/main.html">Compiled models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/compilation_internals/main.html">How compilation works</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
@@ -452,9 +453,9 @@ volume, phase fraction), NEML2 adopts the standard cumulative form</p>
 <span class="math notranslate nohighlight">\(\boldsymbol{I}\)</span> is the rank-2 identity. The three concrete leaves
 in the catalog differ only in how <span class="math notranslate nohighlight">\(\varepsilon^{*}_v\)</span> depends on its
 driver:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-3d65d514-3d2b-406b-af69-f31d7926adfd">
-<div class="amsmath math notranslate nohighlight" id="equation-3d65d514-3d2b-406b-af69-f31d7926adfd">
-<span class="eqno">(21)<a class="headerlink" href="#equation-3d65d514-3d2b-406b-af69-f31d7926adfd" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-1b749124-3648-4f34-9988-dcd98626c854">
+<div class="amsmath math notranslate nohighlight" id="equation-1b749124-3648-4f34-9988-dcd98626c854">
+<span class="eqno">(21)<a class="headerlink" href="#equation-1b749124-3648-4f34-9988-dcd98626c854" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;\varepsilon^{*}_v = \alpha\,(T - T_0), \\
 \text{Volume change:}\quad &amp;\varepsilon^{*}_v = \left(\dfrac{V}{V_0}\right)^{1/3} - 1, \\
 \text{Phase transformation:}\quad &amp;\varepsilon^{*}_v = \Delta V \, f.
@@ -484,9 +485,9 @@ in inelastic flows.</p>
 a scalar deformation Jacobian <span class="math notranslate nohighlight">\(J^{*}\)</span> — the determinant of the
 volumetric correction to be removed from the total deformation
 gradient:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-41929f53-37a6-42ee-a5c3-1fdd8399086f">
-<div class="amsmath math notranslate nohighlight" id="equation-41929f53-37a6-42ee-a5c3-1fdd8399086f">
-<span class="eqno">(22)<a class="headerlink" href="#equation-41929f53-37a6-42ee-a5c3-1fdd8399086f" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-4587bd2f-493b-442c-a4cb-6c6f7e439290">
+<div class="amsmath math notranslate nohighlight" id="equation-4587bd2f-493b-442c-a4cb-6c6f7e439290">
+<span class="eqno">(22)<a class="headerlink" href="#equation-4587bd2f-493b-442c-a4cb-6c6f7e439290" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;J^{*} = 1 + \alpha\,(T - T_0), \\
 \text{Swelling + phase change:}\quad &amp;J^{*} = 1 + \alpha\,c\,\phi^{f}
 + (1-c)\,\phi^{f}\,\Delta\Omega.

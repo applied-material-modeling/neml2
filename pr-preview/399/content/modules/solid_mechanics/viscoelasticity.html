@@ -81,6 +81,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/implicit_model/main.html">Implicit models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/transient_driver/main.html">Transient driver</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/compiled_models/main.html">Compiled models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/models/compilation_internals/main.html">How compilation works</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
@@ -448,9 +449,9 @@ unknown:</p>
 </div>
 <p>For <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/ZenerElement.html#models-zenerelement"><span class="std std-ref">ZenerElement</span></a> — equilibrium spring in parallel with a Maxwell
 branch (Standard Linear Solid):</p>
-<div class="math-wrapper amsmath docutils container" id="equation-df8b6fb2-176b-4aa5-bad1-3f6bb630ecb4">
-<div class="amsmath math notranslate nohighlight" id="equation-df8b6fb2-176b-4aa5-bad1-3f6bb630ecb4">
-<span class="eqno">(13)<a class="headerlink" href="#equation-df8b6fb2-176b-4aa5-bad1-3f6bb630ecb4" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-f9a1aaa5-0fe6-433f-9d4c-5f50358df579">
+<div class="amsmath math notranslate nohighlight" id="equation-f9a1aaa5-0fe6-433f-9d4c-5f50358df579">
+<span class="eqno">(13)<a class="headerlink" href="#equation-f9a1aaa5-0fe6-433f-9d4c-5f50358df579" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \boldsymbol{\sigma} &amp;= (E_\infty + E_M) \boldsymbol{\varepsilon} - E_M \boldsymbol{\varepsilon}_v, \\
 \dot{\boldsymbol{\varepsilon}}_v &amp;= \frac{E_M}{\eta_M} (\boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_v).
 \end{align}\]</div>
@@ -458,9 +459,9 @@ branch (Standard Linear Solid):</p>
 <p>For <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/WiechertElement.html#models-wiechertelement"><span class="std std-ref">WiechertElement</span></a> — an equilibrium spring in parallel with two
 Maxwell branches (generalized Maxwell), one viscous strain
 <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}_{v,i}\)</span> per branch:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-1a157492-c441-4a1e-852d-b69220ffc9ee">
-<div class="amsmath math notranslate nohighlight" id="equation-1a157492-c441-4a1e-852d-b69220ffc9ee">
-<span class="eqno">(14)<a class="headerlink" href="#equation-1a157492-c441-4a1e-852d-b69220ffc9ee" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-fa36ba6e-9656-4dc9-9fa2-362783bff455">
+<div class="amsmath math notranslate nohighlight" id="equation-fa36ba6e-9656-4dc9-9fa2-362783bff455">
+<span class="eqno">(14)<a class="headerlink" href="#equation-fa36ba6e-9656-4dc9-9fa2-362783bff455" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \boldsymbol{\sigma} &amp;= E_\infty \boldsymbol{\varepsilon} + \sum_{i=1}^{2} E_i \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_{v,i} \right), \\
 \dot{\boldsymbol{\varepsilon}}_{v,i} &amp;= \frac{E_i}{\eta_i} \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_{v,i} \right), \quad i = 1, 2.
 \end{align}\]</div>
@@ -468,9 +469,9 @@ Maxwell branches (generalized Maxwell), one viscous strain
 <p>For <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/BurgersElement.html#models-burgerselement"><span class="std std-ref">BurgersElement</span></a> — a Maxwell branch in series with a Kelvin-Voigt
 block, with <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}_v^M\)</span> the Maxwell dashpot strain and
 <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}^K\)</span> the Kelvin-Voigt block strain:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-d3349c43-cca4-4228-b2f3-03d8c36536f8">
-<div class="amsmath math notranslate nohighlight" id="equation-d3349c43-cca4-4228-b2f3-03d8c36536f8">
-<span class="eqno">(15)<a class="headerlink" href="#equation-d3349c43-cca4-4228-b2f3-03d8c36536f8" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-a8e4b4c2-8756-4848-b993-1393adf682f8">
+<div class="amsmath math notranslate nohighlight" id="equation-a8e4b4c2-8756-4848-b993-1393adf682f8">
+<span class="eqno">(15)<a class="headerlink" href="#equation-a8e4b4c2-8756-4848-b993-1393adf682f8" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \boldsymbol{\sigma} &amp;= E_M \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_v^M - \boldsymbol{\varepsilon}^K \right), \\
 \dot{\boldsymbol{\varepsilon}}_v^M &amp;= \boldsymbol{\sigma} / \eta_M, \\
 \dot{\boldsymbol{\varepsilon}}^K &amp;= \left( \boldsymbol{\sigma} - E_K \boldsymbol{\varepsilon}^K \right) / \eta_K.
