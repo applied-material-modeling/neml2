@@ -411,6 +411,21 @@ def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     rel_v = abs(g_e - fd_l) / (abs(fd_l) + 1e-30)
     assert rel_v < 1e-5, f"param_vjp disagrees with FD (rel={rel_v:.2e})"
 
+    # Parity: the py-aoti shim forwards the same parameter-derivative surface
+    # (named_parameters / param_jacobian / param_vjp / set_parameter) to the
+    # binding, so it must agree block-for-block on the same artifact.
+    from neml2.aoti import AOTIModel
+
+    set_e(e0)
+    shim = AOTIModel(str(out_dir / "model_meta.json"))  # fresh load: E at the e0 snapshot
+    assert "model.E" in shim.named_parameters()
+    _, s_pjac = shim.param_jacobian(raw)
+    assert torch.allclose(s_pjac["stress"]["model.E"], block)
+    s_grads = shim.param_vjp(raw, {"stress": w})
+    assert torch.allclose(s_grads["model.E"], grads["model.E"])
+    shim.set_parameter("model.E", torch.tensor(2.0 * e0, dtype=torch.float64))
+    assert float(shim.named_parameters()["model.E"]) == 2.0 * e0
+
 
 @_REQUIRES_PARAM_DERIV_TORCH
 def test_aoti_batched_param_matches_fd_and_eager(tmp_path: Path):
