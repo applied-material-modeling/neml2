@@ -251,7 +251,7 @@
   [predictor]
     type = ConstantExtrapolationPredictor
     unknowns_SR2 = 'elastic_strain deformation_rate target_cauchy_stress'
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
     unknowns_Scalar = 'slip_hardening'
   []
   [model_bare]

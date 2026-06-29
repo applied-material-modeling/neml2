@@ -95,7 +95,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
             optional_reader=_opt_list_str,
         ),
         option(
-            "unknowns_Rot",
+            "unknowns_MRP",
             list,
             "The unknowns to extrapolate of type MRP",
             default=[],
@@ -116,7 +116,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         self,
         unknowns_SR2: list[str],
         unknowns_Scalar: list[str],
-        unknowns_Rot: list[str] | None = None,
+        unknowns_MRP: list[str] | None = None,
         unknowns_R2: list[str] | None = None,
         time: str = "t",
     ) -> None:
@@ -126,7 +126,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         super().__init__(
             unknowns_SR2=unknowns_SR2,
             unknowns_Scalar=unknowns_Scalar,
-            unknowns_Rot=unknowns_Rot,
+            unknowns_MRP=unknowns_MRP,
             unknowns_R2=unknowns_R2,
         )
         self._time = time
@@ -150,9 +150,9 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         v: ChainRuleDict | None = None,
     ):
         # Unpack inputs in the order declared by input_spec:
-        #   [var_n_SR2..., var_n_Scalar..., var_n_Rot...,
+        #   [var_n_SR2..., var_n_Scalar..., var_n_MRP...,
         #    t, t_n, t_nm1,
-        #    var_nm1_SR2..., var_nm1_Scalar..., var_nm1_Rot...]
+        #    var_nm1_SR2..., var_nm1_Scalar..., var_nm1_MRP...]
         n_sr2 = len(self._sr2)
         n_scalar = len(self._scalar)
         n_rot = len(self._rot)

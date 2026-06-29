@@ -170,8 +170,8 @@ class VecConstantParameter(_ConstantParameter):
     )
 
 
-@register_neml2_object("RotConstantParameter")
-class RotConstantParameter(_ConstantParameter):
+@register_neml2_object("MRPConstantParameter")
+class MRPConstantParameter(_ConstantParameter):
     """MRP-valued constant parameter. Mirrors ``ConstantParameter<MRP>``."""
 
     _value_type = MRP
@@ -323,7 +323,7 @@ class MillerIndexConstantParameter(_ConstantParameter):
 __all__ = [
     "MillerIndexConstantParameter",
     "R2ConstantParameter",
-    "RotConstantParameter",
+    "MRPConstantParameter",
     "SR2ConstantParameter",
     "SSR4ConstantParameter",
     "ScalarConstantParameter",

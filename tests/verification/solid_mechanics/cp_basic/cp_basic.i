@@ -167,7 +167,7 @@
   []
   [cp_warmup_2]
     type = ConstantExtrapolationPredictor
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
     unknowns_Scalar = 'slip_hardening'
   []
   [predictor]

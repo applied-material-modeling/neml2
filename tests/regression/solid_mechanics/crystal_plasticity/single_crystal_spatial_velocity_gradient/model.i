@@ -178,7 +178,7 @@
     type = ConstantExtrapolationPredictor
     unknowns_SR2 = 'elastic_strain'
     unknowns_Scalar = 'slip_hardening'
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
   []
   [model]
     type = ImplicitUpdate

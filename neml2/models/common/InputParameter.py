@@ -113,8 +113,8 @@ class VecInputParameter(_InputParameter):
     )
 
 
-@register_neml2_object("RotInputParameter")
-class RotInputParameter(_InputParameter):
+@register_neml2_object("MRPInputParameter")
+class MRPInputParameter(_InputParameter):
     """MRP-valued input parameter. Mirrors ``InputParameter<MRP>``."""
 
     hit = HitSchema(
@@ -176,7 +176,7 @@ class MillerIndexInputParameter(_InputParameter):
 __all__ = [
     "MillerIndexInputParameter",
     "R2InputParameter",
-    "RotInputParameter",
+    "MRPInputParameter",
     "SR2InputParameter",
     "SSR4InputParameter",
     "ScalarInputParameter",

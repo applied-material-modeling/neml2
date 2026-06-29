@@ -14,7 +14,7 @@
 
 [Models]
   [E]
-    type = RotConstantParameter
+    type = MRPConstantParameter
     value = 'value'
   []
 []

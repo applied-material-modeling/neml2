@@ -227,7 +227,7 @@
   ############################################################################
   [predictor2]
     type = ConstantExtrapolationPredictor
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
   []
   [subsystem2]
     type = ImplicitUpdate

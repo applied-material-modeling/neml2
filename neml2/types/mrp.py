@@ -32,7 +32,7 @@ the inverse map). The zero vector is the identity rotation.
 
 MRPs aren't a vector space in the rotation-composition sense, but the
 underlying 3-vector storage supports the usual scalar arithmetic. The Newton
-residual in ``WR2ImplicitExponentialTimeIntegration`` uses ``-`` between Rots
+residual in ``WR2ImplicitExponentialTimeIntegration`` uses ``-`` between MRPs
 as elementwise 3-vector subtraction (correct as long as both sides are MRPs
 of the same orientation up to roundoff). Composition itself goes through the
 free :func:`compose` in :mod:`functions`.

@@ -13,7 +13,7 @@
 
 [Models]
   [ip]
-    type = RotInputParameter
+    type = MRPInputParameter
   []
 []
 

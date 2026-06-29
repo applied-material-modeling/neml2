@@ -156,8 +156,8 @@ class VecParameterToVariable(_ParameterToVariable):
     )
 
 
-@register_neml2_object("RotParameterToVariable")
-class RotParameterToVariable(_ParameterToVariable):
+@register_neml2_object("MRPParameterToVariable")
+class MRPParameterToVariable(_ParameterToVariable):
     """MRP parameter-to-variable. Mirrors ``ParameterToVariable<MRP>``."""
 
     _value_type = MRP
@@ -273,7 +273,7 @@ class MillerIndexParameterToVariable(_ParameterToVariable):
 __all__ = [
     "MillerIndexParameterToVariable",
     "R2ParameterToVariable",
-    "RotParameterToVariable",
+    "MRPParameterToVariable",
     "SR2ParameterToVariable",
     "SSR4ParameterToVariable",
     "ScalarParameterToVariable",

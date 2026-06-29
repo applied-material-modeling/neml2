@@ -1,5 +1,5 @@
 # MRP-valued CopyVariable smoke test (no C++ Catch2 fixture exists for this
-# template instantiation; pattern mirrors RotConstantParameter.i).
+# template instantiation; pattern mirrors MRPConstantParameter.i).
 [Drivers]
   [unit]
     type = ModelUnitTest
@@ -13,7 +13,7 @@
 
 [Models]
   [copy]
-    type = CopyRot
+    type = CopyMRP
     from = 'src'
     to = 'dst'
   []

@@ -14,7 +14,7 @@
 
 [Models]
   [model]
-    type = RotParameterToVariable
+    type = MRPParameterToVariable
     from = 'param'
     to = 'a'
   []

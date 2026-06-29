@@ -110,8 +110,8 @@ class CopyVec(_CopyVariable):
     )
 
 
-@register_neml2_object("CopyRot")
-class CopyRot(_CopyVariable):
+@register_neml2_object("CopyMRP")
+class CopyMRP(_CopyVariable):
     """MRP-valued variable copy. Mirrors ``CopyVariable<MRP>``."""
 
     hit = HitSchema(
@@ -173,7 +173,7 @@ class CopyMillerIndex(_CopyVariable):
 __all__ = [
     "CopyMillerIndex",
     "CopyR2",
-    "CopyRot",
+    "CopyMRP",
     "CopySR2",
     "CopySSR4",
     "CopyScalar",
