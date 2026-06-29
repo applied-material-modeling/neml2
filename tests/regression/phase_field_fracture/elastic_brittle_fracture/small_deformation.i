@@ -19,7 +19,7 @@
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar.linspace(0.0, 3.0, 1000)'
+    expr = 'linspace(Scalar(0.0).dynamic_batch, Scalar(3.0).dynamic_batch, 1000)'
   []
   [strains]
     # LinspaceSR2 0 -> (0.016, -0.008, -0.008, 0, 0, 0) across 1000 steps -> (1000, 6).

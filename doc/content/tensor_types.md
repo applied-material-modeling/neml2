@@ -149,7 +149,7 @@ table:
 from neml2.types import Scalar
 import torch
 
-T_controls = Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)
+T_controls = linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)
 ```
 
 This marks the trailing length-20 axis as the sub-batch (interpolation
@@ -163,7 +163,7 @@ the dynamic per-state batch.
 [Tensors]
   [T_controls]
     type = Python
-    expr = 'Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)'
   []
 []
 ```
@@ -193,7 +193,7 @@ The view methods return a fresh wrapper, so calls chain cleanly:
 broadcast = SR2.fill(0.1, -0.05, -0.05, 0, 0, 0).dynamic_batch.expand(20)
 # Construct an SR2 of base shape (6,), then broadcast it to (20, 6).
 
-retagged = Scalar.linspace(0, 1, 5).sub_batch.retag(1)
+retagged = linspace(Scalar(0).sub_batch, Scalar(1).sub_batch, 5)
 # Mark the trailing length-5 axis as sub-batch.
 
 tr_R = R.base.transpose(-2, -1)   # Transpose the (3, 3) base of an R2.
@@ -231,7 +231,7 @@ factory family from `PrimitiveTensor`:
   literal coercion, defaults to `torch.float64`.
 - `Scalar.zeros`, `Scalar.ones`, `Scalar.full` — override the
   `PrimitiveTensor` defaults to keep `float64`.
-- `Scalar.linspace(start, end, steps)`, `Scalar.arange(start, end, step)` —
+- `linspace(Scalar(start).dynamic_batch, Scalar(end).dynamic_batch, steps)`, `Scalar.arange(start, end, step)` —
   mirror the torch creation API.
 - `Scalar.from_value(x, like=other_wrapper)` — promote a Python literal
   inheriting `dtype`/`device` from an existing wrapper. Useful inside

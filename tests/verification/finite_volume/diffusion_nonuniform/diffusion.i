@@ -57,7 +57,7 @@ final_center = 0.625
   []
   [time]
     type = Python
-    expr = 'Scalar.linspace(0.0, ${t}, 500)'
+    expr = 'linspace(Scalar(0.0).dynamic_batch, Scalar(${t}).dynamic_batch, 500)'
   []
 
   [result]

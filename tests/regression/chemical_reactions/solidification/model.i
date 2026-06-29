@@ -13,7 +13,7 @@ Tf = 1700
   []
   [T]
     type = Python
-    expr = 'Scalar.linspace(1800.0, 1400.0, 100)'
+    expr = 'linspace(Scalar(1800.0).dynamic_batch, Scalar(1400.0).dynamic_batch, 100)'
   []
 []
 

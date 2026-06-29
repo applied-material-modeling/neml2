@@ -37,10 +37,9 @@ What Scalar overrides on top of :class:`PrimitiveTensor`:
 - **``float64`` factory defaults**: ``Scalar.zeros(n)``, ``Scalar.ones(n)``,
   ``Scalar.full(n, fill_value=...)`` default to ``torch.float64`` rather than
   torch's global ``float32`` default.
-- **``linspace`` / ``arange``**: Scalar-only classmethods mirroring the torch
-  creation API (scalar ramps from float endpoints). To interpolate between two
-  *wrapper* endpoints along a chosen region — the v3 form of v2's
-  ``dynamic_linspace`` / ``intmd_linspace`` / ``base_linspace`` — use the
+- **``arange``**: Scalar-only classmethod mirroring the torch creation API. To
+  build a ramp between two endpoints — the v3 form of v2's ``dynamic_linspace`` /
+  ``intmd_linspace`` / ``base_linspace`` — use the
   :func:`~neml2.types.functions.linspace` / :func:`~neml2.types.functions.logspace`
   free functions with region-view endpoints (``x.dynamic_batch`` / ``x.sub_batch``).
 - **``+`` / ``-`` with Python literals**: ``s + 1.5`` and ``s - 1`` are valid;
@@ -137,8 +136,9 @@ class Scalar(PrimitiveTensor):
     #
     # Override the inherited PrimitiveTensor factories so Scalars default to
     # ``torch.float64`` (matching ``Scalar.__init__``) rather than torch's
-    # global float32 default. Sub-batch tagging is composed post-hoc via the
-    # fluent ``Scalar.linspace(...).sub_batch.retag(n)``.
+    # global float32 default. To build a ramp between two endpoints use the
+    # :func:`~neml2.types.functions.linspace` / ``logspace`` free functions with
+    # region-view endpoints (e.g. ``linspace(Scalar(a).sub_batch, Scalar(b).sub_batch, n)``).
 
     @classmethod
     def zeros(
@@ -167,19 +167,6 @@ class Scalar(PrimitiveTensor):
         device: torch.device | str | None = None,
     ) -> Scalar:
         return cls(torch.full(shape, fill_value, dtype=dtype or torch.float64, device=device))
-
-    @classmethod
-    def linspace(
-        cls,
-        start: float,
-        end: float,
-        steps: int,
-        *,
-        dtype: torch.dtype | None = None,
-        device: torch.device | str | None = None,
-    ) -> Scalar:
-        """``steps`` values uniformly spaced from ``start`` to ``end`` inclusive."""
-        return cls(torch.linspace(start, end, steps, dtype=dtype or torch.float64, device=device))
 
     @classmethod
     def arange(

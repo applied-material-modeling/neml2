@@ -30,12 +30,12 @@
   # start_temperature = LinspaceScalar(300, 500, 20) -> shape (20,)
   [start_temperature]
     type = Python
-    expr = 'Scalar.linspace(300.0, 500.0, 20)'
+    expr = 'linspace(Scalar(300.0).dynamic_batch, Scalar(500.0).dynamic_batch, 20)'
   []
   # end_temperature = LinspaceScalar(600, 1200, 20) -> shape (20,)
   [end_temperature]
     type = Python
-    expr = 'Scalar.linspace(600.0, 1200.0, 20)'
+    expr = 'linspace(Scalar(600.0).dynamic_batch, Scalar(1200.0).dynamic_batch, 20)'
   []
   # temperatures = LinspaceScalar(start_temperature, end_temperature, 100) -> shape (100, 20)
   [temperatures]

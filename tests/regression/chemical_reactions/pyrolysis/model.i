@@ -39,7 +39,7 @@ zeta = 0.05
   []
   [T]
     type = Python
-    expr = 'Scalar.linspace(300.0, 1500.0, ${nstep})'
+    expr = 'linspace(Scalar(300.0).dynamic_batch, Scalar(1500.0).dynamic_batch, ${nstep})'
   []
 []
 

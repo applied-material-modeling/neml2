@@ -5,7 +5,7 @@
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar.linspace(0.0, 1.0, 30)'
+    expr = 'linspace(Scalar(0.0).dynamic_batch, Scalar(1.0).dynamic_batch, 30)'
   []
   [jumps]
     type = Python

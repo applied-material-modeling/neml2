@@ -33,7 +33,7 @@
   []
   [gamma]
     type = Python
-    expr = 'Scalar.linspace(-0.1, 0.2, 12).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(-0.1).sub_batch, Scalar(0.2).sub_batch, 12)'
   []
   [wp]
     type = Python

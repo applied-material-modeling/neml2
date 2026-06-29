@@ -17,7 +17,7 @@ t = 1.0
 [Tensors]
   [edges]
     type = Python
-    expr = 'Scalar.linspace(0.0, 1.0, 101).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(0.0).sub_batch, Scalar(1.0).sub_batch, 101)'
   []
   [centers]
     type = Python
@@ -68,7 +68,7 @@ t = 1.0
 
   [time]
     type = Python
-    expr = 'Scalar.linspace(0.0, 1.0, 500)'
+    expr = 'linspace(Scalar(0.0).dynamic_batch, Scalar(1.0).dynamic_batch, 500)'
   []
 []
 

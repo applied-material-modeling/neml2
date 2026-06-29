@@ -6,7 +6,7 @@
   # the lookup-table axis the interpolator slides along.
   [T_controls]
     type = Python
-    expr = 'Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)'
   []
   [mu_values]
     type = Python

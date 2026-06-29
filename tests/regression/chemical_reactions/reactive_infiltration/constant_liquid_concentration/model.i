@@ -14,7 +14,7 @@ oSiCm1 = 0.08
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar.linspace(0, 1e4, 200)'
+    expr = 'linspace(Scalar(0).dynamic_batch, Scalar(1e4).dynamic_batch, 200)'
   []
   [alpha]
     type = Python

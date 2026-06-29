@@ -10,7 +10,7 @@
   # end_time = LinspaceScalar(1, 10, 20) -> shape (20,)
   [end_time]
     type = Python
-    expr = 'Scalar.linspace(1.0, 10.0, 20)'
+    expr = 'linspace(Scalar(1.0).dynamic_batch, Scalar(10.0).dynamic_batch, 20)'
   []
   # times = LinspaceScalar(0, end_time, 100) -> shape (100, 20)
   [times]

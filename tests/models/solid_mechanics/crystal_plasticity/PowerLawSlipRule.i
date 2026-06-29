@@ -18,11 +18,11 @@
 [Tensors]
   [tau]
     type = Python
-    expr = 'Scalar.linspace(-100, 200, 12).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(-100).sub_batch, Scalar(200).sub_batch, 12)'
   []
   [tau_bar]
     type = Python
-    expr = 'Scalar.linspace(50, 250, 12).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(50).sub_batch, Scalar(250).sub_batch, 12)'
   []
   [rates]
     type = Python
