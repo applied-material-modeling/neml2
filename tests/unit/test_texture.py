@@ -155,3 +155,99 @@ def test_pretty_plot_helpers_importable():
     assert callable(tex.pretty_plot_pole_figure_odf)
     assert callable(tex.pretty_plot_pole_figure_points)
     assert callable(tex.pretty_plot_inverse_pole_figure)
+
+
+def test_pretty_plots_render():
+    """Drive the matplotlib rendering paths of all three pretty-plot helpers on
+    the Agg backend, including the explicit-limits and Lambert-projection
+    branches. Coarse grids keep it fast."""
+    import matplotlib  # noqa: PLC0415
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt  # noqa: PLC0415
+
+    torch.set_default_dtype(torch.float64)
+    ori = MRP.rand(60)
+    pole = torch.tensor([1.0, 1.0, 1.0])
+    odf = tex.KDEODF(ori, tex.DeLaValleePoussinKernel(torch.tensor(0.2)))
+    odf.kernel.h = torch.tensor(0.25)
+
+    grid = dict(nradial=6, ntheta=8, nquad=12)
+    tex.pretty_plot_pole_figure_odf(odf, pole, crystal_symmetry="432", **grid)
+    tex.pretty_plot_pole_figure_odf(
+        odf, pole, crystal_symmetry="432", limits=(0.0, 3.0), ncontour=8, **grid
+    )
+    tex.pretty_plot_pole_figure_odf(odf, pole, projection="lambert", crystal_symmetry="432", **grid)
+    tex.pretty_plot_pole_figure_points(ori, pole, crystal_symmetry="432")
+    tex.pretty_plot_inverse_pole_figure(ori, torch.tensor([0.0, 1.0, 0.0]), crystal_symmetry="432")
+    plt.close("all")
+
+
+def test_optimize_kernel_runs():
+    """The cross-validation kernel-width optimizer runs and yields a positive,
+    finite half-width."""
+    torch.set_default_dtype(torch.float64)
+    odf = tex.KDEODF(MRP.rand(40), tex.DeLaValleePoussinKernel(torch.tensor(0.2)))
+    odf.optimize_kernel(miter=3)
+    h = odf.kernel.h.detach()
+    assert torch.isfinite(h) and float(h) > 0
+
+
+def test_texture_index_positive_finite():
+    """texture_index integrates to a positive, finite scalar."""
+    torch.set_default_dtype(torch.float64)
+    odf = tex.KDEODF(MRP.rand(200), tex.DeLaValleePoussinKernel(torch.tensor(0.2)))
+    odf.kernel.h = torch.tensor(0.3)
+    J = float(odf.texture_index())
+    assert math.isfinite(J) and J > 0
+
+
+def test_split_leaves_one_out():
+    """split(X, i) returns the other n-1 orientations and the i-th singleton."""
+    torch.set_default_dtype(torch.float64)
+    X = MRP.rand(5)
+    keep, left = tex.split(X, 2)
+    assert keep.batch.shape[0] == 4
+    assert left.batch.ndim == 0
+
+
+def test_spherical_and_gauss_quadrature():
+    """gauss_points / spherical_quadrature return finite points and weights."""
+    torch.set_default_dtype(torch.float64)
+    pts, wts = tex.gauss_points(8)
+    assert pts.shape == (8,) and wts.shape == (8,)
+    assert torch.isfinite(pts).all() and (wts > 0).all()
+    spts, swts = tex.spherical_quadrature(6)
+    assert torch.isfinite(spts).all() and torch.isfinite(swts).all()
+
+
+def test_cart2polar_round_trip():
+    """cart2polar maps planar points to (theta, r); r recovers the radius."""
+    torch.set_default_dtype(torch.float64)
+    v = torch.tensor([[1.0, 0.0], [0.0, 2.0], [-1.0, -1.0]])
+    polar = tex.cart2polar(v)
+    assert torch.allclose(polar[:, 1], torch.linalg.norm(v, dim=-1))
+
+
+def test_ipf_reduction_keeps_fundamental_subset():
+    """IPFReduction selects the cubic fundamental wedge -- a subset of the input,
+    and idempotent on its own output."""
+    torch.set_default_dtype(torch.float64)
+    reduction = tex.IPFReduction()  # default cubic 001/101/111 wedge
+    v = Vec(torch.randn(200, 3))
+    v = Vec(v.data / torch.linalg.norm(v.data, dim=-1, keepdim=True))
+    kept = reduction(v)
+    assert kept.batch.ndim == 1
+    assert 0 < kept.batch.shape[0] <= 200
+    # re-reducing keeps everything already inside the wedge
+    assert reduction(kept).batch.shape[0] == kept.batch.shape[0]
+
+
+def test_ipf_reduction_rejects_batched_limits():
+    """The fundamental-region limits must be single directions."""
+    torch.set_default_dtype(torch.float64)
+    try:
+        tex.IPFReduction(v0=Vec(torch.randn(3, 3)))
+    except ValueError:
+        return
+    raise AssertionError("IPFReduction should reject batched limit directions")
