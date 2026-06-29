@@ -22,11 +22,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Sphinx extension: inject an "Open in Colab" badge on tutorial notebooks.
+"""Sphinx extension: inject an "Open in Colab" badge on executable notebooks.
 
-Every executable tutorial under ``content/tutorials/`` whose source is a
-Jupyter ``.ipynb`` (the cheap, Colab-runnable notebooks) gets a clickable
-Colab badge inserted just below its page title. The badge links to
+Every executable, Colab-runnable notebook under one of the badged section
+prefixes (``content/tutorials/`` and ``content/tensor_types/``) whose source is
+a Jupyter ``.ipynb`` gets a clickable Colab badge inserted just below its page
+title. The badge links to
 
     https://colab.research.google.com/github/<repo>/blob/<ref>/doc/<docname>.ipynb
 
@@ -72,7 +73,9 @@ SKIP_DOCNAMES = frozenset(
     }
 )
 
-_TUTORIAL_PREFIX = "content/tutorials/"
+#: Section prefixes (relative to ``doc/``, no suffix) whose ``.ipynb`` pages
+#: get a Colab badge. ``str.startswith`` accepts this tuple directly.
+_BADGE_PREFIXES = ("content/tutorials/", "content/tensor_types/")
 
 
 def _colab_url(repo: str, ref: str, docname: str) -> str:
@@ -91,7 +94,7 @@ def _badge_html(url: str) -> str:
 def _inject_badge(app, doctree):
     env = app.env
     docname = env.docname
-    if not docname.startswith(_TUTORIAL_PREFIX) or docname in SKIP_DOCNAMES:
+    if not docname.startswith(_BADGE_PREFIXES) or docname in SKIP_DOCNAMES:
         return
     # Only notebooks (the Colab-runnable tutorials), not the reference-only
     # markdown pages that live alongside them.
