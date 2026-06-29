@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Crystal plasticity - NEML2 3.0.5</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Crystal plasticity formulations" href="formulations.html" /><link rel="prev" title="Plasticity" href="../plasticity.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Crystal plasticity - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Crystal plasticity formulations" href="formulations.html" /><link rel="prev" title="Plasticity" href="../plasticity.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -94,7 +94,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tensor_types.html">Tensor types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tensor_types/index.html">Tensor types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tensor_types/primitive_types.html">Primitive (fixed-base-shape) tensor types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tensor_types/regions.html">Tensor shape regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tensor_types/batching.html">Batching and broadcasting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tensor_types/region_views.html">Region views</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tensor_types/indexing.html">Indexing</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Physics modules</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../../chemical_reactions.html">Chemical reactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../finite_volume.html">Finite volume</a></li>
@@ -444,9 +451,9 @@ l = \dot{\varepsilon} + \Omega^e - \Omega^e \varepsilon + \varepsilon \Omega^e +
 </ol>
 <p>The first holds well for metal plasticity; the second can break down at very high strain rates.</p>
 <p>Defining the current orientation as the composition of the initial lattice rotation <span class="math notranslate nohighlight">\(Q_0\)</span> with the elastic rotation, <span class="math notranslate nohighlight">\(Q = R^e Q_0\)</span>, the elastic spin reduces to <span class="math notranslate nohighlight">\(\Omega^e = \dot{Q} Q^T\)</span>. Splitting the spatial velocity gradient into symmetric and skew parts (<span class="math notranslate nohighlight">\(l = d + w\)</span>, <span class="math notranslate nohighlight">\(l^p = d^p + w^p\)</span>) and rearranging yields the two governing rate equations integrated by this module:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-61676230-d280-48a2-9a30-40fe57ef0794">
-<div class="amsmath math notranslate nohighlight" id="equation-61676230-d280-48a2-9a30-40fe57ef0794">
-<span class="eqno">(18)<a class="headerlink" href="#equation-61676230-d280-48a2-9a30-40fe57ef0794" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-ae71d4c9-7586-4cf3-bb86-39dd26946743">
+<div class="amsmath math notranslate nohighlight" id="equation-ae71d4c9-7586-4cf3-bb86-39dd26946743">
+<span class="eqno">(18)<a class="headerlink" href="#equation-ae71d4c9-7586-4cf3-bb86-39dd26946743" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \dot{\varepsilon} &amp;= d - d^p - \varepsilon w + w \varepsilon \\
   \dot{Q} &amp;= \left(w - w^p - \varepsilon d^p + d^p \varepsilon\right) Q.
 \end{align}\]</div>
@@ -788,7 +795,7 @@ reconstruct the deformed texture:</p>
     </div>
   </div>
 </footer>
-      <script src="../../../../_static/documentation_options.js?v=f4ced14b"></script>
+      <script src="../../../../_static/documentation_options.js?v=c3365b21"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>

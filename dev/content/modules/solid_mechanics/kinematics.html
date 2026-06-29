@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Kinematics - NEML2 3.0.5</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Migration guides" href="../../migration/index.html" /><link rel="prev" title="Traction–separation laws" href="traction_separation_law.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Kinematics - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Migration guides" href="../../migration/index.html" /><link rel="prev" title="Traction–separation laws" href="traction_separation_law.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
@@ -94,7 +94,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../tensor_types.html">Tensor types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tensor_types/index.html">Tensor types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tensor_types/primitive_types.html">Primitive (fixed-base-shape) tensor types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tensor_types/regions.html">Tensor shape regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tensor_types/batching.html">Batching and broadcasting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tensor_types/region_views.html">Region views</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tensor_types/indexing.html">Indexing</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Physics modules</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../chemical_reactions.html">Chemical reactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../finite_volume.html">Finite volume</a></li>
@@ -461,9 +468,9 @@ volume, phase fraction), NEML2 adopts the standard cumulative form</p>
 <span class="math notranslate nohighlight">\(\boldsymbol{I}\)</span> is the rank-2 identity. The three concrete leaves
 in the catalog differ only in how <span class="math notranslate nohighlight">\(\varepsilon^{*}_v\)</span> depends on its
 driver:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-d9635fcb-e84e-40d6-8901-1c0f155b1344">
-<div class="amsmath math notranslate nohighlight" id="equation-d9635fcb-e84e-40d6-8901-1c0f155b1344">
-<span class="eqno">(21)<a class="headerlink" href="#equation-d9635fcb-e84e-40d6-8901-1c0f155b1344" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-973e43a2-b17b-43e5-84af-82d46ab46d1a">
+<div class="amsmath math notranslate nohighlight" id="equation-973e43a2-b17b-43e5-84af-82d46ab46d1a">
+<span class="eqno">(21)<a class="headerlink" href="#equation-973e43a2-b17b-43e5-84af-82d46ab46d1a" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;\varepsilon^{*}_v = \alpha\,(T - T_0), \\
 \text{Volume change:}\quad &amp;\varepsilon^{*}_v = \left(\dfrac{V}{V_0}\right)^{1/3} - 1, \\
 \text{Phase transformation:}\quad &amp;\varepsilon^{*}_v = \Delta V \, f.
@@ -493,9 +500,9 @@ in inelastic flows.</p>
 a scalar deformation Jacobian <span class="math notranslate nohighlight">\(J^{*}\)</span> — the determinant of the
 volumetric correction to be removed from the total deformation
 gradient:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-6ddb3c9f-98b1-4275-b143-696f5a2d6b06">
-<div class="amsmath math notranslate nohighlight" id="equation-6ddb3c9f-98b1-4275-b143-696f5a2d6b06">
-<span class="eqno">(22)<a class="headerlink" href="#equation-6ddb3c9f-98b1-4275-b143-696f5a2d6b06" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-e415c9b3-2421-4d97-b3b9-4a896f2cbf2c">
+<div class="amsmath math notranslate nohighlight" id="equation-e415c9b3-2421-4d97-b3b9-4a896f2cbf2c">
+<span class="eqno">(22)<a class="headerlink" href="#equation-e415c9b3-2421-4d97-b3b9-4a896f2cbf2c" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;J^{*} = 1 + \alpha\,(T - T_0), \\
 \text{Swelling + phase change:}\quad &amp;J^{*} = 1 + \alpha\,c\,\phi^{f}
 + (1-c)\,\phi^{f}\,\Delta\Omega.
@@ -870,7 +877,7 @@ pattern.</p></li>
     </div>
   </div>
 </footer>
-      <script src="../../../_static/documentation_options.js?v=f4ced14b"></script>
+      <script src="../../../_static/documentation_options.js?v=c3365b21"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>

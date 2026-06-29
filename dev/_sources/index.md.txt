@@ -9,7 +9,7 @@ models on CPU and GPU using PyTorch as the tensor backend.
 
 content/installation/index
 content/tutorials/index
-content/tensor_types
+content/tensor_types/index
 content/modules/index
 content/migration/index
 ```

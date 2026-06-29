@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Elasticity - NEML2 3.0.5</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Viscoelasticity" href="viscoelasticity.html" /><link rel="prev" title="Solid mechanics" href="index.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Elasticity - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Viscoelasticity" href="viscoelasticity.html" /><link rel="prev" title="Solid mechanics" href="index.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
@@ -94,7 +94,14 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../tensor_types.html">Tensor types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tensor_types/index.html">Tensor types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tensor_types/primitive_types.html">Primitive (fixed-base-shape) tensor types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tensor_types/regions.html">Tensor shape regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tensor_types/batching.html">Batching and broadcasting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tensor_types/region_views.html">Region views</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tensor_types/indexing.html">Indexing</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Physics modules</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../chemical_reactions.html">Chemical reactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../finite_volume.html">Finite volume</a></li>
@@ -477,9 +484,9 @@ and deviatoric projectors:</p>
 <p>Any pair drawn from <span class="math notranslate nohighlight">\(\{E,\,\nu,\,K,\,G,\,\lambda,\,M\}\)</span> converts to
 <span class="math notranslate nohighlight">\((K,\,G)\)</span> via the standard textbook relations; e.g. with
 <span class="math notranslate nohighlight">\(E,\,\nu\)</span> as inputs,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-b90839c8-5766-4e8c-a090-211b1a4ae601">
-<div class="amsmath math notranslate nohighlight" id="equation-b90839c8-5766-4e8c-a090-211b1a4ae601">
-<span class="eqno">(11)<a class="headerlink" href="#equation-b90839c8-5766-4e8c-a090-211b1a4ae601" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-362d3b32-6f99-4eff-a10b-89462bb1fbe8">
+<div class="amsmath math notranslate nohighlight" id="equation-362d3b32-6f99-4eff-a10b-89462bb1fbe8">
+<span class="eqno">(11)<a class="headerlink" href="#equation-362d3b32-6f99-4eff-a10b-89462bb1fbe8" title="Permalink to this equation">¶</a></span>\[\begin{align}
   K &amp;= \dfrac{E}{3(1 - 2\nu)}, \\
   G &amp;= \dfrac{E}{2(1 + \nu)}.
 \end{align}\]</div>
@@ -495,9 +502,9 @@ fourth-order stiffness onto three cubic-symmetry projectors
 \]</div>
 </div>
 <p>With <span class="math notranslate nohighlight">\((G,\,E,\,\nu)\)</span> as inputs, the canonical triple is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-237399a7-d3d9-4629-bf3f-099810d59281">
-<div class="amsmath math notranslate nohighlight" id="equation-237399a7-d3d9-4629-bf3f-099810d59281">
-<span class="eqno">(12)<a class="headerlink" href="#equation-237399a7-d3d9-4629-bf3f-099810d59281" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-fe6276b7-49f2-419f-b660-42ef487c9838">
+<div class="amsmath math notranslate nohighlight" id="equation-fe6276b7-49f2-419f-b660-42ef487c9838">
+<span class="eqno">(12)<a class="headerlink" href="#equation-fe6276b7-49f2-419f-b660-42ef487c9838" title="Permalink to this equation">¶</a></span>\[\begin{align}
   C_1 &amp;= \dfrac{E\,(1 - \nu)}{(1 + \nu)(1 - 2\nu)}, \\
   C_2 &amp;= \dfrac{E\,\nu}{(1 + \nu)(1 - 2\nu)}, \\
   C_3 &amp;= 2G.
@@ -684,7 +691,7 @@ chain.</p></li>
     </div>
   </div>
 </footer>
-      <script src="../../../_static/documentation_options.js?v=f4ced14b"></script>
+      <script src="../../../_static/documentation_options.js?v=c3365b21"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
