@@ -33,6 +33,7 @@ import torch
 
 from neml2.types import (
     MRP,
+    R2,
     Quaternion,
     Scalar,
     Vec,
@@ -98,6 +99,30 @@ def test_quaternion_matrix_matches_euler_rodrigues():
     R_euler = euler_rodrigues(r).data
     R_quat = quaternion_rotation_matrix(to_quaternion(r)).data
     assert torch.allclose(R_euler, R_quat, atol=1e-12)
+
+
+def test_from_matrix_round_trips_euler_rodrigues():
+    """``MRP.from_matrix`` inverts the rotation-matrix map: feeding it
+    ``euler_rodrigues(r)`` recovers ``r`` (modest magnitudes stay inside one
+    shadow chart, ``theta < pi``)."""
+    _f64()
+    r = _rand_mrp()
+    R = euler_rodrigues(r)
+    r_back = MRP.from_matrix(R)
+    assert torch.allclose(r_back.data, r.data, atol=1e-10)
+
+
+def test_from_matrix_identity_is_zero():
+    _f64()
+    r = MRP.from_matrix(R2(torch.eye(3)))
+    assert torch.allclose(r.data, torch.zeros(3))
+
+
+def test_from_matrix_preserves_sub_batch():
+    _f64()
+    r = MRP(0.3 * torch.randn(4, 3, dtype=torch.float64), sub_batch_ndim=1)
+    R = euler_rodrigues(r)
+    assert MRP.from_matrix(R).sub_batch_ndim == 1
 
 
 def test_identity_conversions():

@@ -54,6 +54,7 @@ from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
 
 if TYPE_CHECKING:
+    from neml2.types.r2 import R2
     from neml2.types.scalar import Scalar
     from neml2.types.vec import Vec
 
@@ -120,6 +121,30 @@ class MRP(PrimitiveTensor):
         vn = nn * torch.tan(theta.data / 2.0).unsqueeze(-1)  # standard Rodrigues
         nsq = (vn * vn).sum(dim=-1, keepdim=True)
         return cls(vn / (torch.sqrt(1.0 + nsq) + 1.0), sub_batch_ndim=n.sub_batch_ndim)
+
+    @classmethod
+    def from_matrix(cls, M: R2) -> MRP:
+        """MRP recovered from a proper rotation matrix (``Rot::fill_matrix``).
+
+        The angle comes from the trace, the axis from the skew part; together
+        they give the standard Rodrigues vector ``n * tan(theta / 2)``, mapped
+        to MRP packing ``r_std / (sqrt(|r_std|^2 + 1) + 1)``. ``M`` must be a
+        proper rotation (``det == +1``); the result is exact for ``theta`` in
+        ``[0, pi)``.
+        """
+        m = M.data
+        trace = m[..., 0, 0] + m[..., 1, 1] + m[..., 2, 2]
+        theta = torch.acos(torch.clip((trace - 1.0) / 2.0, -1.0, 1.0))
+        # scale = tan(theta/2) / (2 sin(theta)); the 0/0 at theta == 0 is the
+        # identity rotation, whose Rodrigues vector is 0 (matches v2's masked put).
+        scale = torch.tan(theta / 2.0) / (2.0 * torch.sin(theta))
+        scale = torch.where(theta == 0, torch.zeros_like(scale), scale)
+        rx = (m[..., 2, 1] - m[..., 1, 2]) * scale
+        ry = (m[..., 0, 2] - m[..., 2, 0]) * scale
+        rz = (m[..., 1, 0] - m[..., 0, 1]) * scale
+        r_std = torch.stack([rx, ry, rz], dim=-1)
+        f = torch.sqrt((r_std * r_std).sum(-1, keepdim=True) + 1.0) + 1.0
+        return cls(r_std / f, sub_batch_ndim=M.sub_batch_ndim)
 
     @classmethod
     def rotation_from_to(cls, v1: Vec, v2: Vec) -> MRP:
