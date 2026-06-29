@@ -27,7 +27,7 @@
 The C++ ``ConstantParameter<T>`` is instantiated for every primitive tensor
 type via the ``FOR_ALL_PRIMITIVETENSOR`` macro. The native surface only
 re-implements the subset of those types that already have a typed wrapper
-under ``neml2.types`` (``Scalar``, ``Vec``, ``Rot``, ``WR2``, ``R2``,
+under ``neml2.types`` (``Scalar``, ``Vec``, ``MRP``, ``WR2``, ``R2``,
 ``SR2``, ``SSR4``, ``MillerIndex``). One shared ``_ConstantParameter`` base
 holds the forward/action logic; each registered variant only differs in the
 ``hit`` schema's wrapper type.
@@ -38,12 +38,12 @@ from __future__ import annotations
 from ...factory import register_neml2_object
 from ...schema import BLOCK_NAME, HitSchema, output, parameter
 from ...types import (
+    MRP,
     R2,
     SR2,
     SSR4,
     WR2,
     MillerIndex,
-    Rot,
     Scalar,
     TensorWrapper,
     Vec,
@@ -172,22 +172,22 @@ class VecConstantParameter(_ConstantParameter):
 
 @register_neml2_object("RotConstantParameter")
 class RotConstantParameter(_ConstantParameter):
-    """Rot-valued constant parameter. Mirrors ``ConstantParameter<Rot>``."""
+    """MRP-valued constant parameter. Mirrors ``ConstantParameter<MRP>``."""
 
-    _value_type = Rot
-    value: Rot  # type: ignore[assignment]
+    _value_type = MRP
+    value: MRP  # type: ignore[assignment]
 
     hit = HitSchema(
         output(
             "parameter",
-            Rot,
+            MRP,
             "The output parameter. If not specified, the object name will be used.",
             default=BLOCK_NAME,
             attr="_p",
         ),
         parameter(
             "value",
-            Rot,
+            MRP,
             "The constant value of the parameter",
             attr="value",
             allow_promotion=True,

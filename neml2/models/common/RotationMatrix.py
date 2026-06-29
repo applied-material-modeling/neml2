@@ -29,8 +29,8 @@ from __future__ import annotations
 from ...factory import register_neml2_object
 from ...schema import HitSchema, input, output
 from ...types import (
+    MRP,
     R2,
-    Rot,
     euler_rodrigues,
     jvp_euler_rodrigues,
 )
@@ -50,13 +50,13 @@ class RotationMatrix(Model):
     """
 
     hit = HitSchema(
-        input("from", Rot, "Rot to convert"),
+        input("from", MRP, "MRP to convert"),
         output("to", R2, "R2 to store the resulting rotation matrix"),
     )
 
     def forward(  # type: ignore[override]
         self,
-        r: Rot,
+        r: MRP,
         v: ChainRuleDict | None = None,
     ):
         out = euler_rodrigues(r)
@@ -65,7 +65,7 @@ class RotationMatrix(Model):
 
         # Differential pushforward: dR = ∂(euler_rodrigues)/∂r · dr via
         # the typed JVP primitive (which hides the irreducible 3×3×3 contraction).
-        def action(V: Rot) -> R2:
+        def action(V: MRP) -> R2:
             return jvp_euler_rodrigues(r, V)
 
         return out, self.apply_chain_rule(v, "to", {"from": action}, output=out)

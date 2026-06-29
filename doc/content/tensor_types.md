@@ -51,7 +51,7 @@ The following wrappers ship in `neml2.types`. The class hierarchy is:
 TensorWrapper           (abstract — shape decomposition + region views)
     └── PrimitiveTensor (concrete intermediate — generic ops + factories)
             ├── Scalar
-            ├── Vec, R2, SR2, WR2, Rot, SSR4, MillerIndex
+            ├── Vec, R2, SR2, WR2, MRP, SSR4, MillerIndex
 ```
 
 `PrimitiveTensor` is the layer where the generic arithmetic operators
@@ -64,7 +64,7 @@ class-specific factories — e.g. `R2.identity`, `SSR4.identity_sym`,
 | :------------- | :--------- | :-------------------------------------------------------------------------------------------------------------------- |
 | `Scalar`       | `()`       | A single number per batch entry. The wrapper exists so mixed operations like `Scalar * SR2` reliably return an `SR2`. |
 | `Vec`          | `(3,)`     | 3-vector.                                                                                                              |
-| `Rot`          | `(3,)`     | Modified Rodrigues parameters (MRPs) representing a 3D rotation: `n * tan(θ/4)`, zero vector = identity.             |
+| `MRP`          | `(3,)`     | Modified Rodrigues parameters (MRPs) representing a 3D rotation: `n * tan(θ/4)`, zero vector = identity.             |
 | `MillerIndex`  | `(3,)`     | Integer-coordinate crystallographic direction or plane normal, stored as float for differentiability.                 |
 | `R2`           | `(3, 3)`   | Full second-order tensor (no symmetry).                                                                                |
 | `WR2`          | `(3,)`     | Skew-symmetric second-order tensor stored as an axial 3-vector `(w0, w1, w2)`. No √2 scaling; the corresponding 3×3 skew form is recovered by `r2_from_wr2`. |
@@ -223,7 +223,7 @@ factory family from `PrimitiveTensor`:
   into the base. `SR2.fill` overrides this with Mandel-aware 1 / 3 / 6
   component overloads (the √2 shear scaling is internal).
 - `<T>.identity(...)` where mathematically meaningful (`R2`,
-  `SR2`, `WR2`, `Rot`, `SSR4`'s several projector variants).
+  `SR2`, `WR2`, `MRP`, `SSR4`'s several projector variants).
 
 `Scalar` adds the torch-analogue factories:
 

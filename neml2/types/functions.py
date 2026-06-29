@@ -55,8 +55,8 @@ from neml2.types._base import (
     combine_sub_batch_state,
     wrap_like,
 )
+from neml2.types.mrp import MRP
 from neml2.types.r2 import R2
-from neml2.types.rot import Rot
 from neml2.types.scalar import Scalar
 from neml2.types.sr2 import SR2
 from neml2.types.ssr4 import SSR4
@@ -1949,13 +1949,13 @@ def skew(t: R2) -> WR2:
     return wrap_like(WR2, torch.stack([w0, w1, w2], dim=-1), t)
 
 
-# ---- Rot ↔ R2 (Euler-Rodrigues mapping) ----
+# ---- MRP ↔ R2 (Euler-Rodrigues mapping) ----
 
 
-def euler_rodrigues(r: Rot) -> R2:
+def euler_rodrigues(r: MRP) -> R2:
     """Convert an MRP rotation to its 3x3 rotation matrix.
 
-    Mirrors ``Rot::euler_rodrigues`` in ``src/neml2/tensors/Rot.cxx``::
+    Mirrors ``MRP::euler_rodrigues`` in ``src/neml2/tensors/MRP.cxx``::
 
         R = (1+rr)^-2 * ( (1+rr)^2 * I + 4(1-rr) W + 8 W^2 )
 
@@ -1994,13 +1994,13 @@ def euler_rodrigues(r: Rot) -> R2:
     return wrap_like(R2, R_mat, r)
 
 
-# ---- Rot composition ----
+# ---- MRP composition ----
 
 
-def compose(r1: Rot, r2: Rot) -> Rot:
+def compose(r1: MRP, r2: MRP) -> MRP:
     """Compose two MRP rotations: ``r1 ∘ r2`` (apply r2 first, then r1).
 
-    Matches ``operator*(const Rot&, const Rot&)`` in ``src/neml2/tensors/Rot.cxx``.
+    Matches ``operator*(const MRP&, const MRP&)`` in ``src/neml2/tensors/MRP.cxx``.
     The result is again an MRP; the formula handles the standard MRP
     composition with denominator $1 + ||r1||^2 ||r2||^2 - 2 r1·r2$.
     """
@@ -2019,7 +2019,7 @@ def compose(r1: Rot, r2: Rot) -> Rot:
     quot = num * reciprocal_ad(den) if den.requires_grad else num / den
     state, meta = combine_sub_batch_state(aa, bb)
     _k_ndim, _k_state, _k_pairing = _combine_k_from_operands(aa, bb)
-    return Rot(
+    return MRP(
         quot,
         sub_batch_ndim=sb,
         sub_batch_state=state,
@@ -2048,10 +2048,10 @@ def _cross_raw(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     return torch.cross(a, b, dim=-1)
 
 
-def drotate_self(r1: Rot, r2: Rot) -> R2:
+def drotate_self(r1: MRP, r2: MRP) -> R2:
     """``d(r2 ∘ r1) / d(r1)`` where the composition is ``r2 * r1``.
 
-    Mirrors ``Rot::drotate_self`` in ``src/neml2/tensors/Rot.cxx``. The
+    Mirrors ``MRP::drotate_self`` in ``src/neml2/tensors/MRP.cxx``. The
     naming follows the C++ convention: $r1.rotate(r2) == r2 * r1$ (apply
     ``r1`` first then ``r2``), and ``r1.drotate_self(r2)`` is the derivative
     of that composed rotation w.r.t. the receiver ``r1``. Returns ``R2``.
@@ -2085,10 +2085,10 @@ def drotate_self(r1: Rot, r2: Rot) -> R2:
     )
 
 
-def drotate(r1: Rot, r2: Rot) -> R2:
+def drotate(r1: MRP, r2: MRP) -> R2:
     """``d(r2 ∘ r1) / d(r2)`` where the composition is ``r2 * r1``.
 
-    Mirrors ``Rot::drotate`` in ``src/neml2/tensors/Rot.cxx``. Returns ``R2``.
+    Mirrors ``MRP::drotate`` in ``src/neml2/tensors/MRP.cxx``. Returns ``R2``.
     """
     [a1, a2], sb = align_sub_batch(r1, r2)
     rr1 = (a1.data * a1.data).sum(dim=-1, keepdim=False)
@@ -2121,7 +2121,7 @@ def drotate(r1: Rot, r2: Rot) -> R2:
 # ---- WR2 exponential map ----
 
 
-def exp_map(w: WR2) -> Rot:
+def exp_map(w: WR2) -> MRP:
     """Exponential of a skew axial vector — yields an MRP rotation.
 
     Mirrors ``WR2::exp_map`` in ``src/neml2/tensors/WR2.cxx``. Uses a Taylor
@@ -2140,7 +2140,7 @@ def exp_map(w: WR2) -> Rot:
     actual_scale = torch.tan(safe_norm2 / 2.0) / (2.0 * safe_norm2 * torch.cos(safe_norm2 / 2.0))
     res_actual = w.data * actual_scale.unsqueeze(-1)
     out = torch.where((norm2 > thresh).unsqueeze(-1), res_actual, res_taylor)
-    return wrap_like(Rot, out, w)
+    return wrap_like(MRP, out, w)
 
 
 def dexp_map(w: WR2) -> R2:
@@ -2549,11 +2549,11 @@ def _rotate_ssr4(T: SSR4, R: R2) -> SSR4:
 # carries no ``K``, so it broadcasts over ``K`` under right-aligned broadcasting.
 
 
-def jvp_euler_rodrigues(r: Rot, dr: Rot) -> R2:
-    """Pushforward of :func:`euler_rodrigues` (Rot→R2) along the tangent ``dr``.
+def jvp_euler_rodrigues(r: MRP, dr: MRP) -> R2:
+    """Pushforward of :func:`euler_rodrigues` (MRP→R2) along the tangent ``dr``.
 
-    Closed-form via the body-frame angular rate. ``Rot`` is the Modified
-    Rodrigues Parameter (MRP) form (``Rot.cxx``), for which the MRP-rate /
+    Closed-form via the body-frame angular rate. ``MRP`` is the Modified
+    Rodrigues Parameter (MRP) form (``MRP.cxx``), for which the MRP-rate /
     body-rate kinematic relation (Schaub & Junkins, *Analytical Mechanics of
     Space Systems*) inverts to::
 
@@ -2584,8 +2584,8 @@ def jvp_euler_rodrigues(r: Rot, dr: Rot) -> R2:
     return wrap_like(R2, dR, dr)
 
 
-def jvp_exp_map(w: WR2, dw: WR2) -> Rot:
-    """Pushforward of :func:`exp_map` (WR2→Rot) along the tangent ``dw``.
+def jvp_exp_map(w: WR2, dw: WR2) -> MRP:
+    """Pushforward of :func:`exp_map` (WR2→MRP) along the tangent ``dw``.
 
     Closed-form rank-1-plus-identity: $dexp_map(w) = a(|w|²) I + b(|w|²) w wᵀ$,
     so the action is $dr = a·dw + b·(w·dw)·w$ — two vector ops, no 3×3
@@ -2619,10 +2619,10 @@ def jvp_exp_map(w: WR2, dw: WR2) -> Rot:
 
     w_dot_dw = (w_d * dw_d).sum(dim=-1, keepdim=True)  # (K, *batch, 1) — w broadcasts
     dr = a * dw_d + (b * w_dot_dw) * w_d  # (K, *batch, 3)
-    return wrap_like(Rot, dr, dw)
+    return wrap_like(MRP, dr, dw)
 
 
-def jvp_compose(r1: Rot, r2: Rot, *, dr1: Rot | None = None, dr2: Rot | None = None) -> Rot:
+def jvp_compose(r1: MRP, r2: MRP, *, dr1: MRP | None = None, dr2: MRP | None = None) -> MRP:
     """Pushforward of :func:`compose` (``compose(r1, r2)``) along its operands.
 
     $d(compose(r1, r2)) = (∂/∂r1)·dr1 + (∂/∂r2)·dr2$ with the operand
@@ -2644,7 +2644,7 @@ def jvp_compose(r1: Rot, r2: Rot, *, dr1: Rot | None = None, dr2: Rot | None = N
     if acc is None:
         raise ValueError("jvp_compose requires at least one of dr1, dr2")
     src: TensorWrapper = dr1 if dr1 is not None else dr2  # type: ignore[assignment]
-    return wrap_like(Rot, acc, src)
+    return wrap_like(MRP, acc, src)
 
 
 def _jvp_rotate_ssr4(T: SSR4, R: R2, dR: R2) -> SSR4:

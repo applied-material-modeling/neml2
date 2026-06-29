@@ -28,7 +28,7 @@ The C++ ``AnisotropicElasticity`` (see
 ``include/neml2/models/solid_mechanics/elasticity/AnisotropicElasticity.h``) is
 an abstract intermediate between ``Elasticity`` and concrete anisotropic
 relations (``GeneralElasticity``, future cubic/transverse-isotropic forms). It
-adds the ``orientation : Rot`` input (active convention) to the elastic
+adds the ``orientation : MRP`` input (active convention) to the elastic
 strain / stress contract while leaving ``set_value`` to subclasses.
 
 Because the C++ class is not registered (no ``register_NEML2_object``), this
@@ -46,7 +46,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....schema import HitSchema, input, output
-from ....types import SR2, Rot
+from ....types import MRP, SR2
 from ...chain_rule import ChainRuleDict
 from ...model import Model
 
@@ -59,14 +59,14 @@ class AnisotropicElasticity(Model):
 
     hit = HitSchema(
         input("strain", SR2, "Elastic strain"),
-        input("orientation", Rot, "Active convention orientation from reference to current"),
+        input("orientation", MRP, "Active convention orientation from reference to current"),
         output("stress", SR2, "Stress"),
     )
 
     def forward(  # type: ignore[override]
         self,
         strain: SR2,
-        orientation: Rot,
+        orientation: MRP,
         *promoted_params,
         v: ChainRuleDict | None = None,
     ):

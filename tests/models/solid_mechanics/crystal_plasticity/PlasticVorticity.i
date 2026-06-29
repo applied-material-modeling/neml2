@@ -1,6 +1,6 @@
 # Translated from tests/unit/models/solid_mechanics/crystal_plasticity/PlasticVorticity.i.
 # FCC <110>{111} via a [Data] CubicCrystal. The C++ fixture composes
-# RotationMatrix -> PlasticVorticity and drives with a Rot; commit 7ad06e395
+# RotationMatrix -> PlasticVorticity and drives with a MRP; commit 7ad06e395
 # fixed the ComposedModel<->ModelUnitTest wrapper-boundary limitation, so we
 # can mirror that composition directly here.
 #
@@ -29,7 +29,7 @@
   []
   [R]
     type = Python
-    expr = 'Rot(torch.tensor([0.00499066, -0.0249533, 0.03493462], dtype=torch.float64))'
+    expr = 'MRP(torch.tensor([0.00499066, -0.0249533, 0.03493462], dtype=torch.float64))'
   []
   [gamma]
     type = Python
@@ -45,8 +45,8 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Rot_names = 'orientation'
-    input_Rot_values = 'R'
+    input_MRP_names = 'orientation'
+    input_MRP_values = 'R'
     input_Scalar_names = 'slip_rates'
     input_Scalar_values = 'gamma'
     output_WR2_names = 'plastic_vorticity'

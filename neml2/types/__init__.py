@@ -36,7 +36,7 @@ ops are exposed through region-view properties (``t.batch``,
 unambiguous — e.g. ``t.sub_batch.unsqueeze(-1)`` or
 ``t.base.transpose(-2, -1)``. Everything else (invariants,
 decompositions, transcendentals, math-bearing type conversions like
-``euler_rodrigues(Rot) -> R2``) lives in :mod:`neml2.types.functions`
+``euler_rodrigues(MRP) -> R2``) lives in :mod:`neml2.types.functions`
 as free functions, matching how the C++ side exposes them.
 """
 
@@ -102,8 +102,8 @@ from neml2.types.functions import (
     where,
 )
 from neml2.types.miller_index import MillerIndex
+from neml2.types.mrp import MRP
 from neml2.types.r2 import R2
-from neml2.types.rot import Rot
 from neml2.types.scalar import Scalar
 from neml2.types.sr2 import SR2
 from neml2.types.ssr4 import SSR4
@@ -116,7 +116,7 @@ __all__ = [
     "MillerIndex",
     "PrimitiveTensor",
     "R2",
-    "Rot",
+    "MRP",
     "SR2",
     "SSR4",
     "Scalar",

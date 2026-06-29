@@ -154,12 +154,12 @@ from .solvers import (
     SchurComplement,
 )
 from .types import (  # noqa: F401 (convenience re-exports of the most common typed wrappers)
+    MRP,
     R2,
     SR2,
     SSR4,
     WR2,
     MillerIndex,
-    Rot,
     Scalar,
     Tensor,
     TensorWrapper,

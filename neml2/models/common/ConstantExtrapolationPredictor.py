@@ -29,9 +29,9 @@ from __future__ import annotations
 from ...factory import register_neml2_object
 from ...schema import HitSchema, option
 from ...types import (
+    MRP,
     R2,
     SR2,
-    Rot,
     Scalar,
     TensorWrapper,
 )
@@ -73,7 +73,7 @@ class ConstantExtrapolationPredictor(Model):
         option(
             "unknowns_Rot",
             list,
-            "The unknowns to extrapolate of type Rot",
+            "The unknowns to extrapolate of type MRP",
             default=[],
             reader=_read_list_str,
             optional_reader=_opt_list_str,
@@ -103,13 +103,13 @@ class ConstantExtrapolationPredictor(Model):
         self.input_spec = {
             **{f"{u}~1": SR2 for u in self._sr2},
             **{f"{u}~1": Scalar for u in self._scalar},
-            **{f"{u}~1": Rot for u in self._rot},
+            **{f"{u}~1": MRP for u in self._rot},
             **{f"{u}~1": R2 for u in self._r2},
         }
         self.output_spec = {
             **{u: SR2 for u in self._sr2},
             **{u: Scalar for u in self._scalar},
-            **{u: Rot for u in self._rot},
+            **{u: MRP for u in self._rot},
             **{u: R2 for u in self._r2},
         }
 

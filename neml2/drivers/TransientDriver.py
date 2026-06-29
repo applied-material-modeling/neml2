@@ -50,7 +50,7 @@ import torch
 
 from ..factory import register_neml2_object
 from ..schema import HitField, HitSchema, dependency, option
-from ..types import R2, SR2, SSR4, WR2, MillerIndex, Rot, Scalar, TensorWrapper, Vec
+from ..types import MRP, R2, SR2, SSR4, WR2, MillerIndex, Scalar, TensorWrapper, Vec
 from .driver import Driver
 
 if TYPE_CHECKING:
@@ -65,7 +65,7 @@ _TYPE_MAP: dict[str, type[TensorWrapper]] = {
     "SR2": SR2,
     "WR2": WR2,
     "R2": R2,
-    "Rot": Rot,
+    "MRP": MRP,
     "SSR4": SSR4,
     "MillerIndex": MillerIndex,
 }

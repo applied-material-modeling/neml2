@@ -54,7 +54,7 @@
   # r = r_std / (sqrt(|r_std|^2 + 1) + 1). Shape (20, 3).
   [initial_orientation]
     type = Python
-    expr = 'Rot((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
+    expr = 'MRP((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
   []
 
   # Fully populated triclinic elastic stiffness tensor (unbatched, shape (6, 6)).
@@ -73,8 +73,8 @@
     prescribed_SR2_values = 'deformation_rate'
     prescribed_WR2_names = 'vorticity'
     prescribed_WR2_values = 'vorticity'
-    ic_Rot_names = 'orientation'
-    ic_Rot_values = 'initial_orientation'
+    ic_MRP_names = 'orientation'
+    ic_MRP_values = 'initial_orientation'
   []
   [regression]
     type = TransientRegression

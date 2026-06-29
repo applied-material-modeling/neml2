@@ -124,7 +124,7 @@ class _LinearCombination(Model):
         for w, x in zip(weights[1:], inputs[1:], strict=True):
             result = result + w * x
         # Add the constant Scalar offset. ``WrapperT + Scalar`` is defined
-        # on every value wrapper (Scalar/Vec/SR2/WR2/Rot/R2/SSR4) and routes
+        # on every value wrapper (Scalar/Vec/SR2/WR2/MRP/R2/SSR4) and routes
         # through ``types._base.align_scalar_base`` to broadcast the Scalar
         # against the trailing base dims. Sub-batch alignment is automatic.
         out = result + offset

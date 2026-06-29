@@ -33,9 +33,9 @@ import torch
 from ...factory import register_neml2_object
 from ...schema import HitSchema, option
 from ...types import (
+    MRP,
     R2,
     SR2,
-    Rot,
     Scalar,
     TensorWrapper,
     gt,
@@ -97,7 +97,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         option(
             "unknowns_Rot",
             list,
-            "The unknowns to extrapolate of type Rot",
+            "The unknowns to extrapolate of type MRP",
             default=[],
             reader=_read_list_str,
             optional_reader=_opt_list_str,
@@ -139,7 +139,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
             f"{time}~2": Scalar,
             **{f"{u}~2": SR2 for u in self._sr2},
             **{f"{u}~2": Scalar for u in self._scalar},
-            **{f"{u}~2": Rot for u in self._rot},
+            **{f"{u}~2": MRP for u in self._rot},
             **{f"{u}~2": R2 for u in self._r2},
         }
         self.input_spec = {**self.input_spec, **extra_in}
@@ -186,7 +186,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         outs: list[TensorWrapper] = []
         for u_n, u_nm1 in zip(var_n, var_nm1, strict=True):
             # u_extrap = u_n + (u_n - u_nm1) * ratio. ``ratio`` is a Scalar;
-            # mixed Scalar * SR2/Rot/Scalar dispatches via the wrapper's __mul__.
+            # mixed Scalar * SR2/MRP/Scalar dispatches via the wrapper's __mul__.
             delta = u_n - u_nm1
             u_extrap = u_n + delta * ratio
             outs.append(where(cond, u_extrap, u_n))

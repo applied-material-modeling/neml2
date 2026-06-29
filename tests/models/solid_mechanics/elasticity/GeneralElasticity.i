@@ -8,8 +8,8 @@
     model = 'model'
     input_SR2_names = 'strain'
     input_SR2_values = 'Ee'
-    input_Rot_names = 'orientation'
-    input_Rot_values = 'R'
+    input_MRP_names = 'orientation'
+    input_MRP_values = 'R'
     output_SR2_names = 'stress'
     output_SR2_values = 'S'
     derivative_rel_tol = 1e-4
@@ -24,7 +24,7 @@
   []
   [R]
     type = Python
-    expr = 'Rot(torch.tensor([0.13991834, 0.18234513, 0.85043991]))'
+    expr = 'MRP(torch.tensor([0.13991834, 0.18234513, 0.85043991]))'
   []
   [S]
     type = Python

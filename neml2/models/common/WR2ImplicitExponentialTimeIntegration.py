@@ -29,8 +29,8 @@ from __future__ import annotations
 from ...factory import register_neml2_object
 from ...schema import HitSchema, derived_input, derived_output, input, option
 from ...types import (
+    MRP,
     WR2,
-    Rot,
     Scalar,
     compose,
     exp_map,
@@ -50,13 +50,13 @@ class WR2ImplicitExponentialTimeIntegration(Model):
     """
 
     hit = HitSchema(
-        input("variable", Rot, "Integrated rotation", attr="_var"),
-        derived_input("variable", Rot, attr="_var_n", suffix="~1"),
+        input("variable", MRP, "Integrated rotation", attr="_var"),
+        derived_input("variable", MRP, attr="_var_n", suffix="~1"),
         input("time", Scalar, "Time", default="t", attr="_t"),
         derived_input("time", Scalar, attr="_t_n", suffix="~1"),
         derived_input("variable", WR2, attr="_rate", suffix="_rate", override="rate"),
         option("rate", str, "Override name for the variable rate.", default="", attr="_rate_opt"),
-        derived_output("variable", Rot, attr="_residual", suffix="_residual"),
+        derived_output("variable", MRP, attr="_residual", suffix="_residual"),
     )
 
     _var: str
@@ -68,15 +68,15 @@ class WR2ImplicitExponentialTimeIntegration(Model):
 
     def forward(  # type: ignore[override]
         self,
-        s: Rot,
-        s_n: Rot,
+        s: MRP,
+        s_n: MRP,
         t: Scalar,
         t_n: Scalar,
         s_rate: WR2,
         v: ChainRuleDict | None = None,
     ):
         # typed wrapper ops align global ``dt`` (Scalar) against
-        # per-crystal ``s_rate``/``s``/``s_n`` (Rot/WR2) automatically — the
+        # per-crystal ``s_rate``/``s``/``s_n`` (MRP/WR2) automatically — the
         # ``ComposedModel`` preserves sub_batch_ndim across the leaf boundary.
         dt = t - t_n  # Scalar
         scaled = s_rate * dt  # WR2 — auto-aligned
@@ -94,19 +94,19 @@ class WR2ImplicitExponentialTimeIntegration(Model):
         #   ∂r/∂s_rate: scaled = s_rate·dt        → -jvp_compose(.., dr1=jvp_exp_map(V·dt))
         #   ∂r/∂t:     ∂scaled/∂t = s_rate        → -jvp_compose(.., dr1=jvp_exp_map(s_rate·V))
         #   ∂r/∂t~1:   ∂scaled/∂t~1 = -s_rate     → +jvp_compose(.., dr1=jvp_exp_map(s_rate·V))
-        def action_s(V: Rot) -> Rot:
+        def action_s(V: MRP) -> MRP:
             return V
 
-        def action_sn(V: Rot) -> Rot:
+        def action_sn(V: MRP) -> MRP:
             return -jvp_compose(inc, s_n, dr2=V)
 
-        def action_rate(V: WR2) -> Rot:
+        def action_rate(V: WR2) -> MRP:
             return -jvp_compose(inc, s_n, dr1=jvp_exp_map(scaled, V * dt))
 
-        def action_t(V: Scalar) -> Rot:
+        def action_t(V: Scalar) -> MRP:
             return -jvp_compose(inc, s_n, dr1=jvp_exp_map(scaled, s_rate * V))
 
-        def action_tn(V: Scalar) -> Rot:
+        def action_tn(V: Scalar) -> MRP:
             return jvp_compose(inc, s_n, dr1=jvp_exp_map(scaled, s_rate * V))
 
         actions = {

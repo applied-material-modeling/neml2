@@ -59,12 +59,12 @@ result = R2(F_full.contiguous())'
   # R1 = linspace(0, 0.75, 20); R2 = linspace(0, -0.25, 20); R3 = linspace(-0.1, 0.1, 20).
   [initial_orientation]
     type = Python
-    expr = 'Rot((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
+    expr = 'MRP((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
   []
   # r = LinspaceRot(initial_orientation, initial_orientation, 100) -> shape (100, 20, 3)
   [r]
     type = Python
-    expr = 'Rot(initial_orientation.data.unsqueeze(0).expand(100, 20, 3).contiguous())'
+    expr = 'MRP(initial_orientation.data.unsqueeze(0).expand(100, 20, 3).contiguous())'
   []
 []
 
@@ -75,8 +75,8 @@ result = R2(F_full.contiguous())'
     prescribed_time = 'times'
     prescribed_R2_names = 'F'
     prescribed_R2_values = 'F'
-    prescribed_Rot_names = 'r'
-    prescribed_Rot_values = 'r'
+    prescribed_MRP_names = 'r'
+    prescribed_MRP_values = 'r'
     ic_R2_names = 'Fp'
     ic_R2_values = 'Fp0'
   []

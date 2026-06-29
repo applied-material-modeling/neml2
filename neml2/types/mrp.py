@@ -22,11 +22,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Rot — rotation stored as modified Rodrigues parameters (MRPs).
+"""MRP — rotation stored as modified Rodrigues parameters (MRPs).
 
 Base shape ``(3,)``. The three components are ``n * tan(theta/4)`` where ``n``
 is the rotation axis (unit vector) and ``theta`` the rotation angle. This is
-the same convention as ``include/neml2/tensors/Rot.h``; it differs from the
+the same convention as ``include/neml2/tensors/MRP.h``; it differs from the
 standard Rodrigues parameters ``n * tan(theta/2)`` (which can be obtained by
 the inverse map). The zero vector is the identity rotation.
 
@@ -38,7 +38,7 @@ of the same orientation up to roundoff). Composition itself goes through the
 free :func:`compose` in :mod:`functions`.
 
 Arithmetic operators and ``zeros``/``ones``/``full``/``empty``/``fill``
-factories are inherited from :class:`PrimitiveTensor`. The only Rot-specific
+factories are inherited from :class:`PrimitiveTensor`. The only MRP-specific
 factory is :meth:`identity`.
 """
 
@@ -54,7 +54,7 @@ from neml2.types._pytree import register
 
 
 @dataclass(frozen=True, eq=False)
-class Rot(PrimitiveTensor):
+class MRP(PrimitiveTensor):
     """Wraps a `torch.Tensor` of shape ``(..., 3)`` in MRP packing."""
 
     data: torch.Tensor
@@ -70,9 +70,9 @@ class Rot(PrimitiveTensor):
     @classmethod
     def identity(
         cls, *, dtype: torch.dtype | None = None, device: torch.device | str | None = None
-    ) -> Rot:
+    ) -> MRP:
         """The identity rotation — the zero MRP vector."""
         return cls(torch.zeros(3, dtype=dtype, device=device))
 
 
-register(Rot)
+register(MRP)
