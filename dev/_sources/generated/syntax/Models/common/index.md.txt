@@ -8,9 +8,9 @@
 ArrheniusParameter
 ComposedModel
 ConstantExtrapolationPredictor
+CopyMRP
 CopyMillerIndex
 CopyR2
-CopyRot
 CopySR2
 CopySSR4
 CopyScalar
@@ -21,6 +21,9 @@ HermiteSmoothStep
 ImplicitUpdate
 IrreversibleScalar
 LinearExtrapolationPredictor
+MRPConstantParameter
+MRPInputParameter
+MRPParameterToVariable
 MacaulaySplit
 MillerIndexConstantParameter
 MillerIndexInputParameter
@@ -35,9 +38,6 @@ R2ParameterToVariable
 R2ToSR2
 R2ToWR2
 R2VariableRate
-RotConstantParameter
-RotInputParameter
-RotParameterToVariable
 RotationMatrix
 SR2BackwardEulerTimeIntegration
 SR2BilinearInterpolation

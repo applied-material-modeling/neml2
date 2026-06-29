@@ -109,7 +109,11 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="solid_mechanics/elasticity.html">Elasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="solid_mechanics/plasticity.html">Plasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
 <li class="toctree-l3"><a class="reference internal" href="solid_mechanics/kinematics.html">Kinematics</a></li>
 </ul>
@@ -165,9 +169,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyRot.html">CopyRot</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
@@ -178,6 +182,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
@@ -192,9 +199,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotConstantParameter.html">RotConstantParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotInputParameter.html">RotInputParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotParameterToVariable.html">RotParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -508,9 +512,9 @@ cell widths).</p>
 <section id="advective-flux">
 <h3>Advective flux<a class="headerlink" href="#advective-flux" title="Link to this heading">¶</a></h3>
 <p>Advective fluxes are stabilized with first-order upwinding,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-1b21ae61-6cbf-4c88-a5f7-8cbde8be4431">
-<div class="amsmath math notranslate nohighlight" id="equation-1b21ae61-6cbf-4c88-a5f7-8cbde8be4431">
-<span class="eqno">(5)<a class="headerlink" href="#equation-1b21ae61-6cbf-4c88-a5f7-8cbde8be4431" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-fd83dca4-4c92-4ac5-bb5a-9cd7b1bb27c7">
+<div class="amsmath math notranslate nohighlight" id="equation-fd83dca4-4c92-4ac5-bb5a-9cd7b1bb27c7">
+<span class="eqno">(5)<a class="headerlink" href="#equation-fd83dca4-4c92-4ac5-bb5a-9cd7b1bb27c7" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \hat{J}_{\mathrm{adv}, i+\tfrac{1}{2}}
 &amp;= v^{+}_{i+\tfrac{1}{2}}\, \bar{u}_i
  + v^{-}_{i+\tfrac{1}{2}}\, \bar{u}_{i+1}, \\
@@ -551,7 +555,7 @@ boundary conditions, and backward-Euler time integration:</p>
 </span><span data-line="4"><span class="w">    </span><span class="c1"># Coarsened for regression-test runtime: 201 -&gt; 51 (50 cells). Full</span>
 </span><span data-line="5"><span class="w">    </span><span class="c1"># resolution lives under tests/regression/; here we only detect drift.</span>
 </span><span data-line="6"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="7"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar.linspace(0.0, 1.0, 51).sub_batch.retag(1)&#39;</span>
+</span><span data-line="7"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(0.0).sub_batch, Scalar(1.0).sub_batch, 51)&#39;</span>
 </span><span data-line="8"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[centers]</span>
 </span><span data-line="10"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
@@ -571,7 +575,7 @@ boundary conditions, and backward-Euler time integration:</p>
 </span><span data-line="24"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="25"><span class="w">  </span><span class="k">[time]</span>
 </span><span data-line="26"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="27"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar.linspace(0.0, 1.0, 25)&#39;</span>
+</span><span data-line="27"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(0.0).dynamic_batch, Scalar(1.0).dynamic_batch, 25)&#39;</span>
 </span><span data-line="28"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="29"><span class="w">  </span><span class="k">[D_cells]</span>
 </span><span data-line="30"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>

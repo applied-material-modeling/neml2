@@ -109,7 +109,11 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/elasticity.html">Elasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/plasticity.html">Plasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modules/solid_mechanics/kinematics.html">Kinematics</a></li>
 </ul>
@@ -165,9 +169,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/CopyRot.html">CopyRot</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
@@ -178,6 +182,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
@@ -192,9 +199,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/RotConstantParameter.html">RotConstantParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/RotInputParameter.html">RotInputParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/RotParameterToVariable.html">RotParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -445,7 +449,7 @@ corresponding counts.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">TensorWrapper           (abstract — shape decomposition + region views)
 </span><span data-line="2">    └── PrimitiveTensor (concrete intermediate — generic ops + factories)
 </span><span data-line="3">            ├── Scalar
-</span><span data-line="4">            ├── Vec, R2, SR2, WR2, Rot, SSR4, MillerIndex
+</span><span data-line="4">            ├── Vec, R2, SR2, WR2, MRP, SSR4, MillerIndex
 </span></pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">PrimitiveTensor</span></code> is the layer where the generic arithmetic operators
@@ -470,7 +474,7 @@ class-specific factories — e.g. <code class="docutils literal notranslate"><sp
 <td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">(3,)</span></code></p></td>
 <td class="text-left"><p>3-vector.</p></td>
 </tr>
-<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">Rot</span></code></p></td>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">MRP</span></code></p></td>
 <td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">(3,)</span></code></p></td>
 <td class="text-left"><p>Modified Rodrigues parameters (MRPs) representing a 3D rotation: <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">*</span> <span class="pre">tan(θ/4)</span></code>, zero vector = identity.</p></td>
 </tr>
@@ -590,7 +594,7 @@ table:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scalar</span>
 </span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">T_controls</span> <span class="o">=</span> <span class="n">Scalar</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">300.0</span><span class="p">,</span> <span class="mf">1200.0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">retag</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">T_controls</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="mf">300.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">(</span><span class="mf">1200.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>This marks the trailing length-20 axis as the sub-batch (interpolation
@@ -601,7 +605,7 @@ the dynamic per-state batch.</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Tensors]</span>
 </span><span data-line="2"><span class="w">  </span><span class="k">[T_controls]</span>
 </span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)&#39;</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)&#39;</span>
 </span><span data-line="5"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="6"><span class="k">[]</span>
 </span></pre></div>
@@ -630,7 +634,7 @@ The view methods return a fresh wrapper, so calls chain cleanly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">broadcast</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
 </span><span data-line="2"><span class="c1"># Construct an SR2 of base shape (6,), then broadcast it to (20, 6).</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">retagged</span> <span class="o">=</span> <span class="n">Scalar</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">retag</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">retagged</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># Mark the trailing length-5 axis as sub-batch.</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="n">tr_R</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># Transpose the (3, 3) base of an R2.</span>
@@ -659,7 +663,7 @@ dynamic shape <code class="docutils literal notranslate"><span class="pre">batch
 into the base. <code class="docutils literal notranslate"><span class="pre">SR2.fill</span></code> overrides this with Mandel-aware 1 / 3 / 6
 component overloads (the √2 shear scaling is internal).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&lt;T&gt;.identity(...)</span></code> where mathematically meaningful (<code class="docutils literal notranslate"><span class="pre">R2</span></code>,
-<code class="docutils literal notranslate"><span class="pre">SR2</span></code>, <code class="docutils literal notranslate"><span class="pre">WR2</span></code>, <code class="docutils literal notranslate"><span class="pre">Rot</span></code>, <code class="docutils literal notranslate"><span class="pre">SSR4</span></code>’s several projector variants).</p></li>
+<code class="docutils literal notranslate"><span class="pre">SR2</span></code>, <code class="docutils literal notranslate"><span class="pre">WR2</span></code>, <code class="docutils literal notranslate"><span class="pre">MRP</span></code>, <code class="docutils literal notranslate"><span class="pre">SSR4</span></code>’s several projector variants).</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">Scalar</span></code> adds the torch-analogue factories:</p>
 <ul class="simple">
@@ -667,7 +671,7 @@ component overloads (the √2 shear scaling is internal).</p></li>
 literal coercion, defaults to <code class="docutils literal notranslate"><span class="pre">torch.float64</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Scalar.zeros</span></code>, <code class="docutils literal notranslate"><span class="pre">Scalar.ones</span></code>, <code class="docutils literal notranslate"><span class="pre">Scalar.full</span></code> — override the
 <code class="docutils literal notranslate"><span class="pre">PrimitiveTensor</span></code> defaults to keep <code class="docutils literal notranslate"><span class="pre">float64</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Scalar.linspace(start,</span> <span class="pre">end,</span> <span class="pre">steps)</span></code>, <code class="docutils literal notranslate"><span class="pre">Scalar.arange(start,</span> <span class="pre">end,</span> <span class="pre">step)</span></code> —
+<li><p><code class="docutils literal notranslate"><span class="pre">linspace(Scalar(start).dynamic_batch,</span> <span class="pre">Scalar(end).dynamic_batch,</span> <span class="pre">steps)</span></code>, <code class="docutils literal notranslate"><span class="pre">Scalar.arange(start,</span> <span class="pre">end,</span> <span class="pre">step)</span></code> —
 mirror the torch creation API.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Scalar.from_value(x,</span> <span class="pre">like=other_wrapper)</span></code> — promote a Python literal
 inheriting <code class="docutils literal notranslate"><span class="pre">dtype</span></code>/<code class="docutils literal notranslate"><span class="pre">device</span></code> from an existing wrapper. Useful inside

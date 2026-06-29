@@ -109,7 +109,11 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/elasticity.html">Elasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/plasticity.html">Plasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../content/modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../content/modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/kinematics.html">Kinematics</a></li>
 </ul>
@@ -165,9 +169,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyRot.html">CopyRot</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
@@ -178,6 +182,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
@@ -192,9 +199,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotConstantParameter.html">RotConstantParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotInputParameter.html">RotInputParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotParameterToVariable.html">RotParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -692,220 +696,221 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="294">            <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 </span><span data-line="295">
 </span><span data-line="296">        <span class="c1"># Sub-batch tagging happens inside ``expr`` via method chaining on the</span>
-</span><span data-line="297">        <span class="c1"># returned wrapper — ``Scalar.linspace(0, 1, 5).sub_batch.retag(1)``.</span>
-</span><span data-line="298">        <span class="c1"># That keeps a single source of truth for the tensor pipeline (and lets</span>
-</span><span data-line="299">        <span class="c1"># users compose ``.sub_batch.expand_at(...)``, ``.sub_batch.diagonalize()``</span>
-</span><span data-line="300">        <span class="c1"># etc. without a parallel HIT option for each).</span>
-</span><span data-line="301">
-</span><span data-line="302">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
-</span><span data-line="303">        <span class="k">return</span> <span class="n">result</span>
-</span><span data-line="304">
+</span><span data-line="297">        <span class="c1"># returned wrapper — e.g. ``Scalar.zeros(5).sub_batch.retag(1)`` or</span>
+</span><span data-line="298">        <span class="c1"># ``linspace(Scalar(0).sub_batch, Scalar(1).sub_batch, 5)``.</span>
+</span><span data-line="299">        <span class="c1"># That keeps a single source of truth for the tensor pipeline (and lets</span>
+</span><span data-line="300">        <span class="c1"># users compose ``.sub_batch.expand_at(...)``, ``.sub_batch.diagonalize()``</span>
+</span><span data-line="301">        <span class="c1"># etc. without a parallel HIT option for each).</span>
+</span><span data-line="302">
+</span><span data-line="303">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+</span><span data-line="304">        <span class="k">return</span> <span class="n">result</span>
 </span><span data-line="305">
-</span><span data-line="306"><span class="c1"># ── [Tensors] Python-expression helpers ───────────────────────────────────────</span>
-</span><span data-line="307">
+</span><span data-line="306">
+</span><span data-line="307"><span class="c1"># ── [Tensors] Python-expression helpers ───────────────────────────────────────</span>
 </span><span data-line="308">
-</span><span data-line="309"><span class="k">class</span><span class="w"> </span><span class="nc">_TensorNamespace</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-</span><span data-line="310"><span class="w">    </span><span class="sd">&quot;&quot;&quot;eval/exec namespace that lazily resolves unknown names as tensor cross-references.</span>
-</span><span data-line="311">
-</span><span data-line="312"><span class="sd">    When an identifier is not found in the pre-populated symbols (``torch``,</span>
-</span><span data-line="313"><span class="sd">    ``neml2.types`` exports, ``math``, ``np``), Python&#39;s name-lookup</span>
-</span><span data-line="314"><span class="sd">    calls ``__missing__``.  We intercept that and try ``factory.get_tensor(key)``</span>
-</span><span data-line="315"><span class="sd">    so users can write ``base`` in an expression instead of ``tensor(&#39;base&#39;)``,</span>
-</span><span data-line="316"><span class="sd">    avoiding HIT&#39;s restriction that quotes may not appear inside quoted strings.</span>
-</span><span data-line="317">
-</span><span data-line="318"><span class="sd">    Cycle detection is handled by ``_NativeInputFile.get_tensor`` itself.</span>
-</span><span data-line="319"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="320">
-</span><span data-line="321">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">,</span> <span class="n">base_ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="322">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">base_ns</span><span class="p">)</span>
-</span><span data-line="323">        <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span> <span class="o">=</span> <span class="n">factory</span>
-</span><span data-line="324">
-</span><span data-line="325">    <span class="k">def</span><span class="w"> </span><span class="fm">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="326">        <span class="k">try</span><span class="p">:</span>
-</span><span data-line="327">            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-</span><span data-line="328">        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-</span><span data-line="329">            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> is not defined&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-</span><span data-line="330">        <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>  <span class="c1"># cache resolved value in the namespace</span>
-</span><span data-line="331">        <span class="k">return</span> <span class="n">val</span>
-</span><span data-line="332">
+</span><span data-line="309">
+</span><span data-line="310"><span class="k">class</span><span class="w"> </span><span class="nc">_TensorNamespace</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+</span><span data-line="311"><span class="w">    </span><span class="sd">&quot;&quot;&quot;eval/exec namespace that lazily resolves unknown names as tensor cross-references.</span>
+</span><span data-line="312">
+</span><span data-line="313"><span class="sd">    When an identifier is not found in the pre-populated symbols (``torch``,</span>
+</span><span data-line="314"><span class="sd">    ``neml2.types`` exports, ``math``, ``np``), Python&#39;s name-lookup</span>
+</span><span data-line="315"><span class="sd">    calls ``__missing__``.  We intercept that and try ``factory.get_tensor(key)``</span>
+</span><span data-line="316"><span class="sd">    so users can write ``base`` in an expression instead of ``tensor(&#39;base&#39;)``,</span>
+</span><span data-line="317"><span class="sd">    avoiding HIT&#39;s restriction that quotes may not appear inside quoted strings.</span>
+</span><span data-line="318">
+</span><span data-line="319"><span class="sd">    Cycle detection is handled by ``_NativeInputFile.get_tensor`` itself.</span>
+</span><span data-line="320"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="321">
+</span><span data-line="322">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">,</span> <span class="n">base_ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="323">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">base_ns</span><span class="p">)</span>
+</span><span data-line="324">        <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span> <span class="o">=</span> <span class="n">factory</span>
+</span><span data-line="325">
+</span><span data-line="326">    <span class="k">def</span><span class="w"> </span><span class="fm">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="327">        <span class="k">try</span><span class="p">:</span>
+</span><span data-line="328">            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</span><span data-line="329">        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+</span><span data-line="330">            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> is not defined&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+</span><span data-line="331">        <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>  <span class="c1"># cache resolved value in the namespace</span>
+</span><span data-line="332">        <span class="k">return</span> <span class="n">val</span>
 </span><span data-line="333">
-</span><span data-line="334"><span class="k">def</span><span class="w"> </span><span class="nf">_build_tensor_eval_namespace</span><span class="p">(</span><span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_TensorNamespace</span><span class="p">:</span>
-</span><span data-line="335"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the eval namespace for ``[Tensors]`` Python expressions.</span>
-</span><span data-line="336">
-</span><span data-line="337"><span class="sd">    Exposes the entire ``neml2.types`` public namespace (all names listed</span>
-</span><span data-line="338"><span class="sd">    in its ``__all__``) so that new types or free functions added there are</span>
-</span><span data-line="339"><span class="sd">    automatically available without touching this file.</span>
-</span><span data-line="340">
-</span><span data-line="341"><span class="sd">    Cross-references to other ``[Tensors]`` entries are resolved implicitly: an</span>
-</span><span data-line="342"><span class="sd">    unknown identifier is looked up as ``factory.get_tensor(name)``, so users</span>
-</span><span data-line="343"><span class="sd">    write ``base`` in the expression rather than ``tensor(&#39;base&#39;)`` (which would</span>
-</span><span data-line="344"><span class="sd">    conflict with HIT&#39;s restriction on quotes inside quoted strings).</span>
-</span><span data-line="345"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="346">    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span> <span class="k">as</span> <span class="n">_types_mod</span>
-</span><span data-line="347">
-</span><span data-line="348">    <span class="n">base_ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_types_mod</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_types_mod</span><span class="o">.</span><span class="n">__all__</span><span class="p">}</span>
-</span><span data-line="349">    <span class="n">base_ns</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-</span><span data-line="350">        <span class="p">{</span>
-</span><span data-line="351">            <span class="s2">&quot;torch&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="p">,</span>
-</span><span data-line="352">            <span class="s2">&quot;math&quot;</span><span class="p">:</span> <span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;math&quot;</span><span class="p">),</span>
-</span><span data-line="353">        <span class="p">}</span>
-</span><span data-line="354">    <span class="p">)</span>
-</span><span data-line="355">    <span class="k">try</span><span class="p">:</span>
-</span><span data-line="356">        <span class="n">base_ns</span><span class="p">[</span><span class="s2">&quot;np&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
-</span><span data-line="357">    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
-</span><span data-line="358">        <span class="k">pass</span>
-</span><span data-line="359">    <span class="k">return</span> <span class="n">_TensorNamespace</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="n">base_ns</span><span class="p">)</span>
-</span><span data-line="360">
+</span><span data-line="334">
+</span><span data-line="335"><span class="k">def</span><span class="w"> </span><span class="nf">_build_tensor_eval_namespace</span><span class="p">(</span><span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_TensorNamespace</span><span class="p">:</span>
+</span><span data-line="336"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the eval namespace for ``[Tensors]`` Python expressions.</span>
+</span><span data-line="337">
+</span><span data-line="338"><span class="sd">    Exposes the entire ``neml2.types`` public namespace (all names listed</span>
+</span><span data-line="339"><span class="sd">    in its ``__all__``) so that new types or free functions added there are</span>
+</span><span data-line="340"><span class="sd">    automatically available without touching this file.</span>
+</span><span data-line="341">
+</span><span data-line="342"><span class="sd">    Cross-references to other ``[Tensors]`` entries are resolved implicitly: an</span>
+</span><span data-line="343"><span class="sd">    unknown identifier is looked up as ``factory.get_tensor(name)``, so users</span>
+</span><span data-line="344"><span class="sd">    write ``base`` in the expression rather than ``tensor(&#39;base&#39;)`` (which would</span>
+</span><span data-line="345"><span class="sd">    conflict with HIT&#39;s restriction on quotes inside quoted strings).</span>
+</span><span data-line="346"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="347">    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span> <span class="k">as</span> <span class="n">_types_mod</span>
+</span><span data-line="348">
+</span><span data-line="349">    <span class="n">base_ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_types_mod</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_types_mod</span><span class="o">.</span><span class="n">__all__</span><span class="p">}</span>
+</span><span data-line="350">    <span class="n">base_ns</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+</span><span data-line="351">        <span class="p">{</span>
+</span><span data-line="352">            <span class="s2">&quot;torch&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="p">,</span>
+</span><span data-line="353">            <span class="s2">&quot;math&quot;</span><span class="p">:</span> <span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;math&quot;</span><span class="p">),</span>
+</span><span data-line="354">        <span class="p">}</span>
+</span><span data-line="355">    <span class="p">)</span>
+</span><span data-line="356">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="357">        <span class="n">base_ns</span><span class="p">[</span><span class="s2">&quot;np&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+</span><span data-line="358">    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+</span><span data-line="359">        <span class="k">pass</span>
+</span><span data-line="360">    <span class="k">return</span> <span class="n">_TensorNamespace</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="n">base_ns</span><span class="p">)</span>
 </span><span data-line="361">
-</span><span data-line="362"><span class="k">def</span><span class="w"> </span><span class="nf">_dedent_hit_expr</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span data-line="363"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dedent a multi-line expression string as returned by ``nmhit.param_str``.</span>
-</span><span data-line="364">
-</span><span data-line="365"><span class="sd">    nmhit strips the leading whitespace from the first line of a quoted value</span>
-</span><span data-line="366"><span class="sd">    (the newline and spaces between the opening quote and the first content</span>
-</span><span data-line="367"><span class="sd">    character) but leaves subsequent lines intact.  Standard ``textwrap.dedent``</span>
-</span><span data-line="368"><span class="sd">    therefore sees the first line with 0 indent and cannot strip anything.</span>
-</span><span data-line="369">
-</span><span data-line="370"><span class="sd">    This helper deduces the common indentation from lines 2 onwards and strips</span>
-</span><span data-line="371"><span class="sd">    it from the entire block, leaving relative indentation inside the code</span>
-</span><span data-line="372"><span class="sd">    unchanged.</span>
-</span><span data-line="373"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="374">    <span class="n">lines</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
-</span><span data-line="375">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="376">        <span class="k">return</span> <span class="n">code</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-</span><span data-line="377">    <span class="c1"># Lines 2+ still carry the original HIT indentation.</span>
-</span><span data-line="378">    <span class="n">rest_nonempty</span> <span class="o">=</span> <span class="p">[</span><span class="n">ln</span> <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
-</span><span data-line="379">    <span class="k">if</span> <span class="ow">not</span> <span class="n">rest_nonempty</span><span class="p">:</span>
-</span><span data-line="380">        <span class="k">return</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-</span><span data-line="381">    <span class="n">min_indent</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span> <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">rest_nonempty</span><span class="p">)</span>
-</span><span data-line="382">    <span class="n">dedented</span> <span class="o">=</span> <span class="p">[</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>  <span class="c1"># first line already has no leading whitespace</span>
-</span><span data-line="383">    <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-</span><span data-line="384">        <span class="n">dedented</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ln</span><span class="p">[</span><span class="n">min_indent</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-</span><span data-line="385">    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dedented</span><span class="p">)</span>
-</span><span data-line="386">
+</span><span data-line="362">
+</span><span data-line="363"><span class="k">def</span><span class="w"> </span><span class="nf">_dedent_hit_expr</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span data-line="364"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dedent a multi-line expression string as returned by ``nmhit.param_str``.</span>
+</span><span data-line="365">
+</span><span data-line="366"><span class="sd">    nmhit strips the leading whitespace from the first line of a quoted value</span>
+</span><span data-line="367"><span class="sd">    (the newline and spaces between the opening quote and the first content</span>
+</span><span data-line="368"><span class="sd">    character) but leaves subsequent lines intact.  Standard ``textwrap.dedent``</span>
+</span><span data-line="369"><span class="sd">    therefore sees the first line with 0 indent and cannot strip anything.</span>
+</span><span data-line="370">
+</span><span data-line="371"><span class="sd">    This helper deduces the common indentation from lines 2 onwards and strips</span>
+</span><span data-line="372"><span class="sd">    it from the entire block, leaving relative indentation inside the code</span>
+</span><span data-line="373"><span class="sd">    unchanged.</span>
+</span><span data-line="374"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="375">    <span class="n">lines</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+</span><span data-line="376">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="377">        <span class="k">return</span> <span class="n">code</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span><span data-line="378">    <span class="c1"># Lines 2+ still carry the original HIT indentation.</span>
+</span><span data-line="379">    <span class="n">rest_nonempty</span> <span class="o">=</span> <span class="p">[</span><span class="n">ln</span> <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+</span><span data-line="380">    <span class="k">if</span> <span class="ow">not</span> <span class="n">rest_nonempty</span><span class="p">:</span>
+</span><span data-line="381">        <span class="k">return</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span><span data-line="382">    <span class="n">min_indent</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span> <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">rest_nonempty</span><span class="p">)</span>
+</span><span data-line="383">    <span class="n">dedented</span> <span class="o">=</span> <span class="p">[</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>  <span class="c1"># first line already has no leading whitespace</span>
+</span><span data-line="384">    <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+</span><span data-line="385">        <span class="n">dedented</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ln</span><span class="p">[</span><span class="n">min_indent</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span data-line="386">    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dedented</span><span class="p">)</span>
 </span><span data-line="387">
-</span><span data-line="388"><span class="k">def</span><span class="w"> </span><span class="nf">_eval_tensor_code</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="389"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Eval a single-expression or exec a multi-line block; return the result.&quot;&quot;&quot;</span>
-</span><span data-line="390">    <span class="n">src</span> <span class="o">=</span> <span class="n">_dedent_hit_expr</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-</span><span data-line="391">    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&gt;&quot;</span>
-</span><span data-line="392">    <span class="k">try</span><span class="p">:</span>
-</span><span data-line="393">        <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;eval&quot;</span><span class="p">),</span> <span class="n">ns</span><span class="p">)</span>  <span class="c1"># noqa: S307</span>
-</span><span data-line="394">    <span class="k">except</span> <span class="ne">SyntaxError</span><span class="p">:</span>
-</span><span data-line="395">        <span class="k">pass</span>
-</span><span data-line="396">    <span class="k">except</span> <span class="ne">RecursionError</span><span class="p">:</span>
-</span><span data-line="397">        <span class="k">raise</span>
-</span><span data-line="398">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-</span><span data-line="399">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] expr raised </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-</span><span data-line="400">    <span class="k">try</span><span class="p">:</span>
-</span><span data-line="401">        <span class="n">exec</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;exec&quot;</span><span class="p">),</span> <span class="n">ns</span><span class="p">)</span>  <span class="c1"># noqa: S102</span>
-</span><span data-line="402">    <span class="k">except</span> <span class="ne">RecursionError</span><span class="p">:</span>
-</span><span data-line="403">        <span class="k">raise</span>
-</span><span data-line="404">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-</span><span data-line="405">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] code raised </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-</span><span data-line="406">    <span class="k">if</span> <span class="s2">&quot;result&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ns</span><span class="p">:</span>
-</span><span data-line="407">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="408">            <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] multi-line code block must assign its output to &#39;result&#39;.&quot;</span>
-</span><span data-line="409">        <span class="p">)</span>
-</span><span data-line="410">    <span class="k">return</span> <span class="n">ns</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
-</span><span data-line="411">
+</span><span data-line="388">
+</span><span data-line="389"><span class="k">def</span><span class="w"> </span><span class="nf">_eval_tensor_code</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="390"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Eval a single-expression or exec a multi-line block; return the result.&quot;&quot;&quot;</span>
+</span><span data-line="391">    <span class="n">src</span> <span class="o">=</span> <span class="n">_dedent_hit_expr</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+</span><span data-line="392">    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&gt;&quot;</span>
+</span><span data-line="393">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="394">        <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;eval&quot;</span><span class="p">),</span> <span class="n">ns</span><span class="p">)</span>  <span class="c1"># noqa: S307</span>
+</span><span data-line="395">    <span class="k">except</span> <span class="ne">SyntaxError</span><span class="p">:</span>
+</span><span data-line="396">        <span class="k">pass</span>
+</span><span data-line="397">    <span class="k">except</span> <span class="ne">RecursionError</span><span class="p">:</span>
+</span><span data-line="398">        <span class="k">raise</span>
+</span><span data-line="399">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+</span><span data-line="400">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] expr raised </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+</span><span data-line="401">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="402">        <span class="n">exec</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;exec&quot;</span><span class="p">),</span> <span class="n">ns</span><span class="p">)</span>  <span class="c1"># noqa: S102</span>
+</span><span data-line="403">    <span class="k">except</span> <span class="ne">RecursionError</span><span class="p">:</span>
+</span><span data-line="404">        <span class="k">raise</span>
+</span><span data-line="405">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+</span><span data-line="406">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] code raised </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+</span><span data-line="407">    <span class="k">if</span> <span class="s2">&quot;result&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ns</span><span class="p">:</span>
+</span><span data-line="408">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="409">            <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] multi-line code block must assign its output to &#39;result&#39;.&quot;</span>
+</span><span data-line="410">        <span class="p">)</span>
+</span><span data-line="411">    <span class="k">return</span> <span class="n">ns</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
 </span><span data-line="412">
-</span><span data-line="413"><span class="c1"># ── public entry points ────────────────────────────────────────────────────────</span>
-</span><span data-line="414">
+</span><span data-line="413">
+</span><span data-line="414"><span class="c1"># ── public entry points ────────────────────────────────────────────────────────</span>
 </span><span data-line="415">
+</span><span data-line="416">
 <div class="viewcode-block" id="load_input">
 <a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_input">[docs]</a>
-</span><span data-line="416"><span class="k">def</span><span class="w"> </span><span class="nf">load_input</span><span class="p">(</span>
-</span><span data-line="417">    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
-</span><span data-line="418">    <span class="o">*</span><span class="p">,</span>
-</span><span data-line="419">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="420">    <span class="n">post</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="421">    <span class="n">additional_args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="422"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NativeInputFile</span><span class="p">:</span>
-</span><span data-line="423"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a HIT input file and return a lazy native factory.</span>
-</span><span data-line="424">
-</span><span data-line="425"><span class="sd">    Parameters</span>
-</span><span data-line="426"><span class="sd">    ----------</span>
-</span><span data-line="427"><span class="sd">    path:</span>
-</span><span data-line="428"><span class="sd">        Path to the HIT ``.i`` file.</span>
-</span><span data-line="429"><span class="sd">    pre, post:</span>
-</span><span data-line="430"><span class="sd">        Optional HIT snippets prepended / appended before parsing (same</span>
-</span><span data-line="431"><span class="sd">        semantics as ``nmhit.parse_file``).</span>
-</span><span data-line="432"><span class="sd">    additional_args:</span>
-</span><span data-line="433"><span class="sd">        Trailing command-line HIT overrides (e.g.</span>
-</span><span data-line="434"><span class="sd">        ``[&quot;Models/elasticity/E:=210000&quot;]``). Each element is a HIT snippet</span>
-</span><span data-line="435"><span class="sd">        appended after ``post`` so any ``:=`` override takes effect after</span>
-</span><span data-line="436"><span class="sd">        the file&#39;s own assignments. Mirrors the C++ side&#39;s</span>
-</span><span data-line="437"><span class="sd">        ``neml2::load_input(path, additional_cliargs)``.</span>
-</span><span data-line="438"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="439">    <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</span><span data-line="440">    <span class="n">full_post</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">post</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_args</span><span class="p">)</span>
-</span><span data-line="441">    <span class="n">root</span> <span class="o">=</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">parse_file</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">full_post</span><span class="p">))</span>
-</span><span data-line="442">    <span class="k">return</span> <span class="n">_NativeInputFile</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></div>
+</span><span data-line="417"><span class="k">def</span><span class="w"> </span><span class="nf">load_input</span><span class="p">(</span>
+</span><span data-line="418">    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="419">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="420">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="421">    <span class="n">post</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="422">    <span class="n">additional_args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="423"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NativeInputFile</span><span class="p">:</span>
+</span><span data-line="424"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a HIT input file and return a lazy native factory.</span>
+</span><span data-line="425">
+</span><span data-line="426"><span class="sd">    Parameters</span>
+</span><span data-line="427"><span class="sd">    ----------</span>
+</span><span data-line="428"><span class="sd">    path:</span>
+</span><span data-line="429"><span class="sd">        Path to the HIT ``.i`` file.</span>
+</span><span data-line="430"><span class="sd">    pre, post:</span>
+</span><span data-line="431"><span class="sd">        Optional HIT snippets prepended / appended before parsing (same</span>
+</span><span data-line="432"><span class="sd">        semantics as ``nmhit.parse_file``).</span>
+</span><span data-line="433"><span class="sd">    additional_args:</span>
+</span><span data-line="434"><span class="sd">        Trailing command-line HIT overrides (e.g.</span>
+</span><span data-line="435"><span class="sd">        ``[&quot;Models/elasticity/E:=210000&quot;]``). Each element is a HIT snippet</span>
+</span><span data-line="436"><span class="sd">        appended after ``post`` so any ``:=`` override takes effect after</span>
+</span><span data-line="437"><span class="sd">        the file&#39;s own assignments. Mirrors the C++ side&#39;s</span>
+</span><span data-line="438"><span class="sd">        ``neml2::load_input(path, additional_cliargs)``.</span>
+</span><span data-line="439"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="440">    <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span data-line="441">    <span class="n">full_post</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">post</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_args</span><span class="p">)</span>
+</span><span data-line="442">    <span class="n">root</span> <span class="o">=</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">parse_file</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">full_post</span><span class="p">))</span>
+</span><span data-line="443">    <span class="k">return</span> <span class="n">_NativeInputFile</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></div>
 
-</span><span data-line="443">
 </span><span data-line="444">
+</span><span data-line="445">
 <div class="viewcode-block" id="load_string">
 <a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_string">[docs]</a>
-</span><span data-line="445"><span class="k">def</span><span class="w"> </span><span class="nf">load_string</span><span class="p">(</span>
-</span><span data-line="446">    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="447">    <span class="o">*</span><span class="p">,</span>
-</span><span data-line="448">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="449">    <span class="n">post</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="450">    <span class="n">additional_args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="451"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NativeInputFile</span><span class="p">:</span>
-</span><span data-line="452"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse an in-memory HIT snippet and return a lazy native factory.</span>
-</span><span data-line="453">
-</span><span data-line="454"><span class="sd">    Same semantics as :func:`load_input` but reads from a string (via</span>
-</span><span data-line="455"><span class="sd">    ``nmhit.parse_text``) instead of a file. Used by</span>
-</span><span data-line="456"><span class="sd">    :meth:`neml2.drivers.ModelUnitTest.from_string` so a unit test can</span>
-</span><span data-line="457"><span class="sd">    embed its ``[Models]`` / ``[Tensors]`` / ``[Drivers]`` blocks inline.</span>
-</span><span data-line="458"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="459">    <span class="n">full_post</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">post</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_args</span><span class="p">)</span>
-</span><span data-line="460">    <span class="n">root</span> <span class="o">=</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">parse_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">full_post</span><span class="p">))</span>
-</span><span data-line="461">    <span class="k">return</span> <span class="n">_NativeInputFile</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">))</span></div>
+</span><span data-line="446"><span class="k">def</span><span class="w"> </span><span class="nf">load_string</span><span class="p">(</span>
+</span><span data-line="447">    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="448">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="449">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="450">    <span class="n">post</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="451">    <span class="n">additional_args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="452"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NativeInputFile</span><span class="p">:</span>
+</span><span data-line="453"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse an in-memory HIT snippet and return a lazy native factory.</span>
+</span><span data-line="454">
+</span><span data-line="455"><span class="sd">    Same semantics as :func:`load_input` but reads from a string (via</span>
+</span><span data-line="456"><span class="sd">    ``nmhit.parse_text``) instead of a file. Used by</span>
+</span><span data-line="457"><span class="sd">    :meth:`neml2.drivers.ModelUnitTest.from_string` so a unit test can</span>
+</span><span data-line="458"><span class="sd">    embed its ``[Models]`` / ``[Tensors]`` / ``[Drivers]`` blocks inline.</span>
+</span><span data-line="459"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="460">    <span class="n">full_post</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">post</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_args</span><span class="p">)</span>
+</span><span data-line="461">    <span class="n">root</span> <span class="o">=</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">parse_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">full_post</span><span class="p">))</span>
+</span><span data-line="462">    <span class="k">return</span> <span class="n">_NativeInputFile</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">))</span></div>
 
-</span><span data-line="462">
 </span><span data-line="463">
+</span><span data-line="464">
 <div class="viewcode-block" id="load_model">
 <a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_model">[docs]</a>
-</span><span data-line="464"><span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="465"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a named model from a HIT input file as a Python-native model.</span>
-</span><span data-line="466">
-</span><span data-line="467"><span class="sd">    Raises ``KeyError`` if the model&#39;s type (or any of its sub-object types)</span>
-</span><span data-line="468"><span class="sd">    isn&#39;t registered in ``NativeRegistry``.</span>
-</span><span data-line="469">
-</span><span data-line="470"><span class="sd">    Parameters</span>
-</span><span data-line="471"><span class="sd">    ----------</span>
-</span><span data-line="472"><span class="sd">    path:</span>
-</span><span data-line="473"><span class="sd">        Path to the HIT ``.i`` file.</span>
-</span><span data-line="474"><span class="sd">    model_name:</span>
-</span><span data-line="475"><span class="sd">        Name of the model in the ``[Models]`` section.</span>
-</span><span data-line="476"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="477">    <span class="k">return</span> <span class="n">load_input</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span></div>
+</span><span data-line="465"><span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="466"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a named model from a HIT input file as a Python-native model.</span>
+</span><span data-line="467">
+</span><span data-line="468"><span class="sd">    Raises ``KeyError`` if the model&#39;s type (or any of its sub-object types)</span>
+</span><span data-line="469"><span class="sd">    isn&#39;t registered in ``NativeRegistry``.</span>
+</span><span data-line="470">
+</span><span data-line="471"><span class="sd">    Parameters</span>
+</span><span data-line="472"><span class="sd">    ----------</span>
+</span><span data-line="473"><span class="sd">    path:</span>
+</span><span data-line="474"><span class="sd">        Path to the HIT ``.i`` file.</span>
+</span><span data-line="475"><span class="sd">    model_name:</span>
+</span><span data-line="476"><span class="sd">        Name of the model in the ``[Models]`` section.</span>
+</span><span data-line="477"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="478">    <span class="k">return</span> <span class="n">load_input</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span></div>
 
-</span><span data-line="478">
 </span><span data-line="479">
+</span><span data-line="480">
 <div class="viewcode-block" id="load_nonlinear_system">
 <a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_nonlinear_system">[docs]</a>
-</span><span data-line="480"><span class="k">def</span><span class="w"> </span><span class="nf">load_nonlinear_system</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="481"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a named system from ``[EquationSystems]`` as a Python-native object.</span>
-</span><span data-line="482">
-</span><span data-line="483"><span class="sd">    Convenience wrapper around ``load_input(path).get_equation_system(name)``</span>
-</span><span data-line="484"><span class="sd">    — mirrors :func:`load_model`. Returns a</span>
-</span><span data-line="485"><span class="sd">    :class:`~neml2.es.NonlinearSystem` (typically a</span>
-</span><span data-line="486"><span class="sd">    :class:`~neml2.es.ModelNonlinearSystem`).</span>
-</span><span data-line="487"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="488">    <span class="k">return</span> <span class="n">load_input</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get_equation_system</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+</span><span data-line="481"><span class="k">def</span><span class="w"> </span><span class="nf">load_nonlinear_system</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="482"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a named system from ``[EquationSystems]`` as a Python-native object.</span>
+</span><span data-line="483">
+</span><span data-line="484"><span class="sd">    Convenience wrapper around ``load_input(path).get_equation_system(name)``</span>
+</span><span data-line="485"><span class="sd">    — mirrors :func:`load_model`. Returns a</span>
+</span><span data-line="486"><span class="sd">    :class:`~neml2.es.NonlinearSystem` (typically a</span>
+</span><span data-line="487"><span class="sd">    :class:`~neml2.es.ModelNonlinearSystem`).</span>
+</span><span data-line="488"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="489">    <span class="k">return</span> <span class="n">load_input</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get_equation_system</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
-</span><span data-line="489">
 </span><span data-line="490">
-</span><span data-line="491"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="492">    <span class="s2">&quot;register_neml2_object&quot;</span><span class="p">,</span>
-</span><span data-line="493">    <span class="s2">&quot;load_input&quot;</span><span class="p">,</span>
-</span><span data-line="494">    <span class="s2">&quot;load_string&quot;</span><span class="p">,</span>
-</span><span data-line="495">    <span class="s2">&quot;load_model&quot;</span><span class="p">,</span>
-</span><span data-line="496">    <span class="s2">&quot;load_nonlinear_system&quot;</span><span class="p">,</span>
-</span><span data-line="497">    <span class="s2">&quot;_NativeInputFile&quot;</span><span class="p">,</span>
-</span><span data-line="498"><span class="p">]</span>
+</span><span data-line="491">
+</span><span data-line="492"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+</span><span data-line="493">    <span class="s2">&quot;register_neml2_object&quot;</span><span class="p">,</span>
+</span><span data-line="494">    <span class="s2">&quot;load_input&quot;</span><span class="p">,</span>
+</span><span data-line="495">    <span class="s2">&quot;load_string&quot;</span><span class="p">,</span>
+</span><span data-line="496">    <span class="s2">&quot;load_model&quot;</span><span class="p">,</span>
+</span><span data-line="497">    <span class="s2">&quot;load_nonlinear_system&quot;</span><span class="p">,</span>
+</span><span data-line="498">    <span class="s2">&quot;_NativeInputFile&quot;</span><span class="p">,</span>
+</span><span data-line="499"><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

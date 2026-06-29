@@ -109,7 +109,11 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="elasticity.html">Elasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="viscoelasticity.html">Viscoelasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plasticity.html">Plasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="traction_separation_law.html">Traction–separation laws</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Kinematics</a></li>
 </ul>
@@ -165,9 +169,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyRot.html">CopyRot</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
@@ -178,6 +182,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
@@ -192,9 +199,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotConstantParameter.html">RotConstantParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotInputParameter.html">RotInputParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotParameterToVariable.html">RotParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -457,9 +461,9 @@ volume, phase fraction), NEML2 adopts the standard cumulative form</p>
 <span class="math notranslate nohighlight">\(\boldsymbol{I}\)</span> is the rank-2 identity. The three concrete leaves
 in the catalog differ only in how <span class="math notranslate nohighlight">\(\varepsilon^{*}_v\)</span> depends on its
 driver:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-9b4bf12f-cbfd-45b5-aaa2-0d9feb907490">
-<div class="amsmath math notranslate nohighlight" id="equation-9b4bf12f-cbfd-45b5-aaa2-0d9feb907490">
-<span class="eqno">(21)<a class="headerlink" href="#equation-9b4bf12f-cbfd-45b5-aaa2-0d9feb907490" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-d9635fcb-e84e-40d6-8901-1c0f155b1344">
+<div class="amsmath math notranslate nohighlight" id="equation-d9635fcb-e84e-40d6-8901-1c0f155b1344">
+<span class="eqno">(21)<a class="headerlink" href="#equation-d9635fcb-e84e-40d6-8901-1c0f155b1344" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;\varepsilon^{*}_v = \alpha\,(T - T_0), \\
 \text{Volume change:}\quad &amp;\varepsilon^{*}_v = \left(\dfrac{V}{V_0}\right)^{1/3} - 1, \\
 \text{Phase transformation:}\quad &amp;\varepsilon^{*}_v = \Delta V \, f.
@@ -489,9 +493,9 @@ in inelastic flows.</p>
 a scalar deformation Jacobian <span class="math notranslate nohighlight">\(J^{*}\)</span> — the determinant of the
 volumetric correction to be removed from the total deformation
 gradient:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-657576ef-e76b-484f-b024-9591ff32d71e">
-<div class="amsmath math notranslate nohighlight" id="equation-657576ef-e76b-484f-b024-9591ff32d71e">
-<span class="eqno">(22)<a class="headerlink" href="#equation-657576ef-e76b-484f-b024-9591ff32d71e" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-6ddb3c9f-98b1-4275-b143-696f5a2d6b06">
+<div class="amsmath math notranslate nohighlight" id="equation-6ddb3c9f-98b1-4275-b143-696f5a2d6b06">
+<span class="eqno">(22)<a class="headerlink" href="#equation-6ddb3c9f-98b1-4275-b143-696f5a2d6b06" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;J^{*} = 1 + \alpha\,(T - T_0), \\
 \text{Swelling + phase change:}\quad &amp;J^{*} = 1 + \alpha\,c\,\phi^{f}
 + (1-c)\,\phi^{f}\,\Delta\Omega.
@@ -544,12 +548,12 @@ strain after both plastic and thermal contributions are removed:</p>
 </span><span data-line="17"><span class="w">  </span><span class="c1"># start_temperature = LinspaceScalar(300, 300, 10) -&gt; 10 copies of 300.</span>
 </span><span data-line="18"><span class="w">  </span><span class="k">[start_temperature]</span>
 </span><span data-line="19"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="20"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar.linspace(300.0, 300.0, 10)&#39;</span>
+</span><span data-line="20"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(300.0).dynamic_batch, Scalar(300.0).dynamic_batch, 10)&#39;</span>
 </span><span data-line="21"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="22"><span class="w">  </span><span class="c1"># end_temperature = LinspaceScalar(1800, 1800, 10) -&gt; 10 copies of 1800.</span>
 </span><span data-line="23"><span class="w">  </span><span class="k">[end_temperature]</span>
 </span><span data-line="24"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="25"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar.linspace(1800.0, 1800.0, 10)&#39;</span>
+</span><span data-line="25"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(1800.0).dynamic_batch, Scalar(1800.0).dynamic_batch, 10)&#39;</span>
 </span><span data-line="26"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="27"><span class="w">  </span><span class="c1"># temperatures = LinspaceScalar(start_temperature, end_temperature, 100) -&gt; (100, 10).</span>
 </span><span data-line="28"><span class="w">  </span><span class="k">[temperatures]</span>
@@ -575,7 +579,7 @@ strain after both plastic and thermal contributions are removed:</p>
 </span><span data-line="48"><span class="w">  </span><span class="c1"># gamma = LinspaceScalar(0, 150, 10) -&gt; shape (10,)</span>
 </span><span data-line="49"><span class="w">  </span><span class="k">[gamma]</span>
 </span><span data-line="50"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="51"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar.linspace(0.0, 150.0, 10)&#39;</span>
+</span><span data-line="51"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(0.0).dynamic_batch, Scalar(150.0).dynamic_batch, 10)&#39;</span>
 </span><span data-line="52"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="53"><span class="k">[]</span>
 </span><span data-line="54">

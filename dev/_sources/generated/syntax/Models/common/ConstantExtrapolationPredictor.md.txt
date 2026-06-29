@@ -17,8 +17,8 @@ Matches the C++ ``ConstantExtrapolationPredictor`` HIT signature.
 `unknowns_Scalar` &mdash; `list`
 : The unknowns to extrapolate of type Scalar
 
-`unknowns_Rot` &mdash; `list`
-: The unknowns to extrapolate of type Rot
+`unknowns_MRP` &mdash; `list`
+: The unknowns to extrapolate of type MRP
 
 `unknowns_R2` &mdash; `list`
 : The unknowns to extrapolate of type R2

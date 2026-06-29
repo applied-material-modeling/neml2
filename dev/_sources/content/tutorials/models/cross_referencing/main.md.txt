@@ -57,7 +57,7 @@ Here's a temperature-controls axis built from a torch expression:
 [Tensors]
   [T_controls]
     type = Python
-    expr = 'Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)'
   []
 []
 ```

@@ -109,7 +109,11 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/elasticity.html">Elasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/plasticity.html">Plasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/kinematics.html">Kinematics</a></li>
 </ul>
@@ -165,9 +169,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyRot.html">CopyRot</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
@@ -178,6 +182,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
@@ -192,9 +199,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotConstantParameter.html">RotConstantParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotInputParameter.html">RotInputParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotParameterToVariable.html">RotParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -432,113 +436,113 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="37"><span class="sd">- **``float64`` factory defaults**: ``Scalar.zeros(n)``, ``Scalar.ones(n)``,</span>
 </span><span data-line="38"><span class="sd">  ``Scalar.full(n, fill_value=...)`` default to ``torch.float64`` rather than</span>
 </span><span data-line="39"><span class="sd">  torch&#39;s global ``float32`` default.</span>
-</span><span data-line="40"><span class="sd">- **``linspace`` / ``arange``**: Scalar-only classmethods mirroring the torch</span>
-</span><span data-line="41"><span class="sd">  creation API (scalar ramps from float endpoints). To interpolate between two</span>
-</span><span data-line="42"><span class="sd">  *wrapper* endpoints along a chosen region — the v3 form of v2&#39;s</span>
-</span><span data-line="43"><span class="sd">  ``dynamic_linspace`` / ``intmd_linspace`` / ``base_linspace`` — use the</span>
-</span><span data-line="44"><span class="sd">  :func:`~neml2.types.functions.linspace` / :func:`~neml2.types.functions.logspace`</span>
-</span><span data-line="45"><span class="sd">  free functions with region-view endpoints (``x.dynamic_batch`` / ``x.sub_batch``).</span>
-</span><span data-line="46"><span class="sd">- **``+`` / ``-`` with Python literals**: ``s + 1.5`` and ``s - 1`` are valid;</span>
-</span><span data-line="47"><span class="sd">  the other primitives reject this (a uniform additive offset is rare and</span>
-</span><span data-line="48"><span class="sd">  ambiguous on a (3,3) or (6,) tensor). Multiply / divide by literal are</span>
-</span><span data-line="49"><span class="sd">  inherited from :meth:`PrimitiveTensor._scale`.</span>
-</span><span data-line="50"><span class="sd">- **``__rsub__`` / ``__rtruediv__``** for the reverse-with-literal cases.</span>
-</span><span data-line="51"><span class="sd">- **``__pow__``, ``__abs__``**: torch-backed forwarders, Scalar-only.</span>
-</span><span data-line="52">
-</span><span data-line="53"><span class="sd">Everything else (``__neg__``, region views, ``zeros``/``ones`` shape semantics)</span>
-</span><span data-line="54"><span class="sd">comes from the base layers.</span>
-</span><span data-line="55"><span class="sd">&quot;&quot;&quot;</span>
-</span><span data-line="56">
-</span><span data-line="57"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
-</span><span data-line="58">
-</span><span data-line="59"><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-</span><span data-line="60"><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">overload</span>
-</span><span data-line="61">
-</span><span data-line="62"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-</span><span data-line="63">
-</span><span data-line="64"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">align_sub_batch</span>
-</span><span data-line="65"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._primitive</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrimitiveTensor</span>
-</span><span data-line="66"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._pytree</span><span class="w"> </span><span class="kn">import</span> <span class="n">register</span>
-</span><span data-line="67">
-</span><span data-line="68"><span class="n">_WrapperT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_WrapperT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">TensorWrapper</span><span class="p">)</span>
+</span><span data-line="40"><span class="sd">- **``arange``**: Scalar-only classmethod mirroring the torch creation API. To</span>
+</span><span data-line="41"><span class="sd">  build a ramp between two endpoints — the v3 form of v2&#39;s ``dynamic_linspace`` /</span>
+</span><span data-line="42"><span class="sd">  ``intmd_linspace`` / ``base_linspace`` — use the</span>
+</span><span data-line="43"><span class="sd">  :func:`~neml2.types.functions.linspace` / :func:`~neml2.types.functions.logspace`</span>
+</span><span data-line="44"><span class="sd">  free functions with region-view endpoints (``x.dynamic_batch`` / ``x.sub_batch``).</span>
+</span><span data-line="45"><span class="sd">- **``+`` / ``-`` with Python literals**: ``s + 1.5`` and ``s - 1`` are valid;</span>
+</span><span data-line="46"><span class="sd">  the other primitives reject this (a uniform additive offset is rare and</span>
+</span><span data-line="47"><span class="sd">  ambiguous on a (3,3) or (6,) tensor). Multiply / divide by literal are</span>
+</span><span data-line="48"><span class="sd">  inherited from :meth:`PrimitiveTensor._scale`.</span>
+</span><span data-line="49"><span class="sd">- **``__rsub__`` / ``__rtruediv__``** for the reverse-with-literal cases.</span>
+</span><span data-line="50"><span class="sd">- **``__pow__``, ``__abs__``**: torch-backed forwarders, Scalar-only.</span>
+</span><span data-line="51">
+</span><span data-line="52"><span class="sd">Everything else (``__neg__``, region views, ``zeros``/``ones`` shape semantics)</span>
+</span><span data-line="53"><span class="sd">comes from the base layers.</span>
+</span><span data-line="54"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="55">
+</span><span data-line="56"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+</span><span data-line="57">
+</span><span data-line="58"><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+</span><span data-line="59"><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">overload</span>
+</span><span data-line="60">
+</span><span data-line="61"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span data-line="62">
+</span><span data-line="63"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">align_sub_batch</span>
+</span><span data-line="64"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._primitive</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrimitiveTensor</span>
+</span><span data-line="65"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._pytree</span><span class="w"> </span><span class="kn">import</span> <span class="n">register</span>
+</span><span data-line="66">
+</span><span data-line="67"><span class="n">_WrapperT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_WrapperT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">TensorWrapper</span><span class="p">)</span>
+</span><span data-line="68">
 </span><span data-line="69">
-</span><span data-line="70">
 <div class="viewcode-block" id="Scalar">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.Scalar">[docs]</a>
-</span><span data-line="71"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span data-line="72"><span class="k">class</span><span class="w"> </span><span class="nc">Scalar</span><span class="p">(</span><span class="n">PrimitiveTensor</span><span class="p">):</span>
-</span><span data-line="73"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a `torch.Tensor` of base shape ``()`` (i.e., one number per batch entry).&quot;&quot;&quot;</span>
-</span><span data-line="74">
-</span><span data-line="75">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
-</span><span data-line="76">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="77">    <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="78">    <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="79">    <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="80">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="81">    <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="82">    <span class="n">BASE_NDIM</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="83">    <span class="n">BASE_SHAPE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="84">
-</span><span data-line="85">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-</span><span data-line="86">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="87">        <span class="n">data</span><span class="p">,</span>
-</span><span data-line="88">        <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-</span><span data-line="89">        <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="90">        <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="91">        <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-</span><span data-line="92">        <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="93">        <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="94">        <span class="o">*</span><span class="p">,</span>
-</span><span data-line="95">        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="96">        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="97">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="98">        <span class="c1"># Accept TensorWrapper input via the same auto-unwrap policy the</span>
-</span><span data-line="99">        <span class="c1"># base ``__post_init__`` enforces for dataclass-generated __init__s</span>
-</span><span data-line="100">        <span class="c1"># (Vec, SR2, etc.). This branch is the Scalar-specific equivalent;</span>
-</span><span data-line="101">        <span class="c1"># without it, ``Scalar(other_scalar, ...)`` falls through to</span>
-</span><span data-line="102">        <span class="c1"># ``torch.as_tensor(other_scalar)`` which doesn&#39;t know about</span>
-</span><span data-line="103">        <span class="c1"># TensorWrapper and raises. The outer call&#39;s metadata wins, matching</span>
-</span><span data-line="104">        <span class="c1"># the base policy.</span>
-</span><span data-line="105">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
-</span><span data-line="106">            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">):</span>
-</span><span data-line="107">                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="108">                    <span class="sa">f</span><span class="s2">&quot;Cannot wrap a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> as a Scalar; &quot;</span>
-</span><span data-line="109">                    <span class="s2">&quot;wrapper types must match. Pass `inner.data` instead of the wrapper.&quot;</span>
-</span><span data-line="110">                <span class="p">)</span>
-</span><span data-line="111">            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span>
-</span><span data-line="112">            <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="113">                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span data-line="114">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-</span><span data-line="115">            <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="116">                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span data-line="117">        <span class="k">else</span><span class="p">:</span>
-</span><span data-line="118">            <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span data-line="119">        <span class="c1"># The class is `@dataclass(frozen=True)` so direct attribute writes</span>
-</span><span data-line="120">        <span class="c1"># are forbidden; route through `object.__setattr__` to seat the</span>
-</span><span data-line="121">        <span class="c1"># dataclass-declared fields.</span>
-</span><span data-line="122">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-</span><span data-line="123">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sub_batch_ndim&quot;</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="124">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="n">sub_batch_state</span><span class="p">)</span>
-</span><span data-line="125">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sub_batch_meta&quot;</span><span class="p">,</span> <span class="n">sub_batch_meta</span><span class="p">)</span>
-</span><span data-line="126">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;k_ndim&quot;</span><span class="p">,</span> <span class="n">k_ndim</span><span class="p">)</span>
-</span><span data-line="127">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;k_state&quot;</span><span class="p">,</span> <span class="n">k_state</span><span class="p">)</span>
-</span><span data-line="128">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;k_pairing&quot;</span><span class="p">,</span> <span class="n">k_pairing</span><span class="p">)</span>
-</span><span data-line="129">        <span class="bp">self</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span>
-</span><span data-line="130">
+</span><span data-line="70"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="71"><span class="k">class</span><span class="w"> </span><span class="nc">Scalar</span><span class="p">(</span><span class="n">PrimitiveTensor</span><span class="p">):</span>
+</span><span data-line="72"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a `torch.Tensor` of base shape ``()`` (i.e., one number per batch entry).&quot;&quot;&quot;</span>
+</span><span data-line="73">
+</span><span data-line="74">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+</span><span data-line="75">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span data-line="76">    <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+</span><span data-line="77">    <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+</span><span data-line="78">    <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span data-line="79">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+</span><span data-line="80">    <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+</span><span data-line="81">    <span class="n">BASE_NDIM</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span data-line="82">    <span class="n">BASE_SHAPE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">()</span>
+</span><span data-line="83">
+</span><span data-line="84">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+</span><span data-line="85">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="86">        <span class="n">data</span><span class="p">,</span>
+</span><span data-line="87">        <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span><span data-line="88">        <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="89">        <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="90">        <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span><span data-line="91">        <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="92">        <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="93">        <span class="o">*</span><span class="p">,</span>
+</span><span data-line="94">        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="95">        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="96">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="97">        <span class="c1"># Accept TensorWrapper input via the same auto-unwrap policy the</span>
+</span><span data-line="98">        <span class="c1"># base ``__post_init__`` enforces for dataclass-generated __init__s</span>
+</span><span data-line="99">        <span class="c1"># (Vec, SR2, etc.). This branch is the Scalar-specific equivalent;</span>
+</span><span data-line="100">        <span class="c1"># without it, ``Scalar(other_scalar, ...)`` falls through to</span>
+</span><span data-line="101">        <span class="c1"># ``torch.as_tensor(other_scalar)`` which doesn&#39;t know about</span>
+</span><span data-line="102">        <span class="c1"># TensorWrapper and raises. The outer call&#39;s metadata wins, matching</span>
+</span><span data-line="103">        <span class="c1"># the base policy.</span>
+</span><span data-line="104">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
+</span><span data-line="105">            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">):</span>
+</span><span data-line="106">                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+</span><span data-line="107">                    <span class="sa">f</span><span class="s2">&quot;Cannot wrap a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> as a Scalar; &quot;</span>
+</span><span data-line="108">                    <span class="s2">&quot;wrapper types must match. Pass `inner.data` instead of the wrapper.&quot;</span>
+</span><span data-line="109">                <span class="p">)</span>
+</span><span data-line="110">            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span>
+</span><span data-line="111">            <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="112">                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="113">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+</span><span data-line="114">            <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="115">                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="116">        <span class="k">else</span><span class="p">:</span>
+</span><span data-line="117">            <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="118">        <span class="c1"># The class is `@dataclass(frozen=True)` so direct attribute writes</span>
+</span><span data-line="119">        <span class="c1"># are forbidden; route through `object.__setattr__` to seat the</span>
+</span><span data-line="120">        <span class="c1"># dataclass-declared fields.</span>
+</span><span data-line="121">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</span><span data-line="122">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sub_batch_ndim&quot;</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="123">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="n">sub_batch_state</span><span class="p">)</span>
+</span><span data-line="124">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sub_batch_meta&quot;</span><span class="p">,</span> <span class="n">sub_batch_meta</span><span class="p">)</span>
+</span><span data-line="125">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;k_ndim&quot;</span><span class="p">,</span> <span class="n">k_ndim</span><span class="p">)</span>
+</span><span data-line="126">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;k_state&quot;</span><span class="p">,</span> <span class="n">k_state</span><span class="p">)</span>
+</span><span data-line="127">        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;k_pairing&quot;</span><span class="p">,</span> <span class="n">k_pairing</span><span class="p">)</span>
+</span><span data-line="128">        <span class="bp">self</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span>
+</span><span data-line="129">
 <div class="viewcode-block" id="Scalar.from_value">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.Scalar.from_value">[docs]</a>
-</span><span data-line="131">    <span class="nd">@classmethod</span>
-</span><span data-line="132">    <span class="k">def</span><span class="w"> </span><span class="nf">from_value</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">like</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="133"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a Scalar inheriting dtype/device from an existing wrapper.&quot;&quot;&quot;</span>
-</span><span data-line="134">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">like</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">like</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+</span><span data-line="130">    <span class="nd">@classmethod</span>
+</span><span data-line="131">    <span class="k">def</span><span class="w"> </span><span class="nf">from_value</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">like</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+</span><span data-line="132"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a Scalar inheriting dtype/device from an existing wrapper.&quot;&quot;&quot;</span>
+</span><span data-line="133">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">like</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">like</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
 
-</span><span data-line="135">
-</span><span data-line="136">    <span class="c1"># ---- torch-analogue factories with float64 defaults ----</span>
-</span><span data-line="137">    <span class="c1">#</span>
-</span><span data-line="138">    <span class="c1"># Override the inherited PrimitiveTensor factories so Scalars default to</span>
-</span><span data-line="139">    <span class="c1"># ``torch.float64`` (matching ``Scalar.__init__``) rather than torch&#39;s</span>
-</span><span data-line="140">    <span class="c1"># global float32 default. Sub-batch tagging is composed post-hoc via the</span>
-</span><span data-line="141">    <span class="c1"># fluent ``Scalar.linspace(...).sub_batch.retag(n)``.</span>
+</span><span data-line="134">
+</span><span data-line="135">    <span class="c1"># ---- torch-analogue factories with float64 defaults ----</span>
+</span><span data-line="136">    <span class="c1">#</span>
+</span><span data-line="137">    <span class="c1"># Override the inherited PrimitiveTensor factories so Scalars default to</span>
+</span><span data-line="138">    <span class="c1"># ``torch.float64`` (matching ``Scalar.__init__``) rather than torch&#39;s</span>
+</span><span data-line="139">    <span class="c1"># global float32 default. To build a ramp between two endpoints use the</span>
+</span><span data-line="140">    <span class="c1"># :func:`~neml2.types.functions.linspace` / ``logspace`` free functions with</span>
+</span><span data-line="141">    <span class="c1"># region-view endpoints (e.g. ``linspace(Scalar(a).sub_batch, Scalar(b).sub_batch, n)``).</span>
 </span><span data-line="142">
 <div class="viewcode-block" id="Scalar.zeros">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.Scalar.zeros">[docs]</a>
@@ -577,125 +581,109 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="169">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
 
 </span><span data-line="170">
-<div class="viewcode-block" id="Scalar.linspace">
-<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.Scalar.linspace">[docs]</a>
+<div class="viewcode-block" id="Scalar.arange">
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.Scalar.arange">[docs]</a>
 </span><span data-line="171">    <span class="nd">@classmethod</span>
-</span><span data-line="172">    <span class="k">def</span><span class="w"> </span><span class="nf">linspace</span><span class="p">(</span>
+</span><span data-line="172">    <span class="k">def</span><span class="w"> </span><span class="nf">arange</span><span class="p">(</span>
 </span><span data-line="173">        <span class="bp">cls</span><span class="p">,</span>
 </span><span data-line="174">        <span class="n">start</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-</span><span data-line="175">        <span class="n">end</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-</span><span data-line="176">        <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span data-line="175">        <span class="n">end</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="176">        <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
 </span><span data-line="177">        <span class="o">*</span><span class="p">,</span>
 </span><span data-line="178">        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="179">        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span data-line="180">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="181"><span class="w">        </span><span class="sd">&quot;&quot;&quot;``steps`` values uniformly spaced from ``start`` to ``end`` inclusive.&quot;&quot;&quot;</span>
-</span><span data-line="182">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
+</span><span data-line="181"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Like ``torch.arange``: ``arange(N)`` -&gt; ``[0, …, N-1]``, ``arange(a, b, s)``</span>
+</span><span data-line="182"><span class="sd">        -&gt; ``[a, a+s, …]`` up to (excluding) ``b``.&quot;&quot;&quot;</span>
+</span><span data-line="183">        <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="184">            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
+</span><span data-line="185">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
 
-</span><span data-line="183">
-<div class="viewcode-block" id="Scalar.arange">
-<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.Scalar.arange">[docs]</a>
-</span><span data-line="184">    <span class="nd">@classmethod</span>
-</span><span data-line="185">    <span class="k">def</span><span class="w"> </span><span class="nf">arange</span><span class="p">(</span>
-</span><span data-line="186">        <span class="bp">cls</span><span class="p">,</span>
-</span><span data-line="187">        <span class="n">start</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-</span><span data-line="188">        <span class="n">end</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="189">        <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-</span><span data-line="190">        <span class="o">*</span><span class="p">,</span>
-</span><span data-line="191">        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="192">        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="193">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="194"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Like ``torch.arange``: ``arange(N)`` -&gt; ``[0, …, N-1]``, ``arange(a, b, s)``</span>
-</span><span data-line="195"><span class="sd">        -&gt; ``[a, a+s, …]`` up to (excluding) ``b``.&quot;&quot;&quot;</span>
-</span><span data-line="196">        <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="197">            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
-</span><span data-line="198">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
-
+</span><span data-line="186">
+</span><span data-line="187">    <span class="c1"># ---- arithmetic with Python literals (add/sub) ----</span>
+</span><span data-line="188">    <span class="c1">#</span>
+</span><span data-line="189">    <span class="c1"># ``__mul__`` / ``__truediv__`` are inherited via :meth:`PrimitiveTensor._scale`</span>
+</span><span data-line="190">    <span class="c1"># which already handles ``float`` / ``int`` literals. ``__add__`` / ``__sub__``</span>
+</span><span data-line="191">    <span class="c1"># need explicit overrides because the base ``_binary`` deliberately rejects</span>
+</span><span data-line="192">    <span class="c1"># literals (a uniform additive offset is rare and ambiguous on a (3,3) or</span>
+</span><span data-line="193">    <span class="c1"># (6,) tensor — on Scalar it&#39;s the natural thing).</span>
+</span><span data-line="194">
+</span><span data-line="195">    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+</span><span data-line="196">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+</span><span data-line="197">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">other</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="198">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binary</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
 </span><span data-line="199">
-</span><span data-line="200">    <span class="c1"># ---- arithmetic with Python literals (add/sub) ----</span>
-</span><span data-line="201">    <span class="c1">#</span>
-</span><span data-line="202">    <span class="c1"># ``__mul__`` / ``__truediv__`` are inherited via :meth:`PrimitiveTensor._scale`</span>
-</span><span data-line="203">    <span class="c1"># which already handles ``float`` / ``int`` literals. ``__add__`` / ``__sub__``</span>
-</span><span data-line="204">    <span class="c1"># need explicit overrides because the base ``_binary`` deliberately rejects</span>
-</span><span data-line="205">    <span class="c1"># literals (a uniform additive offset is rare and ambiguous on a (3,3) or</span>
-</span><span data-line="206">    <span class="c1"># (6,) tensor — on Scalar it&#39;s the natural thing).</span>
+</span><span data-line="200">    <span class="k">def</span><span class="w"> </span><span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+</span><span data-line="201">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__add__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+</span><span data-line="202">
+</span><span data-line="203">    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+</span><span data-line="204">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+</span><span data-line="205">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">other</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="206">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binary</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
 </span><span data-line="207">
-</span><span data-line="208">    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+</span><span data-line="208">    <span class="k">def</span><span class="w"> </span><span class="fm">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 </span><span data-line="209">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
-</span><span data-line="210">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">other</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="211">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binary</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
+</span><span data-line="210">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">other</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="211">        <span class="k">return</span> <span class="bp">NotImplemented</span>
 </span><span data-line="212">
-</span><span data-line="213">    <span class="k">def</span><span class="w"> </span><span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="214">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__add__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-</span><span data-line="215">
-</span><span data-line="216">    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="217">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
-</span><span data-line="218">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">other</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="219">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binary</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
-</span><span data-line="220">
-</span><span data-line="221">    <span class="k">def</span><span class="w"> </span><span class="fm">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="222">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
-</span><span data-line="223">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">other</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="224">        <span class="k">return</span> <span class="bp">NotImplemented</span>
-</span><span data-line="225">
-</span><span data-line="226">    <span class="nd">@overload</span>
-</span><span data-line="227">    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Scalar</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span> <span class="o">...</span>
-</span><span data-line="228">    <span class="nd">@overload</span>
-</span><span data-line="229">    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">_WrapperT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WrapperT</span><span class="p">:</span> <span class="o">...</span>
-</span><span data-line="230">    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-</span><span data-line="231">        <span class="c1"># The Scalar × Scalar and Scalar × literal cases are handled by the</span>
-</span><span data-line="232">        <span class="c1"># inherited ``_scale``. The wrapper-promotion case (``Scalar * SR2 -&gt;</span>
-</span><span data-line="233">        <span class="c1"># SR2``) is delegated explicitly here so it type-checks at the</span>
-</span><span data-line="234">        <span class="c1"># ``-&gt; _WrapperT`` overload — without this branch we&#39;d return</span>
-</span><span data-line="235">        <span class="c1"># ``NotImplemented`` and rely on the wrapper&#39;s ``__rmul__``, which</span>
-</span><span data-line="236">        <span class="c1"># works at runtime but isn&#39;t visible to type-checkers staring at the</span>
-</span><span data-line="237">        <span class="c1"># ``Scalar * wrapper`` expression.</span>
-</span><span data-line="238">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">):</span>
-</span><span data-line="239">            <span class="k">return</span> <span class="n">other</span> <span class="o">*</span> <span class="bp">self</span>
-</span><span data-line="240">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span>
-</span><span data-line="241">
-</span><span data-line="242">    <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="243">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__mul__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-</span><span data-line="244">
-</span><span data-line="245">    <span class="k">def</span><span class="w"> </span><span class="fm">__rtruediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="246">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
-</span><span data-line="247">            <span class="c1"># ``other / self`` lowers to ``other * reciprocal(self)``, whose</span>
-</span><span data-line="248">            <span class="c1"># reverse-mode backward saves its OUTPUT -- which AOTInductor cannot</span>
-</span><span data-line="249">            <span class="c1"># lower under strict + dynamic-batch export (pytorch/pytorch#187907).</span>
-</span><span data-line="250">            <span class="c1"># On the AD path route through the input-recompute reciprocal; keep</span>
-</span><span data-line="251">            <span class="c1"># the plain divide off it so the value path is byte-identical.</span>
-</span><span data-line="252">            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
-</span><span data-line="253">            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">:</span>
-</span><span data-line="254">                <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">reciprocal_ad</span>  <span class="c1"># noqa: PLC0415</span>
-</span><span data-line="255">
-</span><span data-line="256">                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">other</span> <span class="o">*</span> <span class="n">reciprocal_ad</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="257">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">other</span> <span class="o">/</span> <span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="258">        <span class="k">return</span> <span class="bp">NotImplemented</span>
-</span><span data-line="259">
-</span><span data-line="260">    <span class="c1"># ---- Scalar-only transcendentals / unary ops ----</span>
-</span><span data-line="261">    <span class="c1">#</span>
-</span><span data-line="262">    <span class="c1"># ``__neg__`` is inherited from PrimitiveTensor — its body is the same.</span>
-</span><span data-line="263">
-</span><span data-line="264">    <span class="k">def</span><span class="w"> </span><span class="fm">__abs__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="265">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="266">
-</span><span data-line="267">    <span class="k">def</span><span class="w"> </span><span class="fm">__pow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="268">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span></div>
+</span><span data-line="213">    <span class="nd">@overload</span>
+</span><span data-line="214">    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Scalar</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span> <span class="o">...</span>
+</span><span data-line="215">    <span class="nd">@overload</span>
+</span><span data-line="216">    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">_WrapperT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WrapperT</span><span class="p">:</span> <span class="o">...</span>
+</span><span data-line="217">    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+</span><span data-line="218">        <span class="c1"># The Scalar × Scalar and Scalar × literal cases are handled by the</span>
+</span><span data-line="219">        <span class="c1"># inherited ``_scale``. The wrapper-promotion case (``Scalar * SR2 -&gt;</span>
+</span><span data-line="220">        <span class="c1"># SR2``) is delegated explicitly here so it type-checks at the</span>
+</span><span data-line="221">        <span class="c1"># ``-&gt; _WrapperT`` overload — without this branch we&#39;d return</span>
+</span><span data-line="222">        <span class="c1"># ``NotImplemented`` and rely on the wrapper&#39;s ``__rmul__``, which</span>
+</span><span data-line="223">        <span class="c1"># works at runtime but isn&#39;t visible to type-checkers staring at the</span>
+</span><span data-line="224">        <span class="c1"># ``Scalar * wrapper`` expression.</span>
+</span><span data-line="225">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">):</span>
+</span><span data-line="226">            <span class="k">return</span> <span class="n">other</span> <span class="o">*</span> <span class="bp">self</span>
+</span><span data-line="227">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span>
+</span><span data-line="228">
+</span><span data-line="229">    <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+</span><span data-line="230">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__mul__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+</span><span data-line="231">
+</span><span data-line="232">    <span class="k">def</span><span class="w"> </span><span class="fm">__rtruediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+</span><span data-line="233">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+</span><span data-line="234">            <span class="c1"># ``other / self`` lowers to ``other * reciprocal(self)``, whose</span>
+</span><span data-line="235">            <span class="c1"># reverse-mode backward saves its OUTPUT -- which AOTInductor cannot</span>
+</span><span data-line="236">            <span class="c1"># lower under strict + dynamic-batch export (pytorch/pytorch#187907).</span>
+</span><span data-line="237">            <span class="c1"># On the AD path route through the input-recompute reciprocal; keep</span>
+</span><span data-line="238">            <span class="c1"># the plain divide off it so the value path is byte-identical.</span>
+</span><span data-line="239">            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+</span><span data-line="240">            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">:</span>
+</span><span data-line="241">                <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">reciprocal_ad</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="242">
+</span><span data-line="243">                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">other</span> <span class="o">*</span> <span class="n">reciprocal_ad</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="244">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">other</span> <span class="o">/</span> <span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="245">        <span class="k">return</span> <span class="bp">NotImplemented</span>
+</span><span data-line="246">
+</span><span data-line="247">    <span class="c1"># ---- Scalar-only transcendentals / unary ops ----</span>
+</span><span data-line="248">    <span class="c1">#</span>
+</span><span data-line="249">    <span class="c1"># ``__neg__`` is inherited from PrimitiveTensor — its body is the same.</span>
+</span><span data-line="250">
+</span><span data-line="251">    <span class="k">def</span><span class="w"> </span><span class="fm">__abs__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+</span><span data-line="252">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="253">
+</span><span data-line="254">    <span class="k">def</span><span class="w"> </span><span class="fm">__pow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+</span><span data-line="255">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span></div>
 
-</span><span data-line="269">
-</span><span data-line="270">
-</span><span data-line="271"><span class="n">register</span><span class="p">(</span><span class="n">Scalar</span><span class="p">)</span>
-</span><span data-line="272">
-</span><span data-line="273">
-</span><span data-line="274"><span class="c1"># Tell PrimitiveTensor&#39;s generic ``_binary`` dispatch which class to recognise as</span>
-</span><span data-line="275"><span class="c1"># Scalar for the (Self × Scalar) interop branch. This avoids an import cycle in</span>
-</span><span data-line="276"><span class="c1"># ``_primitive.py`` (PrimitiveTensor doesn&#39;t know about Scalar at class-definition</span>
-</span><span data-line="277"><span class="c1"># time, but every code path that triggers the Scalar branch must have already</span>
-</span><span data-line="278"><span class="c1"># imported Scalar to construct one).</span>
-</span><span data-line="279"><span class="n">PrimitiveTensor</span><span class="o">.</span><span class="n">_SCALAR_CLS</span> <span class="o">=</span> <span class="n">Scalar</span>
-</span><span data-line="280">
-</span><span data-line="281"><span class="c1"># Unused import suppressed by being referenced here.</span>
-</span><span data-line="282"><span class="n">_</span> <span class="o">=</span> <span class="n">align_sub_batch</span>
+</span><span data-line="256">
+</span><span data-line="257">
+</span><span data-line="258"><span class="n">register</span><span class="p">(</span><span class="n">Scalar</span><span class="p">)</span>
+</span><span data-line="259">
+</span><span data-line="260">
+</span><span data-line="261"><span class="c1"># Tell PrimitiveTensor&#39;s generic ``_binary`` dispatch which class to recognise as</span>
+</span><span data-line="262"><span class="c1"># Scalar for the (Self × Scalar) interop branch. This avoids an import cycle in</span>
+</span><span data-line="263"><span class="c1"># ``_primitive.py`` (PrimitiveTensor doesn&#39;t know about Scalar at class-definition</span>
+</span><span data-line="264"><span class="c1"># time, but every code path that triggers the Scalar branch must have already</span>
+</span><span data-line="265"><span class="c1"># imported Scalar to construct one).</span>
+</span><span data-line="266"><span class="n">PrimitiveTensor</span><span class="o">.</span><span class="n">_SCALAR_CLS</span> <span class="o">=</span> <span class="n">Scalar</span>
+</span><span data-line="267">
+</span><span data-line="268"><span class="c1"># Unused import suppressed by being referenced here.</span>
+</span><span data-line="269"><span class="n">_</span> <span class="o">=</span> <span class="n">align_sub_batch</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

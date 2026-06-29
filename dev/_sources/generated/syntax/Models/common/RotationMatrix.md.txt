@@ -13,8 +13,8 @@ body-frame-rate identity).
 
 ## Inputs
 
-`from` &mdash; `input` &middot; `Rot` &middot; **required**
-: Rot to convert
+`from` &mdash; `input` &middot; `MRP` &middot; **required**
+: MRP to convert
 
 
 ## Outputs

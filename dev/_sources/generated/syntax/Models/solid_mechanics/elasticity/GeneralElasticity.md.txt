@@ -5,7 +5,7 @@
 
 ``stress = (T.rotate(R)) : strain`` with ``T : SSR4`` the lab-frame stiffness.
 
-$R$ is the orientation matrix derived from the input ``orientation : Rot``
+$R$ is the orientation matrix derived from the input ``orientation : MRP``
 via Euler-Rodrigues. Mirrors C++ ``GeneralElasticity`` in
 ``src/neml2/models/solid_mechanics/elasticity/GeneralElasticity.cxx``.
 $T$ is a parameter (HIT option ``elastic_stiffness_tensor``); declared
@@ -20,7 +20,7 @@ $T$ (the last only when promoted to a runtime input).
 `strain` &mdash; `input` &middot; `SR2` &middot; **required**
 : Elastic strain
 
-`orientation` &mdash; `input` &middot; `Rot` &middot; **required**
+`orientation` &mdash; `input` &middot; `MRP` &middot; **required**
 : Active convention orientation from reference to current
 
 

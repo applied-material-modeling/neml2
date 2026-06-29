@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ConstantExtrapolationPredictor - NEML2 3.0.5</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="CopyMillerIndex" href="CopyMillerIndex.html" /><link rel="prev" title="ComposedModel" href="ComposedModel.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ConstantExtrapolationPredictor - NEML2 3.0.5</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="CopyMRP" href="CopyMRP.html" /><link rel="prev" title="ComposedModel" href="ComposedModel.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -109,7 +109,11 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/solid_mechanics/elasticity.html">Elasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/solid_mechanics/plasticity.html">Plasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../content/modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../content/modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/solid_mechanics/kinematics.html">Kinematics</a></li>
 </ul>
@@ -165,9 +169,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="CopyR2.html">CopyR2</a></li>
-<li class="toctree-l4"><a class="reference internal" href="CopyRot.html">CopyRot</a></li>
 <li class="toctree-l4"><a class="reference internal" href="CopySR2.html">CopySR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="CopySSR4.html">CopySSR4</a></li>
 <li class="toctree-l4"><a class="reference internal" href="CopyScalar.html">CopyScalar</a></li>
@@ -178,6 +182,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="ImplicitUpdate.html">ImplicitUpdate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="MRPParameterToVariable.html">MRPParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="MacaulaySplit.html">MacaulaySplit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
@@ -192,9 +199,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2VariableRate.html">R2VariableRate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="RotConstantParameter.html">RotConstantParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="RotInputParameter.html">RotInputParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="RotParameterToVariable.html">RotParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -417,7 +421,7 @@ Matches the C++ <code class="docutils literal notranslate"><span class="pre">Con
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">unknowns_Scalar</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>The unknowns to extrapolate of type Scalar</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">unknowns_Rot</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>The unknowns to extrapolate of type Rot</p>
+<dt><code class="docutils literal notranslate"><span class="pre">unknowns_MRP</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>The unknowns to extrapolate of type MRP</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">unknowns_R2</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>The unknowns to extrapolate of type R2</p>
 </dd>
@@ -437,10 +441,10 @@ Matches the C++ <code class="docutils literal notranslate"><span class="pre">Con
         <span>Previous</span><div class="title">ComposedModel</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="CopyMillerIndex.html">
+    <a href="CopyMRP.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">CopyMillerIndex</div>
+        <div class="title">CopyMRP</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
