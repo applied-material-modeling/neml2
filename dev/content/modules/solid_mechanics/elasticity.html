@@ -98,7 +98,11 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Physics modules</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../chemical_reactions.html">Chemical reactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../finite_volume.html">Finite volume</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Solid mechanics</a><ul class="current">
@@ -469,9 +473,9 @@ and deviatoric projectors:</p>
 <p>Any pair drawn from <span class="math notranslate nohighlight">\(\{E,\,\nu,\,K,\,G,\,\lambda,\,M\}\)</span> converts to
 <span class="math notranslate nohighlight">\((K,\,G)\)</span> via the standard textbook relations; e.g. with
 <span class="math notranslate nohighlight">\(E,\,\nu\)</span> as inputs,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-b3042421-106d-4e72-a818-4cdd0b62736e">
-<div class="amsmath math notranslate nohighlight" id="equation-b3042421-106d-4e72-a818-4cdd0b62736e">
-<span class="eqno">(11)<a class="headerlink" href="#equation-b3042421-106d-4e72-a818-4cdd0b62736e" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-4d5a2706-7554-4a4d-957e-6fb09b35b754">
+<div class="amsmath math notranslate nohighlight" id="equation-4d5a2706-7554-4a4d-957e-6fb09b35b754">
+<span class="eqno">(11)<a class="headerlink" href="#equation-4d5a2706-7554-4a4d-957e-6fb09b35b754" title="Permalink to this equation">¶</a></span>\[\begin{align}
   K &amp;= \dfrac{E}{3(1 - 2\nu)}, \\
   G &amp;= \dfrac{E}{2(1 + \nu)}.
 \end{align}\]</div>
@@ -487,9 +491,9 @@ fourth-order stiffness onto three cubic-symmetry projectors
 \]</div>
 </div>
 <p>With <span class="math notranslate nohighlight">\((G,\,E,\,\nu)\)</span> as inputs, the canonical triple is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-be6ef053-7bb2-4e8b-9648-1aed3dd2fcf2">
-<div class="amsmath math notranslate nohighlight" id="equation-be6ef053-7bb2-4e8b-9648-1aed3dd2fcf2">
-<span class="eqno">(12)<a class="headerlink" href="#equation-be6ef053-7bb2-4e8b-9648-1aed3dd2fcf2" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-6d9f9ff4-2631-4428-9503-35aafd5276db">
+<div class="amsmath math notranslate nohighlight" id="equation-6d9f9ff4-2631-4428-9503-35aafd5276db">
+<span class="eqno">(12)<a class="headerlink" href="#equation-6d9f9ff4-2631-4428-9503-35aafd5276db" title="Permalink to this equation">¶</a></span>\[\begin{align}
   C_1 &amp;= \dfrac{E\,(1 - \nu)}{(1 + \nu)(1 - 2\nu)}, \\
   C_2 &amp;= \dfrac{E\,\nu}{(1 + \nu)(1 - 2\nu)}, \\
   C_3 &amp;= 2G.

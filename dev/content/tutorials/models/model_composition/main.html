@@ -98,7 +98,11 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">Physics modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../modules/chemical_reactions.html">Chemical reactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../modules/finite_volume.html">Finite volume</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../modules/kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../../../modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -424,9 +428,9 @@ export the composed graph through the compilation pipeline (see
 <h2>A worked example<a class="headerlink" href="#a-worked-example" title="Link to this heading">¶</a></h2>
 <p>To keep the wiring visible we’ll use three small models from the
 catalog instead of the full plasticity stack:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-ae7c4e0c-ce6e-4e6b-87b2-c45f7a1a091f">
-<div class="amsmath math notranslate nohighlight" id="equation-ae7c4e0c-ce6e-4e6b-87b2-c45f7a1a091f">
-<span class="eqno">(1)<a class="headerlink" href="#equation-ae7c4e0c-ce6e-4e6b-87b2-c45f7a1a091f" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-2a220592-6800-4354-97f2-48d4c55aa59c">
+<div class="amsmath math notranslate nohighlight" id="equation-2a220592-6800-4354-97f2-48d4c55aa59c">
+<span class="eqno">(1)<a class="headerlink" href="#equation-2a220592-6800-4354-97f2-48d4c55aa59c" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \bar{a} &amp;= I_1(\boldsymbol{a}), \\
   \bar{b} &amp;= \sqrt{\tfrac{3}{2}\,\operatorname{dev}(\boldsymbol{b}) : \operatorname{dev}(\boldsymbol{b})}, \\
   \dot{\boldsymbol{b}} &amp;= \bar{b}\,\boldsymbol{a} + \bar{a}\,\boldsymbol{b}.

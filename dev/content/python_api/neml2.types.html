@@ -98,7 +98,11 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../modules/index.html">Physics modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modules/chemical_reactions.html">Chemical reactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/finite_volume.html">Finite volume</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -569,8 +573,10 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.jvp_linear_interpolation"><code class="docutils literal notranslate"><span class="pre">jvp_linear_interpolation()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.jvp_rotate"><code class="docutils literal notranslate"><span class="pre">jvp_rotate()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.linear_interpolation"><code class="docutils literal notranslate"><span class="pre">linear_interpolation()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.linspace"><code class="docutils literal notranslate"><span class="pre">linspace()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.log"><code class="docutils literal notranslate"><span class="pre">log()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.log10"><code class="docutils literal notranslate"><span class="pre">log10()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.logspace"><code class="docutils literal notranslate"><span class="pre">logspace()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.lt"><code class="docutils literal notranslate"><span class="pre">lt()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.macaulay"><code class="docutils literal notranslate"><span class="pre">macaulay()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.mean"><code class="docutils literal notranslate"><span class="pre">mean()</span></code></a></li>
@@ -2741,6 +2747,34 @@ handles those naturally.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.linspace">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">linspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nstep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#linspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.linspace" title="Link to this definition">¶</a></dt>
+<dd><p>Interpolate between two endpoints along a NEW axis in a chosen region.</p>
+<p>This is the v3 free-function form of v2’s <code class="docutils literal notranslate"><span class="pre">dynamic_linspace</span></code> /
+<code class="docutils literal notranslate"><span class="pre">intmd_linspace</span></code> / <code class="docutils literal notranslate"><span class="pre">base_linspace</span></code>
+(<code class="docutils literal notranslate"><span class="pre">include/neml2/tensors/functions/linspace.h</span></code>): a single function whose
+target region is disambiguated by <em>which region view the endpoints are
+passed as</em>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x.dynamic_batch</span></code> -&gt; new dynamic-batch axis (v2 <code class="docutils literal notranslate"><span class="pre">dynamic_linspace</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x.sub_batch</span></code>     -&gt; new sub-batch axis     (v2 <code class="docutils literal notranslate"><span class="pre">intmd_linspace</span></code>)</p></li>
+<li><p>a dynamic-base <a class="reference internal" href="#neml2.types.Tensor" title="neml2.types.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a>’s <code class="docutils literal notranslate"><span class="pre">.batch</span></code> / <code class="docutils literal notranslate"><span class="pre">.sub_batch</span></code>
+/ <code class="docutils literal notranslate"><span class="pre">.base</span></code> view (v2 <code class="docutils literal notranslate"><span class="pre">base_linspace</span></code> is the <code class="docutils literal notranslate"><span class="pre">.base</span></code> case)</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> broadcast against each other; <code class="docutils literal notranslate"><span class="pre">nstep</span></code> evenly spaced
+points are inserted at region position <code class="docutils literal notranslate"><span class="pre">dim</span></code> (default the front of the
+region). Returns the same wrapper type as the endpoints (or <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> for
+dynamic-base views).</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">linspace</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch_shape</span>
+</span><span data-line="2"><span class="go">torch.Size([5])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">linspace</span><span class="p">(</span><span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="p">,</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">batch_shape</span>
+</span><span data-line="4"><span class="go">torch.Size([20])</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.log">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.log" title="Link to this definition">¶</a></dt>
 <dd><p>Natural logarithm. Matches <code class="docutils literal notranslate"><span class="pre">neml2::log(const</span> <span class="pre">Scalar&amp;)</span></code>.</p>
@@ -2766,6 +2800,21 @@ handles those naturally.</p>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.logspace">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">logspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nstep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#logspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.logspace" title="Link to this definition">¶</a></dt>
+<dd><p>Log-spaced analogue of <a class="reference internal" href="#neml2.types.linspace" title="neml2.types.linspace"><code class="xref py py-func docutils literal notranslate"><span class="pre">linspace()</span></code></a> (v2’s <code class="docutils literal notranslate"><span class="pre">dynamic_logspace</span></code> /
+<code class="docutils literal notranslate"><span class="pre">intmd_logspace</span></code> / <code class="docutils literal notranslate"><span class="pre">base_logspace</span></code>).</p>
+<p>The endpoints are the <em>exponents</em>: the result spans <code class="docutils literal notranslate"><span class="pre">base**start</span></code> to
+<code class="docutils literal notranslate"><span class="pre">base**end</span></code> with <code class="docutils literal notranslate"><span class="pre">nstep</span></code> points, the new axis placed in the region named
+by the endpoint views (see <a class="reference internal" href="#neml2.types.linspace" title="neml2.types.linspace"><code class="xref py py-func docutils literal notranslate"><span class="pre">linspace()</span></code></a>).</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">logspace</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch_shape</span>
+</span><span data-line="2"><span class="go">torch.Size([201])</span>
+</span></pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">

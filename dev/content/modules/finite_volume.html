@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Finite volume - NEML2 3.0.5</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="KWN (precipitation kinetics)" href="kwn.html" /><link rel="prev" title="Chemical reactions" href="chemical_reactions.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Finite volume - NEML2 3.0.5</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="KWN (precipitation kinetics)" href="kwn/index.html" /><link rel="prev" title="Chemical reactions" href="chemical_reactions.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -98,7 +98,11 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Physics modules</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="chemical_reactions.html">Chemical reactions</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Finite volume</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -504,9 +508,9 @@ cell widths).</p>
 <section id="advective-flux">
 <h3>Advective flux<a class="headerlink" href="#advective-flux" title="Link to this heading">¶</a></h3>
 <p>Advective fluxes are stabilized with first-order upwinding,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-36d222e6-2e23-45c0-81b7-3a812a54eb00">
-<div class="amsmath math notranslate nohighlight" id="equation-36d222e6-2e23-45c0-81b7-3a812a54eb00">
-<span class="eqno">(5)<a class="headerlink" href="#equation-36d222e6-2e23-45c0-81b7-3a812a54eb00" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-1b21ae61-6cbf-4c88-a5f7-8cbde8be4431">
+<div class="amsmath math notranslate nohighlight" id="equation-1b21ae61-6cbf-4c88-a5f7-8cbde8be4431">
+<span class="eqno">(5)<a class="headerlink" href="#equation-1b21ae61-6cbf-4c88-a5f7-8cbde8be4431" title="Permalink to this equation">¶</a></span>\[\begin{align}
 \hat{J}_{\mathrm{adv}, i+\tfrac{1}{2}}
 &amp;= v^{+}_{i+\tfrac{1}{2}}\, \bar{u}_i
  + v^{-}_{i+\tfrac{1}{2}}\, \bar{u}_{i+1}, \\
@@ -778,7 +782,7 @@ that did not appear in the worked example.</p></li>
         <span>Previous</span><div class="title">Chemical reactions</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="kwn.html">
+    <a href="kwn/index.html">
       <div class="page-info">
         <span>Next</span>
         <div class="title">KWN (precipitation kinetics)</div>
