@@ -185,6 +185,20 @@ def test_rotation_from_to_maps_v1_to_v2():
     assert torch.allclose(mapped, v2.data, atol=1e-12)
 
 
+def test_rotate_vec_matvec_and_broadcast():
+    from neml2.types import R2, rotate  # noqa: PLC0415
+
+    _f64()
+    R = euler_rodrigues(_rand_mrp(1))  # (1,3,3)
+    v = Vec(torch.tensor([[1.0, 2.0, 3.0]]))
+    assert torch.allclose(rotate(v, R).data, torch.einsum("nij,nj->ni", R.data, v.data))
+    # a batch of operators (sub_batch) applied to a single direction broadcasts
+    ops = R2(torch.stack([torch.eye(3), torch.eye(3)[[1, 0, 2]]]), sub_batch_ndim=1)
+    out = rotate(Vec(torch.tensor([0.0, 0.0, 1.0])), ops)
+    assert out.data.shape == torch.Size([2, 3])
+    assert out.sub_batch_ndim == 1
+
+
 def test_rand_is_uniform_orientation_shape_and_valid():
     _f64()
     r = MRP.rand(16)

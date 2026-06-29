@@ -2432,6 +2432,23 @@ def _rotate_r2(a: R2, R: R2) -> R2:
     )
 
 
+def _rotate_vec(v: Vec, R: R2) -> Vec:
+    """``R v`` — rotate a 3-vector by the rotation matrix ``R`` (matrix-vector)."""
+    [vv, rr], sb = align_sub_batch(v, R)
+    rotated = torch.einsum("...ij,...j->...i", rr.data, vv.data)
+    state, meta = combine_sub_batch_state(vv, rr)
+    _k_ndim, _k_state, _k_pairing = _combine_k_from_operands(vv, rr)
+    return Vec(
+        rotated,
+        sub_batch_ndim=sb,
+        sub_batch_state=state,
+        sub_batch_meta=meta,
+        k_ndim=_k_ndim,
+        k_state=_k_state,
+        k_pairing=_k_pairing,
+    )
+
+
 def _jvp_rotate_r2(a: R2, R: R2, dR: R2) -> R2:
     """Pushforward of :func:`rotate` (R2 overload) w.r.t. $R$ along ``dR``.
 
@@ -2809,6 +2826,8 @@ def rotate(x: WR2, R: R2) -> WR2: ...
 def rotate(x: SSR4, R: R2) -> SSR4: ...
 @overload
 def rotate(x: R2, R: R2) -> R2: ...
+@overload
+def rotate(x: Vec, R: R2) -> Vec: ...
 def rotate(x, R):
     """Rotate a typed tensor by an ``R2`` rotation matrix.
 
@@ -2818,6 +2837,7 @@ def rotate(x, R):
     - ``WR2 -> WR2`` — ``skew(R W Rᵀ)`` packed back to an axial vector.
     - ``R2 -> R2`` — the full asymmetric ``R A Rᵀ`` (no projection).
     - ``SSR4 -> SSR4`` — the 6×6 Mandel basis rotation ``Q(R) T Q(R)ᵀ``.
+    - ``Vec -> Vec`` — the matrix-vector product ``R v``.
     """
     if isinstance(x, SR2):
         return _rotate_sym(x, R)
@@ -2827,6 +2847,8 @@ def rotate(x, R):
         return _rotate_ssr4(x, R)
     if isinstance(x, R2):
         return _rotate_r2(x, R)
+    if isinstance(x, Vec):
+        return _rotate_vec(x, R)
     raise TypeError(f"rotate: unsupported operand type {type(x).__name__}")
 
 
