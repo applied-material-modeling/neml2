@@ -51,7 +51,7 @@ The following wrappers ship in `neml2.types`. The class hierarchy is:
 TensorWrapper           (abstract — shape decomposition + region views)
     └── PrimitiveTensor (concrete intermediate — generic ops + factories)
             ├── Scalar
-            ├── Vec, R2, SR2, WR2, Rot, SSR4, MillerIndex
+            ├── Vec, R2, SR2, WR2, MRP, SSR4, MillerIndex
 ```
 
 `PrimitiveTensor` is the layer where the generic arithmetic operators
@@ -64,7 +64,7 @@ class-specific factories — e.g. `R2.identity`, `SSR4.identity_sym`,
 | :------------- | :--------- | :-------------------------------------------------------------------------------------------------------------------- |
 | `Scalar`       | `()`       | A single number per batch entry. The wrapper exists so mixed operations like `Scalar * SR2` reliably return an `SR2`. |
 | `Vec`          | `(3,)`     | 3-vector.                                                                                                              |
-| `Rot`          | `(3,)`     | Modified Rodrigues parameters (MRPs) representing a 3D rotation: `n * tan(θ/4)`, zero vector = identity.             |
+| `MRP`          | `(3,)`     | Modified Rodrigues parameters (MRPs) representing a 3D rotation: `n * tan(θ/4)`, zero vector = identity.             |
 | `MillerIndex`  | `(3,)`     | Integer-coordinate crystallographic direction or plane normal, stored as float for differentiability.                 |
 | `R2`           | `(3, 3)`   | Full second-order tensor (no symmetry).                                                                                |
 | `WR2`          | `(3,)`     | Skew-symmetric second-order tensor stored as an axial 3-vector `(w0, w1, w2)`. No √2 scaling; the corresponding 3×3 skew form is recovered by `r2_from_wr2`. |
@@ -149,7 +149,7 @@ table:
 from neml2.types import Scalar
 import torch
 
-T_controls = Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)
+T_controls = linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)
 ```
 
 This marks the trailing length-20 axis as the sub-batch (interpolation
@@ -163,7 +163,7 @@ the dynamic per-state batch.
 [Tensors]
   [T_controls]
     type = Python
-    expr = 'Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)'
   []
 []
 ```
@@ -193,7 +193,7 @@ The view methods return a fresh wrapper, so calls chain cleanly:
 broadcast = SR2.fill(0.1, -0.05, -0.05, 0, 0, 0).dynamic_batch.expand(20)
 # Construct an SR2 of base shape (6,), then broadcast it to (20, 6).
 
-retagged = Scalar.linspace(0, 1, 5).sub_batch.retag(1)
+retagged = linspace(Scalar(0).sub_batch, Scalar(1).sub_batch, 5)
 # Mark the trailing length-5 axis as sub-batch.
 
 tr_R = R.base.transpose(-2, -1)   # Transpose the (3, 3) base of an R2.
@@ -223,7 +223,7 @@ factory family from `PrimitiveTensor`:
   into the base. `SR2.fill` overrides this with Mandel-aware 1 / 3 / 6
   component overloads (the √2 shear scaling is internal).
 - `<T>.identity(...)` where mathematically meaningful (`R2`,
-  `SR2`, `WR2`, `Rot`, `SSR4`'s several projector variants).
+  `SR2`, `WR2`, `MRP`, `SSR4`'s several projector variants).
 
 `Scalar` adds the torch-analogue factories:
 
@@ -231,7 +231,7 @@ factory family from `PrimitiveTensor`:
   literal coercion, defaults to `torch.float64`.
 - `Scalar.zeros`, `Scalar.ones`, `Scalar.full` — override the
   `PrimitiveTensor` defaults to keep `float64`.
-- `Scalar.linspace(start, end, steps)`, `Scalar.arange(start, end, step)` —
+- `linspace(Scalar(start).dynamic_batch, Scalar(end).dynamic_batch, steps)`, `Scalar.arange(start, end, step)` —
   mirror the torch creation API.
 - `Scalar.from_value(x, like=other_wrapper)` — promote a Python literal
   inheriting `dtype`/`device` from an existing wrapper. Useful inside

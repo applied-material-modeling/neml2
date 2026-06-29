@@ -26,7 +26,7 @@
 
 Coverage:
 
-* (a) Tensor types — ``Rot``, ``R2``, ``WR2``, ``MillerIndex`` round-trip
+* (a) Tensor types — ``MRP``, ``R2``, ``WR2``, ``MillerIndex`` round-trip
   and key free-function math (``euler_rodrigues``, ``jvp_euler_rodrigues``,
   ``exp_map``, ``dexp_map``, ``compose``, ``rotate_sym``, ``rotate_ssr4``).
   Validated against (i) hand-computed known cases, (ii) an independent
@@ -67,12 +67,12 @@ from neml2 import (
     cubic_symmetry_operators,
 )
 from neml2.types import (
+    MRP,
     R2,
     SR2,
     SSR4,
     WR2,
     MillerIndex,
-    Rot,
     Scalar,
     compose,
     dexp_map,
@@ -143,7 +143,7 @@ def _mrp_to_R_via_quaternion(mrp: torch.Tensor) -> torch.Tensor:
 
 
 def test_rot_identity_yields_identity_matrix():
-    r = Rot.identity(dtype=torch.float64)
+    r = MRP.identity(dtype=torch.float64)
     R = euler_rodrigues(r).data
     assert torch.allclose(R, torch.eye(3, dtype=torch.float64), atol=1e-15)
 
@@ -157,15 +157,15 @@ def test_rot_euler_rodrigues_known_axis_angle_cases():
     """
     t225 = math.tan(math.pi / 8)  # tan(22.5°)
 
-    R = euler_rodrigues(Rot(torch.tensor([0.0, 0.0, t225]))).data
+    R = euler_rodrigues(MRP(torch.tensor([0.0, 0.0, t225]))).data
     expected = torch.tensor([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
     assert torch.allclose(R, expected, atol=1e-14)
 
-    R = euler_rodrigues(Rot(torch.tensor([0.0, 0.0, 1.0]))).data
+    R = euler_rodrigues(MRP(torch.tensor([0.0, 0.0, 1.0]))).data
     expected = torch.tensor([[-1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, 1.0]])
     assert torch.allclose(R, expected, atol=1e-14)
 
-    R = euler_rodrigues(Rot(torch.tensor([0.0, t225, 0.0]))).data
+    R = euler_rodrigues(MRP(torch.tensor([0.0, t225, 0.0]))).data
     expected = torch.tensor([[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]])
     assert torch.allclose(R, expected, atol=1e-14)
 
@@ -179,7 +179,7 @@ def test_rot_euler_rodrigues_matches_independent_quaternion_path():
         [0.7, 0.0, -0.3],
     ]:
         mrp = torch.tensor(r_vec, dtype=torch.float64)
-        py = euler_rodrigues(Rot(mrp)).data
+        py = euler_rodrigues(MRP(mrp)).data
         ref = _mrp_to_R_via_quaternion(mrp)
         assert torch.allclose(py, ref, atol=1e-13, rtol=1e-13), (
             f"r={r_vec} mismatch: py={py}, ref={ref}"
@@ -189,7 +189,7 @@ def test_rot_euler_rodrigues_matches_independent_quaternion_path():
 def test_rot_euler_rodrigues_yields_orthogonal_unit_determinant():
     """For any MRP, ``R`` must be orthogonal with ``det(R) = +1``."""
     for r_vec in [[0.1, -0.2, 0.3], [-0.5, 0.0, 0.0], [0.05, -0.07, 0.12]]:
-        R = euler_rodrigues(Rot(torch.tensor(r_vec, dtype=torch.float64))).data
+        R = euler_rodrigues(MRP(torch.tensor(r_vec, dtype=torch.float64))).data
         assert torch.allclose(R @ R.T, torch.eye(3, dtype=torch.float64), atol=1e-14)
         assert math.isclose(float(torch.linalg.det(R)), 1.0, abs_tol=1e-14)
 
@@ -217,13 +217,13 @@ def test_dexp_map_matches_finite_difference():
 
 
 def test_compose_satisfies_rotation_group_properties():
-    """``compose`` must (1) act as the identity element under :func:`Rot.identity`,
+    """``compose`` must (1) act as the identity element under :func:`MRP.identity`,
     (2) be associative, and (3) match composition through the rotation
     matrices: ``R(compose(r1, r2)) == R(r1) @ R(r2)``."""
-    r0 = Rot.identity(dtype=torch.float64)
-    r1 = Rot(torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64))
-    r2 = Rot(torch.tensor([-0.05, 0.12, 0.08], dtype=torch.float64))
-    r3 = Rot(torch.tensor([0.4, 0.1, -0.2], dtype=torch.float64))
+    r0 = MRP.identity(dtype=torch.float64)
+    r1 = MRP(torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64))
+    r2 = MRP(torch.tensor([-0.05, 0.12, 0.08], dtype=torch.float64))
+    r3 = MRP(torch.tensor([0.4, 0.1, -0.2], dtype=torch.float64))
 
     # Identity element.
     assert torch.allclose(compose(r0, r1).data, r1.data, atol=1e-14)
@@ -244,7 +244,7 @@ def test_drotate_matches_finite_difference():
     """``drotate(r1, r2) = ∂(compose(r2, r1))/∂(r2)`` via central FD."""
     r1 = torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64)
     r2 = torch.tensor([-0.05, 0.12, 0.08], dtype=torch.float64)
-    analytical = drotate(Rot(r1), Rot(r2)).data  # (3, 3) Jacobian
+    analytical = drotate(MRP(r1), MRP(r2)).data  # (3, 3) Jacobian
     eps = 1e-7
     fd = torch.zeros(3, 3, dtype=torch.float64)
     for j in range(3):
@@ -252,7 +252,7 @@ def test_drotate_matches_finite_difference():
         rp[j] += eps
         rm = r2.clone()
         rm[j] -= eps
-        fd[:, j] = (compose(Rot(rp), Rot(r1)).data - compose(Rot(rm), Rot(r1)).data) / (2.0 * eps)
+        fd[:, j] = (compose(MRP(rp), MRP(r1)).data - compose(MRP(rm), MRP(r1)).data) / (2.0 * eps)
     assert torch.allclose(analytical, fd, atol=1e-6)
 
 
@@ -260,7 +260,7 @@ def test_drotate_self_matches_finite_difference():
     """``drotate_self(r1, r2) = ∂(compose(r2, r1))/∂(r1)`` via central FD."""
     r1 = torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64)
     r2 = torch.tensor([-0.05, 0.12, 0.08], dtype=torch.float64)
-    analytical = drotate_self(Rot(r1), Rot(r2)).data
+    analytical = drotate_self(MRP(r1), MRP(r2)).data
     eps = 1e-7
     fd = torch.zeros(3, 3, dtype=torch.float64)
     for j in range(3):
@@ -268,7 +268,7 @@ def test_drotate_self_matches_finite_difference():
         rp[j] += eps
         rm = r1.clone()
         rm[j] -= eps
-        fd[:, j] = (compose(Rot(r2), Rot(rp)).data - compose(Rot(r2), Rot(rm)).data) / (2.0 * eps)
+        fd[:, j] = (compose(MRP(r2), MRP(rp)).data - compose(MRP(r2), MRP(rm)).data) / (2.0 * eps)
     assert torch.allclose(analytical, fd, atol=1e-6)
 
 
@@ -288,7 +288,7 @@ def test_rotate_sym_round_trips_through_full_R2():
     r_vec = torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64)
     s_full = torch.tensor([[1.0, 2.0, 3.0], [2.0, 4.0, 5.0], [3.0, 5.0, 6.0]], dtype=torch.float64)
     s_mandel = sym(R2(s_full))
-    R = euler_rodrigues(Rot(r_vec))
+    R = euler_rodrigues(MRP(r_vec))
     py_rot = rotate(s_mandel, R).data
     # Direct: sym(R · s_full · R^T) packed in Mandel.
     direct = sym(R2(R.data @ s_full @ R.data.T)).data
@@ -313,7 +313,7 @@ def test_rotate_ssr4_invariance():
     assert torch.allclose(rotate(T, R_id).data, T.data, atol=1e-12)
 
     r_vec = torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64)
-    R = euler_rodrigues(Rot(r_vec))
+    R = euler_rodrigues(MRP(r_vec))
     eps_full = torch.tensor(
         [[0.01, 0.002, -0.001], [0.002, -0.005, 0.003], [-0.001, 0.003, 0.008]],
         dtype=torch.float64,

@@ -27,7 +27,7 @@
 The C++ ``CopyVariable<T>`` is instantiated for every primitive tensor type via
 the ``FOR_ALL_PRIMITIVETENSOR`` macro. The native surface re-implements the
 subset that already has a typed wrapper under ``neml2.types``
-(``Scalar``, ``Vec``, ``Rot``, ``WR2``, ``R2``, ``SR2``, ``SSR4``,
+(``Scalar``, ``Vec``, ``MRP``, ``WR2``, ``R2``, ``SR2``, ``SSR4``,
 ``MillerIndex``) -- the same set as ``ConstantParameter``. One shared
 ``_CopyVariable`` base holds the identity forward/action; each registered
 variant only differs in the ``hit`` schema's wrapper type.
@@ -44,12 +44,12 @@ from __future__ import annotations
 from ...factory import register_neml2_object
 from ...schema import HitSchema, input, output
 from ...types import (
+    MRP,
     R2,
     SR2,
     SSR4,
     WR2,
     MillerIndex,
-    Rot,
     Scalar,
     TensorWrapper,
     Vec,
@@ -110,13 +110,13 @@ class CopyVec(_CopyVariable):
     )
 
 
-@register_neml2_object("CopyRot")
-class CopyRot(_CopyVariable):
-    """Rot-valued variable copy. Mirrors ``CopyVariable<Rot>``."""
+@register_neml2_object("CopyMRP")
+class CopyMRP(_CopyVariable):
+    """MRP-valued variable copy. Mirrors ``CopyVariable<MRP>``."""
 
     hit = HitSchema(
-        input("from", Rot, "Variable to copy value from"),
-        output("to", Rot, "Variable to copy value to"),
+        input("from", MRP, "Variable to copy value from"),
+        output("to", MRP, "Variable to copy value to"),
     )
 
 
@@ -173,7 +173,7 @@ class CopyMillerIndex(_CopyVariable):
 __all__ = [
     "CopyMillerIndex",
     "CopyR2",
-    "CopyRot",
+    "CopyMRP",
     "CopySR2",
     "CopySSR4",
     "CopyScalar",

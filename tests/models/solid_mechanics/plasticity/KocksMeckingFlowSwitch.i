@@ -23,7 +23,7 @@
 [Tensors]
   [g]
     type = Python
-    expr = 'Scalar.linspace(0.1, 0.9, 5)'
+    expr = 'linspace(Scalar(0.1).dynamic_batch, Scalar(0.9).dynamic_batch, 5)'
   []
   [fr_correct]
     type = Python

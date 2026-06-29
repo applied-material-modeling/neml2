@@ -55,8 +55,9 @@ from neml2.types._base import (
     combine_sub_batch_state,
     wrap_like,
 )
+from neml2.types.mrp import MRP
+from neml2.types.quaternion import Quaternion
 from neml2.types.r2 import R2
-from neml2.types.rot import Rot
 from neml2.types.scalar import Scalar
 from neml2.types.sr2 import SR2
 from neml2.types.ssr4 import SSR4
@@ -335,6 +336,10 @@ def norm(A: SR2, eps: float = 0.0) -> Scalar: ...
 
 
 @overload
+def norm(A: Vec, eps: float = 0.0) -> Scalar: ...
+
+
+@overload
 def norm(A: _TensorBaseView, eps: float = 0.0) -> Tensor: ...
 
 
@@ -378,8 +383,13 @@ def norm_sq(view: _TensorBaseView) -> Tensor:
     return dot(view, view)
 
 
-def unit(A: SR2, eps: float = 0.0) -> SR2:
-    """Normalize $A$ by its Frobenius norm. ``eps`` regularizes at ``A == 0``."""
+@overload
+def unit(A: SR2, eps: float = 0.0) -> SR2: ...
+@overload
+def unit(A: Vec, eps: float = 0.0) -> Vec: ...
+def unit(A, eps: float = 0.0):
+    """Normalize $A$ by its Frobenius / Euclidean norm. ``eps`` regularizes at
+    ``A == 0``. Accepts an ``SR2`` (Mandel) or a ``Vec`` (3-vector)."""
     n = align_scalar_base(norm(A, eps).data, 1)
     # On the AD path divide via the input-recompute reciprocal so the norm in the
     # denominator doesn't trip AOTI's saved-output lowering (pytorch/pytorch#187907);
@@ -1949,13 +1959,13 @@ def skew(t: R2) -> WR2:
     return wrap_like(WR2, torch.stack([w0, w1, w2], dim=-1), t)
 
 
-# ---- Rot ↔ R2 (Euler-Rodrigues mapping) ----
+# ---- MRP ↔ R2 (Euler-Rodrigues mapping) ----
 
 
-def euler_rodrigues(r: Rot) -> R2:
+def euler_rodrigues(r: MRP) -> R2:
     """Convert an MRP rotation to its 3x3 rotation matrix.
 
-    Mirrors ``Rot::euler_rodrigues`` in ``src/neml2/tensors/Rot.cxx``::
+    Mirrors ``MRP::euler_rodrigues`` in ``src/neml2/tensors/MRP.cxx``::
 
         R = (1+rr)^-2 * ( (1+rr)^2 * I + 4(1-rr) W + 8 W^2 )
 
@@ -1994,13 +2004,13 @@ def euler_rodrigues(r: Rot) -> R2:
     return wrap_like(R2, R_mat, r)
 
 
-# ---- Rot composition ----
+# ---- MRP composition ----
 
 
-def compose(r1: Rot, r2: Rot) -> Rot:
+def compose(r1: MRP, r2: MRP) -> MRP:
     """Compose two MRP rotations: ``r1 ∘ r2`` (apply r2 first, then r1).
 
-    Matches ``operator*(const Rot&, const Rot&)`` in ``src/neml2/tensors/Rot.cxx``.
+    Matches ``operator*(const MRP&, const MRP&)`` in ``src/neml2/tensors/MRP.cxx``.
     The result is again an MRP; the formula handles the standard MRP
     composition with denominator $1 + ||r1||^2 ||r2||^2 - 2 r1·r2$.
     """
@@ -2019,7 +2029,7 @@ def compose(r1: Rot, r2: Rot) -> Rot:
     quot = num * reciprocal_ad(den) if den.requires_grad else num / den
     state, meta = combine_sub_batch_state(aa, bb)
     _k_ndim, _k_state, _k_pairing = _combine_k_from_operands(aa, bb)
-    return Rot(
+    return MRP(
         quot,
         sub_batch_ndim=sb,
         sub_batch_state=state,
@@ -2048,10 +2058,134 @@ def _cross_raw(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     return torch.cross(a, b, dim=-1)
 
 
-def drotate_self(r1: Rot, r2: Rot) -> R2:
+# ---- Vec products ----
+
+
+def cross(a: Vec, b: Vec) -> Vec:
+    """Vector cross product ``a × b`` over the base 3-axis (``neml2::cross``)."""
+    [aa, bb], sb = align_sub_batch(a, b)
+    state, meta = combine_sub_batch_state(aa, bb)
+    k_ndim, k_state, k_pairing = _combine_k_from_operands(aa, bb)
+    return Vec(
+        _cross_raw(aa.data, bb.data),
+        sub_batch_ndim=sb,
+        sub_batch_state=state,
+        sub_batch_meta=meta,
+        k_ndim=k_ndim,
+        k_state=k_state,
+        k_pairing=k_pairing,
+    )
+
+
+def vdot(a: Vec, b: Vec) -> Scalar:
+    """Dot product of two ``Vec`` over the base 3-axis (``neml2::vdot``)."""
+    [aa, bb], sb = align_sub_batch(a, b)
+    state, meta = combine_sub_batch_state(aa, bb)
+    k_ndim, k_state, k_pairing = _combine_k_from_operands(aa, bb)
+    return Scalar(
+        (aa.data * bb.data).sum(dim=-1),
+        sub_batch_ndim=sb,
+        sub_batch_state=state,
+        sub_batch_meta=meta,
+        k_ndim=k_ndim,
+        k_state=k_state,
+        k_pairing=k_pairing,
+    )
+
+
+# ---- MRP orientation operations (mirror v2 ``Rot`` methods) ----
+
+
+def inverse(r: MRP) -> MRP:
+    """Inverse rotation of an MRP — the negated MRP vector (``Rot::inv``)."""
+    return r._rewrap(-r.data, sub_batch_ndim=r.sub_batch_ndim)
+
+
+def shadow(r: MRP) -> MRP:
+    """The shadow MRP set ``-r / ||r||^2`` — same orientation (``Rot::shadow``)."""
+    nsq = (r.data * r.data).sum(dim=-1, keepdim=True)
+    return r._rewrap(-r.data / nsq, sub_batch_ndim=r.sub_batch_ndim)
+
+
+def gdist(r1: MRP, r2: MRP) -> Scalar:
+    """Raw geodesic distance between two MRPs, ignoring the shadow set
+    (``Rot::gdist``): ``4 asin(clip(||r1-r2|| / sqrt((1+||r1||^2)(1+||r2||^2)), -1, 1))``."""
+    [a, b], sb = align_sub_batch(r1, r2)
+    na = (a.data * a.data).sum(dim=-1)
+    nb = (b.data * b.data).sum(dim=-1)
+    diff = torch.sqrt(((a.data - b.data) ** 2).sum(dim=-1))
+    arg = torch.clamp(diff / torch.sqrt((1.0 + na) * (1.0 + nb)), -1.0, 1.0)
+    state, meta = combine_sub_batch_state(a, b)
+    k_ndim, k_state, k_pairing = _combine_k_from_operands(a, b)
+    return Scalar(
+        4.0 * torch.asin(arg),
+        sub_batch_ndim=sb,
+        sub_batch_state=state,
+        sub_batch_meta=meta,
+        k_ndim=k_ndim,
+        k_state=k_state,
+        k_pairing=k_pairing,
+    )
+
+
+def dist(r1: MRP, r2: MRP) -> Scalar:
+    """Geodesic distance between MRPs, accounting for shadow mapping (``Rot::dist``):
+    the minimum :func:`gdist` over the four (r, shadow(r)) pairings."""
+    r1s, r2s = shadow(r1), shadow(r2)
+    d = gdist(r1, r2)
+    for other in (gdist(r1, r2s), gdist(r2s, r2), gdist(r2s, r1s)):
+        d = d._rewrap(torch.minimum(d.data, other.data), sub_batch_ndim=d.sub_batch_ndim)
+    return d
+
+
+def dV(r: MRP) -> Scalar:
+    """SO(3) volume element ``(8/π) (1 + ||r||^2)^-3`` (``Rot::dV``)."""
+    nsq = (r.data * r.data).sum(dim=-1)
+    return wrap_like(Scalar, (8.0 / math.pi) * (1.0 + nsq) ** (-3.0), r)
+
+
+# ---- Quaternion ↔ MRP / rotation matrix / distance ----
+
+
+def to_quaternion(r: MRP) -> Quaternion:
+    """MRP → unit quaternion ``(w, x, y, z)`` (``Quaternion(const Rot&)``)."""
+    nsq = (r.data * r.data).sum(dim=-1, keepdim=True)
+    w = (1.0 - nsq) / (1.0 + nsq)
+    vec = 2.0 * r.data / (1.0 + nsq)
+    return Quaternion(torch.cat([w, vec], dim=-1), sub_batch_ndim=r.sub_batch_ndim)
+
+
+def quaternion_rotation_matrix(q: Quaternion) -> R2:
+    """Unit quaternion ``(w, x, y, z)`` → 3×3 rotation matrix
+    (``Quaternion::rotation_matrix``)."""
+    w, x, y, z = q.data[..., 0], q.data[..., 1], q.data[..., 2], q.data[..., 3]
+    row0 = torch.stack([1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)], dim=-1)
+    row1 = torch.stack([2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)], dim=-1)
+    row2 = torch.stack([2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)], dim=-1)
+    return wrap_like(R2, torch.stack([row0, row1, row2], dim=-2), q)
+
+
+def quaternion_dist(q1: Quaternion, q2: Quaternion) -> Scalar:
+    """Quaternion geodesic distance ``2 acos(min(|q1·q2|, 1))`` (``Quaternion::dist``)."""
+    [a, b], sb = align_sub_batch(q1, q2)
+    dp = torch.abs((a.data * b.data).sum(dim=-1))
+    state, meta = combine_sub_batch_state(a, b)
+    k_ndim, k_state, k_pairing = _combine_k_from_operands(a, b)
+    return Scalar(
+        2.0 * torch.acos(torch.minimum(dp, torch.ones_like(dp))),
+        sub_batch_ndim=sb,
+        sub_batch_state=state,
+        sub_batch_meta=meta,
+        k_ndim=k_ndim,
+        k_state=k_state,
+        k_pairing=k_pairing,
+    )
+
+
+def drotate_self(r1: MRP, r2: MRP) -> R2:
     """``d(r2 ∘ r1) / d(r1)`` where the composition is ``r2 * r1``.
 
-    Mirrors ``Rot::drotate_self`` in ``src/neml2/tensors/Rot.cxx``. The
+    Mirrors ``MRP::drotate_self`` in ``src/neml2/tensors/MRP.cxx``. The
     naming follows the C++ convention: $r1.rotate(r2) == r2 * r1$ (apply
     ``r1`` first then ``r2``), and ``r1.drotate_self(r2)`` is the derivative
     of that composed rotation w.r.t. the receiver ``r1``. Returns ``R2``.
@@ -2085,10 +2219,10 @@ def drotate_self(r1: Rot, r2: Rot) -> R2:
     )
 
 
-def drotate(r1: Rot, r2: Rot) -> R2:
+def drotate(r1: MRP, r2: MRP) -> R2:
     """``d(r2 ∘ r1) / d(r2)`` where the composition is ``r2 * r1``.
 
-    Mirrors ``Rot::drotate`` in ``src/neml2/tensors/Rot.cxx``. Returns ``R2``.
+    Mirrors ``MRP::drotate`` in ``src/neml2/tensors/MRP.cxx``. Returns ``R2``.
     """
     [a1, a2], sb = align_sub_batch(r1, r2)
     rr1 = (a1.data * a1.data).sum(dim=-1, keepdim=False)
@@ -2121,7 +2255,7 @@ def drotate(r1: Rot, r2: Rot) -> R2:
 # ---- WR2 exponential map ----
 
 
-def exp_map(w: WR2) -> Rot:
+def exp_map(w: WR2) -> MRP:
     """Exponential of a skew axial vector — yields an MRP rotation.
 
     Mirrors ``WR2::exp_map`` in ``src/neml2/tensors/WR2.cxx``. Uses a Taylor
@@ -2140,7 +2274,7 @@ def exp_map(w: WR2) -> Rot:
     actual_scale = torch.tan(safe_norm2 / 2.0) / (2.0 * safe_norm2 * torch.cos(safe_norm2 / 2.0))
     res_actual = w.data * actual_scale.unsqueeze(-1)
     out = torch.where((norm2 > thresh).unsqueeze(-1), res_actual, res_taylor)
-    return wrap_like(Rot, out, w)
+    return wrap_like(MRP, out, w)
 
 
 def dexp_map(w: WR2) -> R2:
@@ -2297,6 +2431,23 @@ def _rotate_r2(a: R2, R: R2) -> R2:
     state, meta = combine_sub_batch_state(aa, rr)
     _k_ndim, _k_state, _k_pairing = _combine_k_from_operands(aa, rr)
     return R2(
+        rotated,
+        sub_batch_ndim=sb,
+        sub_batch_state=state,
+        sub_batch_meta=meta,
+        k_ndim=_k_ndim,
+        k_state=_k_state,
+        k_pairing=_k_pairing,
+    )
+
+
+def _rotate_vec(v: Vec, R: R2) -> Vec:
+    """``R v`` — rotate a 3-vector by the rotation matrix ``R`` (matrix-vector)."""
+    [vv, rr], sb = align_sub_batch(v, R)
+    rotated = torch.einsum("...ij,...j->...i", rr.data, vv.data)
+    state, meta = combine_sub_batch_state(vv, rr)
+    _k_ndim, _k_state, _k_pairing = _combine_k_from_operands(vv, rr)
+    return Vec(
         rotated,
         sub_batch_ndim=sb,
         sub_batch_state=state,
@@ -2549,11 +2700,11 @@ def _rotate_ssr4(T: SSR4, R: R2) -> SSR4:
 # carries no ``K``, so it broadcasts over ``K`` under right-aligned broadcasting.
 
 
-def jvp_euler_rodrigues(r: Rot, dr: Rot) -> R2:
-    """Pushforward of :func:`euler_rodrigues` (Rot→R2) along the tangent ``dr``.
+def jvp_euler_rodrigues(r: MRP, dr: MRP) -> R2:
+    """Pushforward of :func:`euler_rodrigues` (MRP→R2) along the tangent ``dr``.
 
-    Closed-form via the body-frame angular rate. ``Rot`` is the Modified
-    Rodrigues Parameter (MRP) form (``Rot.cxx``), for which the MRP-rate /
+    Closed-form via the body-frame angular rate. ``MRP`` is the Modified
+    Rodrigues Parameter (MRP) form (``MRP.cxx``), for which the MRP-rate /
     body-rate kinematic relation (Schaub & Junkins, *Analytical Mechanics of
     Space Systems*) inverts to::
 
@@ -2584,8 +2735,8 @@ def jvp_euler_rodrigues(r: Rot, dr: Rot) -> R2:
     return wrap_like(R2, dR, dr)
 
 
-def jvp_exp_map(w: WR2, dw: WR2) -> Rot:
-    """Pushforward of :func:`exp_map` (WR2→Rot) along the tangent ``dw``.
+def jvp_exp_map(w: WR2, dw: WR2) -> MRP:
+    """Pushforward of :func:`exp_map` (WR2→MRP) along the tangent ``dw``.
 
     Closed-form rank-1-plus-identity: $dexp_map(w) = a(|w|²) I + b(|w|²) w wᵀ$,
     so the action is $dr = a·dw + b·(w·dw)·w$ — two vector ops, no 3×3
@@ -2619,10 +2770,10 @@ def jvp_exp_map(w: WR2, dw: WR2) -> Rot:
 
     w_dot_dw = (w_d * dw_d).sum(dim=-1, keepdim=True)  # (K, *batch, 1) — w broadcasts
     dr = a * dw_d + (b * w_dot_dw) * w_d  # (K, *batch, 3)
-    return wrap_like(Rot, dr, dw)
+    return wrap_like(MRP, dr, dw)
 
 
-def jvp_compose(r1: Rot, r2: Rot, *, dr1: Rot | None = None, dr2: Rot | None = None) -> Rot:
+def jvp_compose(r1: MRP, r2: MRP, *, dr1: MRP | None = None, dr2: MRP | None = None) -> MRP:
     """Pushforward of :func:`compose` (``compose(r1, r2)``) along its operands.
 
     $d(compose(r1, r2)) = (∂/∂r1)·dr1 + (∂/∂r2)·dr2$ with the operand
@@ -2644,7 +2795,7 @@ def jvp_compose(r1: Rot, r2: Rot, *, dr1: Rot | None = None, dr2: Rot | None = N
     if acc is None:
         raise ValueError("jvp_compose requires at least one of dr1, dr2")
     src: TensorWrapper = dr1 if dr1 is not None else dr2  # type: ignore[assignment]
-    return wrap_like(Rot, acc, src)
+    return wrap_like(MRP, acc, src)
 
 
 def _jvp_rotate_ssr4(T: SSR4, R: R2, dR: R2) -> SSR4:
@@ -2684,6 +2835,8 @@ def rotate(x: WR2, R: R2) -> WR2: ...
 def rotate(x: SSR4, R: R2) -> SSR4: ...
 @overload
 def rotate(x: R2, R: R2) -> R2: ...
+@overload
+def rotate(x: Vec, R: R2) -> Vec: ...
 def rotate(x, R):
     """Rotate a typed tensor by an ``R2`` rotation matrix.
 
@@ -2693,6 +2846,7 @@ def rotate(x, R):
     - ``WR2 -> WR2`` — ``skew(R W Rᵀ)`` packed back to an axial vector.
     - ``R2 -> R2`` — the full asymmetric ``R A Rᵀ`` (no projection).
     - ``SSR4 -> SSR4`` — the 6×6 Mandel basis rotation ``Q(R) T Q(R)ᵀ``.
+    - ``Vec -> Vec`` — the matrix-vector product ``R v``.
     """
     if isinstance(x, SR2):
         return _rotate_sym(x, R)
@@ -2702,6 +2856,8 @@ def rotate(x, R):
         return _rotate_ssr4(x, R)
     if isinstance(x, R2):
         return _rotate_r2(x, R)
+    if isinstance(x, Vec):
+        return _rotate_vec(x, R)
     raise TypeError(f"rotate: unsupported operand type {type(x).__name__}")
 
 
@@ -2817,19 +2973,24 @@ __all__ = [
     "allclose",
     "compose",
     "cosh",
+    "cross",
     "det",
     "dev",
     "dexp_map",
     "diff",
+    "dist",
     "drotate",
     "drotate_self",
+    "dV",
     "equal",
     "euler_rodrigues",
     "exp",
     "exp_map",
+    "gdist",
     "gt",
     "inner",
     "inv",
+    "inverse",
     "jvp_compose",
     "jvp_euler_rodrigues",
     "jvp_exp_map",
@@ -2845,9 +3006,12 @@ __all__ = [
     "norm",
     "outer",
     "pow",
+    "quaternion_dist",
+    "quaternion_rotation_matrix",
     "r2_from_sr2",
     "r2_from_wr2",
     "rotate",
+    "shadow",
     "skew",
     "sign",
     "sinh",
@@ -2855,8 +3019,10 @@ __all__ = [
     "sum",
     "sym",
     "tanh",
+    "to_quaternion",
     "tr",
     "unit",
+    "vdot",
     "vec_component",
     "vec_from_scalars",
     "vol",

@@ -29,9 +29,9 @@ from __future__ import annotations
 from ....factory import register_neml2_object
 from ....schema import HitSchema, input, output, parameter
 from ....types import (
+    MRP,
     SR2,
     SSR4,
-    Rot,
     euler_rodrigues,
     jvp_euler_rodrigues,
     jvp_rotate,
@@ -45,7 +45,7 @@ from ...model import Model
 class GeneralElasticity(Model):
     """``stress = (T.rotate(R)) : strain`` with ``T : SSR4`` the lab-frame stiffness.
 
-    $R$ is the orientation matrix derived from the input ``orientation : Rot``
+    $R$ is the orientation matrix derived from the input ``orientation : MRP``
     via Euler-Rodrigues. Mirrors C++ ``GeneralElasticity`` in
     ``src/neml2/models/solid_mechanics/elasticity/GeneralElasticity.cxx``.
     $T$ is a parameter (HIT option ``elastic_stiffness_tensor``); declared
@@ -58,7 +58,7 @@ class GeneralElasticity(Model):
 
     hit = HitSchema(
         input("strain", SR2, "Elastic strain"),
-        input("orientation", Rot, "Active convention orientation from reference to current"),
+        input("orientation", MRP, "Active convention orientation from reference to current"),
         output("stress", SR2, "Stress"),
         parameter(
             "elastic_stiffness_tensor",
@@ -76,7 +76,7 @@ class GeneralElasticity(Model):
     def forward(  # type: ignore[override]
         self,
         strain: SR2,
-        orientation: Rot,
+        orientation: MRP,
         *promoted_params,
         v: ChainRuleDict | None = None,
     ):
@@ -96,7 +96,7 @@ class GeneralElasticity(Model):
         def strain_action(V: SR2) -> SR2:
             return T_rot @ V
 
-        def orientation_action(V: Rot) -> SR2:
+        def orientation_action(V: MRP) -> SR2:
             dR = jvp_euler_rodrigues(orientation, V)
             return jvp_rotate(T, R, dR) @ strain
 

@@ -36,7 +36,7 @@ ops are exposed through region-view properties (``t.batch``,
 unambiguous — e.g. ``t.sub_batch.unsqueeze(-1)`` or
 ``t.base.transpose(-2, -1)``. Everything else (invariants,
 decompositions, transcendentals, math-bearing type conversions like
-``euler_rodrigues(Rot) -> R2``) lives in :mod:`neml2.types.functions`
+``euler_rodrigues(MRP) -> R2``) lives in :mod:`neml2.types.functions`
 as free functions, matching how the C++ side exposes them.
 """
 
@@ -51,20 +51,25 @@ from neml2.types.functions import (
     clamp,
     compose,
     cosh,
+    cross,
     det,
     dev,
     dexp_map,
     diff,
+    dist,
     drotate,
     drotate_self,
+    dV,
     equal,
     euler_rodrigues,
     exp,
     exp_map,
+    gdist,
     gt,
     heaviside,
     inner,
     inv,
+    inverse,
     jvp_compose,
     jvp_euler_rodrigues,
     jvp_exp_map,
@@ -82,10 +87,13 @@ from neml2.types.functions import (
     opaque_pow,
     outer,
     pow,
+    quaternion_dist,
+    quaternion_rotation_matrix,
     r2_from_sr2,
     r2_from_wr2,
     reciprocal,
     rotate,
+    shadow,
     sign,
     sinh,
     skew,
@@ -94,16 +102,19 @@ from neml2.types.functions import (
     sum,
     sym,
     tanh,
+    to_quaternion,
     tr,
     unit,
+    vdot,
     vec_component,
     vec_from_scalars,
     vol,
     where,
 )
 from neml2.types.miller_index import MillerIndex
+from neml2.types.mrp import MRP
+from neml2.types.quaternion import Quaternion
 from neml2.types.r2 import R2
-from neml2.types.rot import Rot
 from neml2.types.scalar import Scalar
 from neml2.types.sr2 import SR2
 from neml2.types.ssr4 import SSR4
@@ -115,8 +126,9 @@ __all__ = [
     "AxisKind",
     "MillerIndex",
     "PrimitiveTensor",
+    "Quaternion",
     "R2",
-    "Rot",
+    "MRP",
     "SR2",
     "SSR4",
     "Scalar",
@@ -125,6 +137,16 @@ __all__ = [
     "Vec",
     "WR2",
     "abs",
+    "cross",
+    "dV",
+    "dist",
+    "gdist",
+    "inverse",
+    "quaternion_dist",
+    "quaternion_rotation_matrix",
+    "shadow",
+    "to_quaternion",
+    "vdot",
     "align_sub_batch",
     "bilinear_interpolation",
     "bilinear_interpolation_slopes",

@@ -27,7 +27,7 @@
 The C++ ``ParameterToVariable<T>`` is instantiated for every primitive tensor
 type via the ``FOR_ALL_PRIMITIVETENSOR`` macro. The native surface only
 re-implements the subset of those types that already have a typed wrapper
-under ``neml2.types`` (``Scalar``, ``Vec``, ``Rot``, ``WR2``, ``R2``,
+under ``neml2.types`` (``Scalar``, ``Vec``, ``MRP``, ``WR2``, ``R2``,
 ``SR2``, ``SSR4``, ``MillerIndex``) -- the same set as ``ConstantParameter`` /
 ``InputParameter``. One shared ``_ParameterToVariable`` base holds the
 identity forward/action; each registered variant only differs in the ``hit``
@@ -48,12 +48,12 @@ from __future__ import annotations
 from ...factory import register_neml2_object
 from ...schema import HitSchema, output, parameter
 from ...types import (
+    MRP,
     R2,
     SR2,
     SSR4,
     WR2,
     MillerIndex,
-    Rot,
     Scalar,
     TensorWrapper,
     Vec,
@@ -156,18 +156,18 @@ class VecParameterToVariable(_ParameterToVariable):
     )
 
 
-@register_neml2_object("RotParameterToVariable")
-class RotParameterToVariable(_ParameterToVariable):
-    """Rot parameter-to-variable. Mirrors ``ParameterToVariable<Rot>``."""
+@register_neml2_object("MRPParameterToVariable")
+class MRPParameterToVariable(_ParameterToVariable):
+    """MRP parameter-to-variable. Mirrors ``ParameterToVariable<MRP>``."""
 
-    _value_type = Rot
-    param: Rot  # type: ignore[assignment]
+    _value_type = MRP
+    param: MRP  # type: ignore[assignment]
 
     hit = HitSchema(
-        output("to", Rot, "The name of the variable", attr="_to"),
+        output("to", MRP, "The name of the variable", attr="_to"),
         parameter(
             "from",
-            Rot,
+            MRP,
             "The input parameter",
             attr="param",
             allow_promotion=True,
@@ -273,7 +273,7 @@ class MillerIndexParameterToVariable(_ParameterToVariable):
 __all__ = [
     "MillerIndexParameterToVariable",
     "R2ParameterToVariable",
-    "RotParameterToVariable",
+    "MRPParameterToVariable",
     "SR2ParameterToVariable",
     "SSR4ParameterToVariable",
     "ScalarParameterToVariable",

@@ -93,7 +93,7 @@
           torch.linspace(0.0, -0.25, nbatch, dtype=torch.float64),
           torch.linspace(-0.1, 0.1, nbatch, dtype=torch.float64),
       ], dim=-1)
-      result = Rot(r_std / (torch.sqrt((r_std * r_std).sum(-1, keepdim=True) + 1.0) + 1.0))
+      result = MRP(r_std / (torch.sqrt((r_std * r_std).sum(-1, keepdim=True) + 1.0) + 1.0))
     '''
   []
 []
@@ -107,8 +107,8 @@
     prescribed_SR2_values = 'deformation_rate'
     prescribed_WR2_names = 'vorticity'
     prescribed_WR2_values = 'vorticity'
-    ic_Rot_names = 'orientation'
-    ic_Rot_values = 'initial_orientation'
+    ic_MRP_names = 'orientation'
+    ic_MRP_values = 'initial_orientation'
   []
 []
 
@@ -257,7 +257,7 @@
   []
   [predictor2]
     type = ConstantExtrapolationPredictor
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
   []
   [subsystem2]
     type = ImplicitUpdate

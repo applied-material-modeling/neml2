@@ -22,24 +22,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Rot — rotation stored as modified Rodrigues parameters (MRPs).
+"""Quaternion — unit quaternion orientation, packed ``(w, x, y, z)``.
 
-Base shape ``(3,)``. The three components are ``n * tan(theta/4)`` where ``n``
-is the rotation axis (unit vector) and ``theta`` the rotation angle. This is
-the same convention as ``include/neml2/tensors/Rot.h``; it differs from the
-standard Rodrigues parameters ``n * tan(theta/2)`` (which can be obtained by
-the inverse map). The zero vector is the identity rotation.
+Base shape ``(4,)``. Mirrors ``include/neml2/tensors/Quaternion.h``. The scalar
+part ``w`` is component 0; the vector part ``(x, y, z)`` is components 1-3. Used
+mainly as the natural carrier for crystal-symmetry operator tables (see
+:mod:`neml2.ops.symmetry`) and as an intermediate when sampling uniform
+orientations.
 
-MRPs aren't a vector space in the rotation-composition sense, but the
-underlying 3-vector storage supports the usual scalar arithmetic. The Newton
-residual in ``WR2ImplicitExponentialTimeIntegration`` uses ``-`` between Rots
-as elementwise 3-vector subtraction (correct as long as both sides are MRPs
-of the same orientation up to roundoff). Composition itself goes through the
-free :func:`compose` in :mod:`functions`.
-
-Arithmetic operators and ``zeros``/``ones``/``full``/``empty``/``fill``
-factories are inherited from :class:`PrimitiveTensor`. The only Rot-specific
-factory is :meth:`identity`.
+Arithmetic operators and the ``zeros``/``ones``/``full``/``empty``/``fill``
+factories are inherited from :class:`PrimitiveTensor`. Math-bearing operations
+(conversion to/from :class:`~neml2.types.MRP`, the rotation matrix, the
+quaternion geodesic distance) live in :mod:`functions`.
 """
 
 from __future__ import annotations
@@ -54,8 +48,8 @@ from neml2.types._pytree import register
 
 
 @dataclass(frozen=True, eq=False)
-class Rot(PrimitiveTensor):
-    """Wraps a `torch.Tensor` of shape ``(..., 3)`` in MRP packing."""
+class Quaternion(PrimitiveTensor):
+    """Wraps a `torch.Tensor` of shape ``(..., 4)`` packed ``(w, x, y, z)``."""
 
     data: torch.Tensor
     sub_batch_ndim: int = 0
@@ -65,14 +59,14 @@ class Rot(PrimitiveTensor):
     k_state: tuple = ()
     k_pairing: tuple = ()
     BASE_NDIM: ClassVar[int] = 1
-    BASE_SHAPE: ClassVar[tuple[int, ...]] = (3,)
+    BASE_SHAPE: ClassVar[tuple[int, ...]] = (4,)
 
     @classmethod
     def identity(
         cls, *, dtype: torch.dtype | None = None, device: torch.device | str | None = None
-    ) -> Rot:
-        """The identity rotation — the zero MRP vector."""
-        return cls(torch.zeros(3, dtype=dtype, device=device))
+    ) -> Quaternion:
+        """The identity rotation — the quaternion ``(1, 0, 0, 0)``."""
+        return cls(torch.tensor([1.0, 0.0, 0.0, 0.0], dtype=dtype, device=device))
 
 
-register(Rot)
+register(Quaternion)

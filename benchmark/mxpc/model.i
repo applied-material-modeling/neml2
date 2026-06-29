@@ -83,7 +83,7 @@
   # spread of orientations comparable to the legacy hand-picked set.
   [initial_orientation]
     type = Python
-    expr = 'Rot(torch.randn(${nbatch}, 3, dtype=torch.float64), sub_batch_ndim=1)'
+    expr = 'MRP(torch.randn(${nbatch}, 3, dtype=torch.float64), sub_batch_ndim=1)'
   []
   [initial_elastic_strain]
     type = Python
@@ -123,8 +123,8 @@
     prescribed_WR2_names = 'vorticity'
     prescribed_WR2_values = 'vorticity'
 
-    ic_Rot_names = 'orientation'
-    ic_Rot_values = 'initial_orientation'
+    ic_MRP_names = 'orientation'
+    ic_MRP_values = 'initial_orientation'
     ic_SR2_names = 'elastic_strain'
     ic_SR2_values = 'initial_elastic_strain'
     ic_Scalar_names = 'slip_hardening'
@@ -292,7 +292,7 @@
   [predictor]
     type = ConstantExtrapolationPredictor
     unknowns_SR2 = 'elastic_strain deformation_rate target_cauchy_stress'
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
     unknowns_Scalar = 'slip_hardening'
   []
   [model_bare]

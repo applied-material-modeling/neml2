@@ -27,7 +27,7 @@
 The C++ ``InputParameter<T>`` is instantiated for every primitive tensor type
 via the ``FOR_ALL_PRIMITIVETENSOR`` macro. The native surface re-implements the
 subset of those types that already have a typed wrapper under
-``neml2.types`` (``Scalar``, ``Vec``, ``Rot``, ``WR2``, ``R2``, ``SR2``,
+``neml2.types`` (``Scalar``, ``Vec``, ``MRP``, ``WR2``, ``R2``, ``SR2``,
 ``SSR4``, ``MillerIndex``) -- the same set as ``ConstantParameter`` /
 ``CopyVariable``. One shared ``_InputParameter`` base holds the
 identity forward/action; each registered variant only differs in the ``hit``
@@ -46,12 +46,12 @@ from __future__ import annotations
 from ...factory import register_neml2_object
 from ...schema import HitSchema, input, output
 from ...types import (
+    MRP,
     R2,
     SR2,
     SSR4,
     WR2,
     MillerIndex,
-    Rot,
     Scalar,
     TensorWrapper,
     Vec,
@@ -113,13 +113,13 @@ class VecInputParameter(_InputParameter):
     )
 
 
-@register_neml2_object("RotInputParameter")
-class RotInputParameter(_InputParameter):
-    """Rot-valued input parameter. Mirrors ``InputParameter<Rot>``."""
+@register_neml2_object("MRPInputParameter")
+class MRPInputParameter(_InputParameter):
+    """MRP-valued input parameter. Mirrors ``InputParameter<MRP>``."""
 
     hit = HitSchema(
-        input("variable", Rot, "The input variable that defines this parameter"),
-        output("parameter", Rot, "Output parameter"),
+        input("variable", MRP, "The input variable that defines this parameter"),
+        output("parameter", MRP, "Output parameter"),
     )
 
 
@@ -176,7 +176,7 @@ class MillerIndexInputParameter(_InputParameter):
 __all__ = [
     "MillerIndexInputParameter",
     "R2InputParameter",
-    "RotInputParameter",
+    "MRPInputParameter",
     "SR2InputParameter",
     "SSR4InputParameter",
     "ScalarInputParameter",

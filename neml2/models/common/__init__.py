@@ -45,8 +45,8 @@ from .ComposedModel import ComposedModel
 from .ConstantExtrapolationPredictor import ConstantExtrapolationPredictor
 from .ConstantParameter import (
     MillerIndexConstantParameter,
+    MRPConstantParameter,
     R2ConstantParameter,
-    RotConstantParameter,
     ScalarConstantParameter,
     SR2ConstantParameter,
     SSR4ConstantParameter,
@@ -55,8 +55,8 @@ from .ConstantParameter import (
 )
 from .CopyVariable import (
     CopyMillerIndex,
+    CopyMRP,
     CopyR2,
-    CopyRot,
     CopyScalar,
     CopySR2,
     CopySSR4,
@@ -75,8 +75,8 @@ from .HermiteSmoothStep import HermiteSmoothStep
 from .ImplicitUpdate import ImplicitUpdate
 from .InputParameter import (
     MillerIndexInputParameter,
+    MRPInputParameter,
     R2InputParameter,
-    RotInputParameter,
     ScalarInputParameter,
     SR2InputParameter,
     SSR4InputParameter,
@@ -95,8 +95,8 @@ from .MacaulaySplit import MacaulaySplit
 from .MixedControlSetup import MixedControlSetup
 from .ParameterToVariable import (
     MillerIndexParameterToVariable,
+    MRPParameterToVariable,
     R2ParameterToVariable,
-    RotParameterToVariable,
     ScalarParameterToVariable,
     SR2ParameterToVariable,
     SSR4ParameterToVariable,
@@ -145,7 +145,7 @@ __all__ = [
     "LinearExtrapolationPredictor",
     "MillerIndexConstantParameter",
     "R2ConstantParameter",
-    "RotConstantParameter",
+    "MRPConstantParameter",
     "SR2ConstantParameter",
     "SSR4ConstantParameter",
     "ScalarConstantParameter",
@@ -153,7 +153,7 @@ __all__ = [
     "WR2ConstantParameter",
     "CopyMillerIndex",
     "CopyR2",
-    "CopyRot",
+    "CopyMRP",
     "CopyScalar",
     "CopySR2",
     "CopySSR4",
@@ -161,7 +161,7 @@ __all__ = [
     "CopyWR2",
     "MillerIndexInputParameter",
     "R2InputParameter",
-    "RotInputParameter",
+    "MRPInputParameter",
     "SR2InputParameter",
     "SSR4InputParameter",
     "ScalarInputParameter",
@@ -169,7 +169,7 @@ __all__ = [
     "WR2InputParameter",
     "MillerIndexParameterToVariable",
     "R2ParameterToVariable",
-    "RotParameterToVariable",
+    "MRPParameterToVariable",
     "SR2ParameterToVariable",
     "SSR4ParameterToVariable",
     "ScalarParameterToVariable",

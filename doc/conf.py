@@ -186,6 +186,8 @@ nb_execution_excludepatterns = [
     "optimization/statistical/main.ipynb",
     "modules/kwn/precipitation_316h.ipynb",
     "modules/kwn/al_cu_ttp.ipynb",
+    "modules/solid_mechanics/crystal_plasticity/formulations.ipynb",
+    "modules/solid_mechanics/crystal_plasticity/polefigures.ipynb",
 ]
 
 # ---------------------------------------------------------------------------

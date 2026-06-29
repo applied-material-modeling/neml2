@@ -34,7 +34,7 @@
   []
   [initial_orientation]
     type = Python
-    expr = 'Rot(torch.tensor([-0.54412095, -0.34931944, 0.12600655], dtype=torch.float64))'
+    expr = 'MRP(torch.tensor([-0.54412095, -0.34931944, 0.12600655], dtype=torch.float64))'
   []
 []
 
@@ -47,8 +47,8 @@
     prescribed_SR2_values = 'deformation_rate'
     prescribed_WR2_names = 'vorticity'
     prescribed_WR2_values = 'vorticity'
-    ic_Rot_names = 'orientation'
-    ic_Rot_values = 'initial_orientation'
+    ic_MRP_names = 'orientation'
+    ic_MRP_values = 'initial_orientation'
   []
   [verification]
     type = Verification
@@ -167,7 +167,7 @@
   []
   [cp_warmup_2]
     type = ConstantExtrapolationPredictor
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
     unknowns_Scalar = 'slip_hardening'
   []
   [predictor]

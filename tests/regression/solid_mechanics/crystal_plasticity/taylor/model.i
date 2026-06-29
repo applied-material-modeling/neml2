@@ -27,7 +27,7 @@
   [initial_orientation]
     type = Python
     expr = '''
-      Rot(torch.tensor([[-0.269981, -0.299844, -0.86408],
+      MRP(torch.tensor([[-0.269981, -0.299844, -0.86408],
                         [0.209546, 0.192014, 0.514051],
                         [-0.0251234, -0.0175916, -0.636644],
                         [-0.146257, -0.0475218, -0.970804],
@@ -76,8 +76,8 @@
     prescribed_WR2_names = 'vorticity'
     prescribed_WR2_values = 'vorticity'
 
-    ic_Rot_names = 'orientation'
-    ic_Rot_values = 'initial_orientation'
+    ic_MRP_names = 'orientation'
+    ic_MRP_values = 'initial_orientation'
     ic_SR2_names = 'elastic_strain'
     ic_SR2_values = 'initial_elastic_strain'
     ic_Scalar_names = 'slip_hardening'
@@ -251,7 +251,7 @@
   [predictor]
     type = ConstantExtrapolationPredictor
     unknowns_SR2 = 'elastic_strain deformation_rate target_cauchy_stress'
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
     unknowns_Scalar = 'slip_hardening'
   []
   [model_bare]

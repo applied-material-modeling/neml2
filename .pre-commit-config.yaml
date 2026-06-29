@@ -28,15 +28,16 @@ repos:
         # The expensive notebooks rendered from pre-baked outputs (excluded
         # from build-time execution in ``doc/conf.py``) must stay fully
         # executed -- an unexecuted cell would render empty or stale. These
-        # are the two pyzag calibration tutorials plus the physics-module KWN
-        # worked examples (316H precipitation, Al-Cu TTP). The cheap tutorial
+        # are the two pyzag calibration tutorials plus the physics-module
+        # worked examples (KWN 316H precipitation / Al-Cu TTP and the crystal
+        # plasticity formulations / pole figures). The cheap tutorial
         # notebooks are executed at build (``nb_execution_mode = "cache"``)
         # and committed without outputs, so they are deliberately NOT checked
         # here. Mirrors v2's check at ``doc/scripts/examples.py``.
         entry: doc/scripts/check_notebook_executed.py
         language: script
         files: >-
-          ^doc/content/(tutorials/optimization/(deterministic|statistical)/main|modules/kwn/(precipitation_316h|al_cu_ttp))\.ipynb$
+          ^doc/content/(tutorials/optimization/(deterministic|statistical)/main|modules/kwn/(precipitation_316h|al_cu_ttp)|modules/solid_mechanics/crystal_plasticity/(formulations|polefigures))\.ipynb$
         pass_filenames: true
       - id: nmhit-format
         name: nmhit-format

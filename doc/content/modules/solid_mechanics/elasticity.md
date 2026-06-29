@@ -175,7 +175,7 @@ The tensor-form leaves ([](models-IsotropicElasticityTensor),
 itself as a single `SSR4` named after the HIT block. They're useful
 when downstream models need the explicit stiffness — for example a
 [](models-GeneralElasticity) that consumes
-`elastic_stiffness_tensor` and an `orientation : Rot`, or any custom
+`elastic_stiffness_tensor` and an `orientation : MRP`, or any custom
 composition that contracts $\mathbb{C}$ against something other than
 a plain strain.
 

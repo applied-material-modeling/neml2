@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, input, option, output
-from ....types import Rot, inner, lt, where
+from ....types import MRP, inner, lt, where
 from ...chain_rule import ChainRuleDict
 from ...model import Model
 
@@ -45,10 +45,10 @@ class FixOrientation(Model):
     """
 
     hit = HitSchema(
-        input("input", Rot, "Name of input tensor of orientations to operate on."),
+        input("input", MRP, "Name of input tensor of orientations to operate on."),
         output(
             "output",
-            Rot,
+            MRP,
             "Name of output tensor",
             # Declared ``priority="high"`` so composition with another
             # producer of the same name (e.g. ``input='orientation'`` /
@@ -74,10 +74,10 @@ class FixOrientation(Model):
 
     def forward(  # type: ignore[override]
         self,
-        r: Rot,
+        r: MRP,
         v: ChainRuleDict | None = None,
-    ) -> Rot | tuple[Rot, ChainRuleDict]:
-        # ns = ‖r‖² as a Scalar; ``inner(Rot, Rot)`` contracts the three MRP
+    ) -> MRP | tuple[MRP, ChainRuleDict]:
+        # ns = ‖r‖² as a Scalar; ``inner(MRP, MRP)`` contracts the three MRP
         # components into a Scalar over the shared batch + sub-batch axes.
         ns = inner(r, r)
         # Shadow MRP set: r* = -r / ns. Same orientation, but with norm 1/‖r‖,
@@ -95,7 +95,7 @@ class FixOrientation(Model):
         # per-element tangent — no Jacobian materialised.
         ns_sq = ns * ns
 
-        def r_action(V: Rot) -> Rot:
+        def r_action(V: MRP) -> MRP:
             vdotr = inner(r, V)
             d_shadow_v = (vdotr * r) * (2.0 / ns_sq) - V / ns
             return where(cond, V, d_shadow_v)

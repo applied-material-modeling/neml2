@@ -8,7 +8,7 @@
   # end_time = LinspaceScalar(1, 10, 20) -> shape (20,)
   [end_time]
     type = Python
-    expr = 'Scalar.linspace(1.0, 10.0, 20)'
+    expr = 'linspace(Scalar(1.0).dynamic_batch, Scalar(10.0).dynamic_batch, 20)'
   []
   # times = LinspaceScalar(0, end_time, 100) -> shape (100, 20)
   [times]
@@ -55,7 +55,7 @@
   # r = r_std / (sqrt(|r_std|^2 + 1) + 1). Shape (20, 3).
   [initial_orientation]
     type = Python
-    expr = 'Rot((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
+    expr = 'MRP((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
   []
   # Initial dislocation density: FullScalar(value=10, batch_shape=(20,12),
   # intermediate_dimension=1) -> shape (20, 12), sub_batch_ndim=1 marks the
@@ -77,8 +77,8 @@
     prescribed_WR2_values = 'vorticity'
     ic_Scalar_names = 'dislocation_density'
     ic_Scalar_values = 'initial_dislocation_density'
-    ic_Rot_names = 'orientation'
-    ic_Rot_values = 'initial_orientation'
+    ic_MRP_names = 'orientation'
+    ic_MRP_values = 'initial_orientation'
   []
   [regression]
     type = TransientRegression
@@ -192,7 +192,7 @@
   []
   [cp_warmup_2]
     type = ConstantExtrapolationPredictor
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
     unknowns_Scalar = 'dislocation_density'
   []
   [predictor]
