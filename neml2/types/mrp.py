@@ -44,13 +44,18 @@ factory is :meth:`identity`.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import torch
 
 from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
+
+if TYPE_CHECKING:
+    from neml2.types.scalar import Scalar
+    from neml2.types.vec import Vec
 
 
 @dataclass(frozen=True, eq=False)
@@ -73,6 +78,61 @@ class MRP(PrimitiveTensor):
     ) -> MRP:
         """The identity rotation — the zero MRP vector."""
         return cls(torch.zeros(3, dtype=dtype, device=device))
+
+    # ---- orientation constructors (plain batch; mirror v2 ``Rot``) ----
+
+    @classmethod
+    def rand(
+        cls,
+        *shape: int,
+        dtype: torch.dtype | None = None,
+        device: torch.device | str | None = None,
+    ) -> MRP:
+        """``shape`` orientations sampled uniformly on SO(3).
+
+        Shoemake's method (``Rot::rand`` in ``src/neml2/tensors/Rot.cxx``): three
+        uniform deviates build a uniform unit quaternion, converted to the MRP
+        ``q_vec / (1 + q_w)``.
+        """
+        u = torch.rand(*shape, 3, dtype=dtype or torch.float64, device=device)
+        u0, u1, u2 = u[..., 0], u[..., 1], u[..., 2]
+        tau = 2.0 * math.pi
+        w = torch.sqrt(1.0 - u0) * torch.sin(tau * u1)
+        x = torch.sqrt(1.0 - u0) * torch.cos(tau * u1)
+        y = torch.sqrt(u0) * torch.sin(tau * u2)
+        z = torch.sqrt(u0) * torch.cos(tau * u2)
+        return cls(torch.stack([x, y, z], dim=-1) / (1.0 + w).unsqueeze(-1))
+
+    @classmethod
+    def from_axis_angle(cls, n: Vec, theta: Scalar) -> MRP:
+        """MRP for a rotation of ``theta`` about axis ``n`` (need not be unit).
+
+        Matches ``Rot::axis_angle``: ``(n / |n|) * tan(theta / 4)``.
+        """
+        nn = n.data / torch.linalg.vector_norm(n.data, dim=-1, keepdim=True)
+        return cls(nn * torch.tan(theta.data / 4.0).unsqueeze(-1), sub_batch_ndim=n.sub_batch_ndim)
+
+    @classmethod
+    def from_axis_angle_standard(cls, n: Vec, theta: Scalar) -> MRP:
+        """MRP from a standard axis-angle (``Rot::axis_angle_standard``): the
+        ``n * tan(theta / 2)`` Rodrigues vector mapped to MRP packing."""
+        nn = n.data / torch.linalg.vector_norm(n.data, dim=-1, keepdim=True)
+        vn = nn * torch.tan(theta.data / 2.0).unsqueeze(-1)  # standard Rodrigues
+        nsq = (vn * vn).sum(dim=-1, keepdim=True)
+        return cls(vn / (torch.sqrt(1.0 + nsq) + 1.0), sub_batch_ndim=n.sub_batch_ndim)
+
+    @classmethod
+    def rotation_from_to(cls, v1: Vec, v2: Vec) -> MRP:
+        """MRP of the shortest rotation taking direction ``v1`` to ``v2``.
+
+        Matches ``Rot::rotation_from_to``.
+        """
+        a, b = v1.data, v2.data
+        n = torch.linalg.cross(a, b, dim=-1)
+        c = (a * b).sum(dim=-1, keepdim=True)
+        srp = n / (1.0 + c)
+        nsrp = (srp * srp).sum(dim=-1, keepdim=True)
+        return cls(srp / (torch.sqrt(1.0 + nsrp) + 1.0), sub_batch_ndim=v1.sub_batch_ndim)
 
 
 register(MRP)

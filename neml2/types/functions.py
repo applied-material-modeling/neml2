@@ -56,6 +56,7 @@ from neml2.types._base import (
     wrap_like,
 )
 from neml2.types.mrp import MRP
+from neml2.types.quaternion import Quaternion
 from neml2.types.r2 import R2
 from neml2.types.scalar import Scalar
 from neml2.types.sr2 import SR2
@@ -2048,6 +2049,130 @@ def _cross_raw(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     return torch.cross(a, b, dim=-1)
 
 
+# ---- Vec products ----
+
+
+def cross(a: Vec, b: Vec) -> Vec:
+    """Vector cross product ``a × b`` over the base 3-axis (``neml2::cross``)."""
+    [aa, bb], sb = align_sub_batch(a, b)
+    state, meta = combine_sub_batch_state(aa, bb)
+    k_ndim, k_state, k_pairing = _combine_k_from_operands(aa, bb)
+    return Vec(
+        _cross_raw(aa.data, bb.data),
+        sub_batch_ndim=sb,
+        sub_batch_state=state,
+        sub_batch_meta=meta,
+        k_ndim=k_ndim,
+        k_state=k_state,
+        k_pairing=k_pairing,
+    )
+
+
+def vdot(a: Vec, b: Vec) -> Scalar:
+    """Dot product of two ``Vec`` over the base 3-axis (``neml2::vdot``)."""
+    [aa, bb], sb = align_sub_batch(a, b)
+    state, meta = combine_sub_batch_state(aa, bb)
+    k_ndim, k_state, k_pairing = _combine_k_from_operands(aa, bb)
+    return Scalar(
+        (aa.data * bb.data).sum(dim=-1),
+        sub_batch_ndim=sb,
+        sub_batch_state=state,
+        sub_batch_meta=meta,
+        k_ndim=k_ndim,
+        k_state=k_state,
+        k_pairing=k_pairing,
+    )
+
+
+# ---- MRP orientation operations (mirror v2 ``Rot`` methods) ----
+
+
+def inverse(r: MRP) -> MRP:
+    """Inverse rotation of an MRP — the negated MRP vector (``Rot::inv``)."""
+    return r._rewrap(-r.data, sub_batch_ndim=r.sub_batch_ndim)
+
+
+def shadow(r: MRP) -> MRP:
+    """The shadow MRP set ``-r / ||r||^2`` — same orientation (``Rot::shadow``)."""
+    nsq = (r.data * r.data).sum(dim=-1, keepdim=True)
+    return r._rewrap(-r.data / nsq, sub_batch_ndim=r.sub_batch_ndim)
+
+
+def gdist(r1: MRP, r2: MRP) -> Scalar:
+    """Raw geodesic distance between two MRPs, ignoring the shadow set
+    (``Rot::gdist``): ``4 asin(clip(||r1-r2|| / sqrt((1+||r1||^2)(1+||r2||^2)), -1, 1))``."""
+    [a, b], sb = align_sub_batch(r1, r2)
+    na = (a.data * a.data).sum(dim=-1)
+    nb = (b.data * b.data).sum(dim=-1)
+    diff = torch.sqrt(((a.data - b.data) ** 2).sum(dim=-1))
+    arg = torch.clamp(diff / torch.sqrt((1.0 + na) * (1.0 + nb)), -1.0, 1.0)
+    state, meta = combine_sub_batch_state(a, b)
+    k_ndim, k_state, k_pairing = _combine_k_from_operands(a, b)
+    return Scalar(
+        4.0 * torch.asin(arg),
+        sub_batch_ndim=sb,
+        sub_batch_state=state,
+        sub_batch_meta=meta,
+        k_ndim=k_ndim,
+        k_state=k_state,
+        k_pairing=k_pairing,
+    )
+
+
+def dist(r1: MRP, r2: MRP) -> Scalar:
+    """Geodesic distance between MRPs, accounting for shadow mapping (``Rot::dist``):
+    the minimum :func:`gdist` over the four (r, shadow(r)) pairings."""
+    r1s, r2s = shadow(r1), shadow(r2)
+    d = gdist(r1, r2)
+    for other in (gdist(r1, r2s), gdist(r2s, r2), gdist(r2s, r1s)):
+        d = d._rewrap(torch.minimum(d.data, other.data), sub_batch_ndim=d.sub_batch_ndim)
+    return d
+
+
+def dV(r: MRP) -> Scalar:
+    """SO(3) volume element ``(8/π) (1 + ||r||^2)^-3`` (``Rot::dV``)."""
+    nsq = (r.data * r.data).sum(dim=-1)
+    return wrap_like(Scalar, (8.0 / math.pi) * (1.0 + nsq) ** (-3.0), r)
+
+
+# ---- Quaternion ↔ MRP / rotation matrix / distance ----
+
+
+def to_quaternion(r: MRP) -> Quaternion:
+    """MRP → unit quaternion ``(w, x, y, z)`` (``Quaternion(const Rot&)``)."""
+    nsq = (r.data * r.data).sum(dim=-1, keepdim=True)
+    w = (1.0 - nsq) / (1.0 + nsq)
+    vec = 2.0 * r.data / (1.0 + nsq)
+    return Quaternion(torch.cat([w, vec], dim=-1), sub_batch_ndim=r.sub_batch_ndim)
+
+
+def quaternion_rotation_matrix(q: Quaternion) -> R2:
+    """Unit quaternion ``(w, x, y, z)`` → 3×3 rotation matrix
+    (``Quaternion::rotation_matrix``)."""
+    w, x, y, z = q.data[..., 0], q.data[..., 1], q.data[..., 2], q.data[..., 3]
+    row0 = torch.stack([1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)], dim=-1)
+    row1 = torch.stack([2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)], dim=-1)
+    row2 = torch.stack([2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)], dim=-1)
+    return wrap_like(R2, torch.stack([row0, row1, row2], dim=-2), q)
+
+
+def quaternion_dist(q1: Quaternion, q2: Quaternion) -> Scalar:
+    """Quaternion geodesic distance ``2 acos(min(|q1·q2|, 1))`` (``Quaternion::dist``)."""
+    [a, b], sb = align_sub_batch(q1, q2)
+    dp = torch.abs((a.data * b.data).sum(dim=-1))
+    state, meta = combine_sub_batch_state(a, b)
+    k_ndim, k_state, k_pairing = _combine_k_from_operands(a, b)
+    return Scalar(
+        2.0 * torch.acos(torch.minimum(dp, torch.ones_like(dp))),
+        sub_batch_ndim=sb,
+        sub_batch_state=state,
+        sub_batch_meta=meta,
+        k_ndim=k_ndim,
+        k_state=k_state,
+        k_pairing=k_pairing,
+    )
+
+
 def drotate_self(r1: MRP, r2: MRP) -> R2:
     """``d(r2 ∘ r1) / d(r1)`` where the composition is ``r2 * r1``.
 
@@ -2817,19 +2942,24 @@ __all__ = [
     "allclose",
     "compose",
     "cosh",
+    "cross",
     "det",
     "dev",
     "dexp_map",
     "diff",
+    "dist",
     "drotate",
     "drotate_self",
+    "dV",
     "equal",
     "euler_rodrigues",
     "exp",
     "exp_map",
+    "gdist",
     "gt",
     "inner",
     "inv",
+    "inverse",
     "jvp_compose",
     "jvp_euler_rodrigues",
     "jvp_exp_map",
@@ -2845,9 +2975,12 @@ __all__ = [
     "norm",
     "outer",
     "pow",
+    "quaternion_dist",
+    "quaternion_rotation_matrix",
     "r2_from_sr2",
     "r2_from_wr2",
     "rotate",
+    "shadow",
     "skew",
     "sign",
     "sinh",
@@ -2855,8 +2988,10 @@ __all__ = [
     "sum",
     "sym",
     "tanh",
+    "to_quaternion",
     "tr",
     "unit",
+    "vdot",
     "vec_component",
     "vec_from_scalars",
     "vol",
