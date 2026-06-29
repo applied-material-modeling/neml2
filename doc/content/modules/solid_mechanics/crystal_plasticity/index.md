@@ -67,7 +67,7 @@ The catalog supports two integration strategies for the orientation equation: fu
 
 The input file below assembles a single-crystal model with isotropic elasticity, a power-law slip rule, Voce hardening on a single (shared) slip strength, and fully coupled implicit integration of elastic strain, hardening, and orientation. The driver sweeps 20 batched initial orientations under a constant deformation-rate / vorticity history.
 
-```{literalinclude} ../../../../tests/regression/solid_mechanics/crystal_plasticity/single_crystal_coupled/model.i
+```{literalinclude} ../../../../../tests/regression/solid_mechanics/crystal_plasticity/single_crystal_coupled/model.i
 :language: ini
 :caption: tests/regression/solid_mechanics/crystal_plasticity/single_crystal_coupled/model.i
 ```
@@ -108,6 +108,19 @@ The final `model_with_stress` composes the implicit update with the elasticity m
 :::{tip}
 If you need to *post-process* an orientation (e.g. wrap the modified-Rodrigues parameters back into the fundamental zone before writing output), append a [](models-FixOrientation) model to the chain.
 :::
+
+## Worked examples
+
+End-to-end notebooks that drive a single-crystal model through a rolling
+history with [pyzag](https://github.com/Argonne-National-Laboratory/pyzag) and
+reconstruct the deformed texture:
+
+```{toctree}
+:maxdepth: 1
+
+formulations
+polefigures
+```
 
 ## See also
 
