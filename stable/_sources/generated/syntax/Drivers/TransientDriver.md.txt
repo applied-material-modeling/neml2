@@ -81,17 +81,17 @@ Mirrors C++ ``TransientDriver``. See module docstring for differences.
 `ic_R2_values` &mdash; `list`
 : R2 initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_R2_names``.
 
-`prescribed_Rot_names` &mdash; `list`
-: Rot variable names assigned a prescribed value.
+`prescribed_MRP_names` &mdash; `list`
+: MRP variable names assigned a prescribed value.
 
-`prescribed_Rot_values` &mdash; `list`
-: Rot prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_Rot_names``.
+`prescribed_MRP_values` &mdash; `list`
+: MRP prescribed tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``prescribed_MRP_names``.
 
-`ic_Rot_names` &mdash; `list`
-: Rot variable names assigned an initial condition value.
+`ic_MRP_names` &mdash; `list`
+: MRP variable names assigned an initial condition value.
 
-`ic_Rot_values` &mdash; `list`
-: Rot initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_Rot_names``.
+`ic_MRP_values` &mdash; `list`
+: MRP initial condition tokens. Each is either an inline Scalar literal (Scalar only) or a [Tensors] block name. Length must match ``ic_MRP_names``.
 
 `prescribed_SSR4_names` &mdash; `list`
 : SSR4 variable names assigned a prescribed value.

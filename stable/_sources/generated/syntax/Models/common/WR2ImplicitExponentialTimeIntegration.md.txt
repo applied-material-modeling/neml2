@@ -10,7 +10,7 @@ $\circ$ denotes the rotation operator.
 
 ## Inputs
 
-`variable` &mdash; `input` &middot; `Rot` &middot; **required**
+`variable` &mdash; `input` &middot; `MRP` &middot; **required**
 : Integrated rotation
 
 `time` &mdash; `input` &middot; `Scalar` &middot; default `t`

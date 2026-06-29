@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OrthotropicLinearTraction - NEML2 3.0.5</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="PowerLawFullSeparation" href="PowerLawFullSeparation.html" /><link rel="prev" title="ModeMixity" href="ModeMixity.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OrthotropicLinearTraction - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="PowerLawFullSeparation" href="PowerLawFullSeparation.html" /><link rel="prev" title="ModeMixity" href="ModeMixity.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -94,18 +94,33 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../content/tensor_types.html">Tensor types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../content/tensor_types/index.html">Tensor types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../content/tensor_types/primitive_types.html">Primitive (fixed-base-shape) tensor types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../content/tensor_types/regions.html">Tensor shape regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../content/tensor_types/batching.html">Batching and broadcasting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../content/tensor_types/region_views.html">Region views</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../content/tensor_types/indexing.html">Indexing</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../content/modules/index.html">Physics modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/modules/chemical_reactions.html">Chemical reactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/modules/finite_volume.html">Finite volume</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../../content/modules/kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../content/modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/index.html">Solid mechanics</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/elasticity.html">Elasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/plasticity.html">Plasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../../content/modules/solid_mechanics/kinematics.html">Kinematics</a></li>
 </ul>
@@ -161,9 +176,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopyR2.html">CopyR2</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../common/CopyRot.html">CopyRot</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopySR2.html">CopySR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopySSR4.html">CopySSR4</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/CopyScalar.html">CopyScalar</a></li>
@@ -174,6 +189,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/ImplicitUpdate.html">ImplicitUpdate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/MacaulaySplit.html">MacaulaySplit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
@@ -188,9 +206,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2VariableRate.html">R2VariableRate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../common/RotConstantParameter.html">RotConstantParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../common/RotInputParameter.html">RotInputParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../common/RotParameterToVariable.html">RotParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -490,7 +505,7 @@ required); otherwise interpenetration produces zero normal traction.</p>
     </div>
   </div>
 </footer>
-      <script src="../../../../../_static/documentation_options.js?v=f4ced14b"></script>
+      <script src="../../../../../_static/documentation_options.js?v=c3365b21"></script>
       <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>

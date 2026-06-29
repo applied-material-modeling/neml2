@@ -15,7 +15,7 @@ where $\circ$ denotes the rotation operator.
 
 ## Outputs
 
-`variable` &mdash; `output` &middot; `Rot` &middot; **required**
+`variable` &mdash; `output` &middot; `MRP` &middot; **required**
 : Variable being integrated
 
 

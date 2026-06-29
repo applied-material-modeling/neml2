@@ -13,13 +13,13 @@ Rotational Dynamics Using Modified Rodrigues Parameters." (2023).
 
 ## Inputs
 
-`input` &mdash; `input` &middot; `Rot` &middot; **required**
+`input` &mdash; `input` &middot; `MRP` &middot; **required**
 : Name of input tensor of orientations to operate on.
 
 
 ## Outputs
 
-`output` &mdash; `output` &middot; `Rot` &middot; **required**
+`output` &mdash; `output` &middot; `MRP` &middot; **required**
 : Name of output tensor
 
 

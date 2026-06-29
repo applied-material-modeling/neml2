@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.types - NEML2 3.0.5</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="neml2.models" href="neml2.models.html" /><link rel="prev" title="neml2.models.resolver" href="neml2.models.resolver.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.types - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="neml2.models" href="neml2.models.html" /><link rel="prev" title="neml2.models.resolver" href="neml2.models.resolver.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -94,18 +94,33 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../tensor_types.html">Tensor types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/primitive_types.html">Primitive (fixed-base-shape) tensor types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/regions.html">Tensor shape regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/batching.html">Batching and broadcasting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/region_views.html">Region views</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/indexing.html">Indexing</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/index.html">Physics modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modules/chemical_reactions.html">Chemical reactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/finite_volume.html">Finite volume</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/elasticity.html">Elasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/plasticity.html">Plasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/kinematics.html">Kinematics</a></li>
 </ul>
@@ -161,9 +176,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyRot.html">CopyRot</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
@@ -174,6 +189,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
@@ -188,9 +206,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotConstantParameter.html">RotConstantParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotInputParameter.html">RotInputParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotParameterToVariable.html">RotParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -356,6 +371,24 @@ data-aria-dark="Switch to auto color mode">
       <i class="i-lucide close"></i>
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#neml2.types.MRP"><code class="docutils literal notranslate"><span class="pre">MRP</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.types.MRP.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.data"><code class="docutils literal notranslate">data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.from_axis_angle"><code class="docutils literal notranslate">from_axis_angle()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.from_axis_angle_standard"><code class="docutils literal notranslate">from_axis_angle_standard()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.from_matrix"><code class="docutils literal notranslate">from_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.identity"><code class="docutils literal notranslate">identity()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.rand"><code class="docutils literal notranslate">rand()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.rotation_from_to"><code class="docutils literal notranslate">rotation_from_to()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#neml2.types.MillerIndex"><code class="docutils literal notranslate"><span class="pre">MillerIndex</span></code></a><ul>
 <li><a class="reference internal" href="#neml2.types.MillerIndex.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.MillerIndex.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
@@ -377,6 +410,19 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.PrimitiveTensor.zeros_like"><code class="docutils literal notranslate">zeros_like()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#neml2.types.Quaternion"><code class="docutils literal notranslate"><span class="pre">Quaternion</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.types.Quaternion.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.data"><code class="docutils literal notranslate">data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.identity"><code class="docutils literal notranslate">identity()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#neml2.types.R2"><code class="docutils literal notranslate"><span class="pre">R2</span></code></a><ul>
 <li><a class="reference internal" href="#neml2.types.R2.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.R2.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
@@ -388,19 +434,6 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.R2.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.R2.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.R2.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#neml2.types.Rot"><code class="docutils literal notranslate"><span class="pre">Rot</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.Rot.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Rot.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Rot.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Rot.identity"><code class="docutils literal notranslate">identity()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Rot.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Rot.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Rot.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Rot.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Rot.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Rot.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.SR2"><code class="docutils literal notranslate"><span class="pre">SR2</span></code></a><ul>
@@ -446,7 +479,6 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.Scalar.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.Scalar.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.Scalar.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.linspace"><code class="docutils literal notranslate">linspace()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.Scalar.ones"><code class="docutils literal notranslate">ones()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.Scalar.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.Scalar.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
@@ -550,27 +582,34 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.clamp"><code class="docutils literal notranslate"><span class="pre">clamp()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.compose"><code class="docutils literal notranslate"><span class="pre">compose()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.cosh"><code class="docutils literal notranslate"><span class="pre">cosh()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.cross"><code class="docutils literal notranslate"><span class="pre">cross()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.dV"><code class="docutils literal notranslate"><span class="pre">dV()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.det"><code class="docutils literal notranslate"><span class="pre">det()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.dev"><code class="docutils literal notranslate"><span class="pre">dev()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.dexp_map"><code class="docutils literal notranslate"><span class="pre">dexp_map()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.diff"><code class="docutils literal notranslate"><span class="pre">diff()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.dist"><code class="docutils literal notranslate"><span class="pre">dist()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.drotate"><code class="docutils literal notranslate"><span class="pre">drotate()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.drotate_self"><code class="docutils literal notranslate"><span class="pre">drotate_self()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.euler_rodrigues"><code class="docutils literal notranslate"><span class="pre">euler_rodrigues()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.exp"><code class="docutils literal notranslate"><span class="pre">exp()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.exp_map"><code class="docutils literal notranslate"><span class="pre">exp_map()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.gdist"><code class="docutils literal notranslate"><span class="pre">gdist()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.gt"><code class="docutils literal notranslate"><span class="pre">gt()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.heaviside"><code class="docutils literal notranslate"><span class="pre">heaviside()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.inner"><code class="docutils literal notranslate"><span class="pre">inner()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.inv"><code class="docutils literal notranslate"><span class="pre">inv()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.inverse"><code class="docutils literal notranslate"><span class="pre">inverse()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.jvp_compose"><code class="docutils literal notranslate"><span class="pre">jvp_compose()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.jvp_euler_rodrigues"><code class="docutils literal notranslate"><span class="pre">jvp_euler_rodrigues()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.jvp_exp_map"><code class="docutils literal notranslate"><span class="pre">jvp_exp_map()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.jvp_linear_interpolation"><code class="docutils literal notranslate"><span class="pre">jvp_linear_interpolation()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.jvp_rotate"><code class="docutils literal notranslate"><span class="pre">jvp_rotate()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.linear_interpolation"><code class="docutils literal notranslate"><span class="pre">linear_interpolation()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.linspace"><code class="docutils literal notranslate"><span class="pre">linspace()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.log"><code class="docutils literal notranslate"><span class="pre">log()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.log10"><code class="docutils literal notranslate"><span class="pre">log10()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.logspace"><code class="docutils literal notranslate"><span class="pre">logspace()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.lt"><code class="docutils literal notranslate"><span class="pre">lt()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.macaulay"><code class="docutils literal notranslate"><span class="pre">macaulay()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.mean"><code class="docutils literal notranslate"><span class="pre">mean()</span></code></a></li>
@@ -578,10 +617,13 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.opaque_pow"><code class="docutils literal notranslate"><span class="pre">opaque_pow()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.outer"><code class="docutils literal notranslate"><span class="pre">outer()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.pow"><code class="docutils literal notranslate"><span class="pre">pow()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.quaternion_dist"><code class="docutils literal notranslate"><span class="pre">quaternion_dist()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.quaternion_rotation_matrix"><code class="docutils literal notranslate"><span class="pre">quaternion_rotation_matrix()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.r2_from_sr2"><code class="docutils literal notranslate"><span class="pre">r2_from_sr2()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.r2_from_wr2"><code class="docutils literal notranslate"><span class="pre">r2_from_wr2()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.reciprocal"><code class="docutils literal notranslate"><span class="pre">reciprocal()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.rotate"><code class="docutils literal notranslate"><span class="pre">rotate()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.shadow"><code class="docutils literal notranslate"><span class="pre">shadow()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.sign"><code class="docutils literal notranslate"><span class="pre">sign()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.sinh"><code class="docutils literal notranslate"><span class="pre">sinh()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.skew"><code class="docutils literal notranslate"><span class="pre">skew()</span></code></a></li>
@@ -590,8 +632,10 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.sum"><code class="docutils literal notranslate"><span class="pre">sum()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.sym"><code class="docutils literal notranslate"><span class="pre">sym()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.tanh"><code class="docutils literal notranslate"><span class="pre">tanh()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.to_quaternion"><code class="docutils literal notranslate"><span class="pre">to_quaternion()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.tr"><code class="docutils literal notranslate"><span class="pre">tr()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.unit"><code class="docutils literal notranslate"><span class="pre">unit()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.vdot"><code class="docutils literal notranslate"><span class="pre">vdot()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.vec_component"><code class="docutils literal notranslate"><span class="pre">vec_component()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.vec_from_scalars"><code class="docutils literal notranslate"><span class="pre">vec_from_scalars()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.vol"><code class="docutils literal notranslate"><span class="pre">vol()</span></code></a></li>
@@ -644,8 +688,187 @@ ops are exposed through region-view properties (<code class="docutils literal no
 unambiguous — e.g. <code class="docutils literal notranslate"><span class="pre">t.sub_batch.unsqueeze(-1)</span></code> or
 <code class="docutils literal notranslate"><span class="pre">t.base.transpose(-2,</span> <span class="pre">-1)</span></code>. Everything else (invariants,
 decompositions, transcendentals, math-bearing type conversions like
-<code class="docutils literal notranslate"><span class="pre">euler_rodrigues(Rot)</span> <span class="pre">-&gt;</span> <span class="pre">R2</span></code>) lives in <code class="xref py py-mod docutils literal notranslate"><span class="pre">neml2.types.functions</span></code>
+<code class="docutils literal notranslate"><span class="pre">euler_rodrigues(MRP)</span> <span class="pre">-&gt;</span> <span class="pre">R2</span></code>) lives in <code class="xref py py-mod docutils literal notranslate"><span class="pre">neml2.types.functions</span></code>
 as free functions, matching how the C++ side exposes them.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="neml2.types.MRP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">MRP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_pairing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/mrp.html#MRP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.MRP" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#neml2.types.PrimitiveTensor" title="neml2.types._primitive.PrimitiveTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrimitiveTensor</span></code></a></p>
+<p>Wraps a <cite>torch.Tensor</cite> of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">3)</span></code> in MRP packing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a>)</p></li>
+<li><p><strong>sub_batch_ndim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>sub_batch_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
+<li><p><strong>sub_batch_meta</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
+<li><p><strong>k_ndim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>k_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
+<li><p><strong>k_pairing</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.MRP.BASE_NDIM">
+<span class="sig-name descname"><span class="pre">BASE_NDIM</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#neml2.types.MRP.BASE_NDIM" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.MRP.BASE_SHAPE">
+<span class="sig-name descname"><span class="pre">BASE_SHAPE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(3,)</span></em><a class="headerlink" href="#neml2.types.MRP.BASE_SHAPE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.MRP.data">
+<span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><span class="pre">torch.Tensor</span></a></em><a class="headerlink" href="#neml2.types.MRP.data" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.types.MRP.from_axis_angle">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_axis_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/mrp.html#MRP.from_axis_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.MRP.from_axis_angle" title="Link to this definition">¶</a></dt>
+<dd><p>MRP for a rotation of <code class="docutils literal notranslate"><span class="pre">theta</span></code> about axis <code class="docutils literal notranslate"><span class="pre">n</span></code> (need not be unit).</p>
+<p>Matches <code class="docutils literal notranslate"><span class="pre">Rot::axis_angle</span></code>: <code class="docutils literal notranslate"><span class="pre">(n</span> <span class="pre">/</span> <span class="pre">|n|)</span> <span class="pre">*</span> <span class="pre">tan(theta</span> <span class="pre">/</span> <span class="pre">4)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference internal" href="#neml2.types.Vec" title="neml2.types.Vec"><em>Vec</em></a>)</p></li>
+<li><p><strong>theta</strong> (<a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.Scalar"><em>Scalar</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.MRP">MRP</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.types.MRP.from_axis_angle_standard">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_axis_angle_standard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/mrp.html#MRP.from_axis_angle_standard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.MRP.from_axis_angle_standard" title="Link to this definition">¶</a></dt>
+<dd><p>MRP from a standard axis-angle (<code class="docutils literal notranslate"><span class="pre">Rot::axis_angle_standard</span></code>): the
+<code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">*</span> <span class="pre">tan(theta</span> <span class="pre">/</span> <span class="pre">2)</span></code> Rodrigues vector mapped to MRP packing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference internal" href="#neml2.types.Vec" title="neml2.types.Vec"><em>Vec</em></a>)</p></li>
+<li><p><strong>theta</strong> (<a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.Scalar"><em>Scalar</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.MRP">MRP</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.types.MRP.from_matrix">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/mrp.html#MRP.from_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.MRP.from_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>MRP recovered from a proper rotation matrix (<code class="docutils literal notranslate"><span class="pre">Rot::fill_matrix</span></code>).</p>
+<p>The angle comes from the trace, the axis from the skew part; together
+they give the standard Rodrigues vector <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">*</span> <span class="pre">tan(theta</span> <span class="pre">/</span> <span class="pre">2)</span></code>, mapped
+to MRP packing <code class="docutils literal notranslate"><span class="pre">r_std</span> <span class="pre">/</span> <span class="pre">(sqrt(|r_std|^2</span> <span class="pre">+</span> <span class="pre">1)</span> <span class="pre">+</span> <span class="pre">1)</span></code>. <code class="docutils literal notranslate"><span class="pre">M</span></code> must be a
+proper rotation (<code class="docutils literal notranslate"><span class="pre">det</span> <span class="pre">==</span> <span class="pre">+1</span></code>); the result is exact for <code class="docutils literal notranslate"><span class="pre">theta</span></code> in
+<code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">pi)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>M</strong> (<a class="reference internal" href="#neml2.types.R2" title="neml2.types.R2"><em>R2</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.MRP">MRP</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.types.MRP.identity">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/mrp.html#MRP.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.MRP.identity" title="Link to this definition">¶</a></dt>
+<dd><p>The identity rotation — the zero MRP vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.12)"><em>dtype</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.12)"><em>device</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.MRP.k_ndim">
+<span class="sig-name descname"><span class="pre">k_ndim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#neml2.types.MRP.k_ndim" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.MRP.k_pairing">
+<span class="sig-name descname"><span class="pre">k_pairing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.MRP.k_pairing" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.MRP.k_state">
+<span class="sig-name descname"><span class="pre">k_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.MRP.k_state" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.types.MRP.rand">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/mrp.html#MRP.rand"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.MRP.rand" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">shape</span></code> orientations sampled uniformly on SO(3).</p>
+<p>Shoemake’s method (<code class="docutils literal notranslate"><span class="pre">Rot::rand</span></code> in <code class="docutils literal notranslate"><span class="pre">src/neml2/tensors/Rot.cxx</span></code>): three
+uniform deviates build a uniform unit quaternion. The quaternion is taken
+through its rotation matrix and back with <a class="reference internal" href="#neml2.types.MRP.from_matrix" title="neml2.types.MRP.from_matrix"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_matrix()</span></code></a> – exactly
+as v2 does – so the result lands in the principal MRP chart (<code class="docutils literal notranslate"><span class="pre">|r|</span> <span class="pre">&lt;=</span> <span class="pre">1</span></code>,
+i.e. <code class="docutils literal notranslate"><span class="pre">theta</span> <span class="pre">&lt;=</span> <span class="pre">pi</span></code>). Mapping the quaternion straight to <code class="docutils literal notranslate"><span class="pre">q_vec/(1+q_w)</span></code>
+would instead drop the <code class="docutils literal notranslate"><span class="pre">q_w</span> <span class="pre">&lt;</span> <span class="pre">0</span></code> half into the far shadow chart.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.12)"><em>dtype</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.12)"><em>device</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.types.MRP.rotation_from_to">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation_from_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/mrp.html#MRP.rotation_from_to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.MRP.rotation_from_to" title="Link to this definition">¶</a></dt>
+<dd><p>MRP of the shortest rotation taking direction <code class="docutils literal notranslate"><span class="pre">v1</span></code> to <code class="docutils literal notranslate"><span class="pre">v2</span></code>.</p>
+<p>Matches <code class="docutils literal notranslate"><span class="pre">Rot::rotation_from_to</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v1</strong> (<a class="reference internal" href="#neml2.types.Vec" title="neml2.types.Vec"><em>Vec</em></a>)</p></li>
+<li><p><strong>v2</strong> (<a class="reference internal" href="#neml2.types.Vec" title="neml2.types.Vec"><em>Vec</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.MRP">MRP</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.MRP.sub_batch_meta">
+<span class="sig-name descname"><span class="pre">sub_batch_meta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.MRP.sub_batch_meta" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.MRP.sub_batch_ndim">
+<span class="sig-name descname"><span class="pre">sub_batch_ndim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#neml2.types.MRP.sub_batch_ndim" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.MRP.sub_batch_state">
+<span class="sig-name descname"><span class="pre">sub_batch_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.MRP.sub_batch_state" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.types.MillerIndex">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">MillerIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_pairing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/miller_index.html#MillerIndex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.MillerIndex" title="Link to this definition">¶</a></dt>
@@ -856,6 +1079,88 @@ result will combine with).</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="neml2.types.Quaternion">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">Quaternion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_pairing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/quaternion.html#Quaternion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.Quaternion" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#neml2.types.PrimitiveTensor" title="neml2.types._primitive.PrimitiveTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrimitiveTensor</span></code></a></p>
+<p>Wraps a <cite>torch.Tensor</cite> of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">4)</span></code> packed <code class="docutils literal notranslate"><span class="pre">(w,</span> <span class="pre">x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a>)</p></li>
+<li><p><strong>sub_batch_ndim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>sub_batch_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
+<li><p><strong>sub_batch_meta</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
+<li><p><strong>k_ndim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>k_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
+<li><p><strong>k_pairing</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.Quaternion.BASE_NDIM">
+<span class="sig-name descname"><span class="pre">BASE_NDIM</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#neml2.types.Quaternion.BASE_NDIM" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.Quaternion.BASE_SHAPE">
+<span class="sig-name descname"><span class="pre">BASE_SHAPE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(4,)</span></em><a class="headerlink" href="#neml2.types.Quaternion.BASE_SHAPE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.Quaternion.data">
+<span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><span class="pre">torch.Tensor</span></a></em><a class="headerlink" href="#neml2.types.Quaternion.data" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.types.Quaternion.identity">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/quaternion.html#Quaternion.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.Quaternion.identity" title="Link to this definition">¶</a></dt>
+<dd><p>The identity rotation — the quaternion <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.12)"><em>dtype</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.12)"><em>device</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Quaternion" title="neml2.types.quaternion.Quaternion"><em>Quaternion</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.Quaternion.k_ndim">
+<span class="sig-name descname"><span class="pre">k_ndim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#neml2.types.Quaternion.k_ndim" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.Quaternion.k_pairing">
+<span class="sig-name descname"><span class="pre">k_pairing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.Quaternion.k_pairing" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.Quaternion.k_state">
+<span class="sig-name descname"><span class="pre">k_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.Quaternion.k_state" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.Quaternion.sub_batch_meta">
+<span class="sig-name descname"><span class="pre">sub_batch_meta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.Quaternion.sub_batch_meta" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.Quaternion.sub_batch_ndim">
+<span class="sig-name descname"><span class="pre">sub_batch_ndim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#neml2.types.Quaternion.sub_batch_ndim" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.types.Quaternion.sub_batch_state">
+<span class="sig-name descname"><span class="pre">sub_batch_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.Quaternion.sub_batch_state" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="neml2.types.R2">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">R2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_pairing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/r2.html#R2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.R2" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#neml2.types.PrimitiveTensor" title="neml2.types._primitive.PrimitiveTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrimitiveTensor</span></code></a></p>
@@ -932,88 +1237,6 @@ result will combine with).</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.types.R2.sub_batch_state">
 <span class="sig-name descname"><span class="pre">sub_batch_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.R2.sub_batch_state" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="neml2.types.Rot">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">Rot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_batch_meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_pairing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/rot.html#Rot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.Rot" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#neml2.types.PrimitiveTensor" title="neml2.types._primitive.PrimitiveTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrimitiveTensor</span></code></a></p>
-<p>Wraps a <cite>torch.Tensor</cite> of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">3)</span></code> in MRP packing.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a>)</p></li>
-<li><p><strong>sub_batch_ndim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
-<li><p><strong>sub_batch_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
-<li><p><strong>sub_batch_meta</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
-<li><p><strong>k_ndim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
-<li><p><strong>k_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
-<li><p><strong>k_pairing</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.types.Rot.BASE_NDIM">
-<span class="sig-name descname"><span class="pre">BASE_NDIM</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#neml2.types.Rot.BASE_NDIM" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.types.Rot.BASE_SHAPE">
-<span class="sig-name descname"><span class="pre">BASE_SHAPE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(3,)</span></em><a class="headerlink" href="#neml2.types.Rot.BASE_SHAPE" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.types.Rot.data">
-<span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><span class="pre">torch.Tensor</span></a></em><a class="headerlink" href="#neml2.types.Rot.data" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="neml2.types.Rot.identity">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/rot.html#Rot.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.Rot.identity" title="Link to this definition">¶</a></dt>
-<dd><p>The identity rotation — the zero MRP vector.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.12)"><em>dtype</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>device</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.12)"><em>device</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.types.Rot.k_ndim">
-<span class="sig-name descname"><span class="pre">k_ndim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#neml2.types.Rot.k_ndim" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.types.Rot.k_pairing">
-<span class="sig-name descname"><span class="pre">k_pairing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.Rot.k_pairing" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.types.Rot.k_state">
-<span class="sig-name descname"><span class="pre">k_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.Rot.k_state" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.types.Rot.sub_batch_meta">
-<span class="sig-name descname"><span class="pre">sub_batch_meta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.Rot.sub_batch_meta" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.types.Rot.sub_batch_ndim">
-<span class="sig-name descname"><span class="pre">sub_batch_ndim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#neml2.types.Rot.sub_batch_ndim" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="neml2.types.Rot.sub_batch_state">
-<span class="sig-name descname"><span class="pre">sub_batch_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.Rot.sub_batch_state" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1426,26 +1649,6 @@ C++ <code class="docutils literal notranslate"><span class="pre">SSR4::identity_
 <dt class="sig sig-object py" id="neml2.types.Scalar.k_state">
 <span class="sig-name descname"><span class="pre">k_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#neml2.types.Scalar.k_state" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="neml2.types.Scalar.linspace">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">linspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/scalar.html#Scalar.linspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.Scalar.linspace" title="Link to this definition">¶</a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">steps</span></code> values uniformly spaced from <code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">end</span></code> inclusive.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
-<li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
-<li><p><strong>steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
-<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.12)"><em>dtype</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>device</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.12)"><em>device</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
-</dd>
-</dl>
-</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.types.Scalar.ones">
@@ -2333,18 +2536,18 @@ endpoints); preserves wrapper type and <code class="docutils literal notranslate
 <dt class="sig sig-object py" id="neml2.types.compose">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#compose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.compose" title="Link to this definition">¶</a></dt>
 <dd><p>Compose two MRP rotations: <code class="docutils literal notranslate"><span class="pre">r1</span> <span class="pre">∘</span> <span class="pre">r2</span></code> (apply r2 first, then r1).</p>
-<p>Matches <code class="docutils literal notranslate"><span class="pre">operator*(const</span> <span class="pre">Rot&amp;,</span> <span class="pre">const</span> <span class="pre">Rot&amp;)</span></code> in <code class="docutils literal notranslate"><span class="pre">src/neml2/tensors/Rot.cxx</span></code>.
+<p>Matches <code class="docutils literal notranslate"><span class="pre">operator*(const</span> <span class="pre">MRP&amp;,</span> <span class="pre">const</span> <span class="pre">MRP&amp;)</span></code> in <code class="docutils literal notranslate"><span class="pre">src/neml2/tensors/MRP.cxx</span></code>.
 The result is again an MRP; the formula handles the standard MRP
 composition with denominator $1 + ||r1||^2 ||r2||^2 - 2 r1·r2$.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>r1</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p></li>
-<li><p><strong>r2</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p></li>
+<li><p><strong>r1</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
+<li><p><strong>r2</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a></p>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2356,6 +2559,37 @@ composition with denominator $1 + ||r1||^2 ||r2||^2 - 2 r1·r2$.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>s</strong> (<a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.cross">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">cross</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#cross"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.cross" title="Link to this definition">¶</a></dt>
+<dd><p>Vector cross product <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">×</span> <span class="pre">b</span></code> over the base 3-axis (<code class="docutils literal notranslate"><span class="pre">neml2::cross</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<a class="reference internal" href="#neml2.types.Vec" title="neml2.types.vec.Vec"><em>Vec</em></a>)</p></li>
+<li><p><strong>b</strong> (<a class="reference internal" href="#neml2.types.Vec" title="neml2.types.vec.Vec"><em>Vec</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Vec" title="neml2.types.vec.Vec"><em>Vec</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.dV">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">dV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#dV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.dV" title="Link to this definition">¶</a></dt>
+<dd><p>SO(3) volume element <code class="docutils literal notranslate"><span class="pre">(8/π)</span> <span class="pre">(1</span> <span class="pre">+</span> <span class="pre">||r||^2)^-3</span></code> (<code class="docutils literal notranslate"><span class="pre">Rot::dV</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
@@ -2434,15 +2668,33 @@ the axis, so this is <em>not</em> a reduction). <code class="docutils literal no
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="neml2.types.drotate">
-<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">drotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#drotate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.drotate" title="Link to this definition">¶</a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">d(r2</span> <span class="pre">∘</span> <span class="pre">r1)</span> <span class="pre">/</span> <span class="pre">d(r2)</span></code> where the composition is <code class="docutils literal notranslate"><span class="pre">r2</span> <span class="pre">*</span> <span class="pre">r1</span></code>.</p>
-<p>Mirrors <code class="docutils literal notranslate"><span class="pre">Rot::drotate</span></code> in <code class="docutils literal notranslate"><span class="pre">src/neml2/tensors/Rot.cxx</span></code>. Returns <code class="docutils literal notranslate"><span class="pre">R2</span></code>.</p>
+<dt class="sig sig-object py" id="neml2.types.dist">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.dist" title="Link to this definition">¶</a></dt>
+<dd><p>Geodesic distance between MRPs, accounting for shadow mapping (<code class="docutils literal notranslate"><span class="pre">Rot::dist</span></code>):
+the minimum <a class="reference internal" href="#neml2.types.gdist" title="neml2.types.gdist"><code class="xref py py-func docutils literal notranslate"><span class="pre">gdist()</span></code></a> over the four (r, shadow(r)) pairings.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>r1</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p></li>
-<li><p><strong>r2</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p></li>
+<li><p><strong>r1</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
+<li><p><strong>r2</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.drotate">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">drotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#drotate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.drotate" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">d(r2</span> <span class="pre">∘</span> <span class="pre">r1)</span> <span class="pre">/</span> <span class="pre">d(r2)</span></code> where the composition is <code class="docutils literal notranslate"><span class="pre">r2</span> <span class="pre">*</span> <span class="pre">r1</span></code>.</p>
+<p>Mirrors <code class="docutils literal notranslate"><span class="pre">MRP::drotate</span></code> in <code class="docutils literal notranslate"><span class="pre">src/neml2/tensors/MRP.cxx</span></code>. Returns <code class="docutils literal notranslate"><span class="pre">R2</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>r1</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
+<li><p><strong>r2</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -2455,15 +2707,15 @@ the axis, so this is <em>not</em> a reduction). <code class="docutils literal no
 <dt class="sig sig-object py" id="neml2.types.drotate_self">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">drotate_self</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#drotate_self"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.drotate_self" title="Link to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">d(r2</span> <span class="pre">∘</span> <span class="pre">r1)</span> <span class="pre">/</span> <span class="pre">d(r1)</span></code> where the composition is <code class="docutils literal notranslate"><span class="pre">r2</span> <span class="pre">*</span> <span class="pre">r1</span></code>.</p>
-<p>Mirrors <code class="docutils literal notranslate"><span class="pre">Rot::drotate_self</span></code> in <code class="docutils literal notranslate"><span class="pre">src/neml2/tensors/Rot.cxx</span></code>. The
+<p>Mirrors <code class="docutils literal notranslate"><span class="pre">MRP::drotate_self</span></code> in <code class="docutils literal notranslate"><span class="pre">src/neml2/tensors/MRP.cxx</span></code>. The
 naming follows the C++ convention: $r1.rotate(r2) == r2 * r1$ (apply
 <code class="docutils literal notranslate"><span class="pre">r1</span></code> first then <code class="docutils literal notranslate"><span class="pre">r2</span></code>), and <code class="docutils literal notranslate"><span class="pre">r1.drotate_self(r2)</span></code> is the derivative
 of that composed rotation w.r.t. the receiver <code class="docutils literal notranslate"><span class="pre">r1</span></code>. Returns <code class="docutils literal notranslate"><span class="pre">R2</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>r1</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p></li>
-<li><p><strong>r2</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p></li>
+<li><p><strong>r1</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
+<li><p><strong>r2</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -2476,7 +2728,7 @@ of that composed rotation w.r.t. the receiver <code class="docutils literal notr
 <dt class="sig sig-object py" id="neml2.types.euler_rodrigues">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">euler_rodrigues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#euler_rodrigues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.euler_rodrigues" title="Link to this definition">¶</a></dt>
 <dd><p>Convert an MRP rotation to its 3x3 rotation matrix.</p>
-<p>Mirrors <code class="docutils literal notranslate"><span class="pre">Rot::euler_rodrigues</span></code> in <code class="docutils literal notranslate"><span class="pre">src/neml2/tensors/Rot.cxx</span></code>:</p>
+<p>Mirrors <code class="docutils literal notranslate"><span class="pre">MRP::euler_rodrigues</span></code> in <code class="docutils literal notranslate"><span class="pre">src/neml2/tensors/MRP.cxx</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">rr</span><span class="p">)</span><span class="o">^-</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">rr</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span> <span class="o">*</span> <span class="n">I</span> <span class="o">+</span> <span class="mi">4</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">rr</span><span class="p">)</span> <span class="n">W</span> <span class="o">+</span> <span class="mi">8</span> <span class="n">W</span><span class="o">^</span><span class="mi">2</span> <span class="p">)</span>
 </span></pre></div>
 </div>
@@ -2491,7 +2743,7 @@ referenced in the generated wrapper without ever being declared –
 see <code class="docutils literal notranslate"><span class="pre">benchmark/scpdecoup</span></code> for the failing pattern).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>r</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p>
+<dd class="field-odd"><p><strong>r</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.types.R2" title="neml2.types.r2.R2"><em>R2</em></a></p>
@@ -2525,7 +2777,25 @@ C++ implementation.</p>
 <dd class="field-odd"><p><strong>w</strong> (<a class="reference internal" href="#neml2.types.WR2" title="neml2.types.wr2.WR2"><em>WR2</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a></p>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.gdist">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">gdist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#gdist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.gdist" title="Link to this definition">¶</a></dt>
+<dd><p>Raw geodesic distance between two MRPs, ignoring the shadow set
+(<code class="docutils literal notranslate"><span class="pre">Rot::gdist</span></code>): <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">asin(clip(||r1-r2||</span> <span class="pre">/</span> <span class="pre">sqrt((1+||r1||^2)(1+||r2||^2)),</span> <span class="pre">-1,</span> <span class="pre">1))</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>r1</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
+<li><p><strong>r2</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2608,6 +2878,20 @@ tensor is symmetric). Mirrors <code class="docutils literal notranslate"><span c
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.inverse">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#inverse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.inverse" title="Link to this definition">¶</a></dt>
+<dd><p>Inverse rotation of an MRP — the negated MRP vector (<code class="docutils literal notranslate"><span class="pre">Rot::inv</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.jvp_compose">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">jvp_compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dr1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dr2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#jvp_compose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.jvp_compose" title="Link to this definition">¶</a></dt>
 <dd><p>Pushforward of <a class="reference internal" href="#neml2.types.compose" title="neml2.types.compose"><code class="xref py py-func docutils literal notranslate"><span class="pre">compose()</span></code></a> (<code class="docutils literal notranslate"><span class="pre">compose(r1,</span> <span class="pre">r2)</span></code>) along its operands.</p>
@@ -2620,14 +2904,14 @@ vary; a <code class="docutils literal notranslate"><span class="pre">None</span>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>r1</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p></li>
-<li><p><strong>r2</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p></li>
-<li><p><strong>dr1</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>dr2</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>r1</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
+<li><p><strong>r2</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
+<li><p><strong>dr1</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>dr2</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a><em> | </em><em>None</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a></p>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2635,9 +2919,9 @@ vary; a <code class="docutils literal notranslate"><span class="pre">None</span>
 <dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.jvp_euler_rodrigues">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">jvp_euler_rodrigues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#jvp_euler_rodrigues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.jvp_euler_rodrigues" title="Link to this definition">¶</a></dt>
-<dd><p>Pushforward of <a class="reference internal" href="#neml2.types.euler_rodrigues" title="neml2.types.euler_rodrigues"><code class="xref py py-func docutils literal notranslate"><span class="pre">euler_rodrigues()</span></code></a> (Rot→R2) along the tangent <code class="docutils literal notranslate"><span class="pre">dr</span></code>.</p>
-<p>Closed-form via the body-frame angular rate. <code class="docutils literal notranslate"><span class="pre">Rot</span></code> is the Modified
-Rodrigues Parameter (MRP) form (<code class="docutils literal notranslate"><span class="pre">Rot.cxx</span></code>), for which the MRP-rate /
+<dd><p>Pushforward of <a class="reference internal" href="#neml2.types.euler_rodrigues" title="neml2.types.euler_rodrigues"><code class="xref py py-func docutils literal notranslate"><span class="pre">euler_rodrigues()</span></code></a> (MRP→R2) along the tangent <code class="docutils literal notranslate"><span class="pre">dr</span></code>.</p>
+<p>Closed-form via the body-frame angular rate. <code class="docutils literal notranslate"><span class="pre">MRP</span></code> is the Modified
+Rodrigues Parameter (MRP) form (<code class="docutils literal notranslate"><span class="pre">MRP.cxx</span></code>), for which the MRP-rate /
 body-rate kinematic relation (Schaub &amp; Junkins, <em>Analytical Mechanics of
 Space Systems</em>) inverts to:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">ω_b = (4 / s²) · [ (1 − r·r) v − 2 (r × v) + 2 (r·v) r ]
@@ -2652,8 +2936,8 @@ the MRP form NEML2 uses.)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>r</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p></li>
-<li><p><strong>dr</strong> (<a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a>)</p></li>
+<li><p><strong>r</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
+<li><p><strong>dr</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -2665,7 +2949,7 @@ the MRP form NEML2 uses.)</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.jvp_exp_map">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">jvp_exp_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dw</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#jvp_exp_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.jvp_exp_map" title="Link to this definition">¶</a></dt>
-<dd><p>Pushforward of <a class="reference internal" href="#neml2.types.exp_map" title="neml2.types.exp_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">exp_map()</span></code></a> (WR2→Rot) along the tangent <code class="docutils literal notranslate"><span class="pre">dw</span></code>.</p>
+<dd><p>Pushforward of <a class="reference internal" href="#neml2.types.exp_map" title="neml2.types.exp_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">exp_map()</span></code></a> (WR2→MRP) along the tangent <code class="docutils literal notranslate"><span class="pre">dw</span></code>.</p>
 <p>Closed-form rank-1-plus-identity: $dexp_map(w) = a(<a href="#id1"><span class="problematic" id="id2">|</span></a>w|²) I + b(<a href="#id3"><span class="problematic" id="id4">|</span></a>w|²) w wᵀ$,
 so the action is $dr = a·dw + b·(w·dw)·w$ — two vector ops, no 3×3
 matrix materialised. $a$ and $b$ are the same scalar coefficients
@@ -2679,7 +2963,7 @@ near <code class="docutils literal notranslate"><span class="pre">||w||²</span>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Rot" title="neml2.types.rot.Rot"><em>Rot</em></a></p>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2741,6 +3025,34 @@ handles those naturally.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.linspace">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">linspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nstep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#linspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.linspace" title="Link to this definition">¶</a></dt>
+<dd><p>Interpolate between two endpoints along a NEW axis in a chosen region.</p>
+<p>This is the v3 free-function form of v2’s <code class="docutils literal notranslate"><span class="pre">dynamic_linspace</span></code> /
+<code class="docutils literal notranslate"><span class="pre">intmd_linspace</span></code> / <code class="docutils literal notranslate"><span class="pre">base_linspace</span></code>
+(<code class="docutils literal notranslate"><span class="pre">include/neml2/tensors/functions/linspace.h</span></code>): a single function whose
+target region is disambiguated by <em>which region view the endpoints are
+passed as</em>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x.dynamic_batch</span></code> -&gt; new dynamic-batch axis (v2 <code class="docutils literal notranslate"><span class="pre">dynamic_linspace</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x.sub_batch</span></code>     -&gt; new sub-batch axis     (v2 <code class="docutils literal notranslate"><span class="pre">intmd_linspace</span></code>)</p></li>
+<li><p>a dynamic-base <a class="reference internal" href="#neml2.types.Tensor" title="neml2.types.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a>’s <code class="docutils literal notranslate"><span class="pre">.batch</span></code> / <code class="docutils literal notranslate"><span class="pre">.sub_batch</span></code>
+/ <code class="docutils literal notranslate"><span class="pre">.base</span></code> view (v2 <code class="docutils literal notranslate"><span class="pre">base_linspace</span></code> is the <code class="docutils literal notranslate"><span class="pre">.base</span></code> case)</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> broadcast against each other; <code class="docutils literal notranslate"><span class="pre">nstep</span></code> evenly spaced
+points are inserted at region position <code class="docutils literal notranslate"><span class="pre">dim</span></code> (default the front of the
+region). Returns the same wrapper type as the endpoints (or <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> for
+dynamic-base views).</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">linspace</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch_shape</span>
+</span><span data-line="2"><span class="go">torch.Size([5])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">linspace</span><span class="p">(</span><span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="p">,</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">batch_shape</span>
+</span><span data-line="4"><span class="go">torch.Size([20])</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.log">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.log" title="Link to this definition">¶</a></dt>
 <dd><p>Natural logarithm. Matches <code class="docutils literal notranslate"><span class="pre">neml2::log(const</span> <span class="pre">Scalar&amp;)</span></code>.</p>
@@ -2766,6 +3078,21 @@ handles those naturally.</p>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.logspace">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">logspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nstep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#logspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.logspace" title="Link to this definition">¶</a></dt>
+<dd><p>Log-spaced analogue of <a class="reference internal" href="#neml2.types.linspace" title="neml2.types.linspace"><code class="xref py py-func docutils literal notranslate"><span class="pre">linspace()</span></code></a> (v2’s <code class="docutils literal notranslate"><span class="pre">dynamic_logspace</span></code> /
+<code class="docutils literal notranslate"><span class="pre">intmd_logspace</span></code> / <code class="docutils literal notranslate"><span class="pre">base_logspace</span></code>).</p>
+<p>The endpoints are the <em>exponents</em>: the result spans <code class="docutils literal notranslate"><span class="pre">base**start</span></code> to
+<code class="docutils literal notranslate"><span class="pre">base**end</span></code> with <code class="docutils literal notranslate"><span class="pre">nstep</span></code> points, the new axis placed in the region named
+by the endpoint views (see <a class="reference internal" href="#neml2.types.linspace" title="neml2.types.linspace"><code class="xref py py-func docutils literal notranslate"><span class="pre">linspace()</span></code></a>).</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">logspace</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch_shape</span>
+</span><span data-line="2"><span class="go">torch.Size([201])</span>
+</span></pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -2918,6 +3245,38 @@ looks small), switch the call site to <a class="reference internal" href="#neml2
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.quaternion_dist">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">quaternion_dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#quaternion_dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.quaternion_dist" title="Link to this definition">¶</a></dt>
+<dd><p>Quaternion geodesic distance <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">acos(min(|q1·q2|,</span> <span class="pre">1))</span></code> (<code class="docutils literal notranslate"><span class="pre">Quaternion::dist</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q1</strong> (<a class="reference internal" href="#neml2.types.Quaternion" title="neml2.types.quaternion.Quaternion"><em>Quaternion</em></a>)</p></li>
+<li><p><strong>q2</strong> (<a class="reference internal" href="#neml2.types.Quaternion" title="neml2.types.quaternion.Quaternion"><em>Quaternion</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.quaternion_rotation_matrix">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">quaternion_rotation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#quaternion_rotation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.quaternion_rotation_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Unit quaternion <code class="docutils literal notranslate"><span class="pre">(w,</span> <span class="pre">x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code> → 3×3 rotation matrix
+(<code class="docutils literal notranslate"><span class="pre">Quaternion::rotation_matrix</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>q</strong> (<a class="reference internal" href="#neml2.types.Quaternion" title="neml2.types.quaternion.Quaternion"><em>Quaternion</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.R2" title="neml2.types.r2.R2"><em>R2</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.r2_from_sr2">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">r2_from_sr2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#r2_from_sr2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.r2_from_sr2" title="Link to this definition">¶</a></dt>
 <dd><p>Unpack an SR2 (Mandel) into a full <code class="docutils literal notranslate"><span class="pre">R2</span></code> <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">3,</span> <span class="pre">3)</span></code>.</p>
@@ -2986,7 +3345,22 @@ use the input-recompute Function (backward <code class="docutils literal notrans
 <li><p><code class="docutils literal notranslate"><span class="pre">WR2</span> <span class="pre">-&gt;</span> <span class="pre">WR2</span></code> — <code class="docutils literal notranslate"><span class="pre">skew(R</span> <span class="pre">W</span> <span class="pre">Rᵀ)</span></code> packed back to an axial vector.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">R2</span> <span class="pre">-&gt;</span> <span class="pre">R2</span></code> — the full asymmetric <code class="docutils literal notranslate"><span class="pre">R</span> <span class="pre">A</span> <span class="pre">Rᵀ</span></code> (no projection).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">SSR4</span> <span class="pre">-&gt;</span> <span class="pre">SSR4</span></code> — the 6×6 Mandel basis rotation <code class="docutils literal notranslate"><span class="pre">Q(R)</span> <span class="pre">T</span> <span class="pre">Q(R)ᵀ</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Vec</span> <span class="pre">-&gt;</span> <span class="pre">Vec</span></code> — the matrix-vector product <code class="docutils literal notranslate"><span class="pre">R</span> <span class="pre">v</span></code>.</p></li>
 </ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.shadow">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">shadow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#shadow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.shadow" title="Link to this definition">¶</a></dt>
+<dd><p>The shadow MRP set <code class="docutils literal notranslate"><span class="pre">-r</span> <span class="pre">/</span> <span class="pre">||r||^2</span></code> — same orientation (<code class="docutils literal notranslate"><span class="pre">Rot::shadow</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -3138,6 +3512,20 @@ off-diagonals carry the symmetric average times <code class="docutils literal no
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.to_quaternion">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">to_quaternion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#to_quaternion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.to_quaternion" title="Link to this definition">¶</a></dt>
+<dd><p>MRP → unit quaternion <code class="docutils literal notranslate"><span class="pre">(w,</span> <span class="pre">x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code> (<code class="docutils literal notranslate"><span class="pre">Quaternion(const</span> <span class="pre">Rot&amp;)</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong> (<a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Quaternion" title="neml2.types.quaternion.Quaternion"><em>Quaternion</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.tr">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">tr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#tr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.tr" title="Link to this definition">¶</a></dt>
 <dd><p>Trace of a symmetric rank-2 tensor.</p>
@@ -3155,16 +3543,28 @@ off-diagonals carry the symmetric average times <code class="docutils literal no
 <dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.unit">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#unit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.unit" title="Link to this definition">¶</a></dt>
-<dd><p>Normalize $A$ by its Frobenius norm. <code class="docutils literal notranslate"><span class="pre">eps</span></code> regularizes at <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">==</span> <span class="pre">0</span></code>.</p>
+<dd><p>Normalize $A$ by its Frobenius / Euclidean norm. <code class="docutils literal notranslate"><span class="pre">eps</span></code> regularizes at
+<code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">==</span> <span class="pre">0</span></code>. Accepts an <code class="docutils literal notranslate"><span class="pre">SR2</span></code> (Mandel) or a <code class="docutils literal notranslate"><span class="pre">Vec</span></code> (3-vector).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.vdot">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">vdot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#vdot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.vdot" title="Link to this definition">¶</a></dt>
+<dd><p>Dot product of two <code class="docutils literal notranslate"><span class="pre">Vec</span></code> over the base 3-axis (<code class="docutils literal notranslate"><span class="pre">neml2::vdot</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>A</strong> (<a class="reference internal" href="#neml2.types.SR2" title="neml2.types.sr2.SR2"><em>SR2</em></a>)</p></li>
-<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>a</strong> (<a class="reference internal" href="#neml2.types.Vec" title="neml2.types.vec.Vec"><em>Vec</em></a>)</p></li>
+<li><p><strong>b</strong> (<a class="reference internal" href="#neml2.types.Vec" title="neml2.types.vec.Vec"><em>Vec</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#neml2.types.SR2" title="neml2.types.sr2.SR2"><em>SR2</em></a></p>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -3291,7 +3691,7 @@ combine cleanly.</p>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=f4ced14b"></script>
+      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Migrating from v2.x to v3.0 - NEML2 3.0.5</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Migrating from v2.1.1 to v2.1.2" href="211_212.html" /><link rel="prev" title="Migration guides" href="index.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Migrating from v2.x to v3.0 - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Migrating from v2.1.1 to v2.1.2" href="211_212.html" /><link rel="prev" title="Migration guides" href="index.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -94,18 +94,33 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../tensor_types.html">Tensor types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/primitive_types.html">Primitive (fixed-base-shape) tensor types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/regions.html">Tensor shape regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/batching.html">Batching and broadcasting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/region_views.html">Region views</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/indexing.html">Indexing</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/index.html">Physics modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modules/chemical_reactions.html">Chemical reactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/finite_volume.html">Finite volume</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/kwn.html">KWN (precipitation kinetics)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/elasticity.html">Elasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/plasticity.html">Plasticity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity.html">Crystal plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/kinematics.html">Kinematics</a></li>
 </ul>
@@ -161,9 +176,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyRot.html">CopyRot</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
@@ -174,6 +189,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
@@ -188,9 +206,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotConstantParameter.html">RotConstantParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotInputParameter.html">RotInputParameter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotParameterToVariable.html">RotParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -370,7 +385,10 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#scheduler-dispatcher-input-wiring">Scheduler / dispatcher input wiring</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#python-api-surface">Python API surface</a></li>
+<li><a class="reference internal" href="#python-api-surface">Python API surface</a><ul>
+<li><a class="reference internal" href="#example-notebooks">Example notebooks</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#documentation-pipeline">Documentation pipeline</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
@@ -561,7 +579,7 @@ built-in flavors:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Python</span></code> — an inline PyTorch expression evaluated against a
 namespace pre-populated with <code class="docutils literal notranslate"><span class="pre">torch</span></code>, <code class="docutils literal notranslate"><span class="pre">math</span></code>, <code class="docutils literal notranslate"><span class="pre">np</span></code>, and every
-typed wrapper from <code class="docutils literal notranslate"><span class="pre">neml2.types</span></code> (<code class="docutils literal notranslate"><span class="pre">Scalar</span></code>, <code class="docutils literal notranslate"><span class="pre">SR2</span></code>, <code class="docutils literal notranslate"><span class="pre">R2</span></code>, <code class="docutils literal notranslate"><span class="pre">Rot</span></code>,
+typed wrapper from <code class="docutils literal notranslate"><span class="pre">neml2.types</span></code> (<code class="docutils literal notranslate"><span class="pre">Scalar</span></code>, <code class="docutils literal notranslate"><span class="pre">SR2</span></code>, <code class="docutils literal notranslate"><span class="pre">R2</span></code>, <code class="docutils literal notranslate"><span class="pre">MRP</span></code>,
 …). Cross-references to other <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> entries by name
 resolve lazily, so one block can build on another.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">CSV&lt;Type&gt;</span></code> — <code class="docutils literal notranslate"><span class="pre">CSVScalar</span></code>, <code class="docutils literal notranslate"><span class="pre">CSVSR2</span></code>, <code class="docutils literal notranslate"><span class="pre">CSVVec</span></code>, <code class="docutils literal notranslate"><span class="pre">CSVWR2</span></code> for
@@ -592,7 +610,7 @@ sub-batch axis — the same source of truth <code class="docutils literal notran
 </span><span data-line="2"><span class="k">[Tensors]</span>
 </span><span data-line="3"><span class="w">  </span><span class="k">[times]</span>
 </span><span data-line="4"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;Scalar.linspace(0, 1, 5)&#39;</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;linspace(Scalar(0).dynamic_batch, Scalar(1).dynamic_batch, 5)&#39;</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="7"><span class="w">  </span><span class="k">[strain_template]</span>
 </span><span data-line="8"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Python</span>
@@ -627,7 +645,7 @@ Python multi-device path.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">neml2.load_model(path,</span> <span class="pre">name)</span></code> and <code class="docutils literal notranslate"><span class="pre">neml2.load_input(path)</span></code> work as
 in v2.</p></li>
 <li><p>Typed wrappers (<code class="docutils literal notranslate"><span class="pre">Scalar</span></code>, <code class="docutils literal notranslate"><span class="pre">Vec</span></code>, <code class="docutils literal notranslate"><span class="pre">R2</span></code>, <code class="docutils literal notranslate"><span class="pre">SR2</span></code>, <code class="docutils literal notranslate"><span class="pre">WR2</span></code>, <code class="docutils literal notranslate"><span class="pre">SSR4</span></code>,
-<code class="docutils literal notranslate"><span class="pre">Rot</span></code>, <code class="docutils literal notranslate"><span class="pre">MillerIndex</span></code>) live in <code class="docutils literal notranslate"><span class="pre">neml2.types</span></code> as before. Their
+<code class="docutils literal notranslate"><span class="pre">MRP</span></code>, <code class="docutils literal notranslate"><span class="pre">MillerIndex</span></code>) live in <code class="docutils literal notranslate"><span class="pre">neml2.types</span></code> as before. Their
 underlying tensor is <code class="docutils literal notranslate"><span class="pre">.data</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Scalar(&lt;number&gt;)</span></code> now accepts a plain Python number directly
 (defaults to <code class="docutils literal notranslate"><span class="pre">torch.float64</span></code>). v2 required
@@ -639,13 +657,27 @@ underlying tensor is <code class="docutils literal notranslate"><span class="pre
 moved to <code class="docutils literal notranslate"><span class="pre">neml2.es</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">neml2.tensors</span></code> (the submodule re-exporting typed wrappers from the
 C++ bindings) is gone; the wrappers live under <code class="docutils literal notranslate"><span class="pre">neml2.types</span></code>.</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">neml2.postprocessing</span></code> module (ODF, pole-figure helpers) is
-not in v3.0. The crystal-plasticity outputs are still produced
-exactly as before; you’d build the post-processing on top of them
-yourself.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">neml2.postprocessing</span></code> module is renamed <code class="docutils literal notranslate"><span class="pre">neml2.texture</span></code> (ODF
+reconstruction, pole / inverse-pole figures, IPF reductions). The
+crystal symmetry operators it used now come from <code class="docutils literal notranslate"><span class="pre">neml2.ops.symmetry</span></code>,
+and orientations are the <code class="docutils literal notranslate"><span class="pre">neml2.types.MRP</span></code> wrapper (the former <code class="docutils literal notranslate"><span class="pre">Rot</span></code>).</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">neml2.reader</span></code> module is gone — <code class="docutils literal notranslate"><span class="pre">neml2.load_input</span></code> covers the
 parser-facing surface.</p></li>
 </ul>
+<section id="example-notebooks">
+<h3>Example notebooks<a class="headerlink" href="#example-notebooks" title="Link to this heading">¶</a></h3>
+<p>The standalone notebooks that lived under <code class="docutils literal notranslate"><span class="pre">python/examples/</span></code> in v2 are
+re-homed as worked examples under the physics-module pages they
+exercise. The KWN precipitation examples are migrated — see
+<a class="reference internal" href="../modules/kwn/precipitation_316h.html#modules-kwn-precipitation-316h"><span class="std std-ref">316H two-phase precipitation (carbide + Laves)</span></a> (316H carbide + Laves) and
+<a class="reference internal" href="../modules/kwn/al_cu_ttp.html#modules-kwn-al-cu-ttp"><span class="std std-ref">Al–Cu TTP diagram</span></a> (Al–Cu TTP diagram). The deterministic and
+statistical calibration notebooks are now <a class="reference internal" href="../tutorials/index.html#tutorials-optimization"><span class="std std-ref">Parameter calibration</span></a>.
+The crystal-plasticity examples are migrated too — see
+<a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/index.html#modules-solid-mechanics-crystal-plasticity"><span class="std std-ref">Crystal plasticity</span></a> for the separated-vs-integrated
+formulation comparison and the pole-figure / ODF reconstruction (now built
+on <code class="docutils literal notranslate"><span class="pre">neml2.texture</span></code>). The <code class="docutils literal notranslate"><span class="pre">explain.ipynb</span></code> LLM demo is dropped with the
+<code class="docutils literal notranslate"><span class="pre">neml2.reader</span></code> module it used.</p>
+</section>
 </section>
 <section id="documentation-pipeline">
 <h2>Documentation pipeline<a class="headerlink" href="#documentation-pipeline" title="Link to this heading">¶</a></h2>
@@ -704,7 +736,7 @@ wrapper) and <a class="reference internal" href="../development/building.html#bu
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=f4ced14b"></script>
+      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
