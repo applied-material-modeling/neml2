@@ -336,6 +336,10 @@ def norm(A: SR2, eps: float = 0.0) -> Scalar: ...
 
 
 @overload
+def norm(A: Vec, eps: float = 0.0) -> Scalar: ...
+
+
+@overload
 def norm(A: _TensorBaseView, eps: float = 0.0) -> Tensor: ...
 
 
@@ -379,8 +383,13 @@ def norm_sq(view: _TensorBaseView) -> Tensor:
     return dot(view, view)
 
 
-def unit(A: SR2, eps: float = 0.0) -> SR2:
-    """Normalize $A$ by its Frobenius norm. ``eps`` regularizes at ``A == 0``."""
+@overload
+def unit(A: SR2, eps: float = 0.0) -> SR2: ...
+@overload
+def unit(A: Vec, eps: float = 0.0) -> Vec: ...
+def unit(A, eps: float = 0.0):
+    """Normalize $A$ by its Frobenius / Euclidean norm. ``eps`` regularizes at
+    ``A == 0``. Accepts an ``SR2`` (Mandel) or a ``Vec`` (3-vector)."""
     n = align_scalar_base(norm(A, eps).data, 1)
     # On the AD path divide via the input-recompute reciprocal so the norm in the
     # denominator doesn't trip AOTI's saved-output lowering (pytorch/pytorch#187907);
