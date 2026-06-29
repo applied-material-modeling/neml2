@@ -57,7 +57,7 @@ build.targets = ["aoti", "eager", "pyneml2", "cpp_tests"]
 [project]
 name = "neml2"
 # dependencies: neml2.version
-version = "3.0.5"
+version = "3.0.6"
 authors = [
   { name = "Mark Messner", email = "messner@anl.gov" },
   { name = "Gary Hu", email = "thu@anl.gov" },
