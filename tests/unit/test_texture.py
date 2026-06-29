@@ -113,6 +113,43 @@ def test_inverse_pole_figure_points_runs():
     assert torch.isfinite(pts).all()
 
 
+def test_pole_figure_odf_matches_v2_reference():
+    """Golden values pinned against the v2 ``postprocessing.pole_figure_odf``
+    (built v2.1.6) for a fixed orientation set. This guards the fiber/symmetry
+    composition: v2 wrote ``r1.rotate(r2)`` (= ``r2 * r1`` = ``compose(r2, r1)``);
+    reversing the operands to ``compose(r1, r2)`` leaves the cube/identity case
+    intact but washes out a general texture, so a smoke test misses it -- these
+    values do not."""
+    torch.set_default_dtype(torch.float64)
+    X = MRP(
+        torch.tensor(
+            [
+                [0.10, 0.20, -0.05],
+                [-0.15, 0.05, 0.20],
+                [0.02, -0.22, 0.11],
+                [0.18, 0.04, 0.09],
+                [-0.07, -0.12, 0.21],
+                [0.25, -0.03, -0.10],
+                [0.01, 0.17, 0.14],
+                [-0.20, 0.09, -0.06],
+            ]
+        )
+    )
+    odf = tex.KDEODF(X, tex.DeLaValleePoussinKernel(torch.tensor(0.25)))
+    odf.kernel.h = torch.tensor(0.25)
+    vals, _ = tex.pole_figure_odf(
+        odf, torch.tensor([1.0, 1.0, 1.0]), crystal_symmetry="432", nradial=3, ntheta=4, nquad=12
+    )
+    expected = torch.tensor(
+        [
+            [0.725414, 0.715360, 0.718828, 0.728918, 0.725414],
+            [0.540768, 1.110577, 0.713709, 0.363413, 0.540768],
+            [1.942825, 1.608087, 1.942825, 1.608087, 1.942825],
+        ]
+    )
+    assert torch.allclose(vals, expected, atol=1e-5)
+
+
 def test_pretty_plot_helpers_importable():
     """The matplotlib-backed helpers are importable (not called -- need a display)."""
     assert callable(tex.pretty_plot_pole_figure_odf)

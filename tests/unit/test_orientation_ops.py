@@ -231,3 +231,16 @@ def test_rand_is_uniform_orientation_shape_and_valid():
     R = euler_rodrigues(r).data
     eye = torch.einsum("...ij,...kj->...ik", R, R)
     assert torch.allclose(eye, torch.eye(3).expand_as(eye), atol=1e-10)
+
+
+def test_rand_lands_in_principal_chart():
+    """Like v2's ``Rot::rand``, samples route through the rotation matrix so they
+    land in the principal MRP chart (``|r| <= 1``, i.e. theta <= pi). A direct
+    quaternion -> ``q_vec/(1+q_w)`` map would drop the ``q_w < 0`` half into the
+    far shadow chart (``|r| > 1``), biasing every downstream texture estimate."""
+    _f64()
+    torch.manual_seed(0)
+    mag = MRP.rand(20000).data.norm(dim=-1)
+    assert float(mag.max()) <= 1.0 + 1e-9, "rand leaked into the shadow chart (|r| > 1)"
+    # uniform SO(3) in the principal chart: mean |r| = mean tan(theta/4) ~= 0.64
+    assert 0.60 < float(mag.mean()) < 0.69

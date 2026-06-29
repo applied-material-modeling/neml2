@@ -92,9 +92,15 @@ class MRP(PrimitiveTensor):
         """``shape`` orientations sampled uniformly on SO(3).
 
         Shoemake's method (``Rot::rand`` in ``src/neml2/tensors/Rot.cxx``): three
-        uniform deviates build a uniform unit quaternion, converted to the MRP
-        ``q_vec / (1 + q_w)``.
+        uniform deviates build a uniform unit quaternion. The quaternion is taken
+        through its rotation matrix and back with :meth:`from_matrix` -- exactly
+        as v2 does -- so the result lands in the principal MRP chart (``|r| <= 1``,
+        i.e. ``theta <= pi``). Mapping the quaternion straight to ``q_vec/(1+q_w)``
+        would instead drop the ``q_w < 0`` half into the far shadow chart.
         """
+        from neml2.types.functions import quaternion_rotation_matrix  # noqa: PLC0415
+        from neml2.types.quaternion import Quaternion  # noqa: PLC0415
+
         u = torch.rand(*shape, 3, dtype=dtype or torch.float64, device=device)
         u0, u1, u2 = u[..., 0], u[..., 1], u[..., 2]
         tau = 2.0 * math.pi
@@ -102,7 +108,8 @@ class MRP(PrimitiveTensor):
         x = torch.sqrt(1.0 - u0) * torch.cos(tau * u1)
         y = torch.sqrt(u0) * torch.sin(tau * u2)
         z = torch.sqrt(u0) * torch.cos(tau * u2)
-        return cls(torch.stack([x, y, z], dim=-1) / (1.0 + w).unsqueeze(-1))
+        q = Quaternion(torch.stack([w, x, y, z], dim=-1))
+        return cls.from_matrix(quaternion_rotation_matrix(q))
 
     @classmethod
     def from_axis_angle(cls, n: Vec, theta: Scalar) -> MRP:

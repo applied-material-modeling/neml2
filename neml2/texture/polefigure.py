@@ -270,9 +270,12 @@ def pole_figure_odf(
     phi = Scalar(angle_values[:-1]).dynamic_batch.unsqueeze(1).dynamic_batch.unsqueeze(1)
     r2 = MRP.from_axis_angle_standard(sample_poles_b, phi)
 
-    # Compose the two rotations (r1 ∘ r2) -- orientation composition, not a
-    # matrix-vector rotation. v2's ``Rot.rotate(Rot)`` was composition.
-    rm = compose(r1, r2.dynamic_batch.unsqueeze(1))
+    # Compose the two rotations -- orientation composition, not a matrix-vector
+    # rotation. v2 wrote ``r1.rotate(r2)``; ``Rot::rotate(r)`` returns ``r * (*this)``,
+    # i.e. apply ``r1`` first then ``r2`` -- which is ``compose(r2, r1)`` in the
+    # ``compose(a, b) = a ∘ b`` (b applied first) convention. Reversing the
+    # operands washes out the pole figure (the fiber/symmetry grid is scrambled).
+    rm = compose(r2.dynamic_batch.unsqueeze(1), r1)
 
     # Calculate the ODF values. Flatten the dynamic-batch grid to a single axis
     # (raw reshape at the ODF-eval boundary), chunk through the ODF, reshape back.
