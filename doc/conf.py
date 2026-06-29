@@ -160,10 +160,10 @@ myst_heading_anchors = 3
 
 # Execute the cheap tutorial notebooks at build time and cache the results
 # (cache lives under `_build/.jupyter_cache/`), so editing prose around a
-# stable code cell does not re-execute it. Every `{code-cell}` in the docs
-# lives under `content/tutorials/`, so a global `cache` only ever runs the
-# tutorials; the syntax-catalog and reference pages have no executable cells
-# and cost nothing.
+# stable code cell does not re-execute it. The executable notebooks live
+# under `content/tutorials/` and `content/modules/`, so a global `cache`
+# only ever runs those; the syntax-catalog and reference pages have no
+# executable cells and cost nothing.
 #
 # `nb_execution_in_temp` runs each notebook in a throwaway directory: the
 # Colab-runnable tutorials create their own input files via `%%writefile`,
@@ -171,16 +171,21 @@ myst_heading_anchors = 3
 # artifacts) out of the source tree while relative `load_model("input.i")`
 # still resolves against the same cwd.
 #
-# The two *expensive* pyzag calibration notebooks are excluded from
-# execution and instead render from their committed, pre-baked outputs
-# (kept executed by the scoped `check-notebook-executed` pre-commit hook);
-# executing them needs a GPU and minutes-to-hours per run.
+# The expensive notebooks below are excluded from execution and instead
+# render from their committed, pre-baked outputs (kept executed by the
+# scoped `check-notebook-executed` pre-commit hook); executing them needs a
+# GPU and minutes-to-hours per run. These are the two pyzag calibration
+# tutorials plus the physics-module KWN worked examples (316H precipitation,
+# Al-Cu TTP) re-homed from v2's `python/examples/`. Patterns are matched
+# against the path tail (`PurePosixPath.match`).
 nb_execution_mode = "cache"
 nb_execution_timeout = 60
 nb_execution_in_temp = True
 nb_execution_excludepatterns = [
     "optimization/deterministic/main.ipynb",
     "optimization/statistical/main.ipynb",
+    "modules/kwn/precipitation_316h.ipynb",
+    "modules/kwn/al_cu_ttp.ipynb",
 ]
 
 # ---------------------------------------------------------------------------

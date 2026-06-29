@@ -37,7 +37,12 @@ What Scalar overrides on top of :class:`PrimitiveTensor`:
 - **``float64`` factory defaults**: ``Scalar.zeros(n)``, ``Scalar.ones(n)``,
   ``Scalar.full(n, fill_value=...)`` default to ``torch.float64`` rather than
   torch's global ``float32`` default.
-- **``linspace`` / ``arange``**: Scalar-only, mirroring the torch creation API.
+- **``linspace`` / ``arange``**: Scalar-only classmethods mirroring the torch
+  creation API (scalar ramps from float endpoints). To interpolate between two
+  *wrapper* endpoints along a chosen region — the v3 form of v2's
+  ``dynamic_linspace`` / ``intmd_linspace`` / ``base_linspace`` — use the
+  :func:`~neml2.types.functions.linspace` / :func:`~neml2.types.functions.logspace`
+  free functions with region-view endpoints (``x.dynamic_batch`` / ``x.sub_batch``).
 - **``+`` / ``-`` with Python literals**: ``s + 1.5`` and ``s - 1`` are valid;
   the other primitives reject this (a uniform additive offset is rare and
   ambiguous on a (3,3) or (6,) tensor). Multiply / divide by literal are
