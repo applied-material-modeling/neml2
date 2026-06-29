@@ -17,7 +17,7 @@ them together. For the per-type option-by-option reference, see the
 
 chemical_reactions
 finite_volume
-kwn
+kwn/index
 phase_field_fracture
 porous_flow
 solid_mechanics/index

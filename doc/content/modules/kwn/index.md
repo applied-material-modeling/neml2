@@ -213,7 +213,7 @@ tensors. The matrix concentration and growth rate are recomputed from
 the current size distribution each step, and the population balance is
 advanced in time by an `ImplicitUpdate` Newton solve.
 
-```{literalinclude} ../../../tests/regression/kwn/growth-only-scaled/model.i
+```{literalinclude} ../../../../tests/regression/kwn/growth-only-scaled/model.i
 :language: ini
 ```
 
@@ -278,6 +278,18 @@ End-to-end examples live in `tests/regression/kwn/`:
 - `growth-nucleation-unscaled/` — same physics on a fixed-extent
   radius grid (useful for isolating the effect of the semi-infinite
   scaling).
+
+## Worked examples
+
+End-to-end notebooks that compose this catalog into full precipitation
+models and run them:
+
+```{toctree}
+:maxdepth: 1
+
+precipitation_316h
+al_cu_ttp
+```
 
 ## See also
 

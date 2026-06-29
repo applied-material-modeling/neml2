@@ -983,6 +983,101 @@ def cat(views, dim: int = -1):
     return head._rewrap(new_data, sub_batch_ndim=head.sub_batch_ndim)
 
 
+@overload
+def linspace(
+    start: DynamicBatchView[_TW] | SubBatchView[_TW],
+    end: DynamicBatchView[_TW] | SubBatchView[_TW],
+    nstep: int,
+    dim: int = 0,
+) -> _TW: ...
+@overload
+def linspace(
+    start: _TensorRegionView, end: _TensorRegionView, nstep: int, dim: int = 0
+) -> Tensor: ...
+def linspace(start, end, nstep, dim=0):
+    """Interpolate between two endpoints along a NEW axis in a chosen region.
+
+    This is the v3 free-function form of v2's ``dynamic_linspace`` /
+    ``intmd_linspace`` / ``base_linspace``
+    (``include/neml2/tensors/functions/linspace.h``): a single function whose
+    target region is disambiguated by *which region view the endpoints are
+    passed as*:
+
+    - ``x.dynamic_batch`` -> new dynamic-batch axis (v2 ``dynamic_linspace``)
+    - ``x.sub_batch``     -> new sub-batch axis     (v2 ``intmd_linspace``)
+    - a dynamic-base :class:`~neml2.types.Tensor`'s ``.batch`` / ``.sub_batch``
+      / ``.base`` view (v2 ``base_linspace`` is the ``.base`` case)
+
+    ``start`` and ``end`` broadcast against each other; ``nstep`` evenly spaced
+    points are inserted at region position ``dim`` (default the front of the
+    region). Returns the same wrapper type as the endpoints (or ``Tensor`` for
+    dynamic-base views).
+
+    Example
+    -------
+    >>> linspace(Scalar(0.0).sub_batch, Scalar(1.0).sub_batch, 5).sub_batch_shape
+    torch.Size([5])
+    >>> linspace(SR2.fill(0.0).dynamic_batch, SR2.fill(0.01).dynamic_batch, 20).batch_shape
+    torch.Size([20])
+    """
+    if nstep < 1:
+        raise ValueError(f"linspace: nstep must be >= 1, got {nstep}")
+    if type(start) is not type(end):
+        raise TypeError(
+            "linspace: start and end must be the same region-view kind, got "
+            f"{type(start).__name__} and {type(end).__name__}"
+        )
+    # Static-base region views expose ``._w``; dynamic-base Tensor views ``._t``.
+    ws = getattr(start, "_w", None)
+    we = getattr(end, "_w", None)
+    if ws is None:
+        ws = getattr(start, "_t", None)
+        we = getattr(end, "_t", None)
+    if ws is None or we is None:
+        raise TypeError(
+            "linspace: endpoints must be region views (e.g. x.dynamic_batch, "
+            "x.sub_batch, or a Tensor's .batch / .sub_batch / .base)"
+        )
+    region = start._REGION
+    delta = we - ws
+    if nstep == 1:
+        pts = [ws + 0.0 * delta]
+    else:
+        pts = [ws + (i / (nstep - 1)) * delta for i in range(nstep)]
+    # ``stack`` inserts the new axis in the named region and carries the
+    # wrapper type / K / sub-batch metadata through correctly.
+    return stack([getattr(p, region) for p in pts], dim=dim)
+
+
+@overload
+def logspace(
+    start: DynamicBatchView[_TW] | SubBatchView[_TW],
+    end: DynamicBatchView[_TW] | SubBatchView[_TW],
+    nstep: int,
+    dim: int = 0,
+    base: float = 10.0,
+) -> _TW: ...
+@overload
+def logspace(
+    start: _TensorRegionView, end: _TensorRegionView, nstep: int, dim: int = 0, base: float = 10.0
+) -> Tensor: ...
+def logspace(start, end, nstep, dim=0, base=10.0):
+    """Log-spaced analogue of :func:`linspace` (v2's ``dynamic_logspace`` /
+    ``intmd_logspace`` / ``base_logspace``).
+
+    The endpoints are the *exponents*: the result spans ``base**start`` to
+    ``base**end`` with ``nstep`` points, the new axis placed in the region named
+    by the endpoint views (see :func:`linspace`).
+
+    Example
+    -------
+    >>> logspace(Scalar(-4.0).sub_batch, Scalar(0.0).sub_batch, 201).sub_batch_shape
+    torch.Size([201])
+    """
+    exponent = linspace(start, end, nstep, dim=dim)
+    return exponent._rewrap(base**exponent.data, sub_batch_ndim=exponent.sub_batch_ndim)
+
+
 def abs(a: _TW) -> _TW:  # noqa: A001 - mirrors neml2::abs
     """Element-wise absolute value."""
     return a._rewrap(torch.abs(a.data), sub_batch_ndim=a.sub_batch_ndim)
@@ -1228,13 +1323,16 @@ def _bilinear_corners(
     # Locate cell index along each axis (clamped to [1, Nk-1] so a query at the
     # extreme upper edge extrapolates from the last segment instead of falling
     # off — matches the C++ mask convention ``x1 > X10 && x1 <= X11``).
+    # ``searchsorted`` wants both its boundary and value tensors contiguous;
+    # ``X1b`` / ``X2b`` are ``expand`` views, so materialize them here (otherwise
+    # torch copies internally and warns once per process).
     idx1 = (
-        torch.searchsorted(X1b, x1b.unsqueeze(-1).contiguous(), right=True)
+        torch.searchsorted(X1b.contiguous(), x1b.unsqueeze(-1).contiguous(), right=True)
         .squeeze(-1)
         .clamp(1, N1 - 1)
     )
     idx2 = (
-        torch.searchsorted(X2b, x2b.unsqueeze(-1).contiguous(), right=True)
+        torch.searchsorted(X2b.contiguous(), x2b.unsqueeze(-1).contiguous(), right=True)
         .squeeze(-1)
         .clamp(1, N2 - 1)
     )
@@ -2737,8 +2835,10 @@ __all__ = [
     "jvp_exp_map",
     "jvp_rotate",
     "linear_interpolation",
+    "linspace",
     "log",
     "log10",
+    "logspace",
     "lt",
     "macaulay",
     "mean",
