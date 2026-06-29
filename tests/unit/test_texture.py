@@ -172,12 +172,22 @@ def test_pretty_plots_render():
     odf = tex.KDEODF(ori, tex.DeLaValleePoussinKernel(torch.tensor(0.2)))
     odf.kernel.h = torch.tensor(0.25)
 
-    grid = dict(nradial=6, ntheta=8, nquad=12)
-    tex.pretty_plot_pole_figure_odf(odf, pole, crystal_symmetry="432", **grid)
     tex.pretty_plot_pole_figure_odf(
-        odf, pole, crystal_symmetry="432", limits=(0.0, 3.0), ncontour=8, **grid
+        odf, pole, crystal_symmetry="432", nradial=6, ntheta=8, nquad=12
     )
-    tex.pretty_plot_pole_figure_odf(odf, pole, projection="lambert", crystal_symmetry="432", **grid)
+    tex.pretty_plot_pole_figure_odf(
+        odf,
+        pole,
+        crystal_symmetry="432",
+        nradial=6,
+        ntheta=8,
+        nquad=12,
+        limits=(0.0, 3.0),
+        ncontour=8,
+    )
+    tex.pretty_plot_pole_figure_odf(
+        odf, pole, projection="lambert", crystal_symmetry="432", nradial=6, ntheta=8, nquad=12
+    )
     tex.pretty_plot_pole_figure_points(ori, pole, crystal_symmetry="432")
     tex.pretty_plot_inverse_pole_figure(ori, torch.tensor([0.0, 1.0, 0.0]), crystal_symmetry="432")
     plt.close("all")
