@@ -34,6 +34,8 @@
 // must register the same schema + a runtime kernel itself, or the dispatcher
 // throws "Could not find schema for neml2::opaque_pow" when the artifact loads.
 
+#include <mutex>
+
 #include <ATen/core/dispatch/Dispatcher.h>
 #include <ATen/ops/pow.h>
 #include <torch/library.h>
@@ -52,44 +54,36 @@ opaque_pow(const at::Tensor & base, const at::Tensor & exponent)
   return at::pow(base, exponent);
 }
 
-// Register at library load -- but only if the op is not already present. A host
-// that imports the Python neml2 package (the py-aoti route) has already defined
-// `neml2::opaque_pow`, and a second `def` would abort the process; guarding lets
-// a single libneml2 serve both the pure-C++ host (we register) and the Python
-// host (we defer). The kernel is registered on `CompositeExplicitAutograd` so a
-// single definition serves every backend (cpu + cuda).
-struct CustomOpRegistrar
-{
-  CustomOpRegistrar()
-  {
-    // Two constraints, both to avoid pulling in __cxa_call_terminate -- a
-    // libstdc++ EH symbol the wheel/dev link toolchain fails to resolve when
-    // executables link against libneml2 (this is the first torch::Library in the
-    // library):
-    //   * no exception may escape this static-initializer ctor (an escape would
-    //     terminate the process), hence the try/catch; and
-    //   * the torch::Library must have no destructor (a noexcept dtor's
-    //     terminate-on-throw thunk is the actual culprit here), hence it is
-    //     heap-allocated and intentionally never freed -- the registration must
-    //     persist for the whole process anyway.
-    // The expected "op already defined by the Python neml2 package" case
-    // (py-aoti) is handled by the findOp guard, not by the catch.
-    try
-    {
-      if (c10::Dispatcher::singleton().findOp({"neml2::opaque_pow", ""}).has_value())
-        return;
-      auto * lib =
-          new torch::Library(torch::Library::FRAGMENT, "neml2", std::nullopt, __FILE__, __LINE__);
-      lib->def("opaque_pow(Tensor base, Tensor exponent) -> Tensor");
-      lib->impl("opaque_pow",
-                torch::dispatch(c10::DispatchKey::CompositeExplicitAutograd, TORCH_FN(opaque_pow)));
-    }
-    catch (...)
-    {
-    }
-  }
-};
-
-const CustomOpRegistrar registrar;
 } // namespace
+
+void
+ensure_neml2_custom_ops_registered()
+{
+  // Registered lazily -- on first aoti Model construction, not from a static
+  // initializer at libneml2 load -- and only if absent. A single process can
+  // hold BOTH libneml2 and the embedded-Python interpreter (MOOSE's cpp-eager
+  // runtime, or py-aoti); registering at load time raced the Python package's
+  // identical `def` in neml2/types/functions.py ("registered multiple times").
+  // Deferring to first use means the cpp-eager path -- which constructs no aoti
+  // Model -- never registers in C++, so the Python package owns the op there;
+  // the pure cpp-aoti path (no Python) registers it here; py-aoti (Python
+  // imported first) skips via the findOp guard.
+  //
+  // The torch::Library is heap-allocated and never freed: it must outlive the
+  // process, and a destructor would pull in the __cxa_call_terminate EH symbol
+  // the wheel/dev link toolchain cannot resolve.
+  static std::once_flag flag;
+  std::call_once(flag,
+                 []
+                 {
+                   if (c10::Dispatcher::singleton().findOp({"neml2::opaque_pow", ""}).has_value())
+                     return;
+                   auto * lib = new torch::Library(
+                       torch::Library::FRAGMENT, "neml2", std::nullopt, __FILE__, __LINE__);
+                   lib->def("opaque_pow(Tensor base, Tensor exponent) -> Tensor");
+                   lib->impl("opaque_pow",
+                             torch::dispatch(c10::DispatchKey::CompositeExplicitAutograd,
+                                             TORCH_FN(opaque_pow)));
+                 });
+}
 } // namespace neml2::aoti

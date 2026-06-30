@@ -56,6 +56,13 @@ class AOTIModelPackageLoader;
 
 namespace neml2::aoti
 {
+/// Lazily register NEML2's custom Torch operators (currently `neml2::opaque_pow`)
+/// into the dispatcher -- once per process, only if absent. Called from the aoti
+/// `Model` constructor rather than a static initializer so a process that also
+/// embeds the Python neml2 package (cpp-eager / py-aoti) does not double-`def` the
+/// op (the Python package registers the same schema). Defined in `custom_ops.cpp`.
+void ensure_neml2_custom_ops_registered();
+
 /// Opaque implementation of `Model`. Holds the per-segment AOTI graph state and
 /// all the value / Jacobian machinery; the public `Model` methods are one-line
 /// forwarders onto the identically-named members here.
