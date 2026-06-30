@@ -363,6 +363,16 @@ struct Model::Impl
   /// has already passed for this input.
   std::vector<int64_t> _batch_shape_of(std::size_t idx, const at::Tensor & t) const;
 
+  /// Validate every required input and return them as a `state` map with the
+  /// dynamic-batch axes broadcast to a single common shape (base axes
+  /// preserved), so a batch-independent input -- e.g. MOOSE's scalar TIME force
+  /// -- is lifted to the call batch instead of colliding with the batched
+  /// inputs in a downstream `cat`. This is the C++ analogue of
+  /// `neml2/types/_boundary.py::broadcast_to_common_batch`, which the typed
+  /// (eager / py-aoti shim) routes already apply at their raw-tensor boundary.
+  std::map<std::string, at::Tensor>
+  _prepare_inputs(const std::map<std::string, at::Tensor> & inputs) const;
+
   /// Compose the master Jacobian carrier: returns the output values plus the
   /// per-variable `dstate` map, where `dstate[var]` is `(*common_dyn,
   /// var_folded, M_req)` -- the variable's sensitivity to the requested input

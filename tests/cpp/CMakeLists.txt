@@ -121,6 +121,41 @@ set_tests_properties(test_custom_ops PROPERTIES
       ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
 )
 
+# --- Input broadcast: a batch-independent input alongside a batched one --------
+# Every AOTI fixture above feeds uniformly-batched inputs, so the runtime's
+# broadcast of a batch-independent input (the shape MOOSE produces for a scalar
+# TIME force) was uncovered. ScalarLinearCombination C = A + B + offset, with B
+# supplied as a 0-dim scalar. Reuses _fixture_devices (cpu [+cuda]).
+set(_bc_dir ${CMAKE_CURRENT_BINARY_DIR}/broadcast_fixture)
+set(_bc_input ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/batch_broadcast_model.i)
+
+add_test(
+      NAME broadcast_fixture_compile
+      COMMAND ${Python3_EXECUTABLE} -m neml2.cli.aoti_compile ${_bc_input}
+              --model model --device ${_fixture_devices} --dtype float64
+              -d C:A -d C:B
+              --output-dir ${_bc_dir}
+      WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
+)
+set_tests_properties(broadcast_fixture_compile PROPERTIES
+      FIXTURES_SETUP broadcast_artifact
+      LABELS "dispatcher"
+      TIMEOUT 600
+      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_bc_dir}/aoti-cache"
+)
+
+add_executable(test_input_broadcast test_input_broadcast.cpp)
+target_link_libraries(test_input_broadcast PRIVATE aoti)
+target_compile_options(test_input_broadcast PRIVATE -Wall -Wextra)
+set_target_properties(test_input_broadcast PROPERTIES BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
+add_test(NAME test_input_broadcast COMMAND test_input_broadcast ${_bc_dir})
+set_tests_properties(test_input_broadcast PROPERTIES
+      FIXTURES_REQUIRED broadcast_artifact
+      LABELS "dispatcher"
+      TIMEOUT 300
+      ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
+)
+
 # --- Eager embed test: links libneml2_eager, embeds a CPython interpreter, and
 # runs a model straight from the original .i (no compile fixture needed). New
 # "eager" label so it runs independently of the AOTI dispatcher tests.
