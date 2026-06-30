@@ -85,6 +85,42 @@ set_tests_properties(test_dispatcher test_load_model PROPERTIES
       ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
 )
 
+# --- Custom-op coverage: a model that uses neml2::opaque_pow -------------------
+# The dispatcher fixtures above compile LinearIsotropicElasticity (no custom ops),
+# so nothing exercised the cpp-aoti path for an op that torch.export preserves
+# into the artifact and that the Python-free libneml2 must register itself
+# (neml2::opaque_pow -- crystal plasticity / Perzyna). PerzynaPlasticFlowRate is
+# the smallest plain-batch leaf that uses it. Reuses _fixture_devices (cpu [+cuda]).
+set(_pz_dir ${CMAKE_CURRENT_BINARY_DIR}/custom_op_fixture)
+set(_pz_input ${NEML2_SOURCE_DIR}/tests/cpp/fixtures/opaque_pow_model.i)
+
+add_test(
+      NAME custom_op_fixture_compile
+      COMMAND ${Python3_EXECUTABLE} -m neml2.cli.aoti_compile ${_pz_input}
+              --model model --device ${_fixture_devices} --dtype float64
+              -d flow_rate:yield_function
+              --output-dir ${_pz_dir}
+      WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
+)
+set_tests_properties(custom_op_fixture_compile PROPERTIES
+      FIXTURES_SETUP custom_op_artifact
+      LABELS "dispatcher"
+      TIMEOUT 600
+      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_pz_dir}/aoti-cache"
+)
+
+add_executable(test_custom_ops test_custom_ops.cpp)
+target_link_libraries(test_custom_ops PRIVATE aoti)
+target_compile_options(test_custom_ops PRIVATE -Wall -Wextra)
+set_target_properties(test_custom_ops PROPERTIES BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
+add_test(NAME test_custom_ops COMMAND test_custom_ops ${_pz_dir})
+set_tests_properties(test_custom_ops PROPERTIES
+      FIXTURES_REQUIRED custom_op_artifact
+      LABELS "dispatcher"
+      TIMEOUT 300
+      ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
+)
+
 # --- Eager embed test: links libneml2_eager, embeds a CPython interpreter, and
 # runs a model straight from the original .i (no compile fixture needed). New
 # "eager" label so it runs independently of the AOTI dispatcher tests.
