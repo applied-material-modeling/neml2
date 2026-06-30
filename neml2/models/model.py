@@ -79,6 +79,7 @@ if TYPE_CHECKING:
 
     from ..factory import _NativeInputFile
     from ..schema import HitSchema
+    from ..types import Tensor
 
 #: Bound to the concrete typed-wrapper class a caller expects from
 #: :meth:`Model._get_param`, so the return type is narrowed at the call site.
@@ -1030,6 +1031,112 @@ class Model(nn.Module, ABC):
         if len(typed_outs) == 1:
             return (typed_outs[0], v_out)
         return (*typed_outs, v_out)
+
+    # ------------------------------------------------------------------
+    # Forward-mode input derivatives (the public jvp / jacobian surface)
+    # ------------------------------------------------------------------
+    #
+    # The py-eager analogue of the ``forward`` / ``jvp`` / ``jacobian`` surface
+    # every other route exposes (``neml2.aoti.Model`` / ``neml2::aoti::Model`` /
+    # the cpp-eager ``_EagerModel``), so the same code reads identically on any
+    # route. Both are thin, typed wrappers over the ``forward(v=)`` chain rule: a
+    # leading-K seed is threaded per input through the forward, then the typed
+    # contributions are assembled (the typed-output counterparts of the raw
+    # ``neml2.types._boundary`` assembly helpers the C++-facing routes use). The
+    # reverse-mode *parameter* derivatives (:meth:`param_jacobian` /
+    # :meth:`param_vjp`) below are a separate surface.
+
+    def jvp(
+        self,
+        inputs: Mapping[str, TensorWrapper | torch.Tensor],
+        tangents: Mapping[str, TensorWrapper | torch.Tensor],
+    ) -> tuple[dict[str, TensorWrapper], dict[str, TensorWrapper]]:
+        """Evaluate the model and its Jacobian-vector product, all typed.
+
+        Returns ``(outputs, jvp_outputs)``, both keyed by output name with typed
+        values. *inputs* and *tangents* are keyed by input name (typed wrappers or
+        raw tensors, wrapped via ``input_spec``); a missing tangent defaults to
+        zero (that input contributes nothing). ``jvp_outputs[name]`` is the
+        directional derivative -- a wrapper of the output's type at its natural
+        ``(*batch, *sub_batch, *out_base)`` shape.
+
+        Each supplied tangent is seeded as a single formal leading-K direction and
+        threaded through the ``forward(v=)`` chain rule; the per-input
+        contributions to each output are summed. The forward-mode companion of the
+        reverse-mode :meth:`param_jacobian` / :meth:`param_vjp`, and the typed
+        py-eager analogue of the (raw, name-keyed) ``jvp`` the compiled / embedded
+        routes expose.
+        """
+        from ..types._boundary import (  # noqa: PLC0415
+            assemble_jvp_outputs_typed,
+            leading_k1_seed,
+        )
+
+        typed_args = tuple(t(inputs[n]) for n, t in self.input_spec.items())  # type: ignore[call-arg]
+        seed: dict[str, dict[str, TensorWrapper]] = {}
+        for n, t_cls in self.input_spec.items():
+            tg = tangents.get(n)
+            if tg is None:
+                continue
+            tw = tg if isinstance(tg, TensorWrapper) else t_cls(tg)  # type: ignore[call-arg]
+            seed[n] = {n: leading_k1_seed(tw)}
+        *typed_outs, v_out = self(*typed_args, v=seed)
+        output_names = list(self.output_spec)
+        outputs = dict(zip(output_names, typed_outs, strict=True))
+        jvp_outputs = assemble_jvp_outputs_typed(v_out, tuple(typed_outs), output_names)
+        return outputs, jvp_outputs
+
+    def jacobian(
+        self,
+        inputs: Mapping[str, TensorWrapper | torch.Tensor],
+    ) -> tuple[dict[str, TensorWrapper], dict[str, dict[str, Tensor]]]:
+        """Evaluate the model and its full Jacobian as typed variable-pair blocks.
+
+        Returns ``(outputs, J)`` -- ``outputs`` keyed by output name (typed) and
+        ``J`` the nested ``{out_name: {in_name: block}}`` map (rows in
+        ``output_spec`` order, cols in ``input_spec`` order). Each block is a
+        dynamic-base :class:`~neml2.types.Tensor` of shape
+        ``(*batch, *sub_batch, *out_base, *in_base)`` -- there is no single static
+        wrapper for an arbitrary derivative pair. A constant ``(out, in)`` pair is
+        an explicit zero block.
+
+        Built on the same ``forward(v=)`` chain rule as :meth:`jvp`, seeding each
+        input with a leading-K identity (one direction per input base component,
+        reusing the AOTI export's :func:`~neml2.cli.aoti_export._leading_k_identity_seed`)
+        and reshaping the result into per-pair blocks. The seed batch is
+        ``broadcast(input batches, parameter batches)`` so a per-batch-element
+        parameter is handled, matching ``_EagerModel.jacobian``. The typed
+        py-eager analogue of the (raw, name-keyed) ``jacobian`` the compiled /
+        embedded routes expose.
+        """
+        from ..cli.aoti_export import _leading_k_identity_seed  # noqa: PLC0415
+        from ..types._boundary import assemble_jacobian_typed  # noqa: PLC0415
+        from .param_ad import call_batch_shape, enumerate_typed_params  # noqa: PLC0415
+
+        typed_args = tuple(t(inputs[n]) for n, t in self.input_spec.items())  # type: ignore[call-arg]
+        typed_params = enumerate_typed_params(self)
+        param_qnames = [q for q, _ in typed_params]
+        param_base = {q: tuple(cls.BASE_SHAPE) for q, cls in typed_params}
+        # The output batches on broadcast(input batches, parameter batches); build
+        # every identity seed at that common call batch so the chain rule and the
+        # output-batch-keyed assembly agree (a parameter may carry its own batch).
+        call_batch = call_batch_shape(typed_args, self, param_qnames, param_base)
+        seed = {
+            n: {n: _leading_k_identity_seed(t_cls, call_batch, dtype=ta.dtype, device=ta.device)}
+            for (n, t_cls), ta in zip(self.input_spec.items(), typed_args, strict=True)
+        }
+        *typed_outs, v_out = self(*typed_args, v=seed)
+        output_names = list(self.output_spec)
+        outputs = dict(zip(output_names, typed_outs, strict=True))
+        jac = assemble_jacobian_typed(
+            v_out,
+            tuple(typed_outs),
+            output_names,
+            self.output_spec,
+            list(self.input_spec),
+            self.input_spec,
+        )
+        return outputs, jac
 
     # ------------------------------------------------------------------
     # Parameter derivatives (reverse-mode autograd over calibration params)
