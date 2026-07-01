@@ -32,6 +32,12 @@ rename is a pure relabel: with an active ``boundary_aliases`` map the reported
 key use the RENAMED boundary names, while the values are byte-for-byte identical
 to an unrenamed compile of the same model. The internal wiring keeps the original
 authored names -- verified indirectly by the numerical parity.
+
+Input / output / promoted-parameter *name* renaming (forward, jvp, jacobian,
+named_parameters, set_parameter) runs on every torch. The parameter-*derivative*
+blocks (param_jacobian / param_vjp) additionally need reverse-mode AD to lower
+through AOTInductor (torch >= 2.11), so that case is skipped on the exact
+predicate the exporter guards on.
 """
 
 from __future__ import annotations
@@ -42,20 +48,24 @@ import pytest
 import torch
 
 import neml2  # noqa: F401 — registers models
+from neml2.cli.aoti_export import _reverse_ad_aoti_unsupported_reason
 
 _TESTS_ROOT = Path(__file__).resolve().parents[1]
 # Forward model: structural input `x` (Scalar) -> output `out` (Scalar), with a
 # promotable Scalar parameter `ys.C`. Small + fast to compile.
 _MODEL_I = _TESTS_ROOT / "aoti/forward_exp_param/model.i"
 
-# Structural + parameter derivatives, in ORIGINAL names (rename is applied at the
-# boundary only; derivative specs resolve against the authored names).
-_DERIV = [":", "out:ys.C"]
 _RENAMES = {
     "inputs": {"x": "strain"},
     "outputs": {"out": "stress"},
     "parameters": {"ys.C": "Cbar"},
 }
+
+_PARAM_DERIV_UNSUPPORTED = _reverse_ad_aoti_unsupported_reason()
+_REQUIRES_PARAM_DERIV_TORCH = pytest.mark.skipif(
+    _PARAM_DERIV_UNSUPPORTED is not None,
+    reason=f"reverse-mode AD AOTI compilation {_PARAM_DERIV_UNSUPPORTED}",
+)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -66,24 +76,26 @@ def _f64():
     torch.set_default_dtype(prev)
 
 
-def _compile(tmp_path: Path, sub: str, *, renames=None):
+def _compile(tmp_path: Path, sub: str, *, derivatives, renames=None):
     from neml2.aoti import AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
 
     out = tmp_path / sub
     meta = export_model_for_aoti(
-        _MODEL_I, "model", out, promoted={"ys.C"}, derivatives=_DERIV, renames=renames
+        _MODEL_I, "model", out, promoted={"ys.C"}, derivatives=derivatives, renames=renames
     )
     return AOTIModel(str(out / "model_meta.json")), meta
 
 
-def test_rename_round_trip_matches_plain_compile(tmp_path):
-    """A renamed artifact reports boundary names on every surface and is
-    numerically identical to an unrenamed compile of the same model."""
-    plain, plain_meta = _compile(tmp_path, "plain")
-    ren, ren_meta = _compile(tmp_path, "ren", renames=_RENAMES)
+def test_rename_names_and_value_derivatives_match_plain(tmp_path):
+    """A renamed artifact reports boundary names on every surface and its
+    forward / jvp / jacobian / promoted-parameter values are identical to an
+    unrenamed compile. Structural derivatives only, so this runs on every torch."""
+    deriv = [":"]  # all structural (out, in) pairs; no parameter derivatives
+    plain, plain_meta = _compile(tmp_path, "plain", derivatives=deriv)
+    ren, ren_meta = _compile(tmp_path, "ren", derivatives=deriv, renames=_RENAMES)
 
-    # Reported names are the boundary names.
+    # Reported names are the boundary names (inputs, outputs, AND promoted params).
     assert list(ren.input_spec) == ["strain"]
     assert list(ren.output_spec) == ["stress"]
     assert list(ren.named_parameters()) == ["Cbar"]
@@ -114,6 +126,26 @@ def test_rename_round_trip_matches_plain_compile(tmp_path):
     assert list(jr) == ["stress"]
     assert torch.allclose(jp["out"], jr["stress"])
 
+    # set_parameter by the boundary name flows into the value graph identically to
+    # the authored-name path (promotion needs no reverse-mode AD).
+    plain.set_parameter("ys.C", torch.tensor(0.25))
+    ren.set_parameter("Cbar", torch.tensor(0.25))
+    assert torch.allclose(
+        plain.forward(neml2.Scalar(x))[0].data, ren.forward(neml2.Scalar(x))[0].data
+    )
+
+
+@_REQUIRES_PARAM_DERIV_TORCH
+def test_rename_parameter_derivatives_match_plain(tmp_path):
+    """The renamed parameter-derivative blocks (param_jacobian / param_vjp) key by
+    the boundary parameter name and match the unrenamed compile. Needs reverse-mode
+    AD lowering (torch >= 2.11)."""
+    deriv = [":", "out:ys.C"]  # structural + the d(out)/d(ys.C) parameter pair
+    plain, _ = _compile(tmp_path, "plain", derivatives=deriv)
+    ren, _ = _compile(tmp_path, "ren", derivatives=deriv, renames=_RENAMES)
+
+    x = torch.linspace(0.1, 0.5, 5)
+
     # param_jacobian: P[stress][Cbar] == P[out][ys.C].
     _, Pp = plain.param_jacobian({"x": x})
     _, Pr = ren.param_jacobian({"strain": x})
@@ -126,17 +158,3 @@ def test_rename_round_trip_matches_plain_compile(tmp_path):
     gr = ren.param_vjp({"strain": x}, {"stress": cot})
     assert list(gr) == ["Cbar"]
     assert torch.allclose(gp["ys.C"], gr["Cbar"])
-
-
-def test_rename_set_parameter_by_boundary_name(tmp_path):
-    """A promoted parameter is set / read through its boundary name, and the change
-    flows into the value graph identically to the authored-name path."""
-    plain, _ = _compile(tmp_path, "plain")
-    ren, _ = _compile(tmp_path, "ren", renames=_RENAMES)
-
-    x = torch.linspace(0.1, 0.5, 5)
-    plain.set_parameter("ys.C", torch.tensor(0.25))
-    ren.set_parameter("Cbar", torch.tensor(0.25))
-    op = plain.forward(neml2.Scalar(x))[0].data
-    orr = ren.forward(neml2.Scalar(x))[0].data
-    assert torch.allclose(op, orr)

@@ -53,12 +53,18 @@ def test_schema_version_matches_dependencies_yaml():
     """The exported constant tracks the single source of truth in
     ``scripts/dependencies.yaml`` (kept in sync by ``scripts/dep_manager.py``);
     the C++ loader mirrors the same value and refuses any other, so a stale
-    cache surfaces with a clear ``regenerate via neml2-compile`` message."""
-    import yaml
+    cache surfaces with a clear ``regenerate via neml2-compile`` message.
+
+    Parsed with a regex rather than PyYAML: ``yaml`` is a build/dev-tool
+    dependency (``dep_manager``), not part of the runtime test environment.
+    ``aoti.schema_version`` is the only ``schema_version`` key in the file."""
+    import re
 
     repo_root = Path(__file__).resolve().parents[2]
-    deps = yaml.safe_load((repo_root / "scripts" / "dependencies.yaml").read_text())
-    assert AOTI_META_SCHEMA_VERSION == int(deps["aoti"]["schema_version"])
+    text = (repo_root / "scripts" / "dependencies.yaml").read_text()
+    m = re.search(r'^\s*schema_version:\s*"?(\d+)"?', text, re.MULTILINE)
+    assert m is not None, "schema_version not found in scripts/dependencies.yaml"
+    assert AOTI_META_SCHEMA_VERSION == int(m.group(1))
 
 
 # ---------- _var_infos default behaviour (no sub-batch) ----------
