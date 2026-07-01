@@ -74,7 +74,7 @@ dependencies = [
   # dependencies: torch.version_min
   "torch>=2.10.0",
   # dependencies: pyzag.version
-  "pyzag==1.1.3",
+  "pyzag==2.0.0",
   # dependencies: nmhit.version_min
   "nmhit>=0.3.3",
 ]
@@ -295,7 +295,7 @@ before-all = ""
 before-build = "python -m pip install scikit-build-core ninja torch 'nmhit>=0.3.3' wheel pybind11-stubgen>=2.5.5"
 
 # dependencies: pyzag.version
-test-requires = "pytest torch pyzag==1.1.3"
+test-requires = "pytest torch pyzag==2.0.0"
 test-command = "pytest -v {project}/tests"
 
 [tool.cibuildwheel.linux]

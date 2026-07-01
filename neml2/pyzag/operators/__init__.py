@@ -22,20 +22,48 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from .interface import NEML2PyzagFactory, change_lag_order, lag_order
-from .operators import (
-    NEML2BlockJacobian,
-    NEML2BlockVector,
-    NEML2SolvableBlockOperator,
-    NEML2Wrapper,
+"""pyzag block-operator backend backed by neml2 assembled types.
+
+Implements pyzag's ``BlockVector`` / ``SolvableBlockOperator`` / ``BlockJacobian``
+ABCs on top of neml2's ``AssembledVector`` / ``AssembledMatrix``, solving the
+diagonal block with a cached batched LU (single group) or neml2's
+``SchurComplement`` (two-group Schur split). Parallel cyclic reduction is
+supported for single-group dense layouts; other layouts use the Thomas
+factorization.
+"""
+
+from ._assembly import (
+    _require_le_one_intmd,
+    _select_dynamic_am,
+    _select_dynamic_av,
+    _transpose_am,
 )
+from ._cache import CachingLU
+from ._flat import (
+    _av_to_flat,
+    _group_flat_size,
+    _group_intmd_dim,
+    _layout_flat_size,
+    _split_flat_to_av,
+)
+from ._jacobian import NEML2BlockJacobian
+from ._operator import NEML2SolvableBlockOperator
+from ._vector import NEML2BlockVector
+from ._wrapper import NEML2Wrapper
 
 __all__ = [
-    "NEML2PyzagFactory",
-    "change_lag_order",
-    "lag_order",
+    "CachingLU",
     "NEML2BlockVector",
     "NEML2SolvableBlockOperator",
     "NEML2BlockJacobian",
     "NEML2Wrapper",
+    "_av_to_flat",
+    "_split_flat_to_av",
+    "_layout_flat_size",
+    "_group_flat_size",
+    "_group_intmd_dim",
+    "_transpose_am",
+    "_select_dynamic_am",
+    "_select_dynamic_av",
+    "_require_le_one_intmd",
 ]
