@@ -370,6 +370,15 @@ struct Model::Impl
   /// has already passed for this input.
   std::vector<int64_t> _batch_shape_of(std::size_t idx, const at::Tensor & t) const;
 
+  /// The DYNAMIC (plain) batch of a canonical input: the leading axes before
+  /// both the per-input sub-batch axes (`_input_sub_batch_shapes[idx]`) and the
+  /// trailing `base_shape`. Unlike `_batch_shape_of` (which returns dynamic +
+  /// sub-batch), this excludes the sub-batch axes -- the structural per-site
+  /// axes (e.g. crystal-plasticity per-grain / per-slip) that must NOT be
+  /// broadcast across inputs. Used by `_prepare_inputs` to unify only the plain
+  /// batch across a mix of global and sub-batched inputs.
+  std::vector<int64_t> _dynamic_batch_shape_of(std::size_t idx, const at::Tensor & t) const;
+
   /// Validate every required input and return them as a `state` map with the
   /// dynamic-batch axes broadcast to a single common shape (base axes
   /// preserved), so a batch-independent input -- e.g. MOOSE's scalar TIME force

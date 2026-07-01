@@ -89,13 +89,36 @@ Model::Impl::_batch_shape_of(std::size_t idx, const at::Tensor & t) const
   return batch;
 }
 
+std::vector<int64_t>
+Model::Impl::_dynamic_batch_shape_of(std::size_t idx, const at::Tensor & t) const
+{
+  // Strip BOTH the sub-batch axes and the trailing base axes; what remains is
+  // the leading plain (dynamic) batch. `_input_sub_batch_shapes` is populated
+  // per input at construction (an empty vector for a plain-batch input, and
+  // empty overall for an older cache without the metadata -> sub_ndim 0).
+  const int64_t sub_ndim = _input_sub_batch_shapes.empty()
+                               ? 0
+                               : static_cast<int64_t>(_input_sub_batch_shapes[idx].size());
+  const int64_t trailing = static_cast<int64_t>(_input_base_shapes[idx].size()) + sub_ndim;
+  std::vector<int64_t> dyn;
+  for (int64_t d = 0; d < t.dim() - trailing; ++d)
+    dyn.push_back(t.size(d));
+  return dyn;
+}
+
 std::map<std::string, at::Tensor>
 Model::Impl::_prepare_inputs(const std::map<std::string, at::Tensor> & inputs) const
 {
   std::map<std::string, at::Tensor> state;
   // First pass: validate + materialize each input, accumulating the common
-  // dynamic batch (torch broadcasting) across all of them.
-  std::vector<int64_t> batch;
+  // DYNAMIC (plain) batch across all of them. Only the plain batch is unified:
+  // a sub-batched input's per-site axes (crystal-plasticity per-grain /
+  // per-slip) are structural and are stripped alongside the base axes before
+  // broadcasting -- unifying them would collide a global input's (B,) against a
+  // per-grain input's (B, ngrain). This mirrors the typed routes, whose
+  // broadcast_to_common_batch broadcasts only the dynamic batch per its
+  // per-input sub_batch_ndim.
+  std::vector<int64_t> dyn;
   for (std::size_t k = 0; k < _input_names.size(); ++k)
   {
     const auto & n = _input_names[k];
@@ -103,18 +126,26 @@ Model::Impl::_prepare_inputs(const std::map<std::string, at::Tensor> & inputs) c
     _assert(it != inputs.end(), "aoti::Model: missing required input '", n, "'.");
     _validate_input_shape(k, it->second);
     state[n] = it->second.contiguous();
-    batch = at::infer_size(batch, _batch_shape_of(k, state[n]));
+    dyn = at::infer_size(dyn, _dynamic_batch_shape_of(k, state[n]));
   }
-  // Second pass: lift every input's dynamic batch up to the common shape (its
-  // trailing base axes untouched), so a batch-independent input (e.g. a scalar
-  // TIME force) no longer collides with the batched inputs downstream.
+  // Second pass: lift every input's dynamic batch to the common shape, leaving
+  // its sub-batch and base axes untouched -- a batch-independent input (e.g. a
+  // scalar TIME force) is broadcast to the call batch without disturbing a
+  // sub-batched input's per-grain axes.
   for (std::size_t k = 0; k < _input_names.size(); ++k)
   {
     const auto & n = _input_names[k];
-    std::vector<int64_t> target(batch);
-    const auto & base = _input_base_shapes[k];
-    target.insert(target.end(), base.begin(), base.end());
-    state[n] = state[n].broadcast_to(target).contiguous();
+    const at::Tensor & t = state[n];
+    const int64_t sub_ndim = _input_sub_batch_shapes.empty()
+                                 ? 0
+                                 : static_cast<int64_t>(_input_sub_batch_shapes[k].size());
+    const int64_t keep = static_cast<int64_t>(_input_base_shapes[k].size()) + sub_ndim;
+    // target = (*common_dyn, *sub_k, *base_k): common plain batch, then this
+    // input's own trailing sub-batch + base axes verbatim.
+    std::vector<int64_t> target(dyn);
+    for (int64_t d = t.dim() - keep; d < t.dim(); ++d)
+      target.push_back(t.size(d));
+    state[n] = t.broadcast_to(target).contiguous();
   }
   return state;
 }
