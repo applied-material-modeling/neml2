@@ -54,6 +54,17 @@ if TYPE_CHECKING:
     from .tensor import Tensor
 
 
+def to_torch(t: TensorWrapper | Tensor) -> torch.Tensor:
+    """Return the raw ``torch.Tensor`` backing a typed wrapper.
+
+    The pyzag adapter (``neml2/pyzag/``) has to hand raw tensors to pyzag at its
+    framework boundary. Rule 2 forbids ``.data`` access outside ``neml2/types/``,
+    so the adapter calls this helper instead of reaching for ``.data`` itself --
+    the single sanctioned typed->raw read stays here, in the boundary module.
+    """
+    return t.data  # data-ok pyzag adapter boundary
+
+
 def check_tensor(
     t: torch.Tensor,
     name: str,
