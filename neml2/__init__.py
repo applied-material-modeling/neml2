@@ -79,14 +79,6 @@ except ImportError as _aoti_err:
             "underlying cause.",
             stacklevel=2,
         )
-# Eagerly expose ``neml2.pyzag`` as an attribute so notebooks / tests
-# can write ``neml2.pyzag.NEML2PyzagModel(...)`` without an explicit
-# import. Safe to place anywhere in this file -- ``pyzag.interface``
-# imports only from the leaf modules (``neml2.es``, ``neml2.types``,
-# ``neml2.models``) that are already loaded by this point. It used
-# to re-export ``load_nonlinear_system`` and tripped a circular
-# import; that's been removed.
-from . import pyzag as pyzag  # noqa: F401
 from .data import (  # noqa: F401 (registers CubicCrystal [Data] block)
     CrystalGeometry,
     CubicCrystal,
@@ -171,6 +163,7 @@ from .user_tensors import (  # noqa: F401 (registers CSV<Type> [Tensors] block t
     CSVScalar,
     CSVVec,
 )
+from . import pyzag as pyzag
 
 # Determine version
 version_file = Path(__file__).parent / "version"

@@ -22,31 +22,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""pyzag ↔ NEML2 interface.
-
-Wires NEML2's :mod:`neml2.es` runtime (``AxisLayout``,
-``AssembledVector``, ``AssembledMatrix``) into the pyzag
-``NonlinearRecursiveFunction`` protocol. The underlying NEML2 ``Model``
-is itself an :class:`torch.nn.Module`, so ``named_parameters()`` works
-without any wrapping.
-"""
+"""Adapt a NEML2 ``ModelNonlinearSystem`` to pyzag's ``NonlinearFunctionOperatorFactory``."""
 
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 
 import torch
 from pyzag import nonlinear
+from pyzag.operators.neml2 import (
+    BlockLayout,
+    BlockMatrix,
+    BlockTensor,
+    BlockVectorAM,
+    GroupSpec,
+    IStructure,
+    NEML2BlockJacobian,
+    NEML2Wrapper,
+    _av_to_flat,
+    _pack_per_var_to_av,
+    _split_flat_per_var,
+)
 
-# NOTE: do not re-export ``neml2.load_nonlinear_system`` here. Eagerly
-# importing from the top-level ``neml2`` package would deadlock the
-# package's own initialization once ``neml2/__init__.py`` adds
-# ``from . import pyzag`` (which it does, so notebooks can write
-# ``neml2.pyzag.NEML2PyzagModel(...)`` without an explicit import) --
-# Python would be partway through evaluating ``neml2/__init__.py`` and
-# wouldn't have ``load_nonlinear_system`` on the namespace yet. The
-# re-export had no live consumers; users just call
-# ``neml2.load_nonlinear_system`` directly.
 from neml2.es import (
     AssembledMatrix,
     AssembledVector,
@@ -54,17 +52,11 @@ from neml2.es import (
     ModelNonlinearSystem,
 )
 from neml2.types import Tensor, TensorWrapper
+from neml2.types._boundary import to_torch
 
 
 def lag_order(var: str) -> tuple[str, int]:
-    """Split a variable name into its base name and lag order.
-
-    ``var`` is either ``"name"`` (lag 0) or ``"name~n"`` (lag ``n``). Used by
-    the interface to identify *old-state* / *old-force* variables — pyzag
-    wants a contiguous-in-time state and forces tensor, while the NEML2
-    nonlinear system keeps current values on the unknown axis and old values
-    on the given axis with a ``~1`` suffix.
-    """
+    """Split ``"name"`` (lag 0) or ``"name~n"`` into base name and lag order."""
     tokens = var.split("~")
     if len(tokens) == 1:
         return tokens[0], 0
@@ -76,75 +68,125 @@ def lag_order(var: str) -> tuple[str, int]:
 
 
 def change_lag_order(var: str, new_order: int) -> str:
-    """Re-tag a variable name to a different lag order. Inverse of :func:`lag_order`."""
+    """Re-tag a variable name to a different lag order; inverse of :func:`lag_order`."""
     base, _ = lag_order(var)
     return f"{base}~{new_order}" if new_order != 0 else base
 
 
-def _filter_layout_by_lag(
+def _extract_sublayout(
     layout: AxisLayout,
     order: int,
     new_order: int | None = None,
-    *,
-    keep_only_if: set[str] | None = None,
 ) -> AxisLayout:
-    """Single-group sub-layout containing only variables whose lag matches ``order``.
-
-    Optionally renames the surviving variables to ``new_order`` (so old-state
-    seeded as ``"x~1"`` can be re-emitted as ``"x"`` for the pyzag-side
-    representation).
-
-    ``keep_only_if`` further filters the survivors by the *post-rename* name:
-    only entries whose new name is in the set are kept. Used to drop
-    rate-like unknowns from snlayout when the underlying NEML2 model has no
-    matching ``~1`` glayout entry (rate variables solved instantaneously
-    each step, e.g. ``gamma_rate_ri`` for rate-independent flow).
-
-    Native ``AxisLayout`` is groups-based; pyzag's filter is name-based and
-    always single-group, so we collapse to one group on the way out. The
-    surviving names keep their ``specs`` / ``sub_batch_shapes`` from the
-    parent layout.
-    """
-    survivors: list[str] = []
-    new_specs: dict = {}
-    new_sub: dict = {}
-    for name in layout.vars():
-        base, lag = lag_order(name)
-        if lag != order:
-            continue
-        suffix = f"~{new_order}" if new_order is not None and new_order != 0 else ""
-        new_name = f"{base}{suffix}"
-        if keep_only_if is not None and new_name not in keep_only_if:
-            continue
-        survivors.append(new_name)
-        new_specs[new_name] = layout.type_of(name)
-        new_sub[new_name] = layout.sub_batch_shape(name)
-    return AxisLayout([survivors], new_specs, new_sub)
+    """Group-preserving sub-layout of variables whose lag matches ``order``."""
+    target_order = new_order if new_order is not None else 0
+    grouped: list[list[str]] = []
+    specs: dict = {}
+    sub: dict = {}
+    structure: list[str] = []
+    for gi, group in enumerate(layout.groups):
+        kept: list[str] = []
+        for name in group:
+            if lag_order(name)[1] != order:
+                continue
+            new_name = change_lag_order(name, target_order)
+            kept.append(new_name)
+            specs[new_name] = layout.type_of(name)
+            sub[new_name] = layout.sub_batch_shape(name)
+        if kept:
+            grouped.append(kept)
+            structure.append(layout.structure[gi])
+    if not grouped:
+        return AxisLayout([[]], {}, {}, ("dense",))
+    return AxisLayout(grouped, specs, sub, tuple(structure))
 
 
-class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
-    """Wrap a native NEML2 :class:`NonlinearSystem` as a pyzag
-    ``NonlinearRecursiveFunction``.
+def _neml2_to_pyzag_layout(layout: AxisLayout) -> BlockLayout:
+    """NEML2 ``AxisLayout`` -> pyzag ``BlockLayout``."""
+    groups = []
+    for gi, group in enumerate(layout.groups):
+        names = tuple(group)
+        intmd_sizes = tuple(tuple(layout.sub_batch_shape(n)) for n in group)
+        base_sizes = tuple(tuple(layout.type_of(n).BASE_SHAPE or ()) for n in group)
+        istr = (
+            IStructure.BLOCK
+            if layout.structure[gi] == "block"
+            else IStructure.DENSE
+        )
+        groups.append(
+            GroupSpec(
+                names=names,
+                istructure=istr,
+                intmd_sizes=intmd_sizes,
+                base_sizes=base_sizes,
+            )
+        )
+    return BlockLayout(groups=tuple(groups))
+
+
+def _neml2_av_to_pyzag_bv(av: AssembledVector) -> BlockVectorAM:
+    """NEML2 ``AssembledVector`` -> pyzag ``BlockVectorAM``."""
+    layout = _neml2_to_pyzag_layout(av.layout)
+    tensors = []
+    for t in av.tensors:
+        dynamic_dim = t.ndim - 1 - t.sub_batch_ndim
+        tensors.append(BlockTensor(to_torch(t), dynamic_dim, t.sub_batch_ndim))
+    return BlockVectorAM(layout, tensors)
+
+
+def _neml2_am_to_pyzag_bm(am: AssembledMatrix) -> BlockMatrix:
+    """NEML2 ``AssembledMatrix`` -> pyzag ``BlockMatrix``."""
+    row = _neml2_to_pyzag_layout(am.row_layout)
+    col = _neml2_to_pyzag_layout(am.col_layout)
+    n_row = am.row_layout.ngroup
+    n_col = am.col_layout.ngroup
+    tensors = [[BlockTensor() for _ in range(n_col)] for _ in range(n_row)]
+    for i in range(n_row):
+        for j in range(n_col):
+            t = am.tensors[i][j]
+            dynamic_dim = t.ndim - 2 - t.sub_batch_ndim
+            tensors[i][j] = BlockTensor(to_torch(t), dynamic_dim, t.sub_batch_ndim)
+    return BlockMatrix(row, col, tensors)
+
+
+def _expand_bm_dynamic(
+    bm: BlockMatrix, target_dynamic_shape: tuple[int, ...]
+) -> BlockMatrix:
+    """Broadcast every defined block's dynamic dims to ``target_dynamic_shape``."""
+    target_ndim = len(target_dynamic_shape)
+    n_row = bm.row_layout.ngroup()
+    n_col = bm.col_layout.ngroup()
+    out = [[BlockTensor() for _ in range(n_col)] for _ in range(n_row)]
+    for i in range(n_row):
+        for j in range(n_col):
+            blk = bm.tensors[i][j]
+            if not blk.defined():
+                continue
+            raw = blk.torch()
+            intmd_dim = blk.intmd.dim()
+            cur_dyn = blk.dynamic.dim()
+            while cur_dyn < target_ndim:
+                raw = raw.unsqueeze(0)
+                cur_dyn += 1
+            full_target = tuple(target_dynamic_shape) + tuple(raw.shape[target_ndim:])
+            raw = raw.expand(full_target).contiguous()
+            out[i][j] = BlockTensor(raw, target_ndim, intmd_dim)
+    return BlockMatrix(bm.row_layout, bm.col_layout, out)
+
+
+class NEML2PyzagFactory(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFactory):
+    """Adapt a NEML2 ``ModelNonlinearSystem`` to pyzag's ``NonlinearFunctionOperatorFactory``.
 
     Args:
         sys: the native NEML2 nonlinear system to wrap.
 
     Keyword Args:
-        exclude_parameters (list of str): NEML2 parameters to *not* mirror
-            as torch parameters on the wrapper (so every *other* parameter is
-            trained). Mutually exclusive with ``include_parameters``.
-        include_parameters (list of str): the *only* NEML2 parameters to mirror
-            as torch parameters on the wrapper (so every *other* parameter is
-            held fixed). Mutually exclusive with ``exclude_parameters``.
-
-    ``exclude_parameters`` and ``include_parameters`` are both optional and
-    mutually exclusive: omit both to train every parameter, pass
-    ``exclude_parameters`` to train all-but-some, or pass
-    ``include_parameters`` to train only-these. Passing both raises
-    ``ValueError``.
-
-    Additional ``args`` and ``kwargs`` are forwarded to
-    :class:`torch.nn.Module` verbatim.
+        exclude_parameters (list of str): NEML2 parameters to *not* mirror as torch
+            parameters. Mutually exclusive with ``include_parameters``.
+        include_parameters (list of str): the *only* NEML2 parameters to mirror as
+            torch parameters. Mutually exclusive with ``exclude_parameters``.
+        compile (bool): compile the residual model in place via ``neml2.compile`` on
+            construction. Default ``True``; pass ``False`` as a correctness oracle.
     """
 
     def __init__(
@@ -153,6 +195,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         *args,
         exclude_parameters: list[str] | None = None,
         include_parameters: list[str] | None = None,
+        compile: bool = True,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -170,19 +213,6 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                 "or load_input(path).get_equation_system(name) to obtain one."
             )
 
-        # ``self.sys`` is not an ``nn.Module`` — plain attribute assignment is fine.
-        # ``sys.model`` IS an ``nn.Module``, and the default
-        # ``nn.Module.__setattr__`` would silently auto-register it as a
-        # submodule. That doubles every parameter under both
-        # ``wrapper.<flat>`` (our mirror) and ``wrapper.model.<dotted>``
-        # (the underlying), so any code iterating ``solver.named_parameters()``
-        # sees each leaf twice. After our parameter-swap binds the underlying
-        # ``_parameters[leaf]`` to the wrapper's Parameter, the two entries
-        # become the same object — pyzag's adjoint accumulator then writes
-        # the gradient through both positions, which interferes with itself
-        # for at least the ``offset`` case (off-by-a-sign / cancellation).
-        # ``object.__setattr__`` bypasses ``nn.Module.__setattr__`` and leaves
-        # ``self.model`` as a plain instance attribute.
         self.sys = sys
         object.__setattr__(self, "model", sys.model)
         self._lookback = 1
@@ -190,6 +220,28 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         self._setup_maps()
         self._check_model()
         self._setup_parameters(exclude_parameters, include_parameters)
+        self._wrapper = NEML2Wrapper(_neml2_to_pyzag_layout(self.slayout))
+        if compile:
+            self._compile()
+
+    _COMPILE_CACHE_SIZE_LIMIT = 512
+
+    def _compile(self) -> None:
+        """Compile the residual model in place and raise dynamo cache limits."""
+        import torch._dynamo.config
+        import torch._functorch.config
+
+        from neml2.models.compile import compile as _neml2_compile
+
+        torch._functorch.config.donated_buffer = False
+        torch._dynamo.config.cache_size_limit = max(
+            torch._dynamo.config.cache_size_limit, self._COMPILE_CACHE_SIZE_LIMIT
+        )
+        torch._dynamo.config.accumulated_cache_size_limit = max(
+            torch._dynamo.config.accumulated_cache_size_limit,
+            8 * self._COMPILE_CACHE_SIZE_LIMIT,
+        )
+        _neml2_compile(self.sys)
 
     @property
     def lookback(self) -> int:
@@ -203,45 +255,96 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
     @property
     def nstate(self) -> int:
-        return sum(math.prod(self.slayout.specs[v].BASE_SHAPE or (1,)) for v in self.slayout.vars())
+        return sum(
+            math.prod(self.slayout.specs[v].BASE_SHAPE or (1,))
+            for v in self.slayout.vars()
+        )
 
     @property
     def nforce(self) -> int:
-        return sum(math.prod(self.flayout.specs[v].BASE_SHAPE or (1,)) for v in self.flayout.vars())
+        return sum(
+            math.prod(self.flayout.specs[v].BASE_SHAPE or (1,))
+            for v in self.flayout.vars()
+        )
 
-    def forward(
-        self, state: torch.Tensor, forces: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        """Compute the residual and stacked Jacobians for one pyzag block step.
+    @property
+    def wrapper(self):
+        return self._wrapper
 
-        Args:
-            state: flat tensor with the current+previous state, shape
-                ``(n_block + lookback, ..., nstate)``.
-            forces: flat tensor with the current+previous forces, shape
-                ``(n_block + lookback, ..., nforce)``.
-        """
-        # Sync the wrapper-owned torch.nn.Parameters back into the underlying
-        # NEML2 model (the wrapper is what torch reparameterization decorates,
-        # the underlying model is what actually evaluates).
+    def _infer_sub_batch(self, value_dict, layout: AxisLayout, dynamic_dim: int) -> dict:
+        """Infer each variable's runtime sub_batch shape from its tensor shape."""
+        out: dict = {}
+        for name in layout.vars():
+            t = value_dict[name]
+            base_ndim = len(layout.type_of(name).BASE_SHAPE or ())
+            out[name] = tuple(t.shape[dynamic_dim : t.ndim - base_ndim])
+        return out
+
+    def _assemble_dict_to_flat(
+        self, value_dict, pyzag_layout: BlockLayout, dynamic_dim: int
+    ) -> torch.Tensor:
+        """Pack a per-variable tensor dict into a single flat tensor for ``pyzag_layout``."""
+        parts = []
+        for gspec in pyzag_layout.groups:
+            for vi, name in enumerate(gspec.names):
+                intmd_dim = len(gspec.intmd_sizes[vi])
+                parts.append(BlockTensor(value_dict[name], dynamic_dim, intmd_dim))
+        return _av_to_flat(_pack_per_var_to_av(pyzag_layout, parts))
+
+    def assemble_state(self, ic_dict, dynamic_dim: int = 1) -> torch.Tensor:
+        """Build a flat initial-state tensor from a per-variable IC dict."""
+        sb_state = self._infer_sub_batch(ic_dict, self.slayout, dynamic_dim)
+        self.slayout = self.slayout.with_sub_batch_shapes(
+            {n: torch.Size(sb_state[n]) for n in sb_state}
+        )
+        self.snlayout = self.snlayout.with_sub_batch_shapes(
+            {n: torch.Size(sb_state.get(lag_order(n)[0], ())) for n in self.snlayout.vars()}
+        )
+        r_sub = {
+            r_name: torch.Size(sb_state[s_name])
+            for r_name, s_name in zip(self.rlayout.vars(), self.slayout.vars(), strict=True)
+        }
+        self.rlayout = self.rlayout.with_sub_batch_shapes(r_sub)
+        self._wrapper = NEML2Wrapper(_neml2_to_pyzag_layout(self.slayout))
+        return self._assemble_dict_to_flat(
+            ic_dict, _neml2_to_pyzag_layout(self.slayout), dynamic_dim
+        )
+
+    def assemble_forces(self, forces_dict, dynamic_dim: int = 2) -> torch.Tensor:
+        """Build a flat forces tensor from a per-variable forces dict."""
+        sb_force = self._infer_sub_batch(forces_dict, self.flayout, dynamic_dim)
+        self.flayout = self.flayout.with_sub_batch_shapes(
+            {n: torch.Size(sb_force[n]) for n in sb_force}
+        )
+        self.fnlayout = self.fnlayout.with_sub_batch_shapes(
+            {n: torch.Size(sb_force.get(lag_order(n)[0], ())) for n in self.fnlayout.vars()}
+        )
+        return self._assemble_dict_to_flat(
+            forces_dict, _neml2_to_pyzag_layout(self.flayout), dynamic_dim
+        )
+
+    def make_operator(
+        self,
+        prev_solution: torch.Tensor,
+        forces: Sequence[torch.Tensor],
+        inverse_operator,
+    ) -> nonlinear.ChunkOp:
+        return nonlinear.ChunkOp(self, prev_solution, forces, inverse_operator)
+
+    def evaluate_raw(
+        self, x_full: torch.Tensor, forces: Sequence[torch.Tensor]
+    ) -> tuple[torch.Tensor, NEML2BlockJacobian]:
+        """Return ``(r, NEML2BlockJacobian)`` for one chunk's state and forces."""
         self._update_parameter_values()
-
-        # Disassemble the pyzag-shaped state/forces into the per-variable
-        # current/old dicts the native NonlinearSystem consumes.
-        self._update_sys(state, forces)
-
-        # Native assembly:
-        #   A := dr/du   (Jacobian w.r.t. unknowns)
-        #   B := dr/dg   (Jacobian w.r.t. given variables; includes old state,
-        #                forces, old forces)
-        #   b := -r
+        self._update_sys(x_full, forces[0])
         A, B, b = self.sys.A_and_B_and_b()
-        return self._adapt_for_pyzag(A, B, b)
-
-    # ── one-time setup ───────────────────────────────────────────────────────
+        r, J_diag, J_sub = self._adapt_for_pyzag(A, B, b)
+        return r, NEML2BlockJacobian(
+            J_diag, J_sub, _neml2_to_pyzag_layout(self.slayout)
+        )
 
     def _check_model(self):
-        """Sanity-check the model layout: every old-state (or old-force)
-        variable must have a corresponding current variable."""
+        """Every old-state / old-force variable must have a current counterpart."""
         snvars_renamed = {change_lag_order(v, 0) for v in self.snlayout.vars()}
         if not snvars_renamed <= set(self.slayout.vars()):
             raise ValueError(
@@ -258,148 +361,53 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
             )
 
     def _setup_maps(self):
-        """Build the layouts and the snlayout→glayout name map used by
-        :meth:`_adapt_for_pyzag` to extract the old-state Jacobian columns
-        from $B$.
-
-        Native ``ModelNonlinearSystem`` distinguishes between unknowns ($u$)
-        and given variables ($g$); pyzag wants a contiguous-in-time
-        ``(state, forces)`` representation where current+previous state both
-        live in the state tensor and current+previous forces both live in the
-        forces tensor. So old unknowns and old forces (lag 1) need to be
-        moved from $g$ back into a state/force lane on the pyzag side.
-        """
-        # `g` from native includes old unknowns, current forces, and old forces.
+        """Build the state / force / residual layouts and their old-variable subsets."""
         glayout = self.sys.glayout
-        gvars = glayout.vars()
-        gvar_set = set(gvars)
+        gvar_set = set(glayout.vars())
 
-        # Layouts the wrapper exposes to pyzag.
-        self.rlayout = self.sys.blayout  # residuals
-        self.slayout = self.sys.ulayout  # current state (the unknowns)
-        # snlayout / fnlayout = old state / forces. Built from ulayout /
-        # glayout entries with their lag retagged ``~1``. The renames stay
-        # in step with the pyzag-side state and forces tensors, which carry
-        # one slot per unknown / per force regardless of whether the
-        # underlying NEML2 model actually requests a previous value for
-        # that variable. The previous value is *fed into the model* (in
-        # ``_update_sys``) only when the matching ``~1`` is in glayout —
-        # see ``_relevant_old_state`` / ``_relevant_old_forces`` for the
-        # filtered names used at evaluation time. Rate-like unknowns (e.g.
-        # ``gamma_rate_ri`` for rate-independent flow complementarity) and
-        # steady forces (e.g. ``temperature``) thus get a snlayout /
-        # fnlayout slot but no glayout-side push.
-        self.snlayout = _filter_layout_by_lag(self.slayout, 0, new_order=1)
-        self.flayout = _filter_layout_by_lag(glayout, 0)
-        self.fnlayout = _filter_layout_by_lag(glayout, 0, new_order=1)
-        # Names whose lag-1 form is consumed by the model — used by
-        # ``_update_sys`` to filter the old-state / old-force pushes.
+        self.rlayout = self.sys.blayout
+        self.slayout = self.sys.ulayout
+        self.snlayout = _extract_sublayout(self.slayout, 0, new_order=1)
+        self.flayout = _extract_sublayout(glayout, 0)
+        self.fnlayout = _extract_sublayout(glayout, 0, new_order=1)
         self._sn_in_glayout: set[str] = {v for v in self.snlayout.vars() if v in gvar_set}
         self._fn_in_glayout: set[str] = {v for v in self.fnlayout.vars() if v in gvar_set}
 
-        # Surface names used by NEML2 callers (matches pre-port behavior).
         self.svars = self.slayout.vars()
         self.fvars = self.flayout.vars()
-
-        # Per-snvar lookup of the matching glayout name (so we can pick the
-        # right B column when assembling Jn). Old-state names in snlayout
-        # were re-tagged to lag 1, matching their original spelling in
-        # glayout — the lookup is straightforward.
-        self._sn_to_g_name: dict[str, str] = {}
-        for snv in self.snlayout.vars():
-            if snv in gvars:
-                self._sn_to_g_name[snv] = snv
 
     def _setup_parameters(
         self,
         exclude_parameters: list[str] | None,
         include_parameters: list[str] | None,
     ):
-        """Mirror each HIT-named NEML2 model parameter as a
-        ``torch.nn.Parameter`` on the wrapper with a flat ``<hit_name>_<leaf>``
-        key (e.g. ``elasticity_E``, ``flow_rate_eta``, ``Eerate_weight_0``).
-
-        ``exclude_parameters`` / ``include_parameters`` (validated mutually
-        exclusive in :meth:`__init__`) choose which of those flat names become
-        trainable: with ``include_parameters`` only the listed names are
-        mirrored, with ``exclude_parameters`` every name *but* the listed ones
-        is mirrored, and with neither every parameter is mirrored.
-
-        Why not just expose ``self.sys.model.named_parameters()`` verbatim?
-
-        - Native parameters live under dotted paths that include framework
-          boilerplate (``normality._inner.yield.sy``). pyzag callers (and the
-          test contract) identify parameters by their HIT block
-          name (``yield_sy``), so we collapse the dotted path to the deepest
-          enclosing module that carries a ``_hit_name`` (set by the factory)
-          plus the parameter's storage attribute name.
-
-        - pyzag's reparametrization (:mod:`pyzag.reparametrization`) hooks
-          ``torch.nn.utils.parametrize`` onto whichever module owns the
-          parameter. The wrapper owning the (mirrored) parameter lets the
-          user reparametrize without reaching into the NEML2 model.
-
-        The storage attribute name **is** the user-facing identifier — leaf
-        models on the native side are responsible for picking sane
-        attributes (``K``, ``sy``, ``eta``, ``weight``, ``offset``).
-        Anything that starts with an underscore is framework plumbing and
-        should be renamed at the source rather than special-cased here.
-
-        Each forward, :meth:`_update_parameter_values` copies the wrapper's
-        (possibly reparameterized) value back into the underlying model's
-        parameter so the model evaluation sees it.
-        """
-        # Build a {hit_name → submodule} index once. ``modules`` walks
-        # the whole submodule tree in depth-first preorder so the
-        # deepest-matching HIT name wins when a parameter sits inside a
-        # nested wrapper (e.g. Normality's ``_inner.yield`` keeps the
-        # ``yield`` HIT name, not the outer ``normality``).
-        hit_modules: dict[int, str] = {}
-        for module in self.sys.model.modules():
-            hit_name = getattr(module, "_hit_name", None)
-            if hit_name and hit_name.isidentifier():
-                hit_modules[id(module)] = hit_name
-
+        """Mirror each HIT-named NEML2 parameter as a ``torch.nn.Parameter``."""
         exclude = set(exclude_parameters or [])
         include = None if include_parameters is None else set(include_parameters)
 
-        # ``_param_targets`` is the runtime sync table: wrapper-side flat
-        # name → (owning submodule, leaf attribute name on that submodule).
-        # ``_update_parameter_values`` walks this to push values back.
         self.parameter_names: list[str] = []
         self._param_targets: dict[str, tuple[torch.nn.Module, str]] = {}
-        registered: set[str] = set()
         available: set[str] = set()
 
         for module in self.sys.model.modules():
-            mod_hit = hit_modules.get(id(module))
-            if mod_hit is None:
+            mod_hit = getattr(module, "_hit_name", None)
+            if not (mod_hit and mod_hit.isidentifier()):
                 continue
             for leaf_name, param in module.named_parameters(recurse=False):
                 flat = f"{mod_hit}_{leaf_name}"
                 available.add(flat)
-                # ``in registered`` guards against accidental collisions if two
-                # HIT blocks share a name + parameter (pathological, but cheap
-                # to defend against). Then apply the user's selection: an
-                # ``include`` list mirrors only those names; otherwise mirror
-                # everything except the ``exclude`` list.
-                if flat in registered:
+                if flat in self._param_targets:
                     continue
                 if include is not None:
                     if flat not in include:
                         continue
                 elif flat in exclude:
                     continue
-                registered.add(flat)
                 self.parameter_names.append(flat)
                 param.requires_grad_(True)
                 self.register_parameter(flat, torch.nn.Parameter(param.detach().clone()))
                 self._param_targets[flat] = (module, leaf_name)
 
-        # A typo in ``include_parameters`` would silently train fewer
-        # parameters than intended, so reject names that don't exist.
-        # (``exclude_parameters`` stays lenient: an over-broad exclude list is
-        # harmless, and downstream callers have long relied on that.)
         if include is not None:
             unknown = include - available
             if unknown:
@@ -409,119 +417,58 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                 )
 
     def _update_parameter_values(self):
-        """Bind the wrapper's (possibly reparameterized) parameter tensors
-        onto the underlying NEML2 model so the next forward sees them and
-        gradients flow back to the wrapper.
-
-        Key point: ``module._parameters[leaf].data = new_value`` would *only*
-        copy values — the underlying model's parameter stays a fresh autograd
-        leaf, so a backward pass through the model's output gives the
-        gradient to that internal Parameter, not to ``self.<pname>``. The
-        wrapper's mirror parameter then sees a zero ``.grad`` and the
-        adjoint method returns garbage.
-
-        For *plain* (non-parametrized) leaves we therefore *swap* the
-        underlying ``nn.Parameter`` for the wrapper's own ``nn.Parameter``
-        (same object). The model's normal attribute lookup still returns a
-        Parameter through ``_parameters``; the native
-        ``Model.__getattr__`` re-wraps it into the registered typed class;
-        and any backward through the model's output deposits ``.grad`` on
-        the wrapper's Parameter directly.
-
-        For *reparametrized* leaves (``torch.nn.utils.parametrize``
-        replaced ``self.<pname>`` with a transform-producing property),
-        ``getattr(self, pname)`` returns a fresh non-leaf tensor each call.
-        That can't be plugged back into ``_parameters`` (a Parameter must
-        be a leaf), so we fall back to ``object.__setattr__`` of a
-        typed-wrapped tensor in the instance dict — same mechanism as
-        before but only for the reparametrized case.
-        """
+        """Bind the factory's parameter tensors onto the underlying NEML2 model."""
         for pname in self.parameter_names:
-            # ``getattr(self, pname)`` triggers any registered parametrize
-            # transform — that's the natural-scale tensor the model wants.
             new_value = getattr(self, pname)
             module, leaf = self._param_targets[pname]
             typed_cls = getattr(module, "_typed_storage_classes", {}).get(leaf)
             sbn = getattr(module, "_typed_storage_sub_batch_ndim", {}).get(leaf, 0)
 
             if isinstance(new_value, torch.nn.Parameter):
-                # Plain leaf: swap. Drop any instance-dict shim left from a
-                # previous reparametrized cycle so __getattr__ resolves to
-                # _parameters[leaf] again.
                 module.__dict__.pop(leaf, None)
                 module._parameters[leaf] = new_value
             else:
-                # Reparametrized leaf: ``new_value`` is a non-leaf, can't go
-                # in ``_parameters``. Bind as instance attr (wrapped to the
-                # typed class so ``_get_param``'s isinstance check passes).
                 module._parameters.pop(leaf, None)
                 bound = (
-                    typed_cls(new_value, sub_batch_ndim=sbn) if typed_cls is not None else new_value
+                    typed_cls(new_value, sub_batch_ndim=sbn)
+                    if typed_cls is not None
+                    else new_value
                 )
                 object.__setattr__(module, leaf, bound)
 
-    # ── per-forward plumbing ─────────────────────────────────────────────────
-
     def _update_sys(self, state: torch.Tensor, forces: torch.Tensor):
-        """Disassemble the pyzag-shaped state/forces tensors into the
-        per-variable current/old dicts the native NonlinearSystem consumes.
-
-        Native typed-wrapper convention is dynamic batch axes leading; pyzag
-        gives us ``(n_block + lookback, ..., nstate|nforce)`` where dim 0 is
-        the time axis we slice with ``lookback``.
-        """
+        """Disassemble pyzag state / forces into the per-variable dicts the system consumes."""
         assert state.shape[:-1] == forces.shape[:-1]
 
-        # Slice along the time axis to get current (``[lookback:]``) and
-        # previous (``[:-lookback]``) windows.
         state_now = state[self.lookback :]
         state_prev = state[: -self.lookback]
         forces_now = forces[self.lookback :]
         forces_prev = forces[: -self.lookback]
 
-        # Per-variable splits along the trailing axis. Each slice is a flat
-        # ``(*batch, var_size)`` chunk that the native AssembledVector
-        # disassemble path expects.
         u = self._split_by_layout(state_now, self.slayout)
         sn = self._split_by_layout(state_prev, self.snlayout, rename_to_lag=0)
         f = self._split_by_layout(forces_now, self.flayout)
         fn = self._split_by_layout(forces_prev, self.fnlayout, rename_to_lag=0)
 
-        # Sub-batch ndim per variable. The pyzag interface only handles
-        # variables without sub-batch (sub-batch is a per-crystal CP concept
-        # and pyzag's training surface predates it), so always 0.
         sub_batch_ndim: dict[str, int] = {}
         for name in u:
-            sub_batch_ndim[name] = 0
-        for name in sn:
-            sub_batch_ndim[name] = 0
-        for name in f:
-            sub_batch_ndim[name] = 0
-        for name in fn:
-            sub_batch_ndim[name] = 0
+            sub_batch_ndim[name] = len(self.slayout.sub_batch_shape(name))
 
-        # The underlying NEML2 NonlinearSystem doesn't know the
-        # rename_to_lag=0 trick — it expects the original lag-tagged names
-        # ('stress~1' etc.) for old state and old forces. Only push entries
-        # the model actually requests: rate-like unknowns (gamma_rate_ri)
-        # and steady forces (temperature) have a pyzag-side state/force
-        # slot but no model-side ``~1`` input, so we'd KeyError if we tried
-        # to push them.
         g_state: dict[str, TensorWrapper] = {}
         for sn_name, tensor in sn.items():
             sn_full = change_lag_order(sn_name, 1)
             if sn_full in self._sn_in_glayout:
                 g_state[sn_full] = tensor
+                sub_batch_ndim[sn_full] = len(self.snlayout.sub_batch_shape(sn_full))
         for f_name, tensor in f.items():
             g_state[f_name] = tensor
+            sub_batch_ndim[f_name] = len(self.flayout.sub_batch_shape(f_name))
         for fn_name, tensor in fn.items():
             fn_full = change_lag_order(fn_name, 1)
             if fn_full in self._fn_in_glayout:
                 g_state[fn_full] = tensor
+                sub_batch_ndim[fn_full] = len(self.fnlayout.sub_batch_shape(fn_full))
 
-        # Compute the system-wide dyn_shape from the state tensor (drop the
-        # trailing var_size dim). All inputs share this batch shape because
-        # we just sliced state and forces alike.
         dyn_shape = tuple(state_now.shape[:-1])
         u_sv, g_sv = self.sys.to_sparse(u, g_state, sub_batch_ndim)
         self.sys.initialize(u=u_sv, g=g_sv, dyn_shape=dyn_shape)
@@ -532,82 +479,97 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         layout: AxisLayout,
         rename_to_lag: int | None = None,
     ) -> dict[str, TensorWrapper]:
-        """Split a flat ``(*batch, nflat)`` tensor into a per-variable
-        typed-wrapper dict keyed by the layout's variable names,
-        optionally re-tagging each name to a different lag order.
-
-        Variable sizes come from ``layout.var_size(name)``; offsets are the
-        running sum. Each per-variable slice is reshaped from ``(*batch,
-        var_size)`` back to ``(*batch, *BASE_SHAPE)`` and wrapped in the
-        layout-declared :class:`~neml2.types.TensorWrapper` subclass --
-        this is the framework boundary where the raw pyzag tensors become
-        typed (rule 1).
-        """
+        """Split a flat ``(*batch, nflat)`` tensor into a per-variable typed wrapper dict."""
+        pyzag_layout = _neml2_to_pyzag_layout(layout)
+        per_var = _split_flat_per_var(flat, pyzag_layout)
         out: dict[str, TensorWrapper] = {}
-        offset = 0
         for name in layout.vars():
             type_cls = layout.type_of(name)
-            size = layout.var_size(name)
-            slab = flat[..., offset : offset + size]
-            if type_cls.BASE_NDIM == 0:
-                # Scalar: drop the trailing size-1 axis.
-                slab = slab.squeeze(-1)
-            elif type_cls.BASE_NDIM > 1:
-                slab = slab.reshape(*slab.shape[:-1], *type_cls.BASE_SHAPE)
-            # For BASE_NDIM == 1 the shape is already correct.
-            out_name = change_lag_order(name, rename_to_lag) if rename_to_lag is not None else name
-            out[out_name] = type_cls(slab)
-            offset += size
+            sbn = len(layout.sub_batch_shape(name))
+            out_name = (
+                change_lag_order(name, rename_to_lag)
+                if rename_to_lag is not None
+                else name
+            )
+            out[out_name] = type_cls(per_var[name], sub_batch_ndim=sbn)
         return out
 
     def _adapt_for_pyzag(
         self, A: AssembledMatrix, B: AssembledMatrix, b: AssembledVector
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        """Assemble the residual and stacked Jacobians pyzag expects.
+    ) -> tuple[torch.Tensor, BlockMatrix, BlockMatrix]:
+        """Convert NEML2 ``(A, B, b)`` into pyzag-native ``(r, J_diag, J_sub)``."""
+        r = -_av_to_flat(_neml2_av_to_pyzag_bv(b))
+        target_batch = tuple(r.shape[:-1])
 
-        - Native:
-            * $A$ = ``dr/du`` (unknown side)
-            * $B$ = ``dr/dg`` (given side; includes old state, forces, old forces)
-            * $b$ = ``-r``
-        - pyzag wants:
-            * $r$ = residual (so flip the sign on $b$)
-            * $J$ = ``dr/du`` (the current-state Jacobian)
-            * ``Jn`` = ``dr/du_old`` (the old-state Jacobian, extracted from $B$)
-            * Return value: ``(r, torch.stack([Jn, J]))``
+        J_diag = _expand_bm_dynamic(_neml2_am_to_pyzag_bm(A), target_batch)
+        J_sub = _expand_bm_dynamic(
+            self._build_jn_pyzag(B, target_batch), target_batch
+        )
+        return r, J_diag, J_sub
 
-        Jn is built by selecting the subset of B's per-(row, col) blocks that
-        correspond to the snlayout vars (via :meth:`AssembledMatrix.select_blocks`,
-        which replaces the C++ SparseMatrix round-trip).
-        """
-        r = -b.tensors[0].data
-        J = A.tensors[0][0].data
+    def _build_jn_pyzag(
+        self, B: AssembledMatrix, target_batch: tuple[int, ...]
+    ) -> BlockMatrix:
+        """Assemble the subdiagonal ``Jn = dr/du_old`` from the old-state columns of ``B``."""
+        cells = B.disassemble().cells
+        prow = _neml2_to_pyzag_layout(self.rlayout)
+        pcol = _neml2_to_pyzag_layout(self.snlayout)
+        out = [
+            [BlockTensor() for _ in range(pcol.ngroup())]
+            for _ in range(prow.ngroup())
+        ]
+        for i, rg in enumerate(prow.groups):
+            row_bases = [int(math.prod(b)) for b in rg.base_sizes]
+            row_off = [sum(row_bases[:k]) for k in range(len(row_bases))]
+            for j, cg in enumerate(pcol.groups):
+                col_bases = [int(math.prod(b)) for b in cg.base_sizes]
+                col_off = [sum(col_bases[:k]) for k in range(len(col_bases))]
 
-        # Pull the per-(row, col) chain-rule blocks out of B and pick the
-        # ones whose col_var matches a snlayout var (by g-name lookup).
-        # disassemble/select_blocks operate on typed neml2.types.Tensor
-        # wrappers; pyzag is an external framework boundary so we unwrap
-        # to raw torch.Tensor only at the very end (the torch.stack call
-        # below). ``.cells`` exposes the SparseMatrix's underlying
-        # row -> col -> Tensor dict-of-dict for the per-row iteration we
-        # need here.
-        B_blocks = B.disassemble().cells
-        picked: dict[str, dict[str, Tensor]] = {}
-        for row_name, cols in B_blocks.items():
-            picked[row_name] = {}
-            for sn_name in self.snlayout.vars():
-                g_name = self._sn_to_g_name.get(sn_name)
-                if g_name is not None and g_name in cols:
-                    picked[row_name][sn_name] = cols[g_name]
+                if rg.istructure == IStructure.BLOCK:
+                    grain = tuple(rg.intmd_sizes[0])
+                elif cg.istructure == IStructure.BLOCK:
+                    grain = tuple(cg.intmd_sizes[0])
+                else:
+                    grain = ()
 
-        Jn = AssembledMatrix.select_blocks(self.rlayout, self.snlayout, picked).tensors[0][0].data
+                found: dict = {}
+                ref = None
+                for ri, rn in enumerate(rg.names):
+                    inner = cells.get(rn, {})
+                    for ci, cn in enumerate(cg.names):
+                        if cn in self._sn_in_glayout and cn in inner:
+                            found[(ri, ci)] = inner[cn]
+                            ref = inner[cn]
+                if ref is None:
+                    continue
 
-        # Broadcast both Jacobians to the residual's batch shape so pyzag's
-        # downstream stack sees consistent leading dims.
-        target_batch = r.shape[:-1]
-        J = J.expand(*target_batch, *J.shape[-2:])
-        Jn = Jn.expand(*target_batch, *Jn.shape[-2:])
+                block = torch.zeros(
+                    tuple(target_batch) + grain + (sum(row_bases), sum(col_bases)),
+                    dtype=ref.dtype,
+                    device=ref.device,
+                )
+                for (ri, ci), cell in found.items():
+                    rb, cb = row_bases[ri], col_bases[ci]
+                    norm = self._normalize_cell(cell, target_batch, grain, rb, cb)
+                    ro, co = row_off[ri], col_off[ci]
+                    block[..., ro : ro + rb, co : co + cb] = norm
+                out[i][j] = BlockTensor(block, len(target_batch), len(grain))
+        return BlockMatrix(prow, pcol, out)
 
-        assert J.shape[-1] == J.shape[-2], f"J must be square, got shape {tuple(J.shape)}"
-        assert Jn.shape[-1] == Jn.shape[-2], f"Jn must be square, got shape {tuple(Jn.shape)}"
-
-        return r, torch.stack([Jn, J])
+    @staticmethod
+    def _normalize_cell(
+        cell: Tensor,
+        target_batch: tuple[int, ...],
+        grain: tuple[int, ...],
+        rb: int,
+        cb: int,
+    ) -> torch.Tensor:
+        """Broadcast a disassembled cell to ``(*target_batch, *grain, rb, cb)``."""
+        x = to_torch(cell)
+        sbn = cell.sub_batch_ndim
+        for _ in range(len(grain) - sbn):
+            x = x.unsqueeze(x.ndim - 2)
+        full = tuple(target_batch) + tuple(grain) + (rb, cb)
+        while x.ndim < len(full):
+            x = x.unsqueeze(0)
+        return x.expand(full)
