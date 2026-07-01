@@ -166,15 +166,26 @@ class AOTIModel(nn.Module):
         # (e.g. Scalar vs SR2) which the metadata records under `var_type`.
         with open(meta_path) as f:
             meta = json.load(f)
-        self.input_spec = self._spec_from_meta(meta["inputs"])
-        self.output_spec = self._spec_from_meta(meta["outputs"])
+        # Boundary renames (shallow): the metadata records each variable's
+        # ORIGINAL authored name plus an optional ``boundary_aliases`` map. The
+        # C++ binding's public surface (``input_names`` / ``forward`` / ...)
+        # already speaks the boundary names, so the shim keys its own
+        # ``input_spec`` / ``output_spec`` / per-input metadata by the boundary
+        # name too -- keeping ``raw_inputs`` / ``raw_outs`` aligned with what
+        # ``self._inner`` expects and returns. Absent => original names.
+        aliases = meta.get("boundary_aliases", {})
+        in_alias = aliases.get("inputs", {})
+        out_alias = aliases.get("outputs", {})
+        self.input_spec = self._spec_from_meta(meta["inputs"], in_alias)
+        self.output_spec = self._spec_from_meta(meta["outputs"], out_alias)
         # Per-input sub-batch shape (empty tuple when the input has none).
         # ``_broadcast_to_common_batch`` consults this to split each input's
         # batch axes into (dyn, sub) and broadcast only the dyn portion --
         # the sub-batch axis is part of the input's identity and must not
         # be flattened against a global (no-sub-batch) sibling.
         self.input_sub_batch: dict[str, tuple[int, ...]] = {
-            info["name"]: tuple(info.get("sub_batch_shape", ())) for info in meta["inputs"]
+            in_alias.get(info["name"], info["name"]): tuple(info.get("sub_batch_shape", ()))
+            for info in meta["inputs"]
         }
         # Per-input / per-output sub-batch labels (empty tuple when the
         # variable carries none). Persisted at export time via
@@ -183,18 +194,30 @@ class AOTIModel(nn.Module):
         # per-axis label dispatch (preserved-label storage, BLOCK-aware
         # matmul) survives the export-and-load round-trip.
         self.input_labels: dict[str, tuple[str, ...]] = {
-            info["name"]: tuple(info.get("sub_batch_labels", ())) for info in meta["inputs"]
+            in_alias.get(info["name"], info["name"]): tuple(info.get("sub_batch_labels", ()))
+            for info in meta["inputs"]
         }
         self.output_labels: dict[str, tuple[str, ...]] = {
-            info["name"]: tuple(info.get("sub_batch_labels", ())) for info in meta["outputs"]
+            out_alias.get(info["name"], info["name"]): tuple(info.get("sub_batch_labels", ()))
+            for info in meta["outputs"]
         }
 
     @staticmethod
-    def _spec_from_meta(infos: list[dict]) -> dict[str, type[TensorWrapper]]:
-        """Map each metadata ``var_type`` string to the TensorWrapper class."""
+    def _spec_from_meta(
+        infos: list[dict], alias: dict[str, str] | None = None
+    ) -> dict[str, type[TensorWrapper]]:
+        """Map each metadata ``var_type`` string to the TensorWrapper class.
+
+        *alias* is the boundary-rename sub-map for this namespace (``{original:
+        boundary}``); each entry's key is remapped to its boundary name so the
+        returned spec matches the C++ binding's renamed public surface. Empty /
+        ``None`` => original names.
+        """
+        alias = alias or {}
         spec: dict[str, type[TensorWrapper]] = {}
         for info in infos:
-            name = info["name"]
+            orig: str = info["name"]
+            name = alias[orig] if orig in alias else orig
             type_name = info["var_type"]
             type_cls = getattr(_types, type_name, None)
             if type_cls is None or not (

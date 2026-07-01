@@ -100,6 +100,23 @@ def test_argv_promoted_and_derivatives_repeat():
     assert [argv[k + 1] for k, t in enumerate(argv) if t == "-d"] == ["stress:strain", ":"]
 
 
+def test_argv_renames_repeat():
+    state = FormState(
+        name="m",
+        devices=("cpu",),
+        rename_inputs=("strain:eps",),
+        rename_outputs=("stress:sig",),
+        rename_parameters=("elasticity.E:youngs", "elasticity.nu:poisson"),
+    )
+    argv = build_compile_argv(state)
+    assert [argv[k + 1] for k, t in enumerate(argv) if t == "--rename-input"] == ["strain:eps"]
+    assert [argv[k + 1] for k, t in enumerate(argv) if t == "--rename-output"] == ["stress:sig"]
+    assert [argv[k + 1] for k, t in enumerate(argv) if t == "--rename-parameter"] == [
+        "elasticity.E:youngs",
+        "elasticity.nu:poisson",
+    ]
+
+
 def test_argv_example_shape_and_dynamic_batch_tristate():
     def mk(dynamic_batch: bool | None) -> FormState:
         return FormState(
@@ -139,6 +156,17 @@ def test_argv_load_repeat_and_empty_output_dir_omitted():
             example_shape=("strain=(2;100)",),
             dynamic_batch=False,
             load=("ext.py",),
+        ),
+        # Model target with boundary renames -- the built argv must parse cleanly.
+        FormState(
+            input_file="in.i",
+            target="model",
+            name="elasticity",
+            devices=("cpu",),
+            promoted=("elasticity.E",),
+            rename_inputs=("strain:eps",),
+            rename_outputs=("stress:sig",),
+            rename_parameters=("elasticity.E:youngs",),
         ),
     ],
 )
@@ -320,14 +348,15 @@ def test_wizard_flow_builds_and_runs_expected_argv(monkeypatch):
     from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
 
     # Prompt answers in flow order (input file comes from the CLI, not a prompt):
-    # target, name, promote, derivatives?, devices, dtype, output dir, uniform
-    # example shape?, uniform value, dynamic batch, then the review menu's action.
+    # target, name, promote, derivatives?, rename?, devices, dtype, output dir,
+    # uniform example shape?, uniform value, dynamic batch, then the review action.
     fake = _FakeQuestionary(
         [
             "model",
             "elasticity",
             ["E"],
             False,
+            False,  # rename any boundary variables?
             ["cpu", "cuda"],
             "float32",
             "out",
@@ -366,7 +395,7 @@ def test_wizard_example_shape_customize_per_variable(monkeypatch):
     pytest.importorskip("questionary")
     from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
 
-    # target, name, derivatives?, devices, dtype, output, uniform?(No),
+    # target, name, derivatives?, rename?, devices, dtype, output, uniform?(No),
     # customize-which, strain=, temperature=, dynamic, review -> run.
     # (No "promote" prompt: promotable is empty.)
     fake = _FakeQuestionary(
@@ -374,6 +403,7 @@ def test_wizard_example_shape_customize_per_variable(monkeypatch):
             "model",
             "m",
             False,
+            False,  # rename any boundary variables?
             ["cpu"],
             "float64",
             "./aoti",
@@ -413,8 +443,10 @@ def test_wizard_example_shape_uniform(monkeypatch):
     pytest.importorskip("questionary")
     from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
 
+    # target, name, derivatives?, rename?, devices, dtype, output, uniform?, value,
+    # dynamic, run. (No promote prompt: promotable is empty.)
     fake = _FakeQuestionary(
-        ["model", "m", False, ["cpu"], "float64", "./aoti", True, "(4,)", True, "run"]
+        ["model", "m", False, False, ["cpu"], "float64", "./aoti", True, "(4,)", True, "run"]
     )
     monkeypatch.setattr(wiz, "questionary", fake)
     monkeypatch.setattr(
@@ -437,7 +469,8 @@ def test_wizard_derivatives_cross_product(monkeypatch):
     from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
 
     # target, name, promote, derivatives? -> yes, outputs, inputs, round-menu ->
-    # done, devices, dtype, output, uniform?(yes), uniform "", dynamic, review -> run.
+    # done, rename? -> no, devices, dtype, output, uniform?(yes), uniform "",
+    # dynamic, review -> run.
     fake = _FakeQuestionary(
         [
             "model",
@@ -447,6 +480,7 @@ def test_wizard_derivatives_cross_product(monkeypatch):
             ["stress"],  # outputs
             ["strain", "E"],  # w.r.t. inputs (incl. promoted param)
             "done",  # round menu -> finish
+            False,  # rename any boundary variables?
             ["cpu"],
             "float64",
             "./aoti",
@@ -469,6 +503,89 @@ def test_wizard_derivatives_cross_product(monkeypatch):
     argv = captured["argv"]
     dpairs = [argv[k + 1] for k, t in enumerate(argv) if t == "-d"]
     assert dpairs == ["stress:strain", "stress:E"]
+
+
+def test_wizard_collects_renames(monkeypatch):
+    """Accepting the rename step and typing new names for a chosen input / output /
+    promoted parameter yields the three --rename-* flags."""
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    # target, name, promote, derivatives?(no), rename?(yes),
+    #   rename-inputs [strain] -> "eps",
+    #   rename-outputs [stress] -> "sig",
+    #   rename-params [E] -> "youngs",
+    # devices, dtype, output, uniform?(yes), value, dynamic, run.
+    fake = _FakeQuestionary(
+        [
+            "model",
+            "m",
+            ["E"],  # promote E (so it can be renamed)
+            False,  # derivatives?
+            True,  # rename any boundary variables?
+            ["strain"],  # rename which inputs
+            "eps",  # strain ->
+            ["stress"],  # rename which outputs
+            "sig",  # stress ->
+            ["E"],  # rename which promoted parameters
+            "youngs",  # E ->
+            ["cpu"],
+            "float64",
+            "./aoti",
+            True,
+            "",
+            True,
+            "run",
+        ]
+    )
+    monkeypatch.setattr(wiz, "questionary", fake)
+    monkeypatch.setattr(
+        wiz,
+        "_introspect",
+        lambda *a, **k: IntrospectionForm(promotable=["E"], outputs=["stress"], inputs=["strain"]),
+    )
+    captured: dict[str, list[str]] = {}
+    monkeypatch.setattr(wiz, "run_compile", lambda argv: captured.update(argv=argv) or 0)
+
+    assert wiz.run_wizard(input_file=str(_FIXTURE)) == 0
+    argv = captured["argv"]
+    assert argv[argv.index("--rename-input") + 1] == "strain:eps"
+    assert argv[argv.index("--rename-output") + 1] == "stress:sig"
+    assert argv[argv.index("--rename-parameter") + 1] == "E:youngs"
+
+
+def test_ask_renames_decline_and_cancel(monkeypatch):
+    """_ask_renames: declining the gate returns empty maps; cancelling returns None;
+    an unavailable-introspection call leaves the current selection unchanged."""
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    intro = IntrospectionForm(promotable=["E"], outputs=["stress"], inputs=["strain"])
+    # Decline the gate -> all-empty maps.
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([False]))
+    assert wiz._ask_renames(intro, ("E",), {}) == {"inputs": {}, "outputs": {}, "parameters": {}}
+    # Cancel the gate -> None.
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([None]))
+    assert wiz._ask_renames(intro, ("E",), {}) is None
+    # No introspection -> keep current unchanged (no prompt consumed).
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([]))
+    current = {"inputs": {"strain": "eps"}, "outputs": {}, "parameters": {}}
+    assert wiz._ask_renames(None, (), current) == current
+
+
+def test_wizard_rename_skipped_for_driver_target(monkeypatch):
+    """The rename field is a no-op (no prompt) when the target is a driver."""
+    pytest.importorskip("questionary")
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    # An empty answer script would raise if the branch tried to prompt.
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([]))
+    state = wiz._default_state()
+    state["target"] = "driver"
+    state["name"] = "driver"
+    state["rename"] = {"inputs": {"strain": "eps"}, "outputs": {}, "parameters": {}}
+    assert wiz._ask_field("rename", str(_FIXTURE), state, {}) is True
+    assert state["rename"] == {"inputs": {}, "outputs": {}, "parameters": {}}
 
 
 def test_ask_derivatives_edit_add_clear(monkeypatch):
@@ -506,12 +623,14 @@ def test_wizard_edit_back_does_not_crash(monkeypatch):
     pytest.importorskip("questionary")
     from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
 
-    # ... linear (uniform example) ..., review -> edit, edit-field -> back, review -> run.
+    # ... linear (deriv no, rename no, uniform example) ..., review -> edit,
+    # edit-field -> back, review -> run.
     fake = _FakeQuestionary(
         [
             "model",
             "m",
-            False,
+            False,  # derivatives?
+            False,  # rename?
             ["cpu"],
             "float64",
             "./aoti",
@@ -613,9 +732,22 @@ def test_compile_interactive_missing_questionary_hint(monkeypatch, capsys):
 # sequence is deterministic for the scripted flows below.
 _WIZ_INTRO = IntrospectionForm(promotable=["E"], outputs=["stress"], inputs=["strain"])
 # Linear-pass answers (one per prompt) for that intro, with a uniform example
-# shape: target, name, promote, derivatives?, devices, dtype, output, uniform?,
-# uniform value, dynamic batch.
-_LINEAR_OK = ["model", "elasticity", ["E"], False, ["cpu"], "float64", "./aoti", True, "", True]
+# shape: target, name, promote, derivatives?, rename?, devices, dtype, output,
+# uniform?, uniform value, dynamic batch. (The rename step in the decline path is
+# a single confirm answered False.)
+_LINEAR_OK = [
+    "model",
+    "elasticity",
+    ["E"],
+    False,
+    False,
+    ["cpu"],
+    "float64",
+    "./aoti",
+    True,
+    "",
+    True,
+]
 
 
 def _patch_intro(monkeypatch, wiz, intro=_WIZ_INTRO):
@@ -682,7 +814,8 @@ def test_run_wizard_review_validate_problem_then_quit(monkeypatch):
     from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
 
     # devices = [] -> validate_state flags it -> "run" loops back -> "quit".
-    answers = ["model", "elasticity", ["E"], False, [], "float64", "./aoti", True, "", True]
+    # (deriv no, rename no, then devices [].)
+    answers = ["model", "elasticity", ["E"], False, False, [], "float64", "./aoti", True, "", True]
     monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([*answers, "run", "quit"]))
     _patch_intro(monkeypatch, wiz)
     monkeypatch.setattr(wiz, "run_compile", lambda argv: 0)  # must NOT be called
