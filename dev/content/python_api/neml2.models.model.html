@@ -385,6 +385,8 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.models.model.Model.from_hit"><code class="docutils literal notranslate">from_hit()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model.hit"><code class="docutils literal notranslate">hit</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model.input_spec"><code class="docutils literal notranslate">input_spec</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.jacobian"><code class="docutils literal notranslate">jacobian()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.jvp"><code class="docutils literal notranslate">jvp()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model.output_priorities"><code class="docutils literal notranslate">output_priorities</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model.output_spec"><code class="docutils literal notranslate">output_spec</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model.param_jacobian"><code class="docutils literal notranslate">param_jacobian()</span></code></a></li>
@@ -743,6 +745,64 @@ non-trivial construction logic may still override this method.</p>
 <dt class="sig sig-object py" id="neml2.models.model.Model.input_spec">
 <span class="sig-name descname"><span class="pre">input_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper"><span class="pre">TensorWrapper</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.models.model.Model.input_spec" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.models.model.Model.jacobian">
+<span class="sig-name descname"><span class="pre">jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#Model.jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.Model.jacobian" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the model and its full Jacobian as typed variable-pair blocks.</p>
+<p>Returns <code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">J)</span></code> – <code class="docutils literal notranslate"><span class="pre">outputs</span></code> keyed by output name (typed) and
+<code class="docutils literal notranslate"><span class="pre">J</span></code> the nested <code class="docutils literal notranslate"><span class="pre">{out_name:</span> <span class="pre">{in_name:</span> <span class="pre">block}}</span></code> map (rows in
+<code class="docutils literal notranslate"><span class="pre">output_spec</span></code> order, cols in <code class="docutils literal notranslate"><span class="pre">input_spec</span></code> order). Each block is a
+dynamic-base <a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a> of shape
+<code class="docutils literal notranslate"><span class="pre">(*batch,</span> <span class="pre">*sub_batch,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code> – there is no single static
+wrapper for an arbitrary derivative pair. A constant <code class="docutils literal notranslate"><span class="pre">(out,</span> <span class="pre">in)</span></code> pair is
+an explicit zero block.</p>
+<p>Built on the same <code class="docutils literal notranslate"><span class="pre">forward(v=)</span></code> chain rule as <a class="reference internal" href="#neml2.models.model.Model.jvp" title="neml2.models.model.Model.jvp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">jvp()</span></code></a>, seeding each
+input with a leading-K identity (one direction per input base component,
+reusing the AOTI export’s <code class="xref py py-func docutils literal notranslate"><span class="pre">_leading_k_identity_seed()</span></code>)
+and reshaping the result into per-pair blocks. The seed batch is
+<code class="docutils literal notranslate"><span class="pre">broadcast(input</span> <span class="pre">batches,</span> <span class="pre">parameter</span> <span class="pre">batches)</span></code> so a per-batch-element
+parameter is handled, matching <code class="docutils literal notranslate"><span class="pre">_EagerModel.jacobian</span></code>. The typed
+py-eager analogue of the (raw, name-keyed) <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> the compiled /
+embedded routes expose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>inputs</strong> (<em>Mapping</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper"><em>TensorWrapper</em></a><em> | </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>torch.Tensor</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types.TensorWrapper">TensorWrapper</a>], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.Tensor">Tensor</a>]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.models.model.Model.jvp">
+<span class="sig-name descname"><span class="pre">jvp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tangents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/model.html#Model.jvp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.model.Model.jvp" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the model and its Jacobian-vector product, all typed.</p>
+<p>Returns <code class="docutils literal notranslate"><span class="pre">(outputs,</span> <span class="pre">jvp_outputs)</span></code>, both keyed by output name with typed
+values. <em>inputs</em> and <em>tangents</em> are keyed by input name (typed wrappers or
+raw tensors, wrapped via <code class="docutils literal notranslate"><span class="pre">input_spec</span></code>); a missing tangent defaults to
+zero (that input contributes nothing). <code class="docutils literal notranslate"><span class="pre">jvp_outputs[name]</span></code> is the
+directional derivative – a wrapper of the output’s type at its natural
+<code class="docutils literal notranslate"><span class="pre">(*batch,</span> <span class="pre">*sub_batch,</span> <span class="pre">*out_base)</span></code> shape.</p>
+<p>Each supplied tangent is seeded as a single formal leading-K direction and
+threaded through the <code class="docutils literal notranslate"><span class="pre">forward(v=)</span></code> chain rule; the per-input
+contributions to each output are summed. The forward-mode companion of the
+reverse-mode <a class="reference internal" href="#neml2.models.model.Model.param_jacobian" title="neml2.models.model.Model.param_jacobian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">param_jacobian()</span></code></a> / <a class="reference internal" href="#neml2.models.model.Model.param_vjp" title="neml2.models.model.Model.param_vjp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">param_vjp()</span></code></a>, and the typed
+py-eager analogue of the (raw, name-keyed) <code class="docutils literal notranslate"><span class="pre">jvp</span></code> the compiled / embedded
+routes expose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em> | </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a><em>]</em>)</p></li>
+<li><p><strong>tangents</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a><em> | </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.12)"><em>Tensor</em></a><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a>], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference internal" href="neml2.types.html#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a>]]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.models.model.Model.output_priorities">

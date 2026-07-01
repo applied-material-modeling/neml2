@@ -429,11 +429,33 @@ all behave the way they do for any torch module.</p>
 </section>
 <section id="sensitivities">
 <h2>Sensitivities<a class="headerlink" href="#sensitivities" title="Link to this heading">¶</a></h2>
-<p>Two complementary ways to get derivatives:</p>
+<p><code class="docutils literal notranslate"><span class="pre">model.jvp</span></code> and <code class="docutils literal notranslate"><span class="pre">model.jacobian</span></code> are the typed forward-mode derivative surface —
+the same <code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> API the compiled and embedded routes
+expose, so derivative code reads identically on every route:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1"># Jacobian-vector product: one cheap directional derivative.</span>
+</span><span data-line="4"><span class="n">outputs</span><span class="p">,</span> <span class="n">jvp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jvp</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">eps</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">deps</span><span class="p">})</span>
+</span><span data-line="5"><span class="c1">#   jvp[&quot;stress&quot;] is an SR2 — the directional derivative of stress along deps.</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Full Jacobian: every (output, input) block.</span>
+</span><span data-line="8"><span class="n">outputs</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">eps</span><span class="p">})</span>
+</span><span data-line="9"><span class="c1">#   J[&quot;stress&quot;][&quot;strain&quot;] is a typed block d(stress)/d(strain).</span>
+</span></pre></div>
+</div>
+<p>Inputs and tangents are keyed by variable name and accept typed wrappers or raw
+tensors. <code class="docutils literal notranslate"><span class="pre">jvp</span></code> returns each directional derivative as a wrapper of the output’s
+type; <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> returns the nested <code class="docutils literal notranslate"><span class="pre">{output:</span> <span class="pre">{input:</span> <span class="pre">block}}</span></code> map, each block a
+dynamic-base <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(*batch,</span> <span class="pre">*sub_batch,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code>.
+Sub-batch models (e.g. crystal plasticity) are supported — the per-site axis
+stays in the block’s sub-batch region. The reverse-mode parameter derivatives
+<span class="math notranslate nohighlight">\(\partial(\text{output})/\partial(\text{parameter})\)</span> are a separate surface:
+<code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> / <code class="docutils literal notranslate"><span class="pre">param_vjp</span></code>.</p>
+<p>Two lower-level paths remain for when you need them:</p>
 <ul class="simple">
 <li><p><strong>Chain rule</strong> — the first/second-order sensitivity dicts threaded through
 <code class="docutils literal notranslate"><span class="pre">forward(...,</span> <span class="pre">v=,</span> <span class="pre">v2=,</span> <span class="pre">vh=)</span></code> propagate tangents analytically through the
-composed model.</p></li>
+composed model; <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> are thin typed wrappers over exactly this.</p></li>
 <li><p><strong>Autograd</strong> — because evaluation is eager, ordinary <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code> works
 end to end; this is what the calibration tutorials use. See
 <a class="reference internal" href="../tutorials/optimization/automatic_differentiation/main.html#tutorials-optimization-autograd"><span class="std std-ref">Automatic differentiation</span></a>.</p></li>
@@ -507,6 +529,8 @@ separate runtimes: <code class="docutils literal notranslate"><span class="pre">
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../_static/copybutton.js?v=7abfc884"></script>
       <script src="../../_static/shibuya.js?v=50760d75"></script>
+      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
       <script src="../../_static/components/version-banner.js?v=62c7e18e"></script></body>
 </html>
