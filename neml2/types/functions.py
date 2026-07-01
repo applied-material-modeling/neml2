@@ -1484,9 +1484,39 @@ def cosh(s: Scalar) -> Scalar:
     return s._rewrap(torch.cosh(s.data), sub_batch_ndim=s.sub_batch_ndim)
 
 
+def cos(s: Scalar) -> Scalar:
+    """Cosine function."""
+    return s._rewrap(torch.cos(s.data), sub_batch_ndim=s.sub_batch_ndim)
+
+
+def acos(s: Scalar) -> Scalar:
+    """Inverse cosine function."""
+    return s._rewrap(torch.acos(s.data), sub_batch_ndim=s.sub_batch_ndim)
+
+
 def sinh(s: Scalar) -> Scalar:
     """Hyperbolic sine. Matches ``neml2::sinh(const Scalar&)``."""
     return s._rewrap(torch.sinh(s.data), sub_batch_ndim=s.sub_batch_ndim)
+
+
+def sin(s: Scalar) -> Scalar:
+    """Sine function."""
+    return s._rewrap(torch.sin(s.data), sub_batch_ndim=s.sub_batch_ndim)
+
+
+def asin(s: Scalar) -> Scalar:
+    """Inverse sine function."""
+    return s._rewrap(torch.asin(s.data), sub_batch_ndim=s.sub_batch_ndim)
+
+
+def tan(s: Scalar) -> Scalar:
+    """Tangent function."""
+    return s._rewrap(torch.tan(s.data), sub_batch_ndim=s.sub_batch_ndim)
+
+
+def atan(s: Scalar) -> Scalar:
+    """Inverse tangent function."""
+    return s._rewrap(torch.atan(s.data), sub_batch_ndim=s.sub_batch_ndim)
 
 
 def log(s: Scalar) -> Scalar:
