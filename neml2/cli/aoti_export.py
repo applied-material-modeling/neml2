@@ -76,91 +76,15 @@ if TYPE_CHECKING:
 # ---------------------------------------------------------------------------
 
 
-#: Metadata schema version. Bumped at every breaking change so the C++ loader
-#: can refuse mismatched caches with a clear "wipe and re-export" message
-#: rather than failing on a missing field deep in the parser.
-#:
-#: v2: bake-by-default; promoted parameters listed under top-level
-#: ``parameters`` with per-segment ``param_inputs``. No ``buffers`` section.
-#: Adds top-level ``device`` + ``dtype`` keys.
-#:
-#: v3: implicit-segment Newton step graph split into a step-direction
-#: artifact (cheap A + solve, no residual recompute) plus a C++-side
-#: backtracking line search using the existing rhs graph; forward-segment
-#: per-input/output metadata collapsed to ``{"name": ...}``; and
-#: implicit-segment I/O moved from a single packed ``(*dyn, u_size)`` slab
-#: to per-variable tensors at their natural ``(*dyn, *sub_batch, *base)``
-#: shape (per-variable ``sub_batch_shape`` / ``sub_batch_labels`` /
-#: ``base_shape`` recorded so the C++ side can reshape per-variable slots).
-#:
-#: v4: solver convergence / line-search configuration is no longer
-#: baked into the metadata. The implicit-segment ``atol`` / ``rtol`` /
-#: ``miters`` / ``linesearch`` keys are gone -- the generated stub ``.i``
-#: carries a minimal ``[Solvers]`` block (the honored knobs only; the linear
-#: solver, which is baked into the step/IFT graphs, is omitted) and the
-#: ``AOTIModel`` shim forwards it to the C++ runtime at load time. The
-#: predictor is unchanged: it still lowers to its own ``_predictor.pt2``
-#: graph with ``predictor_package`` / ``predictor_inputs`` /
-#: ``predictor_outputs`` metadata.
-#:
-#: v5: per-group / per-cell metadata for implicit segments
-#: (``unknown_group_infos`` / ``given_group_infos`` / ``residual_group_infos``
-#: / ``ift_cells``) so the C++ Newton loop + IFT composition runs per group.
-#:
-#: v6: derivative graphs are opt-in. A new top-level ``derivatives``
-#: array lists the master ``[out, in]`` pairs the artifact supports (empty =>
-#: none; ``jvp`` / ``jacobian`` raise). A forward segment's ``jvp_package`` /
-#: ``jacobian_pairs`` and an implicit segment's ``ift_package`` are present
-#: only when some requested pair needs them, and each ``jacobian_pairs`` entry
-#: gains a ``batch_independent`` flag (the block does not depend on the dynamic
-#: batch, e.g. a constant elasticity tensor, so the runtime may carry / return
-#: it unbatched).
-#:
-#: v7: parameter derivatives ``d(out)/d(param)`` are opt-in, separate
-#: from the input-variable derivatives. A new top-level ``parameter_derivatives``
-#: array lists the master ``[out, param_qname]`` pairs (param on a promoted
-#: parameter); when some pair is requested a forward segment gains two graphs,
-#: both computed by reverse-mode autograd (the only AD that lowers through
-#: AOTInductor):
-#:   * ``param_jacobian_package`` + ``param_jacobian_pairs`` -- the dense
-#:     ``d(out)/d(param)`` blocks. This graph takes the promoted parameter(s) as
-#:     PER-BATCH inputs (``(*dyn, *param_base)``); the C++ runtime broadcasts the
-#:     stored scalar parameter to the runtime batch before calling it.
-#:   * ``param_vjp_package`` + ``param_vjp_params`` + ``param_vjp_outputs`` -- the
-#:     adjoint ``dL/d(param)`` for ``L = sum_o <cotangent_o, out_o>`` (the cheaper
-#:     form for many-parameter optimization). Its inputs are the model inputs
-#:     (parameters stay scalar here) followed by one cotangent per output (in
-#:     ``param_vjp_outputs`` order); its outputs are the parameter gradients (in
-#:     ``param_vjp_params`` order).
-#: The value / input-jvp graphs are unchanged (parameters stay scalar there).
-#:
-#: v8: parameter derivatives for a single ``ImplicitUpdate`` segment.
-#: A promoted parameter living INSIDE the implicit residual is threaded as a
-#: positional tail through the segment's rhs / step / ift graphs (the same
-#: ``param_inputs`` list already carried for forward segments; the stored scalar
-#: is bound constant across the solve and the input-Jacobian). When some
-#: ``parameter_derivatives`` pair targets such a parameter the implicit segment
-#: gains a ``param_ift_package`` + ``param_jacobian_pairs`` graph
-#: (:class:`~neml2.es.implicit.ParamIFT`) emitting the per-(unknown, param)
-#: blocks of ``du/dθ = -A⁻¹ ∂r/∂θ`` -- ``A`` from the analytic chain rule,
-#: ``∂r/∂θ`` from reverse-mode autograd. Like the forward dense
-#: parameter-Jacobian graph it takes the promoted parameter PER-BATCH; the C++
-#: runtime broadcasts the stored scalar to the runtime batch before the call.
-#: Multi-segment (composed) parameter Jacobians remain a follow-up.
-#:
-#: v9 (current): batched parameters. A promoted parameter may carry its own batch
-#: dim (e.g. a per-batch-element Scalar set via ``set_parameter``). The forward /
-#: input-jvp / input-jacobian VALUE graphs now take each promoted parameter as a
-#: PER-BATCH input ``(*dyn, *param_base)`` with the batch dim marked dynamic (was a
-#: scalar baked at its natural shape), so a batched parameter flows through; the C++
-#: runtime broadcasts a stored scalar parameter up to the call batch before calling.
-#: Each ``parameters[]`` entry gains ``param_base_shape`` (the NATURAL base from the
-#: typed class) so the runtime can split a stored ``(*pbatch, *base)`` parameter into
-#: batch vs base. ``param_jacobian`` parameter blocks now record the natural base
-#: too. Batched ``param_vjp`` (per-element, un-summed) and batched parameters inside
-#: an implicit segment's value path remain follow-ups.
+#: Metadata schema version -- the wire-format handshake between the exporter and
+#: the C++/Python loaders. Bumped on every breaking layout change so a loader
+#: refuses a mismatched cache with a clear "regenerate via ``neml2-compile``"
+#: message rather than failing on a missing field deep in the parser. The
+#: canonical value lives in ``scripts/dependencies.yaml``; bump it there with
+#: ``scripts/dep_manager.py`` (which keeps this literal, the C++ loader, and the
+#: docs in sync).
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 7
+AOTI_META_SCHEMA_VERSION = 8
 
 
 def _var_size(type_cls) -> int:
@@ -846,6 +770,67 @@ def _snapshot_promoted(model: nn.Module, names: list[str]) -> dict[str, torch.Te
     buffers = dict(model.named_buffers(recurse=True))
     available = {**params, **buffers}
     return {n: available[n].detach() for n in names}
+
+
+def _validate_renames(
+    renames: dict[str, dict[str, str]] | None,
+    *,
+    input_names: list[str],
+    output_names: list[str],
+    param_names: list[str],
+) -> dict[str, dict[str, str]]:
+    """Validate + normalize the boundary-rename maps for the exported artifact.
+
+    *renames* maps each of ``"inputs"`` / ``"outputs"`` / ``"parameters"`` to an
+    ``{original_name: boundary_name}`` sub-map (any namespace omitted => no
+    renames there). Renaming is *shallow*: only the names a downstream consumer
+    sees at the artifact boundary change; the compiled graphs and every internal
+    wiring keep the original authored names.
+
+    Each original name must exist in its namespace -- the structural input
+    names, the output names, or the promoted-parameter qualified names -- and the
+    resulting boundary names must stay unique within the namespace (a new name
+    may not collide with another new name or with an unrenamed sibling).
+    Identity entries (boundary == original) are dropped. Raises ``ValueError``
+    with a clear listing on any violation.
+
+    Returns a normalized ``{"inputs": {...}, "outputs": {...}, "parameters":
+    {...}}`` carrying only the non-identity renames.
+    """
+    allowed = {
+        "inputs": list(input_names),
+        "outputs": list(output_names),
+        "parameters": list(param_names),
+    }
+    out: dict[str, dict[str, str]] = {"inputs": {}, "outputs": {}, "parameters": {}}
+    if not renames:
+        return out
+
+    unknown_ns = sorted(set(renames) - set(allowed))
+    if unknown_ns:
+        raise ValueError(
+            f"Unknown rename namespace(s) {unknown_ns}; expected a subset of {sorted(allowed)}."
+        )
+
+    for ns, names in allowed.items():
+        mapping = renames.get(ns) or {}
+        singular = ns[:-1]  # "inputs" -> "input"
+        missing = sorted(set(mapping) - set(names))
+        if missing:
+            avail = ", ".join(names) or "<none>"
+            raise ValueError(
+                f"Renamed {singular} name(s) not found in model: {missing}. Available: {avail}."
+            )
+        clean = {o: n for o, n in mapping.items() if o != n}
+        final = [clean.get(name, name) for name in names]
+        dupes = sorted({n for n in final if final.count(n) > 1})
+        if dupes:
+            raise ValueError(
+                f"Renaming the model's {ns} would produce duplicate boundary name(s): {dupes} "
+                f"(a boundary name must be unique among the {ns}, including unrenamed ones)."
+            )
+        out[ns] = clean
+    return out
 
 
 def _promote_parameters(
@@ -2779,6 +2764,7 @@ def export_model_for_aoti(
     example_batch_shape: dict[str, str] | str | None = None,
     dynamic_batch: bool | None = None,
     derivatives: Sequence[str] = (),
+    renames: dict[str, dict[str, str]] | None = None,
     pre: Sequence[str] = (),
     additional_args: tuple[str, ...] = (),
 ) -> dict:
@@ -2833,6 +2819,16 @@ def export_model_for_aoti(
         runtime ``jvp`` / ``jacobian`` raise until recompiled with ``-d``.
         Resolved against the model's outputs + structural inputs after
         promotion (see :func:`_resolve_derivative_specs`).
+    renames:
+        Optional shallow boundary renames (the ``--rename-input`` /
+        ``--rename-output`` / ``--rename-parameter`` CLI surface). A dict with
+        any of ``"inputs"`` / ``"outputs"`` / ``"parameters"`` keys, each an
+        ``{original_name: boundary_name}`` sub-map. Only the names reported at
+        the compiled artifact's interface change; the graphs and every internal
+        wiring keep the original authored names. Validated against the
+        post-promotion boundary namespaces (see :func:`_validate_renames`) and
+        recorded under ``boundary_aliases`` in the metadata. ``None`` (default)
+        keeps the original names.
     pre:
         HIT snippets prepended before parsing (same semantics as
         ``nmhit.parse_file``'s ``pre`` arg). Use to bind ``${var}``
@@ -2923,6 +2919,18 @@ def export_model_for_aoti(
         derivatives,
         list(model.output_spec),
         structural_input_names,
+        param_names=sorted(promoted_qnames),
+    )
+
+    # Validate + normalize boundary renames against the post-promotion boundary
+    # namespaces (structural inputs, outputs, promoted parameters). Fails fast
+    # here -- before the expensive graph compile -- on an unknown or colliding
+    # name. Shallow: only the interface names change; the graphs keep the
+    # original authored names.
+    boundary_aliases = _validate_renames(
+        renames,
+        input_names=structural_input_names,
+        output_names=list(model.output_spec),
         param_names=sorted(promoted_qnames),
     )
 
@@ -3021,6 +3029,13 @@ def export_model_for_aoti(
     meta["parameter_derivatives"] = [
         [o, p] for (o, p) in sorted(param_pairs, key=lambda x: (out_order.get(x[0], 0), x[1]))
     ]
+    # Boundary renames (shallow): remap only the names reported at the artifact's
+    # interface. Absent => the interface uses the original authored names. Only
+    # namespaces with an actual rename are written, so a fully-baked artifact is
+    # unchanged.
+    active_aliases = {ns: m for ns, m in boundary_aliases.items() if m}
+    if active_aliases:
+        meta["boundary_aliases"] = active_aliases
 
     _write_meta(output_dir / f"{model_name}_meta.json", meta)
     return meta

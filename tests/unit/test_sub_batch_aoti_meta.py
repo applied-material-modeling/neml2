@@ -41,25 +41,24 @@ Pins the structural contract between the Python writer
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from neml2.cli.aoti_export import AOTI_META_SCHEMA_VERSION, _var_infos
 from neml2.types import Scalar
 
 # ---------- schema_version constant ----------
 
 
-def test_schema_version_constant():
-    """v7 adds parameter derivatives `d(output)/d(parameter)`: a `parameter_derivatives`
-    array of `(out, param)` pairs, per-segment param-Jacobian / param-VJP graphs (forward,
-    single-`ImplicitUpdate`, and composed), and a `param_base_shape` field per promoted
-    parameter. Promoted parameters enter the value / jvp / jacobian / param-Jacobian /
-    param-VJP graphs as per-batch `(B, *param_base)` inputs, so a batched (per-batch-element)
-    parameter flows through and yields per-element derivatives (param_vjp sums over the batch
-    only for an unbatched/global parameter), matching eager. (v6 made derivative graphs
-    opt-in; v5 carried per-variable ``base_shape``; v4 de-baked the solver config.) The C++
-    loader mirrors this constant and refuses any other value, so a stale cache surfaces
-    immediately with a clear ``regenerate via neml2-compile`` message instead of a cryptic
-    missing-field error."""
-    assert AOTI_META_SCHEMA_VERSION == 7
+def test_schema_version_matches_dependencies_yaml():
+    """The exported constant tracks the single source of truth in
+    ``scripts/dependencies.yaml`` (kept in sync by ``scripts/dep_manager.py``);
+    the C++ loader mirrors the same value and refuses any other, so a stale
+    cache surfaces with a clear ``regenerate via neml2-compile`` message."""
+    import yaml
+
+    repo_root = Path(__file__).resolve().parents[2]
+    deps = yaml.safe_load((repo_root / "scripts" / "dependencies.yaml").read_text())
+    assert AOTI_META_SCHEMA_VERSION == int(deps["aoti"]["schema_version"])
 
 
 # ---------- _var_infos default behaviour (no sub-batch) ----------

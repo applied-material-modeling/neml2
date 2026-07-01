@@ -85,6 +85,44 @@ set_tests_properties(test_dispatcher test_load_model PROPERTIES
       ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
 )
 
+# --- Boundary renames: a renamed artifact reports the boundary names on the C++
+# Model facade + DispatchedModel, and dispatch parity is preserved. ------------
+# Same forward_promoted leaf as the dispatcher fixture, but compiled with the
+# three --rename-* flags so the authored strain/stress/model.{E,nu} surface as
+# eps/sig/youngs/poisson. Reuses _fixture_devices (cpu [+cuda]).
+set(_ren_dir ${CMAKE_CURRENT_BINARY_DIR}/rename_fixture)
+set(_ren_artifact_dir ${_ren_dir}/model)
+
+add_test(
+      NAME rename_fixture_compile
+      COMMAND ${Python3_EXECUTABLE} -m neml2.cli.aoti_compile ${_fixture_input}
+              --model model --device ${_fixture_devices} -p model.E -p model.nu
+              -d : -d stress:model.E -d stress:model.nu
+              --rename-input strain:eps --rename-output stress:sig
+              --rename-parameter model.E:youngs --rename-parameter model.nu:poisson
+              --output-dir ${_ren_dir}
+      WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
+)
+set_tests_properties(rename_fixture_compile PROPERTIES
+      FIXTURES_SETUP rename_artifact
+      LABELS "dispatcher"
+      TIMEOUT 600
+      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_ren_dir}/aoti-cache"
+)
+
+add_executable(test_dispatcher_rename test_dispatcher_rename.cpp)
+target_link_libraries(test_dispatcher_rename PRIVATE aoti)
+target_compile_options(test_dispatcher_rename PRIVATE -Wall -Wextra)
+set_target_properties(test_dispatcher_rename PROPERTIES
+      BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
+add_test(NAME test_dispatcher_rename COMMAND test_dispatcher_rename ${_ren_artifact_dir})
+set_tests_properties(test_dispatcher_rename PROPERTIES
+      FIXTURES_REQUIRED rename_artifact
+      LABELS "dispatcher"
+      TIMEOUT 300
+      ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
+)
+
 # --- Custom-op coverage: a model that uses neml2::opaque_pow -------------------
 # The dispatcher fixtures above compile LinearIsotropicElasticity (no custom ops),
 # so nothing exercised the cpp-aoti path for an op that torch.export preserves

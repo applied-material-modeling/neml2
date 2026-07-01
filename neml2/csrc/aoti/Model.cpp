@@ -80,6 +80,37 @@ parse_dtype(const std::string & s)
   _assert(false, "aoti::Model: unsupported dtype '", s, "' in metadata.");
   return at::kDouble;
 }
+
+// Boundary-rename helpers (used only when the artifact carries `boundary_aliases`).
+// Re-key a name->tensor map through a translation map; a key absent from `tr`
+// passes through unchanged (identity). Small maps, called once per public op.
+std::map<std::string, at::Tensor>
+rekey(const std::map<std::string, at::Tensor> & in, const std::map<std::string, std::string> & tr)
+{
+  std::map<std::string, at::Tensor> out;
+  for (const auto & [k, v] : in)
+  {
+    auto it = tr.find(k);
+    out.emplace(it == tr.end() ? k : it->second, v);
+  }
+  return out;
+}
+
+// Re-key a nested output->(input->tensor) Jacobian through an outer + inner
+// translation (either may be empty => identity on that axis).
+VariablePairJacobian
+rekey_nested(const VariablePairJacobian & in,
+             const std::map<std::string, std::string> & outer_tr,
+             const std::map<std::string, std::string> & inner_tr)
+{
+  VariablePairJacobian out;
+  for (const auto & [o, inner] : in)
+  {
+    auto oit = outer_tr.find(o);
+    out.emplace(oit == outer_tr.end() ? o : oit->second, rekey(inner, inner_tr));
+  }
+  return out;
+}
 } // namespace
 
 Model::Impl::Impl(const std::filesystem::path & meta_path,
@@ -97,17 +128,12 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
           "'. Path must point at the _meta.json written by `neml2-compile`.");
   const auto meta = nlohmann::json::parse(meta_f);
 
-  // Schema-version handshake. v5 makes the runtime variable-native: the master
-  // `inputs`/`outputs` metadata records each variable's full `base_shape`, so
-  // the C++ side reports input_base_shapes()/output_base_shapes(), validates
-  // canonical (*B, *base) inputs, and returns unflattened jvp (*B, *out_base)
-  // and variable-pair jacobian blocks (*B, *out_base, *in_base). (v5 also keeps
-  // the per-segment per-variable sub_batch_shape / base_shape used to pack the
-  // segment loaders' positional inputs and sum convergence norms.) Older caches
-  // lack the master base_shape; we fail loudly instead of misinterpreting them.
-  // dependencies: aoti.schema_version (NOT auto-managed -- C++ `//` comments are
-  // not scanned by scripts/dep_manager.py; keep this literal in sync by hand).
-  static constexpr int kSupportedSchemaVersion = 7;
+  // Wire-format handshake: the loader refuses any metadata whose schema_version
+  // differs, so a stale cache fails with a clear "regenerate" message instead of
+  // a cryptic missing-field error deep in the parser. The canonical value lives
+  // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
+  // dependencies: aoti.schema_version
+  static constexpr int kSupportedSchemaVersion = 8;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -156,6 +182,36 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
   // file itself.
   const auto cache_dir = meta_path.parent_path();
 
+  // Boundary renames (shallow, optional). Only the names reported at the public
+  // surface change; every internal structure keeps the ORIGINAL authored names.
+  // Load the per-namespace forward / reverse maps now so the parameter loop can
+  // store `_named_parameters` boundary-keyed and the ext views can be built
+  // below. Absent => `_has_aliases` stays false and the runtime behaves exactly
+  // as an unrenamed artifact.
+  if (meta.contains("boundary_aliases"))
+  {
+    const auto & ba = meta["boundary_aliases"];
+    auto load_pair_maps = [&ba](const char * key,
+                                std::map<std::string, std::string> & o2e,
+                                std::map<std::string, std::string> & e2o)
+    {
+      if (!ba.contains(key))
+        return;
+      for (auto it = ba[key].begin(); it != ba[key].end(); ++it)
+      {
+        const auto ext = it.value().get<std::string>();
+        o2e[it.key()] = ext;
+        e2o[ext] = it.key();
+      }
+    };
+    load_pair_maps("inputs", _in_orig2ext, _in_ext2orig);
+    load_pair_maps("outputs", _out_orig2ext, _out_ext2orig);
+    if (ba.contains("parameters"))
+      for (auto it = ba["parameters"].begin(); it != ba["parameters"].end(); ++it)
+        _param_orig2ext[it.key()] = it.value().get<std::string>();
+  }
+  _has_aliases = !(_in_orig2ext.empty() && _out_orig2ext.empty() && _param_orig2ext.empty());
+
   // Master inputs / outputs.
   _input_names.reserve(meta["inputs"].size());
   _input_base_shapes.reserve(meta["inputs"].size());
@@ -182,6 +238,26 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
     _output_names.push_back(v["name"].get<std::string>());
     _output_base_shapes.push_back(v["base_shape"].get<std::vector<int64_t>>());
     _output_sizes.push_back(v["var_size"].get<int>());
+  }
+
+  // Pre-build the boundary (renamed) name vectors the public accessors return
+  // (identity for any variable without a rename). Only when some rename is
+  // active -- the unrenamed common case leaves these empty and the accessors
+  // return the original vectors.
+  if (_has_aliases)
+  {
+    _ext_input_names.reserve(_input_names.size());
+    for (const auto & n : _input_names)
+    {
+      auto it = _in_orig2ext.find(n);
+      _ext_input_names.push_back(it == _in_orig2ext.end() ? n : it->second);
+    }
+    _ext_output_names.reserve(_output_names.size());
+    for (const auto & n : _output_names)
+    {
+      auto it = _out_orig2ext.find(n);
+      _ext_output_names.push_back(it == _out_orig2ext.end() ? n : it->second);
+    }
   }
 
   // Master (out, in) derivative pairs the artifact supports (v6+). Absent /
@@ -273,8 +349,19 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
                 "' uses the values_in spill format which is not yet "
                 "supported on the C++ side. Re-export with smaller tensors.");
       }
-      _named_parameters.emplace(name, t.contiguous());
+      // `_named_parameters` is keyed by BOUNDARY name (identity when unaliased):
+      // it is the mutable public surface AND the map the dispatcher slot-assigns
+      // into for multi-device sync, and `_resolve_param` reads it back through
+      // the same boundary key, so all mutation paths stay coherent. The natural
+      // base shape stays keyed by the ORIGINAL name (every internal reader uses
+      // original names); the boundary-keyed view is built below.
+      _named_parameters.emplace(_param_boundary_name(name), t.contiguous());
     }
+    // Boundary-keyed view of the natural base shapes for the public accessor
+    // (`parameter_base_shapes()`), so it lines up with `named_parameters()`.
+    if (_has_aliases)
+      for (const auto & [orig, base] : _param_base_shapes)
+        _ext_param_base_shapes[_param_boundary_name(orig)] = base;
   }
 
   // Narrowed parameter-column layout for the multi-segment parameter-Jacobian
@@ -286,7 +373,9 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
   {
     if (_req_param_offset.count(p))
       continue; // already laid out (a param may pair with several outputs)
-    auto pit = _named_parameters.find(p);
+    // `p` is the ORIGINAL param name (from `_param_derivatives`); look it up in
+    // the boundary-keyed `_named_parameters` via its boundary name.
+    auto pit = _named_parameters.find(_param_boundary_name(p));
     _assert(pit != _named_parameters.end(),
             "aoti::Model: parameter-derivative references promoted parameter '",
             p,
@@ -512,13 +601,17 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
 const at::Tensor &
 Model::Impl::_resolve_param(const std::string & name) const
 {
+  // `name` is the ORIGINAL segment/metadata name; `_named_parameters` and the
+  // per-call `_param_overrides` are keyed by BOUNDARY name (identity when the
+  // parameter is unaliased), so map it through first.
+  const std::string & key = _param_boundary_name(name);
   if (_param_overrides != nullptr)
   {
-    auto oit = _param_overrides->find(name);
+    auto oit = _param_overrides->find(key);
     if (oit != _param_overrides->end())
       return oit->second;
   }
-  auto it = _named_parameters.find(name);
+  auto it = _named_parameters.find(key);
   _assert(it != _named_parameters.end(),
           "aoti::Model: segment references promoted parameter '",
           name,
@@ -572,16 +665,30 @@ Model::output_base_shapes() const noexcept
   return _impl->output_base_shapes();
 }
 
-// The three ops run through `_guarded` so every exception leaving the public
-// surface is a neml2 Exception with a meaningful `recoverable()`: a recoverable
+// The ops run through `_guarded` so every exception leaving the public surface
+// is a neml2 Exception with a meaningful `recoverable()`: a recoverable
 // ConvergenceError from the Newton solve passes through, while a foreign torch
 // error (e.g. a shape / device mismatch raised inside a compiled graph) is
 // normalized to a non-recoverable FatalError.
+//
+// When the artifact carries boundary renames (`_has_aliases`) each op re-keys at
+// the interface: incoming input / tangent dicts BOUNDARY->original, cotangents
+// BOUNDARY->original (keyed by output name), and results original->BOUNDARY.
+// `param_overrides` passes through unchanged -- it is keyed by boundary name and
+// `_resolve_param` maps each original segment name to its boundary key. The
+// unrenamed common case takes the no-copy fast path.
 std::map<std::string, at::Tensor>
 Model::forward(const std::map<std::string, at::Tensor> & inputs,
                const std::map<std::string, at::Tensor> & param_overrides) const
 {
-  return _guarded([&] { return _impl->forward(inputs, param_overrides); });
+  return _guarded(
+      [&]() -> std::map<std::string, at::Tensor>
+      {
+        if (!_impl->_has_aliases)
+          return _impl->forward(inputs, param_overrides);
+        auto out = _impl->forward(rekey(inputs, _impl->_in_ext2orig), param_overrides);
+        return rekey(out, _impl->_out_orig2ext);
+      });
 }
 
 std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
@@ -589,21 +696,51 @@ Model::jvp(const std::map<std::string, at::Tensor> & inputs,
            const std::map<std::string, at::Tensor> & tangents,
            const std::map<std::string, at::Tensor> & param_overrides) const
 {
-  return _guarded([&] { return _impl->jvp(inputs, tangents, param_overrides); });
+  using Ret = std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>;
+  return _guarded(
+      [&]() -> Ret
+      {
+        if (!_impl->_has_aliases)
+          return _impl->jvp(inputs, tangents, param_overrides);
+        auto [out, jout] = _impl->jvp(rekey(inputs, _impl->_in_ext2orig),
+                                      rekey(tangents, _impl->_in_ext2orig),
+                                      param_overrides);
+        return {rekey(out, _impl->_out_orig2ext), rekey(jout, _impl->_out_orig2ext)};
+      });
 }
 
 std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
 Model::jacobian(const std::map<std::string, at::Tensor> & inputs,
                 const std::map<std::string, at::Tensor> & param_overrides) const
 {
-  return _guarded([&] { return _impl->jacobian(inputs, param_overrides); });
+  using Ret = std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>;
+  return _guarded(
+      [&]() -> Ret
+      {
+        if (!_impl->_has_aliases)
+          return _impl->jacobian(inputs, param_overrides);
+        auto [out, jac] = _impl->jacobian(rekey(inputs, _impl->_in_ext2orig), param_overrides);
+        return {rekey(out, _impl->_out_orig2ext),
+                rekey_nested(jac, _impl->_out_orig2ext, _impl->_in_orig2ext)};
+      });
 }
 
 std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
 Model::param_jacobian(const std::map<std::string, at::Tensor> & inputs,
                       const std::map<std::string, at::Tensor> & param_overrides) const
 {
-  return _guarded([&] { return _impl->param_jacobian(inputs, param_overrides); });
+  using Ret = std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>;
+  return _guarded(
+      [&]() -> Ret
+      {
+        if (!_impl->_has_aliases)
+          return _impl->param_jacobian(inputs, param_overrides);
+        auto [out, pjac] =
+            _impl->param_jacobian(rekey(inputs, _impl->_in_ext2orig), param_overrides);
+        // Inner keys are promoted-parameter names -> boundary via _param_orig2ext.
+        return {rekey(out, _impl->_out_orig2ext),
+                rekey_nested(pjac, _impl->_out_orig2ext, _impl->_param_orig2ext)};
+      });
 }
 
 std::map<std::string, at::Tensor>
@@ -611,7 +748,18 @@ Model::param_vjp(const std::map<std::string, at::Tensor> & inputs,
                  const std::map<std::string, at::Tensor> & cotangents,
                  const std::map<std::string, at::Tensor> & param_overrides) const
 {
-  return _guarded([&] { return _impl->param_vjp(inputs, cotangents, param_overrides); });
+  return _guarded(
+      [&]() -> std::map<std::string, at::Tensor>
+      {
+        if (!_impl->_has_aliases)
+          return _impl->param_vjp(inputs, cotangents, param_overrides);
+        // cotangents are keyed by OUTPUT name (BOUNDARY->original); the result is
+        // keyed by promoted-parameter name (original->BOUNDARY).
+        auto grads = _impl->param_vjp(rekey(inputs, _impl->_in_ext2orig),
+                                      rekey(cotangents, _impl->_out_ext2orig),
+                                      param_overrides);
+        return rekey(grads, _impl->_param_orig2ext);
+      });
 }
 
 std::map<std::string, at::Tensor> &

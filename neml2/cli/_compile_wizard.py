@@ -69,6 +69,7 @@ _FIELDS: list[tuple[str, str]] = [
     ("name", "Name"),
     ("promoted", "Parameters"),
     ("derivatives", "Derivatives"),
+    ("rename", "Renames"),
     ("devices", "Devices"),
     ("dtype", "dtype"),
     ("output_dir", "Output dir"),
@@ -92,6 +93,8 @@ _HELP: dict[str, str] = {
     "constants; space toggles, enter confirms.",
     "derivatives": "Also compile Jacobian/JVP graphs for chosen output:input pairs "
     "(needed for jvp()/jacobian() at runtime).",
+    "rename": "Rename input/output/parameter names at the compiled boundary for a "
+    "downstream consumer; the model internals keep the original names. Model target only.",
     "devices": "Target device(s), baked at export; one artifact is emitted per device.",
     "dtype": "Floating-point precision baked into the artifact.",
     "output_dir": "Directory for the .pt2 artifacts and the runnable HIT stub.",
@@ -171,12 +174,18 @@ def run_wizard(*, input_file: str, initial_load: tuple[str, ...] = ()) -> int:
             _ask_field("name", input_file, state, cache)
 
 
+def _empty_renames() -> dict[str, dict[str, str]]:
+    return {"inputs": {}, "outputs": {}, "parameters": {}}
+
+
 def _default_state() -> dict:
     return {
         "target": "model",
         "name": "",
         "promoted": (),
         "derivatives": (),
+        # {"inputs"|"outputs"|"parameters": {orig: new}} -- shallow boundary renames.
+        "rename": _empty_renames(),
         "devices": ("cpu",),
         "dtype": "float64",
         "output_dir": "./aoti",
@@ -251,6 +260,23 @@ def _ask_field(field: str, input_file: str, state: dict, cache: dict) -> bool:
         if specs is None:
             return False
         state["derivatives"] = tuple(specs)
+        return True
+
+    if field == "rename":
+        # Renaming is a model-target-only boundary feature (the driver stub keeps
+        # the original [Drivers] wiring). Skip cleanly in driver mode.
+        if state["target"] != "model":
+            state["rename"] = _empty_renames()
+            questionary.print(
+                "(renaming is only available with a model target, not a driver)",
+                style="italic",
+            )
+            return True
+        intro = _ensure_intro(input_file, state, cache)
+        renames = _ask_renames(intro, tuple(state["promoted"]), state.get("rename", {}))
+        if renames is None:
+            return False
+        state["rename"] = renames
         return True
 
     if field == "devices":
@@ -371,13 +397,16 @@ def _ask_example_shape(input_file: str, state: dict, cache: dict) -> bool:
 
 
 def _reset_model_dependent(state: dict) -> None:
-    """Drop parameter / derivative selections that belong to the previous model."""
-    if state["promoted"] or state["derivatives"]:
+    """Drop parameter / derivative / rename selections that belong to the previous model."""
+    renames = state.get("rename", {})
+    if state["promoted"] or state["derivatives"] or any(renames.values()):
         questionary.print(
-            "(cleared parameter / derivative selections for the new model)", style="italic"
+            "(cleared parameter / derivative / rename selections for the new model)",
+            style="italic",
         )
     state["promoted"] = ()
     state["derivatives"] = ()
+    state["rename"] = _empty_renames()
 
 
 def _ensure_intro(input_file: str, state: dict, cache: dict) -> IntrospectionForm | None:
@@ -399,6 +428,11 @@ def _ensure_intro(input_file: str, state: dict, cache: dict) -> IntrospectionFor
 
 
 def _form_state(input_file: str, state: dict, initial_load: tuple[str, ...]) -> FormState:
+    ren = state.get("rename", {})
+
+    def _specs(ns: str) -> tuple[str, ...]:
+        return tuple(f"{orig}:{new}" for orig, new in ren.get(ns, {}).items())
+
     return FormState(
         input_file=input_file,
         target=state["target"],
@@ -408,6 +442,9 @@ def _form_state(input_file: str, state: dict, initial_load: tuple[str, ...]) -> 
         output_dir=state["output_dir"],
         promoted=tuple(state["promoted"]),
         derivatives=tuple(state["derivatives"]),
+        rename_inputs=_specs("inputs"),
+        rename_outputs=_specs("outputs"),
+        rename_parameters=_specs("parameters"),
         example_shape=tuple(state["example_shape"]),
         dynamic_batch=state["dynamic_batch"],
         load=tuple(initial_load),
@@ -416,10 +453,20 @@ def _form_state(input_file: str, state: dict, initial_load: tuple[str, ...]) -> 
 
 def _print_review(fs: FormState) -> None:
     questionary.print("\nReview:", style="bold")
+    ren_bits = [
+        f"{prefix} {spec.replace(':', '->')}"
+        for prefix, specs in (
+            ("in", fs.rename_inputs),
+            ("out", fs.rename_outputs),
+            ("param", fs.rename_parameters),
+        )
+        for spec in specs
+    ]
     rows = [
         ("Target", f"{fs.target}: {fs.name or '(unset)'}"),
         ("Parameters", ", ".join(fs.promoted) or "(none)"),
         ("Derivatives", ", ".join(fs.derivatives) or "(none)"),
+        ("Renames", ", ".join(ren_bits) or "(none)"),
         ("Devices", ", ".join(fs.devices) or "(none)"),
         ("dtype", fs.dtype),
         ("Output dir", fs.output_dir),
@@ -516,6 +563,58 @@ def _ask_derivatives(
             new = _bulk_select_pairs(outputs, inputs, pairs)
             if new is not None:
                 pairs = list(dict.fromkeys([*pairs, *new]))
+
+
+def _ask_renames(
+    intro: IntrospectionForm | None,
+    promoted: tuple[str, ...],
+    current: dict[str, dict[str, str]],
+) -> dict[str, dict[str, str]] | None:
+    """Collect shallow boundary renames per namespace.
+
+    Returns ``{"inputs"|"outputs"|"parameters": {orig: new}}`` (empty sub-maps =
+    no renames) or ``None`` if the user cancelled. Gates on a single confirm, then
+    for each namespace lets the user check which names to rename (candidates come
+    from introspection: the model's inputs / outputs, and the currently-promoted
+    parameters) and type each new boundary name. An empty or unchanged new name
+    leaves that variable as-is.
+    """
+    if intro is None:
+        return dict(current)  # can't introspect -> leave the selection unchanged
+    namespaces = [
+        ("inputs", "inputs", list(intro.inputs)),
+        ("outputs", "outputs", list(intro.outputs)),
+        ("parameters", "promoted parameters", list(promoted)),
+    ]
+    has_any = any(current.get(ns) for ns, _, _ in namespaces)
+    want = questionary.confirm("Rename any boundary variables?", default=has_any).ask()
+    if want is None:
+        return None
+    if not want:
+        return _empty_renames()
+
+    result = _empty_renames()
+    for ns, label, candidates in namespaces:
+        cur: dict[str, str] = current.get(ns, {})
+        if not candidates:
+            continue
+        which = questionary.checkbox(
+            f"Rename which {label}? (leave unchecked to keep the original name)",
+            choices=[questionary.Choice(c, c, checked=(c in cur)) for c in candidates],
+        ).ask()
+        if which is None:
+            return None
+        mapping: dict[str, str] = {}
+        for name in which:
+            default_new = cur[name] if name in cur else name
+            new = questionary.text(f"  {name} -> ", default=default_new).ask()
+            if new is None:
+                return None
+            new = new.strip()
+            if new and new != name:
+                mapping[name] = new
+        result[ns] = mapping
+    return result
 
 
 def _bulk_select_pairs(

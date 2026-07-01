@@ -81,10 +81,13 @@ def _value_fields(dep_data: dict) -> dict:
 
 
 def _is_annotation_line(line: str) -> bool:
-    """True if the line is any `# dependencies: ...` / HTML-comment annotation."""
+    """True if the line is any `# dependencies: ...` / `// dependencies: ...` /
+    HTML-comment annotation."""
     stripped = line.strip()
-    return stripped.startswith("# dependencies:") or (
-        stripped.startswith("<!-- dependencies:") and stripped.endswith("-->")
+    return (
+        stripped.startswith("# dependencies:")
+        or stripped.startswith("// dependencies:")
+        or (stripped.startswith("<!-- dependencies:") and stripped.endswith("-->"))
     )
 
 
@@ -100,6 +103,7 @@ def _find_annotated_lines(filepath: Path, annotation_key: str) -> list[tuple[int
     lines = filepath.read_text().splitlines()
     markers = {
         f"# dependencies: {annotation_key}",
+        f"// dependencies: {annotation_key}",
         f"<!-- dependencies: {annotation_key} -->",
     }
     results = []
