@@ -33,25 +33,43 @@
 // artifact through libneml2 WITHOUT importing the Python package -- so libneml2
 // must register the same schema + a runtime kernel itself, or the dispatcher
 // throws "Could not find schema for neml2::opaque_pow" when the artifact loads.
+//
+// This uses torch's STABLE ABI (`torch/csrc/stable/library.h`) rather than the
+// regular `torch::Library` C++ API. `torch::Library::def` lowers to a `_def`
+// overload whose signature carries a `Tag` type that moved namespaces across the
+// supported torch range (`at::Tag` -> `torch::headeronly::Tag`); a libneml2
+// built against the max torch then fails to load against the min torch with
+// "undefined symbol: torch::Library::_def(...)". The stable entry points
+// (`aoti_torch_library_def`, which takes only a schema string -- no Tag -- plus
+// `torch_library_impl` / `torch_call_dispatcher`) exist across the whole range,
+// so the one wheel imports on every supported torch. See the torch-compat matrix
+// (`.github/workflows/compat.yaml`).
 
 #include <mutex>
 
-#include <ATen/core/dispatch/Dispatcher.h>
-#include <ATen/ops/pow.h>
-#include <torch/library.h>
+#include <ATen/core/dispatch/Dispatcher.h>          // c10::Dispatcher::findOp (registration guard)
+#include <torch/csrc/inductor/aoti_runtime/utils.h> // AOTI_TORCH_ERROR_CODE_CHECK (header-only)
+#include <torch/csrc/stable/library.h> // StableLibrary + torch_call_dispatcher + StableIValue
 
 namespace neml2::aoti
 {
 namespace
 {
-// Runtime kernel for `neml2::opaque_pow`. The op is opaque only to Inductor's
-// fusion pass; semantically it is a plain power. The fake (abstract) impl and
-// the autograd backward are export-time concerns already baked into the
-// artifact, so the C++ runtime needs only this forward.
-at::Tensor
-opaque_pow(const at::Tensor & base, const at::Tensor & exponent)
+// Boxed runtime kernel for `neml2::opaque_pow`. The op is opaque only to
+// Inductor's fusion pass; semantically and by signature it is exactly
+// `aten::pow.Tensor_Tensor`, so we forward the boxed `[base, exponent]` stack
+// straight to that op through the stable dispatcher. Forwarding the stack avoids
+// any `at::Tensor` round-trip, so no unstable-ABI symbol leaks into the kernel
+// body either. `TORCH_ABI_VERSION` is the extension's BUILD version (per the
+// `torch_call_dispatcher` contract), which lets an older runtime libtorch
+// negotiate compatibility. The fake/abstract impl and autograd backward are
+// export-time concerns already baked into the artifact, so the runtime needs
+// only this forward.
+void
+opaque_pow_boxed(StableIValue * stack, uint64_t /*num_args*/, uint64_t /*num_outputs*/)
 {
-  return at::pow(base, exponent);
+  AOTI_TORCH_ERROR_CODE_CHECK(
+      torch_call_dispatcher("aten::pow", "Tensor_Tensor", stack, TORCH_ABI_VERSION));
 }
 
 } // namespace
@@ -69,21 +87,25 @@ ensure_neml2_custom_ops_registered()
   // the pure cpp-aoti path (no Python) registers it here; py-aoti (Python
   // imported first) skips via the findOp guard.
   //
-  // The torch::Library is heap-allocated and never freed: it must outlive the
-  // process, and a destructor would pull in the __cxa_call_terminate EH symbol
-  // the wheel/dev link toolchain cannot resolve.
+  // The stable-ABI library objects are heap-allocated and never freed: they must
+  // outlive the process, and a destructor would pull in the __cxa_call_terminate
+  // EH symbol the wheel/dev link toolchain cannot resolve. `def` (schema) and
+  // `impl` (kernel) are separate library objects so the kernel can be pinned to
+  // the CompositeExplicitAutograd key -- a bare FRAGMENT `impl` has no key slot.
   static std::once_flag flag;
-  std::call_once(flag,
-                 []
-                 {
-                   if (c10::Dispatcher::singleton().findOp({"neml2::opaque_pow", ""}).has_value())
-                     return;
-                   auto * lib = new torch::Library(
-                       torch::Library::FRAGMENT, "neml2", std::nullopt, __FILE__, __LINE__);
-                   lib->def("opaque_pow(Tensor base, Tensor exponent) -> Tensor");
-                   lib->impl("opaque_pow",
-                             torch::dispatch(c10::DispatchKey::CompositeExplicitAutograd,
-                                             TORCH_FN(opaque_pow)));
-                 });
+  std::call_once(
+      flag,
+      []
+      {
+        if (c10::Dispatcher::singleton().findOp({"neml2::opaque_pow", ""}).has_value())
+          return;
+        using StableLibrary = torch::stable::detail::StableLibrary;
+        auto * def_lib =
+            new StableLibrary(StableLibrary::Kind::FRAGMENT, "neml2", "", __FILE__, __LINE__);
+        def_lib->def("opaque_pow(Tensor base, Tensor exponent) -> Tensor");
+        auto * impl_lib = new StableLibrary(
+            StableLibrary::Kind::IMPL, "neml2", "CompositeExplicitAutograd", __FILE__, __LINE__);
+        impl_lib->impl("opaque_pow", &opaque_pow_boxed);
+      });
 }
 } // namespace neml2::aoti
