@@ -30,6 +30,9 @@
 
 #include "neml2/csrc/aoti/internal.h"
 
+// at::infer_size (broadcast two shapes) for the common-batch computation.
+#include <ATen/ExpandUtils.h>
+
 // param_vjp runs an AOTI loader directly (the other ops delegate loader calls to
 // jacobian.cpp); pull in the full loader type for ->run().
 #include <torch/csrc/inductor/aoti_package/model_package_loader.h>
@@ -86,20 +89,73 @@ Model::Impl::_batch_shape_of(std::size_t idx, const at::Tensor & t) const
   return batch;
 }
 
+std::vector<int64_t>
+Model::Impl::_dynamic_batch_shape_of(std::size_t idx, const at::Tensor & t) const
+{
+  // Strip BOTH the sub-batch axes and the trailing base axes; what remains is
+  // the leading plain (dynamic) batch. `_input_sub_batch_shapes` is populated
+  // per input at construction (an empty vector for a plain-batch input, and
+  // empty overall for an older cache without the metadata -> sub_ndim 0).
+  const int64_t sub_ndim = _input_sub_batch_shapes.empty()
+                               ? 0
+                               : static_cast<int64_t>(_input_sub_batch_shapes[idx].size());
+  const int64_t trailing = static_cast<int64_t>(_input_base_shapes[idx].size()) + sub_ndim;
+  std::vector<int64_t> dyn;
+  for (int64_t d = 0; d < t.dim() - trailing; ++d)
+    dyn.push_back(t.size(d));
+  return dyn;
+}
+
+std::map<std::string, at::Tensor>
+Model::Impl::_prepare_inputs(const std::map<std::string, at::Tensor> & inputs) const
+{
+  std::map<std::string, at::Tensor> state;
+  // First pass: validate + materialize each input, accumulating the common
+  // DYNAMIC (plain) batch across all of them. Only the plain batch is unified:
+  // a sub-batched input's per-site axes (crystal-plasticity per-grain /
+  // per-slip) are structural and are stripped alongside the base axes before
+  // broadcasting -- unifying them would collide a global input's (B,) against a
+  // per-grain input's (B, ngrain). This mirrors the typed routes, whose
+  // broadcast_to_common_batch broadcasts only the dynamic batch per its
+  // per-input sub_batch_ndim.
+  std::vector<int64_t> dyn;
+  for (std::size_t k = 0; k < _input_names.size(); ++k)
+  {
+    const auto & n = _input_names[k];
+    auto it = inputs.find(n);
+    _assert(it != inputs.end(), "aoti::Model: missing required input '", n, "'.");
+    _validate_input_shape(k, it->second);
+    state[n] = it->second.contiguous();
+    dyn = at::infer_size(dyn, _dynamic_batch_shape_of(k, state[n]));
+  }
+  // Second pass: lift every input's dynamic batch to the common shape, leaving
+  // its sub-batch and base axes untouched -- a batch-independent input (e.g. a
+  // scalar TIME force) is broadcast to the call batch without disturbing a
+  // sub-batched input's per-grain axes.
+  for (std::size_t k = 0; k < _input_names.size(); ++k)
+  {
+    const auto & n = _input_names[k];
+    const at::Tensor & t = state[n];
+    const int64_t sub_ndim = _input_sub_batch_shapes.empty()
+                                 ? 0
+                                 : static_cast<int64_t>(_input_sub_batch_shapes[k].size());
+    const int64_t keep = static_cast<int64_t>(_input_base_shapes[k].size()) + sub_ndim;
+    // target = (*common_dyn, *sub_k, *base_k): common plain batch, then this
+    // input's own trailing sub-batch + base axes verbatim.
+    std::vector<int64_t> target(dyn);
+    for (int64_t d = t.dim() - keep; d < t.dim(); ++d)
+      target.push_back(t.size(d));
+    state[n] = t.broadcast_to(target).contiguous();
+  }
+  return state;
+}
+
 std::map<std::string, at::Tensor>
 Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
                      const std::map<std::string, at::Tensor> & param_overrides) const
 {
   const ParamOverrideGuard _pog(this, param_overrides);
-  std::map<std::string, at::Tensor> state;
-  for (std::size_t k = 0; k < _input_names.size(); ++k)
-  {
-    const auto & n = _input_names[k];
-    auto it = inputs.find(n);
-    _assert(it != inputs.end(), "aoti::Model::forward: missing required input '", n, "'.");
-    _validate_input_shape(k, it->second);
-    state[n] = it->second.contiguous();
-  }
+  auto state = _prepare_inputs(inputs);
 
   // Call batch from the first structural input (its base stripped). Forward
   // segments broadcast each promoted parameter to this batch before the call,
@@ -137,16 +193,8 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
 std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
 Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) const
 {
-  // Pack state from caller inputs (validating each is canonical (*B, *base)).
-  std::map<std::string, at::Tensor> state;
-  for (std::size_t k = 0; k < _input_names.size(); ++k)
-  {
-    const auto & n = _input_names[k];
-    auto it = inputs.find(n);
-    _assert(it != inputs.end(), "aoti::Model::jacobian: missing required input '", n, "'.");
-    _validate_input_shape(k, it->second);
-    state[n] = it->second.contiguous();
-  }
+  // Pack state from caller inputs (validating + broadcasting to the common batch).
+  auto state = _prepare_inputs(inputs);
 
   // dstate[var] is (*B, var_size, M) where M = _input_total_size. Initialized
   // with identity columns for each master input, then composed segment-by-
@@ -349,16 +397,9 @@ Model::Impl::param_vjp(const std::map<std::string, at::Tensor> & inputs,
   if (_segments.size() == 1 && seg.kind == SegmentKind::Forward &&
       static_cast<bool>(seg.param_vjp_loader))
   {
-    // Validate + pack structural inputs (canonical (*B, *base)).
-    std::map<std::string, at::Tensor> state;
-    for (std::size_t k = 0; k < _input_names.size(); ++k)
-    {
-      const auto & n = _input_names[k];
-      auto it = inputs.find(n);
-      _assert(it != inputs.end(), "aoti::Model::param_vjp: missing required input '", n, "'.");
-      _validate_input_shape(k, it->second);
-      state[n] = it->second.contiguous();
-    }
+    // Validate + pack structural inputs (canonical (*B, *base)), broadcasting to
+    // the common batch.
+    auto state = _prepare_inputs(inputs);
 
     // Loader inputs: structural state, promoted parameters broadcast PER-BATCH
     // (the adjoint graph differentiates a per-batch leaf -> per-batch-element

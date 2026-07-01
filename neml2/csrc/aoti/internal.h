@@ -56,6 +56,13 @@ class AOTIModelPackageLoader;
 
 namespace neml2::aoti
 {
+/// Lazily register NEML2's custom Torch operators (currently `neml2::opaque_pow`)
+/// into the dispatcher -- once per process, only if absent. Called from the aoti
+/// `Model` constructor rather than a static initializer so a process that also
+/// embeds the Python neml2 package (cpp-eager / py-aoti) does not double-`def` the
+/// op (the Python package registers the same schema). Defined in `custom_ops.cpp`.
+void ensure_neml2_custom_ops_registered();
+
 /// Opaque implementation of `Model`. Holds the per-segment AOTI graph state and
 /// all the value / Jacobian machinery; the public `Model` methods are one-line
 /// forwarders onto the identically-named members here.
@@ -362,6 +369,25 @@ struct Model::Impl
   /// before the trailing `base_shape` axes). Assumes `_validate_input_shape`
   /// has already passed for this input.
   std::vector<int64_t> _batch_shape_of(std::size_t idx, const at::Tensor & t) const;
+
+  /// The DYNAMIC (plain) batch of a canonical input: the leading axes before
+  /// both the per-input sub-batch axes (`_input_sub_batch_shapes[idx]`) and the
+  /// trailing `base_shape`. Unlike `_batch_shape_of` (which returns dynamic +
+  /// sub-batch), this excludes the sub-batch axes -- the structural per-site
+  /// axes (e.g. crystal-plasticity per-grain / per-slip) that must NOT be
+  /// broadcast across inputs. Used by `_prepare_inputs` to unify only the plain
+  /// batch across a mix of global and sub-batched inputs.
+  std::vector<int64_t> _dynamic_batch_shape_of(std::size_t idx, const at::Tensor & t) const;
+
+  /// Validate every required input and return them as a `state` map with the
+  /// dynamic-batch axes broadcast to a single common shape (base axes
+  /// preserved), so a batch-independent input -- e.g. MOOSE's scalar TIME force
+  /// -- is lifted to the call batch instead of colliding with the batched
+  /// inputs in a downstream `cat`. This is the C++ analogue of
+  /// `neml2/types/_boundary.py::broadcast_to_common_batch`, which the typed
+  /// (eager / py-aoti shim) routes already apply at their raw-tensor boundary.
+  std::map<std::string, at::Tensor>
+  _prepare_inputs(const std::map<std::string, at::Tensor> & inputs) const;
 
   /// Compose the master Jacobian carrier: returns the output values plus the
   /// per-variable `dstate` map, where `dstate[var]` is `(*common_dyn,

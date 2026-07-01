@@ -85,6 +85,11 @@ parse_dtype(const std::string & s)
 Model::Impl::Impl(const std::filesystem::path & meta_path,
                   std::optional<at::Device> device_override)
 {
+  // Register any custom ops a compiled artifact may reference (e.g.
+  // neml2::opaque_pow) before a segment loads/evaluates. Lazy + idempotent so it
+  // does not collide with the Python package's registration (cpp-eager / py-aoti).
+  ensure_neml2_custom_ops_registered();
+
   std::ifstream meta_f(meta_path);
   _assert(static_cast<bool>(meta_f),
           "aoti::Model: failed to open metadata file '",
