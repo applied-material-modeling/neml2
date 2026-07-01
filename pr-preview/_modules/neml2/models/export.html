@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="iris" data-content_root="../../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.models.export - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=8ed54ede" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="neml2.models.export"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../../index.html">
+      <img class="light-logo" src="../../../_static/logo_light.png" alt="NEML2" height="28" loading="lazy" />
+      <img class="dark-logo" src="../../../_static/logo_dark.png" alt="NEML2" height="28" loading="lazy" />
+      <strong>NEML2</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/installation/index.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/installation/install.html">Basic installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/installation/compatibility.html">Torch compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/installation/deps.html">Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/input_file.html">Input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/running_your_first_model/main.html">Running your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/model_parameters/main.html">Model parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/evaluation_device/main.html">Evaluation device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/vectorization/main.html">Vectorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/cross_referencing/main.html">Cross-referencing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/model_composition/main.html">Model composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/model_parameters_revisited/main.html">Model parameters revisited</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/implicit_model/main.html">Implicit models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/transient_driver/main.html">Transient driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/compiled_models/main.html">Compiled models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/models/compilation_internals/main.html">How compilation works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/request_ad/main.html">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/tensor_types/index.html">Tensor types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tensor_types/primitive_types.html">Primitive (fixed-base-shape) tensor types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tensor_types/regions.html">Tensor shape regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tensor_types/batching.html">Batching and broadcasting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tensor_types/region_views.html">Region views</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tensor_types/indexing.html">Indexing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/modules/index.html">Physics modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/chemical_reactions.html">Chemical reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/finite_volume.html">Finite volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/phase_field_fracture.html">Phase-field fracture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/porous_flow.html">Porous flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/solid_mechanics/index.html">Solid mechanics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/elasticity.html">Elasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/plasticity.html">Plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../content/modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/solid_mechanics/kinematics.html">Kinematics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/migration/index.html">Migration guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/migration/212_300.html">Migrating from v2.x to v3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/migration/211_212.html">Migrating from v2.1.1 to v2.1.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/migration/200_210.html">Migrating from v2.0.0 to v2.1.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Deployment &amp; integration</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/overview.html">Ways to evaluate a model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/python.html">Python integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cpp.html">C++ integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cli.html">CLI utilities</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/development/building.html">Building from source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/development/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/development/quality.html">Code quality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/development/dependencies.html">Dependency pinning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/development/documentation.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/development/notebooks.html">Jupyter notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/development/submitting.html">Submitting a pull request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/development/benchmarking.html">Benchmarking</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/py_eager.html"><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/py_jit.html"><code class="docutils literal notranslate"><span class="pre">py-jit</span></code> — in-process <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/py_aoti.html"><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/pipeline.html">Compilation pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Models/index.html">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/index.html">chemical_reactions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/AvramiErofeevNucleation.html">AvramiErofeevNucleation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/ContractingGeometry.html">ContractingGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/CylindricalChannelGeometry.html">CylindricalChannelGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/DiffusionLimitedReaction.html">DiffusionLimitedReaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/chemical_reactions/EffectiveVolume.html">EffectiveVolume</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/common/index.html">common</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyVec.html">CopyVec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/CopyWR2.html">CopyWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ConstantParameter.html">SR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2Determinant.html">SR2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2DynamicMean.html">SR2DynamicMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2DynamicSum.html">SR2DynamicSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2InputParameter.html">SR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2IntermediateMean.html">SR2IntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2Invariant.html">SR2Invariant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2LinearCombination.html">SR2LinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ToR2.html">SR2ToR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2VariableRate.html">SR2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SSR4ConstantParameter.html">SSR4ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SSR4InputParameter.html">SSR4InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SSR4ParameterToVariable.html">SSR4ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarBackwardEulerTimeIntegration.html">ScalarBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarBilinearInterpolation.html">ScalarBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarPNorm.html">ScalarPNorm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecComponents.html">VecComponents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecConstantParameter.html">VecConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecInputParameter.html">VecInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecParameterToVariable.html">VecParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/VecVariableRate.html">VecVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/WR2ConstantParameter.html">WR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/WR2ExplicitExponentialTimeIntegration.html">WR2ExplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/WR2ImplicitExponentialTimeIntegration.html">WR2ImplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/WR2InputParameter.html">WR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/WR2ParameterToVariable.html">WR2ParameterToVariable</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/SemiInfiniteCoordinateTransform.html">SemiInfiniteCoordinateTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/SmearedDeltaSource.html">SmearedDeltaSource</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/kwn/index.html">kwn</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/ChemicalGibbsFreeEnergyDifference.html">ChemicalGibbsFreeEnergyDifference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/CurrentConcentration.html">CurrentConcentration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/IdealSolutionVolumetricDrivingForce.html">IdealSolutionVolumetricDrivingForce</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/KineticFactor.html">KineticFactor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/NucleationBarrierAndCriticalRadius.html">NucleationBarrierAndCriticalRadius</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/NucleationFluxMagnitude.html">NucleationFluxMagnitude</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/PrecipitateVolumeFraction.html">PrecipitateVolumeFraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/ProjectedDiffusivitySum.html">ProjectedDiffusivitySum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/RateLimitedPrecipitateGrowthRate.html">RateLimitedPrecipitateGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/SFFKPrecipitationGrowthRate.html">SFFKPrecipitationGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/kwn/ZeldovichFactor.html">ZeldovichFactor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/index.html">phase_field_fracture</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT1.html">CrackGeometricFunctionAT1</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT2.html">CrackGeometricFunctionAT2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.html">LinearIsotropicStrainEnergyDensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/PowerDegradationFunction.html">PowerDegradationFunction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/phase_field_fracture/RationalDegradationFunction.html">RationalDegradationFunction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/index.html">porous_flow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/AdvectiveStress.html">AdvectiveStress</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/BrooksCoreyCapillaryPressure.html">BrooksCoreyCapillaryPressure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/EffectiveSaturation.html">EffectiveSaturation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/ExponentialLawPermeability.html">ExponentialLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/KozenyCarmanPermeability.html">KozenyCarmanPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/PowerLawPermeability.html">PowerLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/porous_flow/VanGenuchtenCapillaryPressure.html">VanGenuchtenCapillaryPressure</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/traction_separation_law/index.html">traction_separation_law</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/index.html">viscoelasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/AOTIModel.html">AOTIModel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Tensors/index.html">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVSR2.html">CSVSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVScalar.html">CSVScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Tensors/Python.html">Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/EquationSystems/index.html">Equation systems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/EquationSystems/NonlinearSystem.html">NonlinearSystem</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Drivers/index.html">Drivers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Drivers/TransientDriver.html">TransientDriver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Drivers/TransientRegression.html">TransientRegression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Drivers/Verification.html">Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Data/index.html">Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Data/CubicCrystal.html">CubicCrystal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/python_api/index.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.factory.html">neml2.factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.schema.html">neml2.schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.models.model.html">neml2.models.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.models.chain_rule.html">neml2.models.chain_rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.models.resolver.html">neml2.models.resolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.types.html">neml2.types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.models.html">neml2.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.solvers.html">neml2.solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.es.html">neml2.es</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.drivers.html">neml2.drivers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.data.html">neml2.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.user_tensors.html">neml2.user_tensors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.models.export.html">neml2.models.export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.aoti.html">neml2.aoti</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.pyzag.html">neml2.pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/python_api/neml2.cli.html">neml2.cli</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../../index.html"><span itemprop="name">NEML2</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../index.html"><span itemprop="name">Module code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">neml2.models.export</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <h1>Source code for neml2.models.export</h1><div class="highlight"><pre>
+<span></span><span data-line="1"><span class="c1"># Copyright 2024, UChicago Argonne, LLC</span>
+</span><span data-line="2"><span class="c1"># All Rights Reserved</span>
+</span><span data-line="3"><span class="c1"># Software Name: NEML2 -- the New Engineering material Model Library, version 2</span>
+</span><span data-line="4"><span class="c1"># By: Argonne National Laboratory</span>
+</span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
+</span><span data-line="6"><span class="c1">#</span>
+</span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
+</span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+</span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+</span><span data-line="12"><span class="c1"># furnished to do so, subject to the following conditions:</span>
+</span><span data-line="13"><span class="c1">#</span>
+</span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+</span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
+</span><span data-line="16"><span class="c1">#</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+</span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+</span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+</span><span data-line="21"><span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+</span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+</span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
+</span><span data-line="24">
+</span><span data-line="25"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="26"><span class="sd">Export pipeline: ``torch.export`` → ``torch._inductor.aoti_compile_and_package``.</span>
+</span><span data-line="27">
+</span><span data-line="28"><span class="sd">This module wraps the leading-underscore ``torch._inductor`` APIs behind a</span>
+</span><span data-line="29"><span class="sd">single ``compile_model`` entry point so a torch version bump touches one file.</span>
+</span><span data-line="30"><span class="sd">The resulting ``.pt2`` package is loadable from C++ via</span>
+</span><span data-line="31"><span class="sd">``torch::inductor::AOTIModelPackageLoader`` (wrapped by ``neml2::aoti::Model``)</span>
+</span><span data-line="32"><span class="sd">and from Python via ``load_package``.</span>
+</span><span data-line="33">
+</span><span data-line="34"><span class="sd">Pinned to torch 2.12.0 — see RISK.md R-001 and decision D-001.</span>
+</span><span data-line="35"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="36">
+</span><span data-line="37"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+</span><span data-line="38">
+</span><span data-line="39"><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+</span><span data-line="40"><span class="kn">import</span><span class="w"> </span><span class="nn">struct</span>
+</span><span data-line="41"><span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
+</span><span data-line="42"><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</span><span data-line="43"><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+</span><span data-line="44">
+</span><span data-line="45"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span data-line="46"><span class="kn">from</span><span class="w"> </span><span class="nn">torch.export</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dim</span><span class="p">,</span> <span class="n">export</span>
+</span><span data-line="47">
+</span><span data-line="48"><span class="kn">from</span><span class="w"> </span><span class="nn">.._warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">TORCH_JIT_PY314</span><span class="p">,</span> <span class="n">TORCH_TREESPEC_LEAFSPEC</span><span class="p">,</span> <span class="n">ignore_warnings</span>
+</span><span data-line="49">
+</span><span data-line="50">
+</span><span data-line="51"><span class="k">def</span><span class="w"> </span><span class="nf">_patch_inductor_int_array_cache_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="52"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Backport pytorch/pytorch#178147 onto torch 2.12&#39;s inductor cpp_wrapper.</span>
+</span><span data-line="53">
+</span><span data-line="54"><span class="sd">    ``CppWrapperCpu.codegen_int_array_var`` caches the emitted ``int_array_N``</span>
+</span><span data-line="55"><span class="sd">    name keyed on ``(int_array, id(writeline), known_statically, id(graph))``.</span>
+</span><span data-line="56"><span class="sd">    ``writeline`` is typically a bound method (``self.wrapper_call.writeline``);</span>
+</span><span data-line="57"><span class="sd">    Python builds a fresh bound-method instance on every attribute access, so</span>
+</span><span data-line="58"><span class="sd">    ``id(writeline)`` is transient and the allocator routinely recycles the</span>
+</span><span data-line="59"><span class="sd">    same address for a different writeline scope. The cache then returns an</span>
+</span><span data-line="60"><span class="sd">    ``int_array_N`` name without re-emitting its declaration in the new scope,</span>
+</span><span data-line="61"><span class="sd">    producing wrapper.cpp lines like ``aoti_torch_cpu_bmm_out(..., int_array_0,</span>
+</span><span data-line="62"><span class="sd">    ...)`` with no matching ``static const int64_t int_array_0[]`` declaration.</span>
+</span><span data-line="63"><span class="sd">    The C++ build fails with ``&#39;int_array_0&#39; was not declared in this scope``.</span>
+</span><span data-line="64">
+</span><span data-line="65"><span class="sd">    The upstream fix keys on ``id(writeline.__self__)`` instead so the cache</span>
+</span><span data-line="66"><span class="sd">    survives bound-method recreation. This patch applies the same change in</span>
+</span><span data-line="67"><span class="sd">    place at import time; remove it once we move past torch 2.12.</span>
+</span><span data-line="68">
+</span><span data-line="69"><span class="sd">    Triggered in NEML2 by ``scpdecoup`` (two sequential ``ImplicitUpdate``</span>
+</span><span data-line="70"><span class="sd">    segments produce a ``linalg_solve`` proxy-executor fallback that takes the</span>
+</span><span data-line="71"><span class="sd">    cache-corrupting path); will also fire on any future model with similar</span>
+</span><span data-line="72"><span class="sd">    structure.</span>
+</span><span data-line="73"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="74">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="75">        <span class="kn">from</span><span class="w"> </span><span class="nn">torch._inductor.codegen</span><span class="w"> </span><span class="kn">import</span> <span class="n">cpp_wrapper_cpu</span> <span class="k">as</span> <span class="n">_ccw</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="76">    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+</span><span data-line="77">        <span class="k">return</span>  <span class="c1"># nothing to patch; downstream torch reshuffle</span>
+</span><span data-line="78">    <span class="bp">cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_ccw</span><span class="p">,</span> <span class="s2">&quot;CppWrapperCpu&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span data-line="79">    <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;codegen_int_array_var&quot;</span><span class="p">):</span>
+</span><span data-line="80">        <span class="k">return</span>
+</span><span data-line="81">    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;_neml2_int_array_patched&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+</span><span data-line="82">        <span class="k">return</span>
+</span><span data-line="83">    <span class="n">_orig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">codegen_int_array_var</span>
+</span><span data-line="84">
+</span><span data-line="85">    <span class="k">def</span><span class="w"> </span><span class="nf">codegen_int_array_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">int_array</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">writeline</span><span class="p">,</span> <span class="n">known_statically</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span data-line="86">        <span class="n">writeline_key</span> <span class="o">=</span> <span class="nb">id</span><span class="p">(</span><span class="n">writeline</span><span class="o">.</span><span class="vm">__self__</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">writeline</span><span class="p">,</span> <span class="s2">&quot;__self__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">id</span><span class="p">(</span><span class="n">writeline</span><span class="p">)</span>
+</span><span data-line="87">        <span class="n">cache_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">int_array</span><span class="p">,</span> <span class="n">writeline_key</span><span class="p">,</span> <span class="n">known_statically</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span> <span class="k">if</span> <span class="n">graph</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+</span><span data-line="88">        <span class="k">if</span> <span class="n">cache_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">codegen_int_array_var_cache</span><span class="p">:</span>
+</span><span data-line="89">            <span class="bp">self</span><span class="o">.</span><span class="n">codegen_int_array_var_cache</span><span class="p">[</span><span class="n">cache_key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_codegen_int_array_var_impl</span><span class="p">(</span>
+</span><span data-line="90">                <span class="n">int_array</span><span class="p">,</span> <span class="n">writeline</span><span class="p">,</span> <span class="n">known_statically</span>
+</span><span data-line="91">            <span class="p">)</span>
+</span><span data-line="92">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">codegen_int_array_var_cache</span><span class="p">[</span><span class="n">cache_key</span><span class="p">]</span>
+</span><span data-line="93">
+</span><span data-line="94">    <span class="n">codegen_int_array_var</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_orig</span><span class="o">.</span><span class="vm">__doc__</span>
+</span><span data-line="95">    <span class="bp">cls</span><span class="o">.</span><span class="n">codegen_int_array_var</span> <span class="o">=</span> <span class="n">codegen_int_array_var</span>
+</span><span data-line="96">    <span class="bp">cls</span><span class="o">.</span><span class="n">_neml2_int_array_patched</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span data-line="97">
+</span><span data-line="98">
+</span><span data-line="99"><span class="n">_patch_inductor_int_array_cache_key</span><span class="p">()</span>
+</span><span data-line="100">
+</span><span data-line="101">
+</span><span data-line="102"><span class="k">def</span><span class="w"> </span><span class="nf">_clear_elf_execstack</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+</span><span data-line="103"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Clear the PF_X (executable) bit from the GNU_STACK segment of an ELF SO.</span>
+</span><span data-line="104">
+</span><span data-line="105"><span class="sd">    PyTorch 2.12 generates assembly constants files without a</span>
+</span><span data-line="106"><span class="sd">    ``.note.GNU-stack`` annotation, causing the linker to conservatively mark</span>
+</span><span data-line="107"><span class="sd">    the output ``.so`` as requiring an executable stack.  Kernels with strict</span>
+</span><span data-line="108"><span class="sd">    W^X policies (``noexecstack`` enforced) refuse to ``dlopen`` such objects.</span>
+</span><span data-line="109"><span class="sd">    This function strips that requirement in-place on the ELF binary so the SO</span>
+</span><span data-line="110"><span class="sd">    can be loaded without kernel restrictions.</span>
+</span><span data-line="111"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="112">    <span class="n">buf</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="113">    <span class="k">if</span> <span class="n">buf</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x7f</span><span class="s2">ELF&quot;</span><span class="p">:</span>
+</span><span data-line="114">        <span class="k">return</span> <span class="n">data</span>
+</span><span data-line="115">    <span class="n">endian</span> <span class="o">=</span> <span class="s2">&quot;&lt;&quot;</span> <span class="k">if</span> <span class="n">buf</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;&gt;&quot;</span>
+</span><span data-line="116">    <span class="n">is64</span> <span class="o">=</span> <span class="n">buf</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
+</span><span data-line="117">    <span class="k">if</span> <span class="n">is64</span><span class="p">:</span>
+</span><span data-line="118">        <span class="p">(</span><span class="n">e_phoff</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+</span><span data-line="119">        <span class="n">e_phentsize</span><span class="p">,</span> <span class="n">e_phnum</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;HH&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">54</span><span class="p">)</span>
+</span><span data-line="120">        <span class="n">flags_offset_in_phdr</span> <span class="o">=</span> <span class="mi">4</span>
+</span><span data-line="121">    <span class="k">else</span><span class="p">:</span>
+</span><span data-line="122">        <span class="p">(</span><span class="n">e_phoff</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span>
+</span><span data-line="123">        <span class="n">e_phentsize</span><span class="p">,</span> <span class="n">e_phnum</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;HH&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+</span><span data-line="124">        <span class="n">flags_offset_in_phdr</span> <span class="o">=</span> <span class="mi">24</span>
+</span><span data-line="125">    <span class="n">PT_GNU_STACK</span><span class="p">,</span> <span class="n">PF_X</span> <span class="o">=</span> <span class="mh">0x6474E551</span><span class="p">,</span> <span class="mh">0x1</span>
+</span><span data-line="126">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">e_phnum</span><span class="p">):</span>
+</span><span data-line="127">        <span class="n">off</span> <span class="o">=</span> <span class="n">e_phoff</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">e_phentsize</span>
+</span><span data-line="128">        <span class="p">(</span><span class="n">p_type</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span>
+</span><span data-line="129">        <span class="k">if</span> <span class="n">p_type</span> <span class="o">==</span> <span class="n">PT_GNU_STACK</span><span class="p">:</span>
+</span><span data-line="130">            <span class="n">foff</span> <span class="o">=</span> <span class="n">off</span> <span class="o">+</span> <span class="n">flags_offset_in_phdr</span>
+</span><span data-line="131">            <span class="p">(</span><span class="n">flags</span><span class="p">,)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">foff</span><span class="p">)</span>
+</span><span data-line="132">            <span class="k">if</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="n">PF_X</span><span class="p">:</span>
+</span><span data-line="133">                <span class="n">struct</span><span class="o">.</span><span class="n">pack_into</span><span class="p">(</span><span class="n">endian</span> <span class="o">+</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">foff</span><span class="p">,</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">PF_X</span><span class="p">)</span>
+</span><span data-line="134">    <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+</span><span data-line="135">
+</span><span data-line="136">
+</span><span data-line="137"><span class="k">def</span><span class="w"> </span><span class="nf">_patch_pt2_noexecstack</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="138"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Rewrite all ELF ``.so`` files inside a ``.pt2`` zip with non-executable stack.&quot;&quot;&quot;</span>
+</span><span data-line="139">    <span class="n">raw</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
+</span><span data-line="140">    <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">raw</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zin</span><span class="p">:</span>
+</span><span data-line="141">        <span class="n">infos</span> <span class="o">=</span> <span class="n">zin</span><span class="o">.</span><span class="n">infolist</span><span class="p">()</span>
+</span><span data-line="142">        <span class="n">contents</span> <span class="o">=</span> <span class="p">{</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="p">:</span> <span class="n">zin</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">infos</span><span class="p">}</span>
+</span><span data-line="143">    <span class="n">out</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+</span><span data-line="144">    <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zout</span><span class="p">:</span>
+</span><span data-line="145">        <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">infos</span><span class="p">:</span>
+</span><span data-line="146">            <span class="n">data</span> <span class="o">=</span> <span class="n">contents</span><span class="p">[</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="p">]</span>
+</span><span data-line="147">            <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.so&quot;</span><span class="p">):</span>
+</span><span data-line="148">                <span class="n">data</span> <span class="o">=</span> <span class="n">_clear_elf_execstack</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="149">            <span class="n">zout</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</span><span data-line="150">    <span class="n">path</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+</span><span data-line="151">
+</span><span data-line="152">
+</span><span data-line="153"><span class="k">def</span><span class="w"> </span><span class="nf">_wants_cuda</span><span class="p">(</span><span class="n">example_inputs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span data-line="154"><span class="w">    </span><span class="sd">&quot;&quot;&quot;True iff any tensor leaf inside *example_inputs* is on a CUDA device.</span>
+</span><span data-line="155">
+</span><span data-line="156"><span class="sd">    Mirrors :func:`_walk_tensors`&#39;s recursion so dataclass-wrapped typed</span>
+</span><span data-line="157"><span class="sd">    tensors and ``(tuple|list)`` packs are inspected too.</span>
+</span><span data-line="158"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="159">    <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">is_cuda</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">example_inputs</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">_walk_tensors</span><span class="p">(</span><span class="n">arg</span><span class="p">))</span>
+</span><span data-line="160">
+</span><span data-line="161">
+</span><span data-line="162"><span class="k">def</span><span class="w"> </span><span class="nf">_check_cuda_toolchain_available</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="163"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise a recipe-bearing ``RuntimeError`` when ``nvcc`` is missing.</span>
+</span><span data-line="164">
+</span><span data-line="165"><span class="sd">    Inductor&#39;s CUDA backend needs ``nvcc`` to compile the generated</span>
+</span><span data-line="166"><span class="sd">    kernels. The default ``torch`` wheel bundles the CUDA *runtime* but</span>
+</span><span data-line="167"><span class="sd">    not the compiler -- without ``nvcc`` you hit a cryptic</span>
+</span><span data-line="168"><span class="sd">    ``OSError: CUDA_HOME environment variable is not set`` deep inside</span>
+</span><span data-line="169"><span class="sd">    ``torch._inductor`` partway through the AOT compile. Surface the</span>
+</span><span data-line="170"><span class="sd">    install recipe early instead.</span>
+</span><span data-line="171"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="172">    <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+</span><span data-line="173">
+</span><span data-line="174">    <span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.cpp_extension</span><span class="w"> </span><span class="kn">import</span> <span class="n">CUDA_HOME</span>
+</span><span data-line="175">
+</span><span data-line="176">    <span class="n">nvcc</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;nvcc&quot;</span><span class="p">)</span>
+</span><span data-line="177">    <span class="k">if</span> <span class="ow">not</span> <span class="n">nvcc</span> <span class="ow">and</span> <span class="n">CUDA_HOME</span><span class="p">:</span>
+</span><span data-line="178">        <span class="n">candidate</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">CUDA_HOME</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;bin&quot;</span> <span class="o">/</span> <span class="s2">&quot;nvcc&quot;</span>
+</span><span data-line="179">        <span class="k">if</span> <span class="n">candidate</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+</span><span data-line="180">            <span class="n">nvcc</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
+</span><span data-line="181">    <span class="k">if</span> <span class="n">nvcc</span><span class="p">:</span>
+</span><span data-line="182">        <span class="k">return</span>
+</span><span data-line="183">    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+</span><span data-line="184">        <span class="s2">&quot;compile_model: CUDA AOTI export requires `nvcc` but none was found &quot;</span>
+</span><span data-line="185">        <span class="s2">&quot;(neither on PATH nor under CUDA_HOME).</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="186">        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="187">        <span class="s2">&quot;The default torch wheel bundles the CUDA *runtime* (libcudart etc.) &quot;</span>
+</span><span data-line="188">        <span class="s2">&quot;but not the compiler. The lightest-weight fix:</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="189">        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="190">        <span class="s2">&quot;    pip install nvidia-cuda-nvcc</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="191">        <span class="s2">&quot;    export CUDA_HOME=</span><span class="se">\&quot;</span><span class="s2">$(python -c &#39;</span><span class="se">\\\n</span><span class="s2">&quot;</span>
+</span><span data-line="192">        <span class="s2">&quot;        import pathlib, site</span><span class="se">\\</span><span class="s2">n&quot;</span>
+</span><span data-line="193">        <span class="s2">&quot;        print(next(p for sp in site.getsitepackages()</span><span class="se">\\</span><span class="s2">n&quot;</span>
+</span><span data-line="194">        <span class="s1">&#39;                   for p in pathlib.Path(sp, &quot;nvidia&quot;).glob(&quot;cu*&quot;)</span><span class="se">\\</span><span class="s1">n&#39;</span>
+</span><span data-line="195">        <span class="s1">&#39;                   if (p / &quot;bin/nvcc&quot;).exists()))</span><span class="se">\&#39;</span><span class="s1">)&quot;</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span><span data-line="196">        <span class="s1">&#39;    export PATH=&quot;$CUDA_HOME/bin:$PATH&quot;</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span><span data-line="197">        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="198">        <span class="s2">&quot;Or use a system install (`apt install nvidia-cuda-toolkit`, conda&#39;s &quot;</span>
+</span><span data-line="199">        <span class="s2">&quot;`cudatoolkit-dev`, NVIDIA&#39;s network installer) and point CUDA_HOME at &quot;</span>
+</span><span data-line="200">        <span class="s2">&quot;its root. See doc/content/installation/deps.md for details. &quot;</span>
+</span><span data-line="201">        <span class="s2">&quot;CPU AOTI export needs none of this -- only inputs on a CUDA device &quot;</span>
+</span><span data-line="202">        <span class="s2">&quot;trigger this check.&quot;</span>
+</span><span data-line="203">    <span class="p">)</span>
+</span><span data-line="204">
+</span><span data-line="205">
+</span><span data-line="206"><span class="k">def</span><span class="w"> </span><span class="nf">_walk_tensors</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+</span><span data-line="207"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield every ``torch.Tensor`` leaf inside a (possibly nested) export arg.</span>
+</span><span data-line="208">
+</span><span data-line="209"><span class="sd">    Mirrors the recursion in :func:`compile_model._dyn_spec` so the same</span>
+</span><span data-line="210"><span class="sd">    structural assumptions apply: dataclass wrappers (typed tensors) are</span>
+</span><span data-line="211"><span class="sd">    descended via their non-static fields; tuples/lists are walked</span>
+</span><span data-line="212"><span class="sd">    element-wise; primitive non-tensor leaves are silently skipped.</span>
+</span><span data-line="213"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="214">    <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_dc</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="215">
+</span><span data-line="216">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+</span><span data-line="217">        <span class="k">yield</span> <span class="n">arg</span>
+</span><span data-line="218">        <span class="k">return</span>
+</span><span data-line="219">    <span class="k">if</span> <span class="n">_dc</span><span class="o">.</span><span class="n">is_dataclass</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+</span><span data-line="220">        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">_dc</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">arg</span><span class="p">):</span>
+</span><span data-line="221">            <span class="n">val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="222">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span>
+</span><span data-line="223">                <span class="n">_dc</span><span class="o">.</span><span class="n">is_dataclass</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
+</span><span data-line="224">            <span class="p">):</span>
+</span><span data-line="225">                <span class="k">yield from</span> <span class="n">_walk_tensors</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+</span><span data-line="226">        <span class="k">return</span>
+</span><span data-line="227">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+</span><span data-line="228">        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+</span><span data-line="229">            <span class="k">yield from</span> <span class="n">_walk_tensors</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="230">
+</span><span data-line="231">
+<div class="viewcode-block" id="compile_model">
+<a class="viewcode-back" href="../../../content/python_api/neml2.models.export.html#neml2.models.export.compile_model">[docs]</a>
+</span><span data-line="232"><span class="k">def</span><span class="w"> </span><span class="nf">compile_model</span><span class="p">(</span>
+</span><span data-line="233">    <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+</span><span data-line="234">    <span class="n">example_inputs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+</span><span data-line="235">    <span class="n">package_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="236">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="237">    <span class="n">dynamic_batch_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span><span data-line="238">    <span class="n">batch_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">20</span><span class="p">,</span>
+</span><span data-line="239">    <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span data-line="240">    <span class="n">inductor_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="241"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span data-line="242"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Export ``model`` and AOT-compile to a ``.pt2`` package at ``package_path``.</span>
+</span><span data-line="243">
+</span><span data-line="244"><span class="sd">    Parameters</span>
+</span><span data-line="245"><span class="sd">    ----------</span>
+</span><span data-line="246"><span class="sd">    model</span>
+</span><span data-line="247"><span class="sd">        A ``torch.nn.Module`` whose forward takes/returns ``torch.Tensor``s</span>
+</span><span data-line="248"><span class="sd">        (or tuples thereof). Buffers are baked in as constants; ``nn.Parameter``s</span>
+</span><span data-line="249"><span class="sd">        are not supported by AOTInductor&#39;s forward-only pipeline (see</span>
+</span><span data-line="250"><span class="sd">        RISK.md R-007).</span>
+</span><span data-line="251"><span class="sd">    example_inputs</span>
+</span><span data-line="252"><span class="sd">        Positional tensors with representative dtype/device and a representative</span>
+</span><span data-line="253"><span class="sd">        batch shape (typically batch=2 to force a true dynamic dim).</span>
+</span><span data-line="254"><span class="sd">    package_path</span>
+</span><span data-line="255"><span class="sd">        Destination path for the ``.pt2`` artifact. Created if absent;</span>
+</span><span data-line="256"><span class="sd">        overwritten if present.</span>
+</span><span data-line="257"><span class="sd">    dynamic_batch_dim</span>
+</span><span data-line="258"><span class="sd">        Which leading axis of every input is dynamic (typically 0). If ``None``,</span>
+</span><span data-line="259"><span class="sd">        all input shapes are pinned and the export specializes.</span>
+</span><span data-line="260"><span class="sd">    batch_max</span>
+</span><span data-line="261"><span class="sd">        Upper bound for the dynamic batch dim. PyTorch ``Dim`` requires explicit</span>
+</span><span data-line="262"><span class="sd">        ``min``/``max``; an unbounded ``max`` falls back to constant shape on</span>
+</span><span data-line="263"><span class="sd">        some kernels. See RISK.md R-004.</span>
+</span><span data-line="264"><span class="sd">    strict</span>
+</span><span data-line="265"><span class="sd">        Passed to :func:`torch.export.export`. The default remains ``False`` for</span>
+</span><span data-line="266"><span class="sd">        some models that rely on the more permissive tracer. Dense</span>
+</span><span data-line="267"><span class="sd">        equation-system wrappers can use ``strict=True`` to avoid non-strict</span>
+</span><span data-line="268"><span class="sd">        fake-tensor constant lifting around internally seeded tangent blocks.</span>
+</span><span data-line="269"><span class="sd">    inductor_configs</span>
+</span><span data-line="270"><span class="sd">        Optional dict forwarded to ``aoti_compile_and_package`` as</span>
+</span><span data-line="271"><span class="sd">        ``inductor_configs=...``. Use this to enable knobs like</span>
+</span><span data-line="272"><span class="sd">        ``{&quot;triton.cudagraphs&quot;: True}`` for CUDA-graph capture on graphs whose</span>
+</span><span data-line="273"><span class="sd">        per-call kernel-launch overhead matters (e.g. ``DenseNewtonStep``).</span>
+</span><span data-line="274"><span class="sd">        ``None`` (the default) leaves Inductor at its compile-time defaults.</span>
+</span><span data-line="275">
+</span><span data-line="276"><span class="sd">    Returns</span>
+</span><span data-line="277"><span class="sd">    -------</span>
+</span><span data-line="278"><span class="sd">    Path</span>
+</span><span data-line="279"><span class="sd">        The absolute path to the produced ``.pt2`` artifact.</span>
+</span><span data-line="280"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="281">    <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+</span><span data-line="282">
+</span><span data-line="283">    <span class="c1"># Preflight: if any example input lives on a CUDA device, the Inductor</span>
+</span><span data-line="284">    <span class="c1"># backend will JIT/AOT-compile CUDA kernels and that requires ``nvcc``</span>
+</span><span data-line="285">    <span class="c1"># on the host -- torch&#39;s default wheel bundles the CUDA *runtime* but</span>
+</span><span data-line="286">    <span class="c1"># not the compiler. Detect early and emit a recipe instead of letting</span>
+</span><span data-line="287">    <span class="c1"># the user hit the cryptic ``OSError: CUDA_HOME environment variable</span>
+</span><span data-line="288">    <span class="c1"># is not set`` deep inside Inductor.</span>
+</span><span data-line="289">    <span class="k">if</span> <span class="n">_wants_cuda</span><span class="p">(</span><span class="n">example_inputs</span><span class="p">):</span>
+</span><span data-line="290">        <span class="n">_check_cuda_toolchain_available</span><span class="p">()</span>
+</span><span data-line="291">
+</span><span data-line="292">    <span class="c1"># Mirror the model&#39;s forward signature in the dynamic_shapes structure.</span>
+</span><span data-line="293">    <span class="c1"># `torch.export` collapses a ``*args`` (VAR_POSITIONAL) pack into a single</span>
+</span><span data-line="294">    <span class="c1"># nested tuple &quot;argument&quot;, while each named positional parameter stays a</span>
+</span><span data-line="295">    <span class="c1"># top-level entry. Forward signatures come in three shapes:</span>
+</span><span data-line="296">    <span class="c1">#   * pure ``*inputs``                     → every example feeds the pack</span>
+</span><span data-line="297">    <span class="c1">#   * named positionals + ``*promoted_params``   → first N examples are named,</span>
+</span><span data-line="298">    <span class="c1">#                                            the remainder feed the pack</span>
+</span><span data-line="299">    <span class="c1">#   * named positionals only               → flat 1:1 with the examples</span>
+</span><span data-line="300">    <span class="c1"># so we split the example inputs at the number of named positional params.</span>
+</span><span data-line="301">    <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+</span><span data-line="302">
+</span><span data-line="303">    <span class="kn">from</span><span class="w"> </span><span class="nn">torch._inductor</span><span class="w"> </span><span class="kn">import</span> <span class="n">aoti_compile_and_package</span>
+</span><span data-line="304">
+</span><span data-line="305">    <span class="n">_fwd_params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+</span><span data-line="306">    <span class="n">_has_varargs</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">_fwd_params</span><span class="p">)</span>
+</span><span data-line="307">    <span class="n">_n_named_positional</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+</span><span data-line="308">        <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_ONLY</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span><span class="p">)</span>
+</span><span data-line="309">        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">_fwd_params</span>
+</span><span data-line="310">    <span class="p">)</span>
+</span><span data-line="311">
+</span><span data-line="312">    <span class="k">if</span> <span class="n">dynamic_batch_dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="313">        <span class="n">dynamic_shapes</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="314">    <span class="k">else</span><span class="p">:</span>
+</span><span data-line="315">        <span class="n">batch</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">batch_max</span><span class="p">)</span>
+</span><span data-line="316">        <span class="n">leaf_spec</span> <span class="o">=</span> <span class="p">{</span><span class="n">dynamic_batch_dim</span><span class="p">:</span> <span class="n">batch</span><span class="p">}</span>
+</span><span data-line="317">
+</span><span data-line="318">        <span class="c1"># Mirror the typed-tensor pytree drop list in `neml2/types/_pytree.py`:</span>
+</span><span data-line="319">        <span class="c1"># every field listed here is registered as ``drop_field_names`` on</span>
+</span><span data-line="320">        <span class="c1"># the dataclass, so torch.export&#39;s flatten does not surface it as a</span>
+</span><span data-line="321">        <span class="c1"># subtree. ``_dyn_spec`` must skip the same names — otherwise an</span>
+</span><span data-line="322">        <span class="c1"># empty ``sub_batch_state = ()`` field is treated as a pytree</span>
+</span><span data-line="323">        <span class="c1"># subtree and the resulting spec has more entries than torch</span>
+</span><span data-line="324">        <span class="c1"># expects (&quot;Node arity mismatch; expected 1, but got 3&quot;).</span>
+</span><span data-line="325">        <span class="n">_DROPPED_PYTREE_FIELDS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+</span><span data-line="326">            <span class="p">(</span>
+</span><span data-line="327">                <span class="s2">&quot;sub_batch_ndim&quot;</span><span class="p">,</span>
+</span><span data-line="328">                <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span>
+</span><span data-line="329">                <span class="s2">&quot;sub_batch_meta&quot;</span><span class="p">,</span>
+</span><span data-line="330">                <span class="s2">&quot;sub_batch_labels&quot;</span><span class="p">,</span>
+</span><span data-line="331">                <span class="s2">&quot;k_ndim&quot;</span><span class="p">,</span>
+</span><span data-line="332">                <span class="s2">&quot;k_state&quot;</span><span class="p">,</span>
+</span><span data-line="333">                <span class="s2">&quot;k_pairing&quot;</span><span class="p">,</span>
+</span><span data-line="334">            <span class="p">)</span>
+</span><span data-line="335">        <span class="p">)</span>
+</span><span data-line="336">
+</span><span data-line="337">        <span class="k">def</span><span class="w"> </span><span class="nf">_dyn_spec</span><span class="p">(</span><span class="n">arg</span><span class="p">):</span>
+</span><span data-line="338">            <span class="c1"># Mirror the input pytree structure. `torch.export` expects every</span>
+</span><span data-line="339">            <span class="c1"># registered dataclass (typed tensor wrappers like SR2 / Scalar)</span>
+</span><span data-line="340">            <span class="c1"># to surface as a list of its non-dropped fields — pytree</span>
+</span><span data-line="341">            <span class="c1"># registration excludes ``sub_batch_ndim`` and the sub-batch</span>
+</span><span data-line="342">            <span class="c1"># metadata tuples via ``drop_field_names``, so we skip those</span>
+</span><span data-line="343">            <span class="c1"># here too.</span>
+</span><span data-line="344">            <span class="k">if</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">is_dataclass</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+</span><span data-line="345">                <span class="n">fields</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="346">                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">arg</span><span class="p">):</span>
+</span><span data-line="347">                    <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">_DROPPED_PYTREE_FIELDS</span><span class="p">:</span>
+</span><span data-line="348">                        <span class="k">continue</span>
+</span><span data-line="349">                    <span class="n">val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="350">                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span>
+</span><span data-line="351">                        <span class="n">dataclasses</span><span class="o">.</span><span class="n">is_dataclass</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
+</span><span data-line="352">                    <span class="p">):</span>
+</span><span data-line="353">                        <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_dyn_spec</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+</span><span data-line="354">                <span class="k">return</span> <span class="n">fields</span>
+</span><span data-line="355">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+</span><span data-line="356">                <span class="c1"># Skip dynamic-batch marking for tensors with no axis to mark</span>
+</span><span data-line="357">                <span class="c1"># (0-d scalars). This covers promoted-parameter inputs whose</span>
+</span><span data-line="358">                <span class="c1"># shape was scalar in the source model -- they&#39;re size-pinned</span>
+</span><span data-line="359">                <span class="c1"># at compile time and never get a batch axis.</span>
+</span><span data-line="360">                <span class="k">if</span> <span class="n">arg</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">dynamic_batch_dim</span><span class="p">:</span>
+</span><span data-line="361">                    <span class="k">return</span> <span class="p">{}</span>
+</span><span data-line="362">                <span class="k">return</span> <span class="n">leaf_spec</span>
+</span><span data-line="363">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+</span><span data-line="364">                <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)(</span><span class="n">_dyn_spec</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">)</span>
+</span><span data-line="365">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+</span><span data-line="366">                <span class="sa">f</span><span class="s2">&quot;compile_model: unsupported input type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">; &quot;</span>
+</span><span data-line="367">                <span class="s2">&quot;expected torch.Tensor, registered dataclass, or tuple/list thereof&quot;</span>
+</span><span data-line="368">            <span class="p">)</span>
+</span><span data-line="369">
+</span><span data-line="370">        <span class="n">specs</span> <span class="o">=</span> <span class="p">[</span><span class="n">_dyn_spec</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">example_inputs</span><span class="p">]</span>
+</span><span data-line="371">        <span class="k">if</span> <span class="n">_has_varargs</span><span class="p">:</span>
+</span><span data-line="372">            <span class="c1"># Named positionals stay top-level; the rest collapse into the</span>
+</span><span data-line="373">            <span class="c1"># single VAR_POSITIONAL tuple entry. `torch.export` drops a</span>
+</span><span data-line="374">            <span class="c1"># zero-length ``*args`` from the call structure entirely, so only</span>
+</span><span data-line="375">            <span class="c1"># emit the pack entry when some inputs actually land in it.</span>
+</span><span data-line="376">            <span class="n">named</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">specs</span><span class="p">[:</span><span class="n">_n_named_positional</span><span class="p">])</span>
+</span><span data-line="377">            <span class="n">pack</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">specs</span><span class="p">[</span><span class="n">_n_named_positional</span><span class="p">:])</span>
+</span><span data-line="378">            <span class="n">dynamic_shapes</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">named</span><span class="p">,</span> <span class="n">pack</span><span class="p">)</span> <span class="k">if</span> <span class="n">pack</span> <span class="k">else</span> <span class="n">named</span>
+</span><span data-line="379">        <span class="k">else</span><span class="p">:</span>
+</span><span data-line="380">            <span class="n">dynamic_shapes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">specs</span><span class="p">)</span>
+</span><span data-line="381">
+</span><span data-line="382">        <span class="c1"># Opt out of torch&#39;s 0/1 specialization on the dynamic batch dim.</span>
+</span><span data-line="383">        <span class="c1"># ``Dim(&quot;batch&quot;, min=1, ...)`` still adds an internal ``&gt; 1`` assertion</span>
+</span><span data-line="384">        <span class="c1"># (torch ``symbolic_shapes._add_assertion``) that bakes a static</span>
+</span><span data-line="385">        <span class="c1"># ``batch_max &gt;= 2`` precondition into the wrapper&#39;s xnumel math --</span>
+</span><span data-line="386">        <span class="c1"># downstream Triton kernels then issue out-of-bounds pointer arithmetic</span>
+</span><span data-line="387">        <span class="c1"># when called at batch=1. Marking the dim as unbacked tells torch to</span>
+</span><span data-line="388">        <span class="c1"># treat its value as data-dependent and emit a true dynamic kernel.</span>
+</span><span data-line="389">        <span class="c1">#</span>
+</span><span data-line="390">        <span class="c1"># ``min`` / ``max`` constraint kwargs landed in a torch 2.12 point</span>
+</span><span data-line="391">        <span class="c1"># release; older 2.12 wheels (some CI runners pick those up via</span>
+</span><span data-line="392">        <span class="c1"># cache or constraint ordering) reject them. Detect the signature</span>
+</span><span data-line="393">        <span class="c1"># and pass them only when supported -- losing the range</span>
+</span><span data-line="394">        <span class="c1"># constraints is a soft degradation: the dim stays unbacked, so</span>
+</span><span data-line="395">        <span class="c1"># Triton still emits a dynamic kernel.</span>
+</span><span data-line="396">        <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_inspect</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="397">
+</span><span data-line="398">        <span class="n">_mark_unbacked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_dynamo</span><span class="o">.</span><span class="n">decorators</span><span class="o">.</span><span class="n">mark_unbacked</span>
+</span><span data-line="399">        <span class="n">_has_min_max</span> <span class="o">=</span> <span class="s2">&quot;min&quot;</span> <span class="ow">in</span> <span class="n">_inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">_mark_unbacked</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span>
+</span><span data-line="400">        <span class="n">_bound_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">batch_max</span><span class="p">}</span> <span class="k">if</span> <span class="n">_has_min_max</span> <span class="k">else</span> <span class="p">{}</span>
+</span><span data-line="401">        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">example_inputs</span><span class="p">:</span>
+</span><span data-line="402">            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">_walk_tensors</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+</span><span data-line="403">                <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">dynamic_batch_dim</span><span class="p">:</span>
+</span><span data-line="404">                    <span class="n">_mark_unbacked</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dynamic_batch_dim</span><span class="p">,</span> <span class="o">**</span><span class="n">_bound_kwargs</span><span class="p">)</span>
+</span><span data-line="405">
+</span><span data-line="406">    <span class="n">package_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">package_path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+</span><span data-line="407">    <span class="n">package_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="408">    <span class="c1"># The export + inductor compile trip two torch-internal deprecations the caller</span>
+</span><span data-line="409">    <span class="c1"># cannot act on (torch calling its own deprecated APIs): the LeafSpec pytree</span>
+</span><span data-line="410">    <span class="c1"># call during ``export()``&#39;s deepcopy, and ``torch.jit.script_method`` while</span>
+</span><span data-line="411">    <span class="c1"># inductor imports ``torch.utils.mkldnn``. Silence them only for the lowering;</span>
+</span><span data-line="412">    <span class="c1"># the specs live in ``neml2/_warnings.py`` (shared with the tests).</span>
+</span><span data-line="413">    <span class="k">with</span> <span class="n">ignore_warnings</span><span class="p">(</span><span class="n">TORCH_TREESPEC_LEAFSPEC</span><span class="p">,</span> <span class="n">TORCH_JIT_PY314</span><span class="p">):</span>
+</span><span data-line="414">        <span class="n">ep</span> <span class="o">=</span> <span class="n">export</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">,</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span>
+</span><span data-line="415">        <span class="n">aoti_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;package_path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">package_path</span><span class="p">)}</span>
+</span><span data-line="416">        <span class="k">if</span> <span class="n">inductor_configs</span><span class="p">:</span>
+</span><span data-line="417">            <span class="n">aoti_kwargs</span><span class="p">[</span><span class="s2">&quot;inductor_configs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inductor_configs</span>
+</span><span data-line="418">        <span class="n">aoti_compile_and_package</span><span class="p">(</span><span class="n">ep</span><span class="p">,</span> <span class="o">**</span><span class="n">aoti_kwargs</span><span class="p">)</span>
+</span><span data-line="419">    <span class="c1"># Clear GNU_STACK executable bit from compiled SOs (PyTorch 2.12 assembles</span>
+</span><span data-line="420">    <span class="c1"># constants without .note.GNU-stack, causing linker to mark SO as RWE).</span>
+</span><span data-line="421">    <span class="n">_patch_pt2_noexecstack</span><span class="p">(</span><span class="n">package_path</span><span class="p">)</span>
+</span><span data-line="422">    <span class="k">return</span> <span class="n">package_path</span></div>
+
+</span><span data-line="423">
+</span><span data-line="424">
+<div class="viewcode-block" id="load_package">
+<a class="viewcode-back" href="../../../content/python_api/neml2.models.export.html#neml2.models.export.load_package">[docs]</a>
+</span><span data-line="425"><span class="k">def</span><span class="w"> </span><span class="nf">load_package</span><span class="p">(</span><span class="n">package_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="426"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a ``.pt2`` package produced by :func:`compile_model` for in-Python use.</span>
+</span><span data-line="427">
+</span><span data-line="428"><span class="sd">    This is the round-trip companion to :func:`compile_model`; the C++ side</span>
+</span><span data-line="429"><span class="sd">    loads the same artifact via ``neml2::aoti::Model`` (``include/neml2/aoti/Model.h``).</span>
+</span><span data-line="430"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="431">    <span class="kn">from</span><span class="w"> </span><span class="nn">torch._inductor</span><span class="w"> </span><span class="kn">import</span> <span class="n">aoti_load_package</span>
+</span><span data-line="432">
+</span><span data-line="433">    <span class="k">return</span> <span class="n">aoti_load_package</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">package_path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()))</span></div>
+
+</span></pre></div>
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, UChicago Argonne, LLC</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=7abfc884"></script>
+      <script src="../../../_static/shibuya.js?v=50760d75"></script>
+      <script src="../../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
+      <script src="../../../_static/components/version-banner.js?v=62c7e18e"></script></body>
+</html>
