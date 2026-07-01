@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="iris" data-content_root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.factory - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=8ed54ede" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="neml2.factory"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../index.html">
+      <img class="light-logo" src="../../_static/logo_light.png" alt="NEML2" height="28" loading="lazy" />
+      <img class="dark-logo" src="../../_static/logo_dark.png" alt="NEML2" height="28" loading="lazy" />
+      <strong>NEML2</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../content/installation/index.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../content/installation/install.html">Basic installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/installation/compatibility.html">Torch compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/installation/deps.html">Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/input_file.html">Input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/running_your_first_model/main.html">Running your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/model_parameters/main.html">Model parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/evaluation_device/main.html">Evaluation device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/vectorization/main.html">Vectorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/cross_referencing/main.html">Cross-referencing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/model_composition/main.html">Model composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/model_parameters_revisited/main.html">Model parameters revisited</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/implicit_model/main.html">Implicit models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/transient_driver/main.html">Transient driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/compiled_models/main.html">Compiled models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/models/compilation_internals/main.html">How compilation works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/extension/request_ad/main.html">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/tensor_types/index.html">Tensor types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tensor_types/primitive_types.html">Primitive (fixed-base-shape) tensor types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tensor_types/regions.html">Tensor shape regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tensor_types/batching.html">Batching and broadcasting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tensor_types/region_views.html">Region views</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/tensor_types/indexing.html">Indexing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/modules/index.html">Physics modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../content/modules/chemical_reactions.html">Chemical reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/modules/finite_volume.html">Finite volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../content/modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../content/modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/modules/phase_field_fracture.html">Phase-field fracture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/modules/porous_flow.html">Porous flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/modules/solid_mechanics/index.html">Solid mechanics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/elasticity.html">Elasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/plasticity.html">Plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../content/modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../content/modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../content/modules/solid_mechanics/kinematics.html">Kinematics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/migration/index.html">Migration guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../content/migration/212_300.html">Migrating from v2.x to v3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/migration/211_212.html">Migrating from v2.1.1 to v2.1.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/migration/200_210.html">Migrating from v2.0.0 to v2.1.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Deployment &amp; integration</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../content/deployment/overview.html">Ways to evaluate a model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/deployment/python.html">Python integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/deployment/cpp.html">C++ integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/deployment/cli.html">CLI utilities</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../content/development/building.html">Building from source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/development/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/development/quality.html">Code quality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/development/dependencies.html">Dependency pinning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/development/documentation.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/development/notebooks.html">Jupyter notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/development/submitting.html">Submitting a pull request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/development/benchmarking.html">Benchmarking</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../content/references/py_eager.html"><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/references/py_jit.html"><code class="docutils literal notranslate"><span class="pre">py-jit</span></code> — in-process <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/references/py_aoti.html"><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/references/pipeline.html">Compilation pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/index.html">chemical_reactions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/AvramiErofeevNucleation.html">AvramiErofeevNucleation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/ContractingGeometry.html">ContractingGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/CylindricalChannelGeometry.html">CylindricalChannelGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/DiffusionLimitedReaction.html">DiffusionLimitedReaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/EffectiveVolume.html">EffectiveVolume</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/common/index.html">common</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyVec.html">CopyVec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyWR2.html">CopyWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ConstantParameter.html">SR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2Determinant.html">SR2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2DynamicMean.html">SR2DynamicMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2DynamicSum.html">SR2DynamicSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2InputParameter.html">SR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateMean.html">SR2IntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2Invariant.html">SR2Invariant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2LinearCombination.html">SR2LinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ToR2.html">SR2ToR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2VariableRate.html">SR2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4ConstantParameter.html">SSR4ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4InputParameter.html">SSR4InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4ParameterToVariable.html">SSR4ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarBackwardEulerTimeIntegration.html">ScalarBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarBilinearInterpolation.html">ScalarBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarPNorm.html">ScalarPNorm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecComponents.html">VecComponents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecConstantParameter.html">VecConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecInputParameter.html">VecInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecParameterToVariable.html">VecParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecVariableRate.html">VecVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ConstantParameter.html">WR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ExplicitExponentialTimeIntegration.html">WR2ExplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ImplicitExponentialTimeIntegration.html">WR2ImplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2InputParameter.html">WR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ParameterToVariable.html">WR2ParameterToVariable</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/SemiInfiniteCoordinateTransform.html">SemiInfiniteCoordinateTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/SmearedDeltaSource.html">SmearedDeltaSource</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/kwn/index.html">kwn</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ChemicalGibbsFreeEnergyDifference.html">ChemicalGibbsFreeEnergyDifference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/CurrentConcentration.html">CurrentConcentration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/IdealSolutionVolumetricDrivingForce.html">IdealSolutionVolumetricDrivingForce</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/KineticFactor.html">KineticFactor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/NucleationBarrierAndCriticalRadius.html">NucleationBarrierAndCriticalRadius</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/NucleationFluxMagnitude.html">NucleationFluxMagnitude</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/PrecipitateVolumeFraction.html">PrecipitateVolumeFraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ProjectedDiffusivitySum.html">ProjectedDiffusivitySum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/RateLimitedPrecipitateGrowthRate.html">RateLimitedPrecipitateGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/SFFKPrecipitationGrowthRate.html">SFFKPrecipitationGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ZeldovichFactor.html">ZeldovichFactor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/index.html">phase_field_fracture</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT1.html">CrackGeometricFunctionAT1</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT2.html">CrackGeometricFunctionAT2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.html">LinearIsotropicStrainEnergyDensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/PowerDegradationFunction.html">PowerDegradationFunction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/RationalDegradationFunction.html">RationalDegradationFunction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/index.html">porous_flow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/AdvectiveStress.html">AdvectiveStress</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/BrooksCoreyCapillaryPressure.html">BrooksCoreyCapillaryPressure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/EffectiveSaturation.html">EffectiveSaturation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/ExponentialLawPermeability.html">ExponentialLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/KozenyCarmanPermeability.html">KozenyCarmanPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/PowerLawPermeability.html">PowerLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/VanGenuchtenCapillaryPressure.html">VanGenuchtenCapillaryPressure</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/traction_separation_law/index.html">traction_separation_law</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/viscoelasticity/index.html">viscoelasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/AOTIModel.html">AOTIModel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Tensors/index.html">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVSR2.html">CSVSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVScalar.html">CSVScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/Python.html">Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/EquationSystems/index.html">Equation systems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/EquationSystems/NonlinearSystem.html">NonlinearSystem</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Drivers/index.html">Drivers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Drivers/TransientDriver.html">TransientDriver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Drivers/TransientRegression.html">TransientRegression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Drivers/Verification.html">Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Data/index.html">Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Data/CubicCrystal.html">CubicCrystal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/python_api/index.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.factory.html">neml2.factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.schema.html">neml2.schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.models.model.html">neml2.models.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.models.chain_rule.html">neml2.models.chain_rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.models.resolver.html">neml2.models.resolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.types.html">neml2.types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.models.html">neml2.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.solvers.html">neml2.solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.es.html">neml2.es</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.drivers.html">neml2.drivers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.data.html">neml2.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.user_tensors.html">neml2.user_tensors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.models.export.html">neml2.models.export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.aoti.html">neml2.aoti</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.pyzag.html">neml2.pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../content/python_api/neml2.cli.html">neml2.cli</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../index.html"><span itemprop="name">NEML2</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">Module code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">neml2.factory</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <h1>Source code for neml2.factory</h1><div class="highlight"><pre>
+<span></span><span data-line="1"><span class="c1"># Copyright 2024, UChicago Argonne, LLC</span>
+</span><span data-line="2"><span class="c1"># All Rights Reserved</span>
+</span><span data-line="3"><span class="c1"># Software Name: NEML2 -- the New Engineering material Model Library, version 2</span>
+</span><span data-line="4"><span class="c1"># By: Argonne National Laboratory</span>
+</span><span data-line="5"><span class="c1"># OPEN SOURCE LICENSE (MIT)</span>
+</span><span data-line="6"><span class="c1">#</span>
+</span><span data-line="7"><span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+</span><span data-line="8"><span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+</span><span data-line="9"><span class="c1"># in the Software without restriction, including without limitation the rights</span>
+</span><span data-line="10"><span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+</span><span data-line="11"><span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+</span><span data-line="12"><span class="c1"># furnished to do so, subject to the following conditions:</span>
+</span><span data-line="13"><span class="c1">#</span>
+</span><span data-line="14"><span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+</span><span data-line="15"><span class="c1"># all copies or substantial portions of the Software.</span>
+</span><span data-line="16"><span class="c1">#</span>
+</span><span data-line="17"><span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+</span><span data-line="18"><span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+</span><span data-line="19"><span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+</span><span data-line="20"><span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+</span><span data-line="21"><span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+</span><span data-line="22"><span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+</span><span data-line="23"><span class="c1"># THE SOFTWARE.</span>
+</span><span data-line="24">
+</span><span data-line="25"><span class="sd">&quot;&quot;&quot;Python-native HIT input file factory.</span>
+</span><span data-line="26">
+</span><span data-line="27"><span class="sd">Mirrors the C++ Factory / Registry pattern for Python-native models:</span>
+</span><span data-line="28">
+</span><span data-line="29"><span class="sd">- :func:`register_neml2_object` — decorator that registers a model class under its</span>
+</span><span data-line="30"><span class="sd">  C++ type name. ``Model`` subclasses usually inherit schema-backed</span>
+</span><span data-line="31"><span class="sd">  ``from_hit(node, factory)``; non-model objects and special cases implement</span>
+</span><span data-line="32"><span class="sd">  their own.</span>
+</span><span data-line="33"><span class="sd">- :func:`load_input` — parse a HIT file and return a lazy :class:`_NativeInputFile`</span>
+</span><span data-line="34"><span class="sd">  factory object.</span>
+</span><span data-line="35"><span class="sd">- :func:`load_model` — convenience wrapper: ``load_input(path).get_model(name)``.</span>
+</span><span data-line="36">
+</span><span data-line="37"><span class="sd">The factory is &quot;dumb&quot; — it dispatches only by type name.  Each registered class</span>
+</span><span data-line="38"><span class="sd">is responsible for reading its own parameters and resolving sub-object</span>
+</span><span data-line="39"><span class="sd">dependencies via the factory&#39;s ``get_model`` / ``get_solver`` /</span>
+</span><span data-line="40"><span class="sd">``get_equation_system`` methods (mirroring ``NEML2Object::get_model`` etc.).</span>
+</span><span data-line="41"><span class="sd">&quot;&quot;&quot;</span>
+</span><span data-line="42">
+</span><span data-line="43"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+</span><span data-line="44">
+</span><span data-line="45"><span class="kn">import</span><span class="w"> </span><span class="nn">keyword</span>
+</span><span data-line="46"><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
+</span><span data-line="47"><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</span><span data-line="48"><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypeVar</span>
+</span><span data-line="49">
+</span><span data-line="50"><span class="kn">import</span><span class="w"> </span><span class="nn">nmhit</span>
+</span><span data-line="51"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span data-line="52">
+</span><span data-line="53"><span class="n">_registry</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="54">
+</span><span data-line="55"><span class="n">_T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_T&quot;</span><span class="p">)</span>
+</span><span data-line="56">
+</span><span data-line="57">
+</span><span data-line="58"><span class="k">def</span><span class="w"> </span><span class="nf">_check_python_attr_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="59"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Refuse names that won&#39;t survive becoming a Python attribute on an ``nn.Module``.</span>
+</span><span data-line="60">
+</span><span data-line="61"><span class="sd">    Eager use only requires the name be a valid Python identifier — ``setattr`` and</span>
+</span><span data-line="62"><span class="sd">    ``__getattr__`` happily handle reserved keywords like ``yield`` or ``class``.</span>
+</span><span data-line="63"><span class="sd">    The trap is :func:`torch.export`: during ``GraphModule.recompile()`` torch</span>
+</span><span data-line="64"><span class="sd">    rewrites the module hierarchy back into literal Python *source* (``self.X.Y.Z``).</span>
+</span><span data-line="65"><span class="sd">    If any path component is a Python keyword, the parser rejects the source with</span>
+</span><span data-line="66"><span class="sd">    ``SyntaxError`` and AOTI compilation collapses with a deeply nested traceback.</span>
+</span><span data-line="67">
+</span><span data-line="68"><span class="sd">    We refuse the name up front so the error surfaces at HIT-load time with a</span>
+</span><span data-line="69"><span class="sd">    message the user can act on, instead of at export time. Pure Python-eager use</span>
+</span><span data-line="70"><span class="sd">    is also blocked — that&#39;s intentional: keeping an export-friendly name now is</span>
+</span><span data-line="71"><span class="sd">    cheaper than discovering the conflict the first time someone runs</span>
+</span><span data-line="72"><span class="sd">    ``neml2-compile``.</span>
+</span><span data-line="73"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="74">    <span class="k">if</span> <span class="n">keyword</span><span class="o">.</span><span class="n">iskeyword</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+</span><span data-line="75">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="76">            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> (</span><span class="si">{</span><span class="n">owner</span><span class="si">}</span><span class="s2">) is a Python reserved keyword. Pick a &quot;</span>
+</span><span data-line="77">            <span class="sa">f</span><span class="s2">&quot;different name — Python keywords cannot appear as path components in &quot;</span>
+</span><span data-line="78">            <span class="sa">f</span><span class="s2">&quot;torch.export&#39;s generated forward source, so AOTI compilation will fail &quot;</span>
+</span><span data-line="79">            <span class="sa">f</span><span class="s2">&quot;at recompile time with a SyntaxError on this path.&quot;</span>
+</span><span data-line="80">        <span class="p">)</span>
+</span><span data-line="81">
+</span><span data-line="82">
+<div class="viewcode-block" id="register_neml2_object">
+<a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.register_neml2_object">[docs]</a>
+</span><span data-line="83"><span class="k">def</span><span class="w"> </span><span class="nf">register_neml2_object</span><span class="p">(</span><span class="n">type_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">type</span><span class="p">[</span><span class="n">_T</span><span class="p">]],</span> <span class="nb">type</span><span class="p">[</span><span class="n">_T</span><span class="p">]]:</span>
+</span><span data-line="84"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorator: register a Model (or solver/system) class under *type_name*.</span>
+</span><span data-line="85">
+</span><span data-line="86"><span class="sd">    The class must provide a ``from_hit(cls, node, factory)`` classmethod that</span>
+</span><span data-line="87"><span class="sd">    constructs an instance from the given nmhit Section node. ``Model``</span>
+</span><span data-line="88"><span class="sd">    subclasses inherit a default implementation backed by ``HitSchema``; other</span>
+</span><span data-line="89"><span class="sd">    registered object types implement it directly. The *factory* argument is a</span>
+</span><span data-line="90"><span class="sd">    :class:`_NativeInputFile` instance whose ``get_model``, ``get_solver``, and</span>
+</span><span data-line="91"><span class="sd">    ``get_equation_system`` methods may be called to resolve named sub-objects</span>
+</span><span data-line="92"><span class="sd">    — exactly as C++ ``NEML2Object::get_model()`` does.</span>
+</span><span data-line="93"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="94">
+</span><span data-line="95">    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">_T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">_T</span><span class="p">]:</span>
+</span><span data-line="96">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;from_hit&quot;</span><span class="p">):</span>
+</span><span data-line="97">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+</span><span data-line="98">                <span class="sa">f</span><span class="s2">&quot;Cannot register </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2">: &quot;</span>
+</span><span data-line="99">                <span class="s2">&quot;it must implement a from_hit(cls, node, factory) classmethod.&quot;</span>
+</span><span data-line="100">            <span class="p">)</span>
+</span><span data-line="101">        <span class="n">_registry</span><span class="p">[</span><span class="n">type_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
+</span><span data-line="102">        <span class="bp">cls</span><span class="o">.</span><span class="n">_native_type_name</span> <span class="o">=</span> <span class="n">type_name</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span><span data-line="103">        <span class="k">return</span> <span class="bp">cls</span>
+</span><span data-line="104">
+</span><span data-line="105">    <span class="k">return</span> <span class="n">decorator</span></div>
+
+</span><span data-line="106">
+</span><span data-line="107">
+</span><span data-line="108"><span class="k">class</span><span class="w"> </span><span class="nc">_NativeInputFile</span><span class="p">:</span>
+</span><span data-line="109"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Lazy factory built from a parsed nmhit AST.</span>
+</span><span data-line="110">
+</span><span data-line="111"><span class="sd">    Mirrors ``neml2::Factory``. Objects are cached by ``(section, name)`` so</span>
+</span><span data-line="112"><span class="sd">    that repeated lookups return the same instance.</span>
+</span><span data-line="113">
+</span><span data-line="114"><span class="sd">    Every unregistered type raises ``KeyError`` — the previous</span>
+</span><span data-line="115"><span class="sd">    An internal</span>
+</span><span data-line="116"><span class="sd">    Python-native object surface is now expected to cover every HIT type a</span>
+</span><span data-line="117"><span class="sd">    Python caller might load; gaps surface immediately rather than silently</span>
+</span><span data-line="118"><span class="sd">    routing through the C++ Python bindings.</span>
+</span><span data-line="119"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="120">
+</span><span data-line="121">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Root</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="122">        <span class="bp">self</span><span class="o">.</span><span class="n">_root</span> <span class="o">=</span> <span class="n">root</span>
+</span><span data-line="123">        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="n">path</span>
+</span><span data-line="124">        <span class="c1"># (section_plural, name) → built object</span>
+</span><span data-line="125">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="126">        <span class="c1"># names currently being evaluated — used to detect circular cross-references</span>
+</span><span data-line="127">        <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+</span><span data-line="128">
+</span><span data-line="129">    <span class="c1"># ── section lookup ────────────────────────────────────────────────────────</span>
+</span><span data-line="130">
+</span><span data-line="131">    <span class="k">def</span><span class="w"> </span><span class="nf">_find_in_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="132"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Search *all* top-level blocks named *section* for a child named *name*.</span>
+</span><span data-line="133">
+</span><span data-line="134"><span class="sd">        nmhit does not automatically merge repeated explicit `[section]` blocks,</span>
+</span><span data-line="135"><span class="sd">        so we must scan all of them.</span>
+</span><span data-line="136"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="137">        <span class="k">for</span> <span class="n">top</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">nmhit</span><span class="o">.</span><span class="n">NodeType</span><span class="o">.</span><span class="n">Section</span><span class="p">):</span>
+</span><span data-line="138">            <span class="k">if</span> <span class="n">top</span><span class="o">.</span><span class="n">path</span><span class="p">()</span> <span class="o">==</span> <span class="n">section</span><span class="p">:</span>
+</span><span data-line="139">                <span class="n">node</span> <span class="o">=</span> <span class="n">top</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="140">                <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="141">                    <span class="k">return</span> <span class="n">node</span>
+</span><span data-line="142">        <span class="k">return</span> <span class="kc">None</span>
+</span><span data-line="143">
+</span><span data-line="144">    <span class="c1"># ── generic dispatcher ────────────────────────────────────────────────────</span>
+</span><span data-line="145">
+</span><span data-line="146">    <span class="k">def</span><span class="w"> </span><span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="147">        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="148">        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+</span><span data-line="149">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</span><span data-line="150">
+</span><span data-line="151">        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_in_section</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="152">        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="153">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No [</span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="154">
+</span><span data-line="155">        <span class="n">type_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+</span><span data-line="156">
+</span><span data-line="157">        <span class="k">if</span> <span class="n">type_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_registry</span><span class="p">:</span>
+</span><span data-line="158">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+</span><span data-line="159">                <span class="sa">f</span><span class="s2">&quot;Type </span><span class="si">{</span><span class="n">type_name</span><span class="si">!r}</span><span class="s2"> is not registered in NativeRegistry &quot;</span>
+</span><span data-line="160">                <span class="sa">f</span><span class="s2">&quot;(section=</span><span class="si">{</span><span class="n">section</span><span class="si">!r}</span><span class="s2">, name=</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">). The Python-native &quot;</span>
+</span><span data-line="161">                <span class="s2">&quot;object surface must cover every HIT type loaded through &quot;</span>
+</span><span data-line="162">                <span class="s2">&quot;neml2; port the type or remove the [</span><span class="si">{section}</span><span class="s2">/</span><span class="si">{name}</span><span class="s2">] &quot;</span>
+</span><span data-line="163">                <span class="s2">&quot;block from the input.&quot;</span>
+</span><span data-line="164">            <span class="p">)</span>
+</span><span data-line="165">
+</span><span data-line="166">        <span class="bp">cls</span> <span class="o">=</span> <span class="n">_registry</span><span class="p">[</span><span class="n">type_name</span><span class="p">]</span>
+</span><span data-line="167">        <span class="c1"># Block names cross the user→Python boundary here; if the name is a</span>
+</span><span data-line="168">        <span class="c1"># Python keyword it survives setattr() / hasattr() fine but breaks</span>
+</span><span data-line="169">        <span class="c1"># torch.export&#39;s GraphModule.recompile (see _check_python_attr_name).</span>
+</span><span data-line="170">        <span class="c1"># Refuse early so the failure is loud and local instead of a SyntaxError</span>
+</span><span data-line="171">        <span class="c1"># deep inside the AOTI lowering.</span>
+</span><span data-line="172">        <span class="n">_check_python_attr_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;HIT block&quot;</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+</span><span data-line="173">        <span class="c1"># Reject unknown HIT fields against the class&#39;s declared schema.</span>
+</span><span data-line="174">        <span class="c1"># Catches stale options (e.g. a removed `priority` on ComposedModel)</span>
+</span><span data-line="175">        <span class="c1"># and typos before they&#39;re silently ignored -- runs uniformly whether</span>
+</span><span data-line="176">        <span class="c1"># the class uses the schema-driven kwargs_from_hit path or owns its</span>
+</span><span data-line="177">        <span class="c1"># own from_hit.</span>
+</span><span data-line="178">        <span class="kn">from</span><span class="w"> </span><span class="nn">.schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">HitSchema</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="179">
+</span><span data-line="180">        <span class="n">schema</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;hit&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span data-line="181">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">HitSchema</span><span class="p">):</span>
+</span><span data-line="182">            <span class="n">schema</span><span class="o">.</span><span class="n">reject_unknown_fields</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+</span><span data-line="183">        <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_hit</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</span><span data-line="184">        <span class="c1"># Variable-name resolution (HIT override → schema default → option name)</span>
+</span><span data-line="185">        <span class="c1"># happens inside _store_schema_values via the input()/output() / var_*</span>
+</span><span data-line="186">        <span class="c1"># schema fields, so there is no longer a boundary-wrapping pass here.</span>
+</span><span data-line="187">        <span class="c1">#</span>
+</span><span data-line="188">        <span class="c1"># Stash the HIT block name on the constructed object so downstream</span>
+</span><span data-line="189">        <span class="c1"># consumers (notably ComposedModel) can register children under</span>
+</span><span data-line="190">        <span class="c1"># readable HIT names instead of opaque _child_N indices. Falls back</span>
+</span><span data-line="191">        <span class="c1"># silently if the object&#39;s class blocks attribute assignment (frozen</span>
+</span><span data-line="192">        <span class="c1"># dataclass etc.) — composed models built directly from Python still</span>
+</span><span data-line="193">        <span class="c1"># work, they just lose the HIT-name overlay.</span>
+</span><span data-line="194">        <span class="k">try</span><span class="p">:</span>
+</span><span data-line="195">            <span class="n">obj</span><span class="o">.</span><span class="n">_hit_name</span> <span class="o">=</span> <span class="n">name</span>
+</span><span data-line="196">        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+</span><span data-line="197">            <span class="k">pass</span>
+</span><span data-line="198">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
+</span><span data-line="199">        <span class="k">return</span> <span class="n">obj</span>
+</span><span data-line="200">
+</span><span data-line="201">    <span class="c1"># ── public get_* API (mirrors NEML2Object::get_model / get_solver / …) ───</span>
+</span><span data-line="202">
+</span><span data-line="203">    <span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="204"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the model named *name* from ``[Models]``.</span>
+</span><span data-line="205">
+</span><span data-line="206"><span class="sd">        Raises ``KeyError`` if the type isn&#39;t registered in ``NativeRegistry``</span>
+</span><span data-line="207"><span class="sd">        (D-054 — no fallback to C++).</span>
+</span><span data-line="208"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="209">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Models&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="210">
+</span><span data-line="211">    <span class="k">def</span><span class="w"> </span><span class="nf">has_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span data-line="212"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether a ``[Models/&lt;name&gt;]`` entry exists (does not build it).&quot;&quot;&quot;</span>
+</span><span data-line="213">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_in_section</span><span class="p">(</span><span class="s2">&quot;Models&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+</span><span data-line="214">
+</span><span data-line="215">    <span class="k">def</span><span class="w"> </span><span class="nf">get_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="216"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the solver named *name* from ``[Solvers]``.&quot;&quot;&quot;</span>
+</span><span data-line="217">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Solvers&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="218">
+</span><span data-line="219">    <span class="k">def</span><span class="w"> </span><span class="nf">get_equation_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="220"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the system from ``[EquationSystems]``.&quot;&quot;&quot;</span>
+</span><span data-line="221">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;EquationSystems&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="222">
+</span><span data-line="223">    <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="224"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the data object from ``[Data]``.</span>
+</span><span data-line="225">
+</span><span data-line="226"><span class="sd">        ``[Data]`` blocks are construction-time inputs shared by reference</span>
+</span><span data-line="227"><span class="sd">        across consumers — currently ``CrystalGeometry`` / ``CubicCrystal``</span>
+</span><span data-line="228"><span class="sd">        for crystal-plasticity Schmid tensor lookup. No C++ fallback:</span>
+</span><span data-line="229"><span class="sd">        ``[Data]`` is small, self-contained, and natively registered types</span>
+</span><span data-line="230"><span class="sd">        cover everything  needs.</span>
+</span><span data-line="231"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="232">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Data&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="233">
+</span><span data-line="234">    <span class="k">def</span><span class="w"> </span><span class="nf">get_driver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="235"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the driver from ``[Drivers]``.</span>
+</span><span data-line="236">
+</span><span data-line="237"><span class="sd">        ``[Drivers]`` blocks are top-level workflow objects (e.g.</span>
+</span><span data-line="238"><span class="sd">        ``TransientDriver`` for the regression suite, ``ModelUnitTest`` for</span>
+</span><span data-line="239"><span class="sd">        the unit-test suite). The C++ side wires them through Factory; we</span>
+</span><span data-line="240"><span class="sd">        mirror that here so a ``.i`` file&#39;s ``[Drivers]`` blocks resolve to</span>
+</span><span data-line="241"><span class="sd">        Python-native classes.</span>
+</span><span data-line="242"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="243">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Drivers&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="244">
+</span><span data-line="245">    <span class="c1"># ── [Tensors] support (mode 2 of declare_typed_parameter) ────────────────</span>
+</span><span data-line="246">
+</span><span data-line="247">    <span class="k">def</span><span class="w"> </span><span class="nf">get_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="248"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the ``[Tensors/&lt;name&gt;]`` value.</span>
+</span><span data-line="249">
+</span><span data-line="250"><span class="sd">        Dispatches on the block&#39;s ``type`` to a class in the native registry —</span>
+</span><span data-line="251"><span class="sd">        ``type = Python`` resolves to</span>
+</span><span data-line="252"><span class="sd">        :class:`~neml2.user_tensors.PythonTensor.PythonTensor` (inline Python</span>
+</span><span data-line="253"><span class="sd">        expression evaluated in the typed-tensor namespace),</span>
+</span><span data-line="254"><span class="sd">        ``type = CSV&lt;T&gt;`` to the corresponding CSV reader, and so on.</span>
+</span><span data-line="255">
+</span><span data-line="256"><span class="sd">        Returns the raw value produced by the registered class — either a</span>
+</span><span data-line="257"><span class="sd">        ``torch.Tensor`` or a ``TensorWrapper`` subclass. The call site</span>
+</span><span data-line="258"><span class="sd">        (``declare_typed_parameter`` mode 2) is responsible for wrapping a raw</span>
+</span><span data-line="259"><span class="sd">        ``torch.Tensor`` into the appropriate typed wrapper.</span>
+</span><span data-line="260">
+</span><span data-line="261"><span class="sd">        Raises ``KeyError`` if no ``[Tensors/&lt;name&gt;]`` block exists or its</span>
+</span><span data-line="262"><span class="sd">        ``type`` isn&#39;t registered.</span>
+</span><span data-line="263"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="264">        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Tensors&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="265">        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+</span><span data-line="266">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</span><span data-line="267">
+</span><span data-line="268">        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_in_section</span><span class="p">(</span><span class="s2">&quot;Tensors&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="269">        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="270">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No [Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="271">
+</span><span data-line="272">        <span class="n">type_str</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+</span><span data-line="273">        <span class="k">if</span> <span class="n">type_str</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_registry</span><span class="p">:</span>
+</span><span data-line="274">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="275">                <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] has type=</span><span class="si">{</span><span class="n">type_str</span><span class="si">!r}</span><span class="s2">; expected a registered tensor &quot;</span>
+</span><span data-line="276">                <span class="s2">&quot;type. For an inline Python expression use:</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="277">                <span class="sa">f</span><span class="s2">&quot;  [Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="278">                <span class="s2">&quot;    type = Python</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="279">                <span class="s2">&quot;    expr = &#39;...pytorch expression...&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="280">                <span class="s2">&quot;  []&quot;</span>
+</span><span data-line="281">            <span class="p">)</span>
+</span><span data-line="282">
+</span><span data-line="283">        <span class="c1"># Cycle detection wraps the dispatch itself because registered tensor</span>
+</span><span data-line="284">        <span class="c1"># classes (notably ``Python``) may recursively call back into</span>
+</span><span data-line="285">        <span class="c1"># ``get_tensor`` through the eval namespace&#39;s ``__missing__`` hook.</span>
+</span><span data-line="286">        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="p">:</span>
+</span><span data-line="287">            <span class="k">raise</span> <span class="ne">RecursionError</span><span class="p">(</span>
+</span><span data-line="288">                <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] cross-references itself (directly or indirectly).&quot;</span>
+</span><span data-line="289">            <span class="p">)</span>
+</span><span data-line="290">        <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="291">        <span class="k">try</span><span class="p">:</span>
+</span><span data-line="292">            <span class="n">result</span> <span class="o">=</span> <span class="n">_registry</span><span class="p">[</span><span class="n">type_str</span><span class="p">]</span><span class="o">.</span><span class="n">from_hit</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</span><span data-line="293">        <span class="k">finally</span><span class="p">:</span>
+</span><span data-line="294">            <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="295">
+</span><span data-line="296">        <span class="c1"># Sub-batch tagging happens inside ``expr`` via method chaining on the</span>
+</span><span data-line="297">        <span class="c1"># returned wrapper — e.g. ``Scalar.zeros(5).sub_batch.retag(1)`` or</span>
+</span><span data-line="298">        <span class="c1"># ``linspace(Scalar(0).sub_batch, Scalar(1).sub_batch, 5)``.</span>
+</span><span data-line="299">        <span class="c1"># That keeps a single source of truth for the tensor pipeline (and lets</span>
+</span><span data-line="300">        <span class="c1"># users compose ``.sub_batch.expand_at(...)``, ``.sub_batch.diagonalize()``</span>
+</span><span data-line="301">        <span class="c1"># etc. without a parallel HIT option for each).</span>
+</span><span data-line="302">
+</span><span data-line="303">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+</span><span data-line="304">        <span class="k">return</span> <span class="n">result</span>
+</span><span data-line="305">
+</span><span data-line="306">
+</span><span data-line="307"><span class="c1"># ── [Tensors] Python-expression helpers ───────────────────────────────────────</span>
+</span><span data-line="308">
+</span><span data-line="309">
+</span><span data-line="310"><span class="k">class</span><span class="w"> </span><span class="nc">_TensorNamespace</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+</span><span data-line="311"><span class="w">    </span><span class="sd">&quot;&quot;&quot;eval/exec namespace that lazily resolves unknown names as tensor cross-references.</span>
+</span><span data-line="312">
+</span><span data-line="313"><span class="sd">    When an identifier is not found in the pre-populated symbols (``torch``,</span>
+</span><span data-line="314"><span class="sd">    ``neml2.types`` exports, ``math``, ``np``), Python&#39;s name-lookup</span>
+</span><span data-line="315"><span class="sd">    calls ``__missing__``.  We intercept that and try ``factory.get_tensor(key)``</span>
+</span><span data-line="316"><span class="sd">    so users can write ``base`` in an expression instead of ``tensor(&#39;base&#39;)``,</span>
+</span><span data-line="317"><span class="sd">    avoiding HIT&#39;s restriction that quotes may not appear inside quoted strings.</span>
+</span><span data-line="318">
+</span><span data-line="319"><span class="sd">    Cycle detection is handled by ``_NativeInputFile.get_tensor`` itself.</span>
+</span><span data-line="320"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="321">
+</span><span data-line="322">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">,</span> <span class="n">base_ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="323">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">base_ns</span><span class="p">)</span>
+</span><span data-line="324">        <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span> <span class="o">=</span> <span class="n">factory</span>
+</span><span data-line="325">
+</span><span data-line="326">    <span class="k">def</span><span class="w"> </span><span class="fm">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="327">        <span class="k">try</span><span class="p">:</span>
+</span><span data-line="328">            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</span><span data-line="329">        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+</span><span data-line="330">            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> is not defined&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+</span><span data-line="331">        <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>  <span class="c1"># cache resolved value in the namespace</span>
+</span><span data-line="332">        <span class="k">return</span> <span class="n">val</span>
+</span><span data-line="333">
+</span><span data-line="334">
+</span><span data-line="335"><span class="k">def</span><span class="w"> </span><span class="nf">_build_tensor_eval_namespace</span><span class="p">(</span><span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_TensorNamespace</span><span class="p">:</span>
+</span><span data-line="336"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the eval namespace for ``[Tensors]`` Python expressions.</span>
+</span><span data-line="337">
+</span><span data-line="338"><span class="sd">    Exposes the entire ``neml2.types`` public namespace (all names listed</span>
+</span><span data-line="339"><span class="sd">    in its ``__all__``) so that new types or free functions added there are</span>
+</span><span data-line="340"><span class="sd">    automatically available without touching this file.</span>
+</span><span data-line="341">
+</span><span data-line="342"><span class="sd">    Cross-references to other ``[Tensors]`` entries are resolved implicitly: an</span>
+</span><span data-line="343"><span class="sd">    unknown identifier is looked up as ``factory.get_tensor(name)``, so users</span>
+</span><span data-line="344"><span class="sd">    write ``base`` in the expression rather than ``tensor(&#39;base&#39;)`` (which would</span>
+</span><span data-line="345"><span class="sd">    conflict with HIT&#39;s restriction on quotes inside quoted strings).</span>
+</span><span data-line="346"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="347">    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span> <span class="k">as</span> <span class="n">_types_mod</span>
+</span><span data-line="348">
+</span><span data-line="349">    <span class="n">base_ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_types_mod</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_types_mod</span><span class="o">.</span><span class="n">__all__</span><span class="p">}</span>
+</span><span data-line="350">    <span class="n">base_ns</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+</span><span data-line="351">        <span class="p">{</span>
+</span><span data-line="352">            <span class="s2">&quot;torch&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="p">,</span>
+</span><span data-line="353">            <span class="s2">&quot;math&quot;</span><span class="p">:</span> <span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;math&quot;</span><span class="p">),</span>
+</span><span data-line="354">        <span class="p">}</span>
+</span><span data-line="355">    <span class="p">)</span>
+</span><span data-line="356">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="357">        <span class="n">base_ns</span><span class="p">[</span><span class="s2">&quot;np&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+</span><span data-line="358">    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+</span><span data-line="359">        <span class="k">pass</span>
+</span><span data-line="360">    <span class="k">return</span> <span class="n">_TensorNamespace</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="n">base_ns</span><span class="p">)</span>
+</span><span data-line="361">
+</span><span data-line="362">
+</span><span data-line="363"><span class="k">def</span><span class="w"> </span><span class="nf">_dedent_hit_expr</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span data-line="364"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dedent a multi-line expression string as returned by ``nmhit.param_str``.</span>
+</span><span data-line="365">
+</span><span data-line="366"><span class="sd">    nmhit strips the leading whitespace from the first line of a quoted value</span>
+</span><span data-line="367"><span class="sd">    (the newline and spaces between the opening quote and the first content</span>
+</span><span data-line="368"><span class="sd">    character) but leaves subsequent lines intact.  Standard ``textwrap.dedent``</span>
+</span><span data-line="369"><span class="sd">    therefore sees the first line with 0 indent and cannot strip anything.</span>
+</span><span data-line="370">
+</span><span data-line="371"><span class="sd">    This helper deduces the common indentation from lines 2 onwards and strips</span>
+</span><span data-line="372"><span class="sd">    it from the entire block, leaving relative indentation inside the code</span>
+</span><span data-line="373"><span class="sd">    unchanged.</span>
+</span><span data-line="374"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="375">    <span class="n">lines</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+</span><span data-line="376">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="377">        <span class="k">return</span> <span class="n">code</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span><span data-line="378">    <span class="c1"># Lines 2+ still carry the original HIT indentation.</span>
+</span><span data-line="379">    <span class="n">rest_nonempty</span> <span class="o">=</span> <span class="p">[</span><span class="n">ln</span> <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+</span><span data-line="380">    <span class="k">if</span> <span class="ow">not</span> <span class="n">rest_nonempty</span><span class="p">:</span>
+</span><span data-line="381">        <span class="k">return</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span><span data-line="382">    <span class="n">min_indent</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span> <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">rest_nonempty</span><span class="p">)</span>
+</span><span data-line="383">    <span class="n">dedented</span> <span class="o">=</span> <span class="p">[</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>  <span class="c1"># first line already has no leading whitespace</span>
+</span><span data-line="384">    <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+</span><span data-line="385">        <span class="n">dedented</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ln</span><span class="p">[</span><span class="n">min_indent</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span data-line="386">    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dedented</span><span class="p">)</span>
+</span><span data-line="387">
+</span><span data-line="388">
+</span><span data-line="389"><span class="k">def</span><span class="w"> </span><span class="nf">_eval_tensor_code</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="390"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Eval a single-expression or exec a multi-line block; return the result.&quot;&quot;&quot;</span>
+</span><span data-line="391">    <span class="n">src</span> <span class="o">=</span> <span class="n">_dedent_hit_expr</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+</span><span data-line="392">    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&gt;&quot;</span>
+</span><span data-line="393">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="394">        <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;eval&quot;</span><span class="p">),</span> <span class="n">ns</span><span class="p">)</span>  <span class="c1"># noqa: S307</span>
+</span><span data-line="395">    <span class="k">except</span> <span class="ne">SyntaxError</span><span class="p">:</span>
+</span><span data-line="396">        <span class="k">pass</span>
+</span><span data-line="397">    <span class="k">except</span> <span class="ne">RecursionError</span><span class="p">:</span>
+</span><span data-line="398">        <span class="k">raise</span>
+</span><span data-line="399">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+</span><span data-line="400">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] expr raised </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+</span><span data-line="401">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="402">        <span class="n">exec</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;exec&quot;</span><span class="p">),</span> <span class="n">ns</span><span class="p">)</span>  <span class="c1"># noqa: S102</span>
+</span><span data-line="403">    <span class="k">except</span> <span class="ne">RecursionError</span><span class="p">:</span>
+</span><span data-line="404">        <span class="k">raise</span>
+</span><span data-line="405">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+</span><span data-line="406">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] code raised </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+</span><span data-line="407">    <span class="k">if</span> <span class="s2">&quot;result&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ns</span><span class="p">:</span>
+</span><span data-line="408">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="409">            <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] multi-line code block must assign its output to &#39;result&#39;.&quot;</span>
+</span><span data-line="410">        <span class="p">)</span>
+</span><span data-line="411">    <span class="k">return</span> <span class="n">ns</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
+</span><span data-line="412">
+</span><span data-line="413">
+</span><span data-line="414"><span class="c1"># ── public entry points ────────────────────────────────────────────────────────</span>
+</span><span data-line="415">
+</span><span data-line="416">
+<div class="viewcode-block" id="load_input">
+<a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_input">[docs]</a>
+</span><span data-line="417"><span class="k">def</span><span class="w"> </span><span class="nf">load_input</span><span class="p">(</span>
+</span><span data-line="418">    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="419">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="420">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="421">    <span class="n">post</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="422">    <span class="n">additional_args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="423"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NativeInputFile</span><span class="p">:</span>
+</span><span data-line="424"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a HIT input file and return a lazy native factory.</span>
+</span><span data-line="425">
+</span><span data-line="426"><span class="sd">    Parameters</span>
+</span><span data-line="427"><span class="sd">    ----------</span>
+</span><span data-line="428"><span class="sd">    path:</span>
+</span><span data-line="429"><span class="sd">        Path to the HIT ``.i`` file.</span>
+</span><span data-line="430"><span class="sd">    pre, post:</span>
+</span><span data-line="431"><span class="sd">        Optional HIT snippets prepended / appended before parsing (same</span>
+</span><span data-line="432"><span class="sd">        semantics as ``nmhit.parse_file``).</span>
+</span><span data-line="433"><span class="sd">    additional_args:</span>
+</span><span data-line="434"><span class="sd">        Trailing command-line HIT overrides (e.g.</span>
+</span><span data-line="435"><span class="sd">        ``[&quot;Models/elasticity/E:=210000&quot;]``). Each element is a HIT snippet</span>
+</span><span data-line="436"><span class="sd">        appended after ``post`` so any ``:=`` override takes effect after</span>
+</span><span data-line="437"><span class="sd">        the file&#39;s own assignments. Mirrors the C++ side&#39;s</span>
+</span><span data-line="438"><span class="sd">        ``neml2::load_input(path, additional_cliargs)``.</span>
+</span><span data-line="439"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="440">    <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span data-line="441">    <span class="n">full_post</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">post</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_args</span><span class="p">)</span>
+</span><span data-line="442">    <span class="n">root</span> <span class="o">=</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">parse_file</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">full_post</span><span class="p">))</span>
+</span><span data-line="443">    <span class="k">return</span> <span class="n">_NativeInputFile</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></div>
+
+</span><span data-line="444">
+</span><span data-line="445">
+<div class="viewcode-block" id="load_string">
+<a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_string">[docs]</a>
+</span><span data-line="446"><span class="k">def</span><span class="w"> </span><span class="nf">load_string</span><span class="p">(</span>
+</span><span data-line="447">    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="448">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="449">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="450">    <span class="n">post</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="451">    <span class="n">additional_args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="452"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NativeInputFile</span><span class="p">:</span>
+</span><span data-line="453"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse an in-memory HIT snippet and return a lazy native factory.</span>
+</span><span data-line="454">
+</span><span data-line="455"><span class="sd">    Same semantics as :func:`load_input` but reads from a string (via</span>
+</span><span data-line="456"><span class="sd">    ``nmhit.parse_text``) instead of a file. Used by</span>
+</span><span data-line="457"><span class="sd">    :meth:`neml2.drivers.ModelUnitTest.from_string` so a unit test can</span>
+</span><span data-line="458"><span class="sd">    embed its ``[Models]`` / ``[Tensors]`` / ``[Drivers]`` blocks inline.</span>
+</span><span data-line="459"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="460">    <span class="n">full_post</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">post</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_args</span><span class="p">)</span>
+</span><span data-line="461">    <span class="n">root</span> <span class="o">=</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">parse_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">full_post</span><span class="p">))</span>
+</span><span data-line="462">    <span class="k">return</span> <span class="n">_NativeInputFile</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">))</span></div>
+
+</span><span data-line="463">
+</span><span data-line="464">
+<div class="viewcode-block" id="load_model">
+<a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_model">[docs]</a>
+</span><span data-line="465"><span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="466"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a named model from a HIT input file as a Python-native model.</span>
+</span><span data-line="467">
+</span><span data-line="468"><span class="sd">    Raises ``KeyError`` if the model&#39;s type (or any of its sub-object types)</span>
+</span><span data-line="469"><span class="sd">    isn&#39;t registered in ``NativeRegistry``.</span>
+</span><span data-line="470">
+</span><span data-line="471"><span class="sd">    Parameters</span>
+</span><span data-line="472"><span class="sd">    ----------</span>
+</span><span data-line="473"><span class="sd">    path:</span>
+</span><span data-line="474"><span class="sd">        Path to the HIT ``.i`` file.</span>
+</span><span data-line="475"><span class="sd">    model_name:</span>
+</span><span data-line="476"><span class="sd">        Name of the model in the ``[Models]`` section.</span>
+</span><span data-line="477"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="478">    <span class="k">return</span> <span class="n">load_input</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span></div>
+
+</span><span data-line="479">
+</span><span data-line="480">
+<div class="viewcode-block" id="load_nonlinear_system">
+<a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_nonlinear_system">[docs]</a>
+</span><span data-line="481"><span class="k">def</span><span class="w"> </span><span class="nf">load_nonlinear_system</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="482"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a named system from ``[EquationSystems]`` as a Python-native object.</span>
+</span><span data-line="483">
+</span><span data-line="484"><span class="sd">    Convenience wrapper around ``load_input(path).get_equation_system(name)``</span>
+</span><span data-line="485"><span class="sd">    — mirrors :func:`load_model`. Returns a</span>
+</span><span data-line="486"><span class="sd">    :class:`~neml2.es.NonlinearSystem` (typically a</span>
+</span><span data-line="487"><span class="sd">    :class:`~neml2.es.ModelNonlinearSystem`).</span>
+</span><span data-line="488"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="489">    <span class="k">return</span> <span class="n">load_input</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get_equation_system</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+</span><span data-line="490">
+</span><span data-line="491">
+</span><span data-line="492"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+</span><span data-line="493">    <span class="s2">&quot;register_neml2_object&quot;</span><span class="p">,</span>
+</span><span data-line="494">    <span class="s2">&quot;load_input&quot;</span><span class="p">,</span>
+</span><span data-line="495">    <span class="s2">&quot;load_string&quot;</span><span class="p">,</span>
+</span><span data-line="496">    <span class="s2">&quot;load_model&quot;</span><span class="p">,</span>
+</span><span data-line="497">    <span class="s2">&quot;load_nonlinear_system&quot;</span><span class="p">,</span>
+</span><span data-line="498">    <span class="s2">&quot;_NativeInputFile&quot;</span><span class="p">,</span>
+</span><span data-line="499"><span class="p">]</span>
+</span></pre></div>
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, UChicago Argonne, LLC</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=7abfc884"></script>
+      <script src="../../_static/shibuya.js?v=50760d75"></script>
+      <script src="../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
+      <script src="../../_static/components/version-banner.js?v=62c7e18e"></script></body>
+</html>
