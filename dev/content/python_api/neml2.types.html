@@ -575,12 +575,16 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.abs"><code class="docutils literal notranslate"><span class="pre">abs()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.acos"><code class="docutils literal notranslate"><span class="pre">acos()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.align_sub_batch"><code class="docutils literal notranslate"><span class="pre">align_sub_batch()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.asin"><code class="docutils literal notranslate"><span class="pre">asin()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.atan"><code class="docutils literal notranslate"><span class="pre">atan()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.bilinear_interpolation"><code class="docutils literal notranslate"><span class="pre">bilinear_interpolation()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.bilinear_interpolation_slopes"><code class="docutils literal notranslate"><span class="pre">bilinear_interpolation_slopes()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.cat"><code class="docutils literal notranslate"><span class="pre">cat()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.clamp"><code class="docutils literal notranslate"><span class="pre">clamp()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.compose"><code class="docutils literal notranslate"><span class="pre">compose()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.cos"><code class="docutils literal notranslate"><span class="pre">cos()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.cosh"><code class="docutils literal notranslate"><span class="pre">cosh()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.cross"><code class="docutils literal notranslate"><span class="pre">cross()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.dV"><code class="docutils literal notranslate"><span class="pre">dV()</span></code></a></li>
@@ -625,12 +629,14 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.rotate"><code class="docutils literal notranslate"><span class="pre">rotate()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.shadow"><code class="docutils literal notranslate"><span class="pre">shadow()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.sign"><code class="docutils literal notranslate"><span class="pre">sign()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.sin"><code class="docutils literal notranslate"><span class="pre">sin()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.sinh"><code class="docutils literal notranslate"><span class="pre">sinh()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.skew"><code class="docutils literal notranslate"><span class="pre">skew()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.sqrt"><code class="docutils literal notranslate"><span class="pre">sqrt()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.stack"><code class="docutils literal notranslate"><span class="pre">stack()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.sum"><code class="docutils literal notranslate"><span class="pre">sum()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.sym"><code class="docutils literal notranslate"><span class="pre">sym()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.tan"><code class="docutils literal notranslate"><span class="pre">tan()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.tanh"><code class="docutils literal notranslate"><span class="pre">tanh()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.to_quaternion"><code class="docutils literal notranslate"><span class="pre">to_quaternion()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.tr"><code class="docutils literal notranslate"><span class="pre">tr()</span></code></a></li>
@@ -2416,6 +2422,20 @@ and re-constructing.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.acos">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">acos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#acos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.acos" title="Link to this definition">¶</a></dt>
+<dd><p>Inverse cosine function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s</strong> (<a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.align_sub_batch">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">align_sub_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">wrappers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/_base.html#align_sub_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.align_sub_batch" title="Link to this definition">¶</a></dt>
 <dd><p>Pad each wrapper’s <code class="docutils literal notranslate"><span class="pre">sub_batch_ndim</span></code> up to the common max.</p>
@@ -2430,6 +2450,34 @@ start of its sub-batch region.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.types.TensorWrapper" title="neml2.types._base.TensorWrapper"><em>TensorWrapper</em></a>, …], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.asin">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">asin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#asin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.asin" title="Link to this definition">¶</a></dt>
+<dd><p>Inverse sine function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s</strong> (<a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.atan">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">atan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#atan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.atan" title="Link to this definition">¶</a></dt>
+<dd><p>Inverse tangent function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s</strong> (<a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2548,6 +2596,20 @@ composition with denominator $1 + ||r1||^2 ||r2||^2 - 2 r1·r2$.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.types.MRP" title="neml2.types.mrp.MRP"><em>MRP</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.cos">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">cos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#cos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.cos" title="Link to this definition">¶</a></dt>
+<dd><p>Cosine function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s</strong> (<a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -3378,6 +3440,20 @@ use the input-recompute Function (backward <code class="docutils literal notrans
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.sin">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">sin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#sin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.sin" title="Link to this definition">¶</a></dt>
+<dd><p>Sine function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s</strong> (<a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.sinh">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">sinh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#sinh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.sinh" title="Link to this definition">¶</a></dt>
 <dd><p>Hyperbolic sine. Matches <code class="docutils literal notranslate"><span class="pre">neml2::sinh(const</span> <span class="pre">Scalar&amp;)</span></code>.</p>
@@ -3493,6 +3569,20 @@ off-diagonals carry the symmetric average times <code class="docutils literal no
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.types.SR2" title="neml2.types.sr2.SR2"><em>SR2</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.tan">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">tan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#tan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.tan" title="Link to this definition">¶</a></dt>
+<dd><p>Tangent function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s</strong> (<a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
 </dd>
 </dl>
 </dd></dl>
