@@ -146,6 +146,15 @@ the Python source. It records, at a high level:
   split on; executed in order at runtime, with each segment's outputs
   feeding the next segment's inputs via a shared `name → tensor` state
   map.
+- **Boundary aliases** (optional `boundary_aliases`) — shallow renames
+  applied at the interface only. Present only when the artifact was
+  compiled with `--rename-input` / `--rename-output` / `--rename-parameter`;
+  a map with `inputs` / `outputs` / `parameters` sub-maps of
+  `{original_name: boundary_name}`. Every other field above keeps the
+  **original** authored names; a loader reads them as the internal identity
+  and applies the alias only when reporting names and keying the public
+  `forward` / `jvp` / `jacobian` / `named_parameters` surface. Absent means
+  the interface uses the authored names.
 
 The exact field layout evolves alongside the export pipeline, so it is
 not mirrored field-by-field here. The metadata carries an integer
@@ -154,7 +163,7 @@ refuses any non-matching version with a clear "regenerate via
 `neml2-compile`" message; the only remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `7`.
+The current schema version is `8`.
 
 ### Segment kinds
 

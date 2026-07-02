@@ -583,6 +583,15 @@ those graphs dereference the parameter on-device.</p></li>
 split on; executed in order at runtime, with each segment’s outputs
 feeding the next segment’s inputs via a shared <code class="docutils literal notranslate"><span class="pre">name</span> <span class="pre">→</span> <span class="pre">tensor</span></code> state
 map.</p></li>
+<li><p><strong>Boundary aliases</strong> (optional <code class="docutils literal notranslate"><span class="pre">boundary_aliases</span></code>) — shallow renames
+applied at the interface only. Present only when the artifact was
+compiled with <code class="docutils literal notranslate"><span class="pre">--rename-input</span></code> / <code class="docutils literal notranslate"><span class="pre">--rename-output</span></code> / <code class="docutils literal notranslate"><span class="pre">--rename-parameter</span></code>;
+a map with <code class="docutils literal notranslate"><span class="pre">inputs</span></code> / <code class="docutils literal notranslate"><span class="pre">outputs</span></code> / <code class="docutils literal notranslate"><span class="pre">parameters</span></code> sub-maps of
+<code class="docutils literal notranslate"><span class="pre">{original_name:</span> <span class="pre">boundary_name}</span></code>. Every other field above keeps the
+<strong>original</strong> authored names; a loader reads them as the internal identity
+and applies the alias only when reporting names and keying the public
+<code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> / <code class="docutils literal notranslate"><span class="pre">named_parameters</span></code> surface. Absent means
+the interface uses the authored names.</p></li>
 </ul>
 <p>The exact field layout evolves alongside the export pipeline, so it is
 not mirrored field-by-field here. The metadata carries an integer
@@ -590,7 +599,7 @@ not mirrored field-by-field here. The metadata carries an integer
 refuses any non-matching version with a clear “regenerate via
 <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>” message; the only remediation is a re-compile.</p>
 <!-- dependencies: aoti.schema_version -->
-<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">7</span></code>.</p>
+<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">8</span></code>.</p>
 </section>
 <section id="segment-kinds">
 <h3>Segment kinds<a class="headerlink" href="#segment-kinds" title="Link to this heading">¶</a></h3>
