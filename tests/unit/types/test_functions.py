@@ -24,16 +24,16 @@
 
 from __future__ import annotations
 
-import pytest
 import torch
+
 from neml2.types import (
     Scalar,
-    sin,
-    cos,
-    tan,
-    asin,
     acos,
+    asin,
     atan,
+    cos,
+    sin,
+    tan,
 )
 
 # ---------------------------------------------------------------------------

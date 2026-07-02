@@ -45,9 +45,9 @@ from neml2.types._primitive import PrimitiveTensor
 from neml2.types.functions import (
     abs,
     acos,
+    allclose,
     asin,
     atan,
-    allclose,
     bilinear_interpolation,
     bilinear_interpolation_slopes,
     cat,
