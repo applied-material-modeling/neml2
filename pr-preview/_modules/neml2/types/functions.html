@@ -1977,14 +1977,20 @@ data-aria-dark="Switch to auto color mode">
 
 </span><span data-line="1485">
 </span><span data-line="1486">
+<div class="viewcode-block" id="cos">
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.cos">[docs]</a>
 </span><span data-line="1487"><span class="k">def</span><span class="w"> </span><span class="nf">cos</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 </span><span data-line="1488"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Cosine function.&quot;&quot;&quot;</span>
-</span><span data-line="1489">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="1489">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span></div>
+
 </span><span data-line="1490">
 </span><span data-line="1491">
+<div class="viewcode-block" id="acos">
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.acos">[docs]</a>
 </span><span data-line="1492"><span class="k">def</span><span class="w"> </span><span class="nf">acos</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 </span><span data-line="1493"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Inverse cosine function.&quot;&quot;&quot;</span>
-</span><span data-line="1494">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="1494">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span></div>
+
 </span><span data-line="1495">
 </span><span data-line="1496">
 <div class="viewcode-block" id="sinh">
@@ -1995,24 +2001,36 @@ data-aria-dark="Switch to auto color mode">
 
 </span><span data-line="1500">
 </span><span data-line="1501">
+<div class="viewcode-block" id="sin">
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.sin">[docs]</a>
 </span><span data-line="1502"><span class="k">def</span><span class="w"> </span><span class="nf">sin</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 </span><span data-line="1503"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Sine function.&quot;&quot;&quot;</span>
-</span><span data-line="1504">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="1504">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span></div>
+
 </span><span data-line="1505">
 </span><span data-line="1506">
+<div class="viewcode-block" id="asin">
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.asin">[docs]</a>
 </span><span data-line="1507"><span class="k">def</span><span class="w"> </span><span class="nf">asin</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 </span><span data-line="1508"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Inverse sine function.&quot;&quot;&quot;</span>
-</span><span data-line="1509">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="1509">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span></div>
+
 </span><span data-line="1510">
 </span><span data-line="1511">
+<div class="viewcode-block" id="tan">
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.tan">[docs]</a>
 </span><span data-line="1512"><span class="k">def</span><span class="w"> </span><span class="nf">tan</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 </span><span data-line="1513"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Tangent function.&quot;&quot;&quot;</span>
-</span><span data-line="1514">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="1514">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span></div>
+
 </span><span data-line="1515">
 </span><span data-line="1516">
+<div class="viewcode-block" id="atan">
+<a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.atan">[docs]</a>
 </span><span data-line="1517"><span class="k">def</span><span class="w"> </span><span class="nf">atan</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 </span><span data-line="1518"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Inverse tangent function.&quot;&quot;&quot;</span>
-</span><span data-line="1519">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="1519">    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span></div>
+
 </span><span data-line="1520">
 </span><span data-line="1521">
 <div class="viewcode-block" id="log">
