@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="iris" data-content_root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Region views - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Indexing" href="indexing.html" /><link rel="prev" title="Batching and broadcasting" href="batching.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=8ed54ede" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="Region views"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../index.html">
+      <img class="light-logo" src="../../_static/logo_light.png" alt="NEML2" height="28" loading="lazy" />
+      <img class="dark-logo" src="../../_static/logo_dark.png" alt="NEML2" height="28" loading="lazy" />
+      <strong>NEML2</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation/install.html">Basic installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation/compatibility.html">Torch compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation/deps.html">Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/input_file.html">Input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/running_your_first_model/main.html">Running your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/model_parameters/main.html">Model parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/evaluation_device/main.html">Evaluation device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/vectorization/main.html">Vectorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/cross_referencing/main.html">Cross-referencing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/model_composition/main.html">Model composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/model_parameters_revisited/main.html">Model parameters revisited</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/implicit_model/main.html">Implicit models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/transient_driver/main.html">Transient driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/compiled_models/main.html">Compiled models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/compilation_internals/main.html">How compilation works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/request_ad/main.html">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tensor types</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="primitive_types.html">Primitive (fixed-base-shape) tensor types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="regions.html">Tensor shape regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="batching.html">Batching and broadcasting</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Region views</a></li>
+<li class="toctree-l2"><a class="reference internal" href="indexing.html">Indexing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">Physics modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/chemical_reactions.html">Chemical reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/finite_volume.html">Finite volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/phase_field_fracture.html">Phase-field fracture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/porous_flow.html">Porous flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/elasticity.html">Elasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/plasticity.html">Plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/kinematics.html">Kinematics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../migration/index.html">Migration guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../migration/212_300.html">Migrating from v2.x to v3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../migration/211_212.html">Migrating from v2.1.1 to v2.1.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../migration/200_210.html">Migrating from v2.0.0 to v2.1.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Deployment &amp; integration</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/overview.html">Ways to evaluate a model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development/building.html">Building from source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/quality.html">Code quality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/dependencies.html">Dependency pinning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/documentation.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/notebooks.html">Jupyter notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/submitting.html">Submitting a pull request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/benchmarking.html">Benchmarking</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references/py_eager.html"><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/py_jit.html"><code class="docutils literal notranslate"><span class="pre">py-jit</span></code> — in-process <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/py_aoti.html"><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/index.html">chemical_reactions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/AvramiErofeevNucleation.html">AvramiErofeevNucleation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/ContractingGeometry.html">ContractingGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/CylindricalChannelGeometry.html">CylindricalChannelGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/DiffusionLimitedReaction.html">DiffusionLimitedReaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/EffectiveVolume.html">EffectiveVolume</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/common/index.html">common</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyVec.html">CopyVec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyWR2.html">CopyWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ConstantParameter.html">SR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2Determinant.html">SR2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2DynamicMean.html">SR2DynamicMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2DynamicSum.html">SR2DynamicSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2InputParameter.html">SR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateMean.html">SR2IntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2Invariant.html">SR2Invariant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2LinearCombination.html">SR2LinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ToR2.html">SR2ToR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2VariableRate.html">SR2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4ConstantParameter.html">SSR4ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4InputParameter.html">SSR4InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4ParameterToVariable.html">SSR4ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarBackwardEulerTimeIntegration.html">ScalarBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarBilinearInterpolation.html">ScalarBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarPNorm.html">ScalarPNorm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecComponents.html">VecComponents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecConstantParameter.html">VecConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecInputParameter.html">VecInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecParameterToVariable.html">VecParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecVariableRate.html">VecVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ConstantParameter.html">WR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ExplicitExponentialTimeIntegration.html">WR2ExplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ImplicitExponentialTimeIntegration.html">WR2ImplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2InputParameter.html">WR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ParameterToVariable.html">WR2ParameterToVariable</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/SemiInfiniteCoordinateTransform.html">SemiInfiniteCoordinateTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/SmearedDeltaSource.html">SmearedDeltaSource</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/kwn/index.html">kwn</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ChemicalGibbsFreeEnergyDifference.html">ChemicalGibbsFreeEnergyDifference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/CurrentConcentration.html">CurrentConcentration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/IdealSolutionVolumetricDrivingForce.html">IdealSolutionVolumetricDrivingForce</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/KineticFactor.html">KineticFactor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/NucleationBarrierAndCriticalRadius.html">NucleationBarrierAndCriticalRadius</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/NucleationFluxMagnitude.html">NucleationFluxMagnitude</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/PrecipitateVolumeFraction.html">PrecipitateVolumeFraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ProjectedDiffusivitySum.html">ProjectedDiffusivitySum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/RateLimitedPrecipitateGrowthRate.html">RateLimitedPrecipitateGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/SFFKPrecipitationGrowthRate.html">SFFKPrecipitationGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ZeldovichFactor.html">ZeldovichFactor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/index.html">phase_field_fracture</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT1.html">CrackGeometricFunctionAT1</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT2.html">CrackGeometricFunctionAT2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.html">LinearIsotropicStrainEnergyDensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/PowerDegradationFunction.html">PowerDegradationFunction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/RationalDegradationFunction.html">RationalDegradationFunction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/index.html">porous_flow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/AdvectiveStress.html">AdvectiveStress</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/BrooksCoreyCapillaryPressure.html">BrooksCoreyCapillaryPressure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/EffectiveSaturation.html">EffectiveSaturation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/ExponentialLawPermeability.html">ExponentialLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/KozenyCarmanPermeability.html">KozenyCarmanPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/PowerLawPermeability.html">PowerLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/VanGenuchtenCapillaryPressure.html">VanGenuchtenCapillaryPressure</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/traction_separation_law/index.html">traction_separation_law</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/viscoelasticity/index.html">viscoelasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/AOTIModel.html">AOTIModel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Tensors/index.html">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVSR2.html">CSVSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVScalar.html">CSVScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/Python.html">Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/EquationSystems/index.html">Equation systems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/EquationSystems/NonlinearSystem.html">NonlinearSystem</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Drivers/index.html">Drivers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Drivers/TransientDriver.html">TransientDriver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Drivers/TransientRegression.html">TransientRegression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Drivers/Verification.html">Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Data/index.html">Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Data/CubicCrystal.html">CubicCrystal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python_api/index.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.factory.html">neml2.factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.schema.html">neml2.schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.models.model.html">neml2.models.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.models.chain_rule.html">neml2.models.chain_rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.models.resolver.html">neml2.models.resolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.types.html">neml2.types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.models.html">neml2.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.solvers.html">neml2.solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.es.html">neml2.es</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.drivers.html">neml2.drivers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.data.html">neml2.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.user_tensors.html">neml2.user_tensors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.models.export.html">neml2.models.export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.aoti.html">neml2.aoti</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.pyzag.html">neml2.pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.cli.html">neml2.cli</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#the-views">The views</a></li>
+<li><a class="reference internal" href="#why-t-batch-cant-be-reshaped">Why <code class="docutils literal notranslate">batch</span></code> can&#8217;t be reshaped</a></li>
+<li><a class="reference internal" href="#sub-batch-only-operations">Sub-batch-only operations</a></li>
+<li><a class="reference internal" href="#disambiguating-the-free-functions">Disambiguating the free functions</a></li>
+<li><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../index.html"><span itemprop="name">NEML2</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Tensor types</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Region views</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section class="tex2jax_ignore mathjax_ignore" id="region-views">
+<span id="tensor-types-region-views"></span><h1>Region views<a class="headerlink" href="#region-views" title="Link to this heading">¶</a></h1>
+<p>On a raw <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code>, <code class="docutils literal notranslate"><span class="pre">t.unsqueeze(0)</span></code> or <code class="docutils literal notranslate"><span class="pre">torch.sum(t,</span> <span class="pre">dim=1)</span></code>
+address axes by absolute position — and once a tensor mixes batch,
+sub-batch, and base axes, an absolute index is ambiguous and easy to
+get wrong. NEML2 fixes this by exposing every shape-manipulating op
+through a <strong>region view</strong>, so each reshape, reduction, or concatenation
+names the region it acts on.</p>
+<section id="the-views">
+<h2>The views<a class="headerlink" href="#the-views" title="Link to this heading">¶</a></h2>
+<p>Four properties select a region; each returns a fresh wrapper, so calls
+chain:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">t.dynamic_batch</span></code> — the dynamic batch region. Ops preserve
+<code class="docutils literal notranslate"><span class="pre">sub_batch_ndim</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t.sub_batch</span></code> — the sub-batch region. Ops adjust <code class="docutils literal notranslate"><span class="pre">sub_batch_ndim</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t.batch</span></code> — the combined region, for read-only <code class="docutils literal notranslate"><span class="pre">.shape</span></code> / <code class="docutils literal notranslate"><span class="pre">.ndim</span></code> and
+for <code class="docutils literal notranslate"><span class="pre">cat</span></code>; shape-<em>changing</em> ops on it raise (see below).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t.base</span></code> — the base region. Read-only except <code class="docutils literal notranslate"><span class="pre">transpose</span></code> on
+square-base types (<code class="docutils literal notranslate"><span class="pre">R2</span></code>, <code class="docutils literal notranslate"><span class="pre">SSR4</span></code>).</p></li>
+</ul>
+<p>Every mutable view exposes <code class="docutils literal notranslate"><span class="pre">.shape</span></code>, <code class="docutils literal notranslate"><span class="pre">.ndim</span></code>, <code class="docutils literal notranslate"><span class="pre">.unsqueeze(dim)</span></code>,
+<code class="docutils literal notranslate"><span class="pre">.squeeze(dim)</span></code>, and <code class="docutils literal notranslate"><span class="pre">.expand(*shape)</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SR2</span><span class="p">,</span> <span class="n">R2</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">broadcast</span> <span class="o">=</span> <span class="n">SR2</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dynamic_batch.expand(20) -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">broadcast</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="n">tr</span> <span class="o">=</span> <span class="n">R2</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="7"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;base.transpose(-2, -1)   -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">dynamic_batch.expand(20) -&gt; (20, 6)
+</span><span data-line="2">base.transpose(-2, -1)   -&gt; (3, 3)
+</span></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="why-t-batch-cant-be-reshaped">
+<h2>Why <code class="docutils literal notranslate"><span class="pre">t.batch</span></code> can’t be reshaped<a class="headerlink" href="#why-t-batch-cant-be-reshaped" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">t.batch</span></code> spans both batch regions at once, so a shape-changing op on it
+would be ambiguous: should a new axis land in the dynamic region or the
+sub-batch region? Rather than guess, those ops raise and tell you which
+view to pick:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">try</span><span class="p">:</span>
+</span><span data-line="2">    <span class="n">SR2</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="3"><span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+</span><span data-line="4">    <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">batch.unsqueeze is ambiguous; use t.dynamic_batch.unsqueeze(...) or t.sub_batch.unsqueeze(...)
+</span></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="sub-batch-only-operations">
+<h2>Sub-batch-only operations<a class="headerlink" href="#sub-batch-only-operations" title="Link to this heading">¶</a></h2>
+<p>The sub-batch view carries a few extra ops for building and collapsing
+per-site structure — <code class="docutils literal notranslate"><span class="pre">retag(n)</span></code> / <code class="docutils literal notranslate"><span class="pre">flatten()</span></code> to change how many
+trailing axes count as sub-batch, <code class="docutils literal notranslate"><span class="pre">expand_at(size)</span></code> to broadcast in a
+new site axis, and <code class="docutils literal notranslate"><span class="pre">diagonalize()</span></code> to turn a per-site vector into a
+per-site diagonal:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scalar</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">s</span> <span class="o">=</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">retag</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="5"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;expand_at(3) -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">expand_at</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;diagonalize  -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span><span data-line="7"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;flatten ndim -&gt;&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">expand_at(3) -&gt; (3, 5)
+</span><span data-line="2">diagonalize  -&gt; (5, 5)
+</span><span data-line="3">flatten ndim -&gt; 0
+</span></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="disambiguating-the-free-functions">
+<h2>Disambiguating the free functions<a class="headerlink" href="#disambiguating-the-free-functions" title="Link to this heading">¶</a></h2>
+<p>This is where region views earn their keep. Reductions, concatenation,
+and interpolation live as <strong>free functions</strong> in <code class="docutils literal notranslate"><span class="pre">neml2.types</span></code>, and they
+take a <em>region view</em> instead of a <code class="docutils literal notranslate"><span class="pre">dim=</span></code> integer. The view tells the
+function which region the axis index addresses — and lets it update the
+wrapper’s metadata correctly (e.g. dropping <code class="docutils literal notranslate"><span class="pre">sub_batch_ndim</span></code> when a
+sub-batch axis is reduced away).</p>
+<p><code class="docutils literal notranslate"><span class="pre">sum</span></code>, <code class="docutils literal notranslate"><span class="pre">mean</span></code>, and <code class="docutils literal notranslate"><span class="pre">diff</span></code> reduce or difference one region’s axis:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="nb">sum</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">linspace</span><span class="p">,</span> <span class="n">cat</span><span class="p">,</span> <span class="n">stack</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">ramp</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="mf">300.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">(</span><span class="mf">1200.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ramp sub_batch_shape -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">ramp</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">))</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ramp</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># reduce the sub-batch axis</span>
+</span><span data-line="7"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sum over sub_batch    -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">total</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="s2">&quot;sub_ndim&quot;</span><span class="p">,</span> <span class="n">total</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="8">
+</span><span data-line="9"><span class="n">avg</span> <span class="o">=</span> <span class="n">mean</span><span class="p">(</span><span class="n">ramp</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span><span data-line="10"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mean over sub_batch   -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">avg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span><span data-line="11">
+</span><span data-line="12"><span class="n">delta</span> <span class="o">=</span> <span class="n">diff</span><span class="p">(</span><span class="n">ramp</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="13"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;diff along sub_batch  -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">delta</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">))</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">ramp sub_batch_shape -&gt; (20,)
+</span><span data-line="2">sum over sub_batch    -&gt; () sub_ndim 0
+</span><span data-line="3">mean over sub_batch   -&gt; ()
+</span><span data-line="4">diff along sub_batch  -&gt; (19,)
+</span></pre></div>
+</div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">stack</span></code> and <code class="docutils literal notranslate"><span class="pre">cat</span></code> combine along a region’s axis; the view fixes which
+region grows:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vec</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">v0</span> <span class="o">=</span> <span class="n">Vec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">6.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">v1</span> <span class="o">=</span> <span class="n">Vec</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">8.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+</span><span data-line="5"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;stack on dynamic_batch -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">stack</span><span class="p">([</span><span class="n">v0</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="p">,</span> <span class="n">v1</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="p">])</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="n">a</span> <span class="o">=</span> <span class="n">Vec</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</span><span data-line="8"><span class="n">b</span> <span class="o">=</span> <span class="n">Vec</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cat on dynamic_batch   -&gt;&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">cat</span><span class="p">([</span><span class="n">a</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">stack on dynamic_batch -&gt; (2, 3)
+</span><span data-line="2">cat on dynamic_batch   -&gt; (5, 3)
+</span></pre></div>
+</div>
+</div>
+</div>
+<p>And <code class="docutils literal notranslate"><span class="pre">linspace</span></code> / <code class="docutils literal notranslate"><span class="pre">logspace</span></code> build a ramp along whichever region you pass
+the endpoints as — the single v3 spelling that replaces v2’s separate
+<code class="docutils literal notranslate"><span class="pre">dynamic_linspace</span></code> / <code class="docutils literal notranslate"><span class="pre">intmd_linspace</span></code> / <code class="docutils literal notranslate"><span class="pre">base_linspace</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">dyn</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">dynamic_batch</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;endpoints as .dynamic_batch -&gt; new dynamic axis &quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">dyn</span><span class="o">.</span><span class="n">dynamic_batch_shape</span><span class="p">))</span>
+</span><span data-line="3"><span class="n">sub</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">sub_batch</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;endpoints as .sub_batch     -&gt; new sub-batch axis&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sub</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">))</span>
+</span></pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">endpoints as .dynamic_batch -&gt; new dynamic axis  (5,)
+</span><span data-line="2">endpoints as .sub_batch     -&gt; new sub-batch axis (5,)
+</span></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="indexing.html#tensor-types-indexing"><span class="std std-ref">Indexing</span></a> — region-scoped indexing follows the same
+view convention.</p></li>
+<li><p><a class="reference internal" href="regions.html#tensor-types-regions"><span class="std std-ref">Tensor shape regions</span></a> — the regions these views select.</p></li>
+</ul>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="batching.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Batching and broadcasting</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="indexing.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Indexing</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, UChicago Argonne, LLC</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=7abfc884"></script>
+      <script src="../../_static/shibuya.js?v=50760d75"></script>
+      <script src="../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
+      <script src="../../_static/components/version-banner.js?v=62c7e18e"></script></body>
+</html>
