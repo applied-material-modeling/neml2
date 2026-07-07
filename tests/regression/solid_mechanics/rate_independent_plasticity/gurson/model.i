@@ -110,7 +110,7 @@
     variable = 'equivalent_plastic_strain'
   []
   [consistency]
-    type = FBComplementarity
+    type = MinMapComplementarity
     a = 'yield_function'
     a_inequality = 'LE'
     b = 'flow_rate'

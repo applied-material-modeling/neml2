@@ -92,6 +92,7 @@ from .LinearCombination import ScalarLinearCombination, SR2LinearCombination
 from .LinearExtrapolationPredictor import LinearExtrapolationPredictor
 from .LinearInterpolation import ScalarLinearInterpolation
 from .MacaulaySplit import MacaulaySplit
+from .MinMapComplementarity import MinMapComplementarity
 from .MixedControlSetup import MixedControlSetup
 from .ParameterToVariable import (
     MillerIndexParameterToVariable,
@@ -141,6 +142,7 @@ __all__ = [
     "HermiteSmoothStep",
     "IrreversibleScalar",
     "MacaulaySplit",
+    "MinMapComplementarity",
     "ConstantExtrapolationPredictor",
     "LinearExtrapolationPredictor",
     "MillerIndexConstantParameter",

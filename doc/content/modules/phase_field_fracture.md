@@ -52,8 +52,18 @@ $$
 f + \dot{d} - \sqrt{f^2 + \dot{d}^2} = 0,
 $$
 
-which can be solved for $d$ with a standard Newton iteration. The stress
-is obtained from the same potential by differentiation,
+which can be solved for $d$ with a standard Newton iteration.
+
+:::{note}
+The same complementarity conditions can instead be enforced with the
+hard-switch minimum map $\min(-f, \dot{d}) = 0$
+([](models-MinMapComplementarity)), which is piecewise-linear and usually
+converges more robustly than the smooth Fischer–Burmeister residual (see
+the [consistent-plasticity discussion](solid_mechanics/plasticity.md) for
+the trade-off). Swap the `type` in the `Fish_Burm` block below to try it.
+:::
+
+The stress is obtained from the same potential by differentiation,
 
 $$
 \mathbf{S} = \frac{\partial \psi}{\partial \mathbf{E}}.
