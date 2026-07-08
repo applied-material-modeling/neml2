@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -405,7 +407,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="tensor-types">
-<span id="id1"></span><h1>Tensor types<a class="headerlink" href="#tensor-types" title="Link to this heading">¶</a></h1>
+<span id="id1"></span><h1>Tensor types<a class="headerlink" href="#tensor-types" title="Link to this heading">#</a></h1>
 <p>NEML2 evaluates constitutive models on batched tensor data, and PyTorch
 is the tensor backend — every value in the system is a <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code> at
 the storage level. But a bare <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code> is just a block of numbers
@@ -414,7 +416,7 @@ are a stress, a strain, or six unrelated scalars, and nothing protects
 the <code class="docutils literal notranslate"><span class="pre">√2</span></code> packing convention a symmetric tensor relies on. NEML2 closes
 that gap by wrapping each tensor in a <em>typed wrapper</em>.</p>
 <section id="what-a-wrapper-is">
-<h2>What a wrapper is<a class="headerlink" href="#what-a-wrapper-is" title="Link to this heading">¶</a></h2>
+<h2>What a wrapper is<a class="headerlink" href="#what-a-wrapper-is" title="Link to this heading">#</a></h2>
 <p>Each wrapper is a small frozen dataclass holding <strong>one</strong> field of
 substance — <code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">torch.Tensor</span></code> — plus a little metadata. The wrapped
 tensor is always reachable as <code class="docutils literal notranslate"><span class="pre">.data</span></code>:</p>
@@ -441,7 +443,7 @@ part that has no equivalent on a raw <code class="docutils literal notranslate">
 </ul>
 </section>
 <section id="how-to-read-this-section">
-<h2>How to read this section<a class="headerlink" href="#how-to-read-this-section" title="Link to this heading">¶</a></h2>
+<h2>How to read this section<a class="headerlink" href="#how-to-read-this-section" title="Link to this heading">#</a></h2>
 <p>If you already know PyTorch tensors, the fastest way to learn the
 wrappers is to focus on <strong>where they differ</strong> from a raw <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code>
 — that is how the rest of this section is organized:</p>
@@ -464,7 +466,7 @@ how it relates to ordinary NumPy/torch indexing.</p></li>
 </div>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../tutorials/models/vectorization/main.html#tutorials-models-vectorization"><span class="std std-ref">Vectorization</span></a> — the everyday user-facing view
 of batching with a timed loop-vs-batched comparison.</p></li>
@@ -513,9 +515,9 @@ constructs wrappers from HIT.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

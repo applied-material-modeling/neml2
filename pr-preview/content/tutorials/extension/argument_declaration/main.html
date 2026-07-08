@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -411,13 +413,13 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="declaring-inputs-outputs-and-parameters">
-<span id="tutorials-extension-arguments"></span><h1>Declaring inputs, outputs, and parameters<a class="headerlink" href="#declaring-inputs-outputs-and-parameters" title="Link to this heading">¶</a></h1>
+<span id="tutorials-extension-arguments"></span><h1>Declaring inputs, outputs, and parameters<a class="headerlink" href="#declaring-inputs-outputs-and-parameters" title="Link to this heading">#</a></h1>
 <p>This tutorial walks through how to declare the inputs, outputs, and
 parameters of a custom model. The next tutorial in the series
 (<a class="reference internal" href="../the_forward_operator/main.html#tutorials-extension-forward"><span class="std std-ref">The forward operator</span></a>) shows how to fill in the actual
 computation.</p>
 <section id="the-running-example">
-<h2>The running example<a class="headerlink" href="#the-running-example" title="Link to this heading">¶</a></h2>
+<h2>The running example<a class="headerlink" href="#the-running-example" title="Link to this heading">#</a></h2>
 <p>A projectile of velocity <span class="math notranslate nohighlight">\(\boldsymbol{v}\)</span> in a viscous medium feels
 gravity plus linear drag:</p>
 <div class="math-wrapper docutils container">
@@ -437,7 +439,7 @@ constant of the environment).</p></li>
 </ul>
 </section>
 <section id="the-schema">
-<h2>The schema<a class="headerlink" href="#the-schema" title="Link to this heading">¶</a></h2>
+<h2>The schema<a class="headerlink" href="#the-schema" title="Link to this heading">#</a></h2>
 <p>A model declares its inputs, outputs, parameters, and buffers in one
 class-level <code class="docutils literal notranslate"><span class="pre">hit</span> <span class="pre">=</span> <span class="pre">HitSchema(...)</span></code> block. Each line is a single call
 to a helper from <code class="docutils literal notranslate"><span class="pre">neml2.schema</span></code>:</p>
@@ -488,7 +490,7 @@ GPU when the model does) but isn’t trainable.</p></li>
 </ul>
 </section>
 <section id="variable-declaration">
-<h2>Variable declaration<a class="headerlink" href="#variable-declaration" title="Link to this heading">¶</a></h2>
+<h2>Variable declaration<a class="headerlink" href="#variable-declaration" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">input</span><span class="p">(</span><span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="s2">&quot;Velocity of the projectile&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -556,7 +558,7 @@ return tuple. The next tutorial,
 </div>
 </section>
 <section id="parameter-declaration">
-<h2>Parameter declaration<a class="headerlink" href="#parameter-declaration" title="Link to this heading">¶</a></h2>
+<h2>Parameter declaration<a class="headerlink" href="#parameter-declaration" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">parameter</span><span class="p">(</span>
 </span><span data-line="2">    <span class="s2">&quot;dynamic_viscosity&quot;</span><span class="p">,</span>
 </span><span data-line="3">    <span class="n">Scalar</span><span class="p">,</span>
@@ -627,7 +629,7 @@ unchanged — <code class="docutils literal notranslate"><span class="pre">model
 <code class="docutils literal notranslate"><span class="pre">torch.optim.Adam(model.parameters(),</span> <span class="pre">...)</span></code>, etc.</p>
 </section>
 <section id="inspecting-the-declared-surface">
-<h2>Inspecting the declared surface<a class="headerlink" href="#inspecting-the-declared-surface" title="Link to this heading">¶</a></h2>
+<h2>Inspecting the declared surface<a class="headerlink" href="#inspecting-the-declared-surface" title="Link to this heading">#</a></h2>
 <p>Once the declarations are in place, the surface is available as
 attributes:</p>
 <div class="cell docutils container">
@@ -696,9 +698,9 @@ these declarations into actual computation.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

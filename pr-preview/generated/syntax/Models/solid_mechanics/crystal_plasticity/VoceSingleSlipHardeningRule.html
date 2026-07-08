@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>VoceSingleSlipHardeningRule - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="elasticity" href="../elasticity/index.html" /><link rel="prev" title="SumSlipRates" href="SumSlipRates.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>VoceSingleSlipHardeningRule - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="damage" href="../damage/index.html" /><link rel="prev" title="SumSlipRates" href="SumSlipRates.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html">solid_mechanics</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../plasticity/index.html">plasticity</a></li>
@@ -421,7 +423,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="vocesinglesliphardeningrule">
-<span id="models-vocesinglesliphardeningrule"></span><h1>VoceSingleSlipHardeningRule<a class="headerlink" href="#vocesinglesliphardeningrule" title="Link to this heading">¶</a></h1>
+<span id="models-vocesinglesliphardeningrule"></span><h1>VoceSingleSlipHardeningRule<a class="headerlink" href="#vocesinglesliphardeningrule" title="Link to this heading">#</a></h1>
 <p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.py</span></code></p>
 <p>Voce hardening for a SingleSlipStrength type model defined by
 <span class="math notranslate nohighlight">\(\dot{\tau} = \theta_0 \left( 1 - \frac{\tau}{\tau_f} \right) \sum_{i=1}^{n_{slip}} \left| \dot{\gamma}_i \right|\)</span>
@@ -430,7 +432,7 @@ where
 the saturated, maximum value of the slip system strength, and
 <span class="math notranslate nohighlight">\(\dot{\gamma}_i\)</span> is the slip rate on each system.</p>
 <section id="inputs">
-<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">¶</a></h2>
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
 <dt><code class="docutils literal notranslate"><span class="pre">slip_hardening</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Name of current values of slip hardening</p>
 </dd>
@@ -439,14 +441,14 @@ the saturated, maximum value of the slip system strength, and
 </dl>
 </section>
 <section id="outputs">
-<h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">¶</a></h2>
+<h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
 <dt><code class="docutils literal notranslate"><span class="pre">slip_hardening_rate</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Name of the slip hardening rate</p>
 </dd>
 </dl>
 </section>
 <section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
 <dt><code class="docutils literal notranslate"><span class="pre">initial_slope</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The initial rate of hardening</p>
 </dd>
@@ -468,10 +470,10 @@ the saturated, maximum value of the slip system strength, and
         <span>Previous</span><div class="title">SumSlipRates</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="../elasticity/index.html">
+    <a href="../damage/index.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">elasticity</div>
+        <div class="title">damage</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
@@ -493,9 +495,9 @@ the saturated, maximum value of the slip system strength, and
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

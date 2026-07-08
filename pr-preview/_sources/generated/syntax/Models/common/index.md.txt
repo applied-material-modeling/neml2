@@ -28,6 +28,7 @@ MacaulaySplit
 MillerIndexConstantParameter
 MillerIndexInputParameter
 MillerIndexParameterToVariable
+MinMapComplementarity
 MixedControlSetup
 R2BackwardEulerTimeIntegration
 R2ConstantParameter

@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -418,12 +420,12 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="model-parameters">
-<span id="tutorials-models-parameters"></span><h1>Model parameters<a class="headerlink" href="#model-parameters" title="Link to this heading">¶</a></h1>
+<span id="tutorials-models-parameters"></span><h1>Model parameters<a class="headerlink" href="#model-parameters" title="Link to this heading">#</a></h1>
 <p>In this tutorial, we’ll pick up the <code class="docutils literal notranslate"><span class="pre">LinearIsotropicElasticity</span></code> model from
 <a class="reference internal" href="../running_your_first_model/main.html#tutorials-models-running-your-first-model"><span class="std std-ref">Running your first model</span></a> and read, change, and
 differentiate through its moduli from Python.</p>
 <section id="the-input-file">
-<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">¶</a></h2>
+<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">#</a></h2>
 <p>Same input file as the previous tutorial — re-used here so we can focus
 on the parameters:</p>
 <div class="cell docutils container">
@@ -450,7 +452,7 @@ on the parameters:</p>
 </div>
 </section>
 <section id="listing-the-parameters">
-<h2>Listing the parameters<a class="headerlink" href="#listing-the-parameters" title="Link to this heading">¶</a></h2>
+<h2>Listing the parameters<a class="headerlink" href="#listing-the-parameters" title="Link to this heading">#</a></h2>
 <p>A NEML2 model is a <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>, so <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> works
 the same way it does for any PyTorch model:</p>
 <div class="cell docutils container">
@@ -475,7 +477,7 @@ the same way it does for any PyTorch model:</p>
 we passed in the input file.</p>
 </section>
 <section id="reading-a-parameter-by-name">
-<h2>Reading a parameter by name<a class="headerlink" href="#reading-a-parameter-by-name" title="Link to this heading">¶</a></h2>
+<h2>Reading a parameter by name<a class="headerlink" href="#reading-a-parameter-by-name" title="Link to this heading">#</a></h2>
 <p>Each parameter is also exposed as a Python attribute on the model.
 Reading <code class="docutils literal notranslate"><span class="pre">model.E</span></code> returns a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> — one of NEML2’s typed tensor
 wrappers (see <a class="reference internal" href="../../../tensor_types/index.html#tensor-types"><span class="std std-ref">Tensor types</span></a> for the full list):</p>
@@ -515,12 +517,12 @@ stays on the typed wrappers.)</p>
 </div>
 </section>
 <section id="changing-a-parameter">
-<h2>Changing a parameter<a class="headerlink" href="#changing-a-parameter" title="Link to this heading">¶</a></h2>
+<h2>Changing a parameter<a class="headerlink" href="#changing-a-parameter" title="Link to this heading">#</a></h2>
 <p>There are two ways to change a parameter at runtime. Pick based on
 whether we want to keep the existing <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code> (and any
 optimizer state attached to it) or replace it outright.</p>
 <section id="in-place-on-data">
-<h3>In place, on <code class="docutils literal notranslate"><span class="pre">.data</span></code><a class="headerlink" href="#in-place-on-data" title="Link to this heading">¶</a></h3>
+<h3>In place, on <code class="docutils literal notranslate"><span class="pre">.data</span></code><a class="headerlink" href="#in-place-on-data" title="Link to this heading">#</a></h3>
 <p>In-place mutation keeps the same <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code> object. Leaf tensors
 that require grad can’t be mutated in place directly — autograd would
 lose the history. Wrap the mutation in <code class="docutils literal notranslate"><span class="pre">torch.no_grad()</span></code> to tell
@@ -549,7 +551,7 @@ reference to the underlying <code class="docutils literal notranslate"><span cla
 writes back to that same Parameter.</p>
 </section>
 <section id="rebinding-the-attribute">
-<h3>Rebinding the attribute<a class="headerlink" href="#rebinding-the-attribute" title="Link to this heading">¶</a></h3>
+<h3>Rebinding the attribute<a class="headerlink" href="#rebinding-the-attribute" title="Link to this heading">#</a></h3>
 <p>Assigning a fresh <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code> swaps the slot wholesale:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -574,7 +576,7 @@ one.</p>
 </section>
 </section>
 <section id="freezing-a-parameter">
-<h2>Freezing a parameter<a class="headerlink" href="#freezing-a-parameter" title="Link to this heading">¶</a></h2>
+<h2>Freezing a parameter<a class="headerlink" href="#freezing-a-parameter" title="Link to this heading">#</a></h2>
 <p>Toggle <code class="docutils literal notranslate"><span class="pre">requires_grad</span></code> off and the parameter is excluded from
 autodiff — its gradient stays <code class="docutils literal notranslate"><span class="pre">None</span></code> through a backward pass, and any
 optimizer tracking it will leave it alone:</p>
@@ -595,7 +597,7 @@ optimizer tracking it will leave it alone:</p>
 see <a class="reference internal" href="../../optimization/parameter_calibration/main.html#tutorials-optimization-calibration"><span class="std std-ref">Parameter calibration</span></a> for the full workflow.</p>
 </section>
 <section id="parameters-flow-into-outputs">
-<h2>Parameters flow into outputs<a class="headerlink" href="#parameters-flow-into-outputs" title="Link to this heading">¶</a></h2>
+<h2>Parameters flow into outputs<a class="headerlink" href="#parameters-flow-into-outputs" title="Link to this heading">#</a></h2>
 <p>Changing a parameter changes the next evaluation’s output. Reload the
 model so the state is clean, then evaluate it once, halve <code class="docutils literal notranslate"><span class="pre">E</span></code>, and
 evaluate again:</p>
@@ -627,7 +629,7 @@ second row is exactly half the first. Any parameter change shows up on
 the next forward call — no need to re-load the input file.</p>
 </section>
 <section id="differentiating-through-parameters">
-<h2>Differentiating through parameters<a class="headerlink" href="#differentiating-through-parameters" title="Link to this heading">¶</a></h2>
+<h2>Differentiating through parameters<a class="headerlink" href="#differentiating-through-parameters" title="Link to this heading">#</a></h2>
 <p>Autodiff flows through NEML2 parameters just like it does through any
 other <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> weight. Backward from a scalar reduction of the
 output gives gradients on each parameter:</p>
@@ -660,7 +662,7 @@ calibration through a time-stepped transient, see
 <a class="reference internal" href="../../optimization/pyzag.html#tutorials-optimization-pyzag"><span class="std std-ref">Recurrent calibration with pyzag</span></a>.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>A parameter doesn’t have to be a literal — it can also be supplied
 by another model, promoted to an input on the host, or shared
@@ -716,9 +718,9 @@ against experimental data via PyTorch autograd.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

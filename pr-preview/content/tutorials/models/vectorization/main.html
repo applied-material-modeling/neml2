@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -411,7 +413,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="vectorization">
-<span id="tutorials-models-vectorization"></span><h1>Vectorization<a class="headerlink" href="#vectorization" title="Link to this heading">¶</a></h1>
+<span id="tutorials-models-vectorization"></span><h1>Vectorization<a class="headerlink" href="#vectorization" title="Link to this heading">#</a></h1>
 <p>In this tutorial, we’ll evaluate the elasticity model from
 <a class="reference internal" href="../running_your_first_model/main.html#tutorials-models-running-your-first-model"><span class="std std-ref">Running your first model</span></a> on a whole batch of
 strain states in one call, then time it against a Python <code class="docutils literal notranslate"><span class="pre">for</span></code>-loop
@@ -419,7 +421,7 @@ to see how much the loop costs. The short version: when we have
 many states, stack them into one batched input and let the model
 evaluate them in a single call.</p>
 <section id="the-input-file">
-<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">¶</a></h2>
+<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">#</a></h2>
 <p>We reuse the elasticity model from the first tutorial unchanged:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -465,7 +467,7 @@ evaluate them in a single call.</p>
 </div>
 </section>
 <section id="one-state-at-a-time">
-<h2>One state at a time<a class="headerlink" href="#one-state-at-a-time" title="Link to this heading">¶</a></h2>
+<h2>One state at a time<a class="headerlink" href="#one-state-at-a-time" title="Link to this heading">#</a></h2>
 <p>A single (unbatched) strain has base shape <code class="docutils literal notranslate"><span class="pre">(6,)</span></code> — the six independent
 components of an <code class="docutils literal notranslate"><span class="pre">SR2</span></code> in Mandel packing. The model returns a stress
 of the same shape:</p>
@@ -484,7 +486,7 @@ of the same shape:</p>
 </div>
 </section>
 <section id="a-batch-of-states-in-one-call">
-<h2>A batch of states in one call<a class="headerlink" href="#a-batch-of-states-in-one-call" title="Link to this heading">¶</a></h2>
+<h2>A batch of states in one call<a class="headerlink" href="#a-batch-of-states-in-one-call" title="Link to this heading">#</a></h2>
 <p>To evaluate the model on <code class="docutils literal notranslate"><span class="pre">N</span></code> strain states at once, build the input
 with a <em>leading batch dimension</em>: shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">6)</span></code> instead of <code class="docutils literal notranslate"><span class="pre">(6,)</span></code>.
 The output comes back with the same leading shape:</p>
@@ -543,7 +545,7 @@ and so on.</p>
 </div>
 </section>
 <section id="loop-vs-batched-a-numerical-experiment">
-<h2>Loop vs. batched: a numerical experiment<a class="headerlink" href="#loop-vs-batched-a-numerical-experiment" title="Link to this heading">¶</a></h2>
+<h2>Loop vs. batched: a numerical experiment<a class="headerlink" href="#loop-vs-batched-a-numerical-experiment" title="Link to this heading">#</a></h2>
 <p>How much does the loop actually cost? Evaluate the same elastic model
 on <span class="math notranslate nohighlight">\(N=10{,}000\)</span> strain states two ways — a Python loop over single
 states and one batched call — and time just the model evaluations:</p>
@@ -574,9 +576,9 @@ states and one batched call — and time just the model evaluations:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">python loop:  3961.68 ms
-</span><span data-line="2">batched:         2.16 ms
-</span><span data-line="3">speedup:       1836.1x
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">python loop:  2965.33 ms
+</span><span data-line="2">batched:         2.31 ms
+</span><span data-line="3">speedup:       1284.2x
 </span></pre></div>
 </div>
 </div>
@@ -588,7 +590,7 @@ Python-level launch carries extra latency, the gap is usually wider
 still.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../evaluation_device/main.html#tutorials-models-evaluation-device"><span class="std std-ref">Evaluation device</span></a> — the same batched call
 runs on CUDA once we move the model and the input there with
@@ -641,9 +643,9 @@ state through a load history, where each batched call is one step.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

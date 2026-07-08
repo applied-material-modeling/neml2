@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -412,7 +414,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="cli-utilities">
-<span id="id1"></span><h1>CLI utilities<a class="headerlink" href="#cli-utilities" title="Link to this heading">¶</a></h1>
+<span id="id1"></span><h1>CLI utilities<a class="headerlink" href="#cli-utilities" title="Link to this heading">#</a></h1>
 <p>The command line is the third way to use neml2 — alongside the Python
 (<a class="reference internal" href="python.html#python-integration"><span class="std std-ref">Python integration</span></a>) and C++ (<a class="reference internal" href="cpp.html#external-project-integration"><span class="std std-ref">C++ integration</span></a>) runtimes,
 you can drive a model end to end from a shell, with no code. The NEML2 wheel
@@ -471,7 +473,7 @@ contract.</p>
 isotropic elastic model named <code class="docutils literal notranslate"><span class="pre">elasticity</span></code>, wrapped in a five-step
 <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code> named <code class="docutils literal notranslate"><span class="pre">driver</span></code>:</p>
 <div class="literal-block-wrapper docutils container" id="id2">
-<div class="code-block-caption"><span class="caption-number">Listing 5 </span><span class="caption-text">input.i</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-number">Listing 5 </span><span class="caption-text">input.i</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Small worked example for the CLI utilities tutorial: a linear isotropic</span>
 </span><span data-line="2"><span class="c1"># elastic model driven through a 5-step uniaxial tension history. The same</span>
 </span><span data-line="3"><span class="c1"># input is reused across the neml2-run / neml2-inspect / neml2-compile</span>
@@ -510,7 +512,7 @@ isotropic elastic model named <code class="docutils literal notranslate"><span c
 </div>
 </div>
 <section id="neml2-run">
-<h2><code class="docutils literal notranslate"><span class="pre">neml2-run</span></code><a class="headerlink" href="#neml2-run" title="Link to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">neml2-run</span></code><a class="headerlink" href="#neml2-run" title="Link to this heading">#</a></h2>
 <p>Loads an input file, instantiates the named driver, and calls its
 <code class="docutils literal notranslate"><span class="pre">run()</span></code> method. Use it whenever you want to step a model through a load
 history from the shell — from a shell script, a CI job, a parameter
@@ -567,7 +569,7 @@ If that gets fiddly, edit the input file directly or use the Python
 API.</p>
 </section>
 <section id="neml2-inspect">
-<span id="cli-neml2-inspect"></span><h2><code class="docutils literal notranslate"><span class="pre">neml2-inspect</span></code><a class="headerlink" href="#neml2-inspect" title="Link to this heading">¶</a></h2>
+<span id="cli-neml2-inspect"></span><h2><code class="docutils literal notranslate"><span class="pre">neml2-inspect</span></code><a class="headerlink" href="#neml2-inspect" title="Link to this heading">#</a></h2>
 <p>Loads a single model from an input file and prints its structural
 summary: input variables, output variables, parameters, and buffers
 (each with dtype, device, and shape). Use it any time you want to
@@ -620,7 +622,7 @@ consumption via <code class="docutils literal notranslate"><span class="pre">--j
 </div>
 </section>
 <section id="neml2-syntax">
-<h2><code class="docutils literal notranslate"><span class="pre">neml2-syntax</span></code><a class="headerlink" href="#neml2-syntax" title="Link to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">neml2-syntax</span></code><a class="headerlink" href="#neml2-syntax" title="Link to this heading">#</a></h2>
 <p>Browses the registered-object catalog: every concrete class that can
 appear in a HIT input file, along with its section, docstring, and
 full option schema. It is the discovery tool — use it when you don’t
@@ -695,7 +697,7 @@ class — the same data the documentation’s syntax catalog under
 </div>
 </section>
 <section id="neml2-compile">
-<h2><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code><a class="headerlink" href="#neml2-compile" title="Link to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code><a class="headerlink" href="#neml2-compile" title="Link to this heading">#</a></h2>
 <p>Exports a model to an AOT-Inductor package — one or more <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>
 files plus a metadata JSON and a drop-in HIT stub — that can be
 loaded later from either Python or C++ without parsing the original
@@ -803,7 +805,7 @@ into a frozen graph for performance.</p>
 compiled and <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> raise at runtime. Request the pairs you
 need with <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">OUT:IN</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">stress:strain</span></code>, or <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">:</span></code> for all).</p>
 <section id="boundary-renaming">
-<h3>Boundary renaming<a class="headerlink" href="#boundary-renaming" title="Link to this heading">¶</a></h3>
+<h3>Boundary renaming<a class="headerlink" href="#boundary-renaming" title="Link to this heading">#</a></h3>
 <p>A downstream consumer may need the compiled model’s variables to carry its own
 names. Rename them at the artifact’s boundary with <code class="docutils literal notranslate"><span class="pre">--rename-input</span> <span class="pre">ORIG:NEW</span></code>,
 <code class="docutils literal notranslate"><span class="pre">--rename-output</span> <span class="pre">ORIG:NEW</span></code>, and <code class="docutils literal notranslate"><span class="pre">--rename-parameter</span> <span class="pre">ORIG:NEW</span></code> (each repeatable).
@@ -825,7 +827,7 @@ trade-offs against eager mode — lives in
 <a class="reference internal" href="../tutorials/models/compiled_models/main.html#tutorials-models-compiled"><span class="std std-ref">Compiled models</span></a>.</p>
 </section>
 <section id="interactive-mode-i-interactive">
-<h3>Interactive mode (<code class="docutils literal notranslate"><span class="pre">-i</span></code> / <code class="docutils literal notranslate"><span class="pre">--interactive</span></code>)<a class="headerlink" href="#interactive-mode-i-interactive" title="Link to this heading">¶</a></h3>
+<h3>Interactive mode (<code class="docutils literal notranslate"><span class="pre">-i</span></code> / <code class="docutils literal notranslate"><span class="pre">--interactive</span></code>)<a class="headerlink" href="#interactive-mode-i-interactive" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>’s flag surface is wide and interdependent: the promotable
 parameter names (<code class="docutils literal notranslate"><span class="pre">-p</span></code>), the valid <code class="docutils literal notranslate"><span class="pre">OUT:IN</span></code> derivative pairs (<code class="docutils literal notranslate"><span class="pre">-d</span></code>), and the
 variables available to rename (<code class="docutils literal notranslate"><span class="pre">--rename-*</span></code>) only exist once the model is loaded
@@ -843,7 +845,7 @@ flag prints a <code class="docutils literal notranslate"><span class="pre">pip</
 </section>
 </section>
 <section id="neml2-stub">
-<h2><code class="docutils literal notranslate"><span class="pre">neml2-stub</span></code><a class="headerlink" href="#neml2-stub" title="Link to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">neml2-stub</span></code><a class="headerlink" href="#neml2-stub" title="Link to this heading">#</a></h2>
 <p>Regenerates <code class="docutils literal notranslate"><span class="pre">.pyi</span></code> type stubs for every pybind11 extension module in the
 installed <code class="docutils literal notranslate"><span class="pre">neml2</span></code> package (currently <code class="docutils literal notranslate"><span class="pre">neml2.aoti._aoti</span></code>). The stubs are
 written next to their <code class="docutils literal notranslate"><span class="pre">.so</span></code> files so that pyright and IDE autocompletion
@@ -910,7 +912,7 @@ wheel-building pipeline. Any extra arguments are forwarded verbatim to
 <code class="docutils literal notranslate"><span class="pre">pybind11_stubgen</span></code>.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>The five scripts are also importable as <code class="docutils literal notranslate"><span class="pre">neml2.cli.run.main</span></code>,
 <code class="docutils literal notranslate"><span class="pre">neml2.cli.inspect.main</span></code>, <code class="docutils literal notranslate"><span class="pre">neml2.cli.syntax.main</span></code>,
@@ -964,9 +966,9 @@ C++ deployment story.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

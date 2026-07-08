@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -420,7 +422,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="plotting-pole-figures">
-<h1>Plotting pole figures<a class="headerlink" href="#plotting-pole-figures" title="Link to this heading">¶</a></h1>
+<h1>Plotting pole figures<a class="headerlink" href="#plotting-pole-figures" title="Link to this heading">#</a></h1>
 <p>This example shows how to plot pole figures with the <code class="docutils literal notranslate"><span class="pre">neml2.texture</span></code> routines. It
 loads a crystal plasticity model, uses it to generate reorientation data under
 rolling, and then plots three kinds of texture figure: a discrete <span class="math notranslate nohighlight">\(\{111\}\)</span> pole
@@ -440,7 +442,7 @@ more on the pyzag driver.</p>
 pre-executed; it runs on the GPU when one is available.</p>
 </div>
 <section id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading">¶</a></h2>
+<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading">#</a></h2>
 <p>This example simulates rolling in an FCC material: <code class="docutils literal notranslate"><span class="pre">rate</span></code> is the strain rate,
 <code class="docutils literal notranslate"><span class="pre">total_rolling_strain</span></code> the reduction strain, <code class="docutils literal notranslate"><span class="pre">ntime</span></code> the number of time steps,
 <code class="docutils literal notranslate"><span class="pre">ncrystal</span></code> the number of random initial orientations, and <code class="docutils literal notranslate"><span class="pre">nchunk</span></code> the pyzag
@@ -495,7 +497,7 @@ orientations are sampled uniformly on <span class="math notranslate nohighlight"
 </div>
 </section>
 <section id="integrate-the-rolling-deformation">
-<h2>Integrate the rolling deformation<a class="headerlink" href="#integrate-the-rolling-deformation" title="Link to this heading">¶</a></h2>
+<h2>Integrate the rolling deformation<a class="headerlink" href="#integrate-the-rolling-deformation" title="Link to this heading">#</a></h2>
 <p>The pyzag driver below packs the typed force tensors into the model’s flat force
 layout, seeds the initial orientation into the state vector, integrates the
 history, and slices the final orientation back out — the same metadata-safe round
@@ -571,7 +573,7 @@ trip used in the formulations example.</p>
 </div>
 </section>
 <section id="discrete-pole-figure">
-<h2>Discrete pole figure<a class="headerlink" href="#discrete-pole-figure" title="Link to this heading">¶</a></h2>
+<h2>Discrete pole figure<a class="headerlink" href="#discrete-pole-figure" title="Link to this heading">#</a></h2>
 <p>Plot a discrete <span class="math notranslate nohighlight">\(\{111\}\)</span> pole figure of the final orientations under cubic
 crystal symmetry (<code class="docutils literal notranslate"><span class="pre">&quot;432&quot;</span></code>). Each crystal contributes its symmetry-equivalent
 <span class="math notranslate nohighlight">\(\{111\}\)</span> poles projected onto the unit disk.</p>
@@ -591,7 +593,7 @@ crystal symmetry (<code class="docutils literal notranslate"><span class="pre">&
 </div>
 </section>
 <section id="discrete-inverse-pole-figure">
-<h2>Discrete inverse pole figure<a class="headerlink" href="#discrete-inverse-pole-figure" title="Link to this heading">¶</a></h2>
+<h2>Discrete inverse pole figure<a class="headerlink" href="#discrete-inverse-pole-figure" title="Link to this heading">#</a></h2>
 <p>An inverse pole figure shows which crystal directions align with a chosen sample
 direction — here the transverse direction <span class="math notranslate nohighlight">\([0, 1, 0]\)</span>.</p>
 <div class="cell docutils container">
@@ -610,7 +612,7 @@ direction — here the transverse direction <span class="math notranslate nohigh
 </div>
 </section>
 <section id="odf-reconstruction">
-<h2>ODF reconstruction<a class="headerlink" href="#odf-reconstruction" title="Link to this heading">¶</a></h2>
+<h2>ODF reconstruction<a class="headerlink" href="#odf-reconstruction" title="Link to this heading">#</a></h2>
 <p>Reconstruct a continuous ODF from the discrete orientations with a kernel density
 estimate. The de la Vallee Poussin kernel half-width is selected by
 cross-validation; we print the optimized value.</p>
@@ -632,7 +634,7 @@ cross-validation; we print the optimized value.</p>
 </div>
 </section>
 <section id="continuous-pole-figure">
-<h2>Continuous pole figure<a class="headerlink" href="#continuous-pole-figure" title="Link to this heading">¶</a></h2>
+<h2>Continuous pole figure<a class="headerlink" href="#continuous-pole-figure" title="Link to this heading">#</a></h2>
 <p>Use the reconstructed ODF to plot a smooth, continuous <span class="math notranslate nohighlight">\(\{111\}\)</span> pole figure. The
 contour values are in multiples of a random distribution (MRD).</p>
 <div class="cell docutils container">
@@ -693,9 +695,9 @@ contour values are in multiples of a random distribution (MRD).</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

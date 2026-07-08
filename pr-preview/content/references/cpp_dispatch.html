@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -412,7 +414,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="cpp-dispatch-dispatching-across-devices">
-<span id="model-dispatch"></span><h1><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices<a class="headerlink" href="#cpp-dispatch-dispatching-across-devices" title="Link to this heading">¶</a></h1>
+<span id="model-dispatch"></span><h1><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices<a class="headerlink" href="#cpp-dispatch-dispatching-across-devices" title="Link to this heading">#</a></h1>
 <p>Modern compute nodes are heterogeneous: one or more CPUs alongside one or more
 GPUs. The <strong>work scheduler / dispatcher</strong> lets a single compiled model spread a
 large batched evaluation across devices — slice the batch into sub-batches, run
@@ -430,12 +432,12 @@ your own per-device loop.</p>
 concurrently via a thread-per-device pool).</p>
 </div>
 <section id="compile-one-artifact-per-device">
-<h2>Compile one artifact per device<a class="headerlink" href="#compile-one-artifact-per-device" title="Link to this heading">¶</a></h2>
+<h2>Compile one artifact per device<a class="headerlink" href="#compile-one-artifact-per-device" title="Link to this heading">#</a></h2>
 <p>AOTI graphs are pinned to a device at export time, so a dispatcher that targets
 several devices needs one artifact per device. <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> takes multiple
 <code class="docutils literal notranslate"><span class="pre">--device</span></code> values and emits them side by side:</p>
 <div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-number">Listing 6 </span><span class="caption-text">tests/aoti/forward_single/model.i — the model to compile</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-number">Listing 6 </span><span class="caption-text">tests/aoti/forward_single/model.i — the model to compile</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># forward_single: a one-leaf forward-only model. Smoke test for the</span>
 </span><span data-line="2"><span class="c1"># bake-by-default path on the simplest possible shape.</span>
 </span><span data-line="3">
@@ -472,7 +474,7 @@ Python shim picks the subfolder matching <code class="docutils literal notransla
 scheduler (below).</p>
 </section>
 <section id="load-and-dispatch-from-c">
-<h2>Load and dispatch from C++<a class="headerlink" href="#load-and-dispatch-from-c" title="Link to this heading">¶</a></h2>
+<h2>Load and dispatch from C++<a class="headerlink" href="#load-and-dispatch-from-c" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">neml2::aoti::load_model</span></code> mirrors Python’s <code class="docutils literal notranslate"><span class="pre">load_model(path,</span> <span class="pre">name)</span></code> and returns a
 <code class="docutils literal notranslate"><span class="pre">DispatchedModel</span></code> — a <code class="docutils literal notranslate"><span class="pre">Model</span></code>-shaped handle exposing the same
 <code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> plus the parameter derivatives
@@ -502,7 +504,7 @@ one chunk, <code class="docutils literal notranslate"><span class="pre">Dispatch
 no-dispatch case carries no slicing or transfer cost.</p>
 </section>
 <section id="schedulers">
-<h2>Schedulers<a class="headerlink" href="#schedulers" title="Link to this heading">¶</a></h2>
+<h2>Schedulers<a class="headerlink" href="#schedulers" title="Link to this heading">#</a></h2>
 <p>A scheduler decides which device(s) a workload runs on and how large each
 sub-batch chunk is. All are plain C++ objects configured by a <code class="docutils literal notranslate"><span class="pre">Config</span></code> struct.
 <code class="docutils literal notranslate"><span class="pre">DispatchedModel</span></code> picks its execution mode from the scheduler’s type: a
@@ -510,7 +512,7 @@ sub-batch chunk is. All are plain C++ objects configured by a <code class="docut
 chunk loop on the calling thread; an <strong>asynchronous</strong> one
 (<code class="docutils literal notranslate"><span class="pre">StaticHybridScheduler</span></code>) drives a thread-per-device pool.</p>
 <section id="simplescheduler">
-<h3><code class="docutils literal notranslate"><span class="pre">SimpleScheduler</span></code><a class="headerlink" href="#simplescheduler" title="Link to this heading">¶</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">SimpleScheduler</span></code><a class="headerlink" href="#simplescheduler" title="Link to this heading">#</a></h3>
 <p>Sends the whole workload to a single device, chunked. <code class="docutils literal notranslate"><span class="pre">Config{device,</span> <span class="pre">batch_size}</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">{&quot;cuda:0&quot;,</span> <span class="pre">1024}</span></code>; <code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">=</span> <span class="pre">0</span></code> means “no chunking”). Use
 it to:</p>
 <ul class="simple">
@@ -525,7 +527,7 @@ one device, a new chunk dispatched as in-flight ones finish and free capacity.</
 </div>
 </section>
 <section id="mpisimplescheduler">
-<h3><code class="docutils literal notranslate"><span class="pre">MPISimpleScheduler</span></code><a class="headerlink" href="#mpisimplescheduler" title="Link to this heading">¶</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">MPISimpleScheduler</span></code><a class="headerlink" href="#mpisimplescheduler" title="Link to this heading">#</a></h3>
 <p>For MPI jobs that drive several devices from many ranks. <code class="docutils literal notranslate"><span class="pre">Config{devices,</span> <span class="pre">batch_sizes,</span> <span class="pre">comm}</span></code> lists the devices to choose from (CPU or CUDA — e.g.
 <code class="docutils literal notranslate"><span class="pre">{&quot;cuda:0&quot;,</span> <span class="pre">&quot;cuda:1&quot;}</span></code>, or <code class="docutils literal notranslate"><span class="pre">{&quot;cpu&quot;}</span></code> for a pure-CPU run); each rank is assigned
 one based on its rank <em>within its node</em> (ranks are grouped by hostname, then
@@ -551,7 +553,7 @@ in it must construct the scheduler. Requires NEML2 built with <code class="docut
 and the host to have called <code class="docutils literal notranslate"><span class="pre">MPI_Init</span></code>; otherwise the constructor throws.</p>
 </section>
 <section id="statichybridscheduler">
-<h3><code class="docutils literal notranslate"><span class="pre">StaticHybridScheduler</span></code><a class="headerlink" href="#statichybridscheduler" title="Link to this heading">¶</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">StaticHybridScheduler</span></code><a class="headerlink" href="#statichybridscheduler" title="Link to this heading">#</a></h3>
 <p>Spreads one batch across several devices <strong>concurrently</strong> — a single
 <code class="docutils literal notranslate"><span class="pre">DispatchedModel</span></code> runs CPU + GPU(s) at once via a thread-per-device pool.
 <code class="docutils literal notranslate"><span class="pre">Config{devices,</span> <span class="pre">batch_sizes,</span> <span class="pre">capacities,</span> <span class="pre">priorities}</span></code> (the last two optional;
@@ -588,7 +590,7 @@ dispatch, so the usual single-device idiom keeps working:</p>
 </section>
 </section>
 <section id="error-handling">
-<h2>Error handling<a class="headerlink" href="#error-handling" title="Link to this heading">¶</a></h2>
+<h2>Error handling<a class="headerlink" href="#error-handling" title="Link to this heading">#</a></h2>
 <p>Every exception that leaves <code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> — on both the
 synchronous and asynchronous paths — is a <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Exception</span></code> (itself a
 <code class="docutils literal notranslate"><span class="pre">std::runtime_error</span></code>) carrying a <code class="docutils literal notranslate"><span class="pre">recoverable()</span></code> flag. That flag is the contract
@@ -629,7 +631,7 @@ are available via <code class="docutils literal notranslate"><span class="pre">A
 for the next call.</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a> — the per-device artifact + metadata layout.</p></li>
 <li><p><a class="reference internal" href="pipeline.html#model-compilation-pipeline"><span class="std std-ref">Compilation pipeline</span></a> — what <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> does internally.</p></li>
@@ -675,9 +677,9 @@ for the next call.</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

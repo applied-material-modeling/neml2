@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -406,7 +408,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="py-eager-eager-python">
-<span id="py-eager"></span><h1><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python<a class="headerlink" href="#py-eager-eager-python" title="Link to this heading">¶</a></h1>
+<span id="py-eager"></span><h1><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python<a class="headerlink" href="#py-eager-eager-python" title="Link to this heading">#</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> is the default runtime: load a model from its input file and call it
 like any <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>, executing eager PyTorch with no compile step. It is
 the path you reach for during development, in tests, and when training with
@@ -414,7 +416,7 @@ PyTorch autograd. It supports the full <code class="docutils literal notranslate
 any device, and sub-batch models (e.g. crystal plasticity).</p>
 <p>Set-up — installing neml2, device placement — is in <a class="reference internal" href="../deployment/python.html#python-integration"><span class="std std-ref">Python integration</span></a>.</p>
 <section id="load-and-call">
-<h2>Load and call<a class="headerlink" href="#load-and-call" title="Link to this heading">¶</a></h2>
+<h2>Load and call<a class="headerlink" href="#load-and-call" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SR2</span>
 </span><span data-line="3">
@@ -428,7 +430,7 @@ live <code class="docutils literal notranslate"><span class="pre">nn.Module</spa
 all behave the way they do for any torch module.</p>
 </section>
 <section id="sensitivities">
-<h2>Sensitivities<a class="headerlink" href="#sensitivities" title="Link to this heading">¶</a></h2>
+<h2>Sensitivities<a class="headerlink" href="#sensitivities" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">model.jvp</span></code> and <code class="docutils literal notranslate"><span class="pre">model.jacobian</span></code> are the typed forward-mode derivative surface —
 the same <code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> API the compiled and embedded routes
 expose, so derivative code reads identically on every route:</p>
@@ -462,7 +464,7 @@ end to end; this is what the calibration tutorials use. See
 </ul>
 </section>
 <section id="consumers">
-<h2>Consumers<a class="headerlink" href="#consumers" title="Link to this heading">¶</a></h2>
+<h2>Consumers<a class="headerlink" href="#consumers" title="Link to this heading">#</a></h2>
 <p>Most shell and Python entry points run <em>on</em> this route rather than being
 separate runtimes: <code class="docutils literal notranslate"><span class="pre">neml2-run</span></code> and the <code class="docutils literal notranslate"><span class="pre">Driver</span></code> classes (<code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>,
 <code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code>, <code class="docutils literal notranslate"><span class="pre">Verification</span></code>) step a model through a load history on
@@ -470,7 +472,7 @@ separate runtimes: <code class="docutils literal notranslate"><span class="pre">
 <a class="reference internal" href="py_jit.html#py-jit"><span class="std std-ref">py-jit — in-process torch.compile</span></a>).</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../tutorials/models/running_your_first_model/main.html#tutorials-models-running-your-first-model"><span class="std std-ref">Running your first model</span></a> — line-by-line first run.</p></li>
 <li><p><a class="reference internal" href="../tutorials/models/transient_driver/main.html#tutorials-models-transient-driver"><span class="std std-ref">Transient driver</span></a> — driving a model over a load history.</p></li>
@@ -517,9 +519,9 @@ separate runtimes: <code class="docutils literal notranslate"><span class="pre">
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

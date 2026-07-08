@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -408,7 +410,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="benchmarking">
-<span id="benchmark"></span><h1>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading">¶</a></h1>
+<span id="benchmark"></span><h1>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading">#</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">benchmark/</span></code> directory ships a curated set of representative
 material models together with a sweep harness and a
 vectorisation-efficiency fitter. The tooling answers the question
@@ -421,7 +423,7 @@ given device?</em></p>
 across NEML2 releases; runtime-touching PRs are expected to keep the
 headline numbers from regressing.</p>
 <section id="scenarios">
-<h2>Scenarios<a class="headerlink" href="#scenarios" title="Link to this heading">¶</a></h2>
+<h2>Scenarios<a class="headerlink" href="#scenarios" title="Link to this heading">#</a></h2>
 <p>The committed scenarios cover the breadth of the solid-mechanics
 module, from trivial elasticity to fully-coupled crystal plasticity:</p>
 <div class="table-wrapper colwidths-auto docutils container">
@@ -485,7 +487,7 @@ batch size) and <code class="docutils literal notranslate"><span class="pre">${d
 experiment.</p>
 </section>
 <section id="vectorisation-efficiency-model">
-<h2>Vectorisation-efficiency model<a class="headerlink" href="#vectorisation-efficiency-model" title="Link to this heading">¶</a></h2>
+<h2>Vectorisation-efficiency model<a class="headerlink" href="#vectorisation-efficiency-model" title="Link to this heading">#</a></h2>
 <p>For a fixed device and model, compute time as a function of batch
 size <span class="math notranslate nohighlight">\(N\)</span> is fitted to ANL-24/43 eq 7.1:</p>
 <div class="math-wrapper docutils container">
@@ -533,7 +535,7 @@ flatter or penalise either side depending on whether that batch
 happens to land in one runtime’s free region.</p>
 </section>
 <section id="running-the-sweep">
-<h2>Running the sweep<a class="headerlink" href="#running-the-sweep" title="Link to this heading">¶</a></h2>
+<h2>Running the sweep<a class="headerlink" href="#running-the-sweep" title="Link to this heading">#</a></h2>
 <p>The sweep tool is invoked through <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">benchmark.sweep</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Init a fresh result folder (just records sweep config + env snapshot)</span>
 </span><span data-line="2">python<span class="w"> </span>-m<span class="w"> </span>benchmark.sweep<span class="w"> </span>init<span class="w"> </span>--device<span class="w"> </span>cuda
@@ -565,7 +567,7 @@ the batch they actually intend to run; reusing one compile across
 batches would be cheaper but can mis-report scaling behaviour at
 batches far from the example.</p>
 <section id="output">
-<h3>Output<a class="headerlink" href="#output" title="Link to this heading">¶</a></h3>
+<h3>Output<a class="headerlink" href="#output" title="Link to this heading">#</a></h3>
 <p>Each <code class="docutils literal notranslate"><span class="pre">run</span></code> populates four file kinds under <code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;</span></code>:</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -650,9 +652,9 @@ machine. The harness itself does not detect contention.</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

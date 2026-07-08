@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -413,7 +415,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="how-compilation-works">
-<span id="tutorials-models-compilation-internals"></span><h1>How compilation works<a class="headerlink" href="#how-compilation-works" title="Link to this heading">¶</a></h1>
+<span id="tutorials-models-compilation-internals"></span><h1>How compilation works<a class="headerlink" href="#how-compilation-works" title="Link to this heading">#</a></h1>
 <p>The <a class="reference internal" href="../compiled_models/main.html#tutorials-models-compiled"><span class="std std-ref">previous tutorial</span></a> showed <em>how</em> to compile a model
 and call it — <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>, the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> artifact, the drop-in stub. This one
 opens the box: <em>what actually happens</em> when a model is compiled, shown on a small
@@ -428,7 +430,7 @@ compiles a native kernel (C++ on CPU, Triton on GPU), packaged into the <code cl
 <p>We’ll watch a model go through both stages and read the graph and the generated
 code at each end.</p>
 <section id="a-model-with-a-shared-subexpression">
-<h2>A model with a shared subexpression<a class="headerlink" href="#a-model-with-a-shared-subexpression" title="Link to this heading">¶</a></h2>
+<h2>A model with a shared subexpression<a class="headerlink" href="#a-model-with-a-shared-subexpression" title="Link to this heading">#</a></h2>
 <p>To make the optimization visible we need an example where the same quantity is
 computed more than once. Three first-order rates sharing a denominator do the job:</p>
 <div class="math-wrapper docutils container">
@@ -499,7 +501,7 @@ should be able to remove.</p>
 </div>
 </section>
 <section id="stage-1-capture-torch-export-the-fx-graph">
-<h2>Stage 1 — capture: <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> → the FX graph<a class="headerlink" href="#stage-1-capture-torch-export-the-fx-graph" title="Link to this heading">¶</a></h2>
+<h2>Stage 1 — capture: <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> → the FX graph<a class="headerlink" href="#stage-1-capture-torch-export-the-fx-graph" title="Link to this heading">#</a></h2>
 <p>The first thing <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> does is trace the model with <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>,
 recording every tensor operation into an <em>FX graph</em>. Tracing needs example
 inputs with a representative dtype and batch shape — one typed tensor per
@@ -547,7 +549,7 @@ own copy of the shared denominator, exactly as the eager Python ran. This is the
 device-agnostic starting point; the optimization happens next.</p>
 </section>
 <section id="stage-2-lower-aotinductor-native-code">
-<h2>Stage 2 — lower: AOTInductor → native code<a class="headerlink" href="#stage-2-lower-aotinductor-native-code" title="Link to this heading">¶</a></h2>
+<h2>Stage 2 — lower: AOTInductor → native code<a class="headerlink" href="#stage-2-lower-aotinductor-native-code" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> hands the FX graph to <strong>AOTInductor</strong>, which runs a series of
 optimization passes (common-subexpression elimination, fusion, layout choices,
 dead-code elimination, vectorization, …), generates kernel source for the target
@@ -644,7 +646,7 @@ engine performed on its trace — but here it lands as real, vectorized, compile
 machine code rather than an optimized interpreter graph.</p>
 </section>
 <section id="the-ir-in-between">
-<h2>The IR in between<a class="headerlink" href="#the-ir-in-between" title="Link to this heading">¶</a></h2>
+<h2>The IR in between<a class="headerlink" href="#the-ir-in-between" title="Link to this heading">#</a></h2>
 <p>Between the FX graph and the C++, Inductor builds its own intermediate
 representation and makes the fusion and scheduling decisions there. It’s verbose
 and internal, so we don’t reproduce it here — but if you’re curious you can dump
@@ -658,7 +660,7 @@ operations collapsed into a single <code class="docutils literal notranslate"><s
 is the kernel we read above.</p>
 </section>
 <section id="what-changes-when-we-compile-for-the-gpu">
-<h2>What changes when we compile for the GPU<a class="headerlink" href="#what-changes-when-we-compile-for-the-gpu" title="Link to this heading">¶</a></h2>
+<h2>What changes when we compile for the GPU<a class="headerlink" href="#what-changes-when-we-compile-for-the-gpu" title="Link to this heading">#</a></h2>
 <p>This notebook compiled for the CPU, so the kernel above is C++. Targeting CUDA
 (<code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">--device</span> <span class="pre">cuda</span></code>, which additionally needs <code class="docutils literal notranslate"><span class="pre">nvcc</span></code>) reuses the
 <em>same</em> captured FX graph but lowers it differently. A few things worth knowing:</p>
@@ -689,7 +691,7 @@ pinned at compile time.</p></li>
 </ul>
 </section>
 <section id="recap">
-<h2>Recap<a class="headerlink" href="#recap" title="Link to this heading">¶</a></h2>
+<h2>Recap<a class="headerlink" href="#recap" title="Link to this heading">#</a></h2>
 <p>When we run <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>, the model travels:</p>
 <blockquote>
 <div><p>eager <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> → <strong><code class="docutils literal notranslate"><span class="pre">torch.export</span></code></strong> (FX graph) → <strong>AOTInductor</strong> (optimize →
@@ -699,7 +701,7 @@ generate → compile native kernels) → <strong><code class="docutils literal n
 redundancy is removed and the math becomes fast device code.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../../../references/pipeline.html#model-compilation-pipeline"><span class="std std-ref">Compilation pipeline</span></a> — the full compilation pipeline reference,
 including how implicit (Newton-solve) models are split into segments.</p></li>
@@ -748,9 +750,9 @@ running a compiled model.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

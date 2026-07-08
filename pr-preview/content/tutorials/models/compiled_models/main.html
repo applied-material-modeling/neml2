@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -415,14 +417,14 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="compiled-models">
-<span id="tutorials-models-compiled"></span><h1>Compiled models<a class="headerlink" href="#compiled-models" title="Link to this heading">¶</a></h1>
+<span id="tutorials-models-compiled"></span><h1>Compiled models<a class="headerlink" href="#compiled-models" title="Link to this heading">#</a></h1>
 <p>In this tutorial, we’ll take a model we can already run in Python, compile it ahead of
 time into a self-contained package, and call the compiled version from
 another process. The compiled form runs the kernels in pre-compiled
 C++ instead of the eager PyTorch dispatcher, so it’s the form to use
 once a model is locked in and we want it fast.</p>
 <section id="the-pipeline">
-<h2>The pipeline<a class="headerlink" href="#the-pipeline" title="Link to this heading">¶</a></h2>
+<h2>The pipeline<a class="headerlink" href="#the-pipeline" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">input.i</span> <span class="pre">--model</span> <span class="pre">elasticity</span></code> turns the eager model into a
 self-contained package and emits:</p>
 <ul class="simple">
@@ -443,7 +445,7 @@ a drop-in replacement anywhere a <code class="docutils literal notranslate"><spa
 <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolders; the loader picks the one matching the device it runs on.</p>
 </section>
 <section id="the-input-file">
-<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">¶</a></h2>
+<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">%%writefile</span> input.i
@@ -468,7 +470,7 @@ a drop-in replacement anywhere a <code class="docutils literal notranslate"><spa
 </div>
 </section>
 <section id="compiling-from-the-shell">
-<h2>Compiling from the shell<a class="headerlink" href="#compiling-from-the-shell" title="Link to this heading">¶</a></h2>
+<h2>Compiling from the shell<a class="headerlink" href="#compiling-from-the-shell" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> (see <a class="reference internal" href="../../../deployment/cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a>) builds the package in one
 invocation. Derivative graphs are <strong>opt-in</strong>: with no <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag only the
 <code class="docutils literal notranslate"><span class="pre">forward</span></code> graph is compiled (the smallest artifact). Request the
@@ -514,7 +516,7 @@ run. With no <code class="docutils literal notranslate"><span class="pre">--outp
 </div>
 </section>
 <section id="loading-the-compiled-model">
-<h2>Loading the compiled model<a class="headerlink" href="#loading-the-compiled-model" title="Link to this heading">¶</a></h2>
+<h2>Loading the compiled model<a class="headerlink" href="#loading-the-compiled-model" title="Link to this heading">#</a></h2>
 <p>The stub looks like any other HIT input file, so <code class="docutils literal notranslate"><span class="pre">neml2.load_model</span></code>
 loads it the usual way:</p>
 <div class="cell docutils container">
@@ -551,7 +553,7 @@ same call convention — but underneath it dispatches to the compiled
 </div>
 </section>
 <section id="round-trip-equivalence">
-<h2>Round-trip equivalence<a class="headerlink" href="#round-trip-equivalence" title="Link to this heading">¶</a></h2>
+<h2>Round-trip equivalence<a class="headerlink" href="#round-trip-equivalence" title="Link to this heading">#</a></h2>
 <p>Evaluate the compiled and eager forms on the same strain and check
 they agree. The compiled model always returns a tuple (even with a
 single output), so we unpack it:</p>
@@ -598,7 +600,7 @@ leading batch dimension is dynamic, so the same artifact handles any
 batch size from 1 to roughly a million without recompilation.</p>
 </section>
 <section id="jacobian-and-jacobian-vector-product">
-<h2>Jacobian and Jacobian-vector product<a class="headerlink" href="#jacobian-and-jacobian-vector-product" title="Link to this heading">¶</a></h2>
+<h2>Jacobian and Jacobian-vector product<a class="headerlink" href="#jacobian-and-jacobian-vector-product" title="Link to this heading">#</a></h2>
 <p>Alongside <code class="docutils literal notranslate"><span class="pre">forward</span></code>, the compiled model also exposes <code class="docutils literal notranslate"><span class="pre">jvp</span></code> (outputs plus
 a directional derivative <code class="docutils literal notranslate"><span class="pre">J</span> <span class="pre">&#64;</span> <span class="pre">v</span></code>) and <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> (outputs plus the
 per-variable Jacobian blocks). Both take and return plain
@@ -653,7 +655,7 @@ offers:</p>
 <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> when we need the full per-variable blocks.</p>
 </section>
 <section id="promoting-parameters">
-<h2>Promoting parameters<a class="headerlink" href="#promoting-parameters" title="Link to this heading">¶</a></h2>
+<h2>Promoting parameters<a class="headerlink" href="#promoting-parameters" title="Link to this heading">#</a></h2>
 <p>By default every parameter is baked into the compiled graph as a
 constant. That’s fastest, but it also means we can’t change them at
 runtime. To keep one mutable, promote it at compile time with <code class="docutils literal notranslate"><span class="pre">-p</span></code>.
@@ -710,7 +712,7 @@ parameters inside an <code class="docutils literal notranslate"><span class="pre
 refuse them with a clear error.</p>
 </section>
 <section id="trade-offs-vs-eager">
-<h2>Trade-offs vs eager<a class="headerlink" href="#trade-offs-vs-eager" title="Link to this heading">¶</a></h2>
+<h2>Trade-offs vs eager<a class="headerlink" href="#trade-offs-vs-eager" title="Link to this heading">#</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -752,7 +754,7 @@ model. Compile it once we’re ready to run it at scale — driver
 runs, large batch sweeps, the inner loop of a finite-element kernel.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../implicit_model/main.html#tutorials-models-implicit-model"><span class="std std-ref">Implicit models</span></a> covers <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> models;
 the same compile flow handles them — each implicit segment produces
@@ -805,9 +807,9 @@ carefully.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

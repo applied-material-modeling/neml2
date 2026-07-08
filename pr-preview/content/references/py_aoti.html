@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -405,7 +407,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="py-aoti-compiled-model-from-python">
-<span id="py-aoti"></span><h1><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python<a class="headerlink" href="#py-aoti-compiled-model-from-python" title="Link to this heading">¶</a></h1>
+<span id="py-aoti"></span><h1><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python<a class="headerlink" href="#py-aoti-compiled-model-from-python" title="Link to this heading">#</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> runs a model that has already been lowered to an AOT-Inductor
 package (<code class="docutils literal notranslate"><span class="pre">.pt2</span></code> + metadata) by <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>, from Python — no NEML2
 source model, no Newton-in-Python, no recompile per call. Use it to deploy a
@@ -417,7 +419,7 @@ schema, parameter promotion, device/dtype pinning — is documented once in
 <a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a>; how to produce it and set up your environment is in
 <a class="reference internal" href="../deployment/python.html#python-integration"><span class="std std-ref">Python integration</span></a>. This page is the Python loading-and-calling API.</p>
 <section id="two-entry-points">
-<h2>Two entry points<a class="headerlink" href="#two-entry-points" title="Link to this heading">¶</a></h2>
+<h2>Two entry points<a class="headerlink" href="#two-entry-points" title="Link to this heading">#</a></h2>
 <p>To drive the artifact through the normal HIT machinery (e.g. a
 <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>), load the stub with <code class="docutils literal notranslate"><span class="pre">neml2.load_model</span></code> — the <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code>
 shim resolves the per-device subfolder for the current default device:</p>
@@ -436,7 +438,7 @@ from a per-device metadata path:</p>
 </div>
 </section>
 <section id="call-surface">
-<h2>Call surface<a class="headerlink" href="#call-surface" title="Link to this heading">¶</a></h2>
+<h2>Call surface<a class="headerlink" href="#call-surface" title="Link to this heading">#</a></h2>
 <p>The bare runtime centers on three call paths plus introspection properties
 (<code class="docutils literal notranslate"><span class="pre">input_names</span></code>, <code class="docutils literal notranslate"><span class="pre">output_names</span></code>, <code class="docutils literal notranslate"><span class="pre">input_base_shapes</span></code>, <code class="docutils literal notranslate"><span class="pre">output_base_shapes</span></code>,
 <code class="docutils literal notranslate"><span class="pre">parameter_base_shapes</span></code> — the promoted parameters’ base shapes keyed by
@@ -503,7 +505,7 @@ available via <code class="docutils literal notranslate"><span class="pre">neml2
 other model (see <a class="reference internal" href="../deployment/cli.html#cli-neml2-inspect"><span class="std std-ref">neml2-inspect</span></a>).</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a> — the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> package format this route loads.</p></li>
 <li><p><a class="reference internal" href="../deployment/python.html#python-integration"><span class="std std-ref">Python integration</span></a> — installing neml2 and obtaining a compiled package.</p></li>
@@ -551,9 +553,9 @@ other model (see <a class="reference internal" href="../deployment/cli.html#cli-
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

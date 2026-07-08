@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -419,9 +421,9 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="kinematics">
-<span id="modules-solid-mechanics-kinematics"></span><h1>Kinematics<a class="headerlink" href="#kinematics" title="Link to this heading">¶</a></h1>
+<span id="modules-solid-mechanics-kinematics"></span><h1>Kinematics<a class="headerlink" href="#kinematics" title="Link to this heading">#</a></h1>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
 <p>The kinematics catalog supplies the small, composable primitives that
 encode <em>non-mechanical</em> contributions to a material’s deformation —
 the strains or volumetric changes that arise from temperature
@@ -453,9 +455,9 @@ Jacobian primitives are multiplied together and then fed through
 volume-corrected deformation gradient.</p>
 </section>
 <section id="math">
-<h2>Math<a class="headerlink" href="#math" title="Link to this heading">¶</a></h2>
+<h2>Math<a class="headerlink" href="#math" title="Link to this heading">#</a></h2>
 <section id="eigenstrain-small-strain-additive-split">
-<h3>Eigenstrain (small-strain additive split)<a class="headerlink" href="#eigenstrain-small-strain-additive-split" title="Link to this heading">¶</a></h3>
+<h3>Eigenstrain (small-strain additive split)<a class="headerlink" href="#eigenstrain-small-strain-additive-split" title="Link to this heading">#</a></h3>
 <p>For an isotropic eigenstrain driven by a scalar field <span class="math notranslate nohighlight">\(q\)</span> (temperature,
 volume, phase fraction), NEML2 adopts the standard cumulative form</p>
 <div class="math-wrapper docutils container">
@@ -468,9 +470,9 @@ volume, phase fraction), NEML2 adopts the standard cumulative form</p>
 <span class="math notranslate nohighlight">\(\boldsymbol{I}\)</span> is the rank-2 identity. The three concrete leaves
 in the catalog differ only in how <span class="math notranslate nohighlight">\(\varepsilon^{*}_v\)</span> depends on its
 driver:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-8a311f43-4d3d-46eb-a72e-622a32aef766">
-<div class="amsmath math notranslate nohighlight" id="equation-8a311f43-4d3d-46eb-a72e-622a32aef766">
-<span class="eqno">(21)<a class="headerlink" href="#equation-8a311f43-4d3d-46eb-a72e-622a32aef766" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-0d65dd35-c568-41ee-a917-02b156ceee7f">
+<div class="amsmath math notranslate nohighlight" id="equation-0d65dd35-c568-41ee-a917-02b156ceee7f">
+<span class="eqno">(21)<a class="headerlink" href="#equation-0d65dd35-c568-41ee-a917-02b156ceee7f" title="Permalink to this equation">#</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;\varepsilon^{*}_v = \alpha\,(T - T_0), \\
 \text{Volume change:}\quad &amp;\varepsilon^{*}_v = \left(\dfrac{V}{V_0}\right)^{1/3} - 1, \\
 \text{Phase transformation:}\quad &amp;\varepsilon^{*}_v = \Delta V \, f.
@@ -495,14 +497,14 @@ split</p>
 in inelastic flows.</p>
 </section>
 <section id="deformation-jacobian-finite-strain-multiplicative-split">
-<h3>Deformation Jacobian (finite-strain multiplicative split)<a class="headerlink" href="#deformation-jacobian-finite-strain-multiplicative-split" title="Link to this heading">¶</a></h3>
+<h3>Deformation Jacobian (finite-strain multiplicative split)<a class="headerlink" href="#deformation-jacobian-finite-strain-multiplicative-split" title="Link to this heading">#</a></h3>
 <p>In the finite-strain setting NEML2 represents the same physics through
 a scalar deformation Jacobian <span class="math notranslate nohighlight">\(J^{*}\)</span> — the determinant of the
 volumetric correction to be removed from the total deformation
 gradient:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-f11846a6-968a-43e8-b312-572fb9c74e32">
-<div class="amsmath math notranslate nohighlight" id="equation-f11846a6-968a-43e8-b312-572fb9c74e32">
-<span class="eqno">(22)<a class="headerlink" href="#equation-f11846a6-968a-43e8-b312-572fb9c74e32" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-50dc9236-3abf-41a6-aaa8-71675961bce8">
+<div class="amsmath math notranslate nohighlight" id="equation-50dc9236-3abf-41a6-aaa8-71675961bce8">
+<span class="eqno">(22)<a class="headerlink" href="#equation-50dc9236-3abf-41a6-aaa8-71675961bce8" title="Permalink to this equation">#</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;J^{*} = 1 + \alpha\,(T - T_0), \\
 \text{Swelling + phase change:}\quad &amp;J^{*} = 1 + \alpha\,c\,\phi^{f}
 + (1-c)\,\phi^{f}\,\Delta\Omega.
@@ -528,14 +530,14 @@ call.</p>
 </section>
 </section>
 <section id="example-thermal-eigenstrain-in-a-free-sintering-model">
-<h2>Example: thermal eigenstrain in a free-sintering model<a class="headerlink" href="#example-thermal-eigenstrain-in-a-free-sintering-model" title="Link to this heading">¶</a></h2>
+<h2>Example: thermal eigenstrain in a free-sintering model<a class="headerlink" href="#example-thermal-eigenstrain-in-a-free-sintering-model" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">free_sintering</span></code> regression scenario composes
 <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/kinematics/ThermalEigenstrain.html#models-thermaleigenstrain"><span class="std std-ref">ThermalEigenstrain</span></a> into a full GTN poroplastic
 free-sintering model. The eigenstrain enters through the elastic-strain
 combination, so the elastic constitutive call sees only the <em>mechanical</em>
 strain after both plastic and thermal contributions are removed:</p>
 <div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-number">Listing 4 </span><span class="caption-text">tests/regression/solid_mechanics/viscoplasticity/free_sintering/model.i</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-number">Listing 4 </span><span class="caption-text">tests/regression/solid_mechanics/viscoplasticity/free_sintering/model.i</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># neml2</span>
 </span><span data-line="2"><span class="c1"># Native port of tests/regression/solid_mechanics/viscoplasticity/free_sintering/model.i.</span>
 </span><span data-line="3"><span class="c1"># Free sintering at zero applied strain with thermal eigenstrain + Olevsky-Skorohod</span>
@@ -759,7 +761,7 @@ strain after both plastic and thermal contributions are removed:</p>
 </div>
 </section>
 <section id="explanation">
-<h2>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">¶</a></h2>
+<h2>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">#</a></h2>
 <p>The kinematic piece of the model is concentrated in two <code class="docutils literal notranslate"><span class="pre">[Models]</span></code>
 blocks.</p>
 <p><code class="docutils literal notranslate"><span class="pre">[eigenstrain]</span></code> declares a <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/kinematics/ThermalEigenstrain.html#models-thermaleigenstrain"><span class="std std-ref">ThermalEigenstrain</span></a> with
@@ -811,7 +813,7 @@ phase history evolves through time.</p>
 </div>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../../tutorials/models/model_composition/main.html#tutorials-models-composition"><span class="std std-ref">Model composition</span></a> — the underlying mechanics of
 wiring small <code class="docutils literal notranslate"><span class="pre">Model</span></code> pieces together into a full constitutive
@@ -871,9 +873,9 @@ pattern.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

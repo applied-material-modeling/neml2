@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -409,7 +411,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="recurrent-calibration-with-pyzag">
-<span id="tutorials-optimization-pyzag"></span><h1>Recurrent calibration with pyzag<a class="headerlink" href="#recurrent-calibration-with-pyzag" title="Link to this heading">¶</a></h1>
+<span id="tutorials-optimization-pyzag"></span><h1>Recurrent calibration with pyzag<a class="headerlink" href="#recurrent-calibration-with-pyzag" title="Link to this heading">#</a></h1>
 <p>Time-history calibration multiplies the cost of plain PyTorch
 autograd in two ways at once. This page explains the bottlenecks and
 how the <code class="docutils literal notranslate"><span class="pre">pyzag</span></code> companion package addresses them.</p>
@@ -421,7 +423,7 @@ Recovering parameters from that data means backpropagating through
 <span class="math notranslate nohighlight">\(N\)</span> coupled implicit solves — each step’s state depends on the
 previous one, so the time loop becomes a long autograd chain.</p>
 <section id="why-plain-pytorch-struggles-at-this-scale">
-<h2>Why plain PyTorch struggles at this scale<a class="headerlink" href="#why-plain-pytorch-struggles-at-this-scale" title="Link to this heading">¶</a></h2>
+<h2>Why plain PyTorch struggles at this scale<a class="headerlink" href="#why-plain-pytorch-struggles-at-this-scale" title="Link to this heading">#</a></h2>
 <p>Two things go wrong if we try to backpropagate through the full
 unrolled time loop with vanilla autograd:</p>
 <ol class="arabic simple">
@@ -437,7 +439,7 @@ that runs in microseconds per step, the GPU is starved.</p></li>
 problem size at “small enough to run on CPU.”</p>
 </section>
 <section id="how-pyzag-addresses-both">
-<h2>How pyzag addresses both<a class="headerlink" href="#how-pyzag-addresses-both" title="Link to this heading">¶</a></h2>
+<h2>How pyzag addresses both<a class="headerlink" href="#how-pyzag-addresses-both" title="Link to this heading">#</a></h2>
 <p>The <a class="reference external" href="https://github.com/applied-material-modeling/pyzag"><code class="docutils literal notranslate"><span class="pre">pyzag</span></code></a>
 companion package fixes both by changing the shape of the time loop.
 The key trick, from Messner, Hu &amp; Chen
@@ -465,7 +467,7 @@ is a standard PyTorch optimizer loop, with <code class="docutils literal notrans
 in place of <code class="docutils literal notranslate"><span class="pre">solve(...).backward()</span></code>.</p>
 </section>
 <section id="where-to-go-from-here">
-<h2>Where to go from here<a class="headerlink" href="#where-to-go-from-here" title="Link to this heading">¶</a></h2>
+<h2>Where to go from here<a class="headerlink" href="#where-to-go-from-here" title="Link to this heading">#</a></h2>
 <p>Two end-to-end notebooks demonstrate the workflow on a temperature- and
 rate-dependent viscoplastic model. Both ship with pre-baked outputs, so
 they’re readable without re-execution:</p>
@@ -522,9 +524,9 @@ block-size trade-offs, custom solver choices), see the
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

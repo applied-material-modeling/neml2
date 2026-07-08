@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -297,6 +298,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -413,7 +415,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="transient-driver">
-<span id="tutorials-models-transient-driver"></span><h1>Transient driver<a class="headerlink" href="#transient-driver" title="Link to this heading">¶</a></h1>
+<span id="tutorials-models-transient-driver"></span><h1>Transient driver<a class="headerlink" href="#transient-driver" title="Link to this heading">#</a></h1>
 <p>A <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code> walks a constitutive model through a prescribed
 load history, feeding each step’s converged state into the next
 step. In this tutorial we’ll ramp a strain from zero to 5% over 50
@@ -421,7 +423,7 @@ steps, run a perfect-viscoplastic model through that history, and
 plot the resulting stress–strain curve. The driver is configured
 from the same kind of input file we’ve been using.</p>
 <section id="the-recursive-update">
-<h2>The recursive update<a class="headerlink" href="#the-recursive-update" title="Link to this heading">¶</a></h2>
+<h2>The recursive update<a class="headerlink" href="#the-recursive-update" title="Link to this heading">#</a></h2>
 <p>Each step takes the previous state <code class="docutils literal notranslate"><span class="pre">s</span></code> and the new prescribed variables <code class="docutils literal notranslate"><span class="pre">g</span></code> (the <em>given</em> values) and produces the
 next state:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
@@ -440,7 +442,7 @@ which performs the same recursive update in a much more efficient fashion.</p>
 </div>
 </section>
 <section id="the-input-file">
-<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">¶</a></h2>
+<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">[Drivers]</span></code> block names the model to step, the prescribed time
 history, and the prescribed strain history. Time and the strain values
 are built inline in <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code>:</p>
@@ -595,7 +597,7 @@ isochoric deformation. See <a class="reference internal" href="../cross_referenc
 more examples of the <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">Python</span></code> block.</p>
 </section>
 <section id="building-and-running-the-driver">
-<h2>Building and running the driver<a class="headerlink" href="#building-and-running-the-driver" title="Link to this heading">¶</a></h2>
+<h2>Building and running the driver<a class="headerlink" href="#building-and-running-the-driver" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">load_input(path).get_driver(name)</span></code> builds the driver from the input
 file:</p>
 <div class="cell docutils container">
@@ -609,7 +611,7 @@ file:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;neml2.drivers.TransientDriver.TransientDriver at 0x7fdcbedd6770&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;neml2.drivers.TransientDriver.TransientDriver at 0x7fb8734df6a0&gt;
 </span></pre></div>
 </div>
 </div>
@@ -649,7 +651,7 @@ state into the next step:</p>
 </div>
 </section>
 <section id="reading-the-per-step-output">
-<h2>Reading the per-step output<a class="headerlink" href="#reading-the-per-step-output" title="Link to this heading">¶</a></h2>
+<h2>Reading the per-step output<a class="headerlink" href="#reading-the-per-step-output" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">driver.result()</span></code> returns a flat dict keyed by
 <code class="docutils literal notranslate"><span class="pre">input.&lt;step&gt;.&lt;variable&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">output.&lt;step&gt;.&lt;variable&gt;</span></code>. Step 0 holds
 only the prescribed variables (the model isn’t called at step 0); every
@@ -706,7 +708,7 @@ comprehension:</p>
 the <span class="math notranslate nohighlight">\(xx\)</span> component.)</p>
 </section>
 <section id="plotting-the-stressstrain-curve">
-<h2>Plotting the stress–strain curve<a class="headerlink" href="#plotting-the-stressstrain-curve" title="Link to this heading">¶</a></h2>
+<h2>Plotting the stress–strain curve<a class="headerlink" href="#plotting-the-stressstrain-curve" title="Link to this heading">#</a></h2>
 <p>With per-step <code class="docutils literal notranslate"><span class="pre">strain_xx</span></code> and <code class="docutils literal notranslate"><span class="pre">stress_xx</span></code> in hand, the curve is just a
 <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> call. <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> is available in the <code class="docutils literal notranslate"><span class="pre">[dev]</span></code> extras
 (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">&quot;.[dev]&quot;</span></code>):</p>
@@ -733,7 +735,7 @@ stress plateaus at the rate-dependent overstress level — a textbook
 perfect-viscoplastic response.</p>
 </section>
 <section id="saving-the-trajectory-to-disk">
-<h2>Saving the trajectory to disk<a class="headerlink" href="#saving-the-trajectory-to-disk" title="Link to this heading">¶</a></h2>
+<h2>Saving the trajectory to disk<a class="headerlink" href="#saving-the-trajectory-to-disk" title="Link to this heading">#</a></h2>
 <p>The full result dict can be saved to a single <code class="docutils literal notranslate"><span class="pre">.pt</span></code> file, keyed by the
 same strings <a class="reference internal" href="../../../../generated/syntax/Drivers/TransientDriver.html#drivers-transientdriver"><span class="std std-ref"><code class="docutils literal notranslate"><span class="pre">driver.result()</span></code></span></a> returns in
 memory:</p>
@@ -756,7 +758,7 @@ memory:</p>
 </div>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>To prescribe stress instead of strain, swap which variable the
 <code class="docutils literal notranslate"><span class="pre">prescribed_*</span></code> block supplies; the rest of the workflow is unchanged.</p></li>
@@ -807,9 +809,9 @@ parameter or initial-condition sweeps. See
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

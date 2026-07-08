@@ -37,9 +37,12 @@ step:
   itself as an explicit function of the yield function.
 
 These pieces are typically glued together by [](models-ComposedModel)
-and closed by either [](models-FBComplementarity) (consistent
-plasticity) or a Perzyna-style rate equation (viscoplasticity), then
-wrapped in [](models-ImplicitUpdate) for the implicit return map. A
+and closed by a complementarity condition (consistent plasticity) or a
+Perzyna-style rate equation (viscoplasticity), then wrapped in
+[](models-ImplicitUpdate) for the implicit return map. For consistent
+plasticity the recommended closure is the hard-switch
+[](models-MinMapComplementarity); [](models-FBComplementarity) is a
+smooth alternative (see below). A
 closed-form radial-return path is also available for the
 J2-elastic-perfectly-plastic case via
 [](models-LinearIsotropicElasticJ2TrialStressUpdate); see the
@@ -58,15 +61,29 @@ where $f^p$ is the yield function and $\gamma$ is the consistency parameter.
 
 ### Consistent (rate-independent) plasticity
 
-NEML2 enforces the KKT conditions by recasting them as the smooth
-Fischer-Burmeister complementarity residual, which the nonlinear
-solver drives to its convergence tolerance:
+NEML2 enforces the KKT conditions by recasting them as a single
+complementarity residual that the nonlinear solver drives to its
+convergence tolerance. The recommended form is the *minimum map*, a hard
+switch that reduces to whichever condition is active:
+
+$$
+r = \min(\dot{\gamma},\, -f^p),
+$$
+
+implemented by [](models-MinMapComplementarity) with `a_inequality = 'LE'`.
+Being piecewise-linear, it gives semismooth-Newton / active-set behavior
+that converges robustly in return mapping.
+
+An alternative is the smooth Fischer-Burmeister residual,
 
 $$
 r = \dot{\gamma} - f^p - \sqrt{\dot{\gamma}^{\,2} + {f^p}^{\,2}},
 $$
 
-implemented by [](models-FBComplementarity) with `a_inequality = 'LE'`.
+implemented by [](models-FBComplementarity) with the same
+`a_inequality = 'LE'`. It is differentiable everywhere but strongly
+nonlinear near the origin, which can slow Newton convergence; prefer the
+minimum map unless a globally smooth residual is specifically required.
 
 :::{note}
 "Consistent" plasticity is often called rate-*independent*. Rate
@@ -135,7 +152,7 @@ The input file below assembles a fully implicit return-map for elastic-plastic
 behaviour with both isotropic and kinematic hardening: linear-elastic
 stress-strain, [](models-VoceIsotropicHardening) isotropic hardening,
 [](models-LinearKinematicHardening) back stress, associative $J_2$ flow, and
-the Fischer-Burmeister consistency condition.
+the minimum-map consistency condition.
 
 ```{literalinclude} ../../../../tests/regression/solid_mechanics/rate_independent_plasticity/isokinharden/model.i
 :language: ini
@@ -169,8 +186,8 @@ the Fischer-Burmeister consistency condition.
   the rates into the residuals `plastic_strain_residual`,
   `kinematic_plastic_strain_residual`,
   `equivalent_plastic_strain_residual`.
-- **Consistency** — `[consistency]` ([](models-FBComplementarity)) closes
-  the system with the Fischer-Burmeister residual between `yield_function`
+- **Consistency** — `[consistency]` ([](models-MinMapComplementarity)) closes
+  the system with the minimum-map residual between `yield_function`
   and `flow_rate`.
 - **Return map** — `[surface]` composes every residual-producing piece into
   one model. `NonlinearSystem` solves for
