@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -453,9 +454,9 @@ energy density per unit volume reads</p>
 </div>
 <p>The Karush–Kuhn–Tucker (KKT) conditions for irreversible phase-field
 evolution read</p>
-<div class="math-wrapper amsmath docutils container" id="equation-7dafa15b-910a-4a97-80fe-f3f8db0263c5">
-<div class="amsmath math notranslate nohighlight" id="equation-7dafa15b-910a-4a97-80fe-f3f8db0263c5">
-<span class="eqno">(9)<a class="headerlink" href="#equation-7dafa15b-910a-4a97-80fe-f3f8db0263c5" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-b814112c-3005-4806-9195-2fea62cdf08c">
+<div class="amsmath math notranslate nohighlight" id="equation-b814112c-3005-4806-9195-2fea62cdf08c">
+<span class="eqno">(9)<a class="headerlink" href="#equation-b814112c-3005-4806-9195-2fea62cdf08c" title="Permalink to this equation">¶</a></span>\[\begin{align}
   f &amp;= \eta\, \dot{d} + \frac{\partial \psi}{\partial d} \ge 0, \\
   \dot{d} &amp;\ge 0, \\
   f\, \dot{d} &amp;= 0,
@@ -470,8 +471,17 @@ single smooth residual via the Fischer–Burmeister function</p>
 f + \dot{d} - \sqrt{f^2 + \dot{d}^2} = 0,
 \]</div>
 </div>
-<p>which can be solved for <span class="math notranslate nohighlight">\(d\)</span> with a standard Newton iteration. The stress
-is obtained from the same potential by differentiation,</p>
+<p>which can be solved for <span class="math notranslate nohighlight">\(d\)</span> with a standard Newton iteration.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The same complementarity conditions can instead be enforced with the
+hard-switch minimum map <span class="math notranslate nohighlight">\(\min(-f, \dot{d}) = 0\)</span>
+(<a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html#models-minmapcomplementarity"><span class="std std-ref">MinMapComplementarity</span></a>), which is piecewise-linear and usually
+converges more robustly than the smooth Fischer–Burmeister residual (see
+the <a class="reference internal" href="solid_mechanics/plasticity.html"><span class="std std-doc">consistent-plasticity discussion</span></a> for
+the trade-off). Swap the <code class="docutils literal notranslate"><span class="pre">type</span></code> in the <code class="docutils literal notranslate"><span class="pre">Fish_Burm</span></code> block below to try it.</p>
+</div>
+<p>The stress is obtained from the same potential by differentiation,</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[

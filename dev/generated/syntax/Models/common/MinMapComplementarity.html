@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SR2DynamicSum - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="SR2ForwardEulerTimeIntegration" href="SR2ForwardEulerTimeIntegration.html" /><link rel="prev" title="SR2DynamicMean" href="SR2DynamicMean.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MinMapComplementarity - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="MixedControlSetup" href="MixedControlSetup.html" /><link rel="prev" title="MillerIndexParameterToVariable" href="MillerIndexParameterToVariable.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -21,7 +21,7 @@
 }
 </style>
     
-  <meta property="og:type" content="website"/><meta property="og:title" content="SR2DynamicSum"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content="MinMapComplementarity"/>
     <meta name="twitter:card" content="summary"/>
   </head>
 <body><div class="sy-head">
@@ -196,7 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
-<li class="toctree-l4"><a class="reference internal" href="MinMapComplementarity.html">MinMapComplementarity</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -213,7 +213,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="SR2ConstantParameter.html">SR2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2Determinant.html">SR2Determinant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2DynamicMean.html">SR2DynamicMean</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">SR2DynamicSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="SR2DynamicSum.html">SR2DynamicSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2InputParameter.html">SR2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
@@ -404,7 +404,7 @@ data-aria-dark="Switch to auto color mode">
         <span>/</span>
         <meta itemprop="position" content="4" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <strong itemprop="name">SR2DynamicSum</strong>
+        <strong itemprop="name">MinMapComplementarity</strong>
         <meta itemprop="position" content="5" />
       </li></ol>
     <div class="xl:hidden ml-1">
@@ -417,31 +417,44 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="sr2dynamicsum">
-<span id="models-sr2dynamicsum"></span><h1>SR2DynamicSum<a class="headerlink" href="#sr2dynamicsum" title="Link to this heading">¶</a></h1>
-<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/common/DynamicSum.py</span></code></p>
-<p>Sum a dynamic dimension.</p>
-<p>Mirrors C++ <code class="docutils literal notranslate"><span class="pre">DynamicSum&lt;SR2&gt;</span></code>. The <code class="docutils literal notranslate"><span class="pre">dim</span></code> HIT option selects the
-dynamic-batch axis to sum over (the same convention as the C++ <code class="docutils literal notranslate"><span class="pre">Size</span></code>
-argument: 0 is the leading dynamic axis, <code class="docutils literal notranslate"><span class="pre">-1</span></code> the trailing).</p>
+          <section class="tex2jax_ignore mathjax_ignore" id="minmapcomplementarity">
+<span id="models-minmapcomplementarity"></span><h1>MinMapComplementarity<a class="headerlink" href="#minmapcomplementarity" title="Link to this heading">¶</a></h1>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/common/MinMapComplementarity.py</span></code></p>
+<p>KKT complementarity condition enforced with the <em>minimum map</em>.</p>
+<p>The complementarity conditions <span class="math notranslate nohighlight">\(a \ge 0, b \ge 0, ab = 0\)</span> are equivalent to
+the single scalar equation
+$<span class="math notranslate nohighlight">\(r = \min(a, b) = 0.\)</span><span class="math notranslate nohighlight">\(
+The residual is piecewise-linear: it equals whichever of the two arguments
+is currently smaller, a hard switch that gives semismooth-Newton /
+active-set behavior and converges robustly in return mapping. The switch is
+selected per batch entry with ``where`` (no Python branching), so the model
+lowers through AOTI and runs on GPU; the trade-off is a piecewise-constant
+Jacobian that is non-smooth at the switch \)</span>a = b$.</p>
+<p>The sign of each argument follows its declared inequality: <code class="docutils literal notranslate"><span class="pre">LE</span></code> enforces
+<span class="math notranslate nohighlight">\(\le 0\)</span> (coefficient <span class="math notranslate nohighlight">\(-1\)</span>) and <code class="docutils literal notranslate"><span class="pre">GE</span></code> enforces <span class="math notranslate nohighlight">\(\ge 0\)</span> (coefficient <span class="math notranslate nohighlight">\(+1\)</span>),
+so the enforced residual is <span class="math notranslate nohighlight">\(r = \min(s_a\, a,\; s_b\, b)\)</span>.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">¶</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">from</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">SR2</span></code> · <strong>required</strong></dt><dd><p>Variable to reduce</p>
+<dt><code class="docutils literal notranslate"><span class="pre">a</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>First condition</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">b</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Second condition</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">¶</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">to</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">SR2</span></code> · <strong>required</strong></dt><dd><p>The reduced variable</p>
+<dt><code class="docutils literal notranslate"><span class="pre">complementarity</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The minimum-map complementarity condition</p>
 </dd>
 </dl>
 </section>
 <section id="other-options">
 <h2>Other options<a class="headerlink" href="#other-options" title="Link to this heading">¶</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">dim</span></code> — <code class="docutils literal notranslate"><span class="pre">int</span></code> · <strong>required</strong></dt><dd><p>The dimension to sum</p>
+<dt><code class="docutils literal notranslate"><span class="pre">a_inequality</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · default <code class="docutils literal notranslate"><span class="pre">LE</span></code></dt><dd><p>Type of the inequality for the first variable a.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">b_inequality</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · default <code class="docutils literal notranslate"><span class="pre">GE</span></code></dt><dd><p>Type of inequality for the second variable b.</p>
 </dd>
 </dl>
 </section>
@@ -453,16 +466,16 @@ argument: 0 is the leading dynamic axis, <code class="docutils literal notransla
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="SR2DynamicMean.html">
+    <a href="MillerIndexParameterToVariable.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">SR2DynamicMean</div></div>
+        <span>Previous</span><div class="title">MillerIndexParameterToVariable</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="SR2ForwardEulerTimeIntegration.html">
+    <a href="MixedControlSetup.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">SR2ForwardEulerTimeIntegration</div>
+        <div class="title">MixedControlSetup</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
@@ -496,6 +509,8 @@ argument: 0 is the leading dynamic axis, <code class="docutils literal notransla
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../../_static/copybutton.js?v=7abfc884"></script>
       <script src="../../../../_static/shibuya.js?v=50760d75"></script>
+      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../../../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
       <script src="../../../../_static/components/version-banner.js?v=62c7e18e"></script></body>
 </html>

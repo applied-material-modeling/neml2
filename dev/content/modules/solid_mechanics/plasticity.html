@@ -196,6 +196,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -462,9 +463,12 @@ flow, <a class="reference internal" href="../../../generated/syntax/Models/solid
 itself as an explicit function of the yield function.</p></li>
 </ul>
 <p>These pieces are typically glued together by <a class="reference internal" href="../../../generated/syntax/Models/common/ComposedModel.html#models-composedmodel"><span class="std std-ref">ComposedModel</span></a>
-and closed by either <a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html#models-fbcomplementarity"><span class="std std-ref">FBComplementarity</span></a> (consistent
-plasticity) or a Perzyna-style rate equation (viscoplasticity), then
-wrapped in <a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html#models-implicitupdate"><span class="std std-ref">ImplicitUpdate</span></a> for the implicit return map. A
+and closed by a complementarity condition (consistent plasticity) or a
+Perzyna-style rate equation (viscoplasticity), then wrapped in
+<a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html#models-implicitupdate"><span class="std std-ref">ImplicitUpdate</span></a> for the implicit return map. For consistent
+plasticity the recommended closure is the hard-switch
+<a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html#models-minmapcomplementarity"><span class="std std-ref">MinMapComplementarity</span></a>; <a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html#models-fbcomplementarity"><span class="std std-ref">FBComplementarity</span></a> is a
+smooth alternative (see below). A
 closed-form radial-return path is also available for the
 J2-elastic-perfectly-plastic case via
 <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/LinearIsotropicElasticJ2TrialStressUpdate.html#models-linearisotropicelasticj2trialstressupdate"><span class="std std-ref">LinearIsotropicElasticJ2TrialStressUpdate</span></a>; see the
@@ -483,16 +487,30 @@ f^p \leq 0, \quad \dot{\gamma} \geq 0, \quad \dot{\gamma}\, f^p = 0,
 <p>where <span class="math notranslate nohighlight">\(f^p\)</span> is the yield function and <span class="math notranslate nohighlight">\(\gamma\)</span> is the consistency parameter.</p>
 <section id="consistent-rate-independent-plasticity">
 <h3>Consistent (rate-independent) plasticity<a class="headerlink" href="#consistent-rate-independent-plasticity" title="Link to this heading">¶</a></h3>
-<p>NEML2 enforces the KKT conditions by recasting them as the smooth
-Fischer-Burmeister complementarity residual, which the nonlinear
-solver drives to its convergence tolerance:</p>
+<p>NEML2 enforces the KKT conditions by recasting them as a single
+complementarity residual that the nonlinear solver drives to its
+convergence tolerance. The recommended form is the <em>minimum map</em>, a hard
+switch that reduces to whichever condition is active:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+r = \min(\dot{\gamma},\, -f^p),
+\]</div>
+</div>
+<p>implemented by <a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html#models-minmapcomplementarity"><span class="std std-ref">MinMapComplementarity</span></a> with <code class="docutils literal notranslate"><span class="pre">a_inequality</span> <span class="pre">=</span> <span class="pre">'LE'</span></code>.
+Being piecewise-linear, it gives semismooth-Newton / active-set behavior
+that converges robustly in return mapping.</p>
+<p>An alternative is the smooth Fischer-Burmeister residual,</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
 r = \dot{\gamma} - f^p - \sqrt{\dot{\gamma}^{\,2} + {f^p}^{\,2}},
 \]</div>
 </div>
-<p>implemented by <a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html#models-fbcomplementarity"><span class="std std-ref">FBComplementarity</span></a> with <code class="docutils literal notranslate"><span class="pre">a_inequality</span> <span class="pre">=</span> <span class="pre">'LE'</span></code>.</p>
+<p>implemented by <a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html#models-fbcomplementarity"><span class="std std-ref">FBComplementarity</span></a> with the same
+<code class="docutils literal notranslate"><span class="pre">a_inequality</span> <span class="pre">=</span> <span class="pre">'LE'</span></code>. It is differentiable everywhere but strongly
+nonlinear near the origin, which can slow Newton convergence; prefer the
+minimum map unless a globally smooth residual is specifically required.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>“Consistent” plasticity is often called rate-<em>independent</em>. Rate
@@ -519,9 +537,9 @@ power-law overstress relation,</p>
 <h3>Effective stress and yield function<a class="headerlink" href="#effective-stress-and-yield-function" title="Link to this heading">¶</a></h3>
 <p>For classical <span class="math notranslate nohighlight">\(J_2\)</span> plasticity the effective stress is the von Mises norm of
 the deviatoric (over-)stress,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-20b477af-a84a-4e35-a703-07d0a5f157f5">
-<div class="amsmath math notranslate nohighlight" id="equation-20b477af-a84a-4e35-a703-07d0a5f157f5">
-<span class="eqno">(16)<a class="headerlink" href="#equation-20b477af-a84a-4e35-a703-07d0a5f157f5" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-c25074a3-a894-4747-816f-daaee48c1717">
+<div class="amsmath math notranslate nohighlight" id="equation-c25074a3-a894-4747-816f-daaee48c1717">
+<span class="eqno">(16)<a class="headerlink" href="#equation-c25074a3-a894-4747-816f-daaee48c1717" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \bar{\sigma} &amp;= \sqrt{3 J_2},                                                \\
   J_2          &amp;= \tfrac{1}{2}\,\mathrm{dev}\,\boldsymbol{\Xi}\,:\,
                   \mathrm{dev}\,\boldsymbol{\Xi},                              \\
@@ -542,9 +560,9 @@ f^p = \bar{\sigma} - \sigma_y - k(\bar{\varepsilon}^p).
 <h3>Associative flow<a class="headerlink" href="#associative-flow" title="Link to this heading">¶</a></h3>
 <p>Associative flow rules derive the rates of the plastic strain and internal
 variables from the maximum-dissipation principle,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-61c6dd53-ac29-49c2-873c-b50159f109a8">
-<div class="amsmath math notranslate nohighlight" id="equation-61c6dd53-ac29-49c2-873c-b50159f109a8">
-<span class="eqno">(17)<a class="headerlink" href="#equation-61c6dd53-ac29-49c2-873c-b50159f109a8" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-26a44039-2542-427d-b510-6e8911411251">
+<div class="amsmath math notranslate nohighlight" id="equation-26a44039-2542-427d-b510-6e8911411251">
+<span class="eqno">(17)<a class="headerlink" href="#equation-26a44039-2542-427d-b510-6e8911411251" title="Permalink to this equation">¶</a></span>\[\begin{align}
   \dot{\boldsymbol{\varepsilon}}^p &amp;= \dot{\gamma}\,
         \frac{\partial f^p}{\partial \boldsymbol{\sigma}},                     \\
   \dot{\bar{\varepsilon}}^p        &amp;= -\dot{\gamma}\,
@@ -567,7 +585,7 @@ a sub-model (the yield function) with respect to a list of input variables;
 behaviour with both isotropic and kinematic hardening: linear-elastic
 stress-strain, <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/VoceIsotropicHardening.html#models-voceisotropichardening"><span class="std std-ref">VoceIsotropicHardening</span></a> isotropic hardening,
 <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/LinearKinematicHardening.html#models-linearkinematichardening"><span class="std std-ref">LinearKinematicHardening</span></a> back stress, associative <span class="math notranslate nohighlight">\(J_2\)</span> flow, and
-the Fischer-Burmeister consistency condition.</p>
+the minimum-map consistency condition.</p>
 <div class="literal-block-wrapper docutils container" id="id1">
 <div class="code-block-caption"><span class="caption-number">Listing 2 </span><span class="caption-text">tests/regression/solid_mechanics/rate_independent_plasticity/isokinharden/model.i</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># neml2</span>
@@ -682,7 +700,7 @@ the Fischer-Burmeister consistency condition.</p>
 </span><span data-line="110"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;plastic_strain&#39;</span>
 </span><span data-line="111"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="112"><span class="w">  </span><span class="k">[consistency]</span>
-</span><span data-line="113"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FBComplementarity</span>
+</span><span data-line="113"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">MinMapComplementarity</span>
 </span><span data-line="114"><span class="w">    </span><span class="na">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;yield_function&#39;</span>
 </span><span data-line="115"><span class="w">    </span><span class="na">a_inequality</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;LE&#39;</span>
 </span><span data-line="116"><span class="w">    </span><span class="na">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;flow_rate&#39;</span>
@@ -764,8 +782,8 @@ parameter <code class="docutils literal notranslate"><span class="pre">flow_rate
 the rates into the residuals <code class="docutils literal notranslate"><span class="pre">plastic_strain_residual</span></code>,
 <code class="docutils literal notranslate"><span class="pre">kinematic_plastic_strain_residual</span></code>,
 <code class="docutils literal notranslate"><span class="pre">equivalent_plastic_strain_residual</span></code>.</p></li>
-<li><p><strong>Consistency</strong> — <code class="docutils literal notranslate"><span class="pre">[consistency]</span></code> (<a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html#models-fbcomplementarity"><span class="std std-ref">FBComplementarity</span></a>) closes
-the system with the Fischer-Burmeister residual between <code class="docutils literal notranslate"><span class="pre">yield_function</span></code>
+<li><p><strong>Consistency</strong> — <code class="docutils literal notranslate"><span class="pre">[consistency]</span></code> (<a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html#models-minmapcomplementarity"><span class="std std-ref">MinMapComplementarity</span></a>) closes
+the system with the minimum-map residual between <code class="docutils literal notranslate"><span class="pre">yield_function</span></code>
 and <code class="docutils literal notranslate"><span class="pre">flow_rate</span></code>.</p></li>
 <li><p><strong>Return map</strong> — <code class="docutils literal notranslate"><span class="pre">[surface]</span></code> composes every residual-producing piece into
 one model. <code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code> solves for
