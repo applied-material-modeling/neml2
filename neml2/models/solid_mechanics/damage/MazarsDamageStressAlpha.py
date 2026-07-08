@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, input, output, parameter
-from ....types import SR2, Scalar, Vec, exp, heaviside, inner, macaulay
+from ....types import R2, SR2, Scalar, Vec, exp, heaviside, inner, macaulay
 from ....types.functions import r2_from_sr2
 from ....types.linalg import diag, eigh, transpose
 from ...chain_rule import ChainRuleDict
@@ -247,7 +247,7 @@ class MazarsDamageStressAlpha(Model):
 
         def strain_action(
             V_S: SR2,
-            V_eps: object = V_eps,
+            V_eps: R2 = V_eps,
             strain_coeff: Vec = strain_coeff,
             den_safe: Scalar = den_safe,
         ) -> Scalar:
@@ -269,7 +269,7 @@ class MazarsDamageStressAlpha(Model):
 
         def stress_action(
             V_sigma: SR2,
-            V_sig: object = V_sig,
+            V_sig: R2 = V_sig,
             stress_coeff: Vec = stress_coeff,
             den_safe: Scalar = den_safe,
         ) -> Scalar:

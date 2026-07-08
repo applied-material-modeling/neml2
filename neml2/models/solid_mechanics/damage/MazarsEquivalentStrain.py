@@ -28,8 +28,8 @@ from __future__ import annotations
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, input, output
-from ....types import SR2, Scalar, inner, macaulay, norm
-from ....types.functions import r2_from_sr2
+from ....types import R2, SR2, Scalar, Vec, inner, macaulay
+from ....types.functions import r2_from_sr2, sqrt
 from ....types.linalg import diag, eigh, transpose
 from ...chain_rule import ChainRuleDict
 from ...model import Model
@@ -75,7 +75,7 @@ class MazarsEquivalentStrain(Model):
         # 3. Euclidean norm over the 3-vector → Scalar equivalent strain.
         eigvals, eigvecs = eigh(strain)
         pos = macaulay(eigvals)
-        eq_strain = norm(pos)
+        eq_strain = sqrt(inner(pos, pos))
 
         if v is None:
             return eq_strain
@@ -100,9 +100,9 @@ class MazarsEquivalentStrain(Model):
 
         def strain_action(
             V_S: SR2,
-            eigvecs: SR2 = eigvecs,  # noqa: type narrowed at runtime
-            pos: SR2 = pos,
-            eq_safe: SR2 = eq_safe,
+            eigvecs: R2 = eigvecs,
+            pos: Vec = pos,
+            eq_safe: Scalar = eq_safe,
         ) -> Scalar:
             V_S_full = r2_from_sr2(V_S)
             rotated = transpose(eigvecs) @ V_S_full @ eigvecs
