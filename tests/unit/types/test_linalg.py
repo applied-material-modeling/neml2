@@ -97,6 +97,7 @@ def test_eigh_autograd_matches_finite_difference():
         requires_grad=True,
     )
     eig2_of(md0).backward()
+    assert md0.grad is not None
     grad_auto = md0.grad.clone()
 
     delta = 1e-6
@@ -120,6 +121,7 @@ def test_eigh_eigenvalue_gradients_finite_at_2fold_degeneracy():
     vals, _ = eigh(s)
     assert torch.isclose(vals.data[1], vals.data[2], atol=1e-15)
     (vals.data**2).sum().backward()
+    assert md.grad is not None
     assert torch.isfinite(md.grad).all()
 
 
@@ -130,6 +132,7 @@ def test_eigh_eigenvalue_gradients_finite_at_3fold_degeneracy():
     vals, _ = eigh(s)
     assert torch.allclose(vals.data, vals.data[0], atol=1e-15)
     (vals.data**2).sum().backward()
+    assert md.grad is not None
     assert torch.isfinite(md.grad).all()
 
 
@@ -141,6 +144,7 @@ def test_eigh_eigenvector_gradients_documented_nan_at_degeneracy():
     s = SR2(md)
     _, vecs = eigh(s)
     (vecs.data**2).sum().backward()
+    assert md.grad is not None
     assert torch.isnan(md.grad).any(), (
         "Eigenvector gradients are NO LONGER NaN at degenerate eigenvalues. "
         "If you intentionally added a degeneracy-safe eigh, update this "
