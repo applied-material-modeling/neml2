@@ -95,29 +95,29 @@ class MazarsDamageStressAlpha(Model):
         ),
         output("damage", Scalar, "Output damage variable D"),
         parameter(
-            "eps_d0", Scalar, "Damage onset equivalent strain", attr="eps_d0", allow_nonlinear=True
+            "eps_d0", Scalar, "Damage onset equivalent strain", attr="eps_d0", allow_promotion=True
         ),
         parameter(
-            "A_t", Scalar, "Tension damage law shape parameter", attr="A_t", allow_nonlinear=True
+            "A_t", Scalar, "Tension damage law shape parameter", attr="A_t", allow_promotion=True
         ),
         parameter(
-            "B_t", Scalar, "Tension damage law rate parameter", attr="B_t", allow_nonlinear=True
+            "B_t", Scalar, "Tension damage law rate parameter", attr="B_t", allow_promotion=True
         ),
         parameter(
             "A_c",
             Scalar,
             "Compression damage law shape parameter",
             attr="A_c",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
-            "B_c", Scalar, "Compression damage law rate parameter", attr="B_c", allow_nonlinear=True
+            "B_c", Scalar, "Compression damage law rate parameter", attr="B_c", allow_promotion=True
         ),
         parameter(
-            "E", Scalar, "Young's modulus (for compliance back-map)", attr="E", allow_nonlinear=True
+            "E", Scalar, "Young's modulus (for compliance back-map)", attr="E", allow_promotion=True
         ),
         parameter(
-            "nu", Scalar, "Poisson ratio (for compliance back-map)", attr="nu", allow_nonlinear=True
+            "nu", Scalar, "Poisson ratio (for compliance back-map)", attr="nu", allow_promotion=True
         ),
     )
 
@@ -287,50 +287,50 @@ class MazarsDamageStressAlpha(Model):
 
         # ∂D/∂ε_d0:
         #   ∂D_t_raw/∂ε_d0 = −H_em · [(1−A_t)/ε_eval + A_t B_t exp(−B_t eps_above)]
-        if "eps_d0" in self._nl_params:
+        if "eps_d0" in self._promoted_params:
             dDt_de0 = H_Dt * (-H_em) * ((1.0 - At) / eps_eval + At * Bt * exp_Bt)
             dDc_de0 = H_Dc * (-H_em) * ((1.0 - Ac) / eps_eval + Ac * Bc * exp_Bc)
             dD_de0 = a_t * dDt_de0 + a_c * dDc_de0
-            actions[self._nl_params["eps_d0"].input_name] = lambda V, c=dD_de0: c * V
+            actions[self._promoted_params["eps_d0"].input_name] = lambda V, c=dD_de0: c * V
 
         # ∂D/∂A_t = α_t · H(Dt_raw) · [ε_d0/ε_eval − exp(−B_t eps_above)]
-        if "A_t" in self._nl_params:
+        if "A_t" in self._promoted_params:
             dDt_dAt = H_Dt * (e0 / eps_eval - exp_Bt)
             dD_dAt = a_t * dDt_dAt
-            actions[self._nl_params["A_t"].input_name] = lambda V, c=dD_dAt: c * V
+            actions[self._promoted_params["A_t"].input_name] = lambda V, c=dD_dAt: c * V
 
         # ∂D/∂B_t = α_t · H(Dt_raw) · A_t · eps_above · exp(−B_t eps_above)
-        if "B_t" in self._nl_params:
+        if "B_t" in self._promoted_params:
             dDt_dBt = H_Dt * At * eps_above * exp_Bt
             dD_dBt = a_t * dDt_dBt
-            actions[self._nl_params["B_t"].input_name] = lambda V, c=dD_dBt: c * V
+            actions[self._promoted_params["B_t"].input_name] = lambda V, c=dD_dBt: c * V
 
         # ∂D/∂A_c and ∂D/∂B_c — symmetric to A_t / B_t but with D_c / α_c.
-        if "A_c" in self._nl_params:
+        if "A_c" in self._promoted_params:
             dDc_dAc = H_Dc * (e0 / eps_eval - exp_Bc)
             dD_dAc = a_c * dDc_dAc
-            actions[self._nl_params["A_c"].input_name] = lambda V, c=dD_dAc: c * V
+            actions[self._promoted_params["A_c"].input_name] = lambda V, c=dD_dAc: c * V
 
-        if "B_c" in self._nl_params:
+        if "B_c" in self._promoted_params:
             dDc_dBc = H_Dc * Ac * eps_above * exp_Bc
             dD_dBc = a_c * dDc_dBc
-            actions[self._nl_params["B_c"].input_name] = lambda V, c=dD_dBc: c * V
+            actions[self._promoted_params["B_c"].input_name] = lambda V, c=dD_dBc: c * V
 
         # ∂D/∂E. Both ε_t and ε_c scale as 1/E, so each α scales as 1/E,
         # so D ∝ 1/E in its α dependence (D_t and D_c don't depend on E):
         #   ∂D/∂E = −D/E.
-        if "E" in self._nl_params:
+        if "E" in self._promoted_params:
             dD_dE = -damage / E_
-            actions[self._nl_params["E"].input_name] = lambda V, c=dD_dE: c * V
+            actions[self._promoted_params["E"].input_name] = lambda V, c=dD_dE: c * V
 
         # ∂D/∂ν. ∂ε_t/∂ν = (σ_t − tr(σ_t)·1) / E, so:
         #   ∂α_t/∂ν = [inner(σ_t, ε_pos) − tr(σ_t)·tr(ε_pos)] / (E · den_safe)
         # ∂D/∂ν = D_t · ∂α_t/∂ν + D_c · ∂α_c/∂ν.
-        if "nu" in self._nl_params:
+        if "nu" in self._promoted_params:
             da_t_dnu = (inner(sig_t, eps_pos) - tr_sig_t * tr_eps_pos) / (E_ * den_safe)
             da_c_dnu = (inner(sig_c, eps_pos) - tr_sig_c * tr_eps_pos) / (E_ * den_safe)
             dD_dnu = Dt * da_t_dnu + Dc * da_c_dnu
-            actions[self._nl_params["nu"].input_name] = lambda V, c=dD_dnu: c * V
+            actions[self._promoted_params["nu"].input_name] = lambda V, c=dD_dnu: c * V
 
         return damage, self.apply_chain_rule(v, "damage", actions, output=damage)
 
