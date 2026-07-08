@@ -44,13 +44,13 @@ class KocksMeckingRateSensitivity(Model):
     hit = HitSchema(
         input("temperature", Scalar, "Absolute temperature"),
         output("rate_sensitivity", Scalar, "Output name of the rate sensitivity"),
-        parameter("A", Scalar, "The Kocks-Mecking slope parameter", attr="A", allow_nonlinear=True),
+        parameter("A", Scalar, "The Kocks-Mecking slope parameter", attr="A", allow_promotion=True),
         parameter(
             "shear_modulus",
             Scalar,
             "The shear modulus",
             attr="mu",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         option("k", float, "Boltzmann constant", attr="_k"),
         option("b", float, "The Burgers vector", attr="_b"),
@@ -75,15 +75,15 @@ class KocksMeckingRateSensitivity(Model):
     def forward(  # type: ignore[override]
         self,
         temperature: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Mirrors ``KocksMeckingRateSensitivity::set_value`` in
         # ``src/neml2/models/solid_mechanics/plasticity/KocksMeckingRateSensitivity.cxx``:
         # ``n = -mu * b^3 / (k * T * A)``.
         T = temperature
-        A = self._get_param("A", nl_params, Scalar)
-        mu = self._get_param("mu", nl_params, Scalar)
+        A = self._get_param("A", promoted_params, Scalar)
+        mu = self._get_param("mu", promoted_params, Scalar)
 
         m = -mu * self._b3 / (self._k * T * A)
 
@@ -99,12 +99,12 @@ class KocksMeckingRateSensitivity(Model):
         dm_dT = self._b3 * mu / (A * self._k * T * T)
 
         actions = {"temperature": lambda V, c=dm_dT: c * V}
-        if "mu" in self._nl_params:
+        if "mu" in self._promoted_params:
             dm_dmu = -Scalar.from_value(self._b3, like=T) / (A * self._k * T)
-            actions[self._nl_params["mu"].input_name] = lambda V, c=dm_dmu: c * V
-        if "A" in self._nl_params:
+            actions[self._promoted_params["mu"].input_name] = lambda V, c=dm_dmu: c * V
+        if "A" in self._promoted_params:
             dm_dA = self._b3 * mu / (A * A * self._k * T)
-            actions[self._nl_params["A"].input_name] = lambda V, c=dm_dA: c * V
+            actions[self._promoted_params["A"].input_name] = lambda V, c=dm_dA: c * V
 
         return m, self.apply_chain_rule(v, "rate_sensitivity", actions, output=m)
 

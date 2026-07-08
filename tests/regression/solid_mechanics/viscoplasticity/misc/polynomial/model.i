@@ -12,11 +12,11 @@
   []
   [start_temperature]
     type = Python
-    expr = 'Scalar.linspace(100.0, 1000.0, 20)'
+    expr = 'linspace(Scalar(100.0).dynamic_batch, Scalar(1000.0).dynamic_batch, 20)'
   []
   [end_temperature]
     type = Python
-    expr = 'Scalar.linspace(200.0, 1500.0, 20)'
+    expr = 'linspace(Scalar(200.0).dynamic_batch, Scalar(1500.0).dynamic_batch, 20)'
   []
   # temperatures: LinspaceScalar(start, end, 100) -> shape (100, 20)
   [temperatures]
@@ -76,13 +76,12 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'E'
-    force_SR2_values = 'strains'
-    force_Scalar_names = 'temperature'
-    force_Scalar_values = 'temperatures'
+    prescribed_SR2_names = 'E'
+    prescribed_SR2_values = 'strains'
+    prescribed_Scalar_names = 'temperature'
+    prescribed_Scalar_values = 'temperatures'
     ic_Scalar_names = 's1 s2'
     ic_Scalar_values = 's1_0 s2_0'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

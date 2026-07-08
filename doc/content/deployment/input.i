@@ -6,7 +6,7 @@
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar.linspace(0, 1, 5)'
+    expr = 'linspace(Scalar(0).dynamic_batch, Scalar(1).dynamic_batch, 5)'
   []
   [strains]
     type = Python
@@ -27,8 +27,8 @@
     type = TransientDriver
     model = 'elasticity'
     prescribed_time = 'times'
-    force_SR2_names = 'strain'
-    force_SR2_values = 'strains'
+    prescribed_SR2_names = 'strain'
+    prescribed_SR2_values = 'strains'
     save_as = 'result.pt'
   []
 []

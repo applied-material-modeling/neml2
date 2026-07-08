@@ -11,7 +11,7 @@
   # LinspaceScalar(0, 1.0, 21) -> shape (21,)
   [times]
     type = Python
-    expr = 'Scalar.linspace(0.0, 1.0, 21)'
+    expr = 'linspace(Scalar(0.0).dynamic_batch, Scalar(1.0).dynamic_batch, 21)'
   []
 
   # Constant stress σ = (100, -50, -50, 20, -10, 5) (physical); Mandel scaling applied
@@ -48,9 +48,8 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'stress'
-    force_SR2_values = 'stress_history'
-    save_as = 'result.pt'
+    prescribed_SR2_names = 'stress'
+    prescribed_SR2_values = 'stress_history'
   []
   [verification]
     type = Verification

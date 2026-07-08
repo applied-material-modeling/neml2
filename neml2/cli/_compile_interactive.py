@@ -59,6 +59,10 @@ class FormState:
     output_dir: str = "./aoti"
     promoted: tuple[str, ...] = ()
     derivatives: tuple[str, ...] = ()  # "OUT:IN" specs
+    # Shallow boundary renames, each a tuple of "ORIG:NEW" specs (model mode only).
+    rename_inputs: tuple[str, ...] = ()
+    rename_outputs: tuple[str, ...] = ()
+    rename_parameters: tuple[str, ...] = ()
     example_shape: tuple[str, ...] = ()  # raw --example-batch-shape entries
     dynamic_batch: bool | None = None  # None => emit neither flag
     load: tuple[str, ...] = ()  # --load extension modules
@@ -128,6 +132,15 @@ def build_compile_argv(state: FormState) -> list[str]:
 
     for spec in state.derivatives:
         argv += ["-d", spec]
+
+    # Shallow boundary renames (model mode only; the CLI rejects them with
+    # --driver). Emitted per namespace, matching the three CLI flags.
+    for spec in state.rename_inputs:
+        argv += ["--rename-input", spec]
+    for spec in state.rename_outputs:
+        argv += ["--rename-output", spec]
+    for spec in state.rename_parameters:
+        argv += ["--rename-parameter", spec]
 
     for spec in state.example_shape:
         argv += ["--example-batch-shape", spec]

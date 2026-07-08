@@ -54,9 +54,9 @@ class CamanhoDavilaCriticalSeparation(Model):
         parameter(
             "mode_mixity",
             Scalar,
-            "Mode-mixity ratio. May be wired to an upstream `ModeMixity` (nonlinear-capable).",
+            "Mode-mixity ratio. May be wired to an upstream `ModeMixity` (promotion-capable).",
             attr="beta",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter("penalty_stiffness", Scalar, "Penalty stiffness K", attr="K"),
         parameter("normal_strength", Scalar, "Tensile (normal) strength N", attr="N"),
@@ -73,18 +73,18 @@ class CamanhoDavilaCriticalSeparation(Model):
     def forward(  # type: ignore[override]
         self,
         dn: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
-        # ``beta`` is nonlinear-capable; route through ``_get_param`` so the
+        # ``beta`` is promotion-capable; route through ``_get_param`` so the
         # same code path works whether it remained a static parameter or got
-        # promoted to a runtime nl input. ``K``, ``N``, ``S`` are
-        # allow_nonlinear=False on the C++ side (no nl-Jacobian), but the
+        # promoted to a runtime input. ``K``, ``N``, ``S`` are
+        # allow_promotion=False on the C++ side (no promoted-parameter Jacobian), but the
         # ``_get_param`` resolver works uniformly for static parameters too.
-        beta = self._get_param("beta", nl_params, Scalar)
-        K = self._get_param("K", nl_params, Scalar)
-        N = self._get_param("N", nl_params, Scalar)
-        S = self._get_param("S", nl_params, Scalar)
+        beta = self._get_param("beta", promoted_params, Scalar)
+        K = self._get_param("K", promoted_params, Scalar)
+        N = self._get_param("N", promoted_params, Scalar)
+        S = self._get_param("S", promoted_params, Scalar)
 
         # Match the C++ ``machine_precision(_dn.scalar_type())`` regularizer
         # used to keep the inner ``sqrt`` differentiable at ``beta == 0``.
@@ -113,11 +113,11 @@ class CamanhoDavilaCriticalSeparation(Model):
         # detached branch mask, so its action is structural zero (omitted
         # from ``actions`` -> ``apply_chain_rule`` treats it as zero). The
         # ``beta`` partial is emitted only when promoted to a runtime input
-        # (mode 3/4). ``K``, ``N``, ``S`` are allow_nonlinear=False so no
+        # (mode 3/4). ``K``, ``N``, ``S`` are allow_promotion=False so no
         # action is emitted for them.
         actions: dict[str, ChainRuleAction] = {}
 
-        beta_nlp = self._nl_params.get("beta")
+        beta_nlp = self._promoted_params.get("beta")
         if beta_nlp is not None:
             zero = Scalar.from_value(0.0, like=delta_c)
             # Opening: d(delta_c)/d(beta) =

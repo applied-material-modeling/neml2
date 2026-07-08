@@ -54,7 +54,7 @@ A `.data` access elsewhere means one of:
 - The caller is about to do raw `torch.*` arithmetic and rewrap, dropping labels/state/meta and reconstructing them by guess. This is the root cause of metadata-loss bugs.
 - A wrapper primitive is missing. Add it.
 
-The same framework boundaries (AOTI shim, `torch.autograd.Function`, eager embed bridge) are the only exceptions, and even there the unwrap is encapsulated in a helper inside `neml2/types/` (the shared boundary helpers live in `neml2/types/_boundary.py`), not done ad hoc at the call site. Genuine framework-boundary unwraps in those exception files bear a `# noqa: data-ok` marker explaining why.
+The same framework boundaries (AOTI shim, `torch.autograd.Function`, eager embed bridge) are the only exceptions, and even there the unwrap is encapsulated in a helper inside `neml2/types/` (the shared boundary helpers live in `neml2/types/_boundary.py`), not done ad hoc at the call site. Genuine framework-boundary unwraps in those exception files bear a `# data-ok` marker explaining why.
 
 ### 3. Fix the root cause; never patch the call site
 
@@ -67,39 +67,44 @@ These three rules reinforce each other. Rule 1 forces functions to produce typed
 ## Build & develop
 
 ```bash
-pip install -e ".[dev]" -v       # editable + dev extras (pytest, pre-commit, sphinx, ...)
+pip install torch nmhit scikit-build-core cmake ninja   # build prerequisites (see note)
+pip install -e ".[dev]" -v --no-build-isolation
 ```
 
-This drives a `scikit-build-core` build of the small AOTI C++ runtime under `build/<wheel_tag>/`, then installs the Python package in editable mode. Python source edits take effect immediately; touching anything under `neml2/csrc/` or `CMakeLists.txt` requires a re-`pip install` to rebuild the runtime.
+This drives a `scikit-build-core` build of the C++ runtime under `build/<wheel_tag>/` (stable `build/editable` symlink), then installs the Python package in editable mode. Python source edits take effect immediately; touching anything under `neml2/csrc/` or `CMakeLists.txt` needs a re-`pip install` — or `cmake --build build/editable` for a fast incremental C++ rebuild. There are **no CMake presets**: `pip install -e` is the single build entry point.
 
-Package versions and pinned deps live in `dependencies.yaml` — use `python scripts/dep_manager.py {check|list|bump DEP.FIELD VALUE}` rather than editing version strings by hand. Files reference their dep with a `# dependencies: NAME.FIELD` annotation immediately above the version literal. The torch compatibility matrix (`compatibility.yaml`) is a separate registry checked against the same `dependencies.yaml` torch entry — keep them in sync via `python scripts/compat_matrix.py {seed|check|render}`.
+**Why the manual prerequisites + `--no-build-isolation`.** `torch` and `nmhit` are declared as *runtime* deps in `[project.dependencies]`, but pip installs runtime deps *after* it builds the wheel — and the C++ build needs libtorch + libnmhit (CMake `find_package`) *during* the build. They can't move to `build-system.requires` either: `libneml2.so`'s rpath resolves libtorch from the sibling `torch/` package at runtime, so neml2 must compile against the *same* torch you run, not an isolated build-env copy. So the build has to see your environment's torch/nmhit — hence pre-installing them and `--no-build-isolation` (which, in turn, requires the build backend — scikit-build-core + cmake + ninja — to be present too). This mirrors cibuildwheel (`build-frontend = build --no-isolation` + a `before-build` install).
 
-### C++ AOTI runtime (rarely needed)
+An editable install builds at `RelWithDebInfo` and additionally compiles the C++ test executables (the `cpp_tests` aggregate target) and emits `compile_commands.json` (symlinked to the repo root); a shipped wheel (`SKBUILD_STATE != editable`) stays lean (`Release`, no tests). The editable-vs-wheel split is declared via `[[tool.scikit-build.overrides]] if.state = "editable"` in `pyproject.toml`.
+
+Package versions and pinned deps live in `dependencies.yaml` — use `python scripts/dep_manager.py {check|list|bump DEP.FIELD VALUE}` rather than editing version strings by hand. Files reference their dep with a `# dependencies: NAME.FIELD` annotation immediately above the version literal. The torch compatibility matrix (`compatibility.yaml`) is a separate registry checked against the same `dependencies.yaml` torch entry — keep them in sync via `python scripts/compat_matrix.py {seed|check|render}`. **Never hardcode a dependency version in prose or documentation** (no "CMake ≥ 3.26", no "torch 2.12") — reference the dependency by name; the pinned value lives only in `dependencies.yaml` and the annotated literals, so a bump never has to chase prose.
+
+### C++ tests + instrumented builds
+
+The C++ test executables build with the editable install; run them by ctest label against `build/editable`:
 
 ```bash
-cmake --preset dev               # configure (Debug)
-cmake --build --preset dev       # build libneml2
-cmake --preset cc                # configure-only; exports compile_commands.json for clangd
+ctest --test-dir build/editable -L dispatcher    # scheduler / dispatcher tests
+ctest --test-dir build/editable -L eager         # embedded-Python eager test
+ctest --test-dir build/editable -L benchmark     # benchmark smoke tests
 ```
 
-Only two presets exist: `dev` (build) and `cc` (compile-commands-only, no `cmake --build`). The wheel build that `pip install` drives uses `cmake.build-type = "Release"` internally — there is no developer-facing `release` preset.
-
-Two instrumentation build types extend the `dev` preset for the C++ test suite (clang or gcc; selecting the type is the opt-in, and both are off the wheel path):
+The instrumented build types go through the same entry point via `--config-settings`:
 
 ```bash
-# Coverage (clang source-based): build, then run the dispatcher + eager tests + report
-CC=clang CXX=clang++ cmake --preset dev -DCMAKE_BUILD_TYPE=Coverage -S .
-cmake --build build/dev --target aoti test_dispatcher eager test_eager ...   # + the other test_* targets
-scripts/cpp_coverage.sh build/dev                            # runs the `dispatcher|eager` labels -> coverage.lcov
+# Coverage (clang source-based) -> coverage.lcov
+CC=clang CXX=clang++ pip install -e ".[dev]" --no-build-isolation \
+  --config-settings=cmake.build-type=Coverage
+scripts/cpp_coverage.sh build/editable                       # runs the `dispatcher|eager` labels
 
 # ThreadSanitizer (guards the async dispatch pool)
-CC=clang CXX=clang++ cmake --preset dev -DCMAKE_BUILD_TYPE=ThreadSanitizer -S .
-cmake --build build/dev --target aoti test_dispatcher ...
+CC=clang CXX=clang++ pip install -e ".[dev]" --no-build-isolation \
+  --config-settings=cmake.build-type=ThreadSanitizer
 OMP_NUM_THREADS=1 TSAN_OPTIONS="suppressions=tests/cpp/tsan_suppressions.txt ignore_noninstrumented_modules=1" \
-  ctest --test-dir build/dev -L dispatcher
+  ctest --test-dir build/editable -L dispatcher
 ```
 
-The pip `libtorch` is not TSan-instrumented, so `ignore_noninstrumented_modules=1` + `tests/cpp/tsan_suppressions.txt` silence torch's own reports; neml2's code is still checked. CI runs both on ubuntu+clang (the `coverage` and `tsan` jobs in `.github/workflows/cpp.yaml`); C++ coverage uploads to Codecov under the informational `cpp` flag.
+The pip `libtorch` is not TSan-instrumented, so `ignore_noninstrumented_modules=1` + `tests/cpp/tsan_suppressions.txt` silence torch's own reports; neml2's code is still checked. CI runs both on ubuntu+clang (the `cpp-coverage` and `tsan` jobs in `.github/workflows/cpp.yaml`); C++ coverage uploads to Codecov under the informational `cpp` flag.
 
 ## Tests
 
@@ -183,7 +188,7 @@ The Python package layout under `neml2/`:
   - `models/_guard.py` — `forward()` guard that blocks raw `torch.autograd` / `einsum` calls inside leaves; the `allow_autograd` / `allow_einsum` context managers carve out exceptions.
   - `models/common/` — `ComposedModel` glues children together via the dependency graph; `ImplicitUpdate` wraps a residual model in a Newton solve with optional `Predictor`.
   - `models/{solid_mechanics,chemical_reactions,phase_field_fracture,porous_flow,finite_volume,kwn}/` — domain leaf libraries. Crystal plasticity is a subdirectory of `solid_mechanics/`.
-- `types/` — typed tensor wrappers (`Scalar`, `Vec`, `R2`, `SR2`, `Rot`, `Quaternion`, `MillerIndex`, fourth-order `SSR4` / `WSR4` / ...). Each is a dataclass registered with `torch.utils._pytree.register_dataclass` so it round-trips through `torch.export`. `.data` exposes the underlying `torch.Tensor`. `types/_boundary.py` holds the shared raw-tensor framework-boundary helpers (device/dtype `check_tensor`, `broadcast_to_common_batch`, and the typed-from-raw `unwrap_outputs` / `assemble_jvp_outputs` / `assemble_jacobian`) used by the AOTI shim, the eager bridge, and `Model` — not eager-specific, so it lives here at the raw↔typed boundary rather than in any one consumer.
+- `types/` — typed tensor wrappers (`Scalar`, `Vec`, `R2`, `SR2`, `MRP`, `Quaternion`, `MillerIndex`, fourth-order `SSR4` / `WSR4` / ...). Each is a dataclass registered with `torch.utils._pytree.register_dataclass` so it round-trips through `torch.export`. `.data` exposes the underlying `torch.Tensor`. `types/_boundary.py` holds the shared raw-tensor framework-boundary helpers (device/dtype `check_tensor`, `broadcast_to_common_batch`, and the typed-from-raw `unwrap_outputs` / `assemble_jvp_outputs` / `assemble_jacobian`) used by the AOTI shim, the eager bridge, and `Model` — not eager-specific, so it lives here at the raw↔typed boundary rather than in any one consumer.
 - `solvers/` — package with `dense_lu.py`, `schur_complement.py`, `newton.py`, `newton_linesearch.py` (per-class files mirroring v2's layout).
 - `es/` — equation-systems package with `axis_layout.py`, `assembled.py` (AssembledVector/Matrix wrapping the dynamic-base `Tensor`), `system.py` (LinearSystem / NonlinearSystem / ModelNonlinearSystem), and `implicit.py` (AOTI implicit-segment export wrappers `RHS` / `NewtonStep` / `IFT`). The same three wrappers cover the DenseLU and SchurComplement solver paths -- the linear solver is configured externally and forwarded.
 - `drivers/` — `driver.py` (the abstract `Driver` base) plus the concrete `TransientDriver`, `ModelUnitTest`, `TransientRegression`, `Verification` files — the top-level "run a model over a load history" objects exposed in input files.
@@ -210,6 +215,6 @@ When adding a new submodule under `neml2/models/<domain>/`, append the import to
 - Type-checked with `pyright` against the installed package (CI: the `typecheck` job).
 - Math in docstrings uses MyST dollarmath (`$x$` inline, `$$...$$` display); MyST `dollarmath` and `amsmath` extensions are enabled in `doc/conf.py`. Code references stay in `` `backticks` ``; the difference matters for rendering in the syntax catalog.
 - HIT inputs use the `nmhit` Python parser (also a pre-commit `nmhit-format` hook). The format itself is unchanged from v2.
-- Notebooks under `doc/content/tutorials/**.ipynb` are paired with `.md` mirrors via `jupytext --sync` (pre-commit hook); `.jupytext.toml` declares the format pairing. Edit the `.ipynb`, never the paired `.md`.
+- Tutorials under `doc/content/tutorials/**/main.ipynb` are notebook-only (no jupytext pairing — edit the `.ipynb` directly; review via GitHub's notebook diff). Cheap tutorials are executed at build time (`nb_execution_mode = "cache"`) and committed without outputs; the two expensive pyzag notebooks (`optimization/{deterministic,statistical}`) are committed pre-baked, excluded from build-time execution, and kept current by the `check-notebook-executed` hook. Reference tutorial pages with no `.ipynb` (e.g. `index.md`, `models/input_file.md`) are plain markdown.
 - Copyright headers are checked by a pre-commit hook (`python scripts/check_copyright.py`); the script auto-fixes missing headers.
 - Avoid editing files in `build/`, `installed/`, or `doc/_build/`, `doc/generated/` — those are generated. `scripts/clobber.sh [dir]` removes git-ignored files if a build gets wedged.

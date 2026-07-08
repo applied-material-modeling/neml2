@@ -97,7 +97,7 @@ class ElasticityInterface(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native elasticity-interface leaves implement the

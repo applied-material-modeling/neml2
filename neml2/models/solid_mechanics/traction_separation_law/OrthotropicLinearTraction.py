@@ -96,16 +96,16 @@ class OrthotropicLinearTraction(Model):
     ):
         # ``input_spec`` order: structural inputs first (declaration order from
         # the schema, minus optional inputs that HIT omitted), then promoted
-        # nl-parameters appended. ``Kn``/``Kt``/``Kpen`` are static (no
-        # ``allow_nonlinear``) so no nl-promotions occur in practice.
+        # promoted parameters appended. ``Kn``/``Kt``/``Kpen`` are static (no
+        # ``allow_promotion``) so no promotions occur in practice.
         names = list(self.input_spec)
         if len(args) != len(names):
             raise AssertionError(
                 f"OrthotropicLinearTraction.forward: got {len(args)} args, expected {len(names)}"
             )
-        n_nl = len(self._nl_params)
+        n_nl = len(self._promoted_params)
         n_struct = len(names) - n_nl
-        inputs, nl_params = args[:n_struct], args[n_struct:]
+        inputs, promoted_params = args[:n_struct], args[n_struct:]
         struct_names = names[:n_struct]
         bound = dict(zip(struct_names, inputs, strict=True))
 
@@ -122,10 +122,10 @@ class OrthotropicLinearTraction(Model):
         dn_pen_name = self._dn_pen_name
         dn_pen = bound[dn_pen_name] if dn_pen_name is not None and dn_pen_name in bound else None
 
-        Kn = self._get_param("Kn", nl_params, Scalar)
-        Kt = self._get_param("Kt", nl_params, Scalar)
+        Kn = self._get_param("Kn", promoted_params, Scalar)
+        Kt = self._get_param("Kt", promoted_params, Scalar)
         # ``Kpen`` is always declared (default 0); only used when penetration is wired.
-        Kpen = self._get_param("Kpen", nl_params, Scalar)
+        Kpen = self._get_param("Kpen", promoted_params, Scalar)
 
         # -------- Assemble traction.
         T_n = Kn * dn_sep

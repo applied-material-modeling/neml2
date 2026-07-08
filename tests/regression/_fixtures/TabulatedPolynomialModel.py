@@ -49,6 +49,7 @@ import nmhit
 import torch
 
 from neml2 import allow_autograd
+from neml2._warnings import TORCH_JIT_PY314, ignore_warnings
 from neml2.factory import _NativeInputFile, register_neml2_object
 from neml2.models.chain_rule import ChainRuleDict
 from neml2.models.model import Model
@@ -212,7 +213,7 @@ class TabulatedPolynomialModel(Model):
         T: Scalar,
         s1: Scalar,
         s2: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
         ep_dot_raw, s1_dot_raw, s2_dot_raw = self._forward_raw(s.data, T.data, s1.data, s2.data)
@@ -290,9 +291,15 @@ class TabulatedPolynomialModel(Model):
                 # Jacobian for the 4-input x 3-output coupled polynomial +
                 # sigmoid is a 12-entry expression that's not worth deriving
                 # by hand.
-                with allow_autograd(
-                    "TabulatedPolynomialModel test fixture: routing the "
-                    "pushforward through torch.func.jvp."
+                with (
+                    allow_autograd(
+                        "TabulatedPolynomialModel test fixture: routing the "
+                        "pushforward through torch.func.jvp."
+                    ),
+                    # First forward-mode jvp triggers torch's one-time JVP-decomposition
+                    # registration, which on Python 3.14 warns about torch's own
+                    # deprecated torch.jit.script (neml2 never calls it).
+                    ignore_warnings(TORCH_JIT_PY314),
                 ):
                     # torch.func.jvp is typed as a union of 2-/3-tuples
                     # (the 3-tuple branch is the ``has_aux=True`` overload

@@ -115,7 +115,7 @@
       r = torch.stack([rx / f, ry / f, rz / f], dim=-1)
       r_ns = (r * r).sum(-1, keepdim=True)
       r_norm = torch.where(r_ns < 1.0, r, -r / r_ns)
-      result = Rot(r_norm.contiguous())
+      result = MRP(r_norm.contiguous())
     '''
   []
 []
@@ -125,12 +125,12 @@
     type = TransientDriver
     model = 'model_with_stress'
     prescribed_time = 'times'
-    force_SR2_names = 'deformation_rate'
-    force_SR2_values = 'deformation_rate'
-    force_WR2_names = 'vorticity'
-    force_WR2_values = 'vorticity'
-    ic_Rot_names = 'orientation'
-    ic_Rot_values = 'initial_orientation'
+    prescribed_SR2_names = 'deformation_rate'
+    prescribed_SR2_values = 'deformation_rate'
+    prescribed_WR2_names = 'vorticity'
+    prescribed_WR2_values = 'vorticity'
+    ic_MRP_names = 'orientation'
+    ic_MRP_values = 'initial_orientation'
   []
 []
 
@@ -233,7 +233,7 @@
   []
   [cp_warmup_2]
     type = ConstantExtrapolationPredictor
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
     unknowns_Scalar = 'slip_hardening'
   []
   [predictor]

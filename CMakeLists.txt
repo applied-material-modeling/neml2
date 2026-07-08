@@ -4,7 +4,7 @@
 # dependencies: cmake.version_min
 cmake_minimum_required(VERSION 3.26.1)
 # dependencies: neml2.version
-project(NEML2 VERSION 3.0.3 LANGUAGES C CXX)
+project(NEML2 VERSION 3.0.6 LANGUAGES C CXX)
 
 # ----------------------------------------------------------------------------
 # Testing (enable_testing + ctest plumbing)
@@ -112,16 +112,33 @@ endif()
 include(DepUtils)
 
 # ----------------------------------------------------------------------------
-# lib directory
+# Install directories
 # ----------------------------------------------------------------------------
-# During an editable wheel install, we want to put the cpython libraries in the
-# source tree so that they can be found by the redirected imports.
+# An editable install builds into ``build/<wheel_tag>`` but must land its
+# artifacts back in the source tree so the redirected ``import neml2`` (and a
+# downstream C++ consumer pointed at the checkout) can find them. So for editable
+# we install with ABSOLUTE destinations under ``<source>/neml2/{lib,include,share}``
+# -- the same layout the shipped wheel lays down under ``<site-packages>/neml2/``,
+# just rooted in the working copy. A non-editable (wheel) build uses destinations
+# relative to scikit-build's install prefix, which it maps under ``neml2/``.
 if(NEML2_WHEEL AND DEFINED SKBUILD_STATE AND SKBUILD_STATE STREQUAL "editable")
+      set(NEML2_EDITABLE ON)
+else()
+      set(NEML2_EDITABLE OFF)
+endif()
+
+if(NEML2_EDITABLE)
       set(INSTALL_LIBDIR ${NEML2_SOURCE_DIR}/neml2/lib)
       set(INSTALL_BINDIR ${NEML2_SOURCE_DIR}/neml2/bin)
+      set(INSTALL_INCLUDEDIR ${NEML2_SOURCE_DIR}/neml2/include)
+      set(INSTALL_SHAREDIR ${NEML2_SOURCE_DIR}/neml2/share)
+      set(INSTALL_DATAROOT ${NEML2_SOURCE_DIR}/neml2)
 else()
       set(INSTALL_LIBDIR lib)
       set(INSTALL_BINDIR bin)
+      set(INSTALL_INCLUDEDIR include)
+      set(INSTALL_SHAREDIR share)
+      set(INSTALL_DATAROOT .)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -130,7 +147,11 @@ endif()
 find_package(torch MODULE OPTIONAL_COMPONENTS cuda python)
 
 if(NOT torch_FOUND)
-      message(FATAL_ERROR "Torch not found.")
+      message(FATAL_ERROR
+            "Torch not found. Install it into your environment and build without "
+            "isolation so it is visible:\n"
+            "  pip install torch nmhit\n"
+            "  pip install -e \".[dev]\" --no-build-isolation")
 endif()
 
 # ----------------------------------------------------------------------------
@@ -153,15 +174,16 @@ if(NOT torch_AOTI_HEADER)
       )
 endif()
 
-if(NOT SKBUILD_STATE STREQUAL "editable")
-      install(FILES
-            ${NEML2_SOURCE_DIR}/cmake/Modules/Findtorch.cmake
-            ${NEML2_SOURCE_DIR}/cmake/Modules/DetectTorchCXXABI.cpp
-            ${NEML2_SOURCE_DIR}/cmake/Modules/Findnmhit.cmake
-            DESTINATION share/cmake/neml2/Modules
-            COMPONENT libneml2
-      )
-endif()
+# The find-modules neml2Config.cmake adds to CMAKE_MODULE_PATH at find_package()
+# time (it does `find_dependency(torch MODULE)`). Shipped in both the wheel and an
+# editable install via INSTALL_SHAREDIR so a downstream consumer can resolve torch.
+install(FILES
+      ${NEML2_SOURCE_DIR}/cmake/Modules/Findtorch.cmake
+      ${NEML2_SOURCE_DIR}/cmake/Modules/DetectTorchCXXABI.cpp
+      ${NEML2_SOURCE_DIR}/cmake/Modules/Findnmhit.cmake
+      DESTINATION ${INSTALL_SHAREDIR}/cmake/neml2/Modules
+      COMPONENT libneml2
+)
 
 # ----------------------------------------------------------------------------
 # nlohmann json
@@ -202,15 +224,14 @@ file(REAL_PATH "../../../" nlohmann_json_DIR BASE_DIRECTORY ${nlohmann_json_DIR}
 path_has_prefix(${nlohmann_json_DIR} ${NEML2_CONTRIB_PREFIX} nlohmann_json_CONTRIB)
 
 # nlohmann json is packaged with the NEML2 installation if we built it ourselves
-# (submodule path) or if this is a wheel build.
+# (submodule path) or if this is a wheel build. Shipped in both the wheel and an
+# editable install (into the source tree via INSTALL_INCLUDEDIR / INSTALL_SHAREDIR)
+# so neml2Config's find_dependency(nlohmann_json) resolves against either.
 if(nlohmann_json_CONTRIB OR NEML2_WHEEL)
-      if(NOT SKBUILD_STATE STREQUAL "editable")
-            install(DIRECTORY ${nlohmann_json_DIR}/include/nlohmann TYPE INCLUDE COMPONENT libneml2)
-      endif()
+      install(DIRECTORY ${nlohmann_json_DIR}/include/nlohmann
+            DESTINATION ${INSTALL_INCLUDEDIR} COMPONENT libneml2)
 endif()
-if(NOT SKBUILD_STATE STREQUAL "editable")
-      install(DIRECTORY ${nlohmann_json_DIR}/share/ DESTINATION share COMPONENT libneml2)
-endif()
+install(DIRECTORY ${nlohmann_json_DIR}/share/ DESTINATION ${INSTALL_SHAREDIR} COMPONENT libneml2)
 
 # ----------------------------------------------------------------------------
 # nmhit (C++ HIT parser)
@@ -225,8 +246,9 @@ find_package(nmhit MODULE REQUIRED)
 # ----------------------------------------------------------------------------
 # libneml2 — the only C++ artifact NEML2 ships (aoti runtime + dispatchers)
 # ----------------------------------------------------------------------------
-# Free-standing: links only against torch::core (+ torch::cuda when available)
-# and nlohmann_json. Wraps torch::inductor::AOTIModelPackageLoader so the
+# Free-standing: links only against torch::core (never torch::cuda -- see the
+# target_link_libraries below) and nlohmann_json. Wraps
+# torch::inductor::AOTIModelPackageLoader so the
 # Python side can execute .pt2 artifacts produced by torch._inductor.aoti_compile_and_package
 # from C++. Source tree lives at neml2/csrc/aoti/, intentionally co-located with
 # the Python package so the C++ and Python sides of NEML2 stay in one tree.
@@ -241,6 +263,7 @@ add_library(aoti SHARED
       neml2/csrc/aoti/jacobian.cpp
       neml2/csrc/aoti/newton.cpp
       neml2/csrc/aoti/nonlinear_system_aoti.cpp
+      neml2/csrc/aoti/custom_ops.cpp
       neml2/csrc/dispatchers/WorkScheduler.cpp
       neml2/csrc/dispatchers/SimpleScheduler.cpp
       neml2/csrc/dispatchers/MPISimpleScheduler.cpp
@@ -306,9 +329,15 @@ target_link_libraries(aoti PRIVATE nmhit::nmhit)
 # The async dispatch pool (StaticHybridScheduler path) spawns std::thread workers.
 find_package(Threads REQUIRED)
 target_link_libraries(aoti PRIVATE Threads::Threads)
-if(TARGET torch::cuda)
-      target_link_libraries(aoti PUBLIC torch::cuda)
-endif()
+# Deliberately NOT linked against torch::cuda. neml2's C++ references zero cuda
+# symbols -- it reaches the GPU only through torch's device-generic dispatch,
+# which loads libtorch_cuda at runtime when a cuda tensor appears. Linking
+# torch::cuda only manufactures a hard DT_NEEDED on libc10_cuda.so that buys
+# nothing and makes `import neml2` fail for anyone on a cpu-only torch (the
+# library was previously linked whenever built against a cuda torch, so the
+# published wheel -- built against the default-index cuda torch -- could not
+# load under a cpu torch). The cpu-side torch ABI is identical across the cuda
+# and cpu builds, so one cuda-free libneml2 runs under both.
 
 # MPI scheduler: link MPI and define NEML2_MPI for the aoti TUs only. The public
 # headers are MPI-type-free, so consumers need neither the flag nor mpi.h; the
@@ -328,23 +357,22 @@ else()
       set_target_properties(aoti PROPERTIES INSTALL_RPATH "${torch_LINK_DIR}")
 endif()
 
+# libneml2 + its public headers + the CMake export set, in ONE install() so the
+# exported target records the right LIBRARY location. Shipped in BOTH the wheel and
+# an editable install (the latter into the source tree via INSTALL_LIBDIR /
+# INSTALL_INCLUDEDIR) so a downstream C++ consumer can build against either: the
+# wheel export is relocatable (prefix-relative); the editable export pins the
+# source-tree paths. The generated export header sits beside Model.h.
 install(TARGETS aoti
+      EXPORT neml2targets
       LIBRARY DESTINATION ${INSTALL_LIBDIR}
+      FILE_SET HEADERS DESTINATION ${INSTALL_INCLUDEDIR}
       COMPONENT libneml2
 )
-if(NOT SKBUILD_STATE STREQUAL "editable")
-      install(TARGETS aoti
-            EXPORT neml2targets
-            FILE_SET HEADERS DESTINATION include
-            COMPONENT libneml2
-      )
-      # Ship the generated export header alongside Model.h. Editable installs
-      # don't ship headers and resolve it via the build-tree include dir above.
-      install(FILES ${NEML2_BINARY_DIR}/include/neml2/csrc/aoti/aoti_export.h
-            DESTINATION include/neml2/csrc/aoti
-            COMPONENT libneml2
-      )
-endif()
+install(FILES ${NEML2_BINARY_DIR}/include/neml2/csrc/aoti/aoti_export.h
+      DESTINATION ${INSTALL_INCLUDEDIR}/neml2/csrc/aoti
+      COMPONENT libneml2
+)
 
 # ----------------------------------------------------------------------------
 # libneml2_eager — the embedded-Python eager runtime (separate from libneml2)
@@ -355,9 +383,9 @@ endif()
 # `neml2-compile` is untenable). It is deliberately KEPT SEPARATE from
 # `libneml2.so` (the `aoti` target above): that library links only torch::core
 # and stays Python-free so the AOTI runtime can embed in pure-C++ hosts.
-# `eager` is the one place the Python dependency lives. Built in both the dev
-# preset (for the C++ test) and the wheel (shipped beside libneml2.so), so the
-# add_library is top-level rather than gated on NEML2_WHEEL.
+# `eager` is the one place the Python dependency lives. Built for the C++ tests
+# and shipped in the wheel beside libneml2.so, so the add_library is top-level
+# rather than gated on NEML2_WHEEL.
 #
 # Link against Development.Module (headers + module link flags), NOT
 # Development.Embed (libpython). A shared library may leave the CPython API
@@ -422,9 +450,9 @@ target_compile_options(eager PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(eager PUBLIC aoti torch::core)
 target_link_libraries(eager PRIVATE torch::python Python3::Module)
 target_compile_definitions(eager PRIVATE "PYBIND11_DETAILED_ERROR_MESSAGES")
-if(TARGET torch::cuda)
-      target_link_libraries(eager PUBLIC torch::cuda)
-endif()
+# No torch::cuda here either, for the same reason as the aoti target above: zero
+# cuda symbol references, so linking it would only add an unsatisfiable
+# libc10_cuda.so DT_NEEDED on cpu-only torch.
 
 # rpath:
 #  - ${INSTALL_REL_PATH} (the lib's OWN dir): libneml2_eager.so links the sibling
@@ -444,20 +472,15 @@ else()
 endif()
 
 install(TARGETS eager
+      EXPORT neml2targets
       LIBRARY DESTINATION ${INSTALL_LIBDIR}
+      FILE_SET HEADERS DESTINATION ${INSTALL_INCLUDEDIR}
       COMPONENT libneml2
 )
-if(NOT SKBUILD_STATE STREQUAL "editable")
-      install(TARGETS eager
-            EXPORT neml2targets
-            FILE_SET HEADERS DESTINATION include
-            COMPONENT libneml2
-      )
-      install(FILES ${NEML2_BINARY_DIR}/include/neml2/csrc/eager/eager_export.h
-            DESTINATION include/neml2/csrc/eager
-            COMPONENT libneml2
-      )
-endif()
+install(FILES ${NEML2_BINARY_DIR}/include/neml2/csrc/eager/eager_export.h
+      DESTINATION ${INSTALL_INCLUDEDIR}/neml2/csrc/eager
+      COMPONENT libneml2
+)
 
 # ----------------------------------------------------------------------------
 # Version / hash
@@ -478,7 +501,7 @@ if(Git_FOUND)
       install(FILES
             ${NEML2_BINARY_DIR}/version
             ${NEML2_BINARY_DIR}/hash
-            DESTINATION .
+            DESTINATION ${INSTALL_DATAROOT}
             COMPONENT libneml2
       )
 endif()
@@ -486,9 +509,12 @@ endif()
 # ----------------------------------------------------------------------------
 # CMake package export (for downstream `find_package(neml2)`)
 # ----------------------------------------------------------------------------
-if(NOT SKBUILD_STATE STREQUAL "editable")
-      install(EXPORT neml2targets NAMESPACE neml2:: DESTINATION share/cmake/neml2 COMPONENT libneml2)
-endif()
+# Shipped in both the wheel and an editable install. The generated config is
+# relocatable -- @PACKAGE_INIT@ derives PACKAGE_PREFIX_DIR from the config file's
+# own location at find_package() time -- so INSTALL_DESTINATION stays the canonical
+# relative `share/cmake/neml2`; only the install() destination differs (source tree
+# for editable, prefix-relative for the wheel) via INSTALL_SHAREDIR.
+install(EXPORT neml2targets NAMESPACE neml2:: DESTINATION ${INSTALL_SHAREDIR}/cmake/neml2 COMPONENT libneml2)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
@@ -503,15 +529,13 @@ write_basic_package_version_file(
       COMPATIBILITY SameMajorVersion
 )
 
-if(NOT SKBUILD_STATE STREQUAL "editable")
-      install(
-            FILES
-            ${NEML2_BINARY_DIR}/neml2Config.cmake
-            ${NEML2_BINARY_DIR}/neml2ConfigVersion.cmake
-            DESTINATION share/cmake/neml2
-            COMPONENT libneml2
-      )
-endif()
+install(
+      FILES
+      ${NEML2_BINARY_DIR}/neml2Config.cmake
+      ${NEML2_BINARY_DIR}/neml2ConfigVersion.cmake
+      DESTINATION ${INSTALL_SHAREDIR}/cmake/neml2
+      COMPONENT libneml2
+)
 
 include(cmake/pkgconfig.cmake)
 
@@ -602,14 +626,31 @@ if(NEML2_WHEEL)
 endif()
 
 # ----------------------------------------------------------------------------
-# Benchmark suite (ctest entries; one per benchmark/<scenario>/model.i)
+# C++ tests + benchmark suite (ctest entries)
 # ----------------------------------------------------------------------------
-# Wheel builds skip ctest entries entirely — they're a developer convenience,
-# not something shipped in the wheel. The dev preset (Debug, NEML2_WHEEL=OFF)
-# is the consumer.
-if(BUILD_TESTING AND NOT NEML2_WHEEL)
+# Built for an editable install and a plain `cmake -S .` dev configure, but NOT
+# baked into the shipped wheel (a shippable wheel is `NEML2_WHEEL AND NOT
+# editable`). Gated additionally on CMake's canonical BUILD_TESTING so
+# `-DBUILD_TESTING=OFF` turns them off as users expect. The editable scikit-build
+# override adds the aggregate `cpp_tests` target to build.targets so a single
+# `pip install -e` compiles them; `ctest --test-dir build/editable` then runs them.
+if(BUILD_TESTING AND NOT (NEML2_WHEEL AND NOT NEML2_EDITABLE))
       add_subdirectory(benchmark)
       add_subdirectory(tests/cpp)
+
+      # Aggregate target so `build.targets` (and humans) can build every C++ test
+      # executable with one name instead of enumerating them. Collected from each
+      # subdirectory's BUILDSYSTEM_TARGETS so new tests are picked up automatically.
+      add_custom_target(cpp_tests)
+      foreach(_dir ${NEML2_SOURCE_DIR}/benchmark ${NEML2_SOURCE_DIR}/tests/cpp)
+            get_property(_dir_targets DIRECTORY ${_dir} PROPERTY BUILDSYSTEM_TARGETS)
+            foreach(_t IN LISTS _dir_targets)
+                  get_target_property(_t_type ${_t} TYPE)
+                  if(_t_type STREQUAL "EXECUTABLE")
+                        add_dependencies(cpp_tests ${_t})
+                  endif()
+            endforeach()
+      endforeach()
 endif()
 
 # ----------------------------------------------------------------------------
@@ -622,4 +663,15 @@ if(CMAKE_EXPORT_COMPILE_COMMANDS)
       if(NOT ${SYMLINK_NAME} STREQUAL ${FILE_ORIGINAL})
             file(CREATE_LINK ${NEML2_BINARY_DIR}/compile_commands.json ${NEML2_SOURCE_DIR}/compile_commands.json SYMBOLIC)
       endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# Stable build-dir symlink for editable installs
+# ----------------------------------------------------------------------------
+# scikit-build builds an editable install into build/<wheel_tag>, whose name
+# varies by interpreter/platform. Drop a stable `build/editable` symlink so the
+# C++ tests run from a fixed path with no preset:
+#   ctest --test-dir build/editable -L dispatcher
+if(NEML2_EDITABLE)
+      file(CREATE_LINK ${NEML2_BINARY_DIR} ${NEML2_SOURCE_DIR}/build/editable SYMBOLIC)
 endif()

@@ -295,3 +295,94 @@ def test_negative_dim_resolves_relative_to_region():
     # New axis goes right after the existing sub-batch region.
     assert u.data.shape == torch.Size([2, 3, 4, 1])
     assert u.sub_batch.shape == torch.Size([3, 4, 1])
+
+
+# ---------- linspace / logspace (v2 dynamic_/intmd_/base_ parity) ----------
+
+
+def test_linspace_sub_batch_inserts_new_sub_axis():
+    from neml2.types import linspace  # noqa: PLC0415
+
+    e = linspace(Scalar(0.0).sub_batch, Scalar(1.0).sub_batch, 5)
+    assert isinstance(e, Scalar)
+    assert e.sub_batch_ndim == 1
+    assert e.sub_batch.shape == torch.Size([5])
+    assert torch.allclose(e.data, torch.linspace(0.0, 1.0, 5, dtype=torch.float64))
+
+
+def test_linspace_dynamic_batch_inserts_new_batch_axis():
+    from neml2.types import linspace  # noqa: PLC0415
+
+    e = linspace(Scalar(0.0).dynamic_batch, Scalar(10.0).dynamic_batch, 11)
+    assert e.sub_batch_ndim == 0
+    assert e.dynamic_batch.shape == torch.Size([11])
+
+
+def test_linspace_interpolates_wrapper_endpoints():
+    """Endpoints may be full wrappers; values interpolate component-wise."""
+    from neml2.types import linspace  # noqa: PLC0415
+
+    a = SR2.fill(0.0)
+    b = SR2.fill(0.01)
+    sr = linspace(a.dynamic_batch, b.dynamic_batch, 20)
+    assert isinstance(sr, SR2)
+    assert sr.batch_shape == torch.Size([20])
+    assert torch.allclose(sr.data[0], a.data)
+    assert torch.allclose(sr.data[-1], b.data)
+
+
+def test_linspace_dim_places_new_axis():
+    from neml2.types import linspace  # noqa: PLC0415
+
+    a = Scalar(torch.zeros(3))
+    b = Scalar(torch.ones(3))
+    # Insert the new dynamic-batch axis at position 1 -> (3, 5).
+    e = linspace(a.dynamic_batch, b.dynamic_batch, 5, dim=1)
+    assert e.data.shape == torch.Size([3, 5])
+
+
+def test_linspace_on_dynamic_base_tensor_base_view():
+    from neml2.types import Tensor, linspace  # noqa: PLC0415
+
+    t0 = Tensor(torch.zeros(3), 0, 0)
+    t1 = Tensor(torch.ones(3), 0, 0)
+    tb = linspace(t0.base, t1.base, 4)
+    assert isinstance(tb, Tensor)
+    assert tb.data.shape == torch.Size([4, 3])
+
+
+def test_logspace_matches_torch_logspace():
+    from neml2.types import logspace  # noqa: PLC0415
+
+    e = logspace(Scalar(-4.0).sub_batch, Scalar(0.0).sub_batch, 201)
+    assert e.sub_batch.shape == torch.Size([201])
+    assert torch.allclose(e.data, torch.logspace(-4.0, 0.0, 201, dtype=torch.float64))
+
+
+def test_logspace_custom_base():
+    from neml2.types import logspace  # noqa: PLC0415
+
+    e = logspace(Scalar(0.0).sub_batch, Scalar(3.0).sub_batch, 4, base=2.0)
+    assert torch.allclose(e.data, torch.tensor([1.0, 2.0, 4.0, 8.0], dtype=torch.float64))
+
+
+def test_linspace_nstep_one_is_single_point():
+    from neml2.types import linspace  # noqa: PLC0415
+
+    e = linspace(Scalar(5.0).sub_batch, Scalar(9.0).sub_batch, 1)
+    assert e.sub_batch.shape == torch.Size([1])
+    assert float(e.data[0]) == 5.0
+
+
+def test_linspace_rejects_mismatched_view_kinds():
+    from neml2.types import linspace  # noqa: PLC0415
+
+    with pytest.raises(TypeError, match="same region-view kind"):
+        linspace(Scalar(0.0).sub_batch, Scalar(1.0).dynamic_batch, 5)  # type: ignore[arg-type]
+
+
+def test_linspace_rejects_nonpositive_nstep():
+    from neml2.types import linspace  # noqa: PLC0415
+
+    with pytest.raises(ValueError, match="nstep must be >= 1"):
+        linspace(Scalar(0.0).sub_batch, Scalar(1.0).sub_batch, 0)

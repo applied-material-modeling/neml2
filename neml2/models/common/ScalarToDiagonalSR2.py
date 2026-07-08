@@ -55,7 +55,7 @@ class ScalarToDiagonalSR2(Model):
     def forward(  # type: ignore[override]
         self,
         s: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         I = SR2.identity(dtype=s.data.dtype, device=s.data.device)

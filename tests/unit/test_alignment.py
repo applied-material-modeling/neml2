@@ -42,11 +42,11 @@ import pytest
 import torch
 
 from neml2.types import (
+    MRP,
     R2,
     SR2,
     SSR4,
     WR2,
-    Rot,
     Scalar,
     align_sub_batch,
     compose,
@@ -130,7 +130,7 @@ def test_align_sub_batch_handles_n_ary():
 
 
 @pytest.mark.parametrize("op_name,op", [("+", lambda a, b: a + b), ("-", lambda a, b: a - b)])
-@pytest.mark.parametrize("cls", [Scalar, SR2, SSR4, R2, Rot, WR2])
+@pytest.mark.parametrize("cls", [Scalar, SR2, SSR4, R2, MRP, WR2])
 def test_additive_ops_align_sub_batch(cls, op_name, op):
     B, N = 2, 5
     g = _make(cls, B, (), 0)
@@ -140,7 +140,7 @@ def test_additive_ops_align_sub_batch(cls, op_name, op):
     assert result.data.shape == (B, N, *cls.BASE_SHAPE)
 
 
-@pytest.mark.parametrize("cls", [SR2, SSR4, R2, Rot, WR2])
+@pytest.mark.parametrize("cls", [SR2, SSR4, R2, MRP, WR2])
 def test_scalar_product_aligns_sub_batch(cls):
     """Per-crystal wrapper × global Scalar."""
     B, N = 2, 5
@@ -151,7 +151,7 @@ def test_scalar_product_aligns_sub_batch(cls):
     assert result.data.shape == (B, N, *cls.BASE_SHAPE)
 
 
-@pytest.mark.parametrize("cls", [SR2, SSR4, R2, Rot, WR2])
+@pytest.mark.parametrize("cls", [SR2, SSR4, R2, MRP, WR2])
 def test_global_scalar_times_per_crystal_wrapper(cls):
     """Global Scalar × per-crystal wrapper — opposite operand order."""
     B, N = 2, 5
@@ -322,8 +322,8 @@ def test_sym_skew_preserve_sub_batch(shape):
 
 def test_compose_aligns_global_with_per_crystal():
     B, N = 2, 5
-    g = _make(Rot, B, (), 0)
-    p = _make(Rot, B, (N,), 1)
+    g = _make(MRP, B, (), 0)
+    p = _make(MRP, B, (N,), 1)
     result = compose(g, p)
     assert result.sub_batch_ndim == 1
     assert result.data.shape == (B, N, 3)
@@ -331,8 +331,8 @@ def test_compose_aligns_global_with_per_crystal():
 
 def test_drotate_aligns_global_with_per_crystal():
     B, N = 2, 5
-    g = _make(Rot, B, (), 0)
-    p = _make(Rot, B, (N,), 1)
+    g = _make(MRP, B, (), 0)
+    p = _make(MRP, B, (N,), 1)
     result = drotate(g, p)
     assert result.sub_batch_ndim == 1
     assert result.data.shape == (B, N, 3, 3)
@@ -340,8 +340,8 @@ def test_drotate_aligns_global_with_per_crystal():
 
 def test_drotate_self_aligns_global_with_per_crystal():
     B, N = 2, 5
-    g = _make(Rot, B, (), 0)
-    p = _make(Rot, B, (N,), 1)
+    g = _make(MRP, B, (), 0)
+    p = _make(MRP, B, (N,), 1)
     result = drotate_self(g, p)
     assert result.sub_batch_ndim == 1
     assert result.data.shape == (B, N, 3, 3)

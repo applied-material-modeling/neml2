@@ -43,7 +43,7 @@ class ThermalEigenstrain(Model):
 
     # Forward: ``eg = alpha * (T - T0) * I`` where ``I`` is the SR2 identity. The
     # leaf is linear in ``T`` (action wrt ``T`` is ``alpha * V * I``) and linear
-    # in ``alpha`` when promoted to a nonlinear input (action is
+    # in ``alpha`` when promoted to a runtime input (action is
     # ``(T - T0) * V * I``). Pure typed wrapper algebra throughout:
     # ``SR2.identity`` and the ``Scalar * SR2`` operator handle Mandel packing
     # and sub-batch alignment, so no ``torch.<op>(.data)`` calls appear in the
@@ -63,7 +63,7 @@ class ThermalEigenstrain(Model):
             Scalar,
             "Coefficient of thermal expansion",
             attr="alpha",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -77,12 +77,12 @@ class ThermalEigenstrain(Model):
     def forward(  # type: ignore[override]
         self,
         temperature: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         T = temperature
-        T0 = self._get_param("T0", nl_params, Scalar)
-        alpha = self._get_param("alpha", nl_params, Scalar)
+        T0 = self._get_param("T0", promoted_params, Scalar)
+        alpha = self._get_param("alpha", promoted_params, Scalar)
         I = SR2.identity(dtype=T.data.dtype, device=T.data.device)
         eg = alpha * (T - T0) * I
         if v is None:
@@ -97,9 +97,9 @@ class ThermalEigenstrain(Model):
 
         actions: dict = {"temperature": temperature_action}
 
-        if "alpha" in self._nl_params:
+        if "alpha" in self._promoted_params:
             dT = T - T0
-            actions[self._nl_params["alpha"].input_name] = lambda V, c=dT: c * V * I
+            actions[self._promoted_params["alpha"].input_name] = lambda V, c=dT: c * V * I
 
         return eg, self.apply_chain_rule(v, "eigenstrain", actions, output=eg)
 

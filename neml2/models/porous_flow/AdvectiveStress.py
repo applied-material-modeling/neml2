@@ -82,7 +82,7 @@ class AdvectiveStress(Model):
             Scalar,
             "Coefficient c",
             attr="coeff",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 

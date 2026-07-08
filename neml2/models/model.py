@@ -79,6 +79,7 @@ if TYPE_CHECKING:
 
     from ..factory import _NativeInputFile
     from ..schema import HitSchema
+    from ..types import Tensor
 
 #: Bound to the concrete typed-wrapper class a caller expects from
 #: :meth:`Model._get_param`, so the return type is narrowed at the call site.
@@ -95,10 +96,10 @@ _PARAM_ATTR_GUARD_MSG = (
     "(self.{name}). This bypasses parameter promotion: once '{name}' is promoted "
     "to a runtime input (neml2-compile -p), the static nn.Parameter no longer "
     "exists and the read breaks. Read it through "
-    "`self._get_param('{name}', nl_params, <Type>)` instead (add `*nl_params` to "
+    "`self._get_param('{name}', promoted_params, <Type>)` instead (add `*promoted_params` to "
     "the forward signature if absent) -- that resolves the static slot or the "
     "promoted runtime input uniformly. For a list of parameters use "
-    "`self._get_param_list('<attr>', nl_params, <Type>)`."
+    "`self._get_param_list('<attr>', promoted_params, <Type>)`."
 )
 
 __all__ = [
@@ -108,7 +109,7 @@ __all__ = [
     "SecondOrderChainRuleDict",
     "SecondOrderChainRuleAction",
     "Model",
-    "NLParam",
+    "PromotedParam",
     "register_submodule",
 ]
 
@@ -143,18 +144,18 @@ def register_submodule(
 
 
 @dataclass(frozen=True)
-class NLParam:
+class PromotedParam:
     """Marker for a parameter resolved to a runtime input (modes 3 + 4).
 
     Records the input variable name added to the host's ``input_spec``, the
-    parameter's position within ``forward``'s ``*nl_params`` pack, and — for
+    parameter's position within ``forward``'s ``*promoted_params`` pack, and — for
     mode 3 — the provider model + its output variable name so the parent
     :class:`~neml2.models.common.ComposedModel.ComposedModel` can auto-pull the provider
-    into the dependency graph (mirroring the C++ ``_nl_params`` bookkeeping
+    into the dependency graph (mirroring the C++ ``_promoted_params`` bookkeeping
     in ``ParameterStore.cxx::resolve_tensor_name``).
 
     ``tail_index`` is the zero-based slot of this parameter inside the
-    ``*nl_params`` pack passed to :meth:`Model._get_param`. Promoted parameters
+    ``*promoted_params`` pack passed to :meth:`Model._get_param`. Promoted parameters
     are appended to ``input_spec`` in declaration order, immediately after the
     fixed structural inputs, so this index is simply the number of parameters
     already promoted when this one was declared.
@@ -232,11 +233,11 @@ class Model(nn.Module, ABC):
         super().__init__()
         self._typed_storage_classes = {}
         self._typed_storage_sub_batch_ndim = {}
-        #: Parameter slot name → :class:`NLParam` for any parameter that was
+        #: Parameter slot name → :class:`PromotedParam` for any parameter that was
         #: resolved to a runtime input (modes 3 + 4). The slot also appears in
-        #: ``input_spec`` keyed by ``NLParam.input_name``; :meth:`_get_param`
+        #: ``input_spec`` keyed by ``PromotedParam.input_name``; :meth:`_get_param`
         #: reads from positional inputs for these and from ``self`` otherwise.
-        self._nl_params: dict[str, NLParam] = {}
+        self._promoted_params: dict[str, PromotedParam] = {}
         #: Resolved ``{(output_name, input_name)}`` pairs whose first-order chain
         #: rule is auto-derived by reverse-mode autodiff instead of a hand-written
         #: ``forward(v=)`` branch. Populated by :meth:`request_AD`; empty for the
@@ -463,7 +464,7 @@ class Model(nn.Module, ABC):
                     value,
                     field.value_type,
                     factory=factory,
-                    allow_nonlinear=field.allow_nonlinear,
+                    allow_promotion=field.allow_promotion,
                 )
 
     @classmethod
@@ -567,7 +568,7 @@ class Model(nn.Module, ABC):
         type_cls: type[TensorWrapper],
         *,
         factory: _NativeInputFile | None = None,
-        allow_nonlinear: bool = False,
+        allow_promotion: bool = False,
     ) -> None:
         """Resolve *spec* and register it as a parameter or promote it to an input.
 
@@ -583,10 +584,10 @@ class Model(nn.Module, ABC):
               a typed parameter (mode 1, literal HIT value).
            b. If a *factory* is available, try ``factory.get_tensor(spec)`` —
               register as a typed parameter (mode 2, ``[Tensors]`` cross-ref).
-           c. If *allow_nonlinear*: parse the string as a variable specifier
+           c. If *allow_promotion*: parse the string as a variable specifier
               (``model_name`` / ``model_name.var`` / ``var``). If it matches a
               ``[Models]`` entry, pull the provider and record the input
-              promotion + provider in ``_nl_params`` (mode 3). Otherwise treat
+              promotion + provider in ``_promoted_params`` (mode 3). Otherwise treat
               the string as a bare variable name and add the input without a
               provider (mode 4).
 
@@ -594,9 +595,9 @@ class Model(nn.Module, ABC):
         entry keyed by the chosen input variable name (the provider's output
         name in mode 3, or the bare variable name in mode 4), appended after
         the fixed structural inputs. Inside ``forward`` — declared as
-        ``forward(self, <structural inputs...>, *nl_params)`` — fetch the value
+        ``forward(self, <structural inputs...>, *promoted_params)`` — fetch the value
         with :meth:`_get_param`, which resolves a static slot from ``self`` or
-        a promoted slot from the ``*nl_params`` pack uniformly.
+        a promoted slot from the ``*promoted_params`` pack uniformly.
         """
         # ── mode 1: already-loaded value ──────────────────────────────────────
         if isinstance(spec, TensorWrapper):
@@ -650,7 +651,7 @@ class Model(nn.Module, ABC):
                 return
 
         # ── mode 3/4: variable specifier ──────────────────────────────────────
-        if not allow_nonlinear:
+        if not allow_promotion:
             raise ValueError(
                 f"declare_typed_parameter({name!r}): cannot resolve spec {spec!r} as a literal "
                 "or [Tensors] entry, and variable coupling is not enabled for this parameter."
@@ -712,7 +713,7 @@ class Model(nn.Module, ABC):
         if not isinstance(self.input_spec, dict) or self.input_spec is type(self).__dict__.get(
             "input_spec"
         ):
-            # Promote class-level input_spec to an instance copy on first nl_param.
+            # Promote class-level input_spec to an instance copy on first promoted_param.
             self.input_spec = dict(self.input_spec)
         if input_name in self.input_spec and self.input_spec[input_name] is not type_cls:
             raise ValueError(
@@ -721,9 +722,9 @@ class Model(nn.Module, ABC):
                 f"{self.input_spec[input_name].__name__}."
             )
         self.input_spec[input_name] = type_cls
-        self._nl_params[name] = NLParam(
+        self._promoted_params[name] = PromotedParam(
             input_name=input_name,
-            tail_index=len(self._nl_params),
+            tail_index=len(self._promoted_params),
             provider=provider,
             provider_output=provider_output,
         )
@@ -814,18 +815,20 @@ class Model(nn.Module, ABC):
         raise ValueError(
             f"declare_typed_buffer({name!r}): cannot resolve spec {spec!r} as a literal "
             "or [Tensors] entry. Buffers are constant values — promoting them to an "
-            "input is not supported (use a parameter with allow_nonlinear=True if you "
+            "input is not supported (use a parameter with allow_promotion=True if you "
             "need that)."
         )
 
-    def _get_param(self, name: str, nl_params: Sequence[TensorWrapper], type_cls: type[_TW]) -> _TW:
-        """Return the value of parameter *name* — static attribute or nl input.
+    def _get_param(
+        self, name: str, promoted_params: Sequence[TensorWrapper], type_cls: type[_TW]
+    ) -> _TW:
+        """Return the value of parameter *name* — static attribute or promoted input.
 
-        Models with parameters that may be either static or nonlinear should
+        Models with parameters that may be either static or promoted should
         call this from ``forward`` instead of reading ``self.<name>`` directly.
-        ``nl_params`` is the ``*nl_params`` pack captured by ``forward`` after
+        ``promoted_params`` is the ``*promoted_params`` pack captured by ``forward`` after
         its fixed structural inputs; a promoted parameter is read positionally
-        from it via its precomputed :attr:`NLParam.tail_index`, and a static
+        from it via its precomputed :attr:`PromotedParam.tail_index`, and a static
         parameter is read from ``self``.
 
         *type_cls* is the concrete typed-wrapper class the caller expects (the
@@ -837,33 +840,33 @@ class Model(nn.Module, ABC):
         """
         from ._guard import _allow_param_attr  # noqa: PLC0415
 
-        nlp = self._nl_params.get(name)
-        if nlp is None:
+        pparam = self._promoted_params.get(name)
+        if pparam is None:
             # Static slot: read from ``self``. This is the ONE sanctioned
             # attribute read of a registered parameter, so lift the
             # __getattr__ guard that forbids it everywhere else in a forward.
             with _allow_param_attr():
                 value = getattr(self, name)
         else:
-            value = nl_params[nlp.tail_index]
+            value = promoted_params[pparam.tail_index]
         assert isinstance(value, type_cls), (
             f"_get_param({name!r}) resolved to {type(value).__name__}, expected {type_cls.__name__}"
         )
         return value
 
     def _get_param_list(
-        self, attr: str, nl_params: Sequence[TensorWrapper], type_cls: type[_TW]
+        self, attr: str, promoted_params: Sequence[TensorWrapper], type_cls: type[_TW]
     ) -> list[_TW]:
         """Return values of every parameter registered via :func:`parameters`.
 
         The :func:`parameters` schema field registers entries as
         ``<attr>_0``, ``<attr>_1``, ... and stores the name list on
         ``self.<attr>``; this helper reads each through :meth:`_get_param`
-        so individual entries that were promoted to nl inputs (mode 3/4)
-        come from ``nl_params`` while static entries come from ``self``.
+        so individual entries that were promoted to runtime inputs (mode 3/4)
+        come from ``promoted_params`` while static entries come from ``self``.
         """
         names: list[str] = getattr(self, attr)
-        return [self._get_param(n, nl_params, type_cls) for n in names]
+        return [self._get_param(n, promoted_params, type_cls) for n in names]
 
     def __getattr__(self, name: str):
         # Forbid reading a registered parameter as a plain attribute inside a
@@ -954,7 +957,7 @@ class Model(nn.Module, ABC):
         evaluation time).
         """
         out_names = list(self.output_spec) if outputs is None else list(outputs)
-        promoted = {nlp.input_name for nlp in self._nl_params.values()}
+        promoted = {pparam.input_name for pparam in self._promoted_params.values()}
         structural = [n for n in self.input_spec if n not in promoted]
         in_names = structural if inputs is None else list(inputs)
         for o in out_names:
@@ -1028,6 +1031,112 @@ class Model(nn.Module, ABC):
         if len(typed_outs) == 1:
             return (typed_outs[0], v_out)
         return (*typed_outs, v_out)
+
+    # ------------------------------------------------------------------
+    # Forward-mode input derivatives (the public jvp / jacobian surface)
+    # ------------------------------------------------------------------
+    #
+    # The py-eager analogue of the ``forward`` / ``jvp`` / ``jacobian`` surface
+    # every other route exposes (``neml2.aoti.Model`` / ``neml2::aoti::Model`` /
+    # the cpp-eager ``_EagerModel``), so the same code reads identically on any
+    # route. Both are thin, typed wrappers over the ``forward(v=)`` chain rule: a
+    # leading-K seed is threaded per input through the forward, then the typed
+    # contributions are assembled (the typed-output counterparts of the raw
+    # ``neml2.types._boundary`` assembly helpers the C++-facing routes use). The
+    # reverse-mode *parameter* derivatives (:meth:`param_jacobian` /
+    # :meth:`param_vjp`) below are a separate surface.
+
+    def jvp(
+        self,
+        inputs: Mapping[str, TensorWrapper | torch.Tensor],
+        tangents: Mapping[str, TensorWrapper | torch.Tensor],
+    ) -> tuple[dict[str, TensorWrapper], dict[str, TensorWrapper]]:
+        """Evaluate the model and its Jacobian-vector product, all typed.
+
+        Returns ``(outputs, jvp_outputs)``, both keyed by output name with typed
+        values. *inputs* and *tangents* are keyed by input name (typed wrappers or
+        raw tensors, wrapped via ``input_spec``); a missing tangent defaults to
+        zero (that input contributes nothing). ``jvp_outputs[name]`` is the
+        directional derivative -- a wrapper of the output's type at its natural
+        ``(*batch, *sub_batch, *out_base)`` shape.
+
+        Each supplied tangent is seeded as a single formal leading-K direction and
+        threaded through the ``forward(v=)`` chain rule; the per-input
+        contributions to each output are summed. The forward-mode companion of the
+        reverse-mode :meth:`param_jacobian` / :meth:`param_vjp`, and the typed
+        py-eager analogue of the (raw, name-keyed) ``jvp`` the compiled / embedded
+        routes expose.
+        """
+        from ..types._boundary import (  # noqa: PLC0415
+            assemble_jvp_outputs_typed,
+            leading_k1_seed,
+        )
+
+        typed_args = tuple(t(inputs[n]) for n, t in self.input_spec.items())  # type: ignore[call-arg]
+        seed: dict[str, dict[str, TensorWrapper]] = {}
+        for n, t_cls in self.input_spec.items():
+            tg = tangents.get(n)
+            if tg is None:
+                continue
+            tw = tg if isinstance(tg, TensorWrapper) else t_cls(tg)  # type: ignore[call-arg]
+            seed[n] = {n: leading_k1_seed(tw)}
+        *typed_outs, v_out = self(*typed_args, v=seed)
+        output_names = list(self.output_spec)
+        outputs = dict(zip(output_names, typed_outs, strict=True))
+        jvp_outputs = assemble_jvp_outputs_typed(v_out, tuple(typed_outs), output_names)
+        return outputs, jvp_outputs
+
+    def jacobian(
+        self,
+        inputs: Mapping[str, TensorWrapper | torch.Tensor],
+    ) -> tuple[dict[str, TensorWrapper], dict[str, dict[str, Tensor]]]:
+        """Evaluate the model and its full Jacobian as typed variable-pair blocks.
+
+        Returns ``(outputs, J)`` -- ``outputs`` keyed by output name (typed) and
+        ``J`` the nested ``{out_name: {in_name: block}}`` map (rows in
+        ``output_spec`` order, cols in ``input_spec`` order). Each block is a
+        dynamic-base :class:`~neml2.types.Tensor` of shape
+        ``(*batch, *sub_batch, *out_base, *in_base)`` -- there is no single static
+        wrapper for an arbitrary derivative pair. A constant ``(out, in)`` pair is
+        an explicit zero block.
+
+        Built on the same ``forward(v=)`` chain rule as :meth:`jvp`, seeding each
+        input with a leading-K identity (one direction per input base component,
+        reusing the AOTI export's :func:`~neml2.cli.aoti_export._leading_k_identity_seed`)
+        and reshaping the result into per-pair blocks. The seed batch is
+        ``broadcast(input batches, parameter batches)`` so a per-batch-element
+        parameter is handled, matching ``_EagerModel.jacobian``. The typed
+        py-eager analogue of the (raw, name-keyed) ``jacobian`` the compiled /
+        embedded routes expose.
+        """
+        from ..cli.aoti_export import _leading_k_identity_seed  # noqa: PLC0415
+        from ..types._boundary import assemble_jacobian_typed  # noqa: PLC0415
+        from .param_ad import call_batch_shape, enumerate_typed_params  # noqa: PLC0415
+
+        typed_args = tuple(t(inputs[n]) for n, t in self.input_spec.items())  # type: ignore[call-arg]
+        typed_params = enumerate_typed_params(self)
+        param_qnames = [q for q, _ in typed_params]
+        param_base = {q: tuple(cls.BASE_SHAPE) for q, cls in typed_params}
+        # The output batches on broadcast(input batches, parameter batches); build
+        # every identity seed at that common call batch so the chain rule and the
+        # output-batch-keyed assembly agree (a parameter may carry its own batch).
+        call_batch = call_batch_shape(typed_args, self, param_qnames, param_base)
+        seed = {
+            n: {n: _leading_k_identity_seed(t_cls, call_batch, dtype=ta.dtype, device=ta.device)}
+            for (n, t_cls), ta in zip(self.input_spec.items(), typed_args, strict=True)
+        }
+        *typed_outs, v_out = self(*typed_args, v=seed)
+        output_names = list(self.output_spec)
+        outputs = dict(zip(output_names, typed_outs, strict=True))
+        jac = assemble_jacobian_typed(
+            v_out,
+            tuple(typed_outs),
+            output_names,
+            self.output_spec,
+            list(self.input_spec),
+            self.input_spec,
+        )
+        return outputs, jac
 
     # ------------------------------------------------------------------
     # Parameter derivatives (reverse-mode autograd over calibration params)

@@ -64,7 +64,7 @@ class KinematicHardening(Model):
     def forward(  # type: ignore[override]
         self,
         kinematic_plastic_strain: SR2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native kinematic-hardening leaves implement the

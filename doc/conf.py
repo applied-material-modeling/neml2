@@ -62,6 +62,9 @@ extensions = [
     # Local: autogenerates doc/generated/syntax/** from `neml2-syntax --json`
     # before sphinx reads any source files.
     "neml2_syntax",
+    # Local: injects an "Open in Colab" badge on the executable tutorial
+    # notebooks (doc/_ext/colab_button.py).
+    "colab_button",
 ]
 
 # sphinx-copybutton: strip common shell / REPL prompts from the copied
@@ -109,19 +112,13 @@ suppress_warnings = [
     "docutils",
     "ref.python",
 ]
-# Jupytext keeps `.md` mirrors next to every executable `.ipynb` tutorial
-# so they round-trip cleanly through the jupytext pre-commit hook. Sphinx
-# must not pick those up — they would double-register against the
-# notebooks and the source-of-truth for the rendered output is the
-# `.ipynb` (the only one with cell metadata + persisted execution
-# counts). Add a new exclude entry whenever a new jupytext-paired
-# notebook tutorial lands.
+# Tutorials are notebook-only: Sphinx renders each `main.ipynb` directly.
+# The reference-only tutorial `.md` pages (no `.ipynb` sibling) render as
+# ordinary markdown. Nothing to exclude beyond the usual build cruft.
 exclude_patterns = [
     "_build",
     "Thumbs.db",
     ".DS_Store",
-    "content/tutorials/optimization/deterministic/main.md",
-    "content/tutorials/optimization/statistical/main.md",
 ]
 
 # ---------------------------------------------------------------------------
@@ -161,29 +158,37 @@ myst_enable_extensions = [
 ]
 myst_heading_anchors = 3
 
-# Default: don't re-execute notebooks at build time. The executable
-# `.ipynb` tutorials are committed with pre-baked outputs (enforced by
-# the `check-notebook-executed` pre-commit hook), and the syntax-catalog
-# pages have no executable cells, so a global "off" makes the usual
-# rebuild instant.
-#
-# Tutorial pages that embed live `{code-cell}` directives opt in to
-# execution via per-page front-matter:
-#
-#   ---
-#   kernelspec:
-#     display_name: Python 3
-#     language: python
-#     name: python3
-#   mystnb:
-#     execution_mode: cache
-#   ---
-#
-# `cache` reuses jupyter-cache results when the cell source is unchanged
+# Execute the cheap tutorial notebooks at build time and cache the results
 # (cache lives under `_build/.jupyter_cache/`), so editing prose around a
-# stable code cell does not re-execute it.
-nb_execution_mode = "off"
+# stable code cell does not re-execute it. The executable notebooks live
+# under `content/tutorials/` and `content/modules/`, so a global `cache`
+# only ever runs those; the syntax-catalog and reference pages have no
+# executable cells and cost nothing.
+#
+# `nb_execution_in_temp` runs each notebook in a throwaway directory: the
+# Colab-runnable tutorials create their own input files via `%%writefile`,
+# so executing in a temp dir keeps those writes (and any `neml2-compile`
+# artifacts) out of the source tree while relative `load_model("input.i")`
+# still resolves against the same cwd.
+#
+# The expensive notebooks below are excluded from execution and instead
+# render from their committed, pre-baked outputs (kept executed by the
+# scoped `check-notebook-executed` pre-commit hook); executing them needs a
+# GPU and minutes-to-hours per run. These are the two pyzag calibration
+# tutorials plus the physics-module KWN worked examples (316H precipitation,
+# Al-Cu TTP) re-homed from v2's `python/examples/`. Patterns are matched
+# against the path tail (`PurePosixPath.match`).
+nb_execution_mode = "cache"
 nb_execution_timeout = 60
+nb_execution_in_temp = True
+nb_execution_excludepatterns = [
+    "optimization/deterministic/main.ipynb",
+    "optimization/statistical/main.ipynb",
+    "modules/kwn/precipitation_316h.ipynb",
+    "modules/kwn/al_cu_ttp.ipynb",
+    "modules/solid_mechanics/crystal_plasticity/formulations.ipynb",
+    "modules/solid_mechanics/crystal_plasticity/polefigures.ipynb",
+]
 
 # ---------------------------------------------------------------------------
 # Autodoc / autosummary
@@ -225,14 +230,18 @@ html_css_files = [
     "css/custom.css",
 ]
 
-# Custom JS, loaded on every page. It is inert until a `.scheduler-demo` div
-# exists in the rendered HTML, so the cost of loading it globally is zero on
-# pages that don't use it. Self-contained (no jQuery, no anime.js; animates via
-# the Web Animations API) and a *classic* script wrapped in an IIFE -- NOT an ES
-# module, because the doc-render validator (check_doc_render.py) opens pages over
-# file://, where browsers block module loading under the CORS null-origin rule.
+# Custom JS, loaded on every page. Each is inert when its trigger is absent, so
+# the cost of loading globally is zero on pages that don't use it. All are
+# *classic* scripts wrapped in an IIFE -- NOT ES modules, because the doc-render
+# validator (check_doc_render.py) opens pages over file://, where browsers block
+# module loading under the CORS null-origin rule.
+#   - scheduler-demos.js: animates `.scheduler-demo` divs (Web Animations API).
+#   - version-banner.js: on the multi-version gh-pages site, prepends an
+#     "old/dev documentation" banner by comparing the URL's version segment
+#     against /<repo>/versions.json; no-op on local/file:// builds.
 html_js_files = [
     "components/scheduler-demos.js",
+    "components/version-banner.js",
 ]
 
 html_logo = "asset/logo_light.png"

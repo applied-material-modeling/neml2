@@ -1,74 +1,14 @@
 (tutorials-models-cross-referencing)=
 # Cross-referencing
 
-You'll wire a driver to a model and a model to its tensor inputs by
-name — the basic glue that lets an input file hold more than one
-object. Anywhere a field expects an object name, you can write the
+In this tutorial, we'll wire a model to its tensor inputs and to other
+models by name — the basic glue that lets an input file hold more than
+one object. Anywhere a field expects an object name, we can write the
 name of another section in the file.
-
-## Referring to a model from a driver
-
-`ModelUnitTest` is a driver that evaluates a model against a fixed
-input. Its `model` option takes the *name* of a model declared
-elsewhere in the file:
-
-```ini
-[Drivers]
-  [unit]
-    type  = ModelUnitTest
-    model = 'elasticity'                  # ← name of the [Models] entry below
-    input_SR2_names  = 'strain'
-    input_SR2_values = 'strain_value'     # ← name of the [Tensors] entry below
-    output_SR2_names = 'stress'
-  []
-[]
-
-[Tensors]
-  [strain_value]
-    type = Python
-    expr = 'SR2.fill(0.01, 0.0, 0.0, 0.0, 0.0, 0.0)'
-  []
-[]
-
-[Models]
-  [elasticity]
-    type = LinearIsotropicElasticity
-    coefficients      = '200e3          0.3'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-  []
-[]
-```
-
-Two cross-references in one block: `model = 'elasticity'` names the
-`[Models]` entry to evaluate, and `input_SR2_values = 'strain_value'`
-names the `[Tensors]` entry that supplies the input. `input_SR2_names`
-and `input_SR2_values` are parallel lists — one entry per input — and
-every entry in `_values` is either a `[Tensors]` reference or (for
-`Scalar` inputs) an inline number.
-
-Other drivers work the same way:
-
-```ini
-[Drivers]
-  [run]
-    type  = TransientDriver
-    model = 'chaboche_voce_perzyna'                   # ← name of the [Models] entry
-    prescribed_time  = 'times'                        # ← name of a [Tensors] entry
-    force_SR2_names  = 'E'
-    force_SR2_values = 'strains'                      # ← name of a [Tensors] entry
-  []
-[]
-```
-
-`prescribed_time = 'times'` is itself a cross-reference — `times` is
-the name of a `[Tensors]` entry. Driving forces are supplied as
-parallel `force_<Type>_names` / `force_<Type>_values` lists, where
-each value token is again a `[Tensors]` name (or an inline literal for
-`Scalar`).
 
 ## Referring to a tensor from a model
 
-When a model field expects a tensor value, you can also point it at a
+When a model field expects a tensor value, we can point it at a
 `[Tensors]` entry by name:
 
 ```ini
@@ -106,8 +46,8 @@ tensor inputs still need a `[Tensors]` entry.)
 []
 ```
 
-So when would you go through `[Tensors]`? When the literal won't do —
-typically because you want to share the value across several models,
+So when would we go through `[Tensors]`? When the literal won't do —
+typically because we want to share the value across several models,
 or because it comes from a torch expression like `torch.linspace(...)`
 or a CSV file rather than a bare number.
 
@@ -117,12 +57,46 @@ Here's a temperature-controls axis built from a torch expression:
 [Tensors]
   [T_controls]
     type = Python
-    expr = 'Scalar.linspace(300.0, 1200.0, 20).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(300.0).sub_batch, Scalar(1200.0).sub_batch, 20)'
   []
 []
 ```
 
 Once declared, every model that references `T_controls` shares it.
+
+## Referring to a model from another model
+
+Some models operate on *another model* rather than on a tensor, and
+their model-valued field takes the name of a `[Models]` entry the same
+way. `Normality` is one: it differentiates a scalar-valued function
+produced by another model. Here it wraps the von Mises stress invariant
+to produce the associated flow direction
+$\boldsymbol{N} = \partial \sigma_\mathrm{eff} / \partial \boldsymbol{\sigma}$:
+
+```ini
+[Models]
+  [vonmises]
+    type = SR2Invariant
+    invariant_type = 'VONMISES'
+    tensor    = 'mandel_stress'
+    invariant = 'effective_stress'
+  []
+  [normality]
+    type = Normality
+    model    = 'vonmises'          # ← name of the [Models] entry above
+    function = 'effective_stress'  # the scalar output of `vonmises` to differentiate
+    from     = 'mandel_stress'
+    to       = 'flow_direction'
+  []
+[]
+```
+
+`model = 'vonmises'` is the cross-reference: `normality` doesn't redefine
+the invariant, it points at the existing `[Models]` entry by name and
+differentiates its `effective_stress` output. Note that `function`,
+`from`, and `to` are *variable* names, not section names — they pick out
+inputs and outputs by the variables a model produces and consumes, which
+is the wiring mechanism the next tutorial builds on.
 
 ## Where to go next
 

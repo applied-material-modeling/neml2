@@ -47,12 +47,12 @@ class VoceSingleSlipHardeningRule(Model):
         input("slip_hardening", Scalar, "Name of current values of slip hardening"),
         input("sum_slip_rates", Scalar, "Name of tensor containing the sum of the slip rates"),
         output("slip_hardening_rate", Scalar, "Name of the slip hardening rate"),
-        parameter("initial_slope", Scalar, "The initial rate of hardening", allow_nonlinear=True),
+        parameter("initial_slope", Scalar, "The initial rate of hardening", allow_promotion=True),
         parameter(
             "saturated_hardening",
             Scalar,
             "The final, saturated value of the slip system strength",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -64,11 +64,11 @@ class VoceSingleSlipHardeningRule(Model):
         self,
         tau: Scalar,
         sg: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ):
-        theta = self._get_param("initial_slope", nl_params, Scalar)
-        tauf = self._get_param("saturated_hardening", nl_params, Scalar)
+        theta = self._get_param("initial_slope", promoted_params, Scalar)
+        tauf = self._get_param("saturated_hardening", promoted_params, Scalar)
         out = theta * (1.0 - tau / tauf) * sg
         if v is None:
             return out

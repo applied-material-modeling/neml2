@@ -100,7 +100,7 @@ result = R2(F_full.contiguous())
   [initial_orientation]
     type = Python
     expr = '''
-      Rot(
+      MRP(
           (lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(
               torch.stack(
                   [
@@ -118,7 +118,7 @@ result = R2(F_full.contiguous())
   [r]
     type = Python
     expr = '''
-      Rot(initial_orientation.data.unsqueeze(0).expand(100, nbatch, 3).contiguous())
+      MRP(initial_orientation.data.unsqueeze(0).expand(100, nbatch, 3).contiguous())
     '''
   []
 []
@@ -128,10 +128,10 @@ result = R2(F_full.contiguous())
     type = TransientDriver
     model = 'model_with_pk2_stress'
     prescribed_time = 'times'
-    force_R2_names = 'F'
-    force_R2_values = 'F'
-    force_Rot_names = 'r'
-    force_Rot_values = 'r'
+    prescribed_R2_names = 'F'
+    prescribed_R2_values = 'F'
+    prescribed_MRP_names = 'r'
+    prescribed_MRP_values = 'r'
     ic_R2_names = 'Fp'
     ic_R2_values = 'Fp0'
   []

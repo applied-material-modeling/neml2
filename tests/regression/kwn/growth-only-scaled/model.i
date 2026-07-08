@@ -16,7 +16,7 @@ D = 297794
 [Tensors]
   [edges]
     type = Python
-    expr = 'Scalar.linspace(0.0, 1.0, 101).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(0.0).sub_batch, Scalar(1.0).sub_batch, 101)'
   []
   [centers]
     type = Python
@@ -62,7 +62,7 @@ D = 297794
 
   [time]
     type = Python
-    expr = 'Scalar.linspace(0.0, 100.0, 500)'
+    expr = 'linspace(Scalar(0.0).dynamic_batch, Scalar(100.0).dynamic_batch, 500)'
   []
 
   [x0_Cu]
@@ -91,7 +91,6 @@ D = 297794
     prescribed_time = 'time'
     ic_Scalar_names = 'number_density'
     ic_Scalar_values = 'ic'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

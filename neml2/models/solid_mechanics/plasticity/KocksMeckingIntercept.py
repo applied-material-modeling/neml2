@@ -43,15 +43,15 @@ class KocksMeckingIntercept(Model):
 
     hit = HitSchema(
         output("intercept", Scalar, "The intercept"),
-        parameter("A", Scalar, "The Kocks-Mecking slope", attr="A", allow_nonlinear=True),
-        parameter("B", Scalar, "The Kocks-Mecking intercept", attr="B", allow_nonlinear=True),
+        parameter("A", Scalar, "The Kocks-Mecking slope", attr="A", allow_promotion=True),
+        parameter("B", Scalar, "The Kocks-Mecking intercept", attr="B", allow_promotion=True),
         parameter(
-            "C", Scalar, "The Kocks-Mecking horizontal value", attr="C", allow_nonlinear=True
+            "C", Scalar, "The Kocks-Mecking horizontal value", attr="C", allow_promotion=True
         ),
     )
 
     # ``from_hit`` auto-declares the A/B/C parameters via
-    # ``declare_typed_parameter``; ``allow_nonlinear=True`` lets each
+    # ``declare_typed_parameter``; ``allow_promotion=True`` lets each
     # independently resolve through mode 1/2/3/4 (literal, [Tensors] ref,
     # [Models] wiring, or bare input promotion). Annotate so pyright sees
     # the typed wrapper that ``Model.__getattr__`` returns rather than
@@ -62,7 +62,7 @@ class KocksMeckingIntercept(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
         v2: SecondOrderChainRuleDict | None = None,
         vh: ChainRuleDict | None = None,
@@ -70,9 +70,9 @@ class KocksMeckingIntercept(Model):
         # Mirrors ``KocksMeckingIntercept::set_value`` in
         # ``src/neml2/models/solid_mechanics/plasticity/KocksMeckingIntercept.cxx``:
         # ``b = (C - B) / A``.
-        A = self._get_param("A", nl_params, Scalar)
-        B = self._get_param("B", nl_params, Scalar)
-        C = self._get_param("C", nl_params, Scalar)
+        A = self._get_param("A", promoted_params, Scalar)
+        B = self._get_param("B", promoted_params, Scalar)
+        C = self._get_param("C", promoted_params, Scalar)
 
         diff = C - B
         inv_A = 1.0 / A
@@ -86,18 +86,18 @@ class KocksMeckingIntercept(Model):
         #   db/dB = -1 / A
         #   db/dC =  1 / A
         # The forward has no structural input variables; every action key is
-        # the nl-promoted input name a mode-3/4 parameter resolution produced.
+        # the promoted input name a mode-3/4 parameter resolution produced.
         inv_A2 = inv_A * inv_A
         actions_1: dict = {}
-        if "A" in self._nl_params:
+        if "A" in self._promoted_params:
             coef_A = -diff * inv_A2
-            actions_1[self._nl_params["A"].input_name] = lambda V, c=coef_A: c * V
-        if "B" in self._nl_params:
+            actions_1[self._promoted_params["A"].input_name] = lambda V, c=coef_A: c * V
+        if "B" in self._promoted_params:
             coef_B = -inv_A
-            actions_1[self._nl_params["B"].input_name] = lambda V, c=coef_B: c * V
-        if "C" in self._nl_params:
+            actions_1[self._promoted_params["B"].input_name] = lambda V, c=coef_B: c * V
+        if "C" in self._promoted_params:
             coef_C = inv_A
-            actions_1[self._nl_params["C"].input_name] = lambda V, c=coef_C: c * V
+            actions_1[self._promoted_params["C"].input_name] = lambda V, c=coef_C: c * V
 
         if v2 is None and vh is None:
             return b, *self.propagate_tangents(v, "intercept", actions_1, output=b)
@@ -113,17 +113,17 @@ class KocksMeckingIntercept(Model):
         #   d2b/dB2 = d2b/dC2 = d2b/dB dC = 0 (omitted)
         actions_2: dict = {}
         inv_A3 = inv_A2 * inv_A
-        if "A" in self._nl_params:
-            aname = self._nl_params["A"].input_name
+        if "A" in self._promoted_params:
+            aname = self._promoted_params["A"].input_name
             c_AA = 2.0 * diff * inv_A3
             actions_2[(aname, aname)] = lambda Va, Vb, c=c_AA: c * Va * Vb
-            if "B" in self._nl_params:
-                bname = self._nl_params["B"].input_name
+            if "B" in self._promoted_params:
+                bname = self._promoted_params["B"].input_name
                 c_AB = inv_A2
                 actions_2[(aname, bname)] = lambda Va, Vb, c=c_AB: c * Va * Vb
                 actions_2[(bname, aname)] = lambda Va, Vb, c=c_AB: c * Va * Vb
-            if "C" in self._nl_params:
-                cname = self._nl_params["C"].input_name
+            if "C" in self._promoted_params:
+                cname = self._promoted_params["C"].input_name
                 c_AC = -inv_A2
                 actions_2[(aname, cname)] = lambda Va, Vb, c=c_AC: c * Va * Vb
                 actions_2[(cname, aname)] = lambda Va, Vb, c=c_AC: c * Va * Vb

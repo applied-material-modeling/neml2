@@ -28,7 +28,7 @@ torch:
     - pyproject.toml
 
 pyzag:
-  version: "1.1.1"
+  version: "1.1.3"
   files:
     - pyproject.toml
     - .github/workflows/compat.yaml
@@ -44,13 +44,13 @@ clang_format:
     - .pre-commit-config.yaml
 
 ruff:
-  version: "0.15.18"
+  version: "0.15.20"
   files:
     - .pre-commit-config.yaml
     - pyproject.toml
 
 pyright:
-  version: "1.1.410"
+  version: "1.1.411"
   files:
     - pyproject.toml
 
@@ -63,11 +63,6 @@ questionary:
   version_min: "2.1.1"
   files:
     - pyproject.toml
-
-jupytext:
-  version: "v1.19.1"
-  files:
-    - .pre-commit-config.yaml
 
 # ---- Build tools ----
 cmake:
@@ -96,7 +91,7 @@ python:
 
 # ---- Project version ----
 neml2:
-  version: "3.0.3"
+  version: "3.0.6"
   files:
     - CMakeLists.txt
     - pyproject.toml
@@ -110,7 +105,7 @@ neml2:
 # ``doc/content/tutorials/models/compiled_models/`` are regenerated at
 # tutorial-rebuild time and so are not tracked here.
 aoti:
-  schema_version: "7"
+  schema_version: "8"
   files:
     - neml2/cli/aoti_export.py
     - neml2/csrc/aoti/Model.cpp

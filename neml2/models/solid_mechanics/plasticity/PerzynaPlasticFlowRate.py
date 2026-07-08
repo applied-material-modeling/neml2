@@ -53,14 +53,14 @@ class PerzynaPlasticFlowRate(Model):
             Scalar,
             "Reference stress",
             attr="eta",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "exponent",
             Scalar,
             "Power-law exponent",
             attr="n",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -72,14 +72,14 @@ class PerzynaPlasticFlowRate(Model):
     def forward(  # type: ignore[override]
         self,
         yield_function: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Mirrors ``PerzynaPlasticFlowRate::set_value`` in
         # ``src/neml2/models/solid_mechanics/plasticity/PerzynaPlasticFlowRate.cxx``.
         f = yield_function
-        eta = self._get_param("eta", nl_params, Scalar)
-        n = self._get_param("n", nl_params, Scalar)
+        eta = self._get_param("eta", promoted_params, Scalar)
+        n = self._get_param("n", promoted_params, Scalar)
 
         Hf = heaviside(f)
         f_abs = abs(f)
@@ -98,10 +98,12 @@ class PerzynaPlasticFlowRate(Model):
         coef_f = n / f_abs * gamma_dot
 
         actions = {"yield_function": lambda V, c=coef_f: c * V}
-        if "eta" in self._nl_params:
-            actions[self._nl_params["eta"].input_name] = lambda V, c=-n * gamma_dot / eta: c * V
-        if "n" in self._nl_params:
+        if "eta" in self._promoted_params:
+            actions[self._promoted_params["eta"].input_name] = lambda V, c=-n * gamma_dot / eta: (
+                c * V
+            )
+        if "n" in self._promoted_params:
             n_coef = gamma_dot * log(f_abs / eta)
-            actions[self._nl_params["n"].input_name] = lambda V, c=n_coef: c * V
+            actions[self._promoted_params["n"].input_name] = lambda V, c=n_coef: c * V
 
         return gamma_dot, self.apply_chain_rule(v, "flow_rate", actions, output=gamma_dot)

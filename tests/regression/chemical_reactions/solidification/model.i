@@ -13,7 +13,7 @@ Tf = 1700
   []
   [T]
     type = Python
-    expr = 'Scalar.linspace(1800.0, 1400.0, 100)'
+    expr = 'linspace(Scalar(1800.0).dynamic_batch, Scalar(1400.0).dynamic_batch, 100)'
   []
 []
 
@@ -22,11 +22,10 @@ Tf = 1700
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_Scalar_names = 'T'
-    force_Scalar_values = 'T'
+    prescribed_Scalar_names = 'T'
+    prescribed_Scalar_values = 'T'
     ic_Scalar_names = 'phif'
     ic_Scalar_values = '1.0'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

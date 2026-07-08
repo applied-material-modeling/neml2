@@ -53,7 +53,7 @@ class DumpInSmallestBin(Model):
             "Source dumped into the smallest bin.",
             default="state/dumped_source",
         ),
-        parameter("cell_centers", Scalar, "Cell center locations.", allow_nonlinear=True),
+        parameter("cell_centers", Scalar, "Cell center locations.", allow_promotion=True),
     )
 
     # magnitude is a global Scalar (sub_batch=0); the output carries the
@@ -68,16 +68,22 @@ class DumpInSmallestBin(Model):
         # its declared sub_batch_ndim metadata (the tensor is stored as a bare
         # nn.Parameter and re-wrapped with sub_batch_ndim=0 on access), so
         # retag here to view that trailing axis as the per-cell sub-batch.
-        centers = self._get_param("cell_centers", nl_params=(), type_cls=Scalar).sub_batch.retag(1)
+        centers = self._get_param(
+            "cell_centers", promoted_params=(), type_cls=Scalar
+        ).sub_batch.retag(1)
         N = int(centers.sub_batch_shape[-1])
 
         # Promote mag (sub_batch=0) to a per-cell Scalar of size 1 along a new
         # cell axis -- the C++ ``mag_raw.unsqueeze(...)`` branch when
         # ``_magnitude.intmd_dim() == 0``.
         mag_cell = mag.sub_batch.unsqueeze(0)  # Scalar(sub_batch=1, size=1)
-        # Zero tail occupying cells [1, N): same dtype/device as centers (now
-        # retagged with sub_batch_ndim=1), new sub-batch axis of size N-1.
-        zero_tail = Scalar.zeros_like(centers, sub_batch_shape=(N - 1,))
+        # Zero tail occupying cells [1, N): built from ``mag_cell`` so it inherits
+        # mag's dynamic-batch (and dtype/device), then overrides the sub-batch to
+        # size N-1. Sourcing the tail from ``centers`` instead would drop any
+        # batch dim carried by ``magnitude`` (e.g. a per-temperature sweep),
+        # making the ``cat`` below fail on a rank mismatch. Mirrors the
+        # ``zeros_like(V_cell, ...)`` tail in the pushforward path.
+        zero_tail = Scalar.zeros_like(mag_cell, sub_batch_shape=(N - 1,))
         src = cat([mag_cell.sub_batch, zero_tail.sub_batch], dim=0)  # (sub_batch=1, size=N)
 
         if v is None:

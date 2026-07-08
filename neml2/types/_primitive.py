@@ -26,7 +26,7 @@
 
 `PrimitiveTensor` sits between :class:`TensorWrapper` (purely abstract — shape
 decomposition + region views + ``_rewrap``/``to``) and each concrete leaf
-(``Scalar``, ``Vec``, ``R2``, ``SR2``, ``WR2``, ``Rot``, ``SSR4``,
+(``Scalar``, ``Vec``, ``R2``, ``SR2``, ``WR2``, ``MRP``, ``SSR4``,
 ``MillerIndex``). It provides three pieces of machinery that every primitive
 needs in nearly-identical form:
 

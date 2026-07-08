@@ -51,8 +51,8 @@ class PowerLawKinematicHardeningStaticRecovery(Model):
     hit = HitSchema(
         input("back_stress", SR2, "Back stress"),
         derived_output("back_stress", SR2, attr="_X_rate", suffix="_rate"),
-        parameter("tau", Scalar, "Static recovery rate", attr="tau", allow_nonlinear=True),
-        parameter("n", Scalar, "Static recovery exponent", attr="n", allow_nonlinear=True),
+        parameter("tau", Scalar, "Static recovery rate", attr="tau", allow_promotion=True),
+        parameter("n", Scalar, "Static recovery exponent", attr="n", allow_promotion=True),
     )
 
     # ``from_hit`` auto-declares the ``tau`` / ``n`` parameters (stored as
@@ -64,13 +64,13 @@ class PowerLawKinematicHardeningStaticRecovery(Model):
     def forward(  # type: ignore[override]
         self,
         back_stress: SR2,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> SR2 | tuple[SR2, ChainRuleDict]:
         # Mirrors ``PowerLawKinematicHardeningStaticRecovery::set_value`` in the C++ source.
         X = back_stress
-        tau = self._get_param("tau", nl_params, Scalar)
-        n = self._get_param("n", nl_params, Scalar)
+        tau = self._get_param("tau", promoted_params, Scalar)
+        n = self._get_param("n", promoted_params, Scalar)
 
         # Match the C++ ``machine_precision(_X.scalar_type())`` eps regularizer
         # for ``s = norm(X)`` so the result stays differentiable at X == 0.
@@ -98,14 +98,14 @@ class PowerLawKinematicHardeningStaticRecovery(Model):
         X_name = next(iter(self.input_spec))
         actions: dict[str, ChainRuleAction] = {X_name: x_action}
 
-        if "tau" in self._nl_params:
+        if "tau" in self._promoted_params:
             # d X_dot / d tau = n * (s/tau)^(n-1) * X / tau^2
             coef_tau = n * pow(s_over_tau, nm1) * X / (tau * tau)
-            actions[self._nl_params["tau"].input_name] = lambda V, c=coef_tau: c * V
+            actions[self._promoted_params["tau"].input_name] = lambda V, c=coef_tau: c * V
 
-        if "n" in self._nl_params:
+        if "n" in self._promoted_params:
             # d X_dot / d n = -X / s * (s/tau)^n * log(s/tau)
             coef_n = -X / s * pow(s_over_tau, n) * log(s_over_tau)
-            actions[self._nl_params["n"].input_name] = lambda V, c=coef_n: c * V
+            actions[self._promoted_params["n"].input_name] = lambda V, c=coef_n: c * V
 
         return X_dot, self.apply_chain_rule(v, self._X_rate, actions, output=X_dot)

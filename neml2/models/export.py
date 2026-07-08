@@ -38,13 +38,14 @@ from __future__ import annotations
 
 import io
 import struct
-import warnings
 import zipfile
 from pathlib import Path
 from typing import Any
 
 import torch
 from torch.export import Dim, export
+
+from .._warnings import TORCH_JIT_PY314, TORCH_TREESPEC_LEAFSPEC, ignore_warnings
 
 
 def _patch_inductor_int_array_cache_key() -> None:
@@ -293,7 +294,7 @@ def compile_model(
     # nested tuple "argument", while each named positional parameter stays a
     # top-level entry. Forward signatures come in three shapes:
     #   * pure ``*inputs``                     → every example feeds the pack
-    #   * named positionals + ``*nl_params``   → first N examples are named,
+    #   * named positionals + ``*promoted_params``   → first N examples are named,
     #                                            the remainder feed the pack
     #   * named positionals only               → flat 1:1 with the examples
     # so we split the example inputs at the number of named positional params.
@@ -402,19 +403,15 @@ def compile_model(
                 if t.dim() > dynamic_batch_dim:
                     _mark_unbacked(t, dynamic_batch_dim, **_bound_kwargs)
 
-    ep = export(model, example_inputs, dynamic_shapes=dynamic_shapes, strict=strict)
-
     package_path = Path(package_path).resolve()
     package_path.parent.mkdir(parents=True, exist_ok=True)
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=(
-                r"`isinstance\(treespec, LeafSpec\)` is deprecated, use "
-                r"`isinstance\(treespec, TreeSpec\) and treespec\.is_leaf\(\)` instead\."
-            ),
-            category=FutureWarning,
-        )
+    # The export + inductor compile trip two torch-internal deprecations the caller
+    # cannot act on (torch calling its own deprecated APIs): the LeafSpec pytree
+    # call during ``export()``'s deepcopy, and ``torch.jit.script_method`` while
+    # inductor imports ``torch.utils.mkldnn``. Silence them only for the lowering;
+    # the specs live in ``neml2/_warnings.py`` (shared with the tests).
+    with ignore_warnings(TORCH_TREESPEC_LEAFSPEC, TORCH_JIT_PY314):
+        ep = export(model, example_inputs, dynamic_shapes=dynamic_shapes, strict=strict)
         aoti_kwargs: dict[str, Any] = {"package_path": str(package_path)}
         if inductor_configs:
             aoti_kwargs["inductor_configs"] = inductor_configs

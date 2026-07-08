@@ -68,7 +68,7 @@ class ScalarMultiplication(Model):
             "The scaling coefficient to multiply to the final product",
             default="1",
             attr="scaling",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         option(
             "reciprocal",
@@ -109,13 +109,13 @@ class ScalarMultiplication(Model):
         vh: ChainRuleDict | None = None,
     ):
         # Split positional inputs: the leading structural inputs (one per
-        # from-var) followed by the *nl_params pack holding any mode-3/4
+        # from-var) followed by the *promoted_params pack holding any mode-3/4
         # promoted parameters (e.g. scaling promoted to a runtime input).
         n = len(self._from_vars)
-        inputs, nl_params = args[:n], args[n:]
+        inputs, promoted_params = args[:n], args[n:]
         if len(inputs) != n:
             raise ValueError(f"{type(self).__name__} expected {n} inputs, got {len(inputs)}")
-        A = self._get_param("scaling", nl_params, Scalar)
+        A = self._get_param("scaling", promoted_params, Scalar)
 
         # Forward: r = A * prod_i ( x_i if not inv[i] else 1/x_i ).
         # Build as r = A * f_0 where f_i = x_i or 1/x_i, then accumulate.
@@ -157,9 +157,9 @@ class ScalarMultiplication(Model):
                 coeff = coeff / xj if self._inv[j] else coeff * xj
             _add(fv, lambda V, c=coeff: c * V)
 
-        # If scaling was promoted to a nonlinear input, also push its action:
+        # If scaling was promoted to a runtime input, also push its action:
         #   dr/dA = r / A  (linear in A) -> action(V) = (r / A) * V
-        nlp_A = self._nl_params.get("scaling")
+        nlp_A = self._promoted_params.get("scaling")
         if nlp_A is not None:
             coeff_A = result / A
             _add(nlp_A.input_name, lambda V, c=coeff_A: c * V)

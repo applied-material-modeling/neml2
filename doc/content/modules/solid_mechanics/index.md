@@ -14,7 +14,7 @@ syntax-catalog entries for the individual types.
 elasticity
 viscoelasticity
 plasticity
-crystal_plasticity
+crystal_plasticity/index
 traction_separation_law
 kinematics
 ```

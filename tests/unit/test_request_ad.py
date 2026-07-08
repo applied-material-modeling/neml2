@@ -62,7 +62,7 @@ class _ADCube(Model):
     def __post_init__(self):
         self.request_AD()
 
-    def forward(self, x, *nl_params):  # type: ignore[override]
+    def forward(self, x, *promoted_params):  # type: ignore[override]
         return x * x * x
 
 
@@ -72,7 +72,7 @@ class _AnalyticCube(Model):
 
     hit = HitSchema(input("x", Scalar, "in"), output("y", Scalar, "out"))
 
-    def forward(self, x, *nl_params, v: ChainRuleDict | None = None):  # type: ignore[override]
+    def forward(self, x, *promoted_params, v: ChainRuleDict | None = None):  # type: ignore[override]
         y = x * x * x
         if v is None:
             return y
@@ -96,7 +96,7 @@ class _ADMix(Model):
     def __post_init__(self):
         self.request_AD()
 
-    def forward(self, a, b, *nl_params):  # type: ignore[override]
+    def forward(self, a, b, *promoted_params):  # type: ignore[override]
         return a * (b * b)
 
 
@@ -109,7 +109,7 @@ class _ADNormSq(Model):
     def __post_init__(self):
         self.request_AD()
 
-    def forward(self, x, *nl_params):  # type: ignore[override]
+    def forward(self, x, *promoted_params):  # type: ignore[override]
         return inner(x, x)
 
 
@@ -126,7 +126,7 @@ class _ADSubset(Model):
     def __post_init__(self):
         self.request_AD(inputs=["a"])
 
-    def forward(self, a, b, *nl_params):  # type: ignore[override]
+    def forward(self, a, b, *promoted_params):  # type: ignore[override]
         return a * (b * b)
 
 
@@ -136,7 +136,7 @@ class _ScaleA(Model):
 
     hit = HitSchema(input("x", Scalar, "in"), output("z", Scalar, "out"))
 
-    def forward(self, x, *nl_params, v: ChainRuleDict | None = None):  # type: ignore[override]
+    def forward(self, x, *promoted_params, v: ChainRuleDict | None = None):  # type: ignore[override]
         z = Scalar(2.0) * x
         if v is None:
             return z
@@ -152,7 +152,7 @@ class _CubeB(Model):
     def __post_init__(self):
         self.request_AD()
 
-    def forward(self, z, *nl_params):  # type: ignore[override]
+    def forward(self, z, *promoted_params):  # type: ignore[override]
         return z * z * z
 
 
@@ -226,6 +226,62 @@ def test_request_ad_subset_selection():
     (_out,), jac = _native_jacobian(m, (SR2(a.data), Scalar(b.data)))
     assert torch.allclose(jac["out"]["a"], (b.data**2).reshape(2, 1, 1) * torch.eye(6, dtype=DT))
     assert torch.count_nonzero(jac["out"]["b"]) == 0  # not requested -> structural zero
+
+
+# --------------------------------------------------------------------------- #
+# Single-direction (k_ndim=0) seeds -- the shape ModelUnitTest and the
+# ``Vec(eye(n))`` idiom send. request_AD must accept exactly what a hand-written
+# action accepts, so a request_AD leaf is indistinguishable at the ``v=`` boundary.
+# --------------------------------------------------------------------------- #
+def _native_jvp_single(model, args, tangents):
+    """Single-direction (k_ndim=0) pushforward: one directional seed per input."""
+    seed = {n: {n: t} for n, t in tangents.items()}
+    *outs, v_out = model(*args, v=seed)
+    return outs, v_out
+
+
+def test_single_direction_jvp_matches_analytic_and_closed_form():
+    """A k_ndim=0 tangent (one direction) contracts to J @ v -- matching the
+    hand-written twin and the closed form 3 x^2 v, with no spurious K axis."""
+    torch.manual_seed(0)
+    x = Scalar(torch.rand(5, dtype=DT) + 0.5)
+    v = Scalar(torch.rand(5, dtype=DT))
+    _, vad = _native_jvp_single(_ADCube(), (Scalar(x.data),), {"x": Scalar(v.data)})
+    _, van = _native_jvp_single(_AnalyticCube(), (Scalar(x.data),), {"x": Scalar(v.data)})
+    assert vad["y"]["x"].k_ndim == 0  # single-direction in -> single-direction out
+    assert torch.allclose(vad["y"]["x"].data, van["y"]["x"].data)  # AD == hand-written
+    assert torch.allclose(vad["y"]["x"].data, 3.0 * x.data**2 * v.data)
+
+
+def test_single_direction_multi_input_multi_base():
+    """Single-direction tangents on a multi-input AD leaf contract per edge:
+    d(out) from a is b^2 v_a; d(out) from b is (2 b a) v_b."""
+    torch.manual_seed(0)
+    a = SR2(torch.randn(4, 6, dtype=DT))
+    b = Scalar(torch.rand(4, dtype=DT) + 0.5)
+    va = SR2(torch.randn(4, 6, dtype=DT))
+    vb = Scalar(torch.rand(4, dtype=DT))
+    _, vout = _native_jvp_single(
+        _ADMix(), (SR2(a.data), Scalar(b.data)), {"a": SR2(va.data), "b": Scalar(vb.data)}
+    )
+    assert vout["out"]["a"].k_ndim == 0
+    assert torch.allclose(vout["out"]["a"].data, (b.data**2).unsqueeze(-1) * va.data)
+    assert torch.allclose(vout["out"]["b"].data, (2.0 * b.data * vb.data).unsqueeze(-1) * a.data)
+
+
+def test_model_unit_test_verifies_request_ad_leaf():
+    """ModelUnitTest's directional JVP check (a single-direction seed cross-checked
+    against torch.autograd) now passes for a request_AD leaf -- previously its
+    k_ndim=0 tangent was rejected by the contraction."""
+    from neml2.drivers.ModelUnitTest import ModelUnitTest
+
+    m = _ADCube()
+    (xname,) = tuple(m.input_spec)
+    (yname,) = tuple(m.output_spec)
+    x = Scalar(torch.rand(5, dtype=DT) + 0.5)
+    report = ModelUnitTest(m, {xname: x}, expected_outputs={yname: Scalar(x.data**3)}).run()
+    assert report.value_checks == 1
+    assert report.jvp_checks == 1
 
 
 # --------------------------------------------------------------------------- #

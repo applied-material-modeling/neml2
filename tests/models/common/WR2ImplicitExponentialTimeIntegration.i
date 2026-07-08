@@ -5,12 +5,12 @@
     model = 'model'
     input_WR2_names = 'foo_rate'
     input_WR2_values = 'w'
-    input_Rot_names = 'foo foo~1'
-    input_Rot_values = 'foo old_foo'
+    input_MRP_names = 'foo foo~1'
+    input_MRP_values = 'foo old_foo'
     input_Scalar_names = 't t~1'
     input_Scalar_values = '1.3 1.1'
-    output_Rot_names = 'foo_residual'
-    output_Rot_values = 'res'
+    output_MRP_names = 'foo_residual'
+    output_MRP_values = 'res'
     value_rel_tol = 1e-4
   []
 []
@@ -26,15 +26,15 @@
 [Tensors]
   [res]
     type = Python
-    expr = 'Rot(torch.tensor([-0.032903, -0.005864, 0.006609], dtype=torch.float64))'
+    expr = 'MRP(torch.tensor([-0.032903, -0.005864, 0.006609], dtype=torch.float64))'
   []
   [foo]
     type = Python
-    expr = 'Rot(torch.tensor([0.00499066, -0.0249533, 0.03493462], dtype=torch.float64))'
+    expr = 'MRP(torch.tensor([0.00499066, -0.0249533, 0.03493462], dtype=torch.float64))'
   []
   [old_foo]
     type = Python
-    expr = 'Rot(torch.tensor([0.03739906, -0.01994617, 0.02991925], dtype=torch.float64))'
+    expr = 'MRP(torch.tensor([0.03739906, -0.01994617, 0.02991925], dtype=torch.float64))'
   []
   [w]
     type = Python

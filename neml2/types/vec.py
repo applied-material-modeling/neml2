@@ -26,7 +26,7 @@
 
 Base shape ``(3,)``. Mirrors ``include/neml2/tensors/Vec.h``. Used for
 displacement / traction triples, position vectors, and any other Cartesian
-3-vector quantity that isn't a Rodrigues rotation (``Rot``), a skew axial
+3-vector quantity that isn't a Rodrigues rotation (``MRP``), a skew axial
 vector (``WR2``), or a Miller-index triple (``MillerIndex``) — the storage
 shape is identical to those three but the type tag keeps cross-type operator
 dispatch unambiguous.

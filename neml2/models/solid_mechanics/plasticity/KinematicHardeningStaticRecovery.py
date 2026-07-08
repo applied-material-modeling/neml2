@@ -66,7 +66,7 @@ class KinematicHardeningStaticRecovery(Model):
     def forward(  # type: ignore[override]
         self,
         back_stress: SR2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native kinematic-hardening static-recovery leaves

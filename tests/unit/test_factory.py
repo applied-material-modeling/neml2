@@ -273,6 +273,30 @@ def test_load_newton_solver_from_hit():
     assert abs(solver.rtol - 1e-6) < 1e-15
 
 
+def test_newton_with_linesearch_from_hit_honors_verbose():
+    """Regression: ``NewtonWithLineSearch.from_hit`` must honor the inherited
+    ``verbose`` option. It previously failed to read it, so a ``verbose = true``
+    input silently produced a quiet solver -- the schema accepts the field
+    (inherited from ``Newton``), so no error flagged the dropped option."""
+    from neml2.solvers import NewtonWithLineSearch
+
+    hit_text = """
+[Solvers]
+  [newton]
+    type = NewtonWithLineSearch
+    verbose = true
+  []
+[]
+"""
+    import nmhit
+
+    root = nmhit.parse_text(hit_text)
+    factory = _NativeInputFile(root, Path("synthetic.i"))
+    solver = factory.get_solver("newton")
+    assert isinstance(solver, NewtonWithLineSearch)
+    assert solver.verbose is True
+
+
 # ---------------------------------------------------------------------------
 # load_input / load_model public API
 # ---------------------------------------------------------------------------

@@ -67,7 +67,7 @@ class ReactionMechanism(Model):
     def forward(  # type: ignore[override]
         self,
         conversion_degree: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native reaction-mechanism leaves implement the

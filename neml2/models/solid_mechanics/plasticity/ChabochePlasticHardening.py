@@ -66,28 +66,28 @@ class ChabochePlasticHardening(Model):
             Scalar,
             "Kinematic hardening coefficient",
             attr="C",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "g",
             Scalar,
             "Dynamic recovery coefficient",
             attr="g",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "A",
             Scalar,
             "Static recovery prefactor",
             attr="A",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "a",
             Scalar,
             "Static recovery exponent",
             attr="a",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -104,15 +104,15 @@ class ChabochePlasticHardening(Model):
         flow_rate: Scalar,
         flow_direction: SR2,
         back_stress: SR2,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> SR2 | tuple[SR2, ChainRuleDict]:
         # Mirrors ``ChabochePlasticHardening::set_value`` in
         # ``src/neml2/models/solid_mechanics/plasticity/ChabochePlasticHardening.cxx``.
-        C = self._get_param("C", nl_params, Scalar)
-        g = self._get_param("g", nl_params, Scalar)
-        A = self._get_param("A", nl_params, Scalar)
-        a = self._get_param("a", nl_params, Scalar)
+        C = self._get_param("C", promoted_params, Scalar)
+        g = self._get_param("g", promoted_params, Scalar)
+        A = self._get_param("A", promoted_params, Scalar)
+        a = self._get_param("a", promoted_params, Scalar)
 
         gamma_dot = flow_rate
         NM = flow_direction
@@ -158,18 +158,18 @@ class ChabochePlasticHardening(Model):
                 -(c * V) - k * inner(Xc, V) * Xc
             ),
         }
-        # Nonlinear-parameter promotions: each parameter that was promoted to a
+        # Promoted-parameter contributions: each parameter that was promoted to a
         # runtime input gets its own action keyed on the resolved input name.
-        if "C" in self._nl_params:
-            actions[self._nl_params["C"].input_name] = lambda V, c=(2.0 / 3.0) * NM * gamma_dot: (
-                c * V
+        if "C" in self._promoted_params:
+            actions[self._promoted_params["C"].input_name] = (
+                lambda V, c=(2.0 / 3.0) * NM * gamma_dot: c * V
             )
-        if "g" in self._nl_params:
-            actions[self._nl_params["g"].input_name] = lambda V, c=-X * gamma_dot: c * V
-        if "A" in self._nl_params:
-            actions[self._nl_params["A"].input_name] = lambda V, c=-s_am1 * X: c * V
-        if "a" in self._nl_params:
+        if "g" in self._promoted_params:
+            actions[self._promoted_params["g"].input_name] = lambda V, c=-X * gamma_dot: c * V
+        if "A" in self._promoted_params:
+            actions[self._promoted_params["A"].input_name] = lambda V, c=-s_am1 * X: c * V
+        if "a" in self._promoted_params:
             a_coef = -A * X * s_am1 * log(s)
-            actions[self._nl_params["a"].input_name] = lambda V, c=a_coef: c * V
+            actions[self._promoted_params["a"].input_name] = lambda V, c=a_coef: c * V
 
         return X_dot, self.apply_chain_rule(v, self._X_rate, actions, output=X_dot)

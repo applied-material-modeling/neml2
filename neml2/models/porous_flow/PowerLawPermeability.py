@@ -74,13 +74,13 @@ class PowerLawPermeability(Model):
     def forward(  # type: ignore[override]
         self,
         porosity: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         phi = porosity
-        K0 = self._get_param("K0", nl_params, Scalar)
-        phi0 = self._get_param("phi0", nl_params, Scalar)
-        p = self._get_param("p", nl_params, Scalar)
+        K0 = self._get_param("K0", promoted_params, Scalar)
+        phi0 = self._get_param("phi0", promoted_params, Scalar)
+        p = self._get_param("p", promoted_params, Scalar)
 
         # ``K = K0 * (phi / phi0) ** p`` — typed Scalar algebra end to end.
         ratio = phi / phi0

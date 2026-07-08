@@ -55,17 +55,17 @@ class BenzeggaghKenaneFullSeparation(Model):
         parameter(
             "mode_mixity",
             Scalar,
-            "Mode-mixity ratio. May be wired to an upstream `ModeMixity` (nonlinear-capable).",
+            "Mode-mixity ratio. May be wired to an upstream `ModeMixity` (promotion-capable).",
             attr="beta",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter(
             "critical_separation",
             Scalar,
             "Critical (damage-onset) separation. May be wired to an upstream "
-            "`CamanhoDavilaCriticalSeparation` (nonlinear-capable).",
+            "`CamanhoDavilaCriticalSeparation` (promotion-capable).",
             attr="delta_c",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameter("penalty_stiffness", Scalar, "Penalty stiffness", attr="K"),
         parameter(
@@ -102,19 +102,19 @@ class BenzeggaghKenaneFullSeparation(Model):
     def forward(  # type: ignore[override]
         self,
         dn: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
-        # ``beta`` and ``delta_c`` are nonlinear-capable; route through
+        # ``beta`` and ``delta_c`` are promotion-capable; route through
         # ``_get_param`` so the same code path works whether they remained
-        # static parameters or were promoted to runtime nl inputs.
-        beta = self._get_param("beta", nl_params, Scalar)
-        delta_c = self._get_param("delta_c", nl_params, Scalar)
-        K = self._get_param("K", nl_params, Scalar)
-        GIc = self._get_param("GIc", nl_params, Scalar)
-        GIIc = self._get_param("GIIc", nl_params, Scalar)
-        S = self._get_param("S", nl_params, Scalar)
-        eta = self._get_param("eta", nl_params, Scalar)
+        # static parameters or were promoted to runtime inputs.
+        beta = self._get_param("beta", promoted_params, Scalar)
+        delta_c = self._get_param("delta_c", promoted_params, Scalar)
+        K = self._get_param("K", promoted_params, Scalar)
+        GIc = self._get_param("GIc", promoted_params, Scalar)
+        GIIc = self._get_param("GIIc", promoted_params, Scalar)
+        S = self._get_param("S", promoted_params, Scalar)
+        eta = self._get_param("eta", promoted_params, Scalar)
 
         # Match the C++ ``machine_precision(dtype)`` regularizer used to keep
         # ``pow(pow_base, eta)`` differentiable at ``beta == 0``.
@@ -144,12 +144,12 @@ class BenzeggaghKenaneFullSeparation(Model):
         # The forward depends on ``normal_separation`` only through the
         # detached branch mask, so its action is structural zero (omitted
         # from ``actions`` -> ``apply_chain_rule`` treats it as zero). The
-        # two nonlinear-capable parameters ``beta`` and ``delta_c`` carry
+        # two promotion-capable parameters ``beta`` and ``delta_c`` carry
         # closed-form partials, emitted only when promoted to runtime
         # inputs (mode 3/4).
         actions: dict[str, ChainRuleAction] = {}
 
-        delta_c_nlp = self._nl_params.get("delta_c")
+        delta_c_nlp = self._promoted_params.get("delta_c")
         if delta_c_nlp is not None:
             # Opening: d(delta_f)/d(delta_c) = -delta_final_open / delta_c.
             # Compression branch is independent of delta_c.
@@ -158,7 +158,7 @@ class BenzeggaghKenaneFullSeparation(Model):
             ddf_dinit = where(pos_mask, ddf_dinit_open, zero)
             actions[delta_c_nlp.input_name] = lambda V, c=ddf_dinit: c * V
 
-        beta_nlp = self._nl_params.get("beta")
+        beta_nlp = self._promoted_params.get("beta")
         if beta_nlp is not None:
             zero = Scalar.from_value(0.0, like=delta_f)
             # d(beta_sq_ratio)/d(beta) = 2 beta / (1 + beta^2)^2

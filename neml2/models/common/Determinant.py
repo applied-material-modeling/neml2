@@ -68,7 +68,7 @@ class R2Determinant(_Determinant):
     def forward(  # type: ignore[override]
         self,
         F: R2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         J = det(F)
@@ -99,7 +99,7 @@ class SR2Determinant(_Determinant):
     def forward(  # type: ignore[override]
         self,
         F: SR2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         J = det(F)

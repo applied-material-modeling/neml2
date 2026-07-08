@@ -64,7 +64,7 @@ class SlipStrengthMap(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native slip-strength maps implement the internal

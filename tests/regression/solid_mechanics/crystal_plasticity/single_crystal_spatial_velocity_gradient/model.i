@@ -8,7 +8,7 @@
   # end_time = LinspaceScalar(1, 10, 20) -> shape (20,)
   [end_time]
     type = Python
-    expr = 'Scalar.linspace(1.0, 10.0, 20)'
+    expr = 'linspace(Scalar(1.0).dynamic_batch, Scalar(10.0).dynamic_batch, 20)'
   []
   # times = LinspaceScalar(0, end_time, 100) -> shape (100, 20)
   [times]
@@ -45,7 +45,7 @@
   # R1 = linspace(0, 0.75, 20); R2 = linspace(0, -0.25, 20); R3 = linspace(-0.1, 0.1, 20).
   [initial_orientation]
     type = Python
-    expr = 'Rot((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
+    expr = 'MRP((lambda r: r / (torch.sqrt((r * r).sum(-1, keepdim=True) + 1.0) + 1.0))(torch.stack([torch.linspace(0.0, 0.75, 20, dtype=torch.float64), torch.linspace(0.0, -0.25, 20, dtype=torch.float64), torch.linspace(-0.1, 0.1, 20, dtype=torch.float64)], dim=-1)))'
   []
 []
 
@@ -54,11 +54,10 @@
     type = TransientDriver
     model = 'model_with_stress'
     prescribed_time = 'times'
-    force_R2_names = 'spatial_velocity_gradient'
-    force_R2_values = 'L'
-    ic_Rot_names = 'orientation'
-    ic_Rot_values = 'initial_orientation'
-    save_as = 'result.pt'
+    prescribed_R2_names = 'spatial_velocity_gradient'
+    prescribed_R2_values = 'L'
+    ic_MRP_names = 'orientation'
+    ic_MRP_values = 'initial_orientation'
   []
   [regression]
     type = TransientRegression
@@ -179,7 +178,7 @@
     type = ConstantExtrapolationPredictor
     unknowns_SR2 = 'elastic_strain'
     unknowns_Scalar = 'slip_hardening'
-    unknowns_Rot = 'orientation'
+    unknowns_MRP = 'orientation'
   []
   [model]
     type = ImplicitUpdate

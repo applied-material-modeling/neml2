@@ -67,13 +67,13 @@ class RationalDegradationFunction(Model):
     def forward(  # type: ignore[override]
         self,
         phase: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
-        p = self._get_param("p", nl_params, Scalar)
-        b1 = self._get_param("b1", nl_params, Scalar)
-        b2 = self._get_param("b2", nl_params, Scalar)
-        b3 = self._get_param("b3", nl_params, Scalar)
+        p = self._get_param("p", promoted_params, Scalar)
+        b1 = self._get_param("b1", promoted_params, Scalar)
+        b2 = self._get_param("b2", promoted_params, Scalar)
+        b3 = self._get_param("b3", promoted_params, Scalar)
         eta = self._eta
 
         d = phase

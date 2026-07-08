@@ -65,7 +65,7 @@ class Eigenstrain(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native eigenstrain leaves declare their own input

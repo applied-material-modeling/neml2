@@ -56,7 +56,7 @@ The promoted-parameter tail (``*params``) is empty in the common case (no
 ``--parameter`` targeting an attribute inside the implicit region); when
 present it lists, in graph-call order, the promoted parameters that live
 inside the implicit segment's residual model. After
-:func:`~neml2.cli.aoti_export._promote_to_nl_params` these appear in
+:func:`~neml2.cli.aoti_export._promote_parameters` these appear in
 ``system.model.input_spec`` but are neither unknowns nor givens, so the
 wrappers inject them into the per-variable state from the trailing forward
 args. ``RHS`` / ``NewtonStep`` / ``IFT`` take them as the stored scalar
@@ -133,7 +133,7 @@ class _SystemModule(nn.Module):
         self.dyn_ndim: dict[str, int] = dict(system._dynamic_batch_ndim)
         self.sub_batch_shapes = dict(system._sub_batch_shapes)
         # Promoted parameters threaded as a positional tail after the givens.
-        # After ``_promote_to_nl_params`` these are in ``model.input_spec`` but
+        # After ``_promote_parameters`` these are in ``model.input_spec`` but
         # are neither unknowns nor givens; ``_state_from_per_group_args``
         # injects them into the per-variable state from the trailing args so
         # ``_call_model_from_state`` (which iterates the full input_spec) finds
@@ -278,7 +278,7 @@ def _vector_to_per_group_raws(vec: AssembledVector) -> tuple[torch.Tensor, ...]:
     boundary -- the legitimate framework-imposed exception case from
     CLAUDE.md rule 2.
     """
-    return tuple(t.data for t in vec.tensors)  # noqa: data-ok AOTI
+    return tuple(t.data for t in vec.tensors)  # data-ok AOTI
 
 
 class RHS(_SystemModule):
@@ -385,7 +385,7 @@ class IFT(_SystemModule):
         # Emit per-(unknown, given) raw blocks in the canonical order. The
         # ``.data`` reads are the legitimate AOTI segment-output boundary.
         return tuple(
-            cells[u][g].data  # noqa: data-ok AOTI
+            cells[u][g].data  # data-ok AOTI
             for (u, g) in self.emitted_pairs()
         )
 
@@ -531,7 +531,7 @@ class ParamIFT(_SystemModule):
         param_leaves: list[torch.Tensor] = []
         for type_cls, raw in zip(self.param_types, param_raws, strict=True):
             # (*batch, *param_base); .data is the AOTI input boundary unwrap.
-            r = raw.data if isinstance(raw, type_cls) else raw  # noqa: data-ok AOTI
+            r = raw.data if isinstance(raw, type_cls) else raw  # data-ok AOTI
             param_leaves.append(r.clone().requires_grad_(True))
 
         # Reconstruct the typed per-variable state by plain narrow / reshape.
@@ -566,7 +566,7 @@ class ParamIFT(_SystemModule):
         # ``.data`` reads are the AOTI boundary unwrap (this file is the export
         # boundary; the residual values carry the autograd graph through .data).
         r_parts = [
-            out_state[rname].data.reshape(*batch, st)  # noqa: data-ok AOTI
+            out_state[rname].data.reshape(*batch, st)  # data-ok AOTI
             for rname, st in self._r_flat
         ]
         r_flat = torch.cat(r_parts, dim=-1) if len(r_parts) > 1 else r_parts[0]

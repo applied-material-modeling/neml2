@@ -81,16 +81,8 @@ Model::Impl::_forward_pair_blocks(const std::map<std::string, at::Tensor> & inpu
 {
   const auto & seg = _segments.front();
 
-  // Pack + validate caller inputs into a state map (canonical (*B, *base)).
-  std::map<std::string, at::Tensor> state;
-  for (std::size_t k = 0; k < _input_names.size(); ++k)
-  {
-    const auto & n = _input_names[k];
-    auto it = inputs.find(n);
-    _assert(it != inputs.end(), "aoti::Model::jacobian: missing required input '", n, "'.");
-    _validate_input_shape(k, it->second);
-    state[n] = it->second.contiguous();
-  }
+  // Pack + validate caller inputs, broadcasting to the common batch.
+  auto state = _prepare_inputs(inputs);
 
   // Run the jvp loader once: it returns (*outputs, *per-pair blocks) where the
   // blocks are row-major over seg.jacobian_pairs (the requested pairs).
@@ -164,16 +156,8 @@ Model::Impl::_forward_param_pair_blocks(const std::map<std::string, at::Tensor> 
 {
   const auto & seg = _segments.front();
 
-  // Pack + validate caller inputs into a state map (canonical (*B, *base)).
-  std::map<std::string, at::Tensor> state;
-  for (std::size_t k = 0; k < _input_names.size(); ++k)
-  {
-    const auto & n = _input_names[k];
-    auto it = inputs.find(n);
-    _assert(it != inputs.end(), "aoti::Model::param_jacobian: missing required input '", n, "'.");
-    _validate_input_shape(k, it->second);
-    state[n] = it->second.contiguous();
-  }
+  // Pack + validate caller inputs, broadcasting to the common batch.
+  auto state = _prepare_inputs(inputs);
 
   // Runtime batch shape from the first structural input. The param-Jacobian graph
   // takes per-batch parameter inputs, so broadcast the stored scalar parameters
@@ -224,16 +208,8 @@ Model::Impl::_implicit_param_pair_blocks(const std::map<std::string, at::Tensor>
 {
   const auto & seg = _segments.front();
 
-  // Pack + validate caller inputs into a state map (canonical (*B, *base)).
-  std::map<std::string, at::Tensor> state;
-  for (std::size_t k = 0; k < _input_names.size(); ++k)
-  {
-    const auto & n = _input_names[k];
-    auto it = inputs.find(n);
-    _assert(it != inputs.end(), "aoti::Model::param_jacobian: missing required input '", n, "'.");
-    _validate_input_shape(k, it->second);
-    state[n] = it->second.contiguous();
-  }
+  // Pack + validate caller inputs, broadcasting to the common batch.
+  auto state = _prepare_inputs(inputs);
 
   // Run the Newton solve to convergence; this writes the converged unknowns back
   // into `state` and hands us the converged per-group unknowns + per-group givens
@@ -391,16 +367,8 @@ Model::Impl::_add_implicit_param_direct(const Segment & seg,
 std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
 Model::Impl::_param_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) const
 {
-  // Pack + validate caller inputs (canonical (*B, *base)).
-  std::map<std::string, at::Tensor> state;
-  for (std::size_t k = 0; k < _input_names.size(); ++k)
-  {
-    const auto & n = _input_names[k];
-    auto it = inputs.find(n);
-    _assert(it != inputs.end(), "aoti::Model::param_jacobian: missing required input '", n, "'.");
-    _validate_input_shape(k, it->second);
-    state[n] = it->second.contiguous();
-  }
+  // Pack + validate caller inputs, broadcasting to the common batch.
+  auto state = _prepare_inputs(inputs);
 
   // Shared dynamic batch (input 0's leading shape minus its own sub-batch), the
   // same `common_dyn` the input-Jacobian carrier uses for its per-variable

@@ -54,14 +54,14 @@ class ProjectedDiffusivitySum(Model):
             Scalar,
             "Concentration differences for each species",
             attr="_dx_names",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameters(
             "diffusivities",
             Scalar,
             "Species diffusivities",
             attr="_D_names",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -100,15 +100,15 @@ class ProjectedDiffusivitySum(Model):
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Split positional args: the leading structural inputs (one Scalar per
-        # far-field concentration) followed by the *nl_params pack of
+        # far-field concentration) followed by the *promoted_params pack of
         # mode-3/4-promoted concentration_differences / diffusivities entries.
         n = len(self._x_inf_vars)
-        x_infs, nl_params = args[:n], args[n:]
+        x_infs, promoted_params = args[:n], args[n:]
         if len(x_infs) != n:
             raise ValueError(f"{type(self).__name__} expected {n} inputs, got {len(x_infs)}")
 
-        dxs = self._get_param_list("_dx_names", nl_params, Scalar)
-        Ds = self._get_param_list("_D_names", nl_params, Scalar)
+        dxs = self._get_param_list("_dx_names", promoted_params, Scalar)
+        Ds = self._get_param_list("_D_names", promoted_params, Scalar)
 
         # Forward: s = sum_k dx_k^2 / (D_k * x_inf_k). Typed Scalar algebra
         # end-to-end, matching ``ProjectedDiffusivitySum::set_value``.
@@ -141,16 +141,16 @@ class ProjectedDiffusivitySum(Model):
             _add(x_name, lambda V, c=coef: c * V)
 
         for dx, D, xinf, p_name in zip(dxs, Ds, x_infs, self._dx_names, strict=True):
-            nlp = self._nl_params.get(p_name)
-            if nlp is not None:
+            pparam = self._promoted_params.get(p_name)
+            if pparam is not None:
                 coef = (2.0 * dx) / (D * xinf)
-                _add(nlp.input_name, lambda V, c=coef: c * V)
+                _add(pparam.input_name, lambda V, c=coef: c * V)
 
         for dx, D, xinf, p_name in zip(dxs, Ds, x_infs, self._D_names, strict=True):
-            nlp = self._nl_params.get(p_name)
-            if nlp is not None:
+            pparam = self._promoted_params.get(p_name)
+            if pparam is not None:
                 coef = -pow(dx, 2.0) / (D * D * xinf)
-                _add(nlp.input_name, lambda V, c=coef: c * V)
+                _add(pparam.input_name, lambda V, c=coef: c * V)
 
         return s, self.apply_chain_rule(v, "projected_diffusivity_sum", actions, output=s)
 

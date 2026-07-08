@@ -162,6 +162,25 @@ Derivative graphs are opt-in: with no `-d` flag only `forward` is
 compiled and `jvp` / `jacobian` raise at runtime. Request the pairs you
 need with `-d OUT:IN` (e.g. `-d stress:strain`, or `-d :` for all).
 
+### Boundary renaming
+
+A downstream consumer may need the compiled model's variables to carry its own
+names. Rename them at the artifact's boundary with `--rename-input ORIG:NEW`,
+`--rename-output ORIG:NEW`, and `--rename-parameter ORIG:NEW` (each repeatable).
+The rename is **shallow**: only the names reported at the interface change — the
+inputs / outputs a caller passes and reads, the promoted-parameter names in
+`named_parameters()`, and the keys of every `forward` / `jvp` / `jacobian`
+result. The compiled graphs and all internal wiring keep the original authored
+names, so a rename is a pure relabel with identical values. `ORIG` must be an
+existing structural input, output, or promoted parameter (`--rename-parameter`
+targets a name from `-p`), and the resulting names must stay unique.
+
+Renaming applies to the compiled routes only (Python `neml2.aoti.Model`, C++
+`neml2::aoti::Model`, and the dispatcher); the eager routes run the un-exported
+model and keep the authored names. It is available with `--model` only — with
+`--driver` the bundled driver is wired to the original names, so combining them
+is rejected.
+
 The end-to-end walkthrough — emitted file layout, loading the
 artifact from Python, parameter promotion (`-p <name>`), and the
 trade-offs against eager mode — lives in
@@ -170,10 +189,11 @@ trade-offs against eager mode — lives in
 ### Interactive mode (`-i` / `--interactive`)
 
 `neml2-compile`'s flag surface is wide and interdependent: the promotable
-parameter names (`-p`) and the valid `OUT:IN` derivative pairs (`-d`) only exist
-once the model is loaded and introspected. Pass `-i` / `--interactive` to be
-guided through the options with prompts populated from the model, ending on a
-review you can run, edit, or copy as a plain `neml2-compile` command:
+parameter names (`-p`), the valid `OUT:IN` derivative pairs (`-d`), and the
+variables available to rename (`--rename-*`) only exist once the model is loaded
+and introspected. Pass `-i` / `--interactive` to be guided through the options
+with prompts populated from the model, ending on a review you can run, edit, or
+copy as a plain `neml2-compile` command:
 
 ```bash
 neml2-compile -i input.i

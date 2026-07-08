@@ -27,7 +27,7 @@
 The C++ ``ConstantParameter<T>`` is instantiated for every primitive tensor
 type via the ``FOR_ALL_PRIMITIVETENSOR`` macro. The native surface only
 re-implements the subset of those types that already have a typed wrapper
-under ``neml2.types`` (``Scalar``, ``Vec``, ``Rot``, ``WR2``, ``R2``,
+under ``neml2.types`` (``Scalar``, ``Vec``, ``MRP``, ``WR2``, ``R2``,
 ``SR2``, ``SSR4``, ``MillerIndex``). One shared ``_ConstantParameter`` base
 holds the forward/action logic; each registered variant only differs in the
 ``hit`` schema's wrapper type.
@@ -38,12 +38,12 @@ from __future__ import annotations
 from ...factory import register_neml2_object
 from ...schema import BLOCK_NAME, HitSchema, output, parameter
 from ...types import (
+    MRP,
     R2,
     SR2,
     SSR4,
     WR2,
     MillerIndex,
-    Rot,
     Scalar,
     TensorWrapper,
     Vec,
@@ -56,7 +56,7 @@ class _ConstantParameter(Model):
     """``parameter = value`` — a single typed constant exposed as an output variable.
 
     Mirrors the C++ ``ConstantParameter<T>``. The ``value`` parameter is declared
-    with ``allow_nonlinear=True`` so it independently resolves through the four
+    with ``allow_promotion=True`` so it independently resolves through the four
     ``declare_typed_parameter`` modes (literal HIT value / ``[Tensors]`` cross-ref
     / ``[Models]`` output wiring → promoted input / bare input promotion). When
     ``value`` is statically bound (mode 1 or 2) the output simply returns it;
@@ -89,16 +89,16 @@ class _ConstantParameter(Model):
 
     def forward(  # type: ignore[override]
         self,
-        *nl_params: TensorWrapper,
+        *promoted_params: TensorWrapper,
         v: ChainRuleDict | None = None,
         v2: SecondOrderChainRuleDict | None = None,
         vh: ChainRuleDict | None = None,
     ):
         # The model has no structural inputs: the ``*args`` pack only ever
-        # carries the optional nl-promoted ``value`` (mode 3/4). Read the
+        # carries the optional promoted ``value`` (mode 3/4). Read the
         # parameter through ``_get_param`` so both the static and promoted
         # paths return the same typed wrapper.
-        value = self._get_param("value", nl_params, self._value_type)
+        value = self._get_param("value", promoted_params, self._value_type)
         # forward: pass the value through as the output.
         out = value
         if v is None:
@@ -140,7 +140,7 @@ class ScalarConstantParameter(_ConstantParameter):
             Scalar,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -165,32 +165,32 @@ class VecConstantParameter(_ConstantParameter):
             Vec,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
 
-@register_neml2_object("RotConstantParameter")
-class RotConstantParameter(_ConstantParameter):
-    """Rot-valued constant parameter. Mirrors ``ConstantParameter<Rot>``."""
+@register_neml2_object("MRPConstantParameter")
+class MRPConstantParameter(_ConstantParameter):
+    """MRP-valued constant parameter. Mirrors ``ConstantParameter<MRP>``."""
 
-    _value_type = Rot
-    value: Rot  # type: ignore[assignment]
+    _value_type = MRP
+    value: MRP  # type: ignore[assignment]
 
     hit = HitSchema(
         output(
             "parameter",
-            Rot,
+            MRP,
             "The output parameter. If not specified, the object name will be used.",
             default=BLOCK_NAME,
             attr="_p",
         ),
         parameter(
             "value",
-            Rot,
+            MRP,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -215,7 +215,7 @@ class WR2ConstantParameter(_ConstantParameter):
             WR2,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -240,7 +240,7 @@ class R2ConstantParameter(_ConstantParameter):
             R2,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -265,7 +265,7 @@ class SR2ConstantParameter(_ConstantParameter):
             SR2,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -290,7 +290,7 @@ class SSR4ConstantParameter(_ConstantParameter):
             SSR4,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -315,7 +315,7 @@ class MillerIndexConstantParameter(_ConstantParameter):
             MillerIndex,
             "The constant value of the parameter",
             attr="value",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -323,7 +323,7 @@ class MillerIndexConstantParameter(_ConstantParameter):
 __all__ = [
     "MillerIndexConstantParameter",
     "R2ConstantParameter",
-    "RotConstantParameter",
+    "MRPConstantParameter",
     "SR2ConstantParameter",
     "SSR4ConstantParameter",
     "ScalarConstantParameter",

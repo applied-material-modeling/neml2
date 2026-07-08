@@ -4,7 +4,7 @@
     # Coarsened for regression-test runtime: 201 -> 51 (50 cells). Full
     # resolution lives under tests/regression/; here we only detect drift.
     type = Python
-    expr = 'Scalar.linspace(0.0, 1.0, 51).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(0.0).sub_batch, Scalar(1.0).sub_batch, 51)'
   []
   [centers]
     type = Python
@@ -24,7 +24,7 @@
   []
   [time]
     type = Python
-    expr = 'Scalar.linspace(0.0, 1.0, 25)'
+    expr = 'linspace(Scalar(0.0).dynamic_batch, Scalar(1.0).dynamic_batch, 25)'
   []
   [D_cells]
     type = Python
@@ -43,7 +43,6 @@
     prescribed_time = 'time'
     ic_Scalar_names = 'concentration'
     ic_Scalar_values = 'ic'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

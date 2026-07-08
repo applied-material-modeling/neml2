@@ -38,7 +38,7 @@ from ..factory import load_input, load_string
 from ..models._guard import allow_autograd
 from ..models.chain_rule import ChainRuleDict
 from ..models.model import Model
-from ..types import R2, SR2, SSR4, WR2, MillerIndex, Rot, Scalar, TensorWrapper, Vec
+from ..types import MRP, R2, SR2, SSR4, WR2, MillerIndex, Scalar, TensorWrapper, Vec
 
 if TYPE_CHECKING:
     from ..factory import _NativeInputFile
@@ -52,7 +52,7 @@ _TYPE_MAP: dict[str, type[TensorWrapper]] = {
     "SR2": SR2,
     "WR2": WR2,
     "R2": R2,
-    "Rot": Rot,
+    "MRP": MRP,
     "SSR4": SSR4,
     "MillerIndex": MillerIndex,
 }

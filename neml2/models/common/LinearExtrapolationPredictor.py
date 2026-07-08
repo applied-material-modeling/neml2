@@ -33,9 +33,9 @@ import torch
 from ...factory import register_neml2_object
 from ...schema import HitSchema, option
 from ...types import (
+    MRP,
     R2,
     SR2,
-    Rot,
     Scalar,
     TensorWrapper,
     gt,
@@ -95,9 +95,9 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
             optional_reader=_opt_list_str,
         ),
         option(
-            "unknowns_Rot",
+            "unknowns_MRP",
             list,
-            "The unknowns to extrapolate of type Rot",
+            "The unknowns to extrapolate of type MRP",
             default=[],
             reader=_read_list_str,
             optional_reader=_opt_list_str,
@@ -116,7 +116,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         self,
         unknowns_SR2: list[str],
         unknowns_Scalar: list[str],
-        unknowns_Rot: list[str] | None = None,
+        unknowns_MRP: list[str] | None = None,
         unknowns_R2: list[str] | None = None,
         time: str = "t",
     ) -> None:
@@ -126,7 +126,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         super().__init__(
             unknowns_SR2=unknowns_SR2,
             unknowns_Scalar=unknowns_Scalar,
-            unknowns_Rot=unknowns_Rot,
+            unknowns_MRP=unknowns_MRP,
             unknowns_R2=unknowns_R2,
         )
         self._time = time
@@ -139,7 +139,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
             f"{time}~2": Scalar,
             **{f"{u}~2": SR2 for u in self._sr2},
             **{f"{u}~2": Scalar for u in self._scalar},
-            **{f"{u}~2": Rot for u in self._rot},
+            **{f"{u}~2": MRP for u in self._rot},
             **{f"{u}~2": R2 for u in self._r2},
         }
         self.input_spec = {**self.input_spec, **extra_in}
@@ -150,9 +150,9 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         v: ChainRuleDict | None = None,
     ):
         # Unpack inputs in the order declared by input_spec:
-        #   [var_n_SR2..., var_n_Scalar..., var_n_Rot...,
+        #   [var_n_SR2..., var_n_Scalar..., var_n_MRP...,
         #    t, t_n, t_nm1,
-        #    var_nm1_SR2..., var_nm1_Scalar..., var_nm1_Rot...]
+        #    var_nm1_SR2..., var_nm1_Scalar..., var_nm1_MRP...]
         n_sr2 = len(self._sr2)
         n_scalar = len(self._scalar)
         n_rot = len(self._rot)
@@ -186,7 +186,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         outs: list[TensorWrapper] = []
         for u_n, u_nm1 in zip(var_n, var_nm1, strict=True):
             # u_extrap = u_n + (u_n - u_nm1) * ratio. ``ratio`` is a Scalar;
-            # mixed Scalar * SR2/Rot/Scalar dispatches via the wrapper's __mul__.
+            # mixed Scalar * SR2/MRP/Scalar dispatches via the wrapper's __mul__.
             delta = u_n - u_nm1
             u_extrap = u_n + delta * ratio
             outs.append(where(cond, u_extrap, u_n))

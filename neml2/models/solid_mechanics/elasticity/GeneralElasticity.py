@@ -29,9 +29,9 @@ from __future__ import annotations
 from ....factory import register_neml2_object
 from ....schema import HitSchema, input, output, parameter
 from ....types import (
+    MRP,
     SR2,
     SSR4,
-    Rot,
     euler_rodrigues,
     jvp_euler_rodrigues,
     jvp_rotate,
@@ -45,27 +45,27 @@ from ...model import Model
 class GeneralElasticity(Model):
     """``stress = (T.rotate(R)) : strain`` with ``T : SSR4`` the lab-frame stiffness.
 
-    $R$ is the orientation matrix derived from the input ``orientation : Rot``
+    $R$ is the orientation matrix derived from the input ``orientation : MRP``
     via Euler-Rodrigues. Mirrors C++ ``GeneralElasticity`` in
     ``src/neml2/models/solid_mechanics/elasticity/GeneralElasticity.cxx``.
     $T$ is a parameter (HIT option ``elastic_stiffness_tensor``); declared
-    nonlinear-capable to mirror the C++ ``declare_parameter`` flag, but Taylor
+    promotion-capable to mirror the C++ ``declare_parameter`` flag, but Taylor
     uses it as a plain buffer.
 
     Chain-rule actions cover ``strain``, ``orientation``, and the parameter
-    $T$ (the last only when promoted to a nonlinear input).
+    $T$ (the last only when promoted to a runtime input).
     """
 
     hit = HitSchema(
         input("strain", SR2, "Elastic strain"),
-        input("orientation", Rot, "Active convention orientation from reference to current"),
+        input("orientation", MRP, "Active convention orientation from reference to current"),
         output("stress", SR2, "Stress"),
         parameter(
             "elastic_stiffness_tensor",
             SSR4,
             "Elastic stiffness tensor",
             attr="T",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -76,11 +76,11 @@ class GeneralElasticity(Model):
     def forward(  # type: ignore[override]
         self,
         strain: SR2,
-        orientation: Rot,
-        *nl_params,
+        orientation: MRP,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
-        T = self._get_param("T", nl_params, SSR4)
+        T = self._get_param("T", promoted_params, SSR4)
         R = euler_rodrigues(orientation)
         T_rot = rotate(T, R)
         stress = T_rot @ strain
@@ -96,7 +96,7 @@ class GeneralElasticity(Model):
         def strain_action(V: SR2) -> SR2:
             return T_rot @ V
 
-        def orientation_action(V: Rot) -> SR2:
+        def orientation_action(V: MRP) -> SR2:
             dR = jvp_euler_rodrigues(orientation, V)
             return jvp_rotate(T, R, dR) @ strain
 

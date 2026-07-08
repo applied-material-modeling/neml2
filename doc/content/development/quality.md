@@ -15,11 +15,12 @@ set (`.pre-commit-config.yaml`):
 - `clang-format` — C++ formatter for `*.cxx`, `*.cpp`, and `*.h` files.
 - `ruff` (lint with `--fix`, Python only) and `ruff-format` (Python plus
   notebook code cells) — Python lint + formatter.
-- `jupytext --sync` — keeps tutorial notebook `*.ipynb` files and their
-  paired `*.md` mirrors in lockstep.
-- `check-notebook-executed` — fails if any code cell in a tracked
-  `.ipynb` lacks an `execution_count`. Sphinx renders the committed
-  outputs as-is, so re-run the notebook end-to-end before committing.
+- `check-notebook-executed` — for the two pre-baked pyzag notebooks
+  (`optimization/{deterministic,statistical}`), fails if any code cell
+  lacks an `execution_count`. Sphinx renders their committed outputs
+  as-is (they are excluded from build-time execution), so re-run them
+  end-to-end before committing. The cheap tutorials are executed at
+  build time and committed without outputs, so they are not checked.
 - `nmhit-format` — formatter for HIT input files (`*.i`).
 - `check-copyright` — adds or refreshes the MIT copyright header on
   source files.

@@ -56,6 +56,21 @@ InterpreterGuard::InterpreterGuard()
   if (g_started_by_us || Py_IsInitialized())
     return;
   py::initialize_interpreter();
+  // Line-buffer the interpreter's stdio. We never finalize the interpreter (see
+  // the destructor), so Python's atexit flush never runs; a block-buffered
+  // stream -- the default when the host's stdout is not a TTY (redirected to a
+  // file or pipe) -- would never be flushed and its output would be lost. Line
+  // buffering flushes on each newline, so Python-side prints (e.g. a solver's
+  // `verbose` convergence log) surface whether or not stdout is a TTY.
+  {
+    auto sys = py::module_::import("sys");
+    for (const char * name : {"stdout", "stderr"})
+    {
+      py::object stream = sys.attr(name);
+      if (!stream.is_none() && py::hasattr(stream, "reconfigure"))
+        stream.attr("reconfigure")(py::arg("line_buffering") = true);
+    }
+  }
   g_release = new py::gil_scoped_release();
   g_started_by_us = true;
 }

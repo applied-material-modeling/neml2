@@ -93,7 +93,7 @@ class R2Multiplication(Model):
         self,
         A: R2,
         B: R2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Apply the optional inverse / transpose to each operand. Composing

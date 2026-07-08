@@ -14,7 +14,7 @@ oSiCm1 = 0.08
 [Tensors]
   [times]
     type = Python
-    expr = 'Scalar.linspace(0, 1e4, 200)'
+    expr = 'linspace(Scalar(0).dynamic_batch, Scalar(1e4).dynamic_batch, 200)'
   []
   [alpha]
     type = Python
@@ -27,11 +27,10 @@ oSiCm1 = 0.08
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_Scalar_names = 'alpha'
-    force_Scalar_values = 'alpha'
+    prescribed_Scalar_names = 'alpha'
+    prescribed_Scalar_values = 'alpha'
     ic_Scalar_names = 'phi_P phi_S alpha_P alpha_S'
     ic_Scalar_values = '0 0.3 0 0.05660377358'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

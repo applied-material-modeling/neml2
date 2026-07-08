@@ -5,6 +5,18 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # The live site is deployed only from a release (see deploy.yaml), the same
+  # event that publishes the wheel to PyPI (python.yaml). Building here on
+  # release lets the deploy job pick up the tagged artifact, so the public docs
+  # stay in lockstep with the `pip install neml2` release that the tutorials'
+  # "Open in Colab" notebooks run against.
+  release:
+    types: [published]
+  # Manual rebuild of a released version's site (deploy.yaml routes this exactly
+  # like a release: into stable/ or the matching v<minor>/). Dispatch this on a
+  # release *tag* to re-publish that version -- e.g. once after the one-time
+  # gh-pages migration so stable/ picks up the version-banner JS.
+  workflow_dispatch:
 
 # Newer commits should cancel old runs
 concurrency:
@@ -12,19 +24,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  notebook-sync:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          # jupytext in pre-commit mode reads git commit timestamps to
-          # decide which file to regenerate from.
-          fetch-depth: 0
-      - uses: pre-commit/action@v3.0.1
-        with:
-          extra_args: jupytext --all-files --show-diff-on-failure -v
-
   documentation:
     runs-on: ubuntu-latest
     steps:
@@ -39,6 +38,20 @@ jobs:
           torch-version: "2.12.1"
       - name: Install NEML2 + dev extras (sphinx, shibuya, myst-nb, ...)
         run: pip install ".[dev]" -v
+      - name: Resolve doc version + Colab ref (single source of truth)
+        # The project version comes from dependencies.yaml via dep_manager (never
+        # the git tag, never hardcoded). On a release/manual-rebuild the Colab
+        # badge points at that version's tag (v$VERSION = the minor's latest
+        # patch); on push/PR the ref stays `main`, which colab_button.py treats
+        # as "no badge" (a Colab notebook pip-installs the PyPI release, so a
+        # main/dev/PR badge would mismatch).
+        run: |
+          VERSION="$(python scripts/dep_manager.py get neml2.version)"
+          echo "NEML2_VERSION=$VERSION" >> "$GITHUB_ENV"
+          case "${{ github.event_name }}" in
+            release|workflow_dispatch) echo "NEML2_DOC_GIT_REF=v$VERSION" >> "$GITHUB_ENV" ;;
+            *) echo "NEML2_DOC_GIT_REF=main" >> "$GITHUB_ENV" ;;
+          esac
       - name: Build documentation (strict — warnings are errors)
         run: sphinx-build -j auto -W --keep-going -b html doc doc/_build/html
       - name: Install Chromium for the math validator
@@ -50,6 +63,14 @@ jobs:
         run: playwright install --with-deps chromium
       - name: Validate built doc site (MathJax, JS errors, broken assets)
         run: python doc/scripts/check_doc_render.py doc/_build/html
+      - name: Write build metadata for the deploy job
+        # Carries the routing event + the dep_manager-sourced version into the
+        # artifact so deploy.yaml names the version folder without trusting the
+        # ambiguous workflow_run.head_branch. deploy_versioned.sh strips this
+        # file before publishing.
+        run: |
+          printf '{"event":"%s","version":"%s"}\n' \
+            "${{ github.event_name }}" "$NEML2_VERSION" > doc/_build/html/_buildinfo.json
       - name: Upload documentation
         uses: actions/upload-artifact@v7
         with:

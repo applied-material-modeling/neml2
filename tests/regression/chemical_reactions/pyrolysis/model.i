@@ -39,7 +39,7 @@ zeta = 0.05
   []
   [T]
     type = Python
-    expr = 'Scalar.linspace(300.0, 1500.0, ${nstep})'
+    expr = 'linspace(Scalar(300.0).dynamic_batch, Scalar(1500.0).dynamic_batch, ${nstep})'
   []
 []
 
@@ -48,11 +48,10 @@ zeta = 0.05
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_Scalar_names = 'T'
-    force_Scalar_values = 'T'
+    prescribed_Scalar_names = 'T'
+    prescribed_Scalar_values = 'T'
     ic_Scalar_names = 'wb wc'
     ic_Scalar_values = '${wb0} ${wc0}'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

@@ -80,7 +80,7 @@ class CapillaryPressure(Model):
     def forward(  # type: ignore[override]
         self,
         effective_saturation: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native capillary-pressure leaves implement the

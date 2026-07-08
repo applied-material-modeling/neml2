@@ -73,14 +73,14 @@ class KozenyCarmanPermeability(Model):
     def forward(  # type: ignore[override]
         self,
         porosity: Scalar,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         phi = porosity
-        K0 = self._get_param("K0", nl_params, Scalar)
-        phi0 = self._get_param("phi0", nl_params, Scalar)
-        n = self._get_param("n", nl_params, Scalar)
-        m = self._get_param("m", nl_params, Scalar)
+        K0 = self._get_param("K0", promoted_params, Scalar)
+        phi0 = self._get_param("phi0", promoted_params, Scalar)
+        n = self._get_param("n", promoted_params, Scalar)
+        m = self._get_param("m", promoted_params, Scalar)
 
         # Note from the C++ docstring (verbatim): the formula reads
         # K = K0 * phi^n * (1 - phi0^m) / (phi0^m * (1 - phi)^n). The actual

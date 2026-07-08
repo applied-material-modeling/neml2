@@ -56,7 +56,7 @@ class LinearDashpot(Model):
             Scalar,
             "Dashpot viscosity",
             attr="eta",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -67,19 +67,21 @@ class LinearDashpot(Model):
     def forward(  # type: ignore[override]
         self,
         stress: SR2,
-        *nl_params: Scalar,
+        *promoted_params: Scalar,
         v: ChainRuleDict | None = None,
     ) -> SR2 | tuple[SR2, ChainRuleDict]:
         S = stress
-        eta = self._get_param("eta", nl_params, Scalar)
+        eta = self._get_param("eta", promoted_params, Scalar)
         Ev_dot = S / eta
         if v is None:
             return Ev_dot
         # Differential pushforward: Ev_dot = S / eta. Linear in S, so
         # the S-direction action scales the SR2 tangent by 1/eta. The
-        # eta-direction (when promoted to a nonlinear parameter input) is the
+        # eta-direction (when promoted to a runtime input) is the
         # ordinary -S/eta^2 derivative scaling the incoming Scalar tangent.
         actions = {"stress": lambda V, c=eta: V / c}
-        if "eta" in self._nl_params:
-            actions[self._nl_params["eta"].input_name] = lambda V, c=eta, s=S: -(s / (c * c)) * V
+        if "eta" in self._promoted_params:
+            actions[self._promoted_params["eta"].input_name] = lambda V, c=eta, s=S: (
+                -(s / (c * c)) * V
+            )
         return Ev_dot, self.apply_chain_rule(v, "viscous_strain_rate", actions, output=Ev_dot)

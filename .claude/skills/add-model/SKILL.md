@@ -90,6 +90,19 @@ class MyHardening(Model):
 - **Don't form the Jacobian; push the tangent.** The action receives a
   tangent of the input type and returns a tangent of the output type,
   in typed-wrapper algebra. The framework accumulates over seed leaves.
+- **Apply the local map to `V`; don't materialize a coefficient and
+  multiply.** The action exists so you can operate on the incoming
+  tangent directly. Scaling by a value that is *already* an operand is
+  fine (`lambda V: K * V` for `h = K * ep`). What to avoid is
+  reconstructing the local derivative as a standalone tensor and then
+  doing `coeff * V` — especially for piecewise / selection maps. For a
+  hard switch `r = where(mask, ta, tb)`, thread the *same* `where` onto
+  the tangent: `lambda V: where(mask, sa * V, Scalar.zeros_like(V))`,
+  **not** `m = where(mask, one, zero); dr = sa * m; lambda V: dr * V`.
+  The direct form is cheaper, reuses the primal's mask (so primal and
+  Jacobian can't diverge), and keeps the branch structure explicit. Use
+  `Scalar.zeros_like(V)` for the vanishing branch — it inherits `V`'s K
+  (seed) layout so `where`'s K-less mask broadcasts over it.
 - **Docstrings must be ASCII** (the `test_syntax_cli` ASCII guard
   rejects em-dashes, Greek letters, math symbols). Save those for
   comments.

@@ -60,14 +60,14 @@ class ChemicalGibbsFreeEnergyDifference(Model):
             Scalar,
             "Chemical potentials in the matrix",
             attr="_mu_names",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
         parameters(
             "equilibrium_potentials",
             Scalar,
             "Equilibrium chemical potentials",
             attr="_mu_eq_names",
-            allow_nonlinear=True,
+            allow_promotion=True,
         ),
     )
 
@@ -107,15 +107,15 @@ class ChemicalGibbsFreeEnergyDifference(Model):
         v: ChainRuleDict | None = None,
     ) -> Scalar | tuple[Scalar, ChainRuleDict]:
         # Split positional args: leading structural inputs (one Scalar per
-        # species) followed by the *nl_params pack of mode-3/4-promoted
+        # species) followed by the *promoted_params pack of mode-3/4-promoted
         # potentials (if any).
         n = len(self._dx_vars)
-        dxs, nl_params = args[:n], args[n:]
+        dxs, promoted_params = args[:n], args[n:]
         if len(dxs) != n:
             raise ValueError(f"{type(self).__name__} expected {n} inputs, got {len(dxs)}")
 
-        mus = self._get_param_list("_mu_names", nl_params, Scalar)
-        mu_eqs = self._get_param_list("_mu_eq_names", nl_params, Scalar)
+        mus = self._get_param_list("_mu_names", promoted_params, Scalar)
+        mu_eqs = self._get_param_list("_mu_eq_names", promoted_params, Scalar)
 
         # Forward: Δg = Σ Δxᵢ (μᵢ − μᵢ_eq)
         coefs = [mu - mu_eq for mu, mu_eq in zip(mus, mu_eqs, strict=True)]
@@ -147,14 +147,14 @@ class ChemicalGibbsFreeEnergyDifference(Model):
             _add(dx_name, lambda V, c=c: c * V)
 
         for i, p_name in enumerate(self._mu_names):
-            nlp = self._nl_params.get(p_name)
-            if nlp is not None:
-                _add(nlp.input_name, lambda V, dx=dxs[i]: dx * V)
+            pparam = self._promoted_params.get(p_name)
+            if pparam is not None:
+                _add(pparam.input_name, lambda V, dx=dxs[i]: dx * V)
 
         for i, p_name in enumerate(self._mu_eq_names):
-            nlp = self._nl_params.get(p_name)
-            if nlp is not None:
-                _add(nlp.input_name, lambda V, dx=dxs[i]: -(dx * V))
+            pparam = self._promoted_params.get(p_name)
+            if pparam is not None:
+                _add(pparam.input_name, lambda V, dx=dxs[i]: -(dx * V))
 
         return dg, self.apply_chain_rule(v, "chemical_gibbs_free_energy", actions, output=dg)
 

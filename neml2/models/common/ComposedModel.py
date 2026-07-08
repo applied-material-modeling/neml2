@@ -59,7 +59,7 @@ from ..chain_rule import (
     ChainRuleDict,
     SecondOrderChainRuleDict,
 )
-from ..model import Model, NLParam, register_submodule
+from ..model import Model, PromotedParam, register_submodule
 from ..resolver import DependencyResolver
 
 
@@ -132,13 +132,13 @@ def _check_leaf_outputs_typed(model: nn.Module, out_names, outputs: tuple) -> No
         )
 
 
-def _walk_nl_params(m: Model) -> dict[str, NLParam]:
-    """Read ``_nl_params`` off a Model.
+def _walk_promoted_params(m: Model) -> dict[str, PromotedParam]:
+    """Read ``_promoted_params`` off a Model.
 
     A nested ``ComposedModel`` will have already absorbed its own providers
     when it was built, so we don't recurse into it from the outer walk.
     """
-    return dict(getattr(m, "_nl_params", {}))
+    return dict(getattr(m, "_promoted_params", {}))
 
 
 # v2-parity: EdgeInfo / per-label composition machinery removed. The chain
@@ -163,7 +163,7 @@ class ComposedModel(Model):
     # Construction-only options (the composed I/O is resolved dynamically from
     # the children, so the schema declares no input/output variables). Drives
     # the syntax catalog; ``from_hit`` below owns the actual parsing (it also
-    # auto-pulls nonlinear-parameter providers into the graph).
+    # auto-pulls promoted-parameter providers into the graph).
     hit = HitSchema(
         option("models", list, "Models being composed together"),
         option(
@@ -214,7 +214,7 @@ class ComposedModel(Model):
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> ComposedModel:
         children: list[Model] = [factory.get_model(n) for n in node.param_list_str("models")]
-        # Auto-pull providers for nonlinear-parameter wirings (mirrors C++
+        # Auto-pull providers for promoted-parameter wirings (mirrors C++
         # ParameterStore: a child whose parameter resolves to a [Models] entry
         # adds an input variable that the dependency resolver matches against
         # the provider's output). Walk transitively so providers-of-providers
@@ -224,14 +224,14 @@ class ComposedModel(Model):
         queue: list[Model] = list(ordered)
         while queue:
             m = queue.pop(0)
-            for nlp in _walk_nl_params(m).values():
-                if nlp.provider is None:
+            for pparam in _walk_promoted_params(m).values():
+                if pparam.provider is None:
                     continue
-                if id(nlp.provider) in seen_ids:
+                if id(pparam.provider) in seen_ids:
                     continue
-                ordered.append(nlp.provider)
-                seen_ids.add(id(nlp.provider))
-                queue.append(nlp.provider)
+                ordered.append(pparam.provider)
+                seen_ids.add(id(pparam.provider))
+                queue.append(pparam.provider)
 
         ao_node = node.find("additional_outputs")
         additional_outputs = node.param_list_str("additional_outputs") if ao_node else None

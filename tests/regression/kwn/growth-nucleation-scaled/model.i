@@ -31,7 +31,7 @@ N0 = 1e16
     # resolution scenario lives under tests/regression/ and exercises the
     # C++ regression suite directly; here we only need to detect drift.
     type = Python
-    expr = 'Scalar.linspace(0.0, 1.0, 51).sub_batch.retag(1)'
+    expr = 'linspace(Scalar(0.0).sub_batch, Scalar(1.0).sub_batch, 51)'
   []
   [centers]
     type = Python
@@ -106,7 +106,6 @@ N0 = 1e16
     prescribed_time = 'time'
     ic_Scalar_names = 'number_density'
     ic_Scalar_values = 'ic'
-    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression

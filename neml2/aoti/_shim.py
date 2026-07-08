@@ -81,10 +81,12 @@ class AOTIModel(nn.Module):
     populated from the metadata's ``var_type`` fields; ``__call__`` takes
     ``TensorWrapper`` positional args in ``input_spec`` order, unwraps them
     to raw tensors, runs the AOTI ``forward`` graph, and wraps each output
-    back in its declared type. Promoted parameters (if any) live on the
-    underlying binding's ``named_parameters()`` and are *not* part of
-    ``input_spec`` -- the caller mutates them in place via
-    ``self._inner.named_parameters()`` to drive runtime-flexible behavior.
+    back in its declared type. Promoted parameters (if any) are *not* part of
+    ``input_spec``; they are reachable through :meth:`named_parameters` (a
+    mutable dict) and :meth:`set_parameter`. The full sensitivity surface --
+    :meth:`jvp`, :meth:`jacobian`, :meth:`param_jacobian`, :meth:`param_vjp` --
+    is forwarded to the binding so the py-aoti route matches the others
+    (CLAUDE.md "six evaluation routes" parity).
     """
 
     #: Inherits from ``nn.Module`` rather than :class:`neml2.model.Model` so
@@ -164,15 +166,26 @@ class AOTIModel(nn.Module):
         # (e.g. Scalar vs SR2) which the metadata records under `var_type`.
         with open(meta_path) as f:
             meta = json.load(f)
-        self.input_spec = self._spec_from_meta(meta["inputs"])
-        self.output_spec = self._spec_from_meta(meta["outputs"])
+        # Boundary renames (shallow): the metadata records each variable's
+        # ORIGINAL authored name plus an optional ``boundary_aliases`` map. The
+        # C++ binding's public surface (``input_names`` / ``forward`` / ...)
+        # already speaks the boundary names, so the shim keys its own
+        # ``input_spec`` / ``output_spec`` / per-input metadata by the boundary
+        # name too -- keeping ``raw_inputs`` / ``raw_outs`` aligned with what
+        # ``self._inner`` expects and returns. Absent => original names.
+        aliases = meta.get("boundary_aliases", {})
+        in_alias = aliases.get("inputs", {})
+        out_alias = aliases.get("outputs", {})
+        self.input_spec = self._spec_from_meta(meta["inputs"], in_alias)
+        self.output_spec = self._spec_from_meta(meta["outputs"], out_alias)
         # Per-input sub-batch shape (empty tuple when the input has none).
         # ``_broadcast_to_common_batch`` consults this to split each input's
         # batch axes into (dyn, sub) and broadcast only the dyn portion --
         # the sub-batch axis is part of the input's identity and must not
         # be flattened against a global (no-sub-batch) sibling.
         self.input_sub_batch: dict[str, tuple[int, ...]] = {
-            info["name"]: tuple(info.get("sub_batch_shape", ())) for info in meta["inputs"]
+            in_alias.get(info["name"], info["name"]): tuple(info.get("sub_batch_shape", ()))
+            for info in meta["inputs"]
         }
         # Per-input / per-output sub-batch labels (empty tuple when the
         # variable carries none). Persisted at export time via
@@ -181,18 +194,30 @@ class AOTIModel(nn.Module):
         # per-axis label dispatch (preserved-label storage, BLOCK-aware
         # matmul) survives the export-and-load round-trip.
         self.input_labels: dict[str, tuple[str, ...]] = {
-            info["name"]: tuple(info.get("sub_batch_labels", ())) for info in meta["inputs"]
+            in_alias.get(info["name"], info["name"]): tuple(info.get("sub_batch_labels", ()))
+            for info in meta["inputs"]
         }
         self.output_labels: dict[str, tuple[str, ...]] = {
-            info["name"]: tuple(info.get("sub_batch_labels", ())) for info in meta["outputs"]
+            out_alias.get(info["name"], info["name"]): tuple(info.get("sub_batch_labels", ()))
+            for info in meta["outputs"]
         }
 
     @staticmethod
-    def _spec_from_meta(infos: list[dict]) -> dict[str, type[TensorWrapper]]:
-        """Map each metadata ``var_type`` string to the TensorWrapper class."""
+    def _spec_from_meta(
+        infos: list[dict], alias: dict[str, str] | None = None
+    ) -> dict[str, type[TensorWrapper]]:
+        """Map each metadata ``var_type`` string to the TensorWrapper class.
+
+        *alias* is the boundary-rename sub-map for this namespace (``{original:
+        boundary}``); each entry's key is remapped to its boundary name so the
+        returned spec matches the C++ binding's renamed public surface. Empty /
+        ``None`` => original names.
+        """
+        alias = alias or {}
         spec: dict[str, type[TensorWrapper]] = {}
         for info in infos:
-            name = info["name"]
+            orig: str = info["name"]
+            name = alias[orig] if orig in alias else orig
             type_name = info["var_type"]
             type_cls = getattr(_types, type_name, None)
             if type_cls is None or not (
@@ -243,16 +268,16 @@ class AOTIModel(nn.Module):
         ``v`` / ``v2`` / ``vh`` (the native chain-rule hooks) are accepted
         only for signature compatibility with other native models; passing
         them is rejected because the AOTI graph's JVP path is structurally
-        different (it's a separate ``_jvp.pt2`` graph, accessed via the
-        binding's ``jvp()`` / ``jacobian()`` methods rather than the typed
+        different (it's a separate ``_jvp.pt2`` graph, exposed via the
+        :meth:`jvp` / :meth:`jacobian` methods rather than the typed
         chain-rule protocol). Drivers that don't need sensitivities -- e.g.
         ``TransientDriver``, ``TransientRegression`` -- work as-is.
         """
         if v is not None or v2 is not None or vh is not None:
             raise NotImplementedError(
                 "AOTIModel does not support the native chain-rule v=/v2=/vh= "
-                "arguments. Use the underlying binding's jvp() or jacobian() "
-                "methods (self._inner) for sensitivities."
+                "arguments. Use the jvp() / jacobian() methods for sensitivities "
+                "(the AOTI derivative graph is a separate compiled artifact)."
             )
 
         if len(args) != len(self.input_spec):
@@ -357,6 +382,96 @@ class AOTIModel(nn.Module):
             # load-bearing on static-base wrappers, set them here.
             out_wrappers.append(type_cls(raw, sub_batch_ndim=sub_n))
         return tuple(out_wrappers)
+
+    def jvp(
+        self,
+        inputs: dict[str, torch.Tensor],
+        tangents: dict[str, torch.Tensor],
+        param_overrides: dict[str, torch.Tensor] | None = None,
+    ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
+        """Outputs + the directional derivative ``J @ v`` from the compiled
+        ``jvp`` graph.
+
+        ``inputs`` / ``tangents`` are ``{variable_name: tensor}`` dicts (same
+        keys as :attr:`input_spec`); ``tangents`` carries the seed direction
+        per input. Returns ``(outputs, jvp)`` keyed by output name -- the same
+        raw-tensor surface the eager runtime exposes. Requires the artifact to
+        carry the derivative graph (compiled with ``neml2-compile ... -d
+        OUT:IN``); otherwise the underlying binding raises.
+        """
+        return self._inner.jvp(inputs, tangents, param_overrides or {})
+
+    def jacobian(
+        self,
+        inputs: dict[str, torch.Tensor],
+        param_overrides: dict[str, torch.Tensor] | None = None,
+    ) -> tuple[dict[str, torch.Tensor], dict[str, dict[str, torch.Tensor]]]:
+        """Outputs + the per-(output, input) Jacobian blocks from the compiled
+        ``jacobian`` graph.
+
+        ``inputs`` is a ``{variable_name: tensor}`` dict. Returns
+        ``(outputs, J)`` where ``J[out][in]`` is the block ``d(out)/d(in)``,
+        shaped ``(batch, *out_base, *in_base)``. Like :meth:`jvp`, needs an
+        artifact compiled with ``-d``.
+        """
+        return self._inner.jacobian(inputs, param_overrides or {})
+
+    def param_jacobian(
+        self,
+        inputs: dict[str, torch.Tensor],
+        param_overrides: dict[str, torch.Tensor] | None = None,
+    ) -> tuple[dict[str, torch.Tensor], dict[str, dict[str, torch.Tensor]]]:
+        """Outputs + the per-(output, parameter) Jacobian blocks ``d(out)/d(param)``.
+
+        The reverse-mode parameter-derivative counterpart to :meth:`jacobian`
+        (mirrors :meth:`neml2.models.model.Model.param_jacobian` on the other
+        routes): ``inputs`` is a ``{variable_name: tensor}`` dict and the result
+        is ``(outputs, P)`` with ``P[out][param]`` the block ``d(out)/d(param)``,
+        keyed by qualified promoted-parameter name (see :meth:`named_parameters`).
+        Needs an artifact with the parameter promoted (``neml2-compile ... -p
+        NAME``) and its derivative graph (``-d``).
+        """
+        return self._inner.param_jacobian(inputs, param_overrides or {})
+
+    def param_vjp(
+        self,
+        inputs: dict[str, torch.Tensor],
+        cotangents: dict[str, torch.Tensor],
+        param_overrides: dict[str, torch.Tensor] | None = None,
+    ) -> dict[str, torch.Tensor]:
+        """Reverse-mode parameter VJP -- ``cotangent`` contracted with ``d(out)/d(param)``.
+
+        The reverse-mode counterpart to :meth:`param_jacobian` (mirrors
+        :meth:`neml2.models.model.Model.param_vjp`): ``inputs`` is a
+        ``{variable_name: tensor}`` dict, ``cotangents`` is keyed by output name,
+        and the result is keyed by qualified promoted-parameter name. Needs a
+        ``-p`` / ``-d`` artifact.
+        """
+        return self._inner.param_vjp(inputs, cotangents, param_overrides or {})
+
+    def named_parameters(self) -> dict[str, torch.Tensor]:  # type: ignore[override]
+        """The promoted parameters as a mutable ``{qualified_name: tensor}`` dict.
+
+        Overrides ``nn.Module.named_parameters`` -- whose ``(name, Parameter)``
+        iterator would be empty here, since the shim registers no
+        ``nn.Parameter``s of its own (the calibratable values live in the
+        compiled binding). This returns the binding's promoted-parameter surface,
+        the same dict the eager runtime and the C++ routes expose. Entries may be
+        mutated in place (``m.named_parameters()["elasticity.E"].fill_(...)``) or
+        replaced via :meth:`set_parameter`; the change is seen on the next call.
+        Only parameters promoted at compile time (``neml2-compile ... -p NAME``)
+        appear -- with none promoted the dict is empty.
+        """
+        return self._inner.named_parameters()
+
+    def set_parameter(self, name: str, value: torch.Tensor) -> None:
+        """Replace a promoted parameter's value (forwarded to the binding).
+
+        ``name`` is a qualified promoted-parameter name (a key of
+        :meth:`named_parameters`); ``value`` must match the artifact's pinned
+        device/dtype. The new value is used on the next forward / derivative call.
+        """
+        self._inner.set_parameter(name, value)
 
     def _broadcast_to_common_batch(
         self,

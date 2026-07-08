@@ -56,6 +56,13 @@ class AOTIModelPackageLoader;
 
 namespace neml2::aoti
 {
+/// Lazily register NEML2's custom Torch operators (currently `neml2::opaque_pow`)
+/// into the dispatcher -- once per process, only if absent. Called from the aoti
+/// `Model` constructor rather than a static initializer so a process that also
+/// embeds the Python neml2 package (cpp-eager / py-aoti) does not double-`def` the
+/// op (the Python package registers the same schema). Defined in `custom_ops.cpp`.
+void ensure_neml2_custom_ops_registered();
+
 /// Opaque implementation of `Model`. Holds the per-segment AOTI graph state and
 /// all the value / Jacobian machinery; the public `Model` methods are one-line
 /// forwarders onto the identically-named members here.
@@ -97,8 +104,22 @@ struct Model::Impl
             const std::map<std::string, at::Tensor> & param_overrides = {}) const;
 
   // --- Accessors (forwarded from Model) ------------------------------------
-  const std::vector<std::string> & input_names() const noexcept { return _input_names; }
-  const std::vector<std::string> & output_names() const noexcept { return _output_names; }
+  //
+  // Boundary renames (shallow): with an active alias map the public surface
+  // reports the RENAMED (boundary) names, while every internal structure below
+  // keeps the ORIGINAL authored names. `input_names` / `output_names` /
+  // `parameter_base_shapes` therefore return the pre-built ext views when
+  // `_has_aliases`; `named_parameters` is itself stored boundary-keyed (see
+  // `_named_parameters`), so it needs no view. Base-shape vectors are positional
+  // (aligned with the name vectors) so they are returned as-is either way.
+  const std::vector<std::string> & input_names() const noexcept
+  {
+    return _has_aliases ? _ext_input_names : _input_names;
+  }
+  const std::vector<std::string> & output_names() const noexcept
+  {
+    return _has_aliases ? _ext_output_names : _output_names;
+  }
   const std::vector<std::vector<int64_t>> & input_base_shapes() const noexcept
   {
     return _input_base_shapes;
@@ -114,10 +135,22 @@ struct Model::Impl
   }
   /// Natural base shape per promoted parameter (Scalar => {}, SR2 => {6}). The
   /// dispatcher needs this to tell a batched stored parameter `(*pbatch, *base)`
-  /// from an unbatched one when slicing per chunk.
+  /// from an unbatched one when slicing per chunk. Boundary-keyed on the public
+  /// surface (via the ext view) so it lines up with `named_parameters()`.
   const std::map<std::string, std::vector<int64_t>> & parameter_base_shapes() const noexcept
   {
-    return _param_base_shapes;
+    return _has_aliases ? _ext_param_base_shapes : _param_base_shapes;
+  }
+
+  /// The boundary (renamed) name for an ORIGINAL promoted-parameter name --
+  /// identity when the parameter is unaliased. `_named_parameters` and the
+  /// per-call `_param_overrides` are stored/keyed by boundary name, so every
+  /// internal read (all through `_resolve_param`, plus the ctor's existence
+  /// check) maps its original segment/metadata name through this first.
+  const std::string & _param_boundary_name(const std::string & orig) const noexcept
+  {
+    auto it = _param_orig2ext.find(orig);
+    return it == _param_orig2ext.end() ? orig : it->second;
   }
   at::Device device() const noexcept { return _device; }
   at::ScalarType dtype() const noexcept { return _dtype; }
@@ -363,6 +396,25 @@ struct Model::Impl
   /// has already passed for this input.
   std::vector<int64_t> _batch_shape_of(std::size_t idx, const at::Tensor & t) const;
 
+  /// The DYNAMIC (plain) batch of a canonical input: the leading axes before
+  /// both the per-input sub-batch axes (`_input_sub_batch_shapes[idx]`) and the
+  /// trailing `base_shape`. Unlike `_batch_shape_of` (which returns dynamic +
+  /// sub-batch), this excludes the sub-batch axes -- the structural per-site
+  /// axes (e.g. crystal-plasticity per-grain / per-slip) that must NOT be
+  /// broadcast across inputs. Used by `_prepare_inputs` to unify only the plain
+  /// batch across a mix of global and sub-batched inputs.
+  std::vector<int64_t> _dynamic_batch_shape_of(std::size_t idx, const at::Tensor & t) const;
+
+  /// Validate every required input and return them as a `state` map with the
+  /// dynamic-batch axes broadcast to a single common shape (base axes
+  /// preserved), so a batch-independent input -- e.g. MOOSE's scalar TIME force
+  /// -- is lifted to the call batch instead of colliding with the batched
+  /// inputs in a downstream `cat`. This is the C++ analogue of
+  /// `neml2/types/_boundary.py::broadcast_to_common_batch`, which the typed
+  /// (eager / py-aoti shim) routes already apply at their raw-tensor boundary.
+  std::map<std::string, at::Tensor>
+  _prepare_inputs(const std::map<std::string, at::Tensor> & inputs) const;
+
   /// Compose the master Jacobian carrier: returns the output values plus the
   /// per-variable `dstate` map, where `dstate[var]` is `(*common_dyn,
   /// var_folded, M_req)` -- the variable's sensitivity to the requested input
@@ -536,8 +588,27 @@ struct Model::Impl
   // (Scalar => {}, SR2 => {6}). Used to split a (possibly batched) stored
   // parameter `(*pbatch, *base)` into batch vs base -- for broadcasting it to the
   // call batch and for reshaping parameter-derivative blocks. Distinct from the
-  // stored tensor's full shape, which carries any batch dim.
+  // stored tensor's full shape, which carries any batch dim. Keyed by ORIGINAL
+  // name (every internal reader uses original names); the boundary-keyed view is
+  // `_ext_param_base_shapes`.
   std::map<std::string, std::vector<int64_t>> _param_base_shapes;
+
+  // --- Boundary renames (shallow) ------------------------------------------
+  // Optional `boundary_aliases` from the metadata. Only the names reported at
+  // the public surface change; every internal structure above keeps the ORIGINAL
+  // authored names. `_*_orig2ext` / `_*_ext2orig` are the per-namespace forward /
+  // reverse maps (present only for renamed entries); `_ext_*` are the pre-built
+  // boundary views the public accessors return. `_named_parameters` and the
+  // per-call `_param_overrides` are themselves stored boundary-keyed, so params
+  // need only the forward map (`_param_orig2ext`, consulted by
+  // `_param_boundary_name`). `_has_aliases` gates the facade's key translation so
+  // the fully-baked / unrenamed common case pays nothing.
+  bool _has_aliases = false;
+  std::map<std::string, std::string> _in_orig2ext, _in_ext2orig;
+  std::map<std::string, std::string> _out_orig2ext, _out_ext2orig;
+  std::map<std::string, std::string> _param_orig2ext;
+  std::vector<std::string> _ext_input_names, _ext_output_names;
+  std::map<std::string, std::vector<int64_t>> _ext_param_base_shapes;
 
   // Device + dtype baked into the artifact at export time.
   at::Device _device = at::kCPU;

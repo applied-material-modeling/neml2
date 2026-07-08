@@ -93,7 +93,7 @@
           torch.linspace(0.0, -0.25, nbatch, dtype=torch.float64),
           torch.linspace(-0.1, 0.1, nbatch, dtype=torch.float64),
       ], dim=-1)
-      result = Rot(r_std / (torch.sqrt((r_std * r_std).sum(-1, keepdim=True) + 1.0) + 1.0))
+      result = MRP(r_std / (torch.sqrt((r_std * r_std).sum(-1, keepdim=True) + 1.0) + 1.0))
     '''
   []
 []
@@ -103,12 +103,12 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'deformation_rate'
-    force_SR2_values = 'deformation_rate'
-    force_WR2_names = 'vorticity'
-    force_WR2_values = 'vorticity'
-    ic_Rot_names = 'orientation'
-    ic_Rot_values = 'initial_orientation'
+    prescribed_SR2_names = 'deformation_rate'
+    prescribed_SR2_values = 'deformation_rate'
+    prescribed_WR2_names = 'vorticity'
+    prescribed_WR2_values = 'vorticity'
+    ic_MRP_names = 'orientation'
+    ic_MRP_values = 'initial_orientation'
   []
 []
 

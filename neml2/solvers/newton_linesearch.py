@@ -91,6 +91,7 @@ class NewtonWithLineSearch(Newton):
         atol = node.param_optional_float("abs_tol", 1.0e-10)
         rtol = node.param_optional_float("rel_tol", 1.0e-8)
         miters = int(node.param_optional_int("max_its", 25))
+        verbose = node.param_optional_bool("verbose", False)
         ls_type = node.param_optional_str("linesearch_type", "BACKTRACKING")
         ls_miter = int(node.param_optional_int("max_linesearch_iterations", 10))
         ls_sigma = node.param_optional_float("linesearch_cutback", 2.0)
@@ -101,6 +102,7 @@ class NewtonWithLineSearch(Newton):
             atol=atol,
             rtol=rtol,
             miters=miters,
+            verbose=verbose,
             linesearch_type=ls_type,
             max_linesearch_iterations=ls_miter,
             linesearch_cutback=ls_sigma,

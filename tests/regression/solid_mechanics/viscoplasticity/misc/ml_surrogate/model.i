@@ -10,11 +10,11 @@
   []
   [start_temperature]
     type = Python
-    expr = 'Scalar.linspace(300.0, 500.0, 20)'
+    expr = 'linspace(Scalar(300.0).dynamic_batch, Scalar(500.0).dynamic_batch, 20)'
   []
   [end_temperature]
     type = Python
-    expr = 'Scalar.linspace(1800.0, 1200.0, 20)'
+    expr = 'linspace(Scalar(1800.0).dynamic_batch, Scalar(1200.0).dynamic_batch, 20)'
   []
   [temperatures]
     type = Python
@@ -35,11 +35,10 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'E'
-    force_SR2_values = 'strains'
-    force_Scalar_names = 'temperature'
-    force_Scalar_values = 'temperatures'
-    save_as = 'result.pt'
+    prescribed_SR2_names = 'E'
+    prescribed_SR2_values = 'strains'
+    prescribed_Scalar_names = 'temperature'
+    prescribed_Scalar_values = 'temperatures'
   []
   [regression]
     type = TransientRegression

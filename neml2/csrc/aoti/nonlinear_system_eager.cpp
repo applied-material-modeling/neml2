@@ -86,7 +86,7 @@ to_layouts(const std::vector<std::pair<std::string, std::vector<int64_t>>> & spe
 }
 } // namespace
 
-std::tuple<std::vector<at::Tensor>, bool, std::size_t>
+std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
 run_eager_newton(const SolverConfig & cfg,
                  py::object residual_fn,
                  py::object step_fn,
@@ -99,6 +99,6 @@ run_eager_newton(const SolverConfig & cfg,
                            to_layouts(unknown_layout),
                            to_layouts(residual_layout));
   NewtonResult result = Newton(cfg).solve(sys, u0);
-  return {std::move(result.u), result.converged, result.iterations};
+  return {std::move(result.u), result.converged, result.iterations, std::move(result.log)};
 }
 } // namespace neml2::aoti

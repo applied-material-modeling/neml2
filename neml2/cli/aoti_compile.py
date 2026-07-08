@@ -193,6 +193,38 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "parameter has rank>=1 and would specialize the dynamic dim."
         ),
     )
+    parser.add_argument(
+        "--rename-input",
+        action="append",
+        default=[],
+        metavar="ORIG:NEW",
+        help=(
+            "Rename an input variable at the compiled artifact's boundary: a "
+            "downstream consumer sees NEW while the model's internal wiring keeps "
+            "ORIG. Repeatable. Only valid with --model (not --driver)."
+        ),
+    )
+    parser.add_argument(
+        "--rename-output",
+        action="append",
+        default=[],
+        metavar="ORIG:NEW",
+        help=(
+            "Rename an output variable at the boundary (the consumer sees NEW; "
+            "the internals keep ORIG). Repeatable. Only valid with --model."
+        ),
+    )
+    parser.add_argument(
+        "--rename-parameter",
+        action="append",
+        default=[],
+        metavar="ORIG:NEW",
+        help=(
+            "Rename a promoted parameter at the boundary (the consumer sees NEW; "
+            "the internals keep the qualified ORIG). ORIG must be a promoted "
+            "parameter (see -p). Repeatable. Only valid with --model."
+        ),
+    )
     add_load_argument(parser)
     return parser
 
@@ -209,6 +241,7 @@ def compile_and_emit_stub(
     example_batch_shape=None,
     dynamic_batch: bool | None = None,
     derivatives: tuple[str, ...] = (),
+    renames: dict[str, dict[str, str]] | None = None,
     pre: tuple[str, ...] = (),
     additional_args: tuple[str, ...] = (),
 ) -> Path:
@@ -230,6 +263,12 @@ def compile_and_emit_stub(
 
     if (driver is None) == (model is None):
         raise ValueError("compile_and_emit_stub: pass exactly one of `driver` or `model`")
+    if driver is not None and renames and any(renames.values()):
+        raise ValueError(
+            "compile_and_emit_stub: boundary renames are only supported with "
+            "`model` (not `driver`): the bundled [Drivers] block is wired to the "
+            "original names."
+        )
     model_name = driver_target_model(input_path, driver) if driver else model
     assert model_name is not None  # for type narrowing
 
@@ -246,6 +285,7 @@ def compile_and_emit_stub(
         example_batch_shape=example_batch_shape,
         dynamic_batch=dynamic_batch,
         derivatives=derivatives,
+        renames=renames,
         pre=pre,
         additional_args=additional_args,
     )
@@ -258,6 +298,36 @@ def compile_and_emit_stub(
         keep_drivers=(driver is not None),
     )
     return stub_path
+
+
+def _parse_rename_pairs(specs: list[str], flag: str) -> dict[str, str]:
+    """Parse ``ORIG:NEW`` rename tokens into an ``{orig: new}`` map.
+
+    Splits on the FIRST colon: variable names carry no colon and a qualified
+    promoted-parameter name (e.g. ``elasticity.E``) uses dots, so the first
+    colon is unambiguously the ORIG/NEW separator. Raises ``ValueError`` on a
+    malformed token (missing colon, empty side) or a duplicate ORIG.
+    """
+    out: dict[str, str] = {}
+    for spec in specs:
+        if ":" not in spec:
+            raise ValueError(f"{flag}: expected ORIG:NEW, got {spec!r} (missing ':').")
+        orig, new = (part.strip() for part in spec.split(":", 1))
+        if not orig or not new:
+            raise ValueError(f"{flag}: expected ORIG:NEW with both sides non-empty, got {spec!r}.")
+        if orig in out:
+            raise ValueError(f"{flag}: duplicate rename for {orig!r}.")
+        out[orig] = new
+    return out
+
+
+def _renames_from_args(args) -> dict[str, dict[str, str]]:
+    """Assemble the ``{inputs, outputs, parameters}`` rename map from parsed CLI args."""
+    return {
+        "inputs": _parse_rename_pairs(args.rename_input, "--rename-input"),
+        "outputs": _parse_rename_pairs(args.rename_output, "--rename-output"),
+        "parameters": _parse_rename_pairs(args.rename_parameter, "--rename-parameter"),
+    }
 
 
 def driver_target_model(original_hit: Path, driver_name: str) -> str:
@@ -546,6 +616,21 @@ def main(argv: list[str] | None = None) -> int:
     if (args.model is None) == (args.driver is None):
         parser.error("exactly one of --model / --driver is required (or use --interactive)")
 
+    # Boundary renames (shallow). Parse early, and reject in --driver mode: the
+    # driver stub bakes the original [Drivers] block (wired to the original
+    # names) into the runnable stub, which the renamed interface would break.
+    try:
+        renames = _renames_from_args(args)
+    except ValueError as exc:
+        parser.error(str(exc))
+    if args.driver is not None and any(renames.values()):
+        parser.error(
+            "--rename-input / --rename-output / --rename-parameter are only "
+            "supported with --model (not --driver): the bundled [Drivers] block "
+            "is wired to the original names. Compile with --model and pair the "
+            "renamed artifact with your own consumer."
+        )
+
     input_path: Path = args.input.resolve()
     if not input_path.exists():
         print(f"Error: input file not found: {input_path}", file=sys.stderr)
@@ -603,6 +688,7 @@ def main(argv: list[str] | None = None) -> int:
                 example_batch_shape=example_batch_shape,
                 dynamic_batch=args.dynamic_batch,
                 derivatives=tuple(args.derivative),
+                renames=renames,
                 additional_args=tuple(additional_args),
             )
         except Exception as exc:  # noqa: BLE001

@@ -42,7 +42,7 @@ accumulated by :meth:`~neml2.models.model.Model.apply_chain_rule`.
 
 Framework boundary (CLAUDE.md "Hard rules" 1 & 2): like :mod:`neml2.models.param_ad`
 this is a sanctioned raw-tensor / autograd site; the ``.data`` reads below bear
-``# noqa: data-ok``. The reverse-mode ``autograd.grad`` runs at forward depth > 0
+``# data-ok``. The reverse-mode ``autograd.grad`` runs at forward depth > 0
 (inside the leaf's ``__call__``), so the :mod:`neml2.models._guard` AD ban is
 armed -- the build runs inside an :func:`~neml2.models._guard.allow_autograd`
 window (framework-managed, sanctioned use).
@@ -103,7 +103,7 @@ def local_input_jacobians(
                     f"{type(model).__name__} carries sub_batch_ndim={ta.sub_batch_ndim}."
                 )
             # Fresh autograd leaf: drop any incoming graph, track grad for the J build.
-            leaf = ta.data.detach().clone().requires_grad_(True)  # noqa: data-ok autograd boundary
+            leaf = ta.data.detach().clone().requires_grad_(True)  # data-ok autograd boundary
             leaves[name] = leaf
             grad_args.append(type(ta)(leaf))
         else:
@@ -154,7 +154,7 @@ def _reverse_blocks(
                 f"request_AD is plain-batch only (v1): output {o_name!r} of "
                 f"{type(model).__name__} carries sub_batch_ndim={o_typed.sub_batch_ndim}."
             )
-        odata = o_typed.data  # noqa: data-ok autograd boundary  (*batch, *out_base)
+        odata = o_typed.data  # data-ok autograd boundary  (*batch, *out_base)
         detached.append(type(o_typed)(odata.detach()))
         req_ins = [i for (o, i) in pairs if o == o_name]
         if not req_ins:

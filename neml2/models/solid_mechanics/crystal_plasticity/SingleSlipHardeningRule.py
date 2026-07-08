@@ -68,7 +68,7 @@ class SingleSlipHardeningRule(Model):
         self,
         tau: Scalar,
         sg: Scalar,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         # Abstract: concrete native single-strength hardening rules implement

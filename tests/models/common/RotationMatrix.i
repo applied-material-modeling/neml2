@@ -1,4 +1,4 @@
-# MRP Rot → 3x3 rotation matrix R(r). Reference values computed from
+# MRP MRP → 3x3 rotation matrix R(r). Reference values computed from
 # euler_rodrigues at r = (0.13991834, 0.18234513, 0.85043991) — the same
 # orientation used in GeneralElasticity.i — to lock down the closed-form
 # jvp_euler_rodrigues pushforward (no (..., 3, 3, 3) derivative kernel).
@@ -6,8 +6,8 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Rot_names = 'orientation'
-    input_Rot_values = 'r'
+    input_MRP_names = 'orientation'
+    input_MRP_values = 'r'
     output_R2_names = 'orientation_matrix'
     output_R2_values = 'R'
   []
@@ -16,7 +16,7 @@
 [Tensors]
   [r]
     type = Python
-    expr = 'Rot(torch.tensor([0.13991834, 0.18234513, 0.85043991], dtype=torch.float64))'
+    expr = 'MRP(torch.tensor([0.13991834, 0.18234513, 0.85043991], dtype=torch.float64))'
   []
   [R]
     type = Python

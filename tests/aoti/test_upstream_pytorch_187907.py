@@ -56,6 +56,8 @@ import torch
 import torch._dynamo  # for the trace_autograd_ops availability gate below
 from torch.export import Dim, export
 
+from neml2._warnings import TORCH_JIT_PY314, ignore_warnings
+
 
 @pytest.fixture
 def _trace_autograd_ops():
@@ -101,13 +103,19 @@ def test_saved_output_op_lowers_through_aoti(op_name, _trace_autograd_ops):
     op = getattr(torch, op_name)
     x = torch.rand(2, dtype=torch.float64) + 0.5  # positive, away from 0
     dyn = ({0: Dim("b", min=1, max=1024)},)
-    ep = export(_grad_module(op), (x,), dynamic_shapes=dyn, strict=True)
+    # Both strict export and the Inductor compile run torch internals that, on
+    # Python 3.14, reach for torch's own deprecated torch.jit.script(_method) (the
+    # mkldnn import + forward-mode JVP-decomp registration) -- neml2 calls neither.
+    # Suppress that torch-internal noise across the whole region; the expected
+    # #187907 failure from the compile still propagates to xfail.
+    with ignore_warnings(TORCH_JIT_PY314):
+        ep = export(_grad_module(op), (x,), dynamic_shapes=dyn, strict=True)
 
-    # No symbolic-shaped constant should appear in a correctly-lowering graph.
-    consts = {k: tuple(c.shape) for k, c in ep.constants.items() if hasattr(c, "shape")}  # type: ignore[union-attr]
-    assert not any(not isinstance(d, int) for s in consts.values() for d in s), (
-        f"symbolic-shaped constant present (the bug): {consts}"
-    )
+        # No symbolic-shaped constant should appear in a correctly-lowering graph.
+        consts = {k: tuple(c.shape) for k, c in ep.constants.items() if hasattr(c, "shape")}  # type: ignore[union-attr]
+        assert not any(not isinstance(d, int) for s in consts.values() for d in s), (
+            f"symbolic-shaped constant present (the bug): {consts}"
+        )
 
-    # The compile itself (the operation that fails today).
-    torch._inductor.aoti_compile_and_package(ep)
+        # The compile itself (the operation that fails today).
+        torch._inductor.aoti_compile_and_package(ep)

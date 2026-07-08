@@ -56,7 +56,7 @@ class R2ToWR2(Model):
     def forward(  # type: ignore[override]
         self,
         A: R2,
-        *nl_params,
+        *promoted_params,
         v: ChainRuleDict | None = None,
     ):
         y = skew(A)

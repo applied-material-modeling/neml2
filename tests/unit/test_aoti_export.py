@@ -684,7 +684,7 @@ def test_export_unregistered_type_raises(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# nonlinear parameter (mode 3) flows through AOTI export
+# promoted parameter (mode 3) flows through AOTI export
 # ---------------------------------------------------------------------------
 
 
@@ -726,7 +726,7 @@ def test_export_with_nl_parameter_matches_eager(tmp_path):
   []
 []
 """
-    hit_file = tmp_path / "nl_param.i"
+    hit_file = tmp_path / "promoted_param.i"
     hit_file.write_text(hit_text)
 
     meta = export_model_for_aoti(hit_file, "chain", tmp_path)

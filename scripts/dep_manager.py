@@ -29,6 +29,7 @@
 Usage:
   dep_manager.py check              verify all files match dependencies.yaml
   dep_manager.py list               list all dependencies and their versions
+  dep_manager.py get DEP.FIELD      print the bare value of one DEP.FIELD
   dep_manager.py bump DEP.FIELD VALUE  update a dependency version
   dep_manager.py sync [--source F]  adopt pins edited in F (default pyproject.toml)
 
@@ -80,10 +81,13 @@ def _value_fields(dep_data: dict) -> dict:
 
 
 def _is_annotation_line(line: str) -> bool:
-    """True if the line is any `# dependencies: ...` / HTML-comment annotation."""
+    """True if the line is any `# dependencies: ...` / `// dependencies: ...` /
+    HTML-comment annotation."""
     stripped = line.strip()
-    return stripped.startswith("# dependencies:") or (
-        stripped.startswith("<!-- dependencies:") and stripped.endswith("-->")
+    return (
+        stripped.startswith("# dependencies:")
+        or stripped.startswith("// dependencies:")
+        or (stripped.startswith("<!-- dependencies:") and stripped.endswith("-->"))
     )
 
 
@@ -99,6 +103,7 @@ def _find_annotated_lines(filepath: Path, annotation_key: str) -> list[tuple[int
     lines = filepath.read_text().splitlines()
     markers = {
         f"# dependencies: {annotation_key}",
+        f"// dependencies: {annotation_key}",
         f"<!-- dependencies: {annotation_key} -->",
     }
     results = []
@@ -241,6 +246,42 @@ def cmd_list(deps: dict, _args) -> None:
     print("─" * (col_dep + col_field + col_val + 6))
     for dep_name, field, value in rows:
         print(f"{dep_name:<{col_dep}}  {field:<{col_field}}  {value}")
+
+
+# ---------------------------------------------------------------------------
+# get
+# ---------------------------------------------------------------------------
+
+
+def cmd_get(deps: dict, args) -> None:
+    """Print the bare value of a single DEP.FIELD, for scripts/CI.
+
+    ``list`` prints a formatted table; this prints just the value (no color, no
+    padding) so shell can capture it, e.g.
+    ``v$(dep_manager.py get neml2.version | cut -d. -f1,2)``. Errors go to stderr
+    with a non-zero exit so a bad key fails the caller loudly.
+    """
+    spec: str = args.spec
+
+    if "." not in spec:
+        print("Error: spec must be DEP.FIELD (e.g. neml2.version)", file=sys.stderr)
+        sys.exit(1)
+
+    dep_name, field = spec.split(".", 1)
+
+    if dep_name not in deps:
+        print(f"Error: unknown dependency '{dep_name}'", file=sys.stderr)
+        sys.exit(1)
+
+    value_fields = _value_fields(deps[dep_name])
+    if field not in value_fields:
+        print(
+            f"Error: '{dep_name}' has no field '{field}'. Available: {list(value_fields)}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    print(value_fields[field])
 
 
 # ---------------------------------------------------------------------------
@@ -403,6 +444,9 @@ def main() -> None:
     subs.add_parser("check", help="verify all files match dependencies.yaml")
     subs.add_parser("list", help="list all dependencies and their versions")
 
+    get_p = subs.add_parser("get", help="print the bare value of a single DEP.FIELD")
+    get_p.add_argument("spec", help="DEP.FIELD (e.g. neml2.version)")
+
     bump_p = subs.add_parser("bump", help="update a dependency version")
     bump_p.add_argument("spec", help="DEP.FIELD (e.g. catch2.version)")
     bump_p.add_argument("value", help="new version value")
@@ -429,6 +473,8 @@ def main() -> None:
         cmd_check(deps, args)
     elif args.command == "list":
         cmd_list(deps, args)
+    elif args.command == "get":
+        cmd_get(deps, args)
     elif args.command == "bump":
         cmd_bump(deps, args)
     elif args.command == "sync":

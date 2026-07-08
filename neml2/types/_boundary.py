@@ -51,6 +51,7 @@ import torch
 
 if TYPE_CHECKING:
     from . import TensorWrapper
+    from .tensor import Tensor
 
 
 def check_tensor(
@@ -161,12 +162,23 @@ def contract_jacobian_block(
     The ``request_AD`` boundary: reverse-mode autograd yields a dense local
     Jacobian ``block`` of shape ``(*B, *out_base, *in_base)`` (see
     :func:`neml2.models.input_ad.local_input_jacobians`); ``v`` is the incoming
-    first-order tangent of the *input* type, carrying a single leading K (seed)
-    axis (``k_ndim == 1``): ``(K, *B, *in_base)``. Returns ``J @ v`` summed over
-    the input base, broadcast over K and the batch -- the contribution to the
-    output tangent as an ``out_type`` wrapper with the same single K axis
-    preserved: ``(K, *B, *out_base)``. :meth:`~neml2.models.model.Model.apply_chain_rule`
-    accumulates these across input edges.
+    first-order tangent of the *input* type. Two seed conventions are accepted,
+    matching exactly what a hand-written chain-rule action accepts -- this is
+    what makes a ``request_AD`` leaf indistinguishable from a hand-written one
+    at the ``v=`` boundary:
+
+    - **Leading-K** (``k_ndim == 1``): ``v`` is ``(K, *B, *in_base)`` -- a stack
+      of ``K`` directional seeds (e.g. an identity seed read off a whole
+      Jacobian column-by-column). The result keeps the same single K axis:
+      ``(K, *B, *out_base)``.
+    - **Single-direction** (``k_ndim == 0``): ``v`` is ``(*B, *in_base)`` -- one
+      directional seed, as ``ModelUnitTest`` and the ``Vec(eye(n))`` idiom send.
+      The result has no K axis: ``(*B, *out_base)``.
+
+    Either way the contraction is ``J @ v`` summed over the input base and
+    broadcast over the batch (and K, when present).
+    :meth:`~neml2.models.model.Model.apply_chain_rule` accumulates the
+    contributions across input edges.
 
     Plain-batch only (``v.sub_batch_ndim == 0``): the request_AD primitive does
     not yet thread sub-batch structure through the AD-derived block.
@@ -181,10 +193,10 @@ def contract_jacobian_block(
             f"cannot contract a sub-batched tangent ({type(v).__name__} with "
             f"sub_batch_ndim={v.sub_batch_ndim})."
         )
-    if v.k_ndim != 1:
+    if v.k_ndim not in (0, 1):
         raise NotImplementedError(
-            "contract_jacobian_block expects a single leading K axis (k_ndim=1), "
-            f"got k_ndim={v.k_ndim}."
+            "contract_jacobian_block expects a single-direction (k_ndim=0) or "
+            f"single leading-K (k_ndim=1) tangent, got k_ndim={v.k_ndim}."
         )
     in_base = tuple(int(s) for s in type(v).BASE_SHAPE)
     out_base = tuple(int(s) for s in out_type.BASE_SHAPE)
@@ -194,15 +206,26 @@ def contract_jacobian_block(
     n_out = 1
     for s in out_base:
         n_out *= s
-    vd = v.data  # noqa: data-ok request_AD autograd boundary  (K, *B, *in_base)
-    v_batch = vd.shape[1 : vd.ndim - len(in_base)]
-    v_flat = vd.reshape(vd.shape[0], *v_batch, n_in)
+    vd = v.data  # data-ok request_AD autograd boundary
     nb = block.ndim - len(out_base) - len(in_base)
-    block_flat = block.reshape(*block.shape[:nb], n_out, n_in)
-    # (1, *Bblk, n_out, n_in) @ (K, *Bv, n_in, 1) -> (K, *B, n_out, 1) -> (K, *B, n_out)
-    res = (block_flat.unsqueeze(0) @ v_flat.unsqueeze(-1)).squeeze(-1)
+    block_flat = block.reshape(*block.shape[:nb], n_out, n_in)  # (*Bblk, n_out, n_in)
+    if v.k_ndim == 1:
+        # Leading-K: vd is (K, *Bv, *in_base). Keep the K axis through the matmul
+        # by giving the block a singleton K (broadcast across all seeds).
+        v_batch = vd.shape[1 : vd.ndim - len(in_base)]
+        v_flat = vd.reshape(vd.shape[0], *v_batch, n_in)
+        # (1, *Bblk, n_out, n_in) @ (K, *Bv, n_in, 1) -> (K, *B, n_out, 1) -> (K, *B, n_out)
+        res = (block_flat.unsqueeze(0) @ v_flat.unsqueeze(-1)).squeeze(-1)
+        res = res.reshape(*res.shape[:-1], *out_base)
+        return out_type(res, k_ndim=1, k_state=v.k_state, k_pairing=v.k_pairing)
+    # Single-direction: vd is (*Bv, *in_base), no K axis. matmul broadcasts the
+    # block's batch against the tangent's; the result carries no K axis either.
+    v_batch = vd.shape[: vd.ndim - len(in_base)]
+    v_flat = vd.reshape(*v_batch, n_in)
+    # (*Bblk, n_out, n_in) @ (*Bv, n_in, 1) -> (*B, n_out, 1) -> (*B, n_out)
+    res = (block_flat @ v_flat.unsqueeze(-1)).squeeze(-1)
     res = res.reshape(*res.shape[:-1], *out_base)
-    return out_type(res, k_ndim=1, k_state=v.k_state, k_pairing=v.k_pairing)
+    return out_type(res)
 
 
 def unwrap_outputs(
@@ -219,7 +242,7 @@ def unwrap_outputs(
     docstring + CLAUDE.md "Hard rules / Rule 1").
     """
     return {
-        name: wrapper.data  # noqa: data-ok eager embed boundary
+        name: wrapper.data  # data-ok eager embed boundary
         for name, wrapper in zip(output_names, typed_outs, strict=True)
     }
 
@@ -247,10 +270,10 @@ def assemble_jvp_outputs(
         contribs = v_out.get(name, {})
         if not contribs:
             # Same (*batch, *out_base) shape as the value output, all zeros.
-            out[name] = torch.zeros_like(typed_out.data)  # noqa: data-ok eager embed boundary
+            out[name] = torch.zeros_like(typed_out.data)  # data-ok eager embed boundary
             continue
         # (1, *batch, *out_base) -> (*batch, *out_base), summed over seeded inputs.
-        blocks = [b.data.squeeze(0) for b in contribs.values()]  # noqa: data-ok eager embed boundary
+        blocks = [b.data.squeeze(0) for b in contribs.values()]  # data-ok eager embed boundary
         out[name] = blocks[0] if len(blocks) == 1 else torch.stack(blocks, 0).sum(0)
     return out
 
@@ -295,5 +318,153 @@ def assemble_jacobian(
             else:
                 # (*batch, *out_base, *in_base).
                 row[i_name] = _leading_k_block_to_per_pair(block, input_spec[i_name]).contiguous()
+        jac[o_name] = row
+    return jac
+
+
+# ---------------------------------------------------------------------------
+# Typed-output assembly — the py-eager native ``Model.jvp`` / ``Model.jacobian``
+# counterparts of the raw ``assemble_*`` helpers above.
+#
+# The raw variants exist for the C++ embed / AOTI boundaries, which hand back raw
+# ``torch.Tensor`` by contract. The native ``Model`` methods are NOT a framework
+# boundary, so they must return typed wrappers (CLAUDE.md Rule 1). These helpers
+# keep the chain-rule result typed: a directional JVP is a wrapper of the output
+# type, and a Jacobian block is a dynamic-base :class:`~neml2.types.tensor.Tensor`
+# of shape ``(*batch, *sub_batch, *out_base, *in_base)`` (there is no single
+# static wrapper for an arbitrary derivative pair). The ``.data`` reads below are
+# the same sanctioned typed↔raw site as the raw helpers — this module is that
+# boundary's home — but here the result is re-wrapped to typed before returning.
+# ---------------------------------------------------------------------------
+
+
+def leading_k1_seed(tangent: TensorWrapper) -> TensorWrapper:
+    """Wrap a primal tangent as a single formal leading-K (K=1) directional seed.
+
+    The ``forward(v=)`` chain rule expects seeds with a formal K region (not a
+    phantom leading batch axis) so that a derivative leaf (e.g. ``Normality``)
+    emitting its own ``k_ndim=1`` tangents aligns with the seed in ``align_k``
+    — the same reason :func:`neml2.cli.aoti_export._leading_k_identity_seed`
+    establishes the K region at the seed. *tangent* is a primal wrapper
+    (``k_ndim == 0``) at the input's ``(*batch, *sub_batch, *base)`` shape; the
+    result is the same type carrying one ``"full"`` K axis of size 1, preserving
+    the tangent's sub-batch metadata.
+    """
+    return type(tangent)(
+        tangent.data.unsqueeze(0),  # data-ok: typed-boundary seed construction
+        sub_batch_ndim=tangent.sub_batch_ndim,
+        sub_batch_state=tangent.sub_batch_state,
+        sub_batch_meta=tangent.sub_batch_meta,
+        k_ndim=1,
+        k_state=("full",),
+        k_pairing=(None,),
+    )
+
+
+def assemble_jvp_outputs_typed(
+    v_out: dict,
+    typed_outputs: tuple[TensorWrapper, ...],
+    output_names: list[str],
+) -> dict[str, TensorWrapper]:
+    """Typed counterpart of :func:`assemble_jvp_outputs`.
+
+    ``v_out`` is the chain-rule result ``{out_name: {seed_name: block}}`` from a
+    single leading-K=1 directional seed per input (see :func:`leading_k1_seed`):
+    each block is a wrapper of the output type carrying one K axis, data
+    ``(1, *batch, *sub, *out_base)``. For each output the per-seed contributions
+    are summed (typed ``+`` — which aligns sub-batch, the reason a plain raw
+    stack-sum would not do for sub-batched models) and the singleton K axis is
+    dropped, giving the directional derivative as a clean ``k_ndim=0`` wrapper of
+    the output type. An output with no dependence on any seeded input is a typed
+    zero of the output type.
+    """
+    out: dict[str, TensorWrapper] = {}
+    for typed_out, name in zip(typed_outputs, output_names, strict=True):
+        # Reconstruct a primal (k_ndim=0) wrapper of the value output's type,
+        # carrying its sub-batch metadata verbatim (k_* default to empty).
+        def _as_output(data: torch.Tensor, _o: TensorWrapper = typed_out) -> TensorWrapper:
+            return type(_o)(
+                data,
+                sub_batch_ndim=_o.sub_batch_ndim,
+                sub_batch_state=_o.sub_batch_state,
+                sub_batch_meta=_o.sub_batch_meta,
+            )
+
+        contribs = list(v_out.get(name, {}).values())
+        if not contribs:
+            # Same type / shape as the value output, all zeros.
+            out[name] = _as_output(torch.zeros_like(typed_out.data))  # data-ok
+            continue
+        summed = contribs[0]
+        for c in contribs[1:]:
+            summed = summed + c
+        # summed: output type, k_ndim=1, data (1, *batch, *sub, *out_base). Drop
+        # the single K direction -> the value output's natural (*batch, *sub,
+        # *out_base).
+        out[name] = _as_output(summed.data.squeeze(0))  # data-ok
+    return out
+
+
+def assemble_jacobian_typed(
+    v_out: dict,
+    typed_outputs: tuple[TensorWrapper, ...],
+    output_names: list[str],
+    output_spec: dict[str, type[TensorWrapper]],
+    input_names: list[str],
+    input_spec: dict[str, type[TensorWrapper]],
+) -> dict[str, dict[str, Tensor]]:
+    """Typed counterpart of :func:`assemble_jacobian`.
+
+    Returns the nested ``{out_name: {in_name: block}}`` where each block is a
+    dynamic-base :class:`~neml2.types.tensor.Tensor` of shape
+    ``(*batch, *sub_batch, *out_base, *in_base)`` — the natural typed Jacobian
+    block (no single static wrapper spans an arbitrary derivative pair). The
+    leading-K identity-seed block ``(K, *batch, *sub, *out_base)`` (K = prod of
+    the input base) has its K axis moved to the trailing end and reshaped into
+    the input's base axes; sub-batch metadata is carried over. A constant
+    ``(out, in)`` pair (absent from ``v_out``) is an explicit typed zero block
+    shaped from the value output.
+    """
+    from .tensor import Tensor  # noqa: PLC0415 — same-package, avoid import cycle
+
+    jac: dict[str, dict[str, Tensor]] = {}
+    for typed_out, o_name in zip(typed_outputs, output_names, strict=True):
+        o_base = tuple(output_spec[o_name].BASE_SHAPE)
+        sub_ndim = typed_out.sub_batch_ndim
+        # Split into the plain-batch region and the sub-batch region via the
+        # framework's region accessors. ``dynamic_batch_shape`` is the plain batch
+        # (it excludes both K and sub-batch); the static-wrapper ``batch_shape``
+        # deliberately bundles dynamic + sub-batch, so it is the wrong accessor to
+        # locate a sub-batched output's plain-batch axes. The value output carries
+        # no K region (k_ndim == 0).
+        batch = tuple(typed_out.dynamic_batch_shape)
+        sub = tuple(typed_out.sub_batch_shape)
+        bnd = len(batch)
+        opts = {"dtype": typed_out.dtype, "device": typed_out.device}
+        row: dict[str, Tensor] = {}
+        for i_name in input_names:
+            i_base = tuple(input_spec[i_name].BASE_SHAPE)
+            block = v_out.get(o_name, {}).get(i_name)
+            if block is None:
+                # Constant (out, in) pair: a structural zero block at the
+                # value output's batch + sub-batch, with (out_base, in_base).
+                data = torch.zeros(*batch, *sub, *o_base, *i_base, **opts)
+            else:
+                # block: output type, k_ndim=1, data (K, *batch, *sub, *out_base);
+                # the contribution was retagged to the output's sub-batch, so it
+                # shares the value output's batch + sub-batch split.
+                moved = block.data.movedim(0, -1)  # data-ok; (*batch, *sub, *out_base, K)
+                if i_base:
+                    data = moved.reshape(*moved.shape[:-1], *i_base)
+                else:
+                    data = moved.squeeze(-1)  # scalar input: K == 1, no trailing axis
+                data = data.contiguous()
+            row[i_name] = Tensor(
+                data,
+                batch_ndim=bnd,
+                sub_batch_ndim=sub_ndim,
+                sub_batch_state=typed_out.sub_batch_state,
+                sub_batch_meta=typed_out.sub_batch_meta,
+            )
         jac[o_name] = row
     return jac
