@@ -354,9 +354,10 @@ def _print_segment_plan(summary: PlanSummary) -> None:
 def _ask_jobs(input_file: str, state: dict) -> bool:
     """Show the segment plan, then ask how many processes to compile with.
 
-    A single-segment model has nothing to parallelize, so we note that and pin
-    ``jobs=1`` without prompting. Otherwise the count is capped for display at the
-    segment count (extra workers just idle)."""
+    ``neml2-compile`` flattens the ``(device × segment)`` grid into one pool, so
+    the useful maximum is ``#devices × #segments``. A build with a single grid
+    cell has nothing to parallelize, so we note that and pin ``jobs=1`` without
+    prompting; otherwise we clamp the chosen count to the grid size."""
     try:
         summary: PlanSummary | None = plan_summary(_form_state(input_file, state, ()))
     except Exception as exc:  # noqa: BLE001
@@ -364,31 +365,37 @@ def _ask_jobs(input_file: str, state: dict) -> bool:
         summary = None
 
     n_seg = len(summary.segments) if summary else 0
+    n_dev = max(1, len(state.get("devices", ())))
+    n_cells = n_seg * n_dev
     if summary:
         _print_segment_plan(summary)
+        if n_dev > 1:
+            questionary.print(
+                f"  × {n_dev} devices = {n_cells} independent compile task(s)", style="italic"
+            )
 
-    if n_seg <= 1:
+    if n_cells <= 1:
         questionary.print(
-            "(single segment -- parallel compilation is not applicable; using 1 process)",
+            "(one compile task -- parallel compilation is not applicable; using 1 process)",
             style="italic",
         )
         state["jobs"] = 1
         return True
 
     v = questionary.text(
-        f"Parallel compile processes (1 = serial; up to {n_seg} segments run concurrently):",
+        f"Parallel compile processes (1 = serial; up to {n_cells} tasks run concurrently):",
         default=str(state.get("jobs", 1)),
         validate=_positive_int,
     ).ask()
     if v is None:
         return False
-    # Clamp to the segment count: extra processes would only sit idle (one task
-    # per segment), so the previewed -j reflects the useful maximum.
+    # Clamp to the grid size: extra processes would only sit idle (one task per
+    # (device, segment) cell), so the previewed -j reflects the useful maximum.
     requested = max(1, int(v.strip()))
-    state["jobs"] = min(requested, n_seg)
-    if requested > n_seg:
+    state["jobs"] = min(requested, n_cells)
+    if requested > n_cells:
         questionary.print(
-            f"(capped at {n_seg}: there are only {n_seg} segments to compile)",
+            f"(capped at {n_cells}: there are only {n_cells} compile task(s))",
             style="italic",
         )
     return True

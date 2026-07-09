@@ -3156,6 +3156,166 @@ def _compile_segments_parallel(
     return [results[i] for i in range(n)]
 
 
+def _finalize_device_meta(
+    prepared: _PreparedExport,
+    model_name: str,
+    device: str,
+    dtype: str,
+    seg_metas: list[dict],
+    output_dir: Path,
+    progress_cb: Callable[[str], None] | None = None,
+) -> dict:
+    """Assemble one device's top-level metadata envelope, write it, and report it.
+
+    The envelope is device-independent except for the recorded ``device`` (the
+    top-level field and each promoted parameter's ``device``), so a single
+    cpu-side *prepared* can finalize every device -- which is what lets the
+    multi-device grid path (:func:`export_model_multidevice`) prepare once on cpu
+    and still emit per-device metadata identical to a per-device compile.
+    """
+    model = prepared.model
+    structural_in = _structural_inputs(model.input_spec, prepared.promoted_qnames)
+    in_sb = {n: sub for n, (_, sub) in (prepared.resolved_shapes or {}).items() if sub}
+    meta: dict = {
+        "schema_version": AOTI_META_SCHEMA_VERSION,
+        "type": "composed",
+        "inputs": _var_infos(structural_in, sub_batch_shapes=in_sb),
+        "outputs": _var_infos(model.output_spec),
+        "segments": seg_metas,
+    }
+    # v2 top-level additions: device + dtype are baked into the artifact;
+    # parameters records the promoted set with initial values.
+    meta["device"] = device
+    meta["dtype"] = dtype
+    meta["parameters"] = _parameter_infos(
+        prepared.promoted_snapshots, prepared.origin, prepared.promoted_base_shapes, device
+    )
+    # Master (out, in) derivative pairs, in deterministic (output, input) order.
+    out_order = {n: k for k, n in enumerate(model.output_spec)}
+    in_order = {n: k for k, n in enumerate(prepared.structural_input_names)}
+    meta["derivatives"] = [
+        [o, i]
+        for (o, i) in sorted(
+            prepared.master_pairs, key=lambda p: (out_order.get(p[0], 0), in_order.get(p[1], 0))
+        )
+    ]
+    # Master (out, param) parameter-derivative pairs, in (output, param) order.
+    meta["parameter_derivatives"] = [
+        [o, p]
+        for (o, p) in sorted(prepared.param_pairs, key=lambda x: (out_order.get(x[0], 0), x[1]))
+    ]
+    # Boundary renames (shallow): only namespaces with an actual rename are written.
+    active_aliases = {ns: m for ns, m in prepared.boundary_aliases.items() if m}
+    if active_aliases:
+        meta["boundary_aliases"] = active_aliases
+
+    meta_name = f"{model_name}_meta.json"
+    _write_meta(output_dir / meta_name, meta)
+    _report(progress_cb, meta_name)
+    return meta
+
+
+def _compile_grid_worker(args) -> tuple[str, int, dict]:
+    """Worker for the multi-device grid: compile ONE ``(device, segment)`` cell.
+
+    Like :func:`_compile_segment_worker` but keyed by device -- it writes to that
+    device's artifact subfolder and tags its progress events with the device so
+    the parent can distinguish the same segment across devices. Everything in
+    *args* is picklable; the worker re-derives its segment from the input file.
+    """
+    hit_path, model_name, output_dir, device, export_opts, seg_index = args
+    prepared = _prepare_export(hit_path, model_name, device=device, **export_opts)
+    plans = _plan_segments(prepared, model_name)
+    plan = plans[seg_index]
+    queue = _worker_progress_queue
+    cb = (lambda name: queue.put(f"{device}/{name}")) if queue is not None else None
+    seg_meta = _execute_segment_plan(plan, prepared, Path(output_dir), device, progress_cb=cb)
+    return device, seg_index, seg_meta
+
+
+def _run_grid_pool(
+    hit_path: str | Path,
+    model_name: str,
+    artifact_dir: Path,
+    devices: list[str],
+    n_segments: int,
+    export_opts: dict,
+    jobs: int,
+    progress_cb: Callable[[str], None] | None,
+) -> dict[str, list[dict]]:
+    """Compile the full ``(device × segment)`` grid concurrently in a spawn pool.
+
+    Up to ``min(jobs, len(devices) * n_segments)`` workers run at once, so the two
+    parallelism axes (devices and segments) are flattened into one pool -- e.g.
+    two devices with two segments each fully use ``-j 4``. Returns
+    ``{device: [seg_meta in segment order]}``; per-``.pt2`` progress (device-tagged)
+    is forwarded to *progress_cb* by a drainer thread.
+    """
+    import concurrent.futures as cf
+    import multiprocessing as mp
+    import threading
+
+    ctx = mp.get_context("spawn")
+    tasks = [(device, i) for device in devices for i in range(n_segments)]
+    workers = max(1, min(jobs, len(tasks)))
+
+    manager = None
+    queue = None
+    drainer = None
+    initializer = None
+    initargs: tuple = ()
+    if progress_cb is not None:
+        manager = ctx.Manager()
+        queue = manager.Queue()
+        initializer = _worker_init
+        initargs = (queue,)
+
+        def _drain() -> None:
+            while True:
+                item = queue.get()
+                if item == _PROGRESS_SENTINEL:
+                    break
+                progress_cb(item)
+
+        drainer = threading.Thread(target=_drain, daemon=True)
+        drainer.start()
+
+    results: dict[tuple[str, int], dict] = {}
+    hit_s = str(hit_path)
+    try:
+        with cf.ProcessPoolExecutor(
+            max_workers=workers, mp_context=ctx, initializer=initializer, initargs=initargs
+        ) as ex:
+            futs = {}
+            for device, i in tasks:
+                out_s = str(Path(artifact_dir) / device)
+                futs[
+                    ex.submit(
+                        _compile_grid_worker,
+                        (hit_s, model_name, out_s, device, export_opts, i),
+                    )
+                ] = (device, i)
+            for fut in cf.as_completed(futs):
+                device, i = futs[fut]
+                try:
+                    d, idx, seg_meta = fut.result()
+                except Exception as exc:  # noqa: BLE001
+                    ex.shutdown(cancel_futures=True)
+                    raise RuntimeError(
+                        f"neml2-compile: segment {i} on device {device!r} failed: {exc}"
+                    ) from exc
+                results[(d, idx)] = seg_meta
+    finally:
+        if queue is not None:
+            queue.put(_PROGRESS_SENTINEL)
+        if drainer is not None:
+            drainer.join()
+        if manager is not None:
+            manager.shutdown()
+
+    return {device: [results[(device, i)] for i in range(n_segments)] for device in devices}
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -3287,7 +3447,6 @@ def export_model_for_aoti(
         pre=pre,
         additional_args=additional_args,
     )
-    model = prepared.model
 
     # Plan the segments (cheap, structural). All three model shapes -- forward,
     # single ImplicitUpdate, composed-with-implicit -- flow through one planner so
@@ -3317,54 +3476,129 @@ def export_model_for_aoti(
             for plan in plans
         ]
 
-    # Assemble the top-level metadata envelope (identical across all three shapes).
-    structural_in = _structural_inputs(model.input_spec, prepared.promoted_qnames)
-    in_sb = {n: sub for n, (_, sub) in (prepared.resolved_shapes or {}).items() if sub}
-    meta: dict = {
-        "schema_version": AOTI_META_SCHEMA_VERSION,
-        "type": "composed",
-        "inputs": _var_infos(structural_in, sub_batch_shapes=in_sb),
-        "outputs": _var_infos(model.output_spec),
-        "segments": seg_metas,
-    }
-
-    # v2 top-level additions: device + dtype are baked into the artifact;
-    # parameters records the promoted set with initial values.
-    meta["device"] = device
-    meta["dtype"] = dtype
-    meta["parameters"] = _parameter_infos(
-        prepared.promoted_snapshots, prepared.origin, prepared.promoted_base_shapes, device
+    return _finalize_device_meta(
+        prepared, model_name, device, dtype, seg_metas, output_dir, progress_cb=progress_cb
     )
-    # Master (out, in) derivative pairs the artifact supports, in deterministic
-    # (output-order, input-order) order so the runtime iterates rows/cols
-    # consistently. Empty => no derivative graphs (jvp/jacobian raise).
-    out_order = {n: k for k, n in enumerate(model.output_spec)}
-    in_order = {n: k for k, n in enumerate(prepared.structural_input_names)}
-    meta["derivatives"] = [
-        [o, i]
-        for (o, i) in sorted(
-            prepared.master_pairs, key=lambda p: (out_order.get(p[0], 0), in_order.get(p[1], 0))
+
+
+def export_model_multidevice(
+    hit_path: str | Path,
+    model_name: str,
+    artifact_dir: str | Path,
+    devices: Sequence[str],
+    *,
+    dtype: str = "float64",
+    promoted: set[str] | list[str] | tuple[str, ...] = (),
+    example_batch_shape: dict[str, str] | str | None = None,
+    dynamic_batch: bool | None = None,
+    derivatives: Sequence[str] = (),
+    renames: dict[str, dict[str, str]] | None = None,
+    pre: Sequence[str] = (),
+    additional_args: tuple[str, ...] = (),
+    jobs: int = 1,
+    progress_cb: Callable[[str], None] | None = None,
+) -> dict[str, dict]:
+    """Compile *model_name* for every device in *devices*, parallelizing across
+    the full ``(device × segment)`` grid.
+
+    Each device's artifacts land in ``artifact_dir/<device>/`` with its own
+    ``<model_name>_meta.json``; returns ``{device: meta}``. This is the CLI's
+    multi-device entry point: unlike calling :func:`export_model_for_aoti` once
+    per device (which parallelizes only that device's segments and runs devices
+    sequentially), *jobs* here bounds the workers across ALL ``(device, segment)``
+    pairs at once -- so e.g. two devices with two segments each saturate ``-j 4``,
+    and the devices compile concurrently.
+
+    *progress_cb* is invoked with a device-tagged ``"<device>/<filename>"`` for
+    every generated ``.pt2`` and ``_meta.json`` (so the same segment on different
+    devices is distinguishable). ``jobs`` is capped at the number of grid cells.
+    Single-device / ``jobs=1`` runs are behavior-identical to a per-device
+    :func:`export_model_for_aoti`.
+    """
+    artifact_dir = Path(artifact_dir).resolve()
+    devices = list(dict.fromkeys(devices))  # de-dupe, preserve order
+
+    def _dev_cb(device: str) -> Callable[[str], None] | None:
+        if progress_cb is None:
+            return None
+        cb = progress_cb  # bind non-None for the closure
+        return lambda name: cb(f"{device}/{name}")
+
+    def _prepare_on(device: str) -> _PreparedExport:
+        return _prepare_export(
+            hit_path,
+            model_name,
+            device=device,
+            promoted=promoted,
+            example_batch_shape=example_batch_shape,
+            dynamic_batch=dynamic_batch,
+            derivatives=derivatives,
+            renames=renames,
+            pre=pre,
+            additional_args=additional_args,
         )
-    ]
-    # Master (out, param) parameter-derivative pairs the artifact supports, in
-    # deterministic (output-order, param-name) order. Empty => no param-jacobian
-    # graph (the runtime parameter-Jacobian accessor raises).
-    meta["parameter_derivatives"] = [
-        [o, p]
-        for (o, p) in sorted(prepared.param_pairs, key=lambda x: (out_order.get(x[0], 0), x[1]))
-    ]
-    # Boundary renames (shallow): remap only the names reported at the artifact's
-    # interface. Absent => the interface uses the original authored names. Only
-    # namespaces with an actual rename are written, so a fully-baked artifact is
-    # unchanged.
-    active_aliases = {ns: m for ns, m in prepared.boundary_aliases.items() if m}
-    if active_aliases:
-        meta["boundary_aliases"] = active_aliases
 
-    meta_name = f"{model_name}_meta.json"
-    _write_meta(output_dir / meta_name, meta)
-    _report(progress_cb, meta_name)
-    return meta
+    # Plan once on cpu -- the segment structure is device-independent, and this
+    # keeps the parent from initializing CUDA (the workers own that).
+    prepared_cpu = _prepare_on("cpu")
+    plans = _plan_segments(prepared_cpu, model_name)
+    n = len(plans)
+    for device in devices:
+        (artifact_dir / device).mkdir(parents=True, exist_ok=True)
+
+    metas: dict[str, dict] = {}
+    if jobs > 1 and len(devices) * n > 1:
+        # Grid pool: workers re-derive each (device, segment) from picklable opts.
+        export_opts = {
+            "promoted": sorted(set(promoted)),
+            "example_batch_shape": example_batch_shape,
+            "dynamic_batch": dynamic_batch,
+            "derivatives": tuple(derivatives),
+            "renames": renames,
+            "pre": tuple(pre),
+            "additional_args": tuple(additional_args),
+        }
+        seg_by_dev = _run_grid_pool(
+            hit_path, model_name, artifact_dir, devices, n, export_opts, jobs, progress_cb
+        )
+        # The cpu-side prepared finalizes every device (envelope is device-
+        # independent apart from the recorded device fields).
+        for device in devices:
+            metas[device] = _finalize_device_meta(
+                prepared_cpu,
+                model_name,
+                device,
+                dtype,
+                seg_by_dev[device],
+                artifact_dir / device,
+                progress_cb=_dev_cb(device),
+            )
+    else:
+        # Serial: prepare per device (device-correct) and compile in order --
+        # behavior-identical to a per-device export_model_for_aoti.
+        for device in devices:
+            dev_dir = artifact_dir / device
+            prepared_d = _prepare_on(device)
+            plans_d = _plan_segments(prepared_d, model_name)
+            seg_metas = [
+                _execute_segment_plan(p, prepared_d, dev_dir, device, progress_cb=_dev_cb(device))
+                for p in plans_d
+            ]
+            metas[device] = _finalize_device_meta(
+                prepared_d,
+                model_name,
+                device,
+                dtype,
+                seg_metas,
+                dev_dir,
+                progress_cb=_dev_cb(device),
+            )
+    return metas
 
 
-__all__ = ["export_model_for_aoti", "plan_export_artifacts", "AOTI_META_SCHEMA_VERSION"]
+__all__ = [
+    "export_model_for_aoti",
+    "export_model_multidevice",
+    "plan_export_artifacts",
+    "AOTI_META_SCHEMA_VERSION",
+]

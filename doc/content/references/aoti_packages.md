@@ -94,12 +94,14 @@ The full set of files a compile will write — every `.pt2`, each
 per-device `<name>_meta.json`, and the `<name>_aoti.i` stub — can be
 enumerated ahead of time, without compiling, via
 `neml2.cli.aoti_export.plan_export_artifacts`. `neml2-compile` prints
-`[k/N]` progress against that count as each file lands. For a
-multi-segment model (see the segment table below), the `_seg{i}`
-segments are independent and can be compiled concurrently with
-`neml2-compile -j N` (a spawn process pool); the emitted artifacts and
-metadata are identical to a serial compile. Single-segment models ignore
-`-j`.
+`[k/N]` progress against that count as each file lands, tagging every
+per-device file with its device (e.g. `cpu/<name>_seg0.pt2`). The
+independent compile units — each `(device, segment)` pair — are flattened
+into one spawn process pool by `neml2-compile -j N`, so both axes
+parallelize together: a `--device cpu cuda` build of a two-segment model
+fully uses `-j 4`, and the emitted artifacts and metadata are identical to
+a serial compile. `N` is capped at the number of `(device, segment)` cells,
+so a single-segment single-device build ignores `-j`.
 
 Inside each `<device>/` subfolder, a forward single-segment model emits
 the metadata plus a value graph and an optional JVP graph:
