@@ -107,7 +107,7 @@ jobs:
           # No rpath on Windows: put neml2.dll + the torch DLLs on PATH so the
           # consumer resolves them at run time.
           $env:PATH = "$prefix\lib;$torchlib;$env:PATH"
-          & "build/downstream/Release/consumer.exe"
+          & "$PWD\build\downstream\Release\consumer.exe"
 
   # Benchmark smoke tests. Each scenario under benchmark/<name>/model.i is
   # compiled through neml2-compile and driven once at batch=2 via the

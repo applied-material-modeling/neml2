@@ -257,6 +257,17 @@ if(nlohmann_json_CONTRIB OR NEML2_WHEEL)
             DESTINATION ${INSTALL_INCLUDEDIR} COMPONENT libneml2)
 endif()
 install(DIRECTORY ${nlohmann_json_DIR}/share/ DESTINATION ${INSTALL_SHAREDIR} COMPONENT libneml2)
+# nlohmann_json ships a Visual Studio debugger visualizer (nlohmann_json.natvis)
+# at its install-prefix root, referenced by a Windows-only INSTALL_INTERFACE
+# source on the imported nlohmann_json::nlohmann_json target. A Windows consumer
+# linking neml2::aoti (which links nlohmann_json PUBLIC) therefore needs the file
+# at neml2's prefix root, or find_package(neml2)'s generate step fails with
+# "Cannot find source file: .../nlohmann_json.natvis". It is guarded out on
+# non-Windows, so this only matters when bundled, but is harmless to ship anywhere.
+if(EXISTS ${nlohmann_json_DIR}/nlohmann_json.natvis)
+      install(FILES ${nlohmann_json_DIR}/nlohmann_json.natvis
+            DESTINATION ${INSTALL_DATAROOT} COMPONENT libneml2)
+endif()
 
 # ----------------------------------------------------------------------------
 # nmhit (C++ HIT parser)
@@ -361,6 +372,11 @@ target_compile_definitions(aoti PRIVATE
       $<$<PLATFORM_ID:Windows>:NOMINMAX;WIN32_LEAN_AND_MEAN>)
 target_link_libraries(aoti PUBLIC torch::core nlohmann_json::nlohmann_json)
 target_link_libraries(aoti PRIVATE nmhit::nmhit)
+# Propagate the C++17 requirement to consumers via the exported target. The
+# global CMAKE_CXX_STANDARD only governs THIS build; without an INTERFACE compile
+# feature a downstream find_package(neml2) consumer compiles at the compiler
+# default (C++14 on MSVC), which fails on the nested-namespace in Exception.h.
+target_compile_features(aoti PUBLIC cxx_std_17)
 # The async dispatch pool (StaticHybridScheduler path) spawns std::thread workers.
 find_package(Threads REQUIRED)
 target_link_libraries(aoti PRIVATE Threads::Threads)
