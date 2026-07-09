@@ -148,14 +148,23 @@ jobs:
           pip install "nmhit>=0.3.3"
       - name: Build + install neml2 (with test deps)
         run: pip install ".[dev]" --no-build-isolation -v
-      - name: Run tests (unit + AOTI)
+      - name: Run unit tests
         # Run from a neutral dir, NOT the repo root: the checked-out ./neml2/
         # source tree has no compiled _aoti extension and would shadow the
         # installed wheel if the repo root were importable. (Same reason the
         # downstream/compat jobs run from elsewhere.) Test paths are absolute.
         run: |
           cd $env:RUNNER_TEMP
-          pytest -v -n auto "$env:GITHUB_WORKSPACE\tests\unit" "$env:GITHUB_WORKSPACE\tests\aoti"
+          pytest -v -n auto "$env:GITHUB_WORKSPACE\tests\unit"
+      - name: Run AOTI tests (serial)
+        # NOT under -n auto: torch's AOTI loader extracts each .pt2 to a fixed
+        # temp path derived from the artifact's content hash, so xdist workers
+        # loading the same compiled model race to extract the same *.wrapper.pyd
+        # and Windows locks the loaded DLL (RuntimeError "error code: 32 ... file
+        # open failed"). Serial execution avoids the collision.
+        run: |
+          cd $env:RUNNER_TEMP
+          pytest -v "$env:GITHUB_WORKSPACE\tests\aoti"
 
   # Benchmark smoke tests. Each scenario under benchmark/<name>/model.i is
   # compiled through neml2-compile and driven once at batch=2 via the
