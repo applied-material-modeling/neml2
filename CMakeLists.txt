@@ -43,6 +43,20 @@ endif()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
       "Debug" "Release" "MinSizeRel" "RelWithDebInfo" "Coverage" "ThreadSanitizer")
 
+# The pip torch wheels ship Release (/MD) binaries only on Windows -- no debug
+# import libs or debug DLLs -- so a Debug (/MDd) neml2 build cannot link or run
+# against them. Reject single-config Debug on Windows with a clear message (use
+# Release or RelWithDebInfo, both /MD). Multi-config generators pick the config
+# at build time, so this configure-time check only covers single-config; a
+# `--build --config Debug` there fails later at link, as expected.
+get_property(_neml2_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(WIN32 AND NOT _neml2_multi_config AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+      message(FATAL_ERROR
+            "Debug builds are unsupported on Windows: the pip torch wheels ship "
+            "only Release (/MD) binaries. Configure with -DCMAKE_BUILD_TYPE=Release "
+            "or -DCMAKE_BUILD_TYPE=RelWithDebInfo.")
+endif()
+
 # Instrumentation build types (opt in with -DCMAKE_BUILD_TYPE=<name>; clang or
 # gcc). Selecting the build type *is* the opt-in -- they add no flags to a normal
 # Debug/Release build and are off the wheel path (the wheel always builds
@@ -79,6 +93,16 @@ mark_as_advanced(
 list(APPEND CMAKE_MODULE_PATH ${NEML2_SOURCE_DIR}/cmake/Modules)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# MSVC-wide build flags (apply to every target below):
+#  - /Zc:__cplusplus: MSVC otherwise reports __cplusplus == 199711L even under
+#    /std:c++17, which trips standards-conditional code in torch's headers.
+#  - /bigobj: the torch + typed-wrapper template instantiations blow past the
+#    default per-object section limit (fatal C1128) without it.
+if(MSVC)
+      add_compile_options(/Zc:__cplusplus /bigobj)
+endif()
+
 set(NEML2_CONTRIB_PREFIX ${NEML2_SOURCE_DIR}/contrib CACHE PATH "NEML2 contrib prefix for downloaded dependencies")
 set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is supposed to be set by setup.py and not by the user.")
 
@@ -189,8 +213,9 @@ install(FILES
 # nlohmann json
 # ----------------------------------------------------------------------------
 # Sourced from the contrib/nlohmann_json-src git submodule and built+installed
-# into contrib/nlohmann_json by contrib/install_nlohmann_json.sh. We auto-init
-# the submodule on first configure to keep the dev experience close to
+# into contrib/nlohmann_json by contrib/install_nlohmann_json.cmake.in (a cmake -P
+# script -- no shell needed, so it works on Windows/MSVC too). We auto-init the
+# submodule on first configure to keep the dev experience close to
 # "clone, configure, build". Pinned via the submodule SHA.
 find_package(nlohmann_json CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/nlohmann_json)
 
@@ -215,7 +240,7 @@ if(NOT nlohmann_json_FOUND)
             endif()
       endif()
       set(nlohmann_json_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/nlohmann_json CACHE PATH "nlohmann json install prefix")
-      custom_install(nlohmann_json contrib/install_nlohmann_json.sh ${NEML2_SOURCE_DIR}/contrib/nlohmann_json-src ${NEML2_CONTRIB_PREFIX}/nlohmann_json-build ${nlohmann_json_INSTALL_PREFIX})
+      custom_install(nlohmann_json contrib/install_nlohmann_json.cmake.in ${NEML2_SOURCE_DIR}/contrib/nlohmann_json-src ${NEML2_CONTRIB_PREFIX}/nlohmann_json-build ${nlohmann_json_INSTALL_PREFIX})
       find_package(nlohmann_json CONFIG REQUIRED PATHS ${nlohmann_json_INSTALL_PREFIX} NO_DEFAULT_PATH)
 endif()
 file(REAL_PATH "../../../" nlohmann_json_DIR BASE_DIRECTORY ${nlohmann_json_DIR})
@@ -323,7 +348,17 @@ target_sources(aoti
 # already on the target covers it.
 target_include_directories(aoti PUBLIC $<BUILD_INTERFACE:${NEML2_BINARY_DIR}/include>)
 set_target_properties(aoti PROPERTIES OUTPUT_NAME "neml2$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
-target_compile_options(aoti PRIVATE -Wall -Wextra -pedantic)
+# Warning flags are compiler-specific; the GCC/Clang -W family is not understood
+# by MSVC (cl.exe). /wd4251 and /wd4275 silence the "needs dll-interface" noise
+# MSVC emits for the std:: members carried by value across the exported PImpl
+# facade (harmless -- the DLL and its consumers use the same toolchain/runtime).
+target_compile_options(aoti PRIVATE
+      $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall;-Wextra;-pedantic>
+      $<$<CXX_COMPILER_ID:MSVC>:/W3;/wd4251;/wd4275>)
+# NOMINMAX / WIN32_LEAN_AND_MEAN: torch's headers pull in <windows.h> on MSVC,
+# whose min/max macros otherwise clobber std::min/std::max (and torch's own uses).
+target_compile_definitions(aoti PRIVATE
+      $<$<PLATFORM_ID:Windows>:NOMINMAX;WIN32_LEAN_AND_MEAN>)
 target_link_libraries(aoti PUBLIC torch::core nlohmann_json::nlohmann_json)
 target_link_libraries(aoti PRIVATE nmhit::nmhit)
 # The async dispatch pool (StaticHybridScheduler path) spawns std::thread workers.
@@ -365,7 +400,12 @@ endif()
 # source-tree paths. The generated export header sits beside Model.h.
 install(TARGETS aoti
       EXPORT neml2targets
+      # RUNTIME (the .dll) lands beside the Unix .so in lib/, matching torch's own
+      # Windows layout (torch/lib/*.dll) so the DLL-search story is a single dir;
+      # ARCHIVE is the import .lib a downstream C++ consumer links against.
+      RUNTIME DESTINATION ${INSTALL_LIBDIR}
       LIBRARY DESTINATION ${INSTALL_LIBDIR}
+      ARCHIVE DESTINATION ${INSTALL_LIBDIR}
       FILE_SET HEADERS DESTINATION ${INSTALL_INCLUDEDIR}
       COMPONENT libneml2
 )
@@ -394,6 +434,17 @@ install(FILES ${NEML2_BINARY_DIR}/include/neml2/csrc/aoti/aoti_export.h
 # the libpython a pure-C++ host links to embed the interpreter. This mirrors the
 # pybind extension modules and, crucially, removes any build-time dependency on a
 # *shared* libpython, which the manylinux wheel images do not reliably provide.
+#
+# The eager runtime is NOT supported on Windows: leaving the CPython/torch_python
+# symbols undefined for load-time resolution is a Unix (ELF/Mach-O) linking model;
+# the PE/COFF linker requires every symbol in a DLL to be resolved at link time.
+# On Windows we define a no-op `eager` target so scikit-build's build.targets
+# (which lists "eager") still resolves; the AOTI runtime -- the C++ deployment
+# path -- is unaffected. See doc: Windows is plain-AOTI only, no cpp-eager.
+if(WIN32)
+      add_custom_target(eager COMMENT "libneml2_eager is not built on Windows (unsupported)")
+else()
+
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 
 # `eager` is an unconditional target, so it links `torch::python` (libtorch_python
@@ -481,6 +532,8 @@ install(FILES ${NEML2_BINARY_DIR}/include/neml2/csrc/eager/eager_export.h
       DESTINATION ${INSTALL_INCLUDEDIR}/neml2/csrc/eager
       COMPONENT libneml2
 )
+
+endif() # NOT WIN32 -- the embedded-Python eager runtime (libneml2_eager)
 
 # ----------------------------------------------------------------------------
 # Version / hash
@@ -592,11 +645,19 @@ if(NEML2_WHEEL)
             target_include_directories(${target} PUBLIC ${Python3_INCLUDE_DIRS})
             target_link_libraries(${target} PUBLIC torch::python Python3::Module ${NX_LIBS})
             target_compile_definitions(${target} PRIVATE "PYBIND11_DETAILED_ERROR_MESSAGES")
+            # Python extension suffix: <SOABI>.pyd on Windows (CMAKE_SHARED_MODULE_SUFFIX
+            # is .dll there, which CPython's import machinery won't discover),
+            # <SOABI>.so/.dylib elsewhere.
+            if(WIN32)
+                  set(_ext_suffix ".${Python3_SOABI}.pyd")
+            else()
+                  set(_ext_suffix ".${Python3_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}")
+            endif()
             set_target_properties(${target} PROPERTIES
                   LIBRARY_OUTPUT_DIRECTORY "${_outdir}"
                   OUTPUT_NAME "_${_basename}"
                   PREFIX ""
-                  SUFFIX ".${Python3_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}"
+                  SUFFIX "${_ext_suffix}"
                   CXX_VISIBILITY_PRESET hidden
             )
             if(DEFINED SKBUILD_STATE AND SKBUILD_STATE STREQUAL "editable")

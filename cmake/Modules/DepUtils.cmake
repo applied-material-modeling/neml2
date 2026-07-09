@@ -1,9 +1,12 @@
 # Install a dependency by running a custom script
 function(custom_install NAME SCRIPT SOURCE_DIR BINARY_DIR INSTALL_PREFIX)
   message(STATUS "Installing ${NAME}")
-  configure_file(${SCRIPT} ${BINARY_DIR}/install_${NAME}.sh)
+  # SCRIPT is a CMake-script template (configured with @ONLY, then run via
+  # `cmake -P`), NOT a shell script -- so the dependency bootstrap has no bash/sh
+  # dependency and works on Windows/MSVC as well as Unix.
+  configure_file(${SCRIPT} ${BINARY_DIR}/install_${NAME}.cmake @ONLY)
   execute_process(
-    COMMAND bash -c ./install_${NAME}.sh
+    COMMAND ${CMAKE_COMMAND} -P ${BINARY_DIR}/install_${NAME}.cmake
     WORKING_DIRECTORY ${BINARY_DIR}
     OUTPUT_QUIET OUTPUT_FILE configure.log
     ERROR_QUIET ERROR_FILE configure.err
