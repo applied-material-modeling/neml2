@@ -74,7 +74,7 @@ dependencies = [
   # dependencies: torch.version_min
   "torch>=2.10.0",
   # dependencies: pyzag.version
-  "pyzag==1.1.3",
+  "pyzag==1.1.4",
   # dependencies: nmhit.version_min
   "nmhit>=0.3.3",
 ]
@@ -228,7 +228,7 @@ reportMissingModuleSource = "none"
 addopts = "--import-mode=importlib"
 
 # pyzag lowers torch._functorch.config.donated_buffer process-wide and announces it
-# at solver construction (expected -- see pyzag 1.1.3). It is a pyzag-owned notice
+# at solver construction (expected pyzag behavior). It is a pyzag-owned notice
 # fired from several pyzag-test solver constructions (once per worker process), so
 # it is silenced here for the whole suite rather than wrapped at each call site.
 # The torch-internal deprecations are handled separately -- silenced at the exact
@@ -295,7 +295,7 @@ before-all = ""
 before-build = "python -m pip install scikit-build-core ninja torch 'nmhit>=0.3.3' wheel pybind11-stubgen>=2.5.5"
 
 # dependencies: pyzag.version
-test-requires = "pytest torch pyzag==1.1.3"
+test-requires = "pytest torch pyzag==1.1.4"
 test-command = "pytest -v {project}/tests"
 
 [tool.cibuildwheel.linux]

@@ -78,10 +78,13 @@ jobs:
         with:
           # dependencies: python.version_min
           python-version: "3.10"
-      - name: Install build + runtime dependencies
-        # torch (CPU) and nmhit ship the libtorch / libnmhit the C++ build links
-        # against, so both must be present before the build. On Windows nmhit
-        # resolves to its first wheel-shipping release (>= 0.3.5).
+      - name: Install build dependencies
+        # Pre-install only the *build* dependencies (--no-build-isolation does not
+        # pull them in): scikit-build-core is the build backend; torch + nmhit ship
+        # the libtorch / libnmhit the C++ build links against. Runtime deps (pyzag)
+        # are resolved by pip during the install below -- pyzag >= 1.1.4 ships a
+        # wheel, so no source build happens under --no-build-isolation. On Windows
+        # nmhit resolves to its first wheel-shipping release (>= 0.3.5).
         run: |
           python -m pip install --upgrade pip
           pip install scikit-build-core
