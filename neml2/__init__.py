@@ -34,7 +34,28 @@ live under :mod:`neml2.drivers`. The pyzag training adapter lives in
 :mod:`neml2.pyzag`.
 """
 
+import os
+import sys
 from pathlib import Path
+
+# Windows has no rpath: the compiled extension (neml2.aoti._aoti) resolves its
+# dependent DLLs -- libneml2 (neml2/lib/neml2.dll) and libtorch (torch/lib/*.dll)
+# -- through the process DLL search path, not a baked-in rpath as on Linux/macOS.
+# Register both directories before importing the extension below so the load
+# succeeds. torch registers its own lib dir when imported, but we add it here too
+# so this does not depend on torch having been imported first.
+if sys.platform == "win32":
+    _neml2_lib = Path(__file__).parent / "lib"
+    if _neml2_lib.is_dir():
+        os.add_dll_directory(str(_neml2_lib))
+    try:
+        import torch as _torch
+
+        _torch_lib = Path(_torch.__file__).parent / "lib"
+        if _torch_lib.is_dir():
+            os.add_dll_directory(str(_torch_lib))
+    except ImportError:
+        pass
 
 from .cli import export_model_for_aoti
 from .models._guard import (  # noqa: F401 (also installs the forward guard)
