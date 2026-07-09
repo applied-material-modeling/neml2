@@ -674,11 +674,13 @@ if(NEML2_WHEEL)
             target_include_directories(${target} PUBLIC ${Python3_INCLUDE_DIRS})
             target_link_libraries(${target} PUBLIC torch::python Python3::Module ${NX_LIBS})
             target_compile_definitions(${target} PRIVATE "PYBIND11_DETAILED_ERROR_MESSAGES")
-            # Python extension suffix: <SOABI>.pyd on Windows (CMAKE_SHARED_MODULE_SUFFIX
-            # is .dll there, which CPython's import machinery won't discover),
-            # <SOABI>.so/.dylib elsewhere.
+            # Python extension suffix. On Windows use a plain ".pyd": CPython
+            # always accepts it, and Python3_SOABI is empty there under
+            # FindPython's Development.Module -- interpolating it would yield the
+            # unimportable name "_aoti..pyd" (double dot). Elsewhere keep the
+            # SOABI tag + platform suffix (.cpython-3XX-....so / .dylib).
             if(WIN32)
-                  set(_ext_suffix ".${Python3_SOABI}.pyd")
+                  set(_ext_suffix ".pyd")
             else()
                   set(_ext_suffix ".${Python3_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}")
             endif()
