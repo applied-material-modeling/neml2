@@ -153,21 +153,26 @@ what lets a multi-segment artifact present a single forward
 contract to the loader.
 
 The segments are coupled **only** at runtime, through that state map;
-their compiles are independent. `neml2-compile -j N` therefore compiles
-up to `N` segments concurrently in a spawn process pool — each worker
-re-derives its assigned segment from the input file (live models can't
-cross the process boundary), and the per-segment metadata is reassembled
-in segment order so the resulting `_meta.json` is identical to a serial
-run. Only a multi-segment model (a `ComposedModel` containing an
-`ImplicitUpdate`) benefits; a single-segment model ignores `-j`. With
-`--device cuda` each worker initializes its own CUDA context and invokes
-the CUDA compiler, so watch memory when raising `N`.
+their compiles are independent. `neml2-compile -j N` therefore flattens
+the whole `(device × segment)` grid into a single spawn process pool of up
+to `N` workers — each worker re-derives its assigned segment from the input
+file (live models can't cross the process boundary), and the per-segment
+metadata is reassembled in segment order so each device's `_meta.json` is
+identical to a serial run. Because the grid spans devices, a
+`--device cpu cuda` build of a two-segment model saturates `-j 4` (and the
+devices compile concurrently); `N` is capped at the number of grid cells.
+Only work that actually partitions benefits — a single-segment model on one
+device has one cell, so `-j` is a no-op there. With `--device cuda` each
+worker initializes its own CUDA context and invokes the CUDA compiler, so a
+`cpu`-target and a `cuda`-target compile running at once share CPU cores;
+watch memory when raising `N`.
 
 The set of segments — and every file the compile will produce — can be
 enumerated ahead of time, without compiling, via
 `neml2.cli.aoti_export.plan_export_artifacts`. `neml2-compile` uses it to
-size the `[k/N]` per-file progress it prints as each `.pt2`, the
-`_meta.json`, and the `_aoti.i` stub is written.
+size the `[k/N]` per-file progress it prints as each `.pt2` and
+`_meta.json` (each tagged with its device, e.g. `cpu/model_seg0.pt2`) and
+the `_aoti.i` stub is written.
 
 ## Stage 7 — Trace, lower, package
 

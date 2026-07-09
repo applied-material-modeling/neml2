@@ -502,12 +502,14 @@ that device. The stub points at the <code class="docutils literal notranslate"><
 per-device <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_meta.json</span></code>, and the <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_aoti.i</span></code> stub — can be
 enumerated ahead of time, without compiling, via
 <code class="docutils literal notranslate"><span class="pre">neml2.cli.aoti_export.plan_export_artifacts</span></code>. <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> prints
-<code class="docutils literal notranslate"><span class="pre">[k/N]</span></code> progress against that count as each file lands. For a
-multi-segment model (see the segment table below), the <code class="docutils literal notranslate"><span class="pre">_seg{i}</span></code>
-segments are independent and can be compiled concurrently with
-<code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">-j</span> <span class="pre">N</span></code> (a spawn process pool); the emitted artifacts and
-metadata are identical to a serial compile. Single-segment models ignore
-<code class="docutils literal notranslate"><span class="pre">-j</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">[k/N]</span></code> progress against that count as each file lands, tagging every
+per-device file with its device (e.g. <code class="docutils literal notranslate"><span class="pre">cpu/&lt;name&gt;_seg0.pt2</span></code>). The
+independent compile units — each <code class="docutils literal notranslate"><span class="pre">(device,</span> <span class="pre">segment)</span></code> pair — are flattened
+into one spawn process pool by <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">-j</span> <span class="pre">N</span></code>, so both axes
+parallelize together: a <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code> build of a two-segment model
+fully uses <code class="docutils literal notranslate"><span class="pre">-j</span> <span class="pre">4</span></code>, and the emitted artifacts and metadata are identical to
+a serial compile. <code class="docutils literal notranslate"><span class="pre">N</span></code> is capped at the number of <code class="docutils literal notranslate"><span class="pre">(device,</span> <span class="pre">segment)</span></code> cells,
+so a single-segment single-device build ignores <code class="docutils literal notranslate"><span class="pre">-j</span></code>.</p>
 <p>Inside each <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolder, a forward single-segment model emits
 the metadata plus a value graph and an optional JVP graph:</p>
 <div class="table-wrapper colwidths-auto docutils container">
