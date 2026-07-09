@@ -44,7 +44,7 @@ from pathlib import Path
 # Register both directories before importing the extension below so the load
 # succeeds. torch registers its own lib dir when imported, but we add it here too
 # so this does not depend on torch having been imported first.
-if sys.platform == "win32":
+if sys.platform == "win32":  # pragma: no cover  (Windows-only; CI coverage runs on Linux)
     _neml2_lib = Path(__file__).parent / "lib"
     if _neml2_lib.is_dir():
         os.add_dll_directory(str(_neml2_lib))
