@@ -65,7 +65,23 @@ class FormState:
     rename_parameters: tuple[str, ...] = ()
     example_shape: tuple[str, ...] = ()  # raw --example-batch-shape entries
     dynamic_batch: bool | None = None  # None => emit neither flag
+    jobs: int = 1  # parallel compile processes (-j); 1 == serial
     load: tuple[str, ...] = ()  # --load extension modules
+
+
+@dataclass(frozen=True)
+class PlanSummary:
+    """The segment / artifact breakdown shown before choosing a process count.
+
+    ``segments`` is one ``(index, kind, basename, artifacts)`` tuple per compiled
+    segment; ``files`` is every file the compile will generate (each segment's
+    ``.pt2`` graphs, the ``_meta.json``, and the ``_aoti.i`` stub). Computed by
+    :func:`plan_summary` from the same planner the real compile uses, so the
+    preview matches what is produced.
+    """
+
+    segments: list[tuple[int, str, str, tuple[str, ...]]] = field(default_factory=list)
+    files: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -126,6 +142,11 @@ def build_compile_argv(state: FormState) -> list[str]:
 
     if state.dtype:
         argv += ["--dtype", state.dtype]
+
+    # Only emit -j when parallel; the default (serial, 1) is the CLI default, so
+    # omitting it keeps the previewed command clean.
+    if state.jobs > 1:
+        argv += ["-j", str(state.jobs)]
 
     for name in state.promoted:
         argv += ["-p", name]
@@ -193,7 +214,42 @@ def validate_state(state: FormState) -> list[str]:
         problems.append(f"A {state.target} name is required.")
     if not state.devices:
         problems.append("Select at least one device.")
+    if state.jobs < 1:
+        problems.append("Number of processes (-j) must be >= 1.")
     return problems
+
+
+def plan_summary(state: FormState) -> PlanSummary:
+    """Enumerate the segments + files a compile of *state* would generate.
+
+    Resolves a ``--driver`` target to its model, then runs the same
+    :func:`neml2.cli.aoti_export.plan_export_artifacts` planner the real compile
+    uses -- no ``.pt2`` is produced, so this is cheap (one model load + structural
+    analysis). Renames and the example batch shape are intentionally omitted: they
+    change neither the segment structure nor the artifact filenames, and skipping
+    them avoids spurious validation errors from a half-entered rename. The set is
+    device-independent, so it is planned on ``cpu``. Raises if the model can't be
+    loaded / planned; the caller (wizard) presents that as a muted note.
+    """
+    from .aoti_compile import driver_target_model  # noqa: PLC0415
+    from .aoti_export import plan_export_artifacts  # noqa: PLC0415
+
+    model_name = (
+        driver_target_model(Path(state.input_file), state.name)
+        if state.target == "driver"
+        else state.name
+    )
+    plan = plan_export_artifacts(
+        state.input_file,
+        model_name,
+        device="cpu",
+        promoted=list(state.promoted),
+        derivatives=tuple(state.derivatives),
+        dynamic_batch=state.dynamic_batch,
+    )
+    segments = [(s.index, s.kind, s.basename, tuple(s.predicted_artifacts)) for s in plan.segments]
+    files = (*plan.artifacts, f"{model_name}_aoti.i")
+    return PlanSummary(segments=segments, files=files)
 
 
 def list_section_entries(path: str | Path, section: str) -> list[tuple[str, str]]:
@@ -235,10 +291,12 @@ def list_driver_names(path: str | Path) -> list[str]:
 __all__ = [
     "FormState",
     "IntrospectionForm",
+    "PlanSummary",
     "build_compile_argv",
     "preview_command",
     "introspection_to_form",
     "validate_state",
+    "plan_summary",
     "list_section_entries",
     "list_model_names",
     "list_driver_names",

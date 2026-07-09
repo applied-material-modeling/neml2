@@ -90,6 +90,17 @@ that device. The stub points at the `<name>/` folder via an absolute
 `<artifact_path>/<device>/<name>_meta.json` for the device it runs on
 (see [The HIT stub](#the-hit-stub)).
 
+The full set of files a compile will write — every `.pt2`, each
+per-device `<name>_meta.json`, and the `<name>_aoti.i` stub — can be
+enumerated ahead of time, without compiling, via
+`neml2.cli.aoti_export.plan_export_artifacts`. `neml2-compile` prints
+`[k/N]` progress against that count as each file lands. For a
+multi-segment model (see the segment table below), the `_seg{i}`
+segments are independent and can be compiled concurrently with
+`neml2-compile -j N` (a spawn process pool); the emitted artifacts and
+metadata are identical to a serial compile. Single-segment models ignore
+`-j`.
+
 Inside each `<device>/` subfolder, a forward single-segment model emits
 the metadata plus a value graph and an optional JVP graph:
 

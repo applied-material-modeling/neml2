@@ -138,6 +138,114 @@ def test_resolve_derivative_specs_grammar_and_errors():
         _resolve_derivative_specs(["stress:E"], outs, ins)
 
 
+# ---------------------------------------------------------------------------
+# Artifact planning (plan_export_artifacts + the emit-order predictors).
+# Cheap: no compile -- pure structural analysis. The drift-guard test in
+# tests/aoti/test_compile_cli.py checks these predictions against what an actual
+# compile produces.
+# ---------------------------------------------------------------------------
+
+_COMPOSED_I = _TESTS_ROOT / "aoti/composed_param/model.i"
+
+
+def test_predict_forward_artifacts_emit_order():
+    """The forward predictor mirrors, in emission order, the compile_model calls
+    in _compile_forward_segment (+ the param-Jacobian / VJP helpers)."""
+    from neml2.cli.aoti_export import _predict_forward_artifacts
+
+    # Value only (no derivative pairs selected).
+    assert _predict_forward_artifacts("m", set(), set(), single_forward_pvjp=True) == ["m.pt2"]
+    # Value + jvp when input pairs are selected.
+    assert _predict_forward_artifacts("m", {("y", "x")}, set(), single_forward_pvjp=True) == [
+        "m.pt2",
+        "m_jvp.pt2",
+    ]
+    # ``None`` selection means "all pairs" -> jvp emitted.
+    assert _predict_forward_artifacts("m", None, set(), single_forward_pvjp=False) == [
+        "m.pt2",
+        "m_jvp.pt2",
+    ]
+    # The pvjp graph is emitted ONLY for the lone forward segment of a
+    # forward-only model (single_forward_pvjp=True).
+    assert _predict_forward_artifacts(
+        "m", {("y", "x")}, {("y", "p")}, single_forward_pvjp=True
+    ) == ["m.pt2", "m_jvp.pt2", "m_pjac.pt2", "m_pvjp.pt2"]
+    # A composed forward segment with the same selection emits pjac but NOT pvjp.
+    assert _predict_forward_artifacts(
+        "m_seg0", {("y", "x")}, {("y", "p")}, single_forward_pvjp=False
+    ) == ["m_seg0.pt2", "m_seg0_jvp.pt2", "m_seg0_pjac.pt2"]
+
+
+def test_predict_implicit_artifacts_emit_order():
+    """The implicit predictor mirrors the compile_model calls in
+    _compile_implicit_segment: rhs, step, then optional ift/pift/predictor."""
+    from neml2.cli.aoti_export import _predict_implicit_artifacts
+
+    assert _predict_implicit_artifacts(
+        "m", emit_ift=False, emit_pift=False, has_predictor=False
+    ) == ["m_rhs.pt2", "m_step.pt2"]
+    assert _predict_implicit_artifacts("m", emit_ift=True, emit_pift=True, has_predictor=True) == [
+        "m_rhs.pt2",
+        "m_step.pt2",
+        "m_ift.pt2",
+        "m_pift.pt2",
+        "m_predictor.pt2",
+    ]
+
+
+def test_plan_export_artifacts_forward():
+    """A forward-only model plans one forward segment named after the model,
+    with the meta.json last."""
+    from neml2.cli.aoti_export import plan_export_artifacts
+
+    plan = plan_export_artifacts(_ELASTICITY_I, "model")
+    assert [s.kind for s in plan.segments] == ["forward"]
+    assert plan.artifacts == ["model.pt2", "model_meta.json"]
+
+    plan_d = plan_export_artifacts(_ELASTICITY_I, "model", derivatives=[":"])
+    assert plan_d.artifacts == ["model.pt2", "model_jvp.pt2", "model_meta.json"]
+    assert plan_d.total == 3
+
+
+def test_plan_export_artifacts_single_implicit():
+    """A single ImplicitUpdate plans one implicit segment (rhs + step, + ift when
+    derivatives are requested), meta.json last."""
+    from neml2.cli.aoti_export import plan_export_artifacts
+
+    # This J2 return map carries a Predictor, so the plan includes its graph too
+    # (rhs, step, ift, predictor) -- exercising the has_predictor branch.
+    plan = plan_export_artifacts(_J2_NATIVE_I, "return_map", derivatives=[":"])
+    assert [s.kind for s in plan.segments] == ["implicit"]
+    assert plan.artifacts == [
+        "return_map_rhs.pt2",
+        "return_map_step.pt2",
+        "return_map_ift.pt2",
+        "return_map_predictor.pt2",
+        "return_map_meta.json",
+    ]
+
+
+def test_plan_export_artifacts_composed_multi_segment():
+    """A ComposedModel with an ImplicitUpdate plans one segment per partition,
+    named ``<model>_seg{i}``, with the meta.json as the final entry."""
+    from neml2.cli.aoti_export import plan_export_artifacts
+
+    plan = plan_export_artifacts(_COMPOSED_I, "model", derivatives=[":"])
+    assert [s.kind for s in plan.segments] == ["forward", "implicit", "forward"]
+    assert plan.artifacts == [
+        "model_seg0.pt2",
+        "model_seg0_jvp.pt2",
+        "model_seg1_rhs.pt2",
+        "model_seg1_step.pt2",
+        "model_seg1_ift.pt2",
+        "model_seg2.pt2",
+        "model_seg2_jvp.pt2",
+        "model_meta.json",
+    ]
+    # The meta.json is always the last generated file for the device.
+    assert plan.artifacts[-1] == "model_meta.json"
+
+
 @pytest.fixture(scope="session")
 def forward_export(tmp_path_factory):
     from neml2.cli.aoti_export import export_model_for_aoti
