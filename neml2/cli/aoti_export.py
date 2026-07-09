@@ -58,7 +58,8 @@ CLI
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from math import prod
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
@@ -1550,6 +1551,20 @@ def _build_example_inputs(
     return tuple(examples)
 
 
+def _report(progress_cb: Callable[[str], None] | None, name: str) -> None:
+    """Fire the per-file progress callback for a just-generated artifact, if set.
+
+    *name* is the bare filename (``<basename>.pt2`` / ``<model>_meta.json`` /
+    ``<model>_aoti.i``) the caller just wrote. The single-argument callback is
+    threaded from :func:`export_model_for_aoti` (and the CLI) so every generated
+    file -- ``.pt2``, ``.json``, and ``.i`` -- is reported through one channel.
+    ``None`` (the default everywhere) is a no-op, preserving the silent library
+    behavior.
+    """
+    if progress_cb is not None:
+        progress_cb(name)
+
+
 def _compile_forward_segment(
     model,
     pkg_basename: str,
@@ -1561,6 +1576,7 @@ def _compile_forward_segment(
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
     selected_pairs: set[tuple[str, str]] | None = None,
+    progress_cb: Callable[[str], None] | None = None,
 ) -> tuple[str, list[dict], list[dict], str | None, list[str], list[dict] | None]:
     """Compile a single forward-shape model to ``<pkg_basename>.pt2`` plus,
     when derivatives are requested, ``<pkg_basename>_jvp.pt2`` carrying the
@@ -1609,6 +1625,7 @@ def _compile_forward_segment(
 
     pkg_name = f"{pkg_basename}.pt2"
     compile_model(exportable, example_inputs, output_dir / pkg_name, dynamic_batch_dim=dynamic_dim)
+    _report(progress_cb, pkg_name)
 
     jvp_pkg_name: str | None = None
     jacobian_pairs: list[dict] | None = None
@@ -1649,6 +1666,7 @@ def _compile_forward_segment(
             compile_model(
                 jvp_module, example_inputs, output_dir / jvp_pkg_name, dynamic_batch_dim=dynamic_dim
             )
+        _report(progress_cb, jvp_pkg_name)
         # Per-(out_var, in_var) pair metadata in the SAME order the JVP
         # module emits trailing tensors: rows-outer (output_spec order),
         # cols-inner (structural inputs in input_spec order).
@@ -1828,6 +1846,7 @@ def _compile_param_jacobian(
     selected_param_pairs: set[tuple[str, str]],
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
+    progress_cb: Callable[[str], None] | None = None,
 ) -> tuple[str, list[dict]]:
     """Compile the parameter-Jacobian graph to ``<pkg_basename>_pjac.pt2``.
 
@@ -1883,6 +1902,7 @@ def _compile_param_jacobian(
     _compile_param_derivative_graph(
         module, example_inputs, output_dir / pkg_name, dynamic_batch_dim=dynamic_dim
     )
+    _report(progress_cb, pkg_name)
 
     # Per-(out_var, param) metadata in the SAME order the module emits blocks:
     # outputs outer (output_spec order), promoted params inner (input_spec order).
@@ -1913,6 +1933,7 @@ def _compile_param_vjp(
     selected_params: set[str],
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
     dynamic_batch: bool = True,
+    progress_cb: Callable[[str], None] | None = None,
 ) -> tuple[str, list[str], list[str]]:
     """Compile the parameter VJP / adjoint graph to ``<pkg_basename>_pvjp.pt2``.
 
@@ -1974,94 +1995,9 @@ def _compile_param_vjp(
     _compile_param_derivative_graph(
         module, example_inputs, output_dir / pkg_name, dynamic_batch_dim=dynamic_dim
     )
+    _report(progress_cb, pkg_name)
 
     return pkg_name, list(module.param_names), list(out_spec)
-
-
-def _export_forward(
-    model,
-    model_name: str,
-    output_dir: Path,
-    device: str,
-    *,
-    promoted_qnames: set[str],
-    promoted_snapshots: dict[str, torch.Tensor],
-    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
-    dynamic_batch: bool = True,
-    derivatives: set[tuple[str, str]] | None = None,
-    param_derivatives: set[tuple[str, str]] | None = None,
-) -> dict:
-    """Export a forward-shape model as a single-segment composed artifact.
-
-    *derivatives* is the resolved master ``(out, in)`` pair set (empty = no
-    derivative graph). For a single forward segment the master pairs *are* the
-    segment-local pairs, so they pass straight through as ``selected_pairs``.
-    """
-    (
-        pkg_name,
-        in_infos,
-        out_infos,
-        jvp_pkg_name,
-        param_inputs,
-        jacobian_pairs,
-    ) = _compile_forward_segment(
-        model,
-        model_name,
-        output_dir,
-        device,
-        promoted_qnames=promoted_qnames,
-        promoted_snapshots=promoted_snapshots,
-        shapes=shapes,
-        dynamic_batch=dynamic_batch,
-        selected_pairs=derivatives if derivatives is not None else set(),
-    )
-    seg = {
-        "kind": "forward",
-        "package": pkg_name,
-        "inputs": _segment_var_infos(in_infos),
-        "outputs": _segment_var_infos(out_infos),
-        "param_inputs": param_inputs,
-    }
-    if jvp_pkg_name is not None:
-        seg["jvp_package"] = jvp_pkg_name
-        seg["jacobian_pairs"] = jacobian_pairs
-    if param_derivatives:
-        pjac_pkg, param_jac_pairs = _compile_param_jacobian(
-            model,
-            model_name,
-            output_dir,
-            device,
-            promoted_qnames=promoted_qnames,
-            promoted_snapshots=promoted_snapshots,
-            selected_param_pairs=param_derivatives,
-            shapes=shapes,
-            dynamic_batch=dynamic_batch,
-        )
-        seg["param_jacobian_package"] = pjac_pkg
-        seg["param_jacobian_pairs"] = param_jac_pairs
-        # Also emit the adjoint (VJP) graph -- dL/d(param) for a loss defined by
-        # output cotangents -- the cheaper form for many-parameter optimization.
-        pvjp_pkg, pvjp_params, pvjp_outputs = _compile_param_vjp(
-            model,
-            model_name,
-            output_dir,
-            device,
-            promoted_qnames=promoted_qnames,
-            promoted_snapshots=promoted_snapshots,
-            selected_params={p for (_, p) in param_derivatives},
-            shapes=shapes,
-            dynamic_batch=dynamic_batch,
-        )
-        seg["param_vjp_package"] = pvjp_pkg
-        seg["param_vjp_params"] = pvjp_params
-        seg["param_vjp_outputs"] = pvjp_outputs
-    return {
-        "schema_version": AOTI_META_SCHEMA_VERSION,
-        "type": "composed",
-        "inputs": in_infos,
-        "outputs": out_infos,
-        "segments": [seg],
-    }
 
 
 # ---------------------------------------------------------------------------
@@ -2082,6 +2018,7 @@ def _compile_implicit_segment(
     promoted_qnames: set[str] | None = None,
     promoted_snapshots: dict[str, torch.Tensor] | None = None,
     selected_param_pairs: set[tuple[str, str]] | None = None,
+    progress_cb: Callable[[str], None] | None = None,
 ) -> dict:
     """Compile an ImplicitUpdate to ``<pkg_basename>_rhs.pt2`` + ``_step.pt2``
     (+ ``_ift.pt2`` when *emit_ift*) (+ ``_pift.pt2`` when *selected_param_pairs*)
@@ -2236,7 +2173,9 @@ def _compile_implicit_segment(
     uses_ad = _model_uses_request_ad(system.model)
     _compile_jac = _compile_param_derivative_graph if uses_ad else compile_model
     compile_model(rhs, example_inputs, output_dir / rhs_name, dynamic_batch_dim=dynamic_dim)
+    _report(progress_cb, rhs_name)
     _compile_jac(step, example_inputs, output_dir / step_name, dynamic_batch_dim=dynamic_dim)
+    _report(progress_cb, step_name)
     # Per-(unknown, given) pair metadata for the IFT graph. The IFT emits one
     # block per variable pair (via AssembledMatrix.disassemble), in
     # ift.emitted_pairs() order, so the C++ runtime composes them against
@@ -2260,6 +2199,7 @@ def _compile_implicit_segment(
             for (u, g) in ift.emitted_pairs()
         ]
         _compile_jac(ift, example_inputs, output_dir / ift_name, dynamic_batch_dim=dynamic_dim)
+        _report(progress_cb, ift_name)
 
     # Per-(unknown, param) parameter-Jacobian graph (ParamIFT). Emits one dense
     # ``du/dθ`` block per requested ``(unknown, param)`` pair, in
@@ -2282,6 +2222,7 @@ def _compile_implicit_segment(
         _compile_param_derivative_graph(
             pift, pift_example_inputs, output_dir / pift_name, dynamic_batch_dim=dynamic_dim
         )
+        _report(progress_cb, pift_name)
 
     # Per-variable infos retained at the segment level as the source of
     # truth for the C++ runtime's per-variable state map (predictor
@@ -2354,75 +2295,12 @@ def _compile_implicit_segment(
         compile_model(
             pred_exportable, pred_inputs, output_dir / pred_name, dynamic_batch_dim=dynamic_dim
         )
+        _report(progress_cb, pred_name)
         seg["predictor_package"] = pred_name
         seg["predictor_inputs"] = _segment_var_infos(pred.input_spec)
         seg["predictor_outputs"] = _segment_var_infos(pred.output_spec)
 
     return seg
-
-
-def _export_implicit(
-    model,
-    inner,
-    model_name: str,
-    output_dir: Path,
-    device: str,
-    *,
-    promoted_qnames: set[str],
-    promoted_snapshots: dict[str, torch.Tensor] | None = None,
-    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
-    dynamic_batch: bool = True,
-    derivatives: set[tuple[str, str]] | None = None,
-    param_derivatives: set[tuple[str, str]] | None = None,
-) -> dict:
-    """Export an ImplicitUpdate as a single-segment composed artifact.
-
-    Promoted parameters living inside the residual are threaded through the
-    segment's graphs (schema v7); ``promoted_qnames`` also filters the metadata's
-    master ``inputs``.
-
-    *derivatives* is the resolved master ``(out, in)`` pair set; the single
-    implicit segment emits its IFT graph iff any structural pair was requested
-    (the IFT couples every given to every unknown). *param_derivatives* is the
-    resolved master ``(out, param)`` pair set; the segment emits its ParamIFT
-    graph iff any was requested. For a single ImplicitUpdate the outputs are the
-    unknowns, so both map to local pairs by a direct filter.
-    """
-    master_pairs = derivatives or set()
-    param_pairs = param_derivatives or set()
-    sys = inner.system
-    selected_ift_pairs = {
-        (o, i) for (o, i) in master_pairs if o in sys.unknown_names and i in sys.given_names
-    }
-    # Local (unknown, param) pairs: the output is an unknown and the "input" is a
-    # promoted parameter inside the residual.
-    selected_param_pairs = {
-        (o, p) for (o, p) in param_pairs if o in sys.unknown_names and p in promoted_qnames
-    }
-    seg = _compile_implicit_segment(
-        inner,
-        model_name,
-        output_dir,
-        device,
-        shapes=shapes,
-        dynamic_batch=dynamic_batch,
-        emit_ift=bool(selected_ift_pairs),
-        selected_ift_pairs=selected_ift_pairs,
-        promoted_qnames=promoted_qnames,
-        promoted_snapshots=promoted_snapshots,
-        selected_param_pairs=selected_param_pairs,
-    )
-    structural_in = _structural_inputs(model.input_spec, promoted_qnames)
-    in_sb = {n: sub for n, (_, sub) in (shapes or {}).items() if sub}
-    # Output labels mirror unknowns' labels (each output is an unknown that
-    # inherits sub_batch_labels from its history input via _solve).
-    return {
-        "schema_version": AOTI_META_SCHEMA_VERSION,
-        "type": "composed",
-        "inputs": _var_infos(structural_in, sub_batch_shapes=in_sb),
-        "outputs": _var_infos(model.output_spec),
-        "segments": [{"kind": "implicit", **seg}],
-    }
 
 
 # ---------------------------------------------------------------------------
@@ -2481,51 +2359,71 @@ def _partition_into_segments(model):
     return segments
 
 
-def _export_composed(
-    model,
-    model_name: str,
-    output_dir: Path,
-    device: str,
-    *,
-    promoted_qnames: set[str],
-    promoted_snapshots: dict[str, torch.Tensor],
-    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
-    dynamic_batch: bool = True,
-    derivatives: set[tuple[str, str]] | None = None,
-    param_derivatives: set[tuple[str, str]] | None = None,
-) -> dict:
-    """Export a ComposedModel containing ImplicitUpdate children as multiple
-    .pt2 artifacts.
+@dataclass
+class _Reachability:
+    """Per-segment dependency reachability for the derivative-graph prune.
 
-    Each non-implicit run of leaves becomes one forward segment .pt2; each
-    ImplicitUpdate becomes the standard rhs/step (+ optional predictor) set.
-    The C++ ``AOTIModel`` orchestrates the segments in order.
-
-    *derivatives* is the resolved master ``(out, in)`` pair set. Forward
-    segments emit only the local pairs that lie on a dependency path between a
-    requested master input and a requested master output (a forward segment with
-    no such pair emits no derivative graph); an implicit segment emits its IFT
-    graph iff it lies on any requested path. Correctness gate: a local pair is
-    kept whenever its row reaches a requested output AND its column is reachable
-    from a requested input — never dropping a pair that carries a requested
-    sensitivity. Empty *derivatives* → no derivative graphs anywhere.
-
-    *param_derivatives* is the resolved master ``(out, param)`` pair set for
-    parameters promoted inside the segments (the multi-segment parameter
-    Jacobian). A promoted parameter enters the dataflow at its OWN segment's
-    outputs (forward: ``param_jacobian`` graph; implicit: ``ParamIFT`` graph),
-    and its sensitivity must then PROPAGATE through every downstream segment to
-    the requested master output. So each segment additionally compiles its jvp /
-    IFT propagation graph for any local pair whose column carries a requested
-    parameter sensitivity (``param_reach``) and whose row reaches a requested
-    output -- the C++ ``_param_jacobian_dstate`` carrier composes the direct
-    (param-graph) and indirect (jvp/IFT) contributions segment by segment.
+    ``reach[V]`` = master (structural) inputs that can flow into V; ``canreach
+    [V]`` = master outputs V can reach; ``param_reach[V]`` = requested promoted
+    params whose sensitivity reaches V. Each segment is modelled as "every
+    output depends on every input" (the all-pairs internal Jacobian; an implicit
+    segment's IFT couples every given to every unknown) -- the correct
+    conservative data-flow model. The ``keep_*`` predicates decide, per local
+    ``(out, in)`` / ``(out, param)`` pair, whether that block must be compiled.
+    Built once by :func:`_segment_reachability` and shared by both the planner
+    (artifact prediction) and the executor (which pairs to emit) so the two can
+    never drift.
     """
-    from ..models.common import ComposedModel, ImplicitUpdate
 
-    segments = _partition_into_segments(model)
-    master_pairs = derivatives or set()
-    param_pairs = param_derivatives or set()
+    segments: list
+    seg_input_sets: list[set[str]]
+    seg_output_sets: list[set[str]]
+    downstream_demands: list[set[str]]
+    seg_direct_params: list[set[str]]
+    master_outs: set[str]
+    reach: dict[str, set[str]]
+    canreach: dict[str, set[str]]
+    param_reach: dict[str, set[str]]
+    master_pairs: set[tuple[str, str]]
+    param_pairs: set[tuple[str, str]]
+
+    def keep_local_pair(self, o: str, i: str) -> bool:
+        """A local pair ``(o, i)`` carries a requested master sensitivity iff its
+        column is reachable from a requested input AND its row reaches a
+        requested output."""
+        return any(
+            (i_m in self.reach.get(i, ())) and (o_m in self.canreach.get(o, ()))
+            for (o_m, i_m) in self.master_pairs
+        )
+
+    def keep_param_prop(self, o: str, i: str) -> bool:
+        """A jvp / IFT local pair ``(o, i)`` must be compiled when its column
+        ``i`` carries a requested parameter sensitivity needed at a requested
+        output reachable from ``o``."""
+        return any(
+            (p in self.param_reach.get(i, ())) and (o_m in self.canreach.get(o, ()))
+            for (o_m, p) in self.param_pairs
+        )
+
+    def keep_param_pair(self, o: str, p: str) -> bool:
+        """A direct param-graph pair ``(o, p)``: keep when ``o`` reaches a
+        requested master output paired with parameter ``p``."""
+        return any(o_m in self.canreach.get(o, ()) for (o_m, pp) in self.param_pairs if pp == p)
+
+
+def _segment_reachability(
+    model,
+    segments,
+    promoted_qnames: set[str],
+    master_pairs: set[tuple[str, str]],
+    param_pairs: set[tuple[str, str]],
+) -> _Reachability:
+    """Compute the :class:`_Reachability` bundle for a partitioned composed model.
+
+    Factored out of the old ``_export_composed`` so the planner and executor
+    share one copy of the reachability math (single source of truth -- no drift
+    between predicted and produced derivative graphs).
+    """
     requested_params = {p for (_, p) in param_pairs}
 
     # Each segment's ComposedModel wrapper would otherwise hide variables that
@@ -2558,14 +2456,6 @@ def _export_composed(
             downstream_demands[i] |= inputs_j
     master_outs = set(model.output_spec)
 
-    # --- Dependency reachability for the per-segment derivative prune ---
-    # ``reach[V]`` = master (structural) inputs that can flow into V; ``canreach
-    # [V]`` = master outputs V can reach. Each segment is modelled as "every
-    # output depends on every input" (the all-pairs internal Jacobian; an
-    # implicit segment's IFT couples every given to every unknown), which is the
-    # correct conservative data-flow model. A local pair (o, i) carries a
-    # requested master sensitivity (o_m, i_m) iff ``i_m ∈ reach[i]`` and
-    # ``o_m ∈ canreach[o]`` — keep it iff that holds for some requested pair.
     structural_master_in = set(_structural_inputs(model.input_spec, promoted_qnames))
     reach: dict[str, set[str]] = {i: {i} for i in structural_master_in}
     for sin, sout in zip(seg_input_sets, seg_output_sets, strict=True):
@@ -2582,16 +2472,9 @@ def _export_composed(
         for x in sin:
             canreach[x] = canreach.get(x, set()) | reachable
 
-    def _keep_local_pair(o: str, i: str) -> bool:
-        return any(
-            (i_m in reach.get(i, ())) and (o_m in canreach.get(o, ()))
-            for (o_m, i_m) in master_pairs
-        )
-
-    # --- Parameter reachability for the multi-segment param Jacobian ---
     # Which requested promoted parameters live directly in each segment (after
-    # promotion + _rebuild_after_promotion, the qname appears in that
-    # segment's model.input_spec).
+    # promotion + _rebuild_after_promotion, the qname appears in that segment's
+    # model.input_spec).
     def _seg_direct_params(payload: object) -> set[str]:
         if isinstance(payload, list):
             return {p for p in requested_params for leaf in payload if p in leaf.input_spec}
@@ -2602,150 +2485,675 @@ def _export_composed(
     # ``param_reach[V]`` = requested promoted params whose sensitivity reaches V.
     # Forward pass mirroring ``reach``: a segment's outputs inherit the union of
     # its inputs' param_reach (indirect) plus the params promoted directly in
-    # that segment (direct, conservative all-outputs model -- same all-pairs
-    # assumption ``reach`` uses).
+    # that segment (direct, conservative all-outputs model).
     param_reach: dict[str, set[str]] = {}
     for sin, sout, direct in zip(seg_input_sets, seg_output_sets, seg_direct_params, strict=True):
-        flowed: set[str] = set(direct)
+        flowed = set(direct)
         for x in sin:
             flowed |= param_reach.get(x, set())
         for o in sout:
             param_reach[o] = param_reach.get(o, set()) | flowed
 
-    def _keep_param_prop(o: str, i: str) -> bool:
-        """A jvp / IFT local pair (o, i) must be compiled when its column ``i``
-        carries a requested parameter sensitivity needed at a requested output
-        reachable from ``o``."""
-        return any(
-            (p in param_reach.get(i, ())) and (o_m in canreach.get(o, ()))
-            for (o_m, p) in param_pairs
+    return _Reachability(
+        segments=segments,
+        seg_input_sets=seg_input_sets,
+        seg_output_sets=seg_output_sets,
+        downstream_demands=downstream_demands,
+        seg_direct_params=seg_direct_params,
+        master_outs=master_outs,
+        reach=reach,
+        canreach=canreach,
+        param_reach=param_reach,
+        master_pairs=master_pairs,
+        param_pairs=param_pairs,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Model preparation (the shared setup prelude)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class _PreparedExport:
+    """The result of :func:`_prepare_export` -- a model made ready to compile,
+    plus every resolved option a segment compile / plan needs.
+
+    Deterministic in ``(input file, options, device)``: the same inputs always
+    yield the same bundle, which is what lets a spawned worker re-derive its
+    assigned segment from scratch (:func:`_compile_segment_worker`) instead of
+    receiving an unpicklable live ``nn.Module`` from the parent.
+    """
+
+    model: Model
+    promoted_qnames: set[str]
+    promoted_snapshots: dict[str, torch.Tensor]
+    origin: dict[str, str]
+    promoted_base_shapes: dict[str, tuple[int, ...]]
+    resolved_shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]]
+    dynamic_batch: bool
+    master_pairs: set[tuple[str, str]]
+    param_pairs: set[tuple[str, str]]
+    boundary_aliases: dict[str, dict[str, str]]
+    structural_input_names: list[str]
+
+
+def _prepare_export(
+    hit_path: str | Path,
+    model_name: str,
+    *,
+    device: str = "cpu",
+    promoted: set[str] | list[str] | tuple[str, ...] = (),
+    example_batch_shape: dict[str, str] | str | None = None,
+    dynamic_batch: bool | None = None,
+    derivatives: Sequence[str] = (),
+    renames: dict[str, dict[str, str]] | None = None,
+    pre: Sequence[str] = (),
+    additional_args: tuple[str, ...] = (),
+) -> _PreparedExport:
+    """Load a model and run the full pre-compile prelude, returning a
+    :class:`_PreparedExport`.
+
+    This is the setup shared by every export path: it loads the model, wraps a
+    bare forward leaf in a ``ComposedModel`` (so promoted names live in the eager
+    namespace), resolves example shapes, promotes parameters + rebuilds the
+    spec-caching containers, resolves ``-d`` derivative specs, validates boundary
+    renames, freezes leftover parameters to buffers, checks baked-shape
+    conflicts, and seeds every implicit sub-batch layout. No ``.pt2`` is
+    produced -- the expensive ``compile_model`` calls happen later, in
+    :func:`_execute_segment_plan`.
+
+    ``device`` is threaded through because :func:`_seed_implicit_subbatch` builds
+    device-resident stand-in tensors; the bundle is therefore device-specific and
+    must be rebuilt per device (never cached across devices).
+    """
+    from ..factory import load_input
+    from ..models.common import ComposedModel
+
+    factory = load_input(hit_path, pre=pre, additional_args=additional_args)
+    model = factory.get_model(model_name)
+
+    # Wrap a bare (non-composed) forward leaf up-front -- BEFORE promotion -- so
+    # promoted parameter names live in the SAME namespace the eager runtime
+    # reports. ImplicitUpdate / composed-with-implicit models keep their dedicated
+    # export path + namespace; an already-composed model is left untouched.
+    if not isinstance(model, ComposedModel) and not _contains_implicit(model):
+        model = ComposedModel([model])
+
+    # Resolve example-batch-shape declarations: kwarg wins, then HIT [Settings],
+    # then the (2,)/uniform default.
+    settings_shapes, settings_dyn = _read_settings(factory)
+    if isinstance(example_batch_shape, str):
+        declared = {"*": example_batch_shape}
+    elif isinstance(example_batch_shape, dict):
+        declared = dict(example_batch_shape)
+    else:
+        declared = settings_shapes
+    if dynamic_batch is None:
+        dynamic_batch = settings_dyn
+    resolved_shapes = _resolve_example_shapes(model.input_spec, declared)
+
+    # Validate / resolve promoted names against the live model BEFORE any
+    # ComposedModel wrapping. Snapshot the initial values now too.
+    promoted_set = set(promoted)
+    promoted_names, origin = _validate_promoted(model, promoted_set)
+    promoted_snapshots = _snapshot_promoted(model, promoted_names)
+
+    # Route each promoted parameter through the leaf's PromotedParam machinery.
+    promo_info = _promote_parameters(model, promoted_names)
+    promoted_qnames = set(promoted_names)
+    promoted_base_shapes = {q: tuple(cls.BASE_SHAPE) for q, (cls, _h, _l) in promo_info.items()}
+
+    # Rebuild every spec-caching container so promoted parameters route correctly.
+    if promoted_names:
+        model = _rebuild_after_promotion(model)
+
+    # Resolve -d/--derivative specs into the master (out, in) / (out, param) pairs.
+    structural_input_names = list(_structural_inputs(model.input_spec, promoted_qnames))
+    master_pairs, param_pairs = _resolve_derivative_specs(
+        derivatives,
+        list(model.output_spec),
+        structural_input_names,
+        param_names=sorted(promoted_qnames),
+    )
+
+    # Validate + normalize boundary renames against the post-promotion namespaces.
+    boundary_aliases = _validate_renames(
+        renames,
+        input_names=structural_input_names,
+        output_names=list(model.output_spec),
+        param_names=sorted(promoted_qnames),
+    )
+
+    # Freeze any remaining nn.Parameter to a persistent buffer so torch.export
+    # bakes it into the graph instead of lifting it as a graph input.
+    _freeze_remaining_parameters_to_buffers(model)
+
+    # Catch baked-parameter shape conflicts before torch.export does.
+    if dynamic_batch:
+        _validate_baked_against_shapes(model, resolved_shapes, promoted_qnames)
+
+    # Populate per-variable sub_batch_shape on every inner ModelNonlinearSystem.
+    _seed_implicit_subbatch(model, resolved_shapes, device)
+
+    return _PreparedExport(
+        model=model,
+        promoted_qnames=promoted_qnames,
+        promoted_snapshots=promoted_snapshots,
+        origin=origin,
+        promoted_base_shapes=promoted_base_shapes,
+        resolved_shapes=resolved_shapes,
+        dynamic_batch=dynamic_batch,
+        master_pairs=master_pairs,
+        param_pairs=param_pairs,
+        boundary_aliases=boundary_aliases,
+        structural_input_names=structural_input_names,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Segment planning + execution
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class _SegmentPlan:
+    """One compilable segment: what it is, what it will emit, and how to build it.
+
+    ``predicted_artifacts`` (ordered ``.pt2`` filenames) is picklable and is the
+    only field a spawned worker needs from the parent (for the progress
+    denominator). The execution fields (``seg_model`` / ``impl_model`` /
+    ``selected_*``) hold live objects used only in-process by
+    :func:`_execute_segment_plan`; a worker rebuilds them by re-running the
+    planner on its own re-derived model.
+    """
+
+    index: int
+    kind: str  # "forward" | "implicit"
+    basename: str
+    predicted_artifacts: list[str]
+    single_forward_pvjp: bool = False
+    seg_model: object = None
+    impl_model: object = None
+    selected_pairs: set[tuple[str, str]] | None = None
+    selected_param_pairs: set[tuple[str, str]] | None = None
+    selected_ift_pairs: set[tuple[str, str]] | None = None
+
+
+def _predict_forward_artifacts(
+    basename: str,
+    selected_pairs: set[tuple[str, str]] | None,
+    selected_param_pairs: set[tuple[str, str]] | None,
+    *,
+    single_forward_pvjp: bool,
+) -> list[str]:
+    """Ordered ``.pt2`` names a forward segment emits -- mirrors, in emission
+    order, the ``compile_model`` calls in :func:`_compile_forward_segment` (+ the
+    param-Jacobian / VJP helpers). The pvjp graph is emitted ONLY for the lone
+    forward segment of a forward-only model (``single_forward_pvjp``)."""
+    arts = [f"{basename}.pt2"]
+    # jvp: emitted when pairs are None (all) or a non-empty selection.
+    if selected_pairs is None or len(selected_pairs) > 0:
+        arts.append(f"{basename}_jvp.pt2")
+    if selected_param_pairs:
+        arts.append(f"{basename}_pjac.pt2")
+        if single_forward_pvjp:
+            arts.append(f"{basename}_pvjp.pt2")
+    return arts
+
+
+def _predict_implicit_artifacts(
+    basename: str,
+    *,
+    emit_ift: bool,
+    emit_pift: bool,
+    has_predictor: bool,
+) -> list[str]:
+    """Ordered ``.pt2`` names an implicit segment emits -- mirrors, in emission
+    order, the ``compile_model`` calls in :func:`_compile_implicit_segment`."""
+    arts = [f"{basename}_rhs.pt2", f"{basename}_step.pt2"]
+    if emit_ift:
+        arts.append(f"{basename}_ift.pt2")
+    if emit_pift:
+        arts.append(f"{basename}_pift.pt2")
+    if has_predictor:
+        arts.append(f"{basename}_predictor.pt2")
+    return arts
+
+
+def _plan_segments(prepared: _PreparedExport, model_name: str) -> list[_SegmentPlan]:
+    """Partition *prepared*'s model into an ordered list of :class:`_SegmentPlan`.
+
+    Unifies all three model shapes -- forward-only (one forward segment named
+    ``model_name``), a single ``ImplicitUpdate`` (one implicit segment named
+    ``model_name``), and a ``ComposedModel`` containing implicit children (one
+    segment per partition, named ``model_name_seg{i}``). The derivative-graph
+    selection uses the shared :func:`_segment_reachability`, so the predicted
+    artifacts exactly match what :func:`_execute_segment_plan` will produce.
+    """
+    from ..models.common import ComposedModel, ImplicitUpdate
+
+    model = prepared.model
+    promoted_qnames = prepared.promoted_qnames
+    master_pairs = prepared.master_pairs
+    param_pairs = prepared.param_pairs
+    inner = model
+
+    # Single ImplicitUpdate: one implicit segment. For a single ImplicitUpdate
+    # the outputs are the unknowns, so master pairs map to local pairs directly.
+    if isinstance(inner, ImplicitUpdate):
+        isys = inner.system
+        selected_ift_pairs = {
+            (o, i) for (o, i) in master_pairs if o in isys.unknown_names and i in isys.given_names
+        }
+        selected_param_pairs = {
+            (o, p) for (o, p) in param_pairs if o in isys.unknown_names and p in promoted_qnames
+        }
+        arts = _predict_implicit_artifacts(
+            model_name,
+            emit_ift=bool(selected_ift_pairs),
+            emit_pift=bool(selected_param_pairs),
+            has_predictor=inner.predictor is not None,
         )
+        return [
+            _SegmentPlan(
+                index=0,
+                kind="implicit",
+                basename=model_name,
+                predicted_artifacts=arts,
+                impl_model=inner,
+                selected_ift_pairs=selected_ift_pairs,
+                selected_param_pairs=selected_param_pairs,
+            )
+        ]
 
-    def _keep_param_pair(o: str, p: str) -> bool:
-        """A direct param-graph pair (o, p): keep when ``o`` reaches a requested
-        master output paired with parameter ``p``."""
-        return any(o_m in canreach.get(o, ()) for (o_m, pp) in param_pairs if pp == p)
+    # ComposedModel containing ImplicitUpdate children: one segment per partition.
+    if _contains_implicit(inner):
+        segments = _partition_into_segments(model)
+        reach = _segment_reachability(model, segments, promoted_qnames, master_pairs, param_pairs)
+        plans: list[_SegmentPlan] = []
+        for i, (kind, payload) in enumerate(segments):
+            basename = f"{model_name}_seg{i}"
+            if kind == "forward":
+                # Wrap the segment's leaves in a fresh ComposedModel so the
+                # dependency resolver derives its specs from the leaves' own
+                # specs. (.to(device) is deferred to _compile_forward_segment.)
+                assert isinstance(payload, list)
+                needed = (reach.master_outs | reach.downstream_demands[i]) & reach.seg_output_sets[
+                    i
+                ]
+                extra = sorted(needed)
+                seg_model = ComposedModel(payload, additional_outputs=extra)
+                seg_struct_in = _structural_inputs(seg_model.input_spec, promoted_qnames)
+                seg_selected = {
+                    (o, si)
+                    for o in seg_model.output_spec
+                    for si in seg_struct_in
+                    if reach.keep_local_pair(o, si) or reach.keep_param_prop(o, si)
+                }
+                seg_param_pairs = {
+                    (o, p)
+                    for o in seg_model.output_spec
+                    for p in reach.seg_direct_params[i]
+                    if reach.keep_param_pair(o, p)
+                }
+                arts = _predict_forward_artifacts(
+                    basename, seg_selected, seg_param_pairs, single_forward_pvjp=False
+                )
+                plans.append(
+                    _SegmentPlan(
+                        index=i,
+                        kind="forward",
+                        basename=basename,
+                        predicted_artifacts=arts,
+                        seg_model=seg_model,
+                        selected_pairs=seg_selected,
+                        selected_param_pairs=seg_param_pairs,
+                    )
+                )
+            else:
+                impl_model = payload
+                assert isinstance(impl_model, ImplicitUpdate)
+                isys = impl_model.system
+                selected_ift_pairs = {
+                    (u, g)
+                    for u in isys.unknown_names
+                    for g in isys.given_names
+                    if reach.keep_local_pair(u, g) or reach.keep_param_prop(u, g)
+                }
+                selected_param_pairs = {
+                    (u, p)
+                    for u in isys.unknown_names
+                    for p in reach.seg_direct_params[i]
+                    if reach.keep_param_pair(u, p)
+                }
+                arts = _predict_implicit_artifacts(
+                    basename,
+                    emit_ift=bool(selected_ift_pairs),
+                    emit_pift=bool(selected_param_pairs),
+                    has_predictor=impl_model.predictor is not None,
+                )
+                plans.append(
+                    _SegmentPlan(
+                        index=i,
+                        kind="implicit",
+                        basename=basename,
+                        predicted_artifacts=arts,
+                        impl_model=impl_model,
+                        selected_ift_pairs=selected_ift_pairs,
+                        selected_param_pairs=selected_param_pairs,
+                    )
+                )
+        return plans
 
-    seg_metas: list[dict] = []
-    for i, (kind, payload) in enumerate(segments):
-        basename = f"{model_name}_seg{i}"
-        if kind == "forward":
-            # Wrap the segment's leaves in a fresh ComposedModel so the
-            # dependency resolver can derive its input/output specs from the
-            # leaves' own specs. Reusing the master's _plan would tangle the
-            # segment's spec with the master's outer wiring.
-            assert isinstance(payload, list)
-            needed = (master_outs | downstream_demands[i]) & seg_output_sets[i]
-            extra = sorted(needed)
-            seg_model = ComposedModel(payload, additional_outputs=extra).to(device)
-            # Local jvp pairs to emit: kept for input derivatives (on a path
-            # between a requested master input and output) OR for parameter
-            # propagation (column carries a requested param sensitivity needed at
-            # a reachable output). Empty -> no jvp graph.
-            seg_struct_in = _structural_inputs(seg_model.input_spec, promoted_qnames)
-            seg_selected = {
-                (o, i)
-                for o in seg_model.output_spec
-                for i in seg_struct_in
-                if _keep_local_pair(o, i) or _keep_param_prop(o, i)
-            }
-            (
-                pkg_name,
-                in_infos,
-                out_infos,
-                jvp_pkg_name,
-                param_inputs,
-                jacobian_pairs,
-            ) = _compile_forward_segment(
-                seg_model,
-                basename,
+    # Forward-only: a single forward segment. For one forward segment the master
+    # pairs ARE the segment-local pairs, so they pass straight through.
+    arts = _predict_forward_artifacts(
+        model_name, master_pairs, param_pairs, single_forward_pvjp=True
+    )
+    return [
+        _SegmentPlan(
+            index=0,
+            kind="forward",
+            basename=model_name,
+            predicted_artifacts=arts,
+            seg_model=model,
+            selected_pairs=master_pairs,
+            selected_param_pairs=param_pairs,
+            single_forward_pvjp=True,
+        )
+    ]
+
+
+def _execute_segment_plan(
+    plan: _SegmentPlan,
+    prepared: _PreparedExport,
+    output_dir: Path,
+    device: str,
+    progress_cb: Callable[[str], None] | None = None,
+) -> dict:
+    """Compile one segment's ``.pt2`` graphs and return its metadata dict.
+
+    The single execution path shared by the serial loop and the process worker.
+    Mirrors the per-segment bodies of the former ``_export_forward`` /
+    ``_export_implicit`` / ``_export_composed``.
+    """
+    promoted_qnames = prepared.promoted_qnames
+    promoted_snapshots = prepared.promoted_snapshots
+    shapes = prepared.resolved_shapes
+    dynamic_batch = prepared.dynamic_batch
+
+    if plan.kind == "forward":
+        (
+            pkg_name,
+            in_infos,
+            out_infos,
+            jvp_pkg_name,
+            param_inputs,
+            jacobian_pairs,
+        ) = _compile_forward_segment(
+            plan.seg_model,
+            plan.basename,
+            output_dir,
+            device,
+            promoted_qnames=promoted_qnames,
+            promoted_snapshots=promoted_snapshots,
+            shapes=shapes,
+            dynamic_batch=dynamic_batch,
+            selected_pairs=plan.selected_pairs,
+            progress_cb=progress_cb,
+        )
+        seg_entry: dict = {
+            "kind": "forward",
+            "package": pkg_name,
+            "inputs": _segment_var_infos(in_infos),
+            "outputs": _segment_var_infos(out_infos),
+            "param_inputs": param_inputs,
+        }
+        if jvp_pkg_name is not None:
+            seg_entry["jvp_package"] = jvp_pkg_name
+            seg_entry["jacobian_pairs"] = jacobian_pairs
+        if plan.selected_param_pairs:
+            pjac_pkg, pjac_pairs = _compile_param_jacobian(
+                plan.seg_model,
+                plan.basename,
                 output_dir,
                 device,
                 promoted_qnames=promoted_qnames,
                 promoted_snapshots=promoted_snapshots,
+                selected_param_pairs=plan.selected_param_pairs,
                 shapes=shapes,
                 dynamic_batch=dynamic_batch,
-                selected_pairs=seg_selected,
+                progress_cb=progress_cb,
             )
-            seg_entry = {
-                "kind": "forward",
-                "package": pkg_name,
-                "inputs": _segment_var_infos(in_infos),
-                "outputs": _segment_var_infos(out_infos),
-                "param_inputs": param_inputs,
-            }
-            if jvp_pkg_name is not None:
-                seg_entry["jvp_package"] = jvp_pkg_name
-                seg_entry["jacobian_pairs"] = jacobian_pairs
-            # Direct parameter Jacobian for params promoted in THIS segment, for
-            # (out, param) pairs reaching a requested master output.
-            seg_param_pairs = {
-                (o, p)
-                for o in seg_model.output_spec
-                for p in seg_direct_params[i]
-                if _keep_param_pair(o, p)
-            }
-            if seg_param_pairs:
-                pjac_pkg, pjac_pairs = _compile_param_jacobian(
-                    seg_model,
-                    basename,
+            seg_entry["param_jacobian_package"] = pjac_pkg
+            seg_entry["param_jacobian_pairs"] = pjac_pairs
+            # The single-forward path also emits the adjoint (VJP) graph -- the
+            # cheaper form for many-parameter optimization. Composed forward
+            # segments do NOT (only the direct param-Jacobian propagates).
+            if plan.single_forward_pvjp:
+                pvjp_pkg, pvjp_params, pvjp_outputs = _compile_param_vjp(
+                    plan.seg_model,
+                    plan.basename,
                     output_dir,
                     device,
                     promoted_qnames=promoted_qnames,
                     promoted_snapshots=promoted_snapshots,
-                    selected_param_pairs=seg_param_pairs,
+                    selected_params={p for (_, p) in plan.selected_param_pairs},
                     shapes=shapes,
                     dynamic_batch=dynamic_batch,
+                    progress_cb=progress_cb,
                 )
-                seg_entry["param_jacobian_package"] = pjac_pkg
-                seg_entry["param_jacobian_pairs"] = pjac_pairs
-            seg_metas.append(seg_entry)
-        else:
-            # payload is the ImplicitUpdate leaf.
-            impl_model = payload
-            assert isinstance(impl_model, ImplicitUpdate)
-            # Local (unknown, given) IFT pairs on a requested dependency path:
-            # the given reachable from a requested master input AND the unknown
-            # reaching a requested master output. Drives both whether to emit the
-            # IFT graph and which per-pair blocks it emits.
-            isys = impl_model.system
-            selected_ift_pairs = {
-                (u, g)
-                for u in isys.unknown_names
-                for g in isys.given_names
-                if _keep_local_pair(u, g) or _keep_param_prop(u, g)
-            }
-            # Direct ParamIFT pairs for params promoted in THIS implicit segment.
-            selected_param_pairs = {
-                (u, p)
-                for u in isys.unknown_names
-                for p in seg_direct_params[i]
-                if _keep_param_pair(u, p)
-            }
-            seg = _compile_implicit_segment(
-                impl_model,
-                basename,
-                output_dir,
-                device,
-                shapes=shapes,
-                dynamic_batch=dynamic_batch,
-                emit_ift=bool(selected_ift_pairs),
-                selected_ift_pairs=selected_ift_pairs,
-                promoted_qnames=promoted_qnames,
-                promoted_snapshots=promoted_snapshots,
-                selected_param_pairs=selected_param_pairs,
-            )
-            seg_metas.append({"kind": "implicit", **seg})
+                seg_entry["param_vjp_package"] = pvjp_pkg
+                seg_entry["param_vjp_params"] = pvjp_params
+                seg_entry["param_vjp_outputs"] = pvjp_outputs
+        return seg_entry
 
-    structural_in = _structural_inputs(model.input_spec, promoted_qnames)
-    in_sb = {n: sub for n, (_, sub) in (shapes or {}).items() if sub}
-    return {
-        "schema_version": AOTI_META_SCHEMA_VERSION,
-        "type": "composed",
-        "inputs": _var_infos(structural_in, sub_batch_shapes=in_sb),
-        "outputs": _var_infos(model.output_spec),
-        "segments": seg_metas,
-    }
+    # implicit
+    seg = _compile_implicit_segment(
+        plan.impl_model,
+        plan.basename,
+        output_dir,
+        device,
+        shapes=shapes,
+        dynamic_batch=dynamic_batch,
+        emit_ift=bool(plan.selected_ift_pairs),
+        selected_ift_pairs=plan.selected_ift_pairs,
+        promoted_qnames=promoted_qnames,
+        promoted_snapshots=promoted_snapshots,
+        selected_param_pairs=plan.selected_param_pairs,
+        progress_cb=progress_cb,
+    )
+    return {"kind": "implicit", **seg}
+
+
+@dataclass
+class _ExportPlan:
+    """What a compile of ``(hit_path, model_name, options)`` on one device will
+    generate, without compiling.
+
+    ``artifacts`` is the flat, ordered list of every generated filename for the
+    device -- the ``.pt2`` graphs of each segment followed by the
+    ``<model>_meta.json``. ``.total`` is the count the CLI uses for the ``[k/N]``
+    progress denominator (the standalone ``<model>_aoti.i`` stub is a CLI-level
+    concern added on top).
+    """
+
+    artifacts: list[str]
+    segments: list[_SegmentPlan]
+
+    @property
+    def total(self) -> int:
+        return len(self.artifacts)
+
+
+def plan_export_artifacts(
+    hit_path: str | Path,
+    model_name: str,
+    *,
+    device: str = "cpu",
+    promoted: set[str] | list[str] | tuple[str, ...] = (),
+    example_batch_shape: dict[str, str] | str | None = None,
+    dynamic_batch: bool | None = None,
+    derivatives: Sequence[str] = (),
+    renames: dict[str, dict[str, str]] | None = None,
+    pre: Sequence[str] = (),
+    additional_args: tuple[str, ...] = (),
+) -> _ExportPlan:
+    """Enumerate the files a compile will generate, WITHOUT compiling.
+
+    Runs the same prelude + segment planning :func:`export_model_for_aoti` uses,
+    then returns the ordered list of every generated filename for *device* (each
+    segment's ``.pt2`` graphs, then ``<model_name>_meta.json``). No
+    ``compile_model`` is called, so this is cheap (one model load + structural
+    analysis). Primarily drives the ``[k/N]`` progress denominator; also useful
+    for programmatic inspection of a model's segment structure. The artifact set
+    is device-independent, so a single call (e.g. ``device="cpu"``) suffices to
+    size a multi-device compile.
+    """
+    prepared = _prepare_export(
+        hit_path,
+        model_name,
+        device=device,
+        promoted=promoted,
+        example_batch_shape=example_batch_shape,
+        dynamic_batch=dynamic_batch,
+        derivatives=derivatives,
+        renames=renames,
+        pre=pre,
+        additional_args=additional_args,
+    )
+    plans = _plan_segments(prepared, model_name)
+    artifacts: list[str] = []
+    for plan in plans:
+        artifacts.extend(plan.predicted_artifacts)
+    artifacts.append(f"{model_name}_meta.json")
+    return _ExportPlan(artifacts=artifacts, segments=plans)
+
+
+# ---------------------------------------------------------------------------
+# Parallel segment compilation (process pool)
+# ---------------------------------------------------------------------------
+
+#: Sentinel enqueued by the parent to tell the progress-drainer thread to exit.
+_PROGRESS_SENTINEL = "__neml2_progress_done__"
+
+#: Per-worker handle to the shared progress queue (set by :func:`_worker_init`).
+#: A module global because ``ProcessPoolExecutor`` cannot pass a Manager queue as
+#: a per-task argument -- it must arrive via the pool ``initializer``.
+_worker_progress_queue = None
+
+
+def _worker_init(queue) -> None:
+    """Pool ``initializer``: stash the shared progress queue in the worker."""
+    global _worker_progress_queue
+    _worker_progress_queue = queue
+
+
+def _compile_segment_worker(args) -> tuple[int, dict]:
+    """Worker entry: re-derive the model from the input file and compile ONE
+    segment. Everything in *args* is picklable (paths, strings, an options dict,
+    and the segment index); no live ``nn.Module`` crosses the process boundary.
+    Per-``.pt2`` progress is streamed back to the parent through the shared queue.
+    """
+    hit_path, model_name, output_dir, device, export_opts, seg_index = args
+    prepared = _prepare_export(hit_path, model_name, device=device, **export_opts)
+    plans = _plan_segments(prepared, model_name)
+    plan = plans[seg_index]
+    queue = _worker_progress_queue
+    cb = (lambda name: queue.put(name)) if queue is not None else None
+    seg_meta = _execute_segment_plan(plan, prepared, Path(output_dir), device, progress_cb=cb)
+    return seg_index, seg_meta
+
+
+def _compile_segments_parallel(
+    hit_path: str | Path,
+    model_name: str,
+    output_dir: Path,
+    device: str,
+    export_opts: dict,
+    plans: list[_SegmentPlan],
+    jobs: int,
+    progress_cb: Callable[[str], None] | None,
+) -> list[dict]:
+    """Compile independent segments concurrently in a spawn process pool.
+
+    Each segment is compiled by a worker that re-derives it from *hit_path* +
+    *export_opts* (workers can't receive live modules). Segment metadata is
+    reassembled in SEGMENT ORDER regardless of completion order, so the resulting
+    ``_meta.json`` is identical to a serial (``jobs=1``) run. Per-``.pt2``
+    progress from workers is forwarded to *progress_cb* by a drainer thread.
+
+    The worker pool is sized at ``min(jobs, len(plans))`` -- there is one task per
+    segment, so requesting more processes than segments would only spawn idle
+    interpreters. Granularity is per-segment: a worker compiles all of one
+    segment's ``.pt2`` graphs sequentially.
+    """
+    import concurrent.futures as cf
+    import multiprocessing as mp
+    import threading
+
+    ctx = mp.get_context("spawn")
+    # One task per segment -> never spawn more workers than segments.
+    workers = max(1, min(jobs, len(plans)))
+
+    manager = None
+    queue = None
+    drainer = None
+    initializer = None
+    initargs: tuple = ()
+    if progress_cb is not None:
+        manager = ctx.Manager()
+        queue = manager.Queue()
+        initializer = _worker_init
+        initargs = (queue,)
+
+        def _drain() -> None:
+            while True:
+                item = queue.get()
+                if item == _PROGRESS_SENTINEL:
+                    break
+                progress_cb(item)
+
+        drainer = threading.Thread(target=_drain, daemon=True)
+        drainer.start()
+
+    n = len(plans)
+    results: dict[int, dict] = {}
+    hit_s = str(hit_path)
+    out_s = str(output_dir)
+    try:
+        with cf.ProcessPoolExecutor(
+            max_workers=workers, mp_context=ctx, initializer=initializer, initargs=initargs
+        ) as ex:
+            futs = {
+                ex.submit(
+                    _compile_segment_worker,
+                    (hit_s, model_name, out_s, device, export_opts, i),
+                ): i
+                for i in range(n)
+            }
+            for fut in cf.as_completed(futs):
+                i = futs[fut]
+                try:
+                    idx, seg_meta = fut.result()
+                except Exception as exc:  # noqa: BLE001
+                    ex.shutdown(cancel_futures=True)
+                    plan = plans[i]
+                    raise RuntimeError(
+                        f"neml2-compile: segment {plan.index} ({plan.kind}, "
+                        f"{plan.basename}) failed: {exc}"
+                    ) from exc
+                results[idx] = seg_meta
+    finally:
+        if queue is not None:
+            queue.put(_PROGRESS_SENTINEL)
+        if drainer is not None:
+            drainer.join()
+        if manager is not None:
+            manager.shutdown()
+
+    return [results[i] for i in range(n)]
 
 
 # ---------------------------------------------------------------------------
@@ -2767,6 +3175,8 @@ def export_model_for_aoti(
     renames: dict[str, dict[str, str]] | None = None,
     pre: Sequence[str] = (),
     additional_args: tuple[str, ...] = (),
+    jobs: int = 1,
+    progress_cb: Callable[[str], None] | None = None,
 ) -> dict:
     """Export a native NEML2 model to ``.pt2`` artifacts for AOTI C++ consumption.
 
@@ -2839,206 +3249,122 @@ def export_model_for_aoti(
         Trailing HIT override tokens appended to the parser's *post* list
         (e.g. ``"Models/elasticity/E:=210000"``). Path-style overrides only;
         for variable substitution use *pre*.
+    jobs:
+        Number of worker processes for parallel segment compilation. ``1``
+        (default) compiles serially (behavior-identical to before this option).
+        ``> 1`` compiles independent segments concurrently in a spawn process
+        pool -- effective only for a multi-segment model (a ``ComposedModel``
+        containing an ``ImplicitUpdate``); single-segment models ignore it. The
+        resulting ``_meta.json`` is identical to a serial run (segment metadata
+        is reassembled in segment order regardless of completion order).
+    progress_cb:
+        Optional callback invoked with the bare filename of each generated file
+        as it is written -- every ``.pt2`` graph and the ``<model>_meta.json``.
+        The CLI passes a printer that renders ``[k/N] <name>`` progress. ``None``
+        (default) is silent. Under ``jobs > 1`` the callback still fires per
+        ``.pt2`` (forwarded from workers), then once for the metadata.
 
     Returns
     -------
     dict
         The metadata dictionary (same content as the written JSON).
     """
-    from ..factory import load_input
-    from ..models.common import ComposedModel, ImplicitUpdate
-
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    factory = load_input(hit_path, pre=pre, additional_args=additional_args)
-    model = factory.get_model(model_name)
-
-    # Wrap a bare (non-composed) forward leaf in ComposedModel up-front -- BEFORE
-    # promotion -- so promoted parameter names live in the SAME namespace the eager
-    # runtime reports (ComposedModel([leaf]) gives ``model.E`` for a leaf named
-    # ``model``), giving byte-identical parameter naming across the cpp-aoti and
-    # cpp-eager routes. The forward export already wraps a bare leaf for tracing
-    # (see ``_export_forward``), so the exported graph is unchanged -- this only
-    # moves the wrap ahead of name validation/promotion so ``-p`` / the recorded
-    # metadata / ``named_parameters()`` keys are the qualified ``model.E``.
-    # ImplicitUpdate (and composed-with-implicit) models keep their dedicated
-    # export path + namespace; an already-composed model is left untouched (its
-    # parameters are already qualified by their child-leaf names).
-    if not isinstance(model, ComposedModel) and not _contains_implicit(model):
-        model = ComposedModel([model])
-
-    # Resolve example-batch-shape declarations: CLI/Python kwarg wins, then
-    # HIT [Settings], then the (2,)/uniform default. The full per-input map
-    # is what every downstream helper consumes.
-    settings_shapes, settings_dyn = _read_settings(factory)
-    if isinstance(example_batch_shape, str):
-        declared = {"*": example_batch_shape}
-    elif isinstance(example_batch_shape, dict):
-        declared = dict(example_batch_shape)
-    else:
-        declared = settings_shapes
-    if dynamic_batch is None:
-        dynamic_batch = settings_dyn
-    resolved_shapes = _resolve_example_shapes(model.input_spec, declared)
-
-    # Validate / resolve promoted names against the live model BEFORE any
-    # ComposedModel wrapping (which would shift the qualified-name namespace).
-    # Snapshot the initial values now too -- those go into the metadata so
-    # the C++ side can populate `named_parameters()` at construction.
-    promoted_set = set(promoted)
-    promoted_names, origin = _validate_promoted(model, promoted_set)
-    promoted_snapshots = _snapshot_promoted(model, promoted_names)
-
-    # Now route each promoted parameter through the leaf's PromotedParam machinery
-    # (delete the static slot, add `_promoted_params[local] = PromotedParam(input_name=
-    # qname, ...)`, append qname to holder's input_spec). Any ComposedModel
-    # wrap downstream picks the new inputs up via dependency resolution and
-    # the call boundary's `_coerce_to_input_type` wraps raw tensors in the
-    # right TensorWrapper before handing them to the leaf's forward, which
-    # reads via `_get_param` from the *promoted_params pack.
-    promo_info = _promote_parameters(model, promoted_names)
-    promoted_qnames = set(promoted_names)
-    # Natural base shape (BASE_SHAPE) per promoted parameter, from its typed-wrapper
-    # class. The C++ runtime uses it to split a (possibly batched) stored parameter
-    # ``(*pbatch, *base)`` into batch vs base; it equals the snapshot's full shape
-    # only for an unbatched parameter.
-    promoted_base_shapes = {q: tuple(cls.BASE_SHAPE) for q, (cls, _h, _l) in promo_info.items()}
-
-    # Rebuild every spec-caching container (ComposedModel / Normality /
-    # ImplicitUpdate residual) so the promoted parameters route correctly through
-    # the graph. No-op when nothing was promoted.
-    if promoted_names:
-        model = _rebuild_after_promotion(model)
-
-    # Resolve -d/--derivative specs into the master (out, in) pair set, against
-    # the post-promotion outputs + structural inputs (promoted parameters never
-    # appear in the Jacobian). Empty => no derivative graphs are compiled.
-    structural_input_names = list(_structural_inputs(model.input_spec, promoted_qnames))
-    master_pairs, param_pairs = _resolve_derivative_specs(
-        derivatives,
-        list(model.output_spec),
-        structural_input_names,
-        param_names=sorted(promoted_qnames),
+    # Run the full pre-compile prelude (load, wrap, promote, resolve derivatives /
+    # renames, freeze, seed) once. Deterministic in (input, options, device) so a
+    # spawned worker can reproduce the exact same segments.
+    prepared = _prepare_export(
+        hit_path,
+        model_name,
+        device=device,
+        promoted=promoted,
+        example_batch_shape=example_batch_shape,
+        dynamic_batch=dynamic_batch,
+        derivatives=derivatives,
+        renames=renames,
+        pre=pre,
+        additional_args=additional_args,
     )
+    model = prepared.model
 
-    # Validate + normalize boundary renames against the post-promotion boundary
-    # namespaces (structural inputs, outputs, promoted parameters). Fails fast
-    # here -- before the expensive graph compile -- on an unknown or colliding
-    # name. Shallow: only the interface names change; the graphs keep the
-    # original authored names.
-    boundary_aliases = _validate_renames(
-        renames,
-        input_names=structural_input_names,
-        output_names=list(model.output_spec),
-        param_names=sorted(promoted_qnames),
-    )
+    # Plan the segments (cheap, structural). All three model shapes -- forward,
+    # single ImplicitUpdate, composed-with-implicit -- flow through one planner so
+    # the artifacts predicted for progress exactly match what is produced.
+    plans = _plan_segments(prepared, model_name)
 
-    # ``request_AD`` controls HOW a leaf's derivatives are computed (reverse-mode
-    # autodiff embedded in the chain rule); ``-d`` still controls WHETHER any are
-    # compiled, exactly as for an analytic model. So a value-only export of
-    # a request_AD model compiles no derivative graph (and needs no
-    # ``trace_autograd_ops``); the author's win is never hand-writing the chain
-    # rule, not implicit ``-d`` selection.
-
-    # Freeze any remaining nn.Parameter to a persistent buffer so torch.export
-    # bakes it into the graph instead of lifting it as a graph input. Promoted
-    # entries are already gone from _parameters so they're skipped naturally.
-    _freeze_remaining_parameters_to_buffers(model)
-
-    # Catch baked-parameter shape conflicts before torch.export does — the
-    # NEML2-side message names the param, the conflicting input, and the
-    # three available resolutions; torch.export's "you marked batch as
-    # dynamic but specialized it to N" message names neither.
-    if dynamic_batch:
-        _validate_baked_against_shapes(model, resolved_shapes, promoted_qnames)
-
-    # Populate per-variable ``sub_batch_shape`` on every inner
-    # ``ModelNonlinearSystem`` from the resolved per-variable shapes so the
-    # Schur/Block export path traces with the correct per-sub-batch-site
-    # layout. The compile path no longer reaches into [Drivers] for this.
-    _seed_implicit_subbatch(model, resolved_shapes, device)
-
-    inner = model
-
-    # Parameter derivatives d(out)/d(param) are supported for forward-only models
-    # (single forward segment), a single ImplicitUpdate (ParamIFT -- schema v7),
-    # and composed models containing an ImplicitUpdate (the multi-segment carrier
-    # composes du/dθ across forward + implicit segments -- schema v7+). No guard
-    # left to raise here.
-    if isinstance(inner, ImplicitUpdate):
-        meta = _export_implicit(
-            model,
-            inner,
-            model_name,
-            output_dir,
-            device,
-            promoted_qnames=promoted_qnames,
-            promoted_snapshots=promoted_snapshots,
-            shapes=resolved_shapes,
-            dynamic_batch=dynamic_batch,
-            derivatives=master_pairs,
-            param_derivatives=param_pairs,
-        )
-    elif _contains_implicit(inner):
-        meta = _export_composed(
-            model,
-            model_name,
-            output_dir,
-            device,
-            promoted_qnames=promoted_qnames,
-            promoted_snapshots=promoted_snapshots,
-            shapes=resolved_shapes,
-            dynamic_batch=dynamic_batch,
-            derivatives=master_pairs,
-            param_derivatives=param_pairs,
+    # Execute: serial (default) or, for a multi-segment model with jobs > 1, in a
+    # spawn process pool where each worker re-derives its segment from the file.
+    if jobs > 1 and len(plans) > 1:
+        # Pass the ORIGINAL options (not the post-prepare derived values) so each
+        # worker's _prepare_export re-derives from byte-identical inputs.
+        export_opts = {
+            "promoted": sorted(set(promoted)),
+            "example_batch_shape": example_batch_shape,
+            "dynamic_batch": dynamic_batch,
+            "derivatives": tuple(derivatives),
+            "renames": renames,
+            "pre": tuple(pre),
+            "additional_args": tuple(additional_args),
+        }
+        seg_metas = _compile_segments_parallel(
+            hit_path, model_name, output_dir, device, export_opts, plans, jobs, progress_cb
         )
     else:
-        meta = _export_forward(
-            model,
-            model_name,
-            output_dir,
-            device,
-            promoted_qnames=promoted_qnames,
-            promoted_snapshots=promoted_snapshots,
-            shapes=resolved_shapes,
-            dynamic_batch=dynamic_batch,
-            derivatives=master_pairs,
-            param_derivatives=param_pairs,
-        )
+        seg_metas = [
+            _execute_segment_plan(plan, prepared, output_dir, device, progress_cb=progress_cb)
+            for plan in plans
+        ]
+
+    # Assemble the top-level metadata envelope (identical across all three shapes).
+    structural_in = _structural_inputs(model.input_spec, prepared.promoted_qnames)
+    in_sb = {n: sub for n, (_, sub) in (prepared.resolved_shapes or {}).items() if sub}
+    meta: dict = {
+        "schema_version": AOTI_META_SCHEMA_VERSION,
+        "type": "composed",
+        "inputs": _var_infos(structural_in, sub_batch_shapes=in_sb),
+        "outputs": _var_infos(model.output_spec),
+        "segments": seg_metas,
+    }
 
     # v2 top-level additions: device + dtype are baked into the artifact;
     # parameters records the promoted set with initial values.
     meta["device"] = device
     meta["dtype"] = dtype
-    meta["parameters"] = _parameter_infos(promoted_snapshots, origin, promoted_base_shapes, device)
+    meta["parameters"] = _parameter_infos(
+        prepared.promoted_snapshots, prepared.origin, prepared.promoted_base_shapes, device
+    )
     # Master (out, in) derivative pairs the artifact supports, in deterministic
     # (output-order, input-order) order so the runtime iterates rows/cols
     # consistently. Empty => no derivative graphs (jvp/jacobian raise).
     out_order = {n: k for k, n in enumerate(model.output_spec)}
-    in_order = {n: k for k, n in enumerate(structural_input_names)}
+    in_order = {n: k for k, n in enumerate(prepared.structural_input_names)}
     meta["derivatives"] = [
         [o, i]
         for (o, i) in sorted(
-            master_pairs, key=lambda p: (out_order.get(p[0], 0), in_order.get(p[1], 0))
+            prepared.master_pairs, key=lambda p: (out_order.get(p[0], 0), in_order.get(p[1], 0))
         )
     ]
     # Master (out, param) parameter-derivative pairs the artifact supports, in
     # deterministic (output-order, param-name) order. Empty => no param-jacobian
     # graph (the runtime parameter-Jacobian accessor raises).
     meta["parameter_derivatives"] = [
-        [o, p] for (o, p) in sorted(param_pairs, key=lambda x: (out_order.get(x[0], 0), x[1]))
+        [o, p]
+        for (o, p) in sorted(prepared.param_pairs, key=lambda x: (out_order.get(x[0], 0), x[1]))
     ]
     # Boundary renames (shallow): remap only the names reported at the artifact's
     # interface. Absent => the interface uses the original authored names. Only
     # namespaces with an actual rename are written, so a fully-baked artifact is
     # unchanged.
-    active_aliases = {ns: m for ns, m in boundary_aliases.items() if m}
+    active_aliases = {ns: m for ns, m in prepared.boundary_aliases.items() if m}
     if active_aliases:
         meta["boundary_aliases"] = active_aliases
 
-    _write_meta(output_dir / f"{model_name}_meta.json", meta)
+    meta_name = f"{model_name}_meta.json"
+    _write_meta(output_dir / meta_name, meta)
+    _report(progress_cb, meta_name)
     return meta
 
 
-__all__ = ["export_model_for_aoti", "AOTI_META_SCHEMA_VERSION"]
+__all__ = ["export_model_for_aoti", "plan_export_artifacts", "AOTI_META_SCHEMA_VERSION"]

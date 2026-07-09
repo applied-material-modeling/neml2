@@ -55,9 +55,11 @@ import questionary
 from ._compile_interactive import (
     FormState,
     IntrospectionForm,
+    PlanSummary,
     build_compile_argv,
     introspection_to_form,
     list_section_entries,
+    plan_summary,
     preview_command,
     validate_state,
 )
@@ -75,6 +77,7 @@ _FIELDS: list[tuple[str, str]] = [
     ("output_dir", "Output dir"),
     ("example_shape", "Example batch shape"),
     ("dynamic_batch", "Dynamic batch"),
+    ("jobs", "Processes"),
 ]
 
 # Distinct sentinel for the edit menu's "back" choice. A questionary ``Choice``
@@ -102,6 +105,8 @@ _HELP: dict[str, str] = {
     "sub-batch axes, e.g. (2;100). Blank = default.",
     "dynamic_batch": "Let the leading batch dimension vary at runtime (vs. pinned to "
     "the example shape).",
+    "jobs": "How many segments to compile in parallel (spawn processes). Shows the "
+    "segments first; only a multi-segment model benefits.",
 }
 
 
@@ -191,6 +196,7 @@ def _default_state() -> dict:
         "output_dir": "./aoti",
         "example_shape": (),  # tuple of raw `--example-batch-shape` entries
         "dynamic_batch": True,
+        "jobs": 1,
     }
 
 
@@ -320,7 +326,72 @@ def _ask_field(field: str, input_file: str, state: dict, cache: dict) -> bool:
         state["dynamic_batch"] = bool(v)
         return True
 
+    if field == "jobs":
+        return _ask_jobs(input_file, state)
+
     raise ValueError(f"unknown field {field!r}")  # pragma: no cover -- defensive
+
+
+def _positive_int(text: str) -> bool | str:
+    """Questionary validator: accept a string that parses to an int >= 1."""
+    try:
+        return int(text.strip()) >= 1 or "Enter an integer >= 1."
+    except ValueError:
+        return "Enter an integer >= 1."
+
+
+def _print_segment_plan(summary: PlanSummary) -> None:
+    """Show the segments a compile will emit + the total file count."""
+    questionary.print(f"\nSegments to compile ({len(summary.segments)}):", style="bold")
+    for index, kind, basename, artifacts in summary.segments:
+        questionary.print(f"  [{index}] {kind:<8} {basename}")
+        questionary.print(f"        {', '.join(artifacts)}", style="fg:ansibrightblack")
+    questionary.print(
+        f"  + {len(summary.files)} file(s) total (incl. metadata + stub)", style="italic"
+    )
+
+
+def _ask_jobs(input_file: str, state: dict) -> bool:
+    """Show the segment plan, then ask how many processes to compile with.
+
+    A single-segment model has nothing to parallelize, so we note that and pin
+    ``jobs=1`` without prompting. Otherwise the count is capped for display at the
+    segment count (extra workers just idle)."""
+    try:
+        summary: PlanSummary | None = plan_summary(_form_state(input_file, state, ()))
+    except Exception as exc:  # noqa: BLE001
+        questionary.print(f"(could not compute the segment plan: {exc})", style="fg:ansired")
+        summary = None
+
+    n_seg = len(summary.segments) if summary else 0
+    if summary:
+        _print_segment_plan(summary)
+
+    if n_seg <= 1:
+        questionary.print(
+            "(single segment -- parallel compilation is not applicable; using 1 process)",
+            style="italic",
+        )
+        state["jobs"] = 1
+        return True
+
+    v = questionary.text(
+        f"Parallel compile processes (1 = serial; up to {n_seg} segments run concurrently):",
+        default=str(state.get("jobs", 1)),
+        validate=_positive_int,
+    ).ask()
+    if v is None:
+        return False
+    # Clamp to the segment count: extra processes would only sit idle (one task
+    # per segment), so the previewed -j reflects the useful maximum.
+    requested = max(1, int(v.strip()))
+    state["jobs"] = min(requested, n_seg)
+    if requested > n_seg:
+        questionary.print(
+            f"(capped at {n_seg}: there are only {n_seg} segments to compile)",
+            style="italic",
+        )
+    return True
 
 
 def _ask_example_shape(input_file: str, state: dict, cache: dict) -> bool:
@@ -447,6 +518,7 @@ def _form_state(input_file: str, state: dict, initial_load: tuple[str, ...]) -> 
         rename_parameters=_specs("parameters"),
         example_shape=tuple(state["example_shape"]),
         dynamic_batch=state["dynamic_batch"],
+        jobs=int(state.get("jobs", 1)),
         load=tuple(initial_load),
     )
 
@@ -472,6 +544,7 @@ def _print_review(fs: FormState) -> None:
         ("Output dir", fs.output_dir),
         ("Example shape", ", ".join(fs.example_shape) or "(none)"),
         ("Dynamic batch", "yes" if fs.dynamic_batch else "no"),
+        ("Processes", f"{fs.jobs} (serial)" if fs.jobs == 1 else f"{fs.jobs} (parallel)"),
     ]
     for label, value in rows:
         questionary.print(f"  {label:<14} {value}")

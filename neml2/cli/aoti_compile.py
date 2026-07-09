@@ -132,6 +132,21 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="Floating-point dtype for the artifact (baked at export time).",
     )
     parser.add_argument(
+        "-j",
+        "--jobs",
+        type=int,
+        default=1,
+        metavar="N",
+        help=(
+            "Compile independent segments in parallel using up to N worker "
+            "processes (spawn). Default 1 (serial). Only a multi-segment model "
+            "(a ComposedModel containing an ImplicitUpdate) benefits; "
+            "single-segment models ignore N, and N is capped at the number of "
+            "segments (one task per segment). With --device cuda each worker "
+            "spawns its own CUDA context and invokes nvcc -- watch memory."
+        ),
+    )
+    parser.add_argument(
         "-p",
         "--parameter",
         action="append",
@@ -244,6 +259,8 @@ def compile_and_emit_stub(
     renames: dict[str, dict[str, str]] | None = None,
     pre: tuple[str, ...] = (),
     additional_args: tuple[str, ...] = (),
+    jobs: int = 1,
+    progress_cb=None,
 ) -> Path:
     """Compile + emit stub in one call; return the stub path.
 
@@ -256,6 +273,10 @@ def compile_and_emit_stub(
     The intermediate ``model_name`` and the layout (``<output_dir>/<model>/<device>/``
     artifacts + a standalone ``<output_dir>/<model>_aoti.i`` stub) live entirely
     inside this function -- callers just run the returned stub path.
+
+    *jobs* (> 1) compiles independent segments concurrently; *progress_cb*, if
+    given, is invoked with the bare filename of every generated file (each
+    ``.pt2``, the ``_meta.json``, and finally the ``_aoti.i`` stub).
     """
     # Local import keeps the module import-light when only the helpers
     # below are needed.
@@ -288,6 +309,8 @@ def compile_and_emit_stub(
         renames=renames,
         pre=pre,
         additional_args=additional_args,
+        jobs=jobs,
+        progress_cb=progress_cb,
     )
     stub_path = output_dir / f"{model_name}_aoti.i"
     emit_aoti_stub(
@@ -297,6 +320,8 @@ def compile_and_emit_stub(
         stub_path,
         keep_drivers=(driver is not None),
     )
+    if progress_cb is not None:
+        progress_cb(stub_path.name)
     return stub_path
 
 
@@ -668,10 +693,51 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
+    if args.jobs < 1:
+        parser.error("--jobs must be >= 1")
+
     # One complete artifact per device, each in its own device-named subfolder
     # (<model>/cpu/, <model>/cuda/). De-dupe while preserving order so
     # `--device cpu cpu` doesn't compile twice.
     devices = list(dict.fromkeys(args.device))
+
+    # Enumerate every file the compile will generate so progress can report
+    # [k/N]. The artifact set is device-independent, so a single plan (on cpu, to
+    # avoid initializing CUDA in the parent) sizes the whole multi-device run;
+    # the trailing +1 is the standalone `_aoti.i` stub emitted once at the end.
+    from neml2.cli.aoti_export import plan_export_artifacts  # noqa: PLC0415
+
+    try:
+        plan = plan_export_artifacts(
+            input_path,
+            model_name,
+            device="cpu",
+            promoted=set(args.parameter),
+            example_batch_shape=example_batch_shape,
+            dynamic_batch=args.dynamic_batch,
+            derivatives=tuple(args.derivative),
+            renames=renames,
+            additional_args=tuple(additional_args),
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"Error planning '{model_name}': {exc}", file=sys.stderr)
+        return 1
+    total_files = plan.total * len(devices) + 1  # per-device artifacts + the stub
+
+    _progress = {"k": 0}
+
+    def progress_cb(name: str) -> None:
+        _progress["k"] += 1
+        print(f"[{_progress['k']}/{total_files}] {name}", file=sys.stderr)
+
+    if args.jobs > 1 and "cuda" in devices:
+        print(
+            f"neml2-compile: warning: -j{args.jobs} with --device cuda spawns "
+            f"{args.jobs} worker processes, each initializing its own CUDA context "
+            "and invoking nvcc; watch GPU/host memory (consider -j1 for cuda).",
+            file=sys.stderr,
+        )
+
     compiled: list[tuple[str, Path]] = []
     meta: dict = {}
     for device in devices:
@@ -690,6 +756,8 @@ def main(argv: list[str] | None = None) -> int:
                 derivatives=tuple(args.derivative),
                 renames=renames,
                 additional_args=tuple(additional_args),
+                jobs=args.jobs,
+                progress_cb=progress_cb,
             )
         except Exception as exc:  # noqa: BLE001
             print(f"Error compiling '{model_name}' for {device}: {exc}", file=sys.stderr)
@@ -709,6 +777,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"Error emitting stub: {exc}", file=sys.stderr)
         return 1
+    progress_cb(stub_path.name)
 
     n_promoted = len(args.parameter)
     bake_note = "fully baked" if n_promoted == 0 else f"{n_promoted} promoted parameter(s)"

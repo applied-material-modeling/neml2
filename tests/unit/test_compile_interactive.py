@@ -140,6 +140,14 @@ def test_argv_load_repeat_and_empty_output_dir_omitted():
     assert [argv[k + 1] for k, t in enumerate(argv) if t == "--load"] == ["a.py", "b.py"]
 
 
+def test_argv_jobs_emitted_only_when_parallel():
+    # jobs == 1 (the serial default) is omitted to keep the previewed command clean.
+    assert "-j" not in build_compile_argv(FormState(name="m", devices=("cpu",), jobs=1))
+    # jobs > 1 emits `-j N`.
+    argv = build_compile_argv(FormState(name="m", devices=("cpu",), jobs=4))
+    assert argv[argv.index("-j") + 1] == "4"
+
+
 @pytest.mark.parametrize(
     "state",
     [
@@ -155,6 +163,7 @@ def test_argv_load_repeat_and_empty_output_dir_omitted():
             derivatives=("stress:strain",),
             example_shape=("strain=(2;100)",),
             dynamic_batch=False,
+            jobs=3,
             load=("ext.py",),
         ),
         # Model target with boundary renames -- the built argv must parse cleanly.
@@ -185,6 +194,7 @@ def test_argv_round_trips_through_real_parser(state):
     assert args.derivative == list(state.derivatives)
     assert args.example_batch_shape == list(state.example_shape)
     assert args.dynamic_batch is state.dynamic_batch
+    assert args.jobs == state.jobs
     assert args.load == list(state.load)
 
 
@@ -213,6 +223,58 @@ def test_validate_flags_nonexistent_input(tmp_path):
         FormState(input_file=str(tmp_path / "nope.i"), name="m", devices=("cpu",))
     )
     assert any("not found" in p for p in problems)
+
+
+def test_validate_flags_bad_jobs(tmp_path):
+    inp = tmp_path / "in.i"
+    inp.write_text("")
+    problems = validate_state(FormState(input_file=str(inp), name="m", devices=("cpu",), jobs=0))
+    assert any("-j" in p or "processes" in p.lower() for p in problems)
+
+
+# --------------------------------------------------------------------------- #
+# plan_summary -- the segment / artifact preview shown before choosing -j      #
+# --------------------------------------------------------------------------- #
+
+_TESTS_ROOT = Path(__file__).parent.parent
+_ELASTICITY_I = _TESTS_ROOT / "models/solid_mechanics/elasticity/LinearIsotropicElasticity.i"
+_COMPOSED_I = _TESTS_ROOT / "aoti/composed_param/model.i"
+
+
+def test_plan_summary_single_segment_forward():
+    import neml2  # noqa: F401 — registers models
+    from neml2.cli._compile_interactive import plan_summary
+
+    summary = plan_summary(
+        FormState(input_file=str(_ELASTICITY_I), target="model", name="model", devices=("cpu",))
+    )
+    # A forward-only model is one segment; the last generated file is the stub.
+    assert [(i, k) for (i, k, _b, _a) in summary.segments] == [(0, "forward")]
+    assert summary.files[-1] == "model_aoti.i"
+    assert "model_meta.json" in summary.files
+
+
+def test_plan_summary_composed_multi_segment():
+    import neml2  # noqa: F401 — registers models
+    from neml2.cli._compile_interactive import plan_summary
+
+    summary = plan_summary(
+        FormState(
+            input_file=str(_COMPOSED_I),
+            target="model",
+            name="model",
+            devices=("cpu",),
+            derivatives=(":",),
+        )
+    )
+    assert [(i, k) for (i, k, _b, _a) in summary.segments] == [
+        (0, "forward"),
+        (1, "implicit"),
+        (2, "forward"),
+    ]
+    # Every predicted artifact plus the meta + stub is enumerated, stub last.
+    assert summary.files[-1] == "model_aoti.i"
+    assert "model_seg1_ift.pt2" in summary.files
 
 
 def test_validate_ok_for_real_file():
@@ -933,3 +995,48 @@ def test_argv_builder_empty_optionals():
         FormState(input_file="", name="", output_dir="", devices=(), dtype="")
     )
     assert argv == []
+
+
+def test_ask_jobs_prompts_on_multi_segment(monkeypatch):
+    """A multi-segment model shows the segment plan and prompts for a process
+    count, consuming exactly one scripted answer."""
+    pytest.importorskip("questionary")
+    import neml2  # noqa: F401, PLC0415 — registers models
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary(["3"]))
+    state = wiz._default_state()
+    state["target"] = "model"
+    state["name"] = "model"
+    assert wiz._ask_field("jobs", str(_COMPOSED_I), state, {}) is True
+    assert state["jobs"] == 3
+
+
+def test_ask_jobs_single_segment_no_prompt(monkeypatch):
+    """A single-segment model pins jobs=1 without prompting -- the empty script
+    would raise StopIteration if a prompt were shown."""
+    pytest.importorskip("questionary")
+    import neml2  # noqa: F401, PLC0415 — registers models
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary([]))
+    state = wiz._default_state()
+    state["target"] = "model"
+    state["name"] = "model"
+    assert wiz._ask_field("jobs", str(_ELASTICITY_I), state, {}) is True
+    assert state["jobs"] == 1
+
+
+def test_ask_jobs_clamps_to_segment_count(monkeypatch):
+    """Requesting more processes than segments is clamped to the segment count
+    (the composed fixture has 3 segments)."""
+    pytest.importorskip("questionary")
+    import neml2  # noqa: F401, PLC0415 — registers models
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary(["99"]))
+    state = wiz._default_state()
+    state["target"] = "model"
+    state["name"] = "model"
+    assert wiz._ask_field("jobs", str(_COMPOSED_I), state, {}) is True
+    assert state["jobs"] == 3
