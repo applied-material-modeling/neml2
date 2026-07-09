@@ -1,0 +1,14 @@
+# kinematics
+
+`[Models]` types under `solid_mechanics/kinematics/`.
+
+```{toctree}
+:maxdepth: 1
+
+PhaseTransformationEigenstrain
+SwellingAndPhaseChangeDeformationJacobian
+ThermalDeformationJacobian
+ThermalEigenstrain
+VolumeAdjustDeformationGradient
+VolumeChangeEigenstrain
+```
