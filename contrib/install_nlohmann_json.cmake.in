@@ -1,0 +1,38 @@
+# nlohmann_json bootstrap — configured by custom_install() (see
+# cmake/Modules/DepUtils.cmake) via configure_file(@ONLY), then run with
+# `cmake -P`. It is a CMake script, NOT a shell script, so the dependency
+# bootstrap works on every platform — including Windows/MSVC, where no POSIX
+# shell (bash/sh) is available during the build.
+#
+# nlohmann_json is header-only; JSON_BuildTests=OFF means the nested build only
+# generates + installs the headers and the CMake package config that neml2's
+# find_package(nlohmann_json CONFIG) consumes. The parent generator is forwarded
+# for consistency; the compiler is intentionally NOT forced (a header-only
+# INTERFACE library needs none, and forcing CMAKE_CXX_COMPILER conflicts with the
+# Visual Studio generator on Windows).
+
+execute_process(
+  COMMAND "@CMAKE_COMMAND@"
+          "-DCMAKE_GENERATOR=@CMAKE_GENERATOR@"
+          "-DCMAKE_BUILD_TYPE=Release"
+          "-DCMAKE_INSTALL_PREFIX=@INSTALL_PREFIX@"
+          "-DJSON_Install=ON"
+          "-DJSON_MultipleHeaders=OFF"
+          "-DJSON_BuildTests=OFF"
+          "-B@BINARY_DIR@"
+          "-S@SOURCE_DIR@"
+  RESULT_VARIABLE _rc
+)
+if(NOT _rc EQUAL 0)
+  message(FATAL_ERROR "nlohmann_json: configure step failed (exit ${_rc})")
+endif()
+
+execute_process(COMMAND "@CMAKE_COMMAND@" --build "@BINARY_DIR@" RESULT_VARIABLE _rc)
+if(NOT _rc EQUAL 0)
+  message(FATAL_ERROR "nlohmann_json: build step failed (exit ${_rc})")
+endif()
+
+execute_process(COMMAND "@CMAKE_COMMAND@" --install "@BINARY_DIR@" RESULT_VARIABLE _rc)
+if(NOT _rc EQUAL 0)
+  message(FATAL_ERROR "nlohmann_json: install step failed (exit ${_rc})")
+endif()

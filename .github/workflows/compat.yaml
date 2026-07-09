@@ -140,7 +140,7 @@ jobs:
         run: pip install wheelhouse/*.whl
       - name: Install test deps
         # dependencies: pyzag.version
-        run: pip install pytest "pyzag==1.1.3"
+        run: pip install pytest "pyzag==1.1.4"
       - name: Confirm import + torch version under test
         # Run from a neutral dir, NOT the repo root: the checked-out source tree
         # has a `neml2/` package with no compiled `_aoti` extension, and CWD on

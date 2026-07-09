@@ -31,14 +31,6 @@ pip install neml2
 
 The wheel ships everything a C++ consumer needs too — `libneml2.so`, the public headers, and the CMake config files all land under your `site-packages/neml2/`. See the [installation guide](https://applied-material-modeling.github.io/neml2/stable/content/installation/install.html) for finer control over the torch variant (CPU / CUDA / ROCm) and the C++ integration guide for `find_package(neml2)` wiring.
 
-**Developer source build** (only when contributing to the bundled C++ AOTI runtime):
-
-```shell
-git clone -b main https://github.com/applied-material-modeling/neml2.git
-cd neml2
-pip install -e ".[dev]"
-```
-
 Once NEML2 is installed, the [deployment overview](https://applied-material-modeling.github.io/neml2/stable/content/deployment/overview.html) walks through the different ways to evaluate a model, and the [tutorials](https://applied-material-modeling.github.io/neml2/stable/content/tutorials/index.html) cover the commonly used APIs.
 
 ### Features and design philosophy

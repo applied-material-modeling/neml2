@@ -56,6 +56,66 @@ jobs:
       - name: Build libneml2
         run: cmake --build build/check --target aoti
 
+  # Windows/MSVC build (neml2 issue #414). Windows is a best-effort,
+  # source-build-only platform -- no wheels are published -- so this job just
+  # proves neml2 compiles, installs, imports, and can be consumed from a
+  # downstream C++ project via find_package(neml2). Non-blocking while the MSVC
+  # port stabilizes (continue-on-error); flip to required once it is green. Runs
+  # in PowerShell (the Windows default shell) and lets scikit-build-core drive the
+  # Visual Studio generator, which locates the MSVC toolset itself -- so no
+  # developer-environment setup is needed. ninja is intentionally NOT installed:
+  # the Ninja generator would then need cl.exe on PATH (a dev shell), whereas the
+  # VS generator does not.
+  windows:
+    needs: clang-format
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+      - name: Install build dependencies
+        # Pre-install only the *build* dependencies (--no-build-isolation does not
+        # pull them in): scikit-build-core is the build backend; torch + nmhit ship
+        # the libtorch / libnmhit the C++ build links against. Runtime deps (pyzag)
+        # are resolved by pip during the install below -- pyzag >= 1.1.4 ships a
+        # wheel, so no source build happens under --no-build-isolation. On Windows
+        # nmhit resolves to its first wheel-shipping release (>= 0.3.5).
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-build-core
+          # dependencies: torch.version
+          pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+          # dependencies: nmhit.version_min
+          pip install "nmhit>=0.3.3"
+      - name: Build + install neml2
+        # Non-editable so the shipped CMake package config lands in site-packages
+        # for the downstream consumer step below.
+        # CXXFLAGS=/WX treats warnings as errors, mirroring the -Werror the
+        # Linux/macOS `build` job passes. It goes through CXXFLAGS (which CMake
+        # *appends* to its flags) rather than -DCMAKE_CXX_FLAGS (which would
+        # *replace* MSVC's defaults like /EHsc). Third-party header warnings are
+        # already suppressed via /external:W0 (see the top-level CMakeLists).
+        env:
+          CXXFLAGS: /WX
+        run: pip install . --no-build-isolation -v
+      - name: Import smoke test
+        run: python -c "import neml2; print('neml2', neml2.__version__)"
+      - name: Downstream C++ consumer via find_package(neml2)
+        run: |
+          $prefix = python -c "import sysconfig, os; print(os.path.join(sysconfig.get_path('platlib'), 'neml2'))"
+          $torchlib = python -c "import torch, os; print(os.path.join(os.path.dirname(torch.__file__), 'lib'))"
+          cmake -S tests/downstream -B build/downstream -Dneml2_DIR="$prefix/share/cmake/neml2"
+          cmake --build build/downstream --config Release
+          # No rpath on Windows: put neml2.dll + the torch DLLs on PATH so the
+          # consumer resolves them at run time.
+          $env:PATH = "$prefix\lib;$torchlib;$env:PATH"
+          & "$PWD\build\downstream\Release\consumer.exe"
+
   # Benchmark smoke tests. Each scenario under benchmark/<name>/model.i is
   # compiled through neml2-compile and driven once at batch=2 via the
   # ctest entries registered in benchmark/CMakeLists.txt. Single Linux/CPU

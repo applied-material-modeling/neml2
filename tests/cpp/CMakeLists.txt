@@ -197,6 +197,9 @@ set_tests_properties(test_input_broadcast PROPERTIES
 # --- Eager embed test: links libneml2_eager, embeds a CPython interpreter, and
 # runs a model straight from the original .i (no compile fixture needed). New
 # "eager" label so it runs independently of the AOTI dispatcher tests.
+# Skipped on Windows: libneml2_eager is not built there (the undefined-symbol
+# embed linking model is Unix-only -- see the top-level CMakeLists).
+if(NOT WIN32)
 add_executable(test_eager test_eager.cpp)
 # This pure-C++ exe supplies libpython (Python3::Python) for the interpreter that
 # libneml2_eager embeds; libneml2_eager itself links only Python3::Module.
@@ -241,3 +244,4 @@ set_tests_properties(test_eager PROPERTIES
       ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${torch_LINK_DIR}"
       ENVIRONMENT "PYTHONHOME=${_py_home};PYTHONPATH=${NEML2_SOURCE_DIR}"
 )
+endif() # NOT WIN32 -- test_eager (libneml2_eager unavailable on Windows)
