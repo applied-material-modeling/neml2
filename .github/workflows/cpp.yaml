@@ -149,7 +149,13 @@ jobs:
       - name: Build + install neml2 (with test deps)
         run: pip install ".[dev]" --no-build-isolation -v
       - name: Run tests (unit + AOTI)
-        run: pytest -v -n auto tests/unit tests/aoti
+        # Run from a neutral dir, NOT the repo root: the checked-out ./neml2/
+        # source tree has no compiled _aoti extension and would shadow the
+        # installed wheel if the repo root were importable. (Same reason the
+        # downstream/compat jobs run from elsewhere.) Test paths are absolute.
+        run: |
+          cd $env:RUNNER_TEMP
+          pytest -v -n auto "$env:GITHUB_WORKSPACE\tests\unit" "$env:GITHUB_WORKSPACE\tests\aoti"
 
   # Benchmark smoke tests. Each scenario under benchmark/<name>/model.i is
   # compiled through neml2-compile and driven once at batch=2 via the

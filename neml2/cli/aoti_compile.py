@@ -498,7 +498,11 @@ def emit_aoti_stub(
     # Absolute pointer at the per-device artifact folder. Absolute (not
     # relative) by design: the stub is standalone and lives outside the folder,
     # so moving the artifacts requires recompiling or editing this path.
-    artifact_abs = str(Path(artifact_dir).resolve())
+    # Forward slashes (as_posix), not the OS-native separator: this path is
+    # written into a HIT stub, and the nmhit parser rejects backslashes
+    # ("unexpected character '\'"). Windows file APIs accept forward slashes, so
+    # the emitted path resolves on every platform.
+    artifact_abs = Path(artifact_dir).resolve().as_posix()
 
     # Build the cleaned [Models] block once: one shim, no siblings.
     cleaned_models = nmhit.Section("Models")
@@ -574,7 +578,10 @@ def emit_aoti_stub(
         f"# Do not edit; regenerate via `neml2-compile`.\n"
         f"\n"
     )
-    stub_path.write_text(header + new_root.render())
+    # encoding="utf-8": model/variable names may contain non-ASCII characters
+    # (e.g. Greek symbols like theta). Without an explicit encoding, Windows
+    # writes with the locale codepage (cp1252) and raises UnicodeEncodeError.
+    stub_path.write_text(header + new_root.render(), encoding="utf-8")
 
 
 def _parse_example_batch_shape_cli(entries: list[str]) -> dict[str, str] | str | None:
