@@ -99,21 +99,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #    /std:c++17, which trips standards-conditional code in torch's headers.
 #  - /bigobj: the torch + typed-wrapper template instantiations blow past the
 #    default per-object section limit (fatal C1128) without it.
-#  - /external:W0 (+ /external:templates-): silence warnings from third-party
-#    headers (torch, nmhit, nlohmann), which CMake marks as external
-#    (/external:I) for SYSTEM includes. This is the MSVC equivalent of the
-#    automatic -isystem suppression on GCC/Clang, and is what lets a
-#    warnings-as-errors build (CXXFLAGS=/WX in CI, mirroring -Werror on the other
-#    platforms) not choke on torch's own warnings. /external:templates- is
-#    essential: without it, a warning raised while instantiating an external
-#    header's template (e.g. torch's function_schema.h building a
-#    std::optional<int> from size_t -> C4267) surfaces at the STL header
-#    <optional> -- which is not in our external set -- and would still error.
-#    /external:templates- attributes such warnings to the external header that
-#    requested the instantiation, so /external:W0 suppresses them.
+#  - /external:W0: silence warnings from third-party headers (torch, nmhit,
+#    nlohmann), which CMake marks as external (/external:I) for SYSTEM includes --
+#    the MSVC equivalent of the automatic -isystem suppression on GCC/Clang. This
+#    lets a warnings-as-errors build (CXXFLAGS=/WX in CI, mirroring -Werror on the
+#    other platforms) not choke on warnings inside those headers.
+#  - /wd4267 (size_t -> smaller-int narrowing): torch triggers this by passing a
+#    size_t into a std::optional<int> (function_schema.h). It surfaces in the STL
+#    header <optional> -- not in our external set, so /external:W0 can't reach it
+#    -- and it is not part of our GCC/Clang -Wall/-Wextra baseline anyway (that
+#    is -Wconversion, which we do not enable), so disabling it keeps the warning
+#    surface consistent across platforms rather than erroring only on MSVC.
 # And _CRT_SECURE_NO_WARNINGS: silence C4996 on standard calls like std::getenv.
 if(MSVC)
-      add_compile_options(/Zc:__cplusplus /bigobj /external:W0 /external:templates-)
+      add_compile_options(/Zc:__cplusplus /bigobj /external:W0 /wd4267)
       add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 endif()
 
