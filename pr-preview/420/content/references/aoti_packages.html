@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="iris" data-content_root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AOTI packages - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Compilation pipeline" href="pipeline.html" /><link rel="prev" title="cpp-eager — eager evaluation from C++" href="cpp_eager.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=8ed54ede" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="AOTI packages"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../index.html">
+      <img class="light-logo" src="../../_static/logo_light.png" alt="NEML2" height="28" loading="lazy" />
+      <img class="dark-logo" src="../../_static/logo_dark.png" alt="NEML2" height="28" loading="lazy" />
+      <strong>NEML2</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation/install.html">Basic installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation/compatibility.html">Torch compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation/deps.html">Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/input_file.html">Input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/running_your_first_model/main.html">Running your first model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/model_parameters/main.html">Model parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/evaluation_device/main.html">Evaluation device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/vectorization/main.html">Vectorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/cross_referencing/main.html">Cross-referencing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/model_composition/main.html">Model composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/model_parameters_revisited/main.html">Model parameters revisited</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/implicit_model/main.html">Implicit models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/transient_driver/main.html">Transient driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/compiled_models/main.html">Compiled models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/models/compilation_internals/main.html">How compilation works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/argument_declaration/main.html">Declaring inputs, outputs, and parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/connection_to_input_files/main.html">Connecting to input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/the_forward_operator/main.html">The forward operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/request_ad/main.html">Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/extension/model_composition/main.html">Composing with existing models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/automatic_differentiation/main.html">Automatic differentiation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/parameter_calibration/main.html">Parameter calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/primitive_types.html">Primitive (fixed-base-shape) tensor types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/regions.html">Tensor shape regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/batching.html">Batching and broadcasting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/region_views.html">Region views</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_types/indexing.html">Indexing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">Physics modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/chemical_reactions.html">Chemical reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/finite_volume.html">Finite volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/phase_field_fracture.html">Phase-field fracture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/porous_flow.html">Porous flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/elasticity.html">Elasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/viscoelasticity.html">Viscoelasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/plasticity.html">Plasticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/index.html">Crystal plasticity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/formulations.html">Crystal plasticity formulations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modules/solid_mechanics/crystal_plasticity/polefigures.html">Plotting pole figures</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/traction_separation_law.html">Traction–separation laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modules/solid_mechanics/kinematics.html">Kinematics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../migration/index.html">Migration guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../migration/212_300.html">Migrating from v2.x to v3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../migration/211_212.html">Migrating from v2.1.1 to v2.1.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../migration/200_210.html">Migrating from v2.0.0 to v2.1.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Deployment &amp; integration</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/overview.html">Ways to evaluate a model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development/building.html">Building from source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/quality.html">Code quality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/dependencies.html">Dependency pinning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/documentation.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/notebooks.html">Jupyter notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/submitting.html">Submitting a pull request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/benchmarking.html">Benchmarking</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="py_eager.html"><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py_jit.html"><code class="docutils literal notranslate"><span class="pre">py-jit</span></code> — in-process <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="py_aoti.html"><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AOTI packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">Compilation pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Models/index.html">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/index.html">chemical_reactions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/AvramiErofeevNucleation.html">AvramiErofeevNucleation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/ContractingGeometry.html">ContractingGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/CylindricalChannelGeometry.html">CylindricalChannelGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/DiffusionLimitedReaction.html">DiffusionLimitedReaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/chemical_reactions/EffectiveVolume.html">EffectiveVolume</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/common/index.html">common</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ArrheniusParameter.html">ArrheniusParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ComposedModel.html">ComposedModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ConstantExtrapolationPredictor.html">ConstantExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMRP.html">CopyMRP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyMillerIndex.html">CopyMillerIndex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyR2.html">CopyR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySR2.html">CopySR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopySSR4.html">CopySSR4</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyScalar.html">CopyScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyVec.html">CopyVec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/CopyWR2.html">CopyWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPInputParameter.html">MRPInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPParameterToVariable.html">MRPParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MacaulaySplit.html">MacaulaySplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ConstantParameter.html">SR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2Determinant.html">SR2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2DynamicMean.html">SR2DynamicMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2DynamicSum.html">SR2DynamicSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ForwardEulerTimeIntegration.html">SR2ForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2InputParameter.html">SR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateDiff.html">SR2IntermediateDiff</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateMean.html">SR2IntermediateMean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2Invariant.html">SR2Invariant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2LinearCombination.html">SR2LinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2ToR2.html">SR2ToR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2VariableRate.html">SR2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4ConstantParameter.html">SSR4ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4InputParameter.html">SSR4InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SSR4ParameterToVariable.html">SSR4ParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarBackwardEulerTimeIntegration.html">ScalarBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarBilinearInterpolation.html">ScalarBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarConstantParameter.html">ScalarConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarForwardEulerTimeIntegration.html">ScalarForwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarPNorm.html">ScalarPNorm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarToDiagonalSR2.html">ScalarToDiagonalSR2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ScalarVariableRate.html">ScalarVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SymmetricHermiteInterpolation.html">SymmetricHermiteInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecBackwardEulerTimeIntegration.html">VecBackwardEulerTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecBilinearInterpolation.html">VecBilinearInterpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecComponents.html">VecComponents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecConstantParameter.html">VecConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecInputParameter.html">VecInputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecParameterToVariable.html">VecParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/VecVariableRate.html">VecVariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ConstantParameter.html">WR2ConstantParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ExplicitExponentialTimeIntegration.html">WR2ExplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ImplicitExponentialTimeIntegration.html">WR2ImplicitExponentialTimeIntegration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2InputParameter.html">WR2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/WR2ParameterToVariable.html">WR2ParameterToVariable</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/SemiInfiniteCoordinateTransform.html">SemiInfiniteCoordinateTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/SmearedDeltaSource.html">SmearedDeltaSource</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/kwn/index.html">kwn</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ChemicalGibbsFreeEnergyDifference.html">ChemicalGibbsFreeEnergyDifference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/CurrentConcentration.html">CurrentConcentration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/IdealSolutionVolumetricDrivingForce.html">IdealSolutionVolumetricDrivingForce</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/KineticFactor.html">KineticFactor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/NucleationBarrierAndCriticalRadius.html">NucleationBarrierAndCriticalRadius</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/NucleationFluxMagnitude.html">NucleationFluxMagnitude</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/PrecipitateVolumeFraction.html">PrecipitateVolumeFraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ProjectedDiffusivitySum.html">ProjectedDiffusivitySum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/RateLimitedPrecipitateGrowthRate.html">RateLimitedPrecipitateGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/SFFKPrecipitationGrowthRate.html">SFFKPrecipitationGrowthRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/kwn/ZeldovichFactor.html">ZeldovichFactor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/index.html">phase_field_fracture</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT1.html">CrackGeometricFunctionAT1</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/CrackGeometricFunctionAT2.html">CrackGeometricFunctionAT2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.html">LinearIsotropicStrainEnergyDensity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/PowerDegradationFunction.html">PowerDegradationFunction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/RationalDegradationFunction.html">RationalDegradationFunction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/index.html">porous_flow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/AdvectiveStress.html">AdvectiveStress</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/BrooksCoreyCapillaryPressure.html">BrooksCoreyCapillaryPressure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/EffectiveSaturation.html">EffectiveSaturation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/ExponentialLawPermeability.html">ExponentialLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/KozenyCarmanPermeability.html">KozenyCarmanPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/PowerLawPermeability.html">PowerLawPermeability</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/porous_flow/VanGenuchtenCapillaryPressure.html">VanGenuchtenCapillaryPressure</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/traction_separation_law/index.html">traction_separation_law</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/viscoelasticity/index.html">viscoelasticity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/SR2TwoStageThermalAnnealing.html">SR2TwoStageThermalAnnealing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/ScalarTwoStageThermalAnnealing.html">ScalarTwoStageThermalAnnealing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/AOTIModel.html">AOTIModel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Tensors/index.html">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVSR2.html">CSVSR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVScalar.html">CSVScalar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVVec.html">CSVVec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/CSVWR2.html">CSVWR2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Tensors/Python.html">Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/EquationSystems/index.html">Equation systems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/EquationSystems/NonlinearSystem.html">NonlinearSystem</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Drivers/index.html">Drivers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Drivers/TransientDriver.html">TransientDriver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Drivers/TransientRegression.html">TransientRegression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Drivers/Verification.html">Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Data/index.html">Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Data/CubicCrystal.html">CubicCrystal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python_api/index.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.factory.html">neml2.factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.schema.html">neml2.schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.models.model.html">neml2.models.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.models.chain_rule.html">neml2.models.chain_rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.models.resolver.html">neml2.models.resolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.types.html">neml2.types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.models.html">neml2.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.solvers.html">neml2.solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.es.html">neml2.es</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.drivers.html">neml2.drivers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.data.html">neml2.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.user_tensors.html">neml2.user_tensors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.models.export.html">neml2.models.export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.aoti.html">neml2.aoti</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.pyzag.html">neml2.pyzag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../python_api/neml2.cli.html">neml2.cli</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#on-disk-layout">On-disk layout</a><ul>
+<li><a class="reference internal" href="#whats-in-the-metadata-json">What&#8217;s in the metadata JSON</a></li>
+<li><a class="reference internal" href="#segment-kinds">Segment kinds</a></li>
+<li><a class="reference internal" href="#cross-segment-state">Cross-segment state</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-hit-stub">The HIT stub</a></li>
+<li><a class="reference internal" href="#parameter-promotion-p">Parameter promotion (<code class="docutils literal notranslate"><span class="pre">-p</span></code>)</a><ul>
+<li><a class="reference internal" href="#constraint-no-parameters-inside-implicitupdate">Constraint: no parameters inside <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code></a></li>
+<li><a class="reference internal" href="#batched-parameters">Batched parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dynamic-batch-dimension">Dynamic batch dimension</a></li>
+<li><a class="reference internal" href="#device-and-dtype-pinning">Device and dtype pinning</a></li>
+<li><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../index.html"><span itemprop="name">NEML2</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">AOTI packages</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section class="tex2jax_ignore mathjax_ignore" id="aoti-packages">
+<span id="id1"></span><h1>AOTI packages<a class="headerlink" href="#aoti-packages" title="Link to this heading">#</a></h1>
+<p>This is the on-disk reference for the artifacts that <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>
+produces — the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs, the metadata, and the HIT stub. It is the
+shared substrate both compiled-model routes load: from Python via
+<a class="reference internal" href="py_aoti.html#py-aoti"><span class="std std-ref">py-aoti — compiled model from Python</span></a> and from C++ via <a class="reference internal" href="cpp_aoti.html#cpp-aoti"><span class="std std-ref">cpp-aoti — compiled model from C++</span></a>. Read it when you need to know
+exactly what a <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> package contains.</p>
+<p>The <em>how</em> — what <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> does between reading your HIT
+file and emitting these files — is covered in
+<a class="reference internal" href="pipeline.html#model-compilation-pipeline"><span class="std std-ref">Compilation pipeline</span></a>. The <em>how-to</em> — compile a model,
+load the result, take Jacobian-vector products — lives in
+<a class="reference internal" href="../tutorials/models/compiled_models/main.html#tutorials-models-compiled"><span class="std std-ref">Compiled models</span></a>.</p>
+<p>The CLI synopsis:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">neml2</span><span class="o">-</span><span class="nb">compile</span> <span class="o">&lt;</span><span class="nb">input</span><span class="o">.</span><span class="n">i</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">model</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span>
+</span><span data-line="2">                        <span class="p">[</span><span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="o">&lt;</span><span class="nb">dir</span><span class="o">&gt;</span><span class="p">]</span>
+</span><span data-line="3">                        <span class="p">[</span><span class="o">--</span><span class="n">device</span> <span class="n">cpu</span><span class="o">|</span><span class="n">cuda</span> <span class="p">[</span><span class="n">cpu</span><span class="o">|</span><span class="n">cuda</span> <span class="o">...</span><span class="p">]]</span> <span class="p">[</span><span class="o">--</span><span class="n">dtype</span> <span class="n">float64</span><span class="o">|</span><span class="n">float32</span><span class="p">]</span>
+</span><span data-line="4">                        <span class="p">[</span><span class="o">-</span><span class="n">p</span><span class="o">|--</span><span class="n">parameter</span> <span class="n">NAME</span> <span class="o">...</span><span class="p">]</span>
+</span><span data-line="5">                        <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="o">|--</span><span class="n">derivative</span> <span class="n">OUT</span><span class="p">:</span><span class="n">IN</span> <span class="o">...</span><span class="p">]</span>
+</span></pre></div>
+</div>
+<p>Derivative graphs are <strong>opt-in</strong>. With no <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag only the <code class="docutils literal notranslate"><span class="pre">forward</span></code>
+graph is compiled and the runtime <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> raise. Each
+<code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">OUT:IN</span></code> requests the Jacobian/JVP for that output-input pair; omit a
+side to select all on it (<code class="docutils literal notranslate"><span class="pre">stress:</span></code> = every input of <code class="docutils literal notranslate"><span class="pre">stress</span></code>, <code class="docutils literal notranslate"><span class="pre">:strain</span></code>
+= every output w.r.t. <code class="docutils literal notranslate"><span class="pre">strain</span></code>, <code class="docutils literal notranslate"><span class="pre">:</span></code> = all pairs). The requested master
+pairs are recorded in the metadata’s top-level <code class="docutils literal notranslate"><span class="pre">derivatives</span></code> array.</p>
+<p>Each derivative is one per-variable-pair block. A block that does not
+depend on the dynamic batch (e.g. a constant stiffness tensor) is returned
+<strong>unbatched</strong> at its natural <code class="docutils literal notranslate"><span class="pre">(*out_base,</span> <span class="pre">*in_base)</span></code> shape.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For an <strong>implicit (Newton-solve) model with sub-batched (per-grain) state</strong>
+— e.g. crystal plasticity — a derivative of a <strong>non-sub-batched output
+w.r.t. a non-sub-batched input</strong> (e.g. a global stress w.r.t. a global
+strain) is supported: the IFT solve handles the internal per-grain coupling
+and the returned block has no grain axis. A derivative that <em>touches</em> a
+per-grain variable (a sub-batched output or input) is not yet implemented
+and fails fast at <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> with a clear “… involves the sub-batched
+variable …” error; use eager mode (<code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code>) for per-grain
+sensitivities. Forward evaluation of such models, and all plain-batch /
+forward derivatives, are fully supported.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Parameter derivatives and saved-output ops.</strong> Parameter-derivative graphs
+(<code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">OUT:PARAM</span></code> for a promoted <code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">PARAM</span></code>) are compiled by reverse-mode
+autograd, which is currently the only AD that lowers through AOTInductor. An
+upstream PyTorch limitation
+(<a class="reference external" href="https://github.com/pytorch/pytorch/issues/187907">pytorch/pytorch#187907</a>)
+prevents lowering a reverse-mode graph through an element-wise op whose backward
+<strong>saves its output</strong> (<code class="docutils literal notranslate"><span class="pre">sqrt</span></code>, <code class="docutils literal notranslate"><span class="pre">exp</span></code>, <code class="docutils literal notranslate"><span class="pre">tanh</span></code>, <code class="docutils literal notranslate"><span class="pre">reciprocal</span></code>, and division by a
+differentiated value — e.g. a von Mises norm or an Arrhenius/Kocks–Mecking
+<code class="docutils literal notranslate"><span class="pre">exp</span></code>). NEML2 works around the common cases transparently: the typed-tensor
+wrappers (<code class="docutils literal notranslate"><span class="pre">neml2/types/functions.py</span></code>) route these ops through input-recompute
+<code class="docutils literal notranslate"><span class="pre">autograd.Function</span></code>s on the AD path while keeping the plain instruction on the
+value path, so such models compile and match eager to machine precision. If a
+model’s differentiated path reaches a saved-output op that is <em>not</em> wrapped
+(e.g. a raw <code class="docutils literal notranslate"><span class="pre">torch.&lt;op&gt;</span></code> inside a leaf), <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> fails fast with an
+actionable message; route that op through its wrapper, or compute the parameter
+derivative through the eager runtime (Python <code class="docutils literal notranslate"><span class="pre">neml2.eager</span></code> / <code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>), which
+never lowers a graph.</p>
+</div>
+<p>See <a class="reference internal" href="../deployment/cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a> for the broader CLI surface.</p>
+<section id="on-disk-layout">
+<h2>On-disk layout<a class="headerlink" href="#on-disk-layout" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> writes a <strong>per-device artifact folder</strong> plus a single
+standalone HIT stub that sits next to it:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;output-dir&gt;/                  # default ./aoti/
+</span><span data-line="2">  &lt;name&gt;_aoti.i                # standalone HIT stub (points at the folder below)
+</span><span data-line="3">  &lt;name&gt;/                      # per-device artifact folder
+</span><span data-line="4">    cpu/   &lt;name&gt;_meta.json + *.pt2
+</span><span data-line="5">    cuda/  &lt;name&gt;_meta.json + *.pt2
+</span></pre></div>
+</div>
+<p>A compile targeting a single device (the default <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span></code>) emits
+just one <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolder; <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code> emits
+both <code class="docutils literal notranslate"><span class="pre">cpu/</span></code> and <code class="docutils literal notranslate"><span class="pre">cuda/</span></code>, each a complete, self-contained artifact for
+that device. The stub points at the <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;/</span></code> folder via an absolute
+<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> field, and the loader resolves
+<code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;name&gt;_meta.json</span></code> for the device it runs on
+(see <a class="reference internal" href="#the-hit-stub">The HIT stub</a>).</p>
+<p>The full set of files a compile will write — every <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>, each
+per-device <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_meta.json</span></code>, and the <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_aoti.i</span></code> stub — can be
+enumerated ahead of time, without compiling, via
+<code class="docutils literal notranslate"><span class="pre">neml2.cli.aoti_export.plan_export_artifacts</span></code>. <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> prints
+<code class="docutils literal notranslate"><span class="pre">[k/N]</span></code> progress against that count as each file lands. For a
+multi-segment model (see the segment table below), the <code class="docutils literal notranslate"><span class="pre">_seg{i}</span></code>
+segments are independent and can be compiled concurrently with
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">-j</span> <span class="pre">N</span></code> (a spawn process pool); the emitted artifacts and
+metadata are identical to a serial compile. Single-segment models ignore
+<code class="docutils literal notranslate"><span class="pre">-j</span></code>.</p>
+<p>Inside each <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolder, a forward single-segment model emits
+the metadata plus a value graph and an optional JVP graph:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>File</p></th>
+<th class="head text-left"><p>Contents</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;.pt2</span></code></p></td>
+<td class="text-left"><p>AOT-Inductor-compiled forward / value graph.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_jvp.pt2</span></code></p></td>
+<td class="text-left"><p>Per-pair Jacobian graph (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a forward-segment pair): returns the outputs plus one block per requested <code class="docutils literal notranslate"><span class="pre">(out,</span> <span class="pre">in)</span></code>. A block that does not depend on the dynamic batch (e.g. a constant stiffness tensor) is emitted unbatched (<code class="docutils literal notranslate"><span class="pre">batch_independent</span></code> in the metadata).</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_meta.json</span></code></p></td>
+<td class="text-left"><p>Variable layout, dtype, device, promoted-parameter initial values, and the top-level <code class="docutils literal notranslate"><span class="pre">derivatives</span></code> array (master <code class="docutils literal notranslate"><span class="pre">[out,</span> <span class="pre">in]</span></code> pairs the artifact supports; empty = none).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Implicit single-segment models emit the per-segment set covered in the
+segment table below in place of the forward graphs.</p>
+<p>For models that contain an <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> — or a <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code>
+whose leaves contain one — the export splits at each implicit
+boundary into separate <strong>segments</strong>, each numbered <code class="docutils literal notranslate"><span class="pre">_seg{i}_</span></code>:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>File</p></th>
+<th class="head text-left"><p>Contents</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}.pt2</span></code></p></td>
+<td class="text-left"><p>Forward-segment value graph.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_jvp.pt2</span></code></p></td>
+<td class="text-left"><p>Forward-segment per-pair Jacobian graph (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a pair this segment contributes to).</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_rhs.pt2</span></code></p></td>
+<td class="text-left"><p>Implicit-segment Newton residual <code class="docutils literal notranslate"><span class="pre">-r(u,</span> <span class="pre">g)</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_step.pt2</span></code></p></td>
+<td class="text-left"><p>Implicit-segment fused assemble + solve + update.</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_ift.pt2</span></code></p></td>
+<td class="text-left"><p>Implicit-function-theorem sensitivity <code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">B</span></code> (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a pair routed through this segment).</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_predictor.pt2</span></code></p></td>
+<td class="text-left"><p>Newton initial guess (only if the source had one).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">_seg0_</span></code> infix is dropped in the single-segment shortcut, so
+single-segment forward artifacts use the names in the first table
+and single-segment implicit artifacts use the per-segment names from
+the second table without the <code class="docutils literal notranslate"><span class="pre">_seg0_</span></code> prefix.</p>
+<section id="whats-in-the-metadata-json">
+<h3>What’s in the metadata JSON<a class="headerlink" href="#whats-in-the-metadata-json" title="Link to this heading">#</a></h3>
+<p>The metadata is the source of truth: the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> files are opaque to
+NEML2, and re-loading an artifact in a new process never re-introspects
+the Python source. It records, at a high level:</p>
+<ul class="simple">
+<li><p><strong>Device + dtype</strong>, baked into the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs at export. There
+is no runtime override.</p></li>
+<li><p><strong>Inputs and outputs</strong> — master input/output order with per-variable
+storage size, base shape, and sub-batch shape.</p></li>
+<li><p><strong>Promoted parameters</strong> — the <code class="docutils literal notranslate"><span class="pre">-p</span></code> set, with initial values, the
+artifact’s device, and each parameter’s natural base shape
+(<code class="docutils literal notranslate"><span class="pre">param_base_shape</span></code>; e.g. <code class="docutils literal notranslate"><span class="pre">[]</span></code> for a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code>, <code class="docutils literal notranslate"><span class="pre">[6]</span></code> for an <code class="docutils literal notranslate"><span class="pre">SR2</span></code>).
+Empty in the fully-baked case (the artifact is then a frozen inference
+graph and <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> is empty at load time). The value /
+jvp / jacobian / param-Jacobian / param-VJP graphs take each promoted
+parameter as a <strong>per-batch</strong> <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">*param_base)</span></code> input, so the runtime
+can broadcast a stored scalar up to the call batch — or pass a
+genuinely batched parameter through (see
+<a class="reference internal" href="#batched-parameters">Batched parameters</a>). The recorded device is the
+artifact’s compile-target device (not the source snapshot’s), since
+those graphs dereference the parameter on-device.</p></li>
+<li><p><strong>Segments</strong> — one entry per <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> boundary the exporter
+split on; executed in order at runtime, with each segment’s outputs
+feeding the next segment’s inputs via a shared <code class="docutils literal notranslate"><span class="pre">name</span> <span class="pre">→</span> <span class="pre">tensor</span></code> state
+map.</p></li>
+<li><p><strong>Boundary aliases</strong> (optional <code class="docutils literal notranslate"><span class="pre">boundary_aliases</span></code>) — shallow renames
+applied at the interface only. Present only when the artifact was
+compiled with <code class="docutils literal notranslate"><span class="pre">--rename-input</span></code> / <code class="docutils literal notranslate"><span class="pre">--rename-output</span></code> / <code class="docutils literal notranslate"><span class="pre">--rename-parameter</span></code>;
+a map with <code class="docutils literal notranslate"><span class="pre">inputs</span></code> / <code class="docutils literal notranslate"><span class="pre">outputs</span></code> / <code class="docutils literal notranslate"><span class="pre">parameters</span></code> sub-maps of
+<code class="docutils literal notranslate"><span class="pre">{original_name:</span> <span class="pre">boundary_name}</span></code>. Every other field above keeps the
+<strong>original</strong> authored names; a loader reads them as the internal identity
+and applies the alias only when reporting names and keying the public
+<code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> / <code class="docutils literal notranslate"><span class="pre">named_parameters</span></code> surface. Absent means
+the interface uses the authored names.</p></li>
+</ul>
+<p>The exact field layout evolves alongside the export pipeline, so it is
+not mirrored field-by-field here. The metadata carries an integer
+<code class="docutils literal notranslate"><span class="pre">schema_version</span></code>, bumped on any breaking layout change. The C++ loader
+refuses any non-matching version with a clear “regenerate via
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>” message; the only remediation is a re-compile.</p>
+<!-- dependencies: aoti.schema_version -->
+<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">8</span></code>.</p>
+</section>
+<section id="segment-kinds">
+<h3>Segment kinds<a class="headerlink" href="#segment-kinds" title="Link to this heading">#</a></h3>
+<p>Two segment kinds appear inside <code class="docutils literal notranslate"><span class="pre">segments</span></code>:</p>
+<ul>
+<li><p><strong>Forward</strong> segments lower to a value graph (<code class="docutils literal notranslate"><span class="pre">_seg{i}.pt2</span></code>), plus a
+per-variable-pair Jacobian graph (<code class="docutils literal notranslate"><span class="pre">_seg{i}_jvp.pt2</span></code>) when <code class="docutils literal notranslate"><span class="pre">-d</span></code>
+requested a derivative pair this segment contributes to (a block that
+does not depend on the dynamic batch is emitted unbatched). Call shape
+is <code class="docutils literal notranslate"><span class="pre">(*user_inputs,</span> <span class="pre">*promoted_params)</span> <span class="pre">-&gt;</span> <span class="pre">outputs</span></code>.</p></li>
+<li><p><strong>Implicit</strong> segments always lower <code class="docutils literal notranslate"><span class="pre">_rhs.pt2</span></code> (Newton residual) and
+<code class="docutils literal notranslate"><span class="pre">_step.pt2</span></code> (fused assemble + LU solve + update + post-update
+residual), plus an optional <code class="docutils literal notranslate"><span class="pre">_predictor.pt2</span></code> graph when the source had
+a <code class="docutils literal notranslate"><span class="pre">Predictor</span></code>. They additionally lower <code class="docutils literal notranslate"><span class="pre">_ift.pt2</span></code> (<code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">B</span></code>
+implicit-function-theorem sensitivity at the converged state) <strong>only
+when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a pair whose derivative path runs through this
+segment</strong>. The Newton loop body is one loader call per iteration plus a
+convergence sync; the IFT graph, when present, is consumed by
+<code class="docutils literal notranslate"><span class="pre">jacobian()</span></code> and <code class="docutils literal notranslate"><span class="pre">jvp()</span></code>.</p>
+<p>The Newton solve’s convergence tolerances, iteration cap, and line-search
+settings are <strong>not</strong> baked into the metadata (schema v4+). They are carried
+by the HIT stub’s <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> block and forwarded to the C++ runtime at load
+time (see <a class="reference internal" href="#the-hit-stub">The HIT stub</a> below). Only the linear solver is
+baked — it lives inside the compiled <code class="docutils literal notranslate"><span class="pre">_step.pt2</span></code> / <code class="docutils literal notranslate"><span class="pre">_ift.pt2</span></code> graphs.</p>
+</li>
+</ul>
+<p>Each segment declares its inputs / outputs / promoted-parameter inputs
+in the same per-variable structure as the top-level layout.</p>
+</section>
+<section id="cross-segment-state">
+<h3>Cross-segment state<a class="headerlink" href="#cross-segment-state" title="Link to this heading">#</a></h3>
+<p>At runtime each segment writes its outputs into a shared
+<code class="docutils literal notranslate"><span class="pre">name</span> <span class="pre">→</span> <span class="pre">tensor</span></code> state map, and the next segment reads its declared
+inputs from that map. The partitioning rule that decides where
+segment boundaries land at export time is documented in
+<a class="reference internal" href="pipeline.html#model-compilation-pipeline"><span class="std std-ref">Compilation pipeline</span></a>.</p>
+</section>
+</section>
+<section id="the-hit-stub">
+<h2>The HIT stub<a class="headerlink" href="#the-hit-stub" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_aoti.i</span></code> file is the original input with the
+<code class="docutils literal notranslate"><span class="pre">[Models]/&lt;name&gt;</span></code> block surgically replaced by an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> shim.
+Every other section (<code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Drivers]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Settings]</span></code>, …) is
+copied through verbatim, so the stub is a drop-in replacement
+wherever a <code class="docutils literal notranslate"><span class="pre">Driver</span></code> consumes the model by name. A typical stub:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Auto-generated by neml2-compile from input.i.</span>
+</span><span data-line="2"><span class="c1"># Drop-in replacement for the original [elasticity] model.</span>
+</span><span data-line="3"><span class="c1"># Do not edit; regenerate via `neml2-compile`.</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="k">[Models]</span>
+</span><span data-line="6"><span class="w">  </span><span class="k">[elasticity]</span>
+</span><span data-line="7"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">AOTIModel</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">artifact_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;/abs/path/to/aoti/elasticity&#39;</span>
+</span><span data-line="9"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="10"><span class="k">[]</span>
+</span></pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> is an <strong>absolute</strong> path to the per-device artifact
+folder (<code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;name&gt;/</span></code>). The loader appends <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> for the
+running device and loads <code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;name&gt;_meta.json</span></code>.
+Because the path is absolute and the stub lives outside that folder, the
+artifacts are <strong>not relocatable</strong> — moving the folder requires editing
+<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> or recompiling.</p>
+<p>The shim has the same surface as a native model — same <code class="docutils literal notranslate"><span class="pre">input_spec</span></code>,
+same <code class="docutils literal notranslate"><span class="pre">output_spec</span></code>, same call convention — but inside it dispatches
+to the compiled <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> instead of executing the Python <code class="docutils literal notranslate"><span class="pre">forward</span></code>.
+Because the surface is identical, anything that consumes a model
+through the normal HIT machinery (e.g. a <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>) works
+without modification.</p>
+<p>For a model with an implicit (<code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>) segment, a <strong>minimal</strong>
+<code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> block is carried and the shim gains a <code class="docutils literal notranslate"><span class="pre">solver</span></code> field pointing
+at it (schema v4+). At load the <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> shim reads that solver’s
+convergence / line-search settings and forwards them to the C++ runtime,
+so they can be tuned by editing the stub without recompiling:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Solvers]</span>
+</span><span data-line="2"><span class="w">  </span><span class="k">[newton]</span>
+</span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
+</span><span data-line="4"><span class="w">    </span><span class="na">abs_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-12</span>
+</span><span data-line="5"><span class="w">    </span><span class="na">rel_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-10</span>
+</span><span data-line="6"><span class="w">    </span><span class="na">max_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">25</span>
+</span><span data-line="7"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="8"><span class="k">[]</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="k">[Models]</span>
+</span><span data-line="11"><span class="w">  </span><span class="k">[model]</span>
+</span><span data-line="12"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">AOTIModel</span>
+</span><span data-line="13"><span class="w">    </span><span class="na">artifact_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;/abs/path/to/aoti/model&#39;</span>
+</span><span data-line="14"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
+</span><span data-line="15"><span class="w">  </span><span class="k">[]</span>
+</span><span data-line="16"><span class="k">[]</span>
+</span></pre></div>
+</div>
+<p>Only the knobs that take effect are carried. The <code class="docutils literal notranslate"><span class="pre">linear_solver</span></code> field is
+<strong>deliberately omitted</strong>: the linear solver is baked into the compiled
+<code class="docutils literal notranslate"><span class="pre">_step.pt2</span></code> / <code class="docutils literal notranslate"><span class="pre">_ift.pt2</span></code> at compile time, so editing it in the stub would
+have no effect — leaving it out keeps the stub free of inert controls.
+<code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> and <code class="docutils literal notranslate"><span class="pre">[Data]</span></code> are dropped — their state was baked in.</p>
+</section>
+<section id="parameter-promotion-p">
+<h2>Parameter promotion (<code class="docutils literal notranslate"><span class="pre">-p</span></code>)<a class="headerlink" href="#parameter-promotion-p" title="Link to this heading">#</a></h2>
+<p>Every parameter and buffer is <strong>baked</strong> into the lowered graph as a
+constant by default. Baked entries are immutable post-compile but
+cost nothing per call — they’re folded directly into the kernel.
+Each <code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">NAME</span></code> flag promotes one entry to a runtime-flexible
+<strong>graph input</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">neml2-compile<span class="w"> </span>input.i<span class="w"> </span>--model<span class="w"> </span>elasticity<span class="w"> </span>-p<span class="w"> </span>elasticity.E
+</span><span data-line="2">neml2-compile<span class="w"> </span>input.i<span class="w"> </span>--model<span class="w"> </span>viscoplasticity<span class="w"> </span>-p<span class="w"> </span>hardening.tau0<span class="w"> </span>-p<span class="w"> </span>flow_rate.A
+</span></pre></div>
+</div>
+<p>Names are fully qualified. A bare (non-composed) leaf is wrapped in a
+single-child <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code> at export — matching the eager runtime
+(<code class="docutils literal notranslate"><span class="pre">neml2::eager::Model</span></code>) — so its parameters are qualified by the model name:
+<code class="docutils literal notranslate"><span class="pre">--model</span> <span class="pre">elasticity</span></code> exposes <code class="docutils literal notranslate"><span class="pre">elasticity.E</span></code>. A composed model’s parameters are
+already qualified by their child-leaf names (e.g. <code class="docutils literal notranslate"><span class="pre">hardening.tau0</span></code>). Either way
+the names match <code class="docutils literal notranslate"><span class="pre">model.named_parameters(recurse=True)</span></code> on the model the eager
+runtime constructs, so <code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">metadata.parameters</span></code>, and <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code>
+agree across the AOTI and eager routes.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Aspect</p></th>
+<th class="head text-left"><p>Baked (default)</p></th>
+<th class="head text-left"><p>Promoted (<code class="docutils literal notranslate"><span class="pre">-p</span></code>)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>On-disk representation</p></td>
+<td class="text-left"><p>Constant inside the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graph.</p></td>
+<td class="text-left"><p>Initial value in <code class="docutils literal notranslate"><span class="pre">metadata.parameters</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>Runtime mutability</p></td>
+<td class="text-left"><p>None — re-compile to change.</p></td>
+<td class="text-left"><p>In-place via <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Per-call cost</p></td>
+<td class="text-left"><p>Zero (folded into kernel).</p></td>
+<td class="text-left"><p>One dict lookup + extra graph input.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>Appearance in <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code></p></td>
+<td class="text-left"><p>Absent.</p></td>
+<td class="text-left"><p>Present.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The trade-off: baked is the right default for shipped inference
+artifacts; promotion is the escape hatch for training-loop weights,
+what-if knobs, and calibration sweeps. If the model was compiled
+with no <code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> is empty and the artifact is
+effectively a frozen inference graph.</p>
+<section id="constraint-no-parameters-inside-implicitupdate">
+<h3>Constraint: no parameters inside <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code><a class="headerlink" href="#constraint-no-parameters-inside-implicitupdate" title="Link to this heading">#</a></h3>
+<p>Trying to promote a parameter that lives inside an <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>’s
+<code class="docutils literal notranslate"><span class="pre">system.model</span></code> tree raises a <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> at compile time,
+with a message pointing at the offending name. Parameters in forward
+segments of a composed model promote normally; see
+<a class="reference internal" href="pipeline.html#model-compilation-pipeline"><span class="std std-ref">Compilation pipeline</span></a> for the underlying constraint on the
+equation-system wrappers.</p>
+</section>
+<section id="batched-parameters">
+<span id="id2"></span><h3>Batched parameters<a class="headerlink" href="#batched-parameters" title="Link to this heading">#</a></h3>
+<p>A promoted parameter can be set to a <strong>per-batch-element</strong> value at runtime —
+e.g. a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> parameter given shape <code class="docutils literal notranslate"><span class="pre">(B,)</span></code> via <code class="docutils literal notranslate"><span class="pre">set_parameter</span></code>, a spatially
+varying material property (the common MOOSE inverse-optimization case). The
+value / jvp / jacobian / param-Jacobian / param-VJP graphs all take each promoted
+parameter as a per-batch <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">*param_base)</span></code> input (a genuine per-batch input is
+symbolic, so it is never re-pinned by Inductor’s <code class="docutils literal notranslate"><span class="pre">constant_fold_uniform_value</span></code>
+under the dynamic batch). The runtime broadcasts a stored <em>scalar</em> parameter up
+to the call batch before the call, and passes a genuinely <em>batched</em> parameter
+through unchanged; the call batch is <code class="docutils literal notranslate"><span class="pre">broadcast(input</span> <span class="pre">batches,</span> <span class="pre">parameter</span> <span class="pre">batches)</span></code>.</p>
+<p>The two parameter-derivative surfaces then follow the parameter’s shape,
+matching the eager runtime:</p>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code></strong> returns a dense <code class="docutils literal notranslate"><span class="pre">d(out)/d(param)</span></code> block
+<code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*out_base,</span> <span class="pre">*param_base)</span></code> — per batch element, so a batched parameter’s
+block varies across the batch.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">param_vjp</span></code></strong> returns the adjoint <code class="docutils literal notranslate"><span class="pre">dL/d(param)</span></code> <strong>summed over the batch for a
+global (unbatched) parameter</strong> (the gradient reverse-mode autograd accumulates
+for a shared leaf) and <strong>per-element <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">*param_base)</span></code> for a batched one</strong>
+(each batch element depends only on its own copy). The adjoint graph emits the
+per-element gradient and the runtime collapses it to the stored parameter’s
+shape.</p></li>
+</ul>
+<p>For <code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code>, each chunk receives the batched parameter sliced to its own
+rows; per-element <code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> blocks and batched <code class="docutils literal notranslate"><span class="pre">param_vjp</span></code> adjoints are
+concatenated back across chunks, while a global <code class="docutils literal notranslate"><span class="pre">param_vjp</span></code> adjoint is summed.
+Sub-batched (per-grain) parameters are not yet supported.</p>
+</section>
+</section>
+<section id="dynamic-batch-dimension">
+<h2>Dynamic batch dimension<a class="headerlink" href="#dynamic-batch-dimension" title="Link to this heading">#</a></h2>
+<p>The leading batch dimension is compiled as a dynamic axis. The same
+artifact handles any batch size from 1 to roughly a million without
+recompilation. The cost is modest extra symbolic-shape machinery
+inside the lowered kernel; the benefit is that a single artifact
+serves both single-point evaluation (a unit-cell stress update) and
+large fan-out runs (a finite-element kernel sweeping thousands of
+integration points) with no extra moving parts.</p>
+<p>Sub-batch axes — the structured per-site dimensions some models
+carry — are baked into the artifact at export time. To change them,
+re-compile.</p>
+</section>
+<section id="device-and-dtype-pinning">
+<h2>Device and dtype pinning<a class="headerlink" href="#device-and-dtype-pinning" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs are pinned to the device and dtype they were
+exported with, so the artifact does not expose a runtime <code class="docutils literal notranslate"><span class="pre">to()</span></code>:
+any move would silently desync the graph from its parameters. To
+target a different device or dtype, re-run <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> with the
+new <code class="docutils literal notranslate"><span class="pre">--device</span></code> / <code class="docutils literal notranslate"><span class="pre">--dtype</span></code>. Promoted parameter tensors are placed
+on the same device as the graph at load time.</p>
+</section>
+<section id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="py_aoti.html#py-aoti"><span class="std std-ref">py-aoti — compiled model from Python</span></a> — load and call a compiled package from Python.</p></li>
+<li><p><a class="reference internal" href="cpp_aoti.html#cpp-aoti"><span class="std std-ref">cpp-aoti — compiled model from C++</span></a> — load and call a compiled package from C++.</p></li>
+<li><p><a class="reference internal" href="pipeline.html#model-compilation-pipeline"><span class="std std-ref">Compilation pipeline</span></a> — what <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> does between
+the HIT file and these artifacts.</p></li>
+<li><p><a class="reference internal" href="../tutorials/models/compiled_models/main.html#tutorials-models-compiled"><span class="std std-ref">Compiled models</span></a> — end-to-end how-to: compile, load,
+round-trip, JVP, parameter promotion, trade-offs against eager.</p></li>
+<li><p><a class="reference internal" href="../deployment/cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a> — <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> and the rest of the console
+scripts.</p></li>
+<li><p><a class="reference internal" href="../deployment/cli.html#cli-neml2-inspect"><span class="std std-ref">neml2-inspect</span></a> — inspect a compiled stub the same way you
+inspect any other model.</p></li>
+<li><p><a class="reference internal" href="cpp_dispatch.html#model-dispatch"><span class="std std-ref">cpp-dispatch — dispatching across devices</span></a> — load these artifacts from C++ and spread a
+batched evaluation across CPU + GPU(s).</p></li>
+<li><p><a class="reference internal" href="../deployment/cpp.html#external-project-integration"><span class="std std-ref">C++ integration</span></a> — CMake / pkg-config wiring for
+C++ projects that consume the bundled <code class="docutils literal notranslate"><span class="pre">libneml2.so</span></code> from the
+wheel.</p></li>
+</ul>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="cpp_eager.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="pipeline.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Compilation pipeline</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, UChicago Argonne, LLC</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=7abfc884"></script>
+      <script src="../../_static/shibuya.js?v=50760d75"></script>
+      <script src="../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
+      <script src="../../_static/components/version-banner.js?v=62c7e18e"></script></body>
+</html>
