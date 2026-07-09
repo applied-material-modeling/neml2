@@ -45,3 +45,8 @@ regression-tested. If you need an additional combination, please
 - Python 3.13: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
 - Python 3.14: torch 2.10.0, 2.11.0, 2.12.0, 2.12.1
 <!-- END_COMPAT_MATRIX -->
+
+## Windows
+
+Windows is partially supported on a best-effort basis, from a source build
+only — no wheels are published on PyPI. See [](source-builds).
