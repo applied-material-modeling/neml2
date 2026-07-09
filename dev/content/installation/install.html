@@ -422,6 +422,12 @@ small helper packages are the only runtime dependencies, and pip pulls
 them in automatically. See <a class="reference internal" href="compatibility.html#torch-compat"><span class="std std-ref">Torch compatibility</span></a> for the torch versions
 every wheel is regression-tested against, and <a class="reference internal" href="deps.html#dependency-management"><span class="std std-ref">Dependencies</span></a>
 for the full dependency list.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Prebuilt wheels cover Linux and macOS. <strong>Windows is partially supported
+on a best-effort basis</strong>: build from source (see <a class="reference internal" href="#source-builds"><span class="std std-ref">Source builds</span></a>) — no
+wheels are published on PyPI.</p>
+</div>
 <p>Verify the install:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="n">neml2</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
@@ -455,11 +461,14 @@ the wheel — both CMake and <code class="docutils literal notranslate"><span cl
 covered in <a class="reference internal" href="../deployment/cpp.html#external-project-integration"><span class="std std-ref">C++ integration</span></a>.</p>
 </section>
 <section id="source-builds">
-<h2>Source builds<a class="headerlink" href="#source-builds" title="Link to this heading">#</a></h2>
+<span id="id1"></span><h2>Source builds<a class="headerlink" href="#source-builds" title="Link to this heading">#</a></h2>
 <p>If you are contributing to NEML2 itself or need a build flavor the
 wheels don’t ship (CUDA-only toolchain, debug build, sanitizer build,
 …), see <a class="reference internal" href="../development/building.html#build-customization"><span class="std std-ref">Building from source</span></a> for the developer source-build
 workflow.</p>
+<p>On <strong>Windows</strong> this source build is the only supported path, and support
+is best-effort: no wheels are published, and the embedded-Python eager
+runtime (<code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>) is unavailable.</p>
 </section>
 <section id="choosing-a-torch-variant">
 <h2>Choosing a torch variant<a class="headerlink" href="#choosing-a-torch-variant" title="Link to this heading">#</a></h2>
