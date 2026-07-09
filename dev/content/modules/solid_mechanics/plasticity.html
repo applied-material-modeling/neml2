@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
@@ -426,9 +426,9 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="plasticity">
-<span id="modules-solid-mechanics-plasticity"></span><h1>Plasticity<a class="headerlink" href="#plasticity" title="Link to this heading">¶</a></h1>
+<span id="modules-solid-mechanics-plasticity"></span><h1>Plasticity<a class="headerlink" href="#plasticity" title="Link to this heading">#</a></h1>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
 <p>Plasticity models describe the (typically irreversible and dissipative)
 history-dependent deformation of solids. NEML2’s macroscale plasticity
 catalog under <code class="docutils literal notranslate"><span class="pre">neml2/models/solid_mechanics/plasticity/</span></code> provides small
@@ -475,7 +475,7 @@ J2-elastic-perfectly-plastic case via
 <code class="docutils literal notranslate"><span class="pre">rate_independent_plasticity/radial_return/</span></code> regression scenario.</p>
 </section>
 <section id="math">
-<h2>Math<a class="headerlink" href="#math" title="Link to this heading">¶</a></h2>
+<h2>Math<a class="headerlink" href="#math" title="Link to this heading">#</a></h2>
 <p>Plastic flow is governed by the Karush-Kuhn-Tucker (KKT) loading/unloading
 conditions</p>
 <div class="math-wrapper docutils container">
@@ -486,7 +486,7 @@ f^p \leq 0, \quad \dot{\gamma} \geq 0, \quad \dot{\gamma}\, f^p = 0,
 </div>
 <p>where <span class="math notranslate nohighlight">\(f^p\)</span> is the yield function and <span class="math notranslate nohighlight">\(\gamma\)</span> is the consistency parameter.</p>
 <section id="consistent-rate-independent-plasticity">
-<h3>Consistent (rate-independent) plasticity<a class="headerlink" href="#consistent-rate-independent-plasticity" title="Link to this heading">¶</a></h3>
+<h3>Consistent (rate-independent) plasticity<a class="headerlink" href="#consistent-rate-independent-plasticity" title="Link to this heading">#</a></h3>
 <p>NEML2 enforces the KKT conditions by recasting them as a single
 complementarity residual that the nonlinear solver drives to its
 convergence tolerance. The recommended form is the <em>minimum map</em>, a hard
@@ -520,7 +520,7 @@ laws expressed in terms of internal-variable rates, so the
 </div>
 </section>
 <section id="viscoplasticity">
-<h3>Viscoplasticity<a class="headerlink" href="#viscoplasticity" title="Link to this heading">¶</a></h3>
+<h3>Viscoplasticity<a class="headerlink" href="#viscoplasticity" title="Link to this heading">#</a></h3>
 <p>The Perzyna regularization replaces the complementarity with an explicit
 power-law overstress relation,</p>
 <div class="math-wrapper docutils container">
@@ -534,12 +534,12 @@ power-law overstress relation,</p>
 <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/PerzynaPlasticFlowRate.html#models-perzynaplasticflowrate"><span class="std std-ref">PerzynaPlasticFlowRate</span></a>.</p>
 </section>
 <section id="effective-stress-and-yield-function">
-<h3>Effective stress and yield function<a class="headerlink" href="#effective-stress-and-yield-function" title="Link to this heading">¶</a></h3>
+<h3>Effective stress and yield function<a class="headerlink" href="#effective-stress-and-yield-function" title="Link to this heading">#</a></h3>
 <p>For classical <span class="math notranslate nohighlight">\(J_2\)</span> plasticity the effective stress is the von Mises norm of
 the deviatoric (over-)stress,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-c25074a3-a894-4747-816f-daaee48c1717">
-<div class="amsmath math notranslate nohighlight" id="equation-c25074a3-a894-4747-816f-daaee48c1717">
-<span class="eqno">(16)<a class="headerlink" href="#equation-c25074a3-a894-4747-816f-daaee48c1717" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-b6d03d1e-9660-44de-b530-919292b9651f">
+<div class="amsmath math notranslate nohighlight" id="equation-b6d03d1e-9660-44de-b530-919292b9651f">
+<span class="eqno">(16)<a class="headerlink" href="#equation-b6d03d1e-9660-44de-b530-919292b9651f" title="Permalink to this equation">#</a></span>\[\begin{align}
   \bar{\sigma} &amp;= \sqrt{3 J_2},                                                \\
   J_2          &amp;= \tfrac{1}{2}\,\mathrm{dev}\,\boldsymbol{\Xi}\,:\,
                   \mathrm{dev}\,\boldsymbol{\Xi},                              \\
@@ -557,12 +557,12 @@ f^p = \bar{\sigma} - \sigma_y - k(\bar{\varepsilon}^p).
 </div>
 </section>
 <section id="associative-flow">
-<h3>Associative flow<a class="headerlink" href="#associative-flow" title="Link to this heading">¶</a></h3>
+<h3>Associative flow<a class="headerlink" href="#associative-flow" title="Link to this heading">#</a></h3>
 <p>Associative flow rules derive the rates of the plastic strain and internal
 variables from the maximum-dissipation principle,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-26a44039-2542-427d-b510-6e8911411251">
-<div class="amsmath math notranslate nohighlight" id="equation-26a44039-2542-427d-b510-6e8911411251">
-<span class="eqno">(17)<a class="headerlink" href="#equation-26a44039-2542-427d-b510-6e8911411251" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-ea324b8e-1f55-4218-9dbc-ed33c0207533">
+<div class="amsmath math notranslate nohighlight" id="equation-ea324b8e-1f55-4218-9dbc-ed33c0207533">
+<span class="eqno">(17)<a class="headerlink" href="#equation-ea324b8e-1f55-4218-9dbc-ed33c0207533" title="Permalink to this equation">#</a></span>\[\begin{align}
   \dot{\boldsymbol{\varepsilon}}^p &amp;= \dot{\gamma}\,
         \frac{\partial f^p}{\partial \boldsymbol{\sigma}},                     \\
   \dot{\bar{\varepsilon}}^p        &amp;= -\dot{\gamma}\,
@@ -580,14 +580,14 @@ a sub-model (the yield function) with respect to a list of input variables;
 </section>
 </section>
 <section id="example-rate-independent-j-2-plasticity-with-mixed-hardening">
-<h2>Example: rate-independent <span class="math notranslate nohighlight">\(J_2\)</span> plasticity with mixed hardening<a class="headerlink" href="#example-rate-independent-j-2-plasticity-with-mixed-hardening" title="Link to this heading">¶</a></h2>
+<h2>Example: rate-independent <span class="math notranslate nohighlight">\(J_2\)</span> plasticity with mixed hardening<a class="headerlink" href="#example-rate-independent-j-2-plasticity-with-mixed-hardening" title="Link to this heading">#</a></h2>
 <p>The input file below assembles a fully implicit return-map for elastic-plastic
 behaviour with both isotropic and kinematic hardening: linear-elastic
 stress-strain, <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/VoceIsotropicHardening.html#models-voceisotropichardening"><span class="std std-ref">VoceIsotropicHardening</span></a> isotropic hardening,
 <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/LinearKinematicHardening.html#models-linearkinematichardening"><span class="std std-ref">LinearKinematicHardening</span></a> back stress, associative <span class="math notranslate nohighlight">\(J_2\)</span> flow, and
 the minimum-map consistency condition.</p>
 <div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-number">Listing 2 </span><span class="caption-text">tests/regression/solid_mechanics/rate_independent_plasticity/isokinharden/model.i</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-number">Listing 2 </span><span class="caption-text">tests/regression/solid_mechanics/rate_independent_plasticity/isokinharden/model.i</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># neml2</span>
 </span><span data-line="2"><span class="k">[Tensors]</span>
 </span><span data-line="3"><span class="w">  </span><span class="k">[end_time]</span>
@@ -755,7 +755,7 @@ the minimum-map consistency condition.</p>
 </div>
 </div>
 <section id="how-the-pieces-wire-together">
-<h3>How the pieces wire together<a class="headerlink" href="#how-the-pieces-wire-together" title="Link to this heading">¶</a></h3>
+<h3>How the pieces wire together<a class="headerlink" href="#how-the-pieces-wire-together" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>Hardening laws</strong> — <code class="docutils literal notranslate"><span class="pre">[isoharden]</span></code> (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/VoceIsotropicHardening.html#models-voceisotropichardening"><span class="std std-ref">VoceIsotropicHardening</span></a>) maps
 <code class="docutils literal notranslate"><span class="pre">equivalent_plastic_strain</span></code> to <code class="docutils literal notranslate"><span class="pre">isotropic_hardening</span></code>; <code class="docutils literal notranslate"><span class="pre">[kinharden]</span></code>
@@ -795,7 +795,7 @@ plastic strain to expose the final stress.</p></li>
 </ul>
 </section>
 <section id="switching-to-viscoplasticity">
-<h3>Switching to viscoplasticity<a class="headerlink" href="#switching-to-viscoplasticity" title="Link to this heading">¶</a></h3>
+<h3>Switching to viscoplasticity<a class="headerlink" href="#switching-to-viscoplasticity" title="Link to this heading">#</a></h3>
 <p>Swapping the FB closure for a direct Perzyna flow-rate evaluation is
 the basic move from rate-independent to viscoplastic; depending on
 the variation you may also integrate stress in rate form rather than
@@ -803,7 +803,7 @@ plastic strain. The reference recipe lives at
 <code class="docutils literal notranslate"><span class="pre">tests/regression/solid_mechanics/viscoplasticity/perfect/model.i</span></code>.</p>
 </section>
 <section id="variations-shipped-in-the-test-tree">
-<h3>Variations shipped in the test tree<a class="headerlink" href="#variations-shipped-in-the-test-tree" title="Link to this heading">¶</a></h3>
+<h3>Variations shipped in the test tree<a class="headerlink" href="#variations-shipped-in-the-test-tree" title="Link to this heading">#</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">tests/regression/solid_mechanics/</span></code> tree carries ready-to-read
 compositions for the most common dialects:</p>
 <ul class="simple">
@@ -824,7 +824,7 @@ radial-return via <a class="reference internal" href="../../../generated/syntax/
 </section>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../../tutorials/models/implicit_model/main.html#tutorials-models-implicit-model"><span class="std std-ref">Implicit models</span></a> — walks through <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>,
 <code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code>, and the predictor with a minimal plasticity example.</p></li>
@@ -879,9 +879,9 @@ above.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

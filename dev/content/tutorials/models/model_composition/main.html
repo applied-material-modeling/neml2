@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -412,7 +412,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="model-composition">
-<span id="tutorials-models-composition"></span><h1>Model composition<a class="headerlink" href="#model-composition" title="Link to this heading">¶</a></h1>
+<span id="tutorials-models-composition"></span><h1>Model composition<a class="headerlink" href="#model-composition" title="Link to this heading">#</a></h1>
 <p>In this tutorial, we’ll wire three small models together into a composed model, inspect
 how NEML2 resolves the connections, and evaluate the result. Then we’ll
 compare it to doing the same plumbing by hand.</p>
@@ -437,12 +437,12 @@ overhead of stepping through many sub-models drops out once we
 export the composed graph through the compilation pipeline (see
 <a class="reference internal" href="../compiled_models/main.html#tutorials-models-compiled"><span class="std std-ref">Compiled models</span></a>).</p>
 <section id="a-worked-example">
-<h2>A worked example<a class="headerlink" href="#a-worked-example" title="Link to this heading">¶</a></h2>
+<h2>A worked example<a class="headerlink" href="#a-worked-example" title="Link to this heading">#</a></h2>
 <p>To keep the wiring visible we’ll use three small models from the
 catalog instead of the full plasticity stack:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-59bdf5b9-fbb5-4deb-afef-89847847fa88">
-<div class="amsmath math notranslate nohighlight" id="equation-59bdf5b9-fbb5-4deb-afef-89847847fa88">
-<span class="eqno">(1)<a class="headerlink" href="#equation-59bdf5b9-fbb5-4deb-afef-89847847fa88" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-0fcb9ce3-54a3-4cde-9910-72d85008856f">
+<div class="amsmath math notranslate nohighlight" id="equation-0fcb9ce3-54a3-4cde-9910-72d85008856f">
+<span class="eqno">(1)<a class="headerlink" href="#equation-0fcb9ce3-54a3-4cde-9910-72d85008856f" title="Permalink to this equation">#</a></span>\[\begin{align}
   \bar{a} &amp;= I_1(\boldsymbol{a}), \\
   \bar{b} &amp;= \sqrt{\tfrac{3}{2}\,\operatorname{dev}(\boldsymbol{b}) : \operatorname{dev}(\boldsymbol{b})}, \\
   \dot{\boldsymbol{b}} &amp;= \bar{b}\,\boldsymbol{a} + \bar{a}\,\boldsymbol{b}.
@@ -505,7 +505,7 @@ aren’t literals or <code class="docutils literal notranslate"><span class="pre
 scalars that <code class="docutils literal notranslate"><span class="pre">eq1</span></code> and <code class="docutils literal notranslate"><span class="pre">eq2</span></code> produce, and wires them up.</p>
 </section>
 <section id="inspecting-the-wiring">
-<h2>Inspecting the wiring<a class="headerlink" href="#inspecting-the-wiring" title="Link to this heading">¶</a></h2>
+<h2>Inspecting the wiring<a class="headerlink" href="#inspecting-the-wiring" title="Link to this heading">#</a></h2>
 <p>Before evaluating anything, ask <code class="docutils literal notranslate"><span class="pre">neml2-inspect</span></code> to print the resolved
 graph:</p>
 <div class="cell docutils container">
@@ -553,7 +553,7 @@ fastest way to catch typos: a missed name shows up as a dangling
 input or missing output, instead of a shape mismatch later on.</p>
 </section>
 <section id="loading-and-evaluating-the-composed-model">
-<h2>Loading and evaluating the composed model<a class="headerlink" href="#loading-and-evaluating-the-composed-model" title="Link to this heading">¶</a></h2>
+<h2>Loading and evaluating the composed model<a class="headerlink" href="#loading-and-evaluating-the-composed-model" title="Link to this heading">#</a></h2>
 <p>The composed model loads and calls just like any other model:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -618,7 +618,7 @@ many inputs — <code class="docutils literal notranslate"><span class="pre">eq.
 evaluation with name-keyed dicts on both ends.</p>
 </section>
 <section id="the-same-thing-without-composedmodel">
-<h2>The same thing without <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code><a class="headerlink" href="#the-same-thing-without-composedmodel" title="Link to this heading">¶</a></h2>
+<h2>The same thing without <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code><a class="headerlink" href="#the-same-thing-without-composedmodel" title="Link to this heading">#</a></h2>
 <p>To see what <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code> is doing for us, here’s the same
 calculation done by hand. The input file is the same three <code class="docutils literal notranslate"><span class="pre">[Models]</span></code>
 entries, but with <code class="docutils literal notranslate"><span class="pre">weights</span> <span class="pre">=</span> <span class="pre">'1</span> <span class="pre">1'</span></code> on <code class="docutils literal notranslate"><span class="pre">eq3</span></code> so <code class="docutils literal notranslate"><span class="pre">weight_0</span></code> and
@@ -706,7 +706,7 @@ story.</p>
 </div>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>The flexible name-binding used for <code class="docutils literal notranslate"><span class="pre">eq3</span></code>’s <code class="docutils literal notranslate"><span class="pre">weights</span></code> is generalized
 in <a class="reference internal" href="../model_parameters_revisited/main.html#tutorials-models-parameters-revisited"><span class="std std-ref">Model parameters revisited</span></a>.</p></li>
@@ -751,9 +751,9 @@ in <a class="reference internal" href="../model_parameters_revisited/main.html#t
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

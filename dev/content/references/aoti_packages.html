@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -418,7 +418,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="aoti-packages">
-<span id="id1"></span><h1>AOTI packages<a class="headerlink" href="#aoti-packages" title="Link to this heading">¶</a></h1>
+<span id="id1"></span><h1>AOTI packages<a class="headerlink" href="#aoti-packages" title="Link to this heading">#</a></h1>
 <p>This is the on-disk reference for the artifacts that <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>
 produces — the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs, the metadata, and the HIT stub. It is the
 shared substrate both compiled-model routes load: from Python via
@@ -481,7 +481,7 @@ never lowers a graph.</p>
 </div>
 <p>See <a class="reference internal" href="../deployment/cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a> for the broader CLI surface.</p>
 <section id="on-disk-layout">
-<h2>On-disk layout<a class="headerlink" href="#on-disk-layout" title="Link to this heading">¶</a></h2>
+<h2>On-disk layout<a class="headerlink" href="#on-disk-layout" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> writes a <strong>per-device artifact folder</strong> plus a single
 standalone HIT stub that sits next to it:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;output-dir&gt;/                  # default ./aoti/
@@ -498,6 +498,16 @@ that device. The stub points at the <code class="docutils literal notranslate"><
 <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> field, and the loader resolves
 <code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;name&gt;_meta.json</span></code> for the device it runs on
 (see <a class="reference internal" href="#the-hit-stub">The HIT stub</a>).</p>
+<p>The full set of files a compile will write — every <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>, each
+per-device <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_meta.json</span></code>, and the <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_aoti.i</span></code> stub — can be
+enumerated ahead of time, without compiling, via
+<code class="docutils literal notranslate"><span class="pre">neml2.cli.aoti_export.plan_export_artifacts</span></code>. <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> prints
+<code class="docutils literal notranslate"><span class="pre">[k/N]</span></code> progress against that count as each file lands. For a
+multi-segment model (see the segment table below), the <code class="docutils literal notranslate"><span class="pre">_seg{i}</span></code>
+segments are independent and can be compiled concurrently with
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">-j</span> <span class="pre">N</span></code> (a spawn process pool); the emitted artifacts and
+metadata are identical to a serial compile. Single-segment models ignore
+<code class="docutils literal notranslate"><span class="pre">-j</span></code>.</p>
 <p>Inside each <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolder, a forward single-segment model emits
 the metadata plus a value graph and an optional JVP graph:</p>
 <div class="table-wrapper colwidths-auto docutils container">
@@ -559,7 +569,7 @@ single-segment forward artifacts use the names in the first table
 and single-segment implicit artifacts use the per-segment names from
 the second table without the <code class="docutils literal notranslate"><span class="pre">_seg0_</span></code> prefix.</p>
 <section id="whats-in-the-metadata-json">
-<h3>What’s in the metadata JSON<a class="headerlink" href="#whats-in-the-metadata-json" title="Link to this heading">¶</a></h3>
+<h3>What’s in the metadata JSON<a class="headerlink" href="#whats-in-the-metadata-json" title="Link to this heading">#</a></h3>
 <p>The metadata is the source of truth: the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> files are opaque to
 NEML2, and re-loading an artifact in a new process never re-introspects
 the Python source. It records, at a high level:</p>
@@ -603,7 +613,7 @@ refuses any non-matching version with a clear “regenerate via
 <p>The current schema version is <code class="docutils literal notranslate"><span class="pre">8</span></code>.</p>
 </section>
 <section id="segment-kinds">
-<h3>Segment kinds<a class="headerlink" href="#segment-kinds" title="Link to this heading">¶</a></h3>
+<h3>Segment kinds<a class="headerlink" href="#segment-kinds" title="Link to this heading">#</a></h3>
 <p>Two segment kinds appear inside <code class="docutils literal notranslate"><span class="pre">segments</span></code>:</p>
 <ul>
 <li><p><strong>Forward</strong> segments lower to a value graph (<code class="docutils literal notranslate"><span class="pre">_seg{i}.pt2</span></code>), plus a
@@ -631,7 +641,7 @@ baked — it lives inside the compiled <code class="docutils literal notranslate
 in the same per-variable structure as the top-level layout.</p>
 </section>
 <section id="cross-segment-state">
-<h3>Cross-segment state<a class="headerlink" href="#cross-segment-state" title="Link to this heading">¶</a></h3>
+<h3>Cross-segment state<a class="headerlink" href="#cross-segment-state" title="Link to this heading">#</a></h3>
 <p>At runtime each segment writes its outputs into a shared
 <code class="docutils literal notranslate"><span class="pre">name</span> <span class="pre">→</span> <span class="pre">tensor</span></code> state map, and the next segment reads its declared
 inputs from that map. The partitioning rule that decides where
@@ -640,7 +650,7 @@ segment boundaries land at export time is documented in
 </section>
 </section>
 <section id="the-hit-stub">
-<h2>The HIT stub<a class="headerlink" href="#the-hit-stub" title="Link to this heading">¶</a></h2>
+<h2>The HIT stub<a class="headerlink" href="#the-hit-stub" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_aoti.i</span></code> file is the original input with the
 <code class="docutils literal notranslate"><span class="pre">[Models]/&lt;name&gt;</span></code> block surgically replaced by an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> shim.
 Every other section (<code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Drivers]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Settings]</span></code>, …) is
@@ -700,7 +710,7 @@ have no effect — leaving it out keeps the stub free of inert controls.
 <code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> and <code class="docutils literal notranslate"><span class="pre">[Data]</span></code> are dropped — their state was baked in.</p>
 </section>
 <section id="parameter-promotion-p">
-<h2>Parameter promotion (<code class="docutils literal notranslate"><span class="pre">-p</span></code>)<a class="headerlink" href="#parameter-promotion-p" title="Link to this heading">¶</a></h2>
+<h2>Parameter promotion (<code class="docutils literal notranslate"><span class="pre">-p</span></code>)<a class="headerlink" href="#parameter-promotion-p" title="Link to this heading">#</a></h2>
 <p>Every parameter and buffer is <strong>baked</strong> into the lowered graph as a
 constant by default. Baked entries are immutable post-compile but
 cost nothing per call — they’re folded directly into the kernel.
@@ -752,7 +762,7 @@ what-if knobs, and calibration sweeps. If the model was compiled
 with no <code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> is empty and the artifact is
 effectively a frozen inference graph.</p>
 <section id="constraint-no-parameters-inside-implicitupdate">
-<h3>Constraint: no parameters inside <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code><a class="headerlink" href="#constraint-no-parameters-inside-implicitupdate" title="Link to this heading">¶</a></h3>
+<h3>Constraint: no parameters inside <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code><a class="headerlink" href="#constraint-no-parameters-inside-implicitupdate" title="Link to this heading">#</a></h3>
 <p>Trying to promote a parameter that lives inside an <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>’s
 <code class="docutils literal notranslate"><span class="pre">system.model</span></code> tree raises a <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> at compile time,
 with a message pointing at the offending name. Parameters in forward
@@ -761,7 +771,7 @@ segments of a composed model promote normally; see
 equation-system wrappers.</p>
 </section>
 <section id="batched-parameters">
-<span id="id2"></span><h3>Batched parameters<a class="headerlink" href="#batched-parameters" title="Link to this heading">¶</a></h3>
+<span id="id2"></span><h3>Batched parameters<a class="headerlink" href="#batched-parameters" title="Link to this heading">#</a></h3>
 <p>A promoted parameter can be set to a <strong>per-batch-element</strong> value at runtime —
 e.g. a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> parameter given shape <code class="docutils literal notranslate"><span class="pre">(B,)</span></code> via <code class="docutils literal notranslate"><span class="pre">set_parameter</span></code>, a spatially
 varying material property (the common MOOSE inverse-optimization case). The
@@ -791,7 +801,7 @@ Sub-batched (per-grain) parameters are not yet supported.</p>
 </section>
 </section>
 <section id="dynamic-batch-dimension">
-<h2>Dynamic batch dimension<a class="headerlink" href="#dynamic-batch-dimension" title="Link to this heading">¶</a></h2>
+<h2>Dynamic batch dimension<a class="headerlink" href="#dynamic-batch-dimension" title="Link to this heading">#</a></h2>
 <p>The leading batch dimension is compiled as a dynamic axis. The same
 artifact handles any batch size from 1 to roughly a million without
 recompilation. The cost is modest extra symbolic-shape machinery
@@ -804,7 +814,7 @@ carry — are baked into the artifact at export time. To change them,
 re-compile.</p>
 </section>
 <section id="device-and-dtype-pinning">
-<h2>Device and dtype pinning<a class="headerlink" href="#device-and-dtype-pinning" title="Link to this heading">¶</a></h2>
+<h2>Device and dtype pinning<a class="headerlink" href="#device-and-dtype-pinning" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs are pinned to the device and dtype they were
 exported with, so the artifact does not expose a runtime <code class="docutils literal notranslate"><span class="pre">to()</span></code>:
 any move would silently desync the graph from its parameters. To
@@ -813,7 +823,7 @@ new <code class="docutils literal notranslate"><span class="pre">--device</span>
 on the same device as the graph at load time.</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="py_aoti.html#py-aoti"><span class="std std-ref">py-aoti — compiled model from Python</span></a> — load and call a compiled package from Python.</p></li>
 <li><p><a class="reference internal" href="cpp_aoti.html#cpp-aoti"><span class="std std-ref">cpp-aoti — compiled model from C++</span></a> — load and call a compiled package from C++.</p></li>
@@ -871,9 +881,9 @@ wheel.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

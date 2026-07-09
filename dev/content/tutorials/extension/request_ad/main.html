@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -412,7 +412,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="auto-deriving-the-chain-rule-with-request-ad">
-<span id="tutorials-extension-request-ad"></span><h1>Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code><a class="headerlink" href="#auto-deriving-the-chain-rule-with-request-ad" title="Link to this heading">¶</a></h1>
+<span id="tutorials-extension-request-ad"></span><h1>Auto-deriving the chain rule with <code class="docutils literal notranslate"><span class="pre">request_AD</span></code><a class="headerlink" href="#auto-deriving-the-chain-rule-with-request-ad" title="Link to this heading">#</a></h1>
 <p>The <a class="reference internal" href="../the_forward_operator/main.html#tutorials-extension-forward"><span class="std std-ref">previous tutorial</span></a> hand-wrote the
 projectile’s first derivative — the <code class="docutils literal notranslate"><span class="pre">actions</span></code> closure <code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">V:</span> <span class="pre">-mu</span> <span class="pre">*</span> <span class="pre">V</span></code> encoding <span class="math notranslate nohighlight">\(\partial\boldsymbol{a}/\partial\boldsymbol{v} = -\mu I\)</span>.
 That is the right call when the local Jacobian is simple. But when it
@@ -425,7 +425,7 @@ let <code class="docutils literal notranslate"><span class="pre">request_AD</spa
 <code class="docutils literal notranslate"><span class="pre">forward</span></code>, and the auto-derived chain rule comes out identical to the
 hand-written one.</p>
 <section id="declaring-request-ad">
-<h2>Declaring <code class="docutils literal notranslate"><span class="pre">request_AD</span></code><a class="headerlink" href="#declaring-request-ad" title="Link to this heading">¶</a></h2>
+<h2>Declaring <code class="docutils literal notranslate"><span class="pre">request_AD</span></code><a class="headerlink" href="#declaring-request-ad" title="Link to this heading">#</a></h2>
 <p>A leaf opts in by calling <code class="docutils literal notranslate"><span class="pre">self.request_AD()</span></code> once at construction (in
 <code class="docutils literal notranslate"><span class="pre">__post_init__</span></code>), then writing a value-only <code class="docutils literal notranslate"><span class="pre">forward</span></code> — no <code class="docutils literal notranslate"><span class="pre">v=</span></code> branch,
 no <code class="docutils literal notranslate"><span class="pre">actions</span></code>. Everything else is unchanged: the same schema, the same
@@ -573,7 +573,7 @@ forward behaves identically to the hand-written model:</p>
 hand-written model, as it must be.</p>
 </section>
 <section id="first-derivatives-for-free">
-<h2>First derivatives, for free<a class="headerlink" href="#first-derivatives-for-free" title="Link to this heading">¶</a></h2>
+<h2>First derivatives, for free<a class="headerlink" href="#first-derivatives-for-free" title="Link to this heading">#</a></h2>
 <p>We never wrote a <code class="docutils literal notranslate"><span class="pre">v=</span></code> branch, yet the model hands back directional
 derivatives just like the analytic one. Seed the identity on the
 velocity input and read off the full Jacobian column
@@ -600,7 +600,7 @@ velocity input and read off the full Jacobian column
 <code class="docutils literal notranslate"><span class="pre">request_AD</span></code> reproduced it from the value forward alone.</p>
 </section>
 <section id="verifying-with-modelunittest">
-<h2>Verifying with <code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code><a class="headerlink" href="#verifying-with-modelunittest" title="Link to this heading">¶</a></h2>
+<h2>Verifying with <code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code><a class="headerlink" href="#verifying-with-modelunittest" title="Link to this heading">#</a></h2>
 <p>The same <code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code> harness pins the auto-derived model. It
 cross-checks every JVP against PyTorch’s autograd, so a positive
 <code class="docutils literal notranslate"><span class="pre">JVP</span> <span class="pre">checks</span></code> count is independent confirmation that the auto-derived
@@ -664,7 +664,7 @@ chain rule is correct — not merely self-consistent:</p>
 </div>
 </section>
 <section id="where-this-really-pays-off-an-ml-surrogate">
-<h2>Where this really pays off: an ML surrogate<a class="headerlink" href="#where-this-really-pays-off-an-ml-surrogate" title="Link to this heading">¶</a></h2>
+<h2>Where this really pays off: an ML surrogate<a class="headerlink" href="#where-this-really-pays-off-an-ml-surrogate" title="Link to this heading">#</a></h2>
 <p>The projectile’s <span class="math notranslate nohighlight">\(-\mu I\)</span> was easy to hand-write — <code class="docutils literal notranslate"><span class="pre">request_AD</span></code> only
 saved us a few lines. The real payoff is a forward operator whose
 Jacobian we would <em>never</em> want to derive by hand: a trained
@@ -711,7 +711,7 @@ residual (which contains the leaf) and lower the same way.</p></li>
 </ul>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>The next tutorial, <a class="reference internal" href="../model_composition/main.html#tutorials-extension-composition"><span class="std std-ref">Composing with existing models</span></a>, shows how to
 glue several models together so a dependency resolver wires their
@@ -757,9 +757,9 @@ inputs and outputs and threads the chain rule for us.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

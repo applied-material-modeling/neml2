@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -415,7 +415,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="parameter-calibration">
-<span id="tutorials-optimization-calibration"></span><h1>Parameter calibration<a class="headerlink" href="#parameter-calibration" title="Link to this heading">¶</a></h1>
+<span id="tutorials-optimization-calibration"></span><h1>Parameter calibration<a class="headerlink" href="#parameter-calibration" title="Link to this heading">#</a></h1>
 <p>The previous tutorial, <a class="reference internal" href="../automatic_differentiation/main.html#tutorials-optimization-autograd"><span class="std std-ref">Automatic differentiation</span></a>, showed how
 to read the gradient of a NEML2 model’s output with respect to its
 parameters. That gradient is the only ingredient an off-the-shelf
@@ -423,7 +423,7 @@ parameters. That gradient is the only ingredient an off-the-shelf
 loss against observations, step a real optimizer, and watch the
 parameters converge back to their true values.</p>
 <section id="problem-setup">
-<h2>Problem setup<a class="headerlink" href="#problem-setup" title="Link to this heading">¶</a></h2>
+<h2>Problem setup<a class="headerlink" href="#problem-setup" title="Link to this heading">#</a></h2>
 <p>We calibrate the elastic moduli of a linear isotropic material from
 strain/stress observations. The model is parameterized by Young’s
 modulus <span class="math notranslate nohighlight">\(E\)</span> and Poisson’s ratio <span class="math notranslate nohighlight">\(\nu\)</span>:</p>
@@ -451,7 +451,7 @@ deliberately far from the “true” values we’ll synthesize the data
 from — that’s the gap the optimizer has to close.</p>
 </section>
 <section id="synthetic-observations">
-<h2>Synthetic observations<a class="headerlink" href="#synthetic-observations" title="Link to this heading">¶</a></h2>
+<h2>Synthetic observations<a class="headerlink" href="#synthetic-observations" title="Link to this heading">#</a></h2>
 <p>Calibrating against synthetic data — where the answer is known by
 construction — is the standard way to debug a calibration pipeline
 before we point it at a real experiment. We load the same input
@@ -499,7 +499,7 @@ keeps the same <code class="docutils literal notranslate"><span class="pre">nn.P
 gets a fresh set of parameters at the file’s defaults.</p>
 </section>
 <section id="loss-function">
-<h2>Loss function<a class="headerlink" href="#loss-function" title="Link to this heading">¶</a></h2>
+<h2>Loss function<a class="headerlink" href="#loss-function" title="Link to this heading">#</a></h2>
 <p>The mean squared error between predicted and observed stress is a
 standard choice — it’s smooth, convex in the prediction, and easy to
 differentiate:</p>
@@ -534,9 +534,9 @@ differentiate:</p>
 factor of two.</p>
 </section>
 <section id="optimizer-choice-and-conditioning">
-<h2>Optimizer choice and conditioning<a class="headerlink" href="#optimizer-choice-and-conditioning" title="Link to this heading">¶</a></h2>
+<h2>Optimizer choice and conditioning<a class="headerlink" href="#optimizer-choice-and-conditioning" title="Link to this heading">#</a></h2>
 <p>NEML2 parameters are leaf <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code> tensors, so any optimizer in
-<code class="docutils literal notranslate"><span class="pre">torch.optim</span></code> works. We use <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="(in PyTorch v2.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.Adam</span></code></a> here.</p>
+<code class="docutils literal notranslate"><span class="pre">torch.optim</span></code> works. We use <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="(in PyTorch v2.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.Adam</span></code></a> here.</p>
 <p>There is one subtlety. <span class="math notranslate nohighlight">\(E\)</span> lives at <span class="math notranslate nohighlight">\(\mathcal{O}(10^5)\)</span> and <span class="math notranslate nohighlight">\(\nu\)</span> at
 <span class="math notranslate nohighlight">\(\mathcal{O}(0.3)\)</span> — almost six orders of magnitude apart. A single
 scalar learning rate that’s large enough to move <span class="math notranslate nohighlight">\(E\)</span> will catapult
@@ -567,7 +567,7 @@ sensitivity.</p>
 </div>
 </section>
 <section id="calibration-loop">
-<h2>Calibration loop<a class="headerlink" href="#calibration-loop" title="Link to this heading">¶</a></h2>
+<h2>Calibration loop<a class="headerlink" href="#calibration-loop" title="Link to this heading">#</a></h2>
 <p>The loop is the standard PyTorch idiom: zero the gradients, forward,
 compute the loss, backward, step. We record the loss, the parameter
 values, and the gradient norm at every iteration so we can diagnose
@@ -614,7 +614,7 @@ where the loss is exactly zero; the residual error is set by the
 optimizer’s tolerance rather than the data.</p>
 </section>
 <section id="diagnostics">
-<h2>Diagnostics<a class="headerlink" href="#diagnostics" title="Link to this heading">¶</a></h2>
+<h2>Diagnostics<a class="headerlink" href="#diagnostics" title="Link to this heading">#</a></h2>
 <p>Three plots almost always tell us whether a calibration is healthy.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -681,7 +681,7 @@ parameter’s contribution dominating the norm.</p></li>
 </ul>
 </section>
 <section id="common-failure-modes">
-<h2>Common failure modes<a class="headerlink" href="#common-failure-modes" title="Link to this heading">¶</a></h2>
+<h2>Common failure modes<a class="headerlink" href="#common-failure-modes" title="Link to this heading">#</a></h2>
 <p>A few patterns to recognize when calibrating real models:</p>
 <ul class="simple">
 <li><p><strong>Bad conditioning.</strong> Parameters with very different magnitudes (the
@@ -717,7 +717,7 @@ stop.</p></li>
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">torch.optim</span></code> provides several alternatives to Adam — SGD with
 momentum, RMSProp, and the line-search-based
-<a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.LBFGS.html#torch.optim.LBFGS" title="(in PyTorch v2.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.LBFGS</span></code></a>. LBFGS converges in many fewer steps on
+<a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.LBFGS.html#torch.optim.LBFGS" title="(in PyTorch v2.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.LBFGS</span></code></a>. LBFGS converges in many fewer steps on
 smooth, well-conditioned problems, but doesn’t support the
 per-parameter learning rates used above, so it’s the wrong tool until
 we’ve reparameterized to bring all parameters to similar scales. For
@@ -728,7 +728,7 @@ reparameterized to unit scale.</p>
 </div>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Calibrating a <em>transient</em> model (one that integrates a load
 history step by step) requires backpropagating through the
@@ -779,9 +779,9 @@ inputs) live in <a class="reference internal" href="../../models/model_parameter
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

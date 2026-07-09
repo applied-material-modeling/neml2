@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -412,14 +412,14 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="tensor-shape-regions">
-<span id="tensor-types-regions"></span><h1>Tensor shape regions<a class="headerlink" href="#tensor-shape-regions" title="Link to this heading">¶</a></h1>
+<span id="tensor-types-regions"></span><h1>Tensor shape regions<a class="headerlink" href="#tensor-shape-regions" title="Link to this heading">#</a></h1>
 <p>A raw <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code> has one flat shape. A NEML2 wrapper gives that
 shape <em>structure</em>: the trailing axes are the fixed mathematical base,
 and the leading axes are split into two batch regions that the
 framework treats differently. Understanding the split is the key to
 reading any wrapper’s shape.</p>
 <section id="the-decomposition">
-<h2>The decomposition<a class="headerlink" href="#the-decomposition" title="Link to this heading">¶</a></h2>
+<h2>The decomposition<a class="headerlink" href="#the-decomposition" title="Link to this heading">#</a></h2>
 <p>A wrapper’s <code class="docutils literal notranslate"><span class="pre">data.shape</span></code> reads left-to-right as three contiguous
 regions:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">data.shape == (*dynamic_batch_shape, *sub_batch_shape, *base_shape)
@@ -440,7 +440,7 @@ artifact handles every batch size.</p></li>
 </ul>
 </section>
 <section id="reading-the-regions-off-a-wrapper">
-<h2>Reading the regions off a wrapper<a class="headerlink" href="#reading-the-regions-off-a-wrapper" title="Link to this heading">¶</a></h2>
+<h2>Reading the regions off a wrapper<a class="headerlink" href="#reading-the-regions-off-a-wrapper" title="Link to this heading">#</a></h2>
 <p>Each region has an accessor. With no sub-batch axes declared,
 everything that isn’t base is dynamic batch:</p>
 <div class="cell docutils container">
@@ -492,7 +492,7 @@ many trailing batch axes are per-site with <code class="docutils literal notrans
 </div>
 </section>
 <section id="dynamic-vs-sub-batch">
-<h2>Dynamic vs sub-batch<a class="headerlink" href="#dynamic-vs-sub-batch" title="Link to this heading">¶</a></h2>
+<h2>Dynamic vs sub-batch<a class="headerlink" href="#dynamic-vs-sub-batch" title="Link to this heading">#</a></h2>
 <p>The two batch regions exist precisely because the framework treats them
 differently:</p>
 <div class="table-wrapper colwidths-auto docutils container">
@@ -528,7 +528,7 @@ small extra structural region the chain rule accumulates over. The
 batching rules are covered in <a class="reference internal" href="batching.html#tensor-types-batching"><span class="std std-ref">Batching and broadcasting</span></a>.</p>
 </section>
 <section id="two-regions-you-usually-dont-construct">
-<h2>Two regions you usually don’t construct<a class="headerlink" href="#two-regions-you-usually-dont-construct" title="Link to this heading">¶</a></h2>
+<h2>Two regions you usually don’t construct<a class="headerlink" href="#two-regions-you-usually-dont-construct" title="Link to this heading">#</a></h2>
 <p><strong>An internal K region.</strong> Chain-rule tangents carry an extra leading
 <em>K</em> (seed-direction) region to the left of the dynamic batch. Primal
 values — everything you build by hand — have <code class="docutils literal notranslate"><span class="pre">k_ndim</span> <span class="pre">==</span> <span class="pre">0</span></code>, so the
@@ -572,7 +572,7 @@ vocabulary with <code class="docutils literal notranslate"><span class="pre">bat
 </div>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="batching.html#tensor-types-batching"><span class="std std-ref">Batching and broadcasting</span></a> — broadcasting across these regions.</p></li>
 <li><p><a class="reference internal" href="region_views.html#tensor-types-region-views"><span class="std std-ref">Region views</span></a> — naming a region to reshape it.</p></li>
@@ -617,9 +617,9 @@ vocabulary with <code class="docutils literal notranslate"><span class="pre">bat
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

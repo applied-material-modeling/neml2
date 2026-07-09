@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -424,7 +424,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="deterministic-material-model-calibration">
-<h1>Deterministic material model calibration<a class="headerlink" href="#deterministic-material-model-calibration" title="Link to this heading">¶</a></h1>
+<h1>Deterministic material model calibration<a class="headerlink" href="#deterministic-material-model-calibration" title="Link to this heading">#</a></h1>
 <p>This is a complete example of using the pyzag bindings to NEML2 to calibrate a material model against experimental data.  <code class="docutils literal notranslate"><span class="pre">demo_model.i</span></code> defines the constitutive model, which is a structural material model describing the evolution of strain and stress in the material under mechanical load.  The particular demonstration is a fairly complex model where the material responds differently as a function of both temperature and strain rate.  The material deformation is driven by an axial strain and all the other stress components are zero.</p>
 <p>In this example we:</p>
 <ol class="arabic simple">
@@ -450,7 +450,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </div>
 <section id="setup-parameters-related-to-how-we-calibrate-the-model">
-<h2>Setup parameters related to <em>how</em> we calibrate the model<a class="headerlink" href="#setup-parameters-related-to-how-we-calibrate-the-model" title="Link to this heading">¶</a></h2>
+<h2>Setup parameters related to <em>how</em> we calibrate the model<a class="headerlink" href="#setup-parameters-related-to-how-we-calibrate-the-model" title="Link to this heading">#</a></h2>
 <p>Choose which device to use.  The <code class="docutils literal notranslate"><span class="pre">nchunk</span></code> parameter controls the time integration in <code class="docutils literal notranslate"><span class="pre">pyzag</span></code>.  <code class="docutils literal notranslate"><span class="pre">pyzag</span></code> can vectorize the time integration itself, providing a larger bandwidth to the compute device.  This helps speed up the calculation, particularly when running on a GPU.  The optimal value will depend on our compute device.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -476,7 +476,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="setup-the-synthetic-experimental-conditions">
-<h2>Setup the synthetic experimental conditions<a class="headerlink" href="#setup-the-synthetic-experimental-conditions" title="Link to this heading">¶</a></h2>
+<h2>Setup the synthetic experimental conditions<a class="headerlink" href="#setup-the-synthetic-experimental-conditions" title="Link to this heading">#</a></h2>
 <p>Setup the loading conditions for the “experiments” we’re going to run.  These will span several strain rates (<code class="docutils literal notranslate"><span class="pre">nrate</span></code>) and temperatures (<code class="docutils literal notranslate"><span class="pre">ntemperature</span></code>).  Overall, we’ll run <code class="docutils literal notranslate"><span class="pre">nbatch</span></code> experiments.  Also setup the maximum strain to pull the material through <code class="docutils literal notranslate"><span class="pre">max_strain</span></code> and the number of time steps we’re going to use for integration <code class="docutils literal notranslate"><span class="pre">ntime</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -493,7 +493,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="define-the-variability-in-the-synthetic-data-and-for-our-initial-guess-at-the-parameters">
-<h2>Define the variability in the synthetic data and for our initial guess at the parameters<a class="headerlink" href="#define-the-variability-in-the-synthetic-data-and-for-our-initial-guess-at-the-parameters" title="Link to this heading">¶</a></h2>
+<h2>Define the variability in the synthetic data and for our initial guess at the parameters<a class="headerlink" href="#define-the-variability-in-the-synthetic-data-and-for-our-initial-guess-at-the-parameters" title="Link to this heading">#</a></h2>
 <p>These control the variability in the synthetic data (<code class="docutils literal notranslate"><span class="pre">actual_cov</span></code>) and the variability of the initial guess at the parameter values (<code class="docutils literal notranslate"><span class="pre">guess_cov</span></code>)</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -505,7 +505,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="setup-the-actual-model">
-<h2>Setup the actual model<a class="headerlink" href="#setup-the-actual-model" title="Link to this heading">¶</a></h2>
+<h2>Setup the actual model<a class="headerlink" href="#setup-the-actual-model" title="Link to this heading">#</a></h2>
 <p>This class is a thin wrapper around the underlying <code class="docutils literal notranslate"><span class="pre">pyzag</span></code> wrapper for NEML2.  All it does is take the input conditions (time, temperature, and strain), combine them into a single tensor, call the <code class="docutils literal notranslate"><span class="pre">pyzag</span></code> wrapper, and return the stress.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -586,7 +586,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </div>
 <section id="actually-setup-the-model">
-<h3>Actually setup the model<a class="headerlink" href="#actually-setup-the-model" title="Link to this heading">¶</a></h3>
+<h3>Actually setup the model<a class="headerlink" href="#actually-setup-the-model" title="Link to this heading">#</a></h3>
 <p>Load the NEML model from disk, wrap it in both the <code class="docutils literal notranslate"><span class="pre">pyzag</span></code> wrapper and our thin wrapper class above.  Exclude some of the model parameters we don’t want to calibrate.</p>
 <p>We also call <code class="docutils literal notranslate"><span class="pre">neml2.compile</span></code> on the <code class="docutils literal notranslate"><span class="pre">pyzag</span></code>-wrapped model. This JIT-compiles the residual/Jacobian evaluation with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> in-process (no AOT export or C++ round-trip), so each Newton and adjoint step in the calibration loop runs a fused compiled graph instead of eager Python. It is a transparent, in-place acceleration — the model is used exactly as before, and gradients still flow for adjoint training.</p>
 <div class="cell docutils container">
@@ -628,7 +628,7 @@ data-aria-dark="Switch to auto color mode">
 </section>
 </section>
 <section id="create-the-input-tensors">
-<h2>Create the input tensors<a class="headerlink" href="#create-the-input-tensors" title="Link to this heading">¶</a></h2>
+<h2>Create the input tensors<a class="headerlink" href="#create-the-input-tensors" title="Link to this heading">#</a></h2>
 <p>Actually setup the full input tensors based on the parameters above</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -649,7 +649,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="replace-the-model-parameters-with-random-values">
-<h2>Replace the model parameters with random values<a class="headerlink" href="#replace-the-model-parameters-with-random-values" title="Link to this heading">¶</a></h2>
+<h2>Replace the model parameters with random values<a class="headerlink" href="#replace-the-model-parameters-with-random-values" title="Link to this heading">#</a></h2>
 <p>Sampled from a normal distribution controlled by the <code class="docutils literal notranslate"><span class="pre">actual_cov</span></code> parameter.</p>
 <p>This controls the randomness in the input synthetic test data</p>
 <div class="cell docutils container">
@@ -666,7 +666,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="run-the-model-to-generate-the-synthetic-data">
-<h2>Run the model to generate the synthetic data<a class="headerlink" href="#run-the-model-to-generate-the-synthetic-data" title="Link to this heading">¶</a></h2>
+<h2>Run the model to generate the synthetic data<a class="headerlink" href="#run-the-model-to-generate-the-synthetic-data" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
@@ -683,7 +683,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="plot-the-synthetic-data">
-<h2>Plot the synthetic data<a class="headerlink" href="#plot-the-synthetic-data" title="Link to this heading">¶</a></h2>
+<h2>Plot the synthetic data<a class="headerlink" href="#plot-the-synthetic-data" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">loading</span><span class="o">.</span><span class="n">cpu</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
@@ -700,7 +700,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="setup-the-model-for-training">
-<h2>Setup the model for training<a class="headerlink" href="#setup-the-model-for-training" title="Link to this heading">¶</a></h2>
+<h2>Setup the model for training<a class="headerlink" href="#setup-the-model-for-training" title="Link to this heading">#</a></h2>
 <p>Replace the parameter values with random initial guesses, with variability controlled by the <code class="docutils literal notranslate"><span class="pre">guess_cov</span></code> parameter.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -717,7 +717,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="scale-the-model-parameters">
-<h2>Scale the model parameters<a class="headerlink" href="#scale-the-model-parameters" title="Link to this heading">¶</a></h2>
+<h2>Scale the model parameters<a class="headerlink" href="#scale-the-model-parameters" title="Link to this heading">#</a></h2>
 <p>Our material model parameters have units.  In general, the parameter values will have different magnitudes from each other, which affects the scale of the gradients.  Unbalanced gradients in turn affect the convergence of gradient descent optimization methods.</p>
 <p>Typically we’d scale the training data to fix this problem.  However, again our data has units and a physical meaning we want to preserve.</p>
 <p>As an alternative we can scale the parameter values themselves both to clip the values to a physical range and to scale the gradients and hopefully improve the convergence of the optimization step.  We do that here, in a way that should be mostly invisible to the training algorithms.</p>
@@ -763,7 +763,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="run-the-model-with-the-initial-parameter-values">
-<h2>Run the model with the initial parameter values<a class="headerlink" href="#run-the-model-with-the-initial-parameter-values" title="Link to this heading">¶</a></h2>
+<h2>Run the model with the initial parameter values<a class="headerlink" href="#run-the-model-with-the-initial-parameter-values" title="Link to this heading">#</a></h2>
 <p>Just to see how far away from the training data we starting from.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -796,7 +796,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="calibrate-the-model-against-the-synthetic-data">
-<h2>Calibrate the model against the synthetic data<a class="headerlink" href="#calibrate-the-model-against-the-synthetic-data" title="Link to this heading">¶</a></h2>
+<h2>Calibrate the model against the synthetic data<a class="headerlink" href="#calibrate-the-model-against-the-synthetic-data" title="Link to this heading">#</a></h2>
 <p>Apply a fairly standard gradient-descent algorithm to adjust the model parameters to better match the synthetic data.  Plot the loss versus iteration data from training.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -870,7 +870,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="plot-the-calibrated-model-predictions">
-<h2>Plot the calibrated model predictions<a class="headerlink" href="#plot-the-calibrated-model-predictions" title="Link to this heading">¶</a></h2>
+<h2>Plot the calibrated model predictions<a class="headerlink" href="#plot-the-calibrated-model-predictions" title="Link to this heading">#</a></h2>
 <p>See how accurately the calibrated model recovers the synthetic data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -889,7 +889,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="print-the-calibrated-model-coefficients">
-<h2>Print the calibrated model coefficients<a class="headerlink" href="#print-the-calibrated-model-coefficients" title="Link to this heading">¶</a></h2>
+<h2>Print the calibrated model coefficients<a class="headerlink" href="#print-the-calibrated-model-coefficients" title="Link to this heading">#</a></h2>
 <p>These may vary significantly from the actual mean values, particularly if we used a large variance when sampling the parameters to generate the synthetic data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -971,9 +971,9 @@ data-aria-dark="Switch to auto color mode">
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

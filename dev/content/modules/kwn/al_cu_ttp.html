@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
@@ -420,7 +420,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="alcu-ttp-diagram">
-<span id="modules-kwn-al-cu-ttp"></span><h1>Al–Cu TTP diagram<a class="headerlink" href="#alcu-ttp-diagram" title="Link to this heading">¶</a></h1>
+<span id="modules-kwn-al-cu-ttp"></span><h1>Al–Cu TTP diagram<a class="headerlink" href="#alcu-ttp-diagram" title="Link to this heading">#</a></h1>
 <p>This worked example computes a <strong>time–temperature–precipitation (TTP) diagram</strong>
 for the <span class="math notranslate nohighlight">\(\theta\)</span>-phase <span class="math notranslate nohighlight">\(\mathrm{Al}_2\mathrm{Cu}\)</span> precipitate forming from a
 dilute Al–Cu matrix (4 wt% Cu), using the <a class="reference internal" href="index.html#modules-kwn"><span class="std std-ref">KWN (precipitation kinetics)</span></a> catalog. A TTP diagram
@@ -439,7 +439,7 @@ already baked into the input file as inline tables.</p></li>
 half needs no pycalphad.</p></li>
 </ol>
 <section id="part-1-thermodynamic-tables-offline">
-<h2>Part 1 — Thermodynamic tables (offline)<a class="headerlink" href="#part-1-thermodynamic-tables-offline" title="Link to this heading">¶</a></h2>
+<h2>Part 1 — Thermodynamic tables (offline)<a class="headerlink" href="#part-1-thermodynamic-tables-offline" title="Link to this heading">#</a></h2>
 <p>Running this part requires <code class="docutils literal notranslate"><span class="pre">pycalphad</span></code> and the Liang &amp; Schmid-Fetzer (2015)
 database saved as <code class="docutils literal notranslate"><span class="pre">AlCu-Liang-Schmid-Fetzer.tdb</span></code> (supplemental material of
 <a class="reference external" href="https://doi.org/10.1016/j.calphad.2015.10.004">doi:10.1016/j.calphad.2015.10.004</a>).
@@ -495,7 +495,7 @@ so you can skip straight there. Uncomment to regenerate them.</p>
 </div>
 </section>
 <section id="part-2-ttp-evaluation">
-<h2>Part 2 — TTP evaluation<a class="headerlink" href="#part-2-ttp-evaluation" title="Link to this heading">¶</a></h2>
+<h2>Part 2 — TTP evaluation<a class="headerlink" href="#part-2-ttp-evaluation" title="Link to this heading">#</a></h2>
 <p>The CALPHAD tables from Part 1 are baked into the <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> block of
 <code class="docutils literal notranslate"><span class="pre">al_cu_ttp.i</span></code> (next to this notebook) — <code class="docutils literal notranslate"><span class="pre">temperatures_for_interpolation</span></code>,
 <code class="docutils literal notranslate"><span class="pre">cu_for_interpolation</span></code>, <code class="docutils literal notranslate"><span class="pre">chem_potential_y</span></code>, … — read by a
@@ -503,7 +503,7 @@ so you can skip straight there. Uncomment to regenerate them.</p>
 and matrix Cu concentration. The rest is the standard KWN nucleation +
 SFFK-growth composition wrapped in an <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>.</p>
 <section id="set-up-and-load-the-model">
-<h3>Set up and load the model<a class="headerlink" href="#set-up-and-load-the-model" title="Link to this heading">¶</a></h3>
+<h3>Set up and load the model<a class="headerlink" href="#set-up-and-load-the-model" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
@@ -530,7 +530,7 @@ SFFK-growth composition wrapped in an <code class="docutils literal notranslate"
 </div>
 </section>
 <section id="the-temperaturetime-grid">
-<h3>The temperature–time grid<a class="headerlink" href="#the-temperaturetime-grid" title="Link to this heading">¶</a></h3>
+<h3>The temperature–time grid<a class="headerlink" href="#the-temperaturetime-grid" title="Link to this heading">#</a></h3>
 <p>A TTP diagram needs many KWN runs: one per temperature, each integrated over the
 full time history. We use 50 temperatures from 300–450 K and 500 log-spaced time
 points from <span class="math notranslate nohighlight">\(10^{-4}\)</span> to <span class="math notranslate nohighlight">\(10^2\)</span> hr, starting from a tiny seed number density.</p>
@@ -553,7 +553,7 @@ points from <span class="math notranslate nohighlight">\(10^{-4}\)</span> to <sp
 </div>
 </section>
 <section id="run-the-sweep">
-<h3>Run the sweep<a class="headerlink" href="#run-the-sweep" title="Link to this heading">¶</a></h3>
+<h3>Run the sweep<a class="headerlink" href="#run-the-sweep" title="Link to this heading">#</a></h3>
 <p>Running all 50 temperatures at once is memory-hungry, so we step through them in
 small chunks. Each chunk advances its whole batch through the time history at
 once. We keep the temperatures within a chunk close together: on this stiff
@@ -623,7 +623,7 @@ batched temperatures are at similar stages of precipitation.</p>
 </div>
 </section>
 <section id="the-ttp-diagram">
-<h3>The TTP diagram<a class="headerlink" href="#the-ttp-diagram" title="Link to this heading">¶</a></h3>
+<h3>The TTP diagram<a class="headerlink" href="#the-ttp-diagram" title="Link to this heading">#</a></h3>
 <p>Contours of constant <span class="math notranslate nohighlight">\(\theta\)</span>-phase volume fraction over temperature and time.
 The “nose” (shortest time to a given fraction) sits near the middle of the
 temperature range — fast enough kinetics, large enough driving force. Without any
@@ -649,7 +649,7 @@ the qualitative C-curve is there.</p>
 </div>
 </section>
 <section id="final-size-distributions">
-<h3>Final size distributions<a class="headerlink" href="#final-size-distributions" title="Link to this heading">¶</a></h3>
+<h3>Final size distributions<a class="headerlink" href="#final-size-distributions" title="Link to this heading">#</a></h3>
 <p>The number-density distribution <span class="math notranslate nohighlight">\(n(R)\)</span> at the last time step, for a subset of
 temperatures. The largest precipitate fraction develops near the nose
 temperature, tailing off above and below it.</p>
@@ -710,9 +710,9 @@ temperature, tailing off above and below it.</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

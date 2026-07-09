@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -413,7 +413,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="batching-and-broadcasting">
-<span id="tensor-types-batching"></span><h1>Batching and broadcasting<a class="headerlink" href="#batching-and-broadcasting" title="Link to this heading">¶</a></h1>
+<span id="tensor-types-batching"></span><h1>Batching and broadcasting<a class="headerlink" href="#batching-and-broadcasting" title="Link to this heading">#</a></h1>
 <p>Vectorizing a model over many material points is the whole point of the
 tensor backend: the <em>same</em> <code class="docutils literal notranslate"><span class="pre">forward</span></code> body evaluates one state or a
 million, and the only difference is the shape of the input. This page
@@ -421,7 +421,7 @@ shows the batching pattern, the broadcasting rules wrappers follow, and
 the one batching concept torch has no equivalent for — the sub-batch
 region.</p>
 <section id="one-body-any-batch-shape">
-<h2>One body, any batch shape<a class="headerlink" href="#one-body-any-batch-shape" title="Link to this heading">¶</a></h2>
+<h2>One body, any batch shape<a class="headerlink" href="#one-body-any-batch-shape" title="Link to this heading">#</a></h2>
 <p>A model’s <code class="docutils literal notranslate"><span class="pre">forward</span></code> dispatches one PyTorch kernel per operation, and
 those kernels broadcast across leading axes natively. So we can hand the
 same model a single strain, a 1-D batch, or a 2-D grid and only the
@@ -477,7 +477,7 @@ whole batch as one tensor whenever you can.
 <a class="reference internal" href="../tutorials/models/vectorization/main.html#tutorials-models-vectorization"><span class="std std-ref">Vectorization</span></a> shows the timing difference.</p>
 </section>
 <section id="broadcasting">
-<h2>Broadcasting<a class="headerlink" href="#broadcasting" title="Link to this heading">¶</a></h2>
+<h2>Broadcasting<a class="headerlink" href="#broadcasting" title="Link to this heading">#</a></h2>
 <p>Binary operators between wrappers broadcast their batch regions using
 PyTorch’s standard rules: right-aligned by axis, size-1 axes stretched
 to match, mismatched non-1 sizes an error. A <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> broadcasts against
@@ -506,7 +506,7 @@ one:</p>
 </div>
 </section>
 <section id="sub-batch-metadata-survives-the-op">
-<h2>Sub-batch metadata survives the op<a class="headerlink" href="#sub-batch-metadata-survives-the-op" title="Link to this heading">¶</a></h2>
+<h2>Sub-batch metadata survives the op<a class="headerlink" href="#sub-batch-metadata-survives-the-op" title="Link to this heading">#</a></h2>
 <p>Algebraic operators don’t just broadcast the raw tensors — they unify
 the operands’ sub-batch widths and tag the result accordingly. So a
 “global” parameter and a “per-site” field combine cleanly at any dynamic
@@ -530,7 +530,7 @@ batch size, and the result still knows which axis is per-site:</p>
 </div>
 </section>
 <section id="declaring-sub-batch-axes-in-an-input-file">
-<h2>Declaring sub-batch axes in an input file<a class="headerlink" href="#declaring-sub-batch-axes-in-an-input-file" title="Link to this heading">¶</a></h2>
+<h2>Declaring sub-batch axes in an input file<a class="headerlink" href="#declaring-sub-batch-axes-in-an-input-file" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">.sub_batch.retag(n)</span></code> is also valid inside a <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> HIT block,
 whose <code class="docutils literal notranslate"><span class="pre">expr</span></code> is evaluated as Python. A lookup-table control axis is the
 canonical case — here 20 interpolation points marked as the sub-batch:</p>
@@ -569,7 +569,7 @@ canonical case — here 20 interpolation points marked as the sub-batch:</p>
 </div>
 </section>
 <section id="relation-to-torch">
-<h2>Relation to torch<a class="headerlink" href="#relation-to-torch" title="Link to this heading">¶</a></h2>
+<h2>Relation to torch<a class="headerlink" href="#relation-to-torch" title="Link to this heading">#</a></h2>
 <p>The leading-batch broadcasting above <em>is</em> PyTorch’s — wrappers add no
 new rule there; they just keep the base packing intact through it. The
 sub-batch region is the genuinely new concept: a torch tensor has no
@@ -578,7 +578,7 @@ which is exactly the distinction the chain rule needs when models on
 different sites compose.</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../tutorials/models/vectorization/main.html#tutorials-models-vectorization"><span class="std std-ref">Vectorization</span></a> — a timed loop-vs-batched
 comparison.</p></li>
@@ -625,9 +625,9 @@ comparison.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

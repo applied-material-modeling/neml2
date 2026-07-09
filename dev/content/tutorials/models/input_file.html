@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
@@ -414,7 +414,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="input-files">
-<span id="tutorials-models-input-file"></span><h1>Input files<a class="headerlink" href="#input-files" title="Link to this heading">¶</a></h1>
+<span id="tutorials-models-input-file"></span><h1>Input files<a class="headerlink" href="#input-files" title="Link to this heading">#</a></h1>
 <p>In this tutorial, we’ll learn enough of NEML2’s input-file syntax to
 read and write the files we’ll see throughout the rest of the
 tutorials. The same file
@@ -425,7 +425,7 @@ format. This tutorial covers the syntax we’ll use day-to-day; the
 <a class="reference external" href="https://github.com/applied-material-modeling/neml2-hit/blob/main/README.md">HIT README</a>
 is the authoritative reference for the rest.</p>
 <section id="anatomy">
-<h2>Anatomy<a class="headerlink" href="#anatomy" title="Link to this heading">¶</a></h2>
+<h2>Anatomy<a class="headerlink" href="#anatomy" title="Link to this heading">#</a></h2>
 <p>A HIT file is a sequence of <strong>sections</strong> and <strong>fields</strong>. A section
 opens with <code class="docutils literal notranslate"><span class="pre">[name]</span></code> and closes with <code class="docutils literal notranslate"><span class="pre">[]</span></code>; a field is a <code class="docutils literal notranslate"><span class="pre">key</span> <span class="pre">=</span> <span class="pre">value</span></code>
 pair.</p>
@@ -444,7 +444,7 @@ pair.</p>
 <p>Indentation is purely visual — HIT doesn’t care.</p>
 </section>
 <section id="sections-and-systems">
-<h2>Sections and systems<a class="headerlink" href="#sections-and-systems" title="Link to this heading">¶</a></h2>
+<h2>Sections and systems<a class="headerlink" href="#sections-and-systems" title="Link to this heading">#</a></h2>
 <p>A NEML2 input file is organized into a few <strong>top-level sections</strong> —
 <code class="docutils literal notranslate"><span class="pre">[Models]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Drivers]</span></code>, and a few others
 (see the <a class="reference internal" href="../../../generated/syntax/index.html#syntax-catalog"><span class="std std-ref">syntax catalog</span></a> for the full list).</p>
@@ -471,7 +471,7 @@ full file is parsed.</p>
 </div>
 </section>
 <section id="value-types">
-<h2>Value types<a class="headerlink" href="#value-types" title="Link to this heading">¶</a></h2>
+<h2>Value types<a class="headerlink" href="#value-types" title="Link to this heading">#</a></h2>
 <p>HIT itself stores every value as text; the <em>type</em> is enforced at the
 point where NEML2 reads the option. The supported primitive types are:</p>
 <div class="table-wrapper colwidths-auto docutils container">
@@ -514,7 +514,7 @@ calling out:</p>
 </ul>
 </section>
 <section id="comments">
-<h2>Comments<a class="headerlink" href="#comments" title="Link to this heading">¶</a></h2>
+<h2>Comments<a class="headerlink" href="#comments" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">#</span></code> starts a comment that runs to end of line. It can appear on a
 line of its own, after a section header (<code class="docutils literal notranslate"><span class="pre">[Models]</span> <span class="pre">#</span> <span class="pre">ok</span></code>), or after a
 <strong>quoted</strong> value (<code class="docutils literal notranslate"><span class="pre">coefficients</span> <span class="pre">=</span> <span class="pre">'200e3</span> <span class="pre">0.3'</span> <span class="pre">#</span> <span class="pre">ok</span></code>). After an
@@ -523,7 +523,7 @@ line of its own, after a section header (<code class="docutils literal notransla
 the safe default in NEML2 anyway.</p>
 </section>
 <section id="includes">
-<h2>Includes<a class="headerlink" href="#includes" title="Link to this heading">¶</a></h2>
+<h2>Includes<a class="headerlink" href="#includes" title="Link to this heading">#</a></h2>
 <p>A file can splice in another file at any point:</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="na">!include shared/material.i</span>
 </span></pre></div>
@@ -533,7 +533,7 @@ and the included content is parsed as if it had been inlined. Useful
 for sharing a <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> section across several driver inputs.</p>
 </section>
 <section id="variable-substitution">
-<h2>Variable substitution<a class="headerlink" href="#variable-substitution" title="Link to this heading">¶</a></h2>
+<h2>Variable substitution<a class="headerlink" href="#variable-substitution" title="Link to this heading">#</a></h2>
 <p>Values can interpolate other fields or environment variables using
 <code class="docutils literal notranslate"><span class="pre">${...}</span></code>:</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="na">E</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">200e3</span>
@@ -557,7 +557,7 @@ for sharing a <code class="docutils literal notranslate"><span class="pre">[Tens
 side can sit anywhere in the file or in an included file.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>The <a class="reference external" href="https://github.com/applied-material-modeling/neml2-hit/blob/main/README.md">HIT README</a>
 for the corners not covered here: override semantics (<code class="docutils literal notranslate"><span class="pre">:=</span></code>),
@@ -609,9 +609,9 @@ file.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -410,13 +410,13 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="cross-referencing">
-<span id="tutorials-models-cross-referencing"></span><h1>Cross-referencing<a class="headerlink" href="#cross-referencing" title="Link to this heading">¶</a></h1>
+<span id="tutorials-models-cross-referencing"></span><h1>Cross-referencing<a class="headerlink" href="#cross-referencing" title="Link to this heading">#</a></h1>
 <p>In this tutorial, we’ll wire a model to its tensor inputs and to other
 models by name — the basic glue that lets an input file hold more than
 one object. Anywhere a field expects an object name, we can write the
 name of another section in the file.</p>
 <section id="referring-to-a-tensor-from-a-model">
-<h2>Referring to a tensor from a model<a class="headerlink" href="#referring-to-a-tensor-from-a-model" title="Link to this heading">¶</a></h2>
+<h2>Referring to a tensor from a model<a class="headerlink" href="#referring-to-a-tensor-from-a-model" title="Link to this heading">#</a></h2>
 <p>When a model field expects a tensor value, we can point it at a
 <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> entry by name:</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Tensors]</span>
@@ -467,7 +467,7 @@ or a CSV file rather than a bare number.</p>
 <p>Once declared, every model that references <code class="docutils literal notranslate"><span class="pre">T_controls</span></code> shares it.</p>
 </section>
 <section id="referring-to-a-model-from-another-model">
-<h2>Referring to a model from another model<a class="headerlink" href="#referring-to-a-model-from-another-model" title="Link to this heading">¶</a></h2>
+<h2>Referring to a model from another model<a class="headerlink" href="#referring-to-a-model-from-another-model" title="Link to this heading">#</a></h2>
 <p>Some models operate on <em>another model</em> rather than on a tensor, and
 their model-valued field takes the name of a <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> entry the same
 way. <code class="docutils literal notranslate"><span class="pre">Normality</span></code> is one: it differentiates a scalar-valued function
@@ -499,7 +499,7 @@ inputs and outputs by the variables a model produces and consumes, which
 is the wiring mechanism the next tutorial builds on.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <p>The same name-binding mechanism is what <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code> uses to wire
 its children together — see <a class="reference internal" href="../model_composition/main.html#tutorials-models-composition"><span class="std std-ref">Model composition</span></a>.</p>
 </section>
@@ -542,9 +542,9 @@ its children together — see <a class="reference internal" href="../model_compo
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

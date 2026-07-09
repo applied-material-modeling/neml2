@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -412,7 +412,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="region-views">
-<span id="tensor-types-region-views"></span><h1>Region views<a class="headerlink" href="#region-views" title="Link to this heading">¶</a></h1>
+<span id="tensor-types-region-views"></span><h1>Region views<a class="headerlink" href="#region-views" title="Link to this heading">#</a></h1>
 <p>On a raw <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code>, <code class="docutils literal notranslate"><span class="pre">t.unsqueeze(0)</span></code> or <code class="docutils literal notranslate"><span class="pre">torch.sum(t,</span> <span class="pre">dim=1)</span></code>
 address axes by absolute position — and once a tensor mixes batch,
 sub-batch, and base axes, an absolute index is ambiguous and easy to
@@ -420,7 +420,7 @@ get wrong. NEML2 fixes this by exposing every shape-manipulating op
 through a <strong>region view</strong>, so each reshape, reduction, or concatenation
 names the region it acts on.</p>
 <section id="the-views">
-<h2>The views<a class="headerlink" href="#the-views" title="Link to this heading">¶</a></h2>
+<h2>The views<a class="headerlink" href="#the-views" title="Link to this heading">#</a></h2>
 <p>Four properties select a region; each returns a fresh wrapper, so calls
 chain:</p>
 <ul class="simple">
@@ -455,7 +455,7 @@ square-base types (<code class="docutils literal notranslate"><span class="pre">
 </div>
 </section>
 <section id="why-t-batch-cant-be-reshaped">
-<h2>Why <code class="docutils literal notranslate"><span class="pre">t.batch</span></code> can’t be reshaped<a class="headerlink" href="#why-t-batch-cant-be-reshaped" title="Link to this heading">¶</a></h2>
+<h2>Why <code class="docutils literal notranslate"><span class="pre">t.batch</span></code> can’t be reshaped<a class="headerlink" href="#why-t-batch-cant-be-reshaped" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">t.batch</span></code> spans both batch regions at once, so a shape-changing op on it
 would be ambiguous: should a new axis land in the dynamic region or the
 sub-batch region? Rather than guess, those ops raise and tell you which
@@ -477,7 +477,7 @@ view to pick:</p>
 </div>
 </section>
 <section id="sub-batch-only-operations">
-<h2>Sub-batch-only operations<a class="headerlink" href="#sub-batch-only-operations" title="Link to this heading">¶</a></h2>
+<h2>Sub-batch-only operations<a class="headerlink" href="#sub-batch-only-operations" title="Link to this heading">#</a></h2>
 <p>The sub-batch view carries a few extra ops for building and collapsing
 per-site structure — <code class="docutils literal notranslate"><span class="pre">retag(n)</span></code> / <code class="docutils literal notranslate"><span class="pre">flatten()</span></code> to change how many
 trailing axes count as sub-batch, <code class="docutils literal notranslate"><span class="pre">expand_at(size)</span></code> to broadcast in a
@@ -505,7 +505,7 @@ per-site diagonal:</p>
 </div>
 </section>
 <section id="disambiguating-the-free-functions">
-<h2>Disambiguating the free functions<a class="headerlink" href="#disambiguating-the-free-functions" title="Link to this heading">¶</a></h2>
+<h2>Disambiguating the free functions<a class="headerlink" href="#disambiguating-the-free-functions" title="Link to this heading">#</a></h2>
 <p>This is where region views earn their keep. Reductions, concatenation,
 and interpolation live as <strong>free functions</strong> in <code class="docutils literal notranslate"><span class="pre">neml2.types</span></code>, and they
 take a <em>region view</em> instead of a <code class="docutils literal notranslate"><span class="pre">dim=</span></code> integer. The view tells the
@@ -584,7 +584,7 @@ the endpoints as — the single v3 spelling that replaces v2’s separate
 </div>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="indexing.html#tensor-types-indexing"><span class="std std-ref">Indexing</span></a> — region-scoped indexing follows the same
 view convention.</p></li>
@@ -630,9 +630,9 @@ view convention.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -409,14 +409,14 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="python-integration">
-<span id="id1"></span><h1>Python integration<a class="headerlink" href="#python-integration" title="Link to this heading">¶</a></h1>
+<span id="id1"></span><h1>Python integration<a class="headerlink" href="#python-integration" title="Link to this heading">#</a></h1>
 <p>The most direct way to use neml2 is from Python: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>, load a model
 from its input file, and evaluate it like any <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>. This page is
 the <em>setup</em> side — installing neml2 in your application, the dependency
 footprint, and where model artifacts come from. The actual evaluation API for
 each route lives in the per-route references linked at the bottom.</p>
 <section id="install">
-<h2>Install<a class="headerlink" href="#install" title="Link to this heading">¶</a></h2>
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading">#</a></h2>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>neml2
 </span></pre></div>
 </div>
@@ -425,7 +425,7 @@ each route lives in the per-route references linked at the bottom.</p>
 editable install from source — see <a class="reference internal" href="../installation/index.html#installation"><span class="std std-ref">Installation</span></a>.</p>
 </section>
 <section id="dependency-footprint">
-<h2>Dependency footprint<a class="headerlink" href="#dependency-footprint" title="Link to this heading">¶</a></h2>
+<h2>Dependency footprint<a class="headerlink" href="#dependency-footprint" title="Link to this heading">#</a></h2>
 <p>A Python app that embeds neml2 depends on <strong>neml2 + torch</strong> (torch is the
 tensor backend and the bulk of the install size). There is no separate
 libtorch download and no system NEML2 install: everything resolves through the
@@ -433,7 +433,7 @@ two wheels in your environment. Pin both for reproducible deployments —
 neml2’s pinned torch is recorded in its wheel metadata.</p>
 </section>
 <section id="obtaining-a-model-artifact">
-<h2>Obtaining a model artifact<a class="headerlink" href="#obtaining-a-model-artifact" title="Link to this heading">¶</a></h2>
+<h2>Obtaining a model artifact<a class="headerlink" href="#obtaining-a-model-artifact" title="Link to this heading">#</a></h2>
 <p>Which artifact you ship depends on the route:</p>
 <ul class="simple">
 <li><p><strong>A HIT input file (<code class="docutils literal notranslate"><span class="pre">.i</span></code>)</strong> — the model definition, consumed by the eager
@@ -445,7 +445,7 @@ for the format and <a class="reference internal" href="cli.html#cli-utilities"><
 </ul>
 </section>
 <section id="import-and-device">
-<h2>Import and device<a class="headerlink" href="#import-and-device" title="Link to this heading">¶</a></h2>
+<h2>Import and device<a class="headerlink" href="#import-and-device" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;my_model&quot;</span><span class="p">)</span>
@@ -458,7 +458,7 @@ call across several devices you compile and use the C++ dispatcher
 (<a class="reference internal" href="../references/cpp_dispatch.html#model-dispatch"><span class="std std-ref">cpp-dispatch — dispatching across devices</span></a>).</p>
 </section>
 <section id="now-evaluate">
-<h2>Now evaluate<a class="headerlink" href="#now-evaluate" title="Link to this heading">¶</a></h2>
+<h2>Now evaluate<a class="headerlink" href="#now-evaluate" title="Link to this heading">#</a></h2>
 <p>With neml2 installed and an artifact in hand, pick the route that fits:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../references/py_eager.html#py-eager"><span class="std std-ref">py-eager — eager Python</span></a> — load and call the model directly; the default for development,
@@ -471,7 +471,7 @@ for pyzag training loops.</p></li>
 <a class="reference internal" href="../tutorials/models/running_your_first_model/main.html#tutorials-models-running-your-first-model"><span class="std std-ref">Running your first model</span></a>.</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../installation/index.html#installation"><span class="std std-ref">Installation</span></a> — torch variants, CUDA/ROCm, building from source.</p></li>
 <li><p><a class="reference internal" href="overview.html#deployment-overview"><span class="std std-ref">Ways to evaluate a model</span></a> — all six routes and how to choose.</p></li>
@@ -517,9 +517,9 @@ for pyzag training loops.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

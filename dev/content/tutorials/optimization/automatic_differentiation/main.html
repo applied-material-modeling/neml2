@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -413,7 +413,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="automatic-differentiation">
-<span id="tutorials-optimization-autograd"></span><h1>Automatic differentiation<a class="headerlink" href="#automatic-differentiation" title="Link to this heading">¶</a></h1>
+<span id="tutorials-optimization-autograd"></span><h1>Automatic differentiation<a class="headerlink" href="#automatic-differentiation" title="Link to this heading">#</a></h1>
 <p>Calibrating a material model means finding parameter values that make
 the model’s predictions match observations. The gradient of a scalar
 loss with respect to the parameters is what every gradient-based
@@ -426,7 +426,7 @@ traced.</p>
 the model, build a scalar loss, call <code class="docutils literal notranslate"><span class="pre">.backward()</span></code>, and read the
 per-parameter gradient off <code class="docutils literal notranslate"><span class="pre">parameter.grad</span></code>.</p>
 <section id="the-model">
-<h2>The model<a class="headerlink" href="#the-model" title="Link to this heading">¶</a></h2>
+<h2>The model<a class="headerlink" href="#the-model" title="Link to this heading">#</a></h2>
 <p>We reuse the linear-isotropic-elastic model from
 <a class="reference internal" href="../../models/running_your_first_model/main.html#tutorials-models-running-your-first-model"><span class="std std-ref">Running your first model</span></a> so the focus stays on
 autograd rather than the physics:</p>
@@ -470,7 +470,7 @@ autograd rather than the physics:</p>
 </div>
 </section>
 <section id="parameters-are-nn-parameters">
-<h2>Parameters are <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code>s<a class="headerlink" href="#parameters-are-nn-parameters" title="Link to this heading">¶</a></h2>
+<h2>Parameters are <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code>s<a class="headerlink" href="#parameters-are-nn-parameters" title="Link to this heading">#</a></h2>
 <p>Because <code class="docutils literal notranslate"><span class="pre">Model</span></code> derives from <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>, the model’s named
 parameters show up under <code class="docutils literal notranslate"><span class="pre">model.named_parameters()</span></code> exactly like any
 other PyTorch module:</p>
@@ -503,7 +503,7 @@ calibration), set <code class="docutils literal notranslate"><span class="pre">r
 </div>
 </section>
 <section id="a-scalar-loss-end-to-end">
-<h2>A scalar loss, end-to-end<a class="headerlink" href="#a-scalar-loss-end-to-end" title="Link to this heading">¶</a></h2>
+<h2>A scalar loss, end-to-end<a class="headerlink" href="#a-scalar-loss-end-to-end" title="Link to this heading">#</a></h2>
 <p>Pick a small uniaxial-strain input and evaluate the model:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -568,7 +568,7 @@ through this access:</p>
 </ol>
 </section>
 <section id="per-component-derivatives-via-torch-autograd-grad">
-<h2>Per-component derivatives via <code class="docutils literal notranslate"><span class="pre">torch.autograd.grad</span></code><a class="headerlink" href="#per-component-derivatives-via-torch-autograd-grad" title="Link to this heading">¶</a></h2>
+<h2>Per-component derivatives via <code class="docutils literal notranslate"><span class="pre">torch.autograd.grad</span></code><a class="headerlink" href="#per-component-derivatives-via-torch-autograd-grad" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">.backward()</span></code> accumulates into <code class="docutils literal notranslate"><span class="pre">.grad</span></code>, which is convenient inside a
 training loop but inconvenient when we want a one-off derivative
 without side effects. <code class="docutils literal notranslate"><span class="pre">torch.autograd.grad</span></code> returns the gradient
@@ -608,7 +608,7 @@ updates.</p>
 </div>
 </section>
 <section id="what-about-implicit-models">
-<h2>What about implicit models?<a class="headerlink" href="#what-about-implicit-models" title="Link to this heading">¶</a></h2>
+<h2>What about implicit models?<a class="headerlink" href="#what-about-implicit-models" title="Link to this heading">#</a></h2>
 <p>For an implicit model — one whose output comes from an internal Newton
 solve, e.g. a viscoplastic update — autograd still flows back to the
 parameters with no changes to our training code. The reason is that
@@ -628,7 +628,7 @@ the explicit case above. See
 assembled in NEML2.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../parameter_calibration/main.html#tutorials-optimization-calibration"><span class="std std-ref">Parameter calibration</span></a> puts these gradients to work
 in a full calibration loop with a PyTorch optimizer.</p></li>
@@ -676,9 +676,9 @@ an entire load history, see the <code class="docutils literal notranslate"><span
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -406,12 +406,12 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="tutorials">
-<span id="id1"></span><h1>Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading">¶</a></h1>
+<span id="id1"></span><h1>Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading">#</a></h1>
 <p>End-to-end walkthroughs of NEML2, grouped by what we’re trying to do:
 run and compose existing models, extend NEML2 with a model of our own,
 or calibrate model parameters against data.</p>
 <section id="introduction">
-<span id="tutorials-models"></span><h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<span id="tutorials-models"></span><h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
 <p>NEML2 ships a large collection of material models that can be used on
 their own or composed into more complex ones. The wiring lives entirely
 in a text-based <a class="reference internal" href="models/input_file.html#tutorials-models-input-file"><span class="std std-ref">input file</span></a>, so we don’t
@@ -437,7 +437,7 @@ existing models.</p>
 </div>
 </section>
 <section id="extension">
-<span id="tutorials-extension"></span><h2>Extension<a class="headerlink" href="#extension" title="Link to this heading">¶</a></h2>
+<span id="tutorials-extension"></span><h2>Extension<a class="headerlink" href="#extension" title="Link to this heading">#</a></h2>
 <p>When the built-in library doesn’t cover what we need, we can add our
 own model as a small Python class deriving from <code class="docutils literal notranslate"><span class="pre">Model</span></code>, plug it into an
 input file like any registered type, and optionally compile it. These
@@ -454,7 +454,7 @@ tutorials build one such model from scratch on a single running example.</p>
 </div>
 </section>
 <section id="parameter-calibration">
-<span id="tutorials-optimization"></span><h2>Parameter calibration<a class="headerlink" href="#parameter-calibration" title="Link to this heading">¶</a></h2>
+<span id="tutorials-optimization"></span><h2>Parameter calibration<a class="headerlink" href="#parameter-calibration" title="Link to this heading">#</a></h2>
 <p>The earlier tutorials evaluate a model — given parameters and inputs,
 compute outputs. Calibration is the inverse: given input/output
 observations, find the parameters that best fit them. These tutorials
@@ -510,9 +510,9 @@ cover gradient-based calibration through PyTorch autograd, plus the
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

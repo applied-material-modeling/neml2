@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -410,7 +410,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="basic-installation">
-<span id="install"></span><h1>Basic installation<a class="headerlink" href="#basic-installation" title="Link to this heading">¶</a></h1>
+<span id="install"></span><h1>Basic installation<a class="headerlink" href="#basic-installation" title="Link to this heading">#</a></h1>
 <p>NEML2 ships as a Python wheel on
 <a class="reference external" href="https://pypi.org/project/neml2/">PyPI</a>, and that’s the recommended
 install path for end users:</p>
@@ -428,7 +428,7 @@ for the full dependency list.</p>
 </span></pre></div>
 </div>
 <section id="what-you-get">
-<h2>What you get<a class="headerlink" href="#what-you-get" title="Link to this heading">¶</a></h2>
+<h2>What you get<a class="headerlink" href="#what-you-get" title="Link to this heading">#</a></h2>
 <p>A single <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">neml2</span></code> lays down everything needed to use NEML2
 from <strong>either</strong> Python or C++ — no second install step, no separate
 LibTorch download.</p>
@@ -455,14 +455,14 @@ the wheel — both CMake and <code class="docutils literal notranslate"><span cl
 covered in <a class="reference internal" href="../deployment/cpp.html#external-project-integration"><span class="std std-ref">C++ integration</span></a>.</p>
 </section>
 <section id="source-builds">
-<h2>Source builds<a class="headerlink" href="#source-builds" title="Link to this heading">¶</a></h2>
+<h2>Source builds<a class="headerlink" href="#source-builds" title="Link to this heading">#</a></h2>
 <p>If you are contributing to NEML2 itself or need a build flavor the
 wheels don’t ship (CUDA-only toolchain, debug build, sanitizer build,
 …), see <a class="reference internal" href="../development/building.html#build-customization"><span class="std std-ref">Building from source</span></a> for the developer source-build
 workflow.</p>
 </section>
 <section id="choosing-a-torch-variant">
-<h2>Choosing a torch variant<a class="headerlink" href="#choosing-a-torch-variant" title="Link to this heading">¶</a></h2>
+<h2>Choosing a torch variant<a class="headerlink" href="#choosing-a-torch-variant" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">neml2</span></code> pulls in whichever torch your platform’s default
 PyPI index serves — that’s the right choice for most users and needs
 no further action.</p>
@@ -517,9 +517,9 @@ and allocating inputs there, see <a class="reference internal" href="../tutorial
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

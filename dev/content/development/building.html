@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -407,7 +407,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="building-from-source">
-<span id="build-customization"></span><h1>Building from source<a class="headerlink" href="#building-from-source" title="Link to this heading">¶</a></h1>
+<span id="build-customization"></span><h1>Building from source<a class="headerlink" href="#building-from-source" title="Link to this heading">#</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>End users should not need this page. The published PyPI wheels are
@@ -417,7 +417,7 @@ build flavor the wheels don’t ship, or experimenting with a custom
 LibTorch.</p>
 </div>
 <section id="quick-start">
-<h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
+<h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h2>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>https://github.com/applied-material-modeling/neml2.git
 </span><span data-line="2"><span class="nb">cd</span><span class="w"> </span>neml2
 </span><span data-line="3">
@@ -445,7 +445,7 @@ clangd / clang-tidy;</p></li>
 </ul>
 </section>
 <section id="running-the-c-tests">
-<h2>Running the C++ tests<a class="headerlink" href="#running-the-c-tests" title="Link to this heading">¶</a></h2>
+<h2>Running the C++ tests<a class="headerlink" href="#running-the-c-tests" title="Link to this heading">#</a></h2>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ctest<span class="w"> </span>--test-dir<span class="w"> </span>build/editable<span class="w"> </span>-L<span class="w"> </span>dispatcher<span class="w">    </span><span class="c1"># dispatcher / scheduler tests</span>
 </span><span data-line="2">ctest<span class="w"> </span>--test-dir<span class="w"> </span>build/editable<span class="w"> </span>-L<span class="w"> </span>eager<span class="w">         </span><span class="c1"># embedded-Python eager test</span>
 </span><span data-line="3">ctest<span class="w"> </span>--test-dir<span class="w"> </span>build/editable<span class="w"> </span>-L<span class="w"> </span>benchmark<span class="w">     </span><span class="c1"># benchmark smoke tests</span>
@@ -454,7 +454,7 @@ clangd / clang-tidy;</p></li>
 <p>The Python suite runs under <code class="docutils literal notranslate"><span class="pre">pytest</span></code> — see <a class="reference internal" href="testing.html#contributing-tests"><span class="std std-ref">Testing</span></a>.</p>
 </section>
 <section id="build-type-and-other-overrides">
-<h2>Build-type and other overrides<a class="headerlink" href="#build-type-and-other-overrides" title="Link to this heading">¶</a></h2>
+<h2>Build-type and other overrides<a class="headerlink" href="#build-type-and-other-overrides" title="Link to this heading">#</a></h2>
 <p>Pass <code class="docutils literal notranslate"><span class="pre">--config-settings</span></code> to override a default for one install. A full
 Debug build:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>--no-build-isolation<span class="w"> </span><span class="se">\</span>
@@ -474,7 +474,7 @@ Debug build:</p>
 </div>
 </section>
 <section id="iterating-on-the-c-runtime">
-<h2>Iterating on the C++ runtime<a class="headerlink" href="#iterating-on-the-c-runtime" title="Link to this heading">¶</a></h2>
+<h2>Iterating on the C++ runtime<a class="headerlink" href="#iterating-on-the-c-runtime" title="Link to this heading">#</a></h2>
 <p>While editing the C++ sources, rebuild the editable build tree directly
 for a fast incremental compile (no <code class="docutils literal notranslate"><span class="pre">pip</span></code> round-trip):</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">cmake<span class="w"> </span>--build<span class="w"> </span>build/editable
@@ -520,9 +520,9 @@ for a fast incremental compile (no <code class="docutils literal notranslate"><s
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

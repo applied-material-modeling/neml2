@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -417,9 +417,9 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="phase-field-fracture">
-<span id="modules-phase-field-fracture"></span><h1>Phase-field fracture<a class="headerlink" href="#phase-field-fracture" title="Link to this heading">¶</a></h1>
+<span id="modules-phase-field-fracture"></span><h1>Phase-field fracture<a class="headerlink" href="#phase-field-fracture" title="Link to this heading">#</a></h1>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
 <p>The <strong>phase-field fracture</strong> module collects the building blocks needed to
 compose regularized brittle-fracture models in NEML2. Sharp cracks are
 replaced by a smeared scalar phase field <span class="math notranslate nohighlight">\(d \in [0, 1]\)</span> whose evolution
@@ -439,7 +439,7 @@ the <a class="reference internal" href="solid_mechanics/index.html#modules-solid
 to the fracture driving force.</p>
 </section>
 <section id="math">
-<h2>Math<a class="headerlink" href="#math" title="Link to this heading">¶</a></h2>
+<h2>Math<a class="headerlink" href="#math" title="Link to this heading">#</a></h2>
 <p>Let <span class="math notranslate nohighlight">\(d\)</span> be the phase-field variable, <span class="math notranslate nohighlight">\(\alpha(d)\)</span> the crack geometric
 function, <span class="math notranslate nohighlight">\(g(d)\)</span> the degradation function, and <span class="math notranslate nohighlight">\(\psi_\text{active}(\mathbf{E})\)</span>
 the active part of the elastic strain energy density. Letting
@@ -454,9 +454,9 @@ energy density per unit volume reads</p>
 </div>
 <p>The Karush–Kuhn–Tucker (KKT) conditions for irreversible phase-field
 evolution read</p>
-<div class="math-wrapper amsmath docutils container" id="equation-b814112c-3005-4806-9195-2fea62cdf08c">
-<div class="amsmath math notranslate nohighlight" id="equation-b814112c-3005-4806-9195-2fea62cdf08c">
-<span class="eqno">(9)<a class="headerlink" href="#equation-b814112c-3005-4806-9195-2fea62cdf08c" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-428ef0ac-8f76-4778-b7a1-1318910ac5e8">
+<div class="amsmath math notranslate nohighlight" id="equation-428ef0ac-8f76-4778-b7a1-1318910ac5e8">
+<span class="eqno">(9)<a class="headerlink" href="#equation-428ef0ac-8f76-4778-b7a1-1318910ac5e8" title="Permalink to this equation">#</a></span>\[\begin{align}
   f &amp;= \eta\, \dot{d} + \frac{\partial \psi}{\partial d} \ge 0, \\
   \dot{d} &amp;\ge 0, \\
   f\, \dot{d} &amp;= 0,
@@ -493,7 +493,7 @@ the trade-off). Swap the <code class="docutils literal notranslate"><span class=
 operator, so the wiring layer of the input file never needs to spell
 them out — only the energy <span class="math notranslate nohighlight">\(\psi\)</span> itself.</p>
 <section id="crack-geometric-functions">
-<h3>Crack geometric functions<a class="headerlink" href="#crack-geometric-functions" title="Link to this heading">¶</a></h3>
+<h3>Crack geometric functions<a class="headerlink" href="#crack-geometric-functions" title="Link to this heading">#</a></h3>
 <p>NEML2 ships the two canonical AT-family functionals:</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -520,7 +520,7 @@ them out — only the energy <span class="math notranslate nohighlight">\(\psi\)
 </div>
 </section>
 <section id="degradation-functions">
-<h3>Degradation functions<a class="headerlink" href="#degradation-functions" title="Link to this heading">¶</a></h3>
+<h3>Degradation functions<a class="headerlink" href="#degradation-functions" title="Link to this heading">#</a></h3>
 <p>The degradation function multiplies the active strain energy to model
 loss of stiffness. The catalog provides two parameterized families:</p>
 <ul class="simple">
@@ -532,7 +532,7 @@ with <span class="math notranslate nohighlight">\(Q(d) = b_1 d (1 + b_2 d + b_2 
 well-conditioned at full damage.</p>
 </section>
 <section id="strain-energy-density">
-<h3>Strain energy density<a class="headerlink" href="#strain-energy-density" title="Link to this heading">¶</a></h3>
+<h3>Strain energy density<a class="headerlink" href="#strain-energy-density" title="Link to this heading">#</a></h3>
 <p>The supplied concrete energy is
 <a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.html#models-linearisotropicstrainenergydensity"><span class="std std-ref">LinearIsotropicStrainEnergyDensity</span></a>, which evaluates the
 linear-elastic isotropic strain energy and supports an optional
@@ -543,7 +543,7 @@ the same input/output variable names as the concrete leaves above.</p>
 </section>
 </section>
 <section id="example-linear-elastic-brittle-fracture">
-<h2>Example: linear-elastic brittle fracture<a class="headerlink" href="#example-linear-elastic-brittle-fracture" title="Link to this heading">¶</a></h2>
+<h2>Example: linear-elastic brittle fracture<a class="headerlink" href="#example-linear-elastic-brittle-fracture" title="Link to this heading">#</a></h2>
 <p>The following input file composes an AT-2, power-degradation, VOLDEV-split
 elastic-brittle fracture model and integrates it under uniaxial tension
 with the Fischer–Burmeister complementarity solver:</p>
@@ -706,7 +706,7 @@ with the Fischer–Burmeister complementarity solver:</p>
 </div>
 </section>
 <section id="explanation">
-<h2>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">¶</a></h2>
+<h2>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">#</a></h2>
 <p>Reading the <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> block top-to-bottom:</p>
 <ul class="simple">
 <li><p><strong><code class="docutils literal notranslate"><span class="pre">degrade</span></code></strong> (<a class="reference internal" href="../../generated/syntax/Models/phase_field_fracture/PowerDegradationFunction.html#models-powerdegradationfunction"><span class="std std-ref">PowerDegradationFunction</span></a>) maps the phase field
@@ -767,7 +767,7 @@ variable name <code class="docutils literal notranslate"><span class="pre">phase
 </div>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../tutorials/models/model_composition/main.html#tutorials-models-composition"><span class="std std-ref">Model composition</span></a> — general patterns for composing
 NEML2 models with <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code>.</p></li>
@@ -819,9 +819,9 @@ registered in this module.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

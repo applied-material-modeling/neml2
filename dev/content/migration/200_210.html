@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -416,18 +416,18 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="migrating-from-v2-0-0-to-v2-1-0">
-<span id="migration-200-210"></span><h1>Migrating from v2.0.0 to v2.1.0<a class="headerlink" href="#migrating-from-v2-0-0-to-v2-1-0" title="Link to this heading">¶</a></h1>
+<span id="migration-200-210"></span><h1>Migrating from v2.0.0 to v2.1.0<a class="headerlink" href="#migrating-from-v2-0-0-to-v2-1-0" title="Link to this heading">#</a></h1>
 <section id="input-file-changes">
-<h2>Input file changes<a class="headerlink" href="#input-file-changes" title="Link to this heading">¶</a></h2>
+<h2>Input file changes<a class="headerlink" href="#input-file-changes" title="Link to this heading">#</a></h2>
 <section id="new-top-level-sections">
-<h3>New top-level sections<a class="headerlink" href="#new-top-level-sections" title="Link to this heading">¶</a></h3>
+<h3>New top-level sections<a class="headerlink" href="#new-top-level-sections" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">[Schedulers]</span></code> is now a recognized top-level section.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> is now a recognized top-level section.</p></li>
 </ul>
 </section>
 <section id="migration-to-equationsystems-nonlinearsystem">
-<span id="eqsys"></span><h3>Migration to EquationSystems (<code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code>)<a class="headerlink" href="#migration-to-equationsystems-nonlinearsystem" title="Link to this heading">¶</a></h3>
+<span id="eqsys"></span><h3>Migration to EquationSystems (<code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code>)<a class="headerlink" href="#migration-to-equationsystems-nonlinearsystem" title="Link to this heading">#</a></h3>
 <p>The biggest implicit-model migration is that nonlinear systems are now
 first-class objects under <code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code>.</p>
 <p>In v2.0.0, <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> referenced a model directly:</p>
@@ -473,7 +473,7 @@ implementation, which interprets:</p>
 </ul>
 </section>
 <section id="nonlinear-solvers-now-reference-a-linear-solver">
-<span id="linear-solver"></span><h3>Nonlinear solvers now reference a linear solver<a class="headerlink" href="#nonlinear-solvers-now-reference-a-linear-solver" title="Link to this heading">¶</a></h3>
+<span id="linear-solver"></span><h3>Nonlinear solvers now reference a linear solver<a class="headerlink" href="#nonlinear-solvers-now-reference-a-linear-solver" title="Link to this heading">#</a></h3>
 <p>In v2.1.0, nonlinear solvers accept a <code class="docutils literal notranslate"><span class="pre">linear_solver</span></code> option that
 selects the linear algebra backend for each Newton iteration.
 When omitted, the solver defaults to <code class="docutils literal notranslate"><span class="pre">DenseLU</span></code>.</p>
@@ -496,7 +496,7 @@ the linearized system, which was previously internal to the nonlinear
 solver implementation.</p>
 </section>
 <section id="settings-defaults-keys-changed">
-<h3>Settings defaults / keys changed<a class="headerlink" href="#settings-defaults-keys-changed" title="Link to this heading">¶</a></h3>
+<h3>Settings defaults / keys changed<a class="headerlink" href="#settings-defaults-keys-changed" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">[Settings]</span></code> changed substantially in v2.1.0:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">buffer_name_separator</span></code> default changed from <code class="docutils literal notranslate"><span class="pre">&quot;.&quot;</span></code> to <code class="docutils literal notranslate"><span class="pre">&quot;_&quot;</span></code>.</p></li>
@@ -510,7 +510,7 @@ solver implementation.</p>
 </section>
 </section>
 <section id="binary-utility-changes">
-<h2>Binary utility changes<a class="headerlink" href="#binary-utility-changes" title="Link to this heading">¶</a></h2>
+<h2>Binary utility changes<a class="headerlink" href="#binary-utility-changes" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">runner</span></code> was replaced by dedicated tools.</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -532,7 +532,7 @@ solver implementation.</p>
 removed in the v3 rewrite. See <a class="reference internal" href="212_300.html"><span class="std std-doc">Migrating from v2.x to v3.0</span></a> for the current tool set.</p>
 </section>
 <section id="build-system-and-integration">
-<h2>Build system and integration<a class="headerlink" href="#build-system-and-integration" title="Link to this heading">¶</a></h2>
+<h2>Build system and integration<a class="headerlink" href="#build-system-and-integration" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>CMake minimum changed to <code class="docutils literal notranslate"><span class="pre">3.26</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cmake-variants.yaml</span></code> workflow was replaced by <code class="docutils literal notranslate"><span class="pre">CMakePresets.json</span></code>.</p></li>
@@ -584,9 +584,9 @@ v3 rewrite.</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

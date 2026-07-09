@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -413,7 +413,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="compilation-pipeline">
-<span id="model-compilation-pipeline"></span><h1>Compilation pipeline<a class="headerlink" href="#compilation-pipeline" title="Link to this heading">¶</a></h1>
+<span id="model-compilation-pipeline"></span><h1>Compilation pipeline<a class="headerlink" href="#compilation-pipeline" title="Link to this heading">#</a></h1>
 <p>This page is the contributor reference for what <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>
 actually does between reading a HIT input file and writing the
 <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> artifacts described in <a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a>. It’s aimed at
@@ -426,11 +426,11 @@ to <em>use</em> a compiled model should start with
 <p><span class="caption-number">Fig. 2 </span><span class="caption-text">What <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> does end to end: the <code class="docutils literal notranslate"><span class="pre">export_model_for_aoti</span></code> subsystem
 (seven stages) lowers the live model into <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs plus a metadata JSON,
 while <code class="docutils literal notranslate"><span class="pre">emit_aoti_stub</span></code> rewrites the HIT file into an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> shim — the two
-branches converging at load time on <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code>.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+branches converging at load time on <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code>.</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <section id="high-level-shape">
-<h2>High-level shape<a class="headerlink" href="#high-level-shape" title="Link to this heading">¶</a></h2>
+<h2>High-level shape<a class="headerlink" href="#high-level-shape" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> orchestrates two mostly-orthogonal subsystems:</p>
 <ol class="arabic simple">
 <li><p><strong>Export</strong> — turns a live <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> into one or more <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>
@@ -463,7 +463,7 @@ AOT-Inductor; collect per-segment metadata.</p></li>
 <em>why</em> it exists in addition to <em>what</em> it does.</p>
 </section>
 <section id="stage-1-load-the-model">
-<h2>Stage 1 — Load the model<a class="headerlink" href="#stage-1-load-the-model" title="Link to this heading">¶</a></h2>
+<h2>Stage 1 — Load the model<a class="headerlink" href="#stage-1-load-the-model" title="Link to this heading">#</a></h2>
 <p>The exporter parses the HIT file (via <code class="docutils literal notranslate"><span class="pre">nmhit</span></code>) and instantiates the
 named <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> block, returning a live <code class="docutils literal notranslate"><span class="pre">Model</span></code> (an <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code>)
 with all dependencies already resolved and wired.</p>
@@ -472,7 +472,7 @@ re-running <code class="docutils literal notranslate"><span class="pre">neml2-co
 changes.</p>
 </section>
 <section id="stage-2-validate-and-snapshot-promoted-parameters">
-<h2>Stage 2 — Validate and snapshot promoted parameters<a class="headerlink" href="#stage-2-validate-and-snapshot-promoted-parameters" title="Link to this heading">¶</a></h2>
+<h2>Stage 2 — Validate and snapshot promoted parameters<a class="headerlink" href="#stage-2-validate-and-snapshot-promoted-parameters" title="Link to this heading">#</a></h2>
 <p>Each <code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">NAME</span></code> flag promotes one fully-qualified parameter or buffer
 from a baked constant to a runtime graph input. A bare (non-composed)
 leaf is first wrapped in a single-child <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code> — matching the
@@ -493,7 +493,7 @@ before any rewriting. Those tensors land in the metadata’s
 <code class="docutils literal notranslate"><span class="pre">aoti::Model::named_parameters()</span></code> at construction.</p>
 </section>
 <section id="stage-3-re-route-promoted-parameters-to-graph-inputs">
-<h2>Stage 3 — Re-route promoted parameters to graph inputs<a class="headerlink" href="#stage-3-re-route-promoted-parameters-to-graph-inputs" title="Link to this heading">¶</a></h2>
+<h2>Stage 3 — Re-route promoted parameters to graph inputs<a class="headerlink" href="#stage-3-re-route-promoted-parameters-to-graph-inputs" title="Link to this heading">#</a></h2>
 <p>This stage transitions each promoted name from a static field on the
 leaf to a graph input the caller supplies on every invocation. The
 exporter routes promotion through the leaf’s existing promoted-parameter
@@ -510,7 +510,7 @@ unchanged — the promoted-parameter pack abstracts the “baked vs
 promoted” distinction away.</p>
 </section>
 <section id="stage-4-freeze-remaining-parameters-to-buffers">
-<h2>Stage 4 — Freeze remaining parameters to buffers<a class="headerlink" href="#stage-4-freeze-remaining-parameters-to-buffers" title="Link to this heading">¶</a></h2>
+<h2>Stage 4 — Freeze remaining parameters to buffers<a class="headerlink" href="#stage-4-freeze-remaining-parameters-to-buffers" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> treats <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code> as a <em>graph input</em> by default
 and <code class="docutils literal notranslate"><span class="pre">nn.Buffer</span></code> as a <em>constant</em>. We want every non-promoted entry
 folded into the kernel, so the exporter walks the module tree and
@@ -520,7 +520,7 @@ already gone from the parameter dict (Stage 3) so this pass skips
 them naturally.</p>
 </section>
 <section id="stage-5-seed-sub-batch-shapes-from-the-example-shapes">
-<h2>Stage 5 — Seed sub-batch shapes from the example shapes<a class="headerlink" href="#stage-5-seed-sub-batch-shapes-from-the-example-shapes" title="Link to this heading">¶</a></h2>
+<h2>Stage 5 — Seed sub-batch shapes from the example shapes<a class="headerlink" href="#stage-5-seed-sub-batch-shapes-from-the-example-shapes" title="Link to this heading">#</a></h2>
 <p>Some constitutive models — slip-system kinematics, multi-grain
 plasticity — carry structured per-site dimensions on top of the
 batch axis (the <code class="docutils literal notranslate"><span class="pre">sub_batch_shape</span></code>). The implicit-update tracer
@@ -537,7 +537,7 @@ system’s per-variable <code class="docutils literal notranslate"><span class="
 tracer runs.</p>
 </section>
 <section id="stage-6-partition-into-segments">
-<h2>Stage 6 — Partition into segments<a class="headerlink" href="#stage-6-partition-into-segments" title="Link to this heading">¶</a></h2>
+<h2>Stage 6 — Partition into segments<a class="headerlink" href="#stage-6-partition-into-segments" title="Link to this heading">#</a></h2>
 <p>Every <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> becomes its own segment so the Newton loop
 can be driven from the C++ orchestrator (one <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> call per step
 until convergence). <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> traces eager Python and can’t
@@ -557,9 +557,24 @@ non-implicit leaves coalesce into a single forward segment, every
 inputs from that map. The shared map plus topological order is
 what lets a multi-segment artifact present a single forward
 contract to the loader.</p>
+<p>The segments are coupled <strong>only</strong> at runtime, through that state map;
+their compiles are independent. <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">-j</span> <span class="pre">N</span></code> therefore compiles
+up to <code class="docutils literal notranslate"><span class="pre">N</span></code> segments concurrently in a spawn process pool — each worker
+re-derives its assigned segment from the input file (live models can’t
+cross the process boundary), and the per-segment metadata is reassembled
+in segment order so the resulting <code class="docutils literal notranslate"><span class="pre">_meta.json</span></code> is identical to a serial
+run. Only a multi-segment model (a <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code> containing an
+<code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>) benefits; a single-segment model ignores <code class="docutils literal notranslate"><span class="pre">-j</span></code>. With
+<code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cuda</span></code> each worker initializes its own CUDA context and invokes
+the CUDA compiler, so watch memory when raising <code class="docutils literal notranslate"><span class="pre">N</span></code>.</p>
+<p>The set of segments — and every file the compile will produce — can be
+enumerated ahead of time, without compiling, via
+<code class="docutils literal notranslate"><span class="pre">neml2.cli.aoti_export.plan_export_artifacts</span></code>. <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> uses it to
+size the <code class="docutils literal notranslate"><span class="pre">[k/N]</span></code> per-file progress it prints as each <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>, the
+<code class="docutils literal notranslate"><span class="pre">_meta.json</span></code>, and the <code class="docutils literal notranslate"><span class="pre">_aoti.i</span></code> stub is written.</p>
 </section>
 <section id="stage-7-trace-lower-package">
-<h2>Stage 7 — Trace, lower, package<a class="headerlink" href="#stage-7-trace-lower-package" title="Link to this heading">¶</a></h2>
+<h2>Stage 7 — Trace, lower, package<a class="headerlink" href="#stage-7-trace-lower-package" title="Link to this heading">#</a></h2>
 <p>Each segment routes through the project’s <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> adapter — a
 thin wrapper around <code class="docutils literal notranslate"><span class="pre">torch.export.export</span></code> + AOT-Inductor’s
 compile-and-package, also exposed in-process as the public
@@ -599,7 +614,7 @@ the <code class="docutils literal notranslate"><span class="pre">BLOCK</span> <s
 structure is internal to the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>.</p>
 </section>
 <section id="after-export-emit-the-hit-stub">
-<h2>After export: emit the HIT stub<a class="headerlink" href="#after-export-emit-the-hit-stub" title="Link to this heading">¶</a></h2>
+<h2>After export: emit the HIT stub<a class="headerlink" href="#after-export-emit-the-hit-stub" title="Link to this heading">#</a></h2>
 <p>Once each device’s metadata JSON and <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs have been
 written, the exporter rewrites the source HIT file into a standalone
 stub:</p>
@@ -635,7 +650,7 @@ or the C++ <code class="docutils literal notranslate"><span class="pre">load_mod
 on.</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a> — on-disk artifact format and runtime API.</p></li>
 <li><p><a class="reference internal" href="../tutorials/models/compiled_models/main.html#tutorials-models-compiled"><span class="std std-ref">Compiled models</span></a> — end-to-end how-to.</p></li>
@@ -682,9 +697,9 @@ on.</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

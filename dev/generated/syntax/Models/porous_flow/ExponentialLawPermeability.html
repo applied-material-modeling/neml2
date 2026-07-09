@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -418,7 +418,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="exponentiallawpermeability">
-<span id="models-exponentiallawpermeability"></span><h1>ExponentialLawPermeability<a class="headerlink" href="#exponentiallawpermeability" title="Link to this heading">¶</a></h1>
+<span id="models-exponentiallawpermeability"></span><h1>ExponentialLawPermeability<a class="headerlink" href="#exponentiallawpermeability" title="Link to this heading">#</a></h1>
 <p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/porous_flow/ExponentialLawPermeability.py</span></code></p>
 <p>Define the relationship between non-dimensionalized porosity and permeability.</p>
 <p>The exponential porosity-permeability relation takes the form of
@@ -426,21 +426,21 @@ data-aria-dark="Switch to auto color mode">
 scaling parameter; <span class="math notranslate nohighlight">\(\varphi_0\)</span> and <span class="math notranslate nohighlight">\(K_0\)</span> are the reference
 porosity and permeability respectively.</p>
 <section id="inputs">
-<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">¶</a></h2>
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
 <dt><code class="docutils literal notranslate"><span class="pre">porosity</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The porosity</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
-<h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">¶</a></h2>
+<h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
 <dt><code class="docutils literal notranslate"><span class="pre">permeability</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The porosity-dependent permeability</p>
 </dd>
 </dl>
 </section>
 <section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
 <dt><code class="docutils literal notranslate"><span class="pre">reference_permeability</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The reference permeability</p>
 </dd>
@@ -489,9 +489,9 @@ porosity and permeability respectively.</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>

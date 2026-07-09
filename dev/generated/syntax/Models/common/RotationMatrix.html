@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -417,7 +417,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="rotationmatrix">
-<span id="models-rotationmatrix"></span><h1>RotationMatrix<a class="headerlink" href="#rotationmatrix" title="Link to this heading">¶</a></h1>
+<span id="models-rotationmatrix"></span><h1>RotationMatrix<a class="headerlink" href="#rotationmatrix" title="Link to this heading">#</a></h1>
 <p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/common/RotationMatrix.py</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">orientation_matrix</span> <span class="pre">=</span> <span class="pre">euler_rodrigues(orientation)</span></code>.</p>
 <p>Mirrors C++ <code class="docutils literal notranslate"><span class="pre">RotationMatrix</span></code> in <code class="docutils literal notranslate"><span class="pre">src/neml2/models/common/RotationMatrix.cxx</span></code>.
@@ -426,14 +426,14 @@ inside <code class="docutils literal notranslate"><span class="pre">jvp_euler_ro
 kernel is ever formed (see the function docstring for the MRP
 body-frame-rate identity).</p>
 <section id="inputs">
-<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">¶</a></h2>
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
 <dt><code class="docutils literal notranslate"><span class="pre">from</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">MRP</span></code> · <strong>required</strong></dt><dd><p>MRP to convert</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
-<h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">¶</a></h2>
+<h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
 <dt><code class="docutils literal notranslate"><span class="pre">to</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">R2</span></code> · <strong>required</strong></dt><dd><p>R2 to store the resulting rotation matrix</p>
 </dd>
@@ -478,9 +478,9 @@ body-frame-rate identity).</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
