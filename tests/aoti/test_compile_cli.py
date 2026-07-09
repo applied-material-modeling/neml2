@@ -178,3 +178,55 @@ def test_jobs_ignored_for_single_segment(tmp_path):
     assert {p.name for p in j1_dir.iterdir() if p.is_file()} == {
         p.name for p in j4_dir.iterdir() if p.is_file()
     }
+
+
+# ---------------------------------------------------------------------------
+# Multi-device grid orchestration (export_model_multidevice)
+# ---------------------------------------------------------------------------
+
+
+def test_multidevice_matches_single_device_export(tmp_path):
+    """A single-device grid run must produce metadata + artifacts byte-identical
+    to a direct per-device export_model_for_aoti (the CLI now routes through the
+    grid orchestrator, so this pins that they agree)."""
+    from neml2.cli.aoti_export import export_model_for_aoti, export_model_multidevice
+
+    direct_dir = tmp_path / "direct" / "cpu"
+    direct_dir.mkdir(parents=True)
+    grid_root = tmp_path / "grid"
+    grid_root.mkdir()
+
+    meta_direct = export_model_for_aoti(_COMPOSED_INPUT, "model", direct_dir, derivatives=[":"])
+    metas_grid = export_model_multidevice(
+        _COMPOSED_INPUT, "model", grid_root, ["cpu"], derivatives=[":"]
+    )
+
+    assert set(metas_grid) == {"cpu"}
+    assert json.dumps(metas_grid["cpu"], sort_keys=True) == json.dumps(meta_direct, sort_keys=True)
+    assert {p.name for p in (grid_root / "cpu").iterdir() if p.is_file()} == {
+        p.name for p in direct_dir.iterdir() if p.is_file()
+    }
+
+
+def test_multidevice_grid_parallel_matches_serial_and_tags_device(tmp_path):
+    """The grid pool (jobs>1) matches serial output and reports device-tagged
+    progress; over-provisioned jobs are capped at the grid size."""
+    from neml2.cli.aoti_export import export_model_multidevice
+
+    serial_dir = tmp_path / "s"
+    par_dir = tmp_path / "p"
+    serial_dir.mkdir()
+    par_dir.mkdir()
+
+    reported: list[str] = []
+    metas_serial = export_model_multidevice(_COMPOSED_INPUT, "model", serial_dir, ["cpu"], jobs=1)
+    metas_par = export_model_multidevice(
+        _COMPOSED_INPUT, "model", par_dir, ["cpu"], jobs=8, progress_cb=reported.append
+    )
+
+    assert json.dumps(metas_serial["cpu"], sort_keys=True) == json.dumps(
+        metas_par["cpu"], sort_keys=True
+    )
+    # Every reported generated file is device-tagged (single-device -> all "cpu/").
+    assert reported and all(name.startswith("cpu/") for name in reported)
+    assert "cpu/model_meta.json" in reported

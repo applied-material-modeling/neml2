@@ -53,7 +53,7 @@ import sys
 from pathlib import Path
 
 from ._extensions import add_load_argument, load_user_extensions
-from .aoti_export import export_model_for_aoti
+from .aoti_export import export_model_multidevice
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
@@ -738,31 +738,30 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
 
-    compiled: list[tuple[str, Path]] = []
-    meta: dict = {}
-    for device in devices:
-        device_dir = artifact_dir / device
-        device_dir.mkdir(parents=True, exist_ok=True)
-        try:
-            meta = export_model_for_aoti(
-                input_path,
-                model_name,
-                device_dir,
-                device=device,
-                dtype=args.dtype,
-                promoted=set(args.parameter),
-                example_batch_shape=example_batch_shape,
-                dynamic_batch=args.dynamic_batch,
-                derivatives=tuple(args.derivative),
-                renames=renames,
-                additional_args=tuple(additional_args),
-                jobs=args.jobs,
-                progress_cb=progress_cb,
-            )
-        except Exception as exc:  # noqa: BLE001
-            print(f"Error compiling '{model_name}' for {device}: {exc}", file=sys.stderr)
-            return 1
-        compiled.append((device, device_dir / f"{model_name}_meta.json"))
+    # Compile every device, parallelizing across the full (device x segment) grid
+    # (jobs bounds the workers across ALL cells, so multiple devices compile
+    # concurrently). progress_cb receives device-tagged names from the orchestrator.
+    try:
+        metas = export_model_multidevice(
+            input_path,
+            model_name,
+            artifact_dir,
+            devices,
+            dtype=args.dtype,
+            promoted=set(args.parameter),
+            example_batch_shape=example_batch_shape,
+            dynamic_batch=args.dynamic_batch,
+            derivatives=tuple(args.derivative),
+            renames=renames,
+            additional_args=tuple(additional_args),
+            jobs=args.jobs,
+            progress_cb=progress_cb,
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"Error compiling '{model_name}': {exc}", file=sys.stderr)
+        return 1
+    compiled = [(device, artifact_dir / device / f"{model_name}_meta.json") for device in devices]
+    meta = next(iter(metas.values()))  # envelope is identical across devices
 
     # One standalone stub next to the artifact folder, pointing at it.
     stub_path = output_dir / f"{model_name}_aoti.i"

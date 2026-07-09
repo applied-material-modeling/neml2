@@ -1028,8 +1028,8 @@ def test_ask_jobs_single_segment_no_prompt(monkeypatch):
 
 
 def test_ask_jobs_clamps_to_segment_count(monkeypatch):
-    """Requesting more processes than segments is clamped to the segment count
-    (the composed fixture has 3 segments)."""
+    """On one device, requesting more processes than segments is clamped to the
+    segment count (the composed fixture has 3 segments)."""
     pytest.importorskip("questionary")
     import neml2  # noqa: F401, PLC0415 — registers models
     from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
@@ -1040,3 +1040,35 @@ def test_ask_jobs_clamps_to_segment_count(monkeypatch):
     state["name"] = "model"
     assert wiz._ask_field("jobs", str(_COMPOSED_I), state, {}) is True
     assert state["jobs"] == 3
+
+
+def test_ask_jobs_clamps_to_grid_over_multiple_devices(monkeypatch):
+    """The clamp is the grid size #devices × #segments: 2 devices × 3 segments = 6
+    (computed from the chosen device list; no CUDA needed to plan)."""
+    pytest.importorskip("questionary")
+    import neml2  # noqa: F401, PLC0415 — registers models
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary(["99"]))
+    state = wiz._default_state()
+    state["target"] = "model"
+    state["name"] = "model"
+    state["devices"] = ("cpu", "cuda")
+    assert wiz._ask_field("jobs", str(_COMPOSED_I), state, {}) is True
+    assert state["jobs"] == 6
+
+
+def test_ask_jobs_single_segment_multi_device_prompts(monkeypatch):
+    """A single-segment model on TWO devices is still a 2-cell grid, so parallel
+    compilation applies and the wizard prompts (rather than pinning to 1)."""
+    pytest.importorskip("questionary")
+    import neml2  # noqa: F401, PLC0415 — registers models
+    from neml2.cli import _compile_wizard as wiz  # noqa: PLC2701, PLC0415
+
+    monkeypatch.setattr(wiz, "questionary", _FakeQuestionary(["2"]))
+    state = wiz._default_state()
+    state["target"] = "model"
+    state["name"] = "model"
+    state["devices"] = ("cpu", "cuda")
+    assert wiz._ask_field("jobs", str(_ELASTICITY_I), state, {}) is True
+    assert state["jobs"] == 2
