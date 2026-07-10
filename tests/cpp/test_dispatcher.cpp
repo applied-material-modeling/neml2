@@ -69,14 +69,13 @@ make_inputs(const Model & model, int64_t b)
 int
 main(int argc, char ** argv)
 {
-  NEML2_CHECK(argc >= 2); // argv[1] = the fixture artifact root (holds cpu/ subfolder)
+  NEML2_CHECK(argc >= 2); // argv[1] = the fixture artifact root (holds metadata.json + cpu/)
   const std::string artifact_root = argv[1];
-  const std::string meta_path = artifact_root + "/cpu/model_meta.json";
 
   at::manual_seed(0);
 
-  // Single-shot reference.
-  Model ref(meta_path);
+  // Single-shot reference straight off the cpu leaf of the artifact root.
+  Model ref(artifact_root, at::kCPU, at::kDouble);
   const int64_t b = 10;
   const auto inputs = make_inputs(ref, b);
   const auto ref_out = ref.forward(inputs);
@@ -193,7 +192,7 @@ main(int argc, char ** argv)
         ref.named_parameters().at(sp);
 
     // Batched single-shot reference.
-    Model bref(meta_path);
+    Model bref(artifact_root, at::kCPU, at::kDouble);
     bref.set_parameter(sp, pvals);
     const auto bref_out = bref.forward(inputs);
     const auto bref_pjac = bref.param_jacobian(inputs);
@@ -275,7 +274,7 @@ main(int argc, char ** argv)
     const auto newval = ref.named_parameters().at(pname).clone() * 1.5;
     disp.set_parameter(pname, newval);
 
-    Model ref2(meta_path);
+    Model ref2(artifact_root, at::kCPU, at::kDouble);
     ref2.set_parameter(pname, newval);
     const auto out = disp.forward(inputs);
     const auto ref2_out = ref2.forward(inputs);
@@ -286,7 +285,7 @@ main(int argc, char ** argv)
   // Public API surface: the (Model, scheduler) constructor, move semantics, and
   // the trivial accessors -- kept exercised so they don't silently rot.
   {
-    DispatchedModel m(std::make_unique<Model>(meta_path),
+    DispatchedModel m(std::make_unique<Model>(artifact_root, at::kCPU, at::kDouble),
                       std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cpu", 0}));
     NEML2_CHECK(m.input_names() == ref.input_names());
     NEML2_CHECK(m.output_names() == ref.output_names());
@@ -300,7 +299,7 @@ main(int argc, char ** argv)
 
     DispatchedModel moved(std::move(m)); // move ctor
     NEML2_CHECK(moved.input_names() == ref.input_names());
-    DispatchedModel m2(std::make_unique<Model>(meta_path),
+    DispatchedModel m2(std::make_unique<Model>(artifact_root, at::kCPU, at::kDouble),
                        std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cpu", 0}));
     m2 = std::move(moved); // move assignment
     NEML2_CHECK(at::allclose(m2.forward(inputs).at(first), ref_out.at(first), 1e-8, 1e-10));
@@ -411,8 +410,8 @@ main(int argc, char ** argv)
   // returned on the input (CPU) device -- match the CPU single-shot reference.
   // The cpu-only loop above cannot reach this path (there in_device ==
   // compute_device, so no transfer happens). Skipped on cpu-only machines.
-  const std::string cuda_meta = artifact_root + "/cuda/model_meta.json";
-  if (at::hasCUDA() && std::filesystem::exists(cuda_meta))
+  const std::string cuda_leaf = artifact_root + "/cuda/float64";
+  if (at::hasCUDA() && std::filesystem::exists(cuda_leaf))
   {
     auto scheduler = std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cuda", 4});
     DispatchedModel disp(artifact_root, scheduler);
@@ -446,7 +445,7 @@ main(int argc, char ** argv)
     // across cpu + cuda) must match -- which it only can if the cuda copy saw
     // the mutation.
     {
-      Model ref_mut(meta_path);
+      Model ref_mut(artifact_root, at::kCPU, at::kDouble);
       auto & rp = ref_mut.named_parameters();
       NEML2_CHECK(!rp.empty()); // forward_promoted exposes E + nu
       const std::string pkey = rp.begin()->first;
@@ -481,7 +480,7 @@ main(int argc, char ** argv)
       const auto pvals = at::linspace(0.8, 1.2, b, at::TensorOptions().dtype(ref.dtype())) *
                          ref.named_parameters().at(sp);
 
-      Model bref(meta_path); // cpu single-shot, batched
+      Model bref(artifact_root, at::kCPU, at::kDouble); // cpu single-shot, batched
       bref.set_parameter(sp, pvals);
       const auto bref_out = bref.forward(inputs);
       const auto bref_pjac = bref.param_jacobian(inputs);

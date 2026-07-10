@@ -25,10 +25,11 @@
 """Drive the ``neml2-compile`` CLI surface end-to-end.
 
 Covers the multi-device output layout: ``main()`` and the
-``compile_and_emit_stub`` helper both emit one artifact folder per device
-(``<out>/<model>/<device>/``) plus a single standalone ``<out>/<model>_aoti.i``
-stub that points at the folder via an absolute ``artifact_path``. Also exercises
-the two cheap error exits (missing input, unknown model).
+``compile_and_emit_stub`` helper both emit one artifact folder per model
+(``<out>/<model>/`` holding one shared ``metadata.json`` + per-``<device>/<dtype>/``
+binaries) plus a single standalone ``<out>/<model>_aoti.i`` stub that points at
+the folder via an absolute ``artifact_path``. Also exercises the two cheap error
+exits (missing input, unknown model).
 
 The forward_single leaf is the smallest scenario; the second compile of it hits
 the warm Inductor cache, so the per-device-layout assertions cost roughly one
@@ -56,20 +57,45 @@ def test_main_emits_standalone_stub_and_per_device_folder(tmp_path):
 
     stub = tmp_path / "model_aoti.i"
     assert stub.exists()
-    assert (tmp_path / "model" / "cpu" / "model_meta.json").exists()
+    # Schema v10: one shared metadata.json at the artifact root, binaries under
+    # <device>/<dtype>/.
+    assert (tmp_path / "model" / "metadata.json").exists()
+    assert (tmp_path / "model" / "cpu" / "float64").is_dir()
 
     # The shim points at the artifact folder via artifact_path; the old
     # per-device `meta =` field is gone.
     stub_text = stub.read_text()
     assert "artifact_path" in stub_text
     assert "\n    meta =" not in stub_text
+    # Schema v10: the stub carries no [Solvers] block / solver field (the config
+    # rides along in metadata.json).
+    assert "[Solvers]" not in stub_text
+    assert "\n    solver =" not in stub_text
 
 
 def test_compile_and_emit_stub_layout(tmp_path):
     stub = compile_and_emit_stub(_INPUT, tmp_path, model="model")
     assert stub == tmp_path / "model_aoti.i"
     assert stub.exists()
-    assert (tmp_path / "model" / "cpu" / "model_meta.json").exists()
+    assert (tmp_path / "model" / "metadata.json").exists()
+    assert (tmp_path / "model" / "cpu" / "float64").is_dir()
+
+
+def test_compile_and_emit_stub_no_stub(tmp_path):
+    """``emit_stub=False`` skips the standalone ``_aoti.i`` while still writing the
+    self-describing artifact folder (metadata.json + <device>/<dtype>/ binaries)."""
+    stub = compile_and_emit_stub(_INPUT, tmp_path, model="model", emit_stub=False)
+    assert not stub.exists()
+    assert (tmp_path / "model" / "metadata.json").exists()
+    assert (tmp_path / "model" / "cpu" / "float64").is_dir()
+
+
+def test_main_no_stub(tmp_path):
+    """``--no-stub`` on the CLI suppresses the ``_aoti.i`` stub."""
+    rc = main([str(_INPUT), "--model", "model", "--output-dir", str(tmp_path), "--no-stub"])
+    assert rc == 0
+    assert not (tmp_path / "model_aoti.i").exists()
+    assert (tmp_path / "model" / "metadata.json").exists()
 
 
 def test_main_input_not_found(tmp_path):
@@ -112,10 +138,15 @@ def test_planned_equals_produced(tmp_path, inp, model, derivs):
     reported: list[str] = []
     export_model_for_aoti(inp, model, tmp_path, derivatives=derivs, progress_cb=reported.append)
 
+    # Schema v10 layout: the shared metadata.json sits at the artifact root while
+    # the .pt2 binaries live under <device>/<dtype>/. Gather both, keyed by bare
+    # name (the predictor + progress stream both speak bare filenames).
+    leaf = tmp_path / "cpu" / "float64"
     on_disk = {p.name for p in tmp_path.iterdir() if p.is_file()}
+    on_disk |= {p.name for p in leaf.iterdir() if p.is_file()}
     # Ordered prediction matches the ordered progress stream (serial run) ...
     assert reported == predicted
-    # ... and the exact set of files on disk (.pt2 graphs + the meta.json).
+    # ... and the exact set of files on disk (.pt2 graphs + the metadata.json).
     assert set(predicted) == on_disk
 
 
@@ -126,8 +157,8 @@ def test_planned_equals_produced_includes_stub(tmp_path):
     stub = compile_and_emit_stub(_INPUT, tmp_path, model="model", progress_cb=reported.append)
     assert stub.exists()
     assert reported[-1] == "model_aoti.i"
-    # The stub is the last generated file, after every .pt2 and the meta.json.
-    assert reported == ["model.pt2", "model_meta.json", "model_aoti.i"]
+    # The stub is the last generated file, after every .pt2 and the metadata.json.
+    assert reported == ["model.pt2", "metadata.json", "model_aoti.i"]
 
 
 # ---------------------------------------------------------------------------
@@ -154,11 +185,16 @@ def test_parallel_matches_serial(tmp_path):
 
     # Metadata identical (order-insensitive JSON compare).
     assert json.dumps(meta_serial, sort_keys=True) == json.dumps(meta_parallel, sort_keys=True)
+
     # Same artifacts on disk (compare names, not .pt2 bytes -- Inductor output
-    # can differ trivially run-to-run).
-    serial_files = {p.name for p in serial_dir.iterdir() if p.is_file()}
-    parallel_files = {p.name for p in parallel_dir.iterdir() if p.is_file()}
-    assert serial_files == parallel_files
+    # can differ trivially run-to-run). Gather the shared metadata.json at the
+    # root plus the <device>/<dtype>/ .pt2 binaries (schema v10 layout).
+    def _artifact_names(root: Path) -> set[str]:
+        names = {p.name for p in root.iterdir() if p.is_file()}
+        names |= {p.name for p in (root / "cpu" / "float64").iterdir() if p.is_file()}
+        return names
+
+    assert _artifact_names(serial_dir) == _artifact_names(parallel_dir)
 
 
 def test_jobs_ignored_for_single_segment(tmp_path):
@@ -175,9 +211,13 @@ def test_jobs_ignored_for_single_segment(tmp_path):
     meta_j4 = export_model_for_aoti(_INPUT, "model", j4_dir, jobs=4)
 
     assert json.dumps(meta_j1, sort_keys=True) == json.dumps(meta_j4, sort_keys=True)
-    assert {p.name for p in j1_dir.iterdir() if p.is_file()} == {
-        p.name for p in j4_dir.iterdir() if p.is_file()
-    }
+
+    def _artifact_names(root: Path) -> set[str]:
+        names = {p.name for p in root.iterdir() if p.is_file()}
+        names |= {p.name for p in (root / "cpu" / "float64").iterdir() if p.is_file()}
+        return names
+
+    assert _artifact_names(j1_dir) == _artifact_names(j4_dir)
 
 
 # ---------------------------------------------------------------------------
@@ -191,20 +231,23 @@ def test_multidevice_matches_single_device_export(tmp_path):
     grid orchestrator, so this pins that they agree)."""
     from neml2.cli.aoti_export import export_model_for_aoti, export_model_multidevice
 
-    direct_dir = tmp_path / "direct" / "cpu"
-    direct_dir.mkdir(parents=True)
+    direct_root = tmp_path / "direct"
+    direct_root.mkdir(parents=True)
     grid_root = tmp_path / "grid"
     grid_root.mkdir()
 
-    meta_direct = export_model_for_aoti(_COMPOSED_INPUT, "model", direct_dir, derivatives=[":"])
-    metas_grid = export_model_multidevice(
+    # Both paths use the schema v10 artifact-root layout: shared metadata.json at
+    # the root, .pt2 binaries under <device>/<dtype>/.
+    meta_direct = export_model_for_aoti(_COMPOSED_INPUT, "model", direct_root, derivatives=[":"])
+    meta_grid = export_model_multidevice(
         _COMPOSED_INPUT, "model", grid_root, ["cpu"], derivatives=[":"]
     )
 
-    assert set(metas_grid) == {"cpu"}
-    assert json.dumps(metas_grid["cpu"], sort_keys=True) == json.dumps(meta_direct, sort_keys=True)
-    assert {p.name for p in (grid_root / "cpu").iterdir() if p.is_file()} == {
-        p.name for p in direct_dir.iterdir() if p.is_file()
+    # export_model_multidevice returns a single shared meta dict (schema v10),
+    # identical to the direct single-device export.
+    assert json.dumps(meta_grid, sort_keys=True) == json.dumps(meta_direct, sort_keys=True)
+    assert {p.name for p in (grid_root / "cpu" / "float64").iterdir() if p.is_file()} == {
+        p.name for p in (direct_root / "cpu" / "float64").iterdir() if p.is_file()
     }
 
 
@@ -219,14 +262,15 @@ def test_multidevice_grid_parallel_matches_serial_and_tags_device(tmp_path):
     par_dir.mkdir()
 
     reported: list[str] = []
-    metas_serial = export_model_multidevice(_COMPOSED_INPUT, "model", serial_dir, ["cpu"], jobs=1)
-    metas_par = export_model_multidevice(
+    meta_serial = export_model_multidevice(_COMPOSED_INPUT, "model", serial_dir, ["cpu"], jobs=1)
+    meta_par = export_model_multidevice(
         _COMPOSED_INPUT, "model", par_dir, ["cpu"], jobs=8, progress_cb=reported.append
     )
 
-    assert json.dumps(metas_serial["cpu"], sort_keys=True) == json.dumps(
-        metas_par["cpu"], sort_keys=True
-    )
-    # Every reported generated file is device-tagged (single-device -> all "cpu/").
-    assert reported and all(name.startswith("cpu/") for name in reported)
-    assert "cpu/model_meta.json" in reported
+    # Single shared meta dict per run (schema v10); serial and parallel agree.
+    assert json.dumps(meta_serial, sort_keys=True) == json.dumps(meta_par, sort_keys=True)
+    # Every reported .pt2 is device-tagged (single-device -> "cpu/"); the shared
+    # metadata.json is written once at the root and reported untagged.
+    assert reported
+    assert all(name.startswith("cpu/") for name in reported if name.endswith(".pt2"))
+    assert "metadata.json" in reported

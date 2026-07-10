@@ -68,10 +68,12 @@ void ensure_neml2_custom_ops_registered();
 /// forwarders onto the identically-named members here.
 struct Model::Impl
 {
-  /// See `Model::Model`. Parses `_meta.json`, loads every `.pt2` segment, and
-  /// materialises the promoted-parameter surface. `device_override` refines the
-  /// concrete device index (its type must match the compiled device type).
-  explicit Impl(const std::filesystem::path & meta_path, std::optional<at::Device> device_override);
+  /// See `Model::Model`. Parses `<artifact_root>/metadata.json`, loads every
+  /// `.pt2` segment from the `<device>/<dtype>/` leaf, and materialises the
+  /// promoted-parameter surface on `device` (floating params at `dtype`).
+  explicit Impl(const std::filesystem::path & artifact_root,
+                at::Device device,
+                at::ScalarType dtype);
 
   // --- Public ops (forwarded from Model) -----------------------------------
   //

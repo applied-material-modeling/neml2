@@ -25,8 +25,8 @@
 """AOTI (cpp-aoti via the pybind binding) substepping smoke tests.
 
 These exercise the host-side substep driver through the compiled runtime end to
-end: the Python role classification is serialized into ``_meta.json`` (schema
-v9), the C++ ``Model`` parses it, and ``_run_implicit_segment_substepped``
+end: the Python role classification is serialized into the shared ``metadata.json``
+(schema v10), the C++ ``Model`` parses it, and ``_run_implicit_segment_substepped``
 dispatches per the roles. The scenario integration is linear-in-time, so the
 substepped answer equals the single-shot answer -- the "no-op equivalence" that
 validates the interpolation / chaining machinery. Genuine convergence-recovery
@@ -79,7 +79,7 @@ def test_forward_noop_equivalence(tmp_path: Path):
 
     out = tmp_path / "implicit_substep"
     export_model_for_aoti(_SUBSTEP, "model", out)
-    aoti = AOTIModel(str(out / "model_meta.json"))
+    aoti = AOTIModel(str(out))
 
     b = 4
     inputs = {
@@ -106,8 +106,8 @@ def test_forward_matches_non_substepped_build(tmp_path: Path):
     out_plain = tmp_path / "plain"
     export_model_for_aoti(_SUBSTEP, "model", out_sub)
     export_model_for_aoti(plain_i, "model", out_plain)
-    m_sub = AOTIModel(str(out_sub / "model_meta.json"))
-    m_plain = AOTIModel(str(out_plain / "model_meta.json"))
+    m_sub = AOTIModel(str(out_sub))
+    m_plain = AOTIModel(str(out_plain))
 
     b = 3
     inputs = {
@@ -150,7 +150,7 @@ def test_nonlinear_convergence_recovery(tmp_path: Path):
 
     out = tmp_path / "nl"
     export_model_for_aoti(_SUBSTEP_NL, "model", out, derivatives=["x:x~1", "x:t", "x:t~1"])
-    aoti = AOTIModel(str(out / "model_meta.json"))
+    aoti = AOTIModel(str(out))
 
     def fwd(dt: float) -> float:
         ins = {
@@ -184,7 +184,7 @@ def test_nonlinear_substepped_jacobian_matches_fd(tmp_path: Path):
 
     out = tmp_path / "nl"
     export_model_for_aoti(_SUBSTEP_NL, "model", out, derivatives=["x:x~1", "x:t", "x:t~1"])
-    aoti = AOTIModel(str(out / "model_meta.json"))
+    aoti = AOTIModel(str(out))
 
     base = {
         "x": torch.full((1,), 0.2, dtype=torch.float64),
@@ -218,7 +218,7 @@ def test_eager_aoti_parity_easy_step(tmp_path: Path):
 
     out = tmp_path / "nl"
     export_model_for_aoti(_SUBSTEP_NL, "model", out, derivatives=["x:x~1", "x:t", "x:t~1"])
-    aoti = AOTIModel(str(out / "model_meta.json"))
+    aoti = AOTIModel(str(out))
     eager = neml2.load_model(str(_SUBSTEP_NL), "model").to(torch.float64)
 
     ins = {
@@ -246,7 +246,7 @@ def test_masking_mixed_batch_matches_per_element(tmp_path: Path):
 
     out = tmp_path / "nl"
     export_model_for_aoti(_SUBSTEP_NL, "model", out, derivatives=["x:x~1", "x:t", "x:t~1"])
-    aoti = AOTIModel(str(out / "model_meta.json"))
+    aoti = AOTIModel(str(out))
 
     dts = [1.0, 8.0, 2.0, 8.0]  # easy, hard, easy, hard
     x1s = [0.2, 0.2, 0.3, 0.15]
@@ -291,7 +291,7 @@ def test_substep_trace_env_var(tmp_path: Path, capfd, monkeypatch):
 
     out = tmp_path / "nl"
     export_model_for_aoti(_SUBSTEP_NL, "model", out)
-    aoti = AOTIModel(str(out / "model_meta.json"))
+    aoti = AOTIModel(str(out))
 
     monkeypatch.setenv("NEML2_AOTI_TRACE_SUBSTEP", "1")
     aoti.forward(_mixed_inputs())

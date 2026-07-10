@@ -157,7 +157,7 @@ their compiles are independent. `neml2-compile -j N` therefore flattens
 the whole `(device × segment)` grid into a single spawn process pool of up
 to `N` workers — each worker re-derives its assigned segment from the input
 file (live models can't cross the process boundary), and the per-segment
-metadata is reassembled in segment order so each device's `_meta.json` is
+metadata is reassembled in segment order so the emitted artifacts are
 identical to a serial run. Because the grid spans devices, a
 `--device cpu cuda` build of a two-segment model saturates `-j 4` (and the
 devices compile concurrently); `N` is capped at the number of grid cells.
@@ -170,9 +170,9 @@ watch memory when raising `N`.
 The set of segments — and every file the compile will produce — can be
 enumerated ahead of time, without compiling, via
 `neml2.cli.aoti_export.plan_export_artifacts`. `neml2-compile` uses it to
-size the `[k/N]` per-file progress it prints as each `.pt2` and
-`_meta.json` (each tagged with its device, e.g. `cpu/model_seg0.pt2`) and
-the `_aoti.i` stub is written.
+size the `[k/N]` per-file progress it prints as each `.pt2`
+(each tagged with its device, e.g. `cpu/float64/model_seg0.pt2`),
+the shared `metadata.json`, and the optional `_aoti.i` stub is written.
 
 ## Stage 7 — Trace, lower, package
 
@@ -222,9 +222,9 @@ structure is internal to the `.pt2`.
 
 ## After export: emit the HIT stub
 
-Once each device's metadata JSON and `.pt2` graphs have been
-written, the exporter rewrites the source HIT file into a standalone
-stub:
+Once the metadata JSON and `.pt2` graphs have been written, the
+exporter optionally rewrites the source HIT file into a standalone
+stub (suppressed by `--no-stub`):
 
 - find the top-level `[Models]` block containing the target model
   (HIT allows multiple `[Models]` blocks — all of them are walked);
@@ -233,28 +233,21 @@ stub:
   unrelated `[Models]` entries are dropped — they're unreachable
   from the shim at runtime;
 - point the shim at the compiled artifact via an absolute
-  `artifact_path` field (the `<model>/` folder holding one
-  `<device>/` subfolder per compiled device);
+  `artifact_path` field (the `<model>/` artifact root folder);
 - carry `[Settings]` (with the legacy `aoti_*` keys stripped, since
   they would fail the v3 factory's strict-key check) and `[Tensors]`
   from the original; keep `[Drivers]` only in `--driver` mode; drop
-  `[Data]` and `[EquationSystems]` (their state is baked into the
-  `.pt2`);
-- for an implicit model, carry a *minimal* `[Solvers]` block — only
-  the implicit model's solver, and only its honored convergence /
-  line-search knobs — and reference it from the shim via a
-  `solver = <name>` field. The `linear_solver` field is dropped on
-  purpose: it is baked into the compiled step / IFT graphs, so
-  editing it in the stub would have no effect.
+  `[Data]`, `[EquationSystems]`, and `[Solvers]` — their state is
+  baked into the `.pt2` or the `metadata.json` `solver_config`.
 
 The stub is written to `<output-dir>/<model>_aoti.i`, *next to* (not
 inside) the `<output-dir>/<model>/` artifact folder. Because the
 `artifact_path` is recorded as an absolute path, the stub is
 standalone but **not relocatable**: moving the artifacts requires
 recompiling (or hand-editing the path). The loader (the Python shim
-or the C++ `load_model`) resolves
-`<artifact_path>/<device>/<model>_meta.json` for the device it runs
-on.
+or the C++ `load_model`) reads `<artifact_path>/metadata.json` and
+resolves `<artifact_path>/<device>/<dtype>/` for the device and dtype
+it runs on.
 
 ## See also
 

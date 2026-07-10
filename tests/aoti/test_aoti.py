@@ -146,8 +146,9 @@ def test_aoti_export_reload_matches_eager(scenario: Path, tmp_path: Path):
     assert meta["schema_version"] == AOTI_META_SCHEMA_VERSION
     assert meta["parameters"] == []
 
-    # Reload through the pybind binding.
-    aoti = AOTIModel(str(out_dir / "model_meta.json"))
+    # Reload through the pybind binding: pass the artifact ROOT (holding the
+    # shared metadata.json + <device>/<dtype>/ binaries), schema v10.
+    aoti = AOTIModel(str(out_dir))
 
     # Build a reproducible structural-input batch shared by eager and AOTI.
     eager_model = load_input(hit_path).get_model("model")
@@ -206,13 +207,14 @@ def test_aoti_stub_loads_through_native_factory(scenario: Path, tmp_path: Path):
 
     hit_path = scenario / "model.i"
 
-    # New layout: <out>/model/<device>/ artifacts + a standalone <out>/model_aoti.i
-    # stub that points at the artifact folder. The shim picks the subfolder for
-    # the current default device, so compile for exactly that device.
+    # Schema v10 layout: <out>/model/ is the artifact root (shared metadata.json +
+    # <device>/<dtype>/ binaries, created by the exporter) + a standalone
+    # <out>/model_aoti.i stub pointing at that folder. The shim picks the
+    # <device>/<dtype>/ leaf for the current defaults, so compile for that device.
     out_dir = tmp_path / scenario.name
     dev = torch.get_default_device().type
     artifact_dir = out_dir / "model"
-    export_model_for_aoti(hit_path, "model", artifact_dir / dev, device=dev)
+    export_model_for_aoti(hit_path, "model", artifact_dir, device=dev)
     # `export_model_for_aoti` only writes the .pt2 segments + metadata; the
     # `.i` stub is `neml2-compile`'s additional step. Drive it directly so
     # this test stays a single in-process call.
@@ -283,7 +285,7 @@ def test_aoti_export_persists_sub_batch_labels(tmp_path: Path):
 
     # Read the persisted master meta and assert the grain label is on the
     # per-site input AND the corresponding unknown output.
-    meta_path = out_dir / "model_meta.json"
+    meta_path = out_dir / "metadata.json"
     meta = json.loads(meta_path.read_text())
     inputs_by_name = {info["name"]: info for info in meta["inputs"]}
     outputs_by_name = {info["name"]: info for info in meta["outputs"]}
@@ -300,7 +302,8 @@ def test_aoti_export_persists_sub_batch_labels(tmp_path: Path):
     )
 
     # The Python shim re-attaches labels to typed outputs at the load boundary.
-    shim = AOTIModel(meta_path)
+    # Schema v10: pass the artifact ROOT, not the metadata.json path.
+    shim = AOTIModel(out_dir)
     assert shim.output_labels.get("u_per") == ("grain",)
 
     # Driving the shim should produce typed wrappers that carry the
@@ -354,7 +357,7 @@ def test_parameter_base_shapes_map_matches_eager(tmp_path: Path):
     # (promoted-subset) surface covers the same parameters.
     out_dir = tmp_path / "pbs"
     export_model_for_aoti(hit_path, "model", out_dir, promoted=set(em.parameter_base_shapes))
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
 
     # aoti: the map keys are exactly the runtime-settable promoted parameters.
     assert set(m.parameter_base_shapes) == set(m.named_parameters())
@@ -382,7 +385,7 @@ def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     export_model_for_aoti(
         hit_path, "model", out_dir, promoted={"model.E"}, derivatives=["stress:model.E"]
     )
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
     assert "model.E" in m.named_parameters()
 
     torch.manual_seed(0)
@@ -431,7 +434,7 @@ def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     from neml2.aoti import AOTIModel
 
     set_e(e0)
-    shim = AOTIModel(str(out_dir / "model_meta.json"))  # fresh load: E at the e0 snapshot
+    shim = AOTIModel(str(out_dir))  # fresh load: E at the e0 snapshot
     assert "model.E" in shim.named_parameters()
     _, s_pjac = shim.param_jacobian(raw)
     assert torch.allclose(s_pjac["stress"]["model.E"], block)
@@ -461,7 +464,7 @@ def test_aoti_batched_param_matches_fd_and_eager(tmp_path: Path):
     export_model_for_aoti(
         hit_path, "model", out_dir, promoted={"model.E"}, derivatives=["stress:model.E"]
     )
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
 
     torch.manual_seed(0)
     b = 5
@@ -536,7 +539,7 @@ def test_aoti_provider_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     export_model_for_aoti(
         hit_path, "model", out_dir, promoted={"k.value"}, derivatives=["y:k.value"]
     )
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
 
     x = torch.tensor([2.0, 5.0, -1.0, 3.5], dtype=torch.float64)
     k0 = float(m.named_parameters()["k.value"])
@@ -587,7 +590,7 @@ def test_aoti_implicit_param_jacobian_matches_fd(tmp_path: Path):
     qname = "residual.rate.weight_0"
     out_dir = tmp_path / "implicit_param_deriv"
     export_model_for_aoti(hit_path, "model", out_dir, promoted={qname}, derivatives=[f"x:{qname}"])
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
     assert qname in m.named_parameters()
 
     # Uniaxial-style implicit step: x~1 ramps, dt = t - t~1 = 0.5, x IC = 0.
@@ -679,7 +682,7 @@ def test_aoti_composed_param_jacobian_matches_fd(tmp_path: Path):
     export_model_for_aoti(
         hit_path, "model", out_dir, promoted=set(params), derivatives=[f"y:{p}" for p in params]
     )
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
     for p in params:
         assert p in m.named_parameters()
 
@@ -813,7 +816,7 @@ def test_aoti_saved_output_param_derivative_matches_fd_and_eager(
     export_model_for_aoti(
         hit_path, "model", out_dir, promoted={param}, derivatives=[f"{out_var}:{param}"]
     )
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
     ins = make_inputs()
 
     # cpp-aoti param_jacobian vs finite differences on the runtime parameter.

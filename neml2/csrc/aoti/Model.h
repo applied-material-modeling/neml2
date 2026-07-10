@@ -120,23 +120,22 @@ using VariablePairJacobian = std::map<std::string, std::map<std::string, at::Ten
 class AOTI_EXPORT Model
 {
 public:
-  /// Load all .pt2 segments + metadata from `meta_path`. Other artifact files
-  /// (`.pt2` segments, optional `_state.pt`) are resolved relative to the
-  /// metadata file's directory. Throws on any missing file or schema
-  /// mismatch.
+  /// Load a compiled artifact from `artifact_root` -- the folder `neml2-compile`
+  /// writes: one shared, device/dtype-independent `metadata.json` at the root
+  /// plus per-`<device>/<dtype>/` `.pt2` binaries (schema v10). The structural
+  /// metadata backs every compiled (device, dtype) leaf; the `.pt2` graphs and
+  /// promoted parameters for THIS run are taken from
+  /// `<artifact_root>/<device-type>/<dtype>/`. Throws if that leaf is absent
+  /// (listing the available leaves), on any missing file, or on schema mismatch.
   ///
-  /// Promoted-parameter tensors are placed on the device + dtype recorded in
-  /// the metadata (set by `neml2-compile --device/--dtype`). The AOTI graphs
-  /// are pinned to that same device at export time.
-  ///
-  /// `device_override` refines *which* concrete device the artifact is loaded
-  /// onto. Its device *type* must match the compiled type recorded in the
-  /// metadata (a `cpu` artifact cannot be loaded onto cuda, or vice versa);
-  /// only the index is honoured. This is how one `cuda` artifact is
-  /// instantiated on `cuda:0`, `cuda:1`, … by a multi-device dispatcher. When
-  /// omitted, the metadata device (default cuda index) is used unchanged.
-  explicit Model(const std::filesystem::path & meta_path,
-                 std::optional<at::Device> device_override = std::nullopt);
+  /// `device` carries the concrete index (e.g. `cuda:1`), so a multi-device
+  /// dispatcher instantiates one Model per GPU from the same `artifact_root`.
+  /// The promoted-parameter `values` in the metadata are stored dtype-neutral
+  /// (float64) and materialized here on `device`: floating parameters at `dtype`,
+  /// an integer/bool parameter at its recorded dtype.
+  explicit Model(const std::filesystem::path & artifact_root,
+                 at::Device device = at::kCPU,
+                 at::ScalarType dtype = at::kDouble);
 
   /// Declared (not defaulted) here and defined out-of-line where `Impl` is a
   /// complete type, as the PImpl idiom requires.

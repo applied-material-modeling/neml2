@@ -50,9 +50,9 @@ int
 main(int argc, char ** argv)
 {
   NEML2_CHECK(argc >= 2); // argv[1] = the fixture (collection) dir
-  const std::string cpu_meta = std::string(argv[1]) + "/model/cpu/model_meta.json";
+  const std::string artifact_root = std::string(argv[1]) + "/model";
 
-  Model m(cpu_meta);
+  Model m(artifact_root, at::kCPU, at::kDouble);
   const int64_t b = 6;
   const double offset = 2.0; // matches batch_broadcast_model.i
   const auto opts = at::TensorOptions().dtype(m.dtype()).device(m.device());

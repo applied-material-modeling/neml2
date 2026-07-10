@@ -39,62 +39,28 @@
 
 namespace neml2::aoti
 {
-namespace
-{
-// Find the single `*_meta.json` inside a per-device artifact subfolder.
-std::filesystem::path
-find_meta(const std::filesystem::path & dir)
-{
-  _assert(std::filesystem::is_directory(dir),
-          "DispatchedModel: artifact subfolder '",
-          dir.string(),
-          "' does not exist. Compile with `neml2-compile --device <type>` so a per-device "
-          "subfolder is produced.");
-
-  const std::string suffix = "_meta.json";
-  std::filesystem::path found;
-  for (const auto & entry : std::filesystem::directory_iterator(dir))
-  {
-    const auto p = entry.path();
-    const auto fn = p.filename().string();
-    if (fn.size() >= suffix.size() &&
-        fn.compare(fn.size() - suffix.size(), suffix.size(), suffix) == 0)
-    {
-      _assert(found.empty(),
-              "DispatchedModel: multiple '*_meta.json' files in '",
-              dir.string(),
-              "'. Expected exactly one compiled model.");
-      found = p;
-    }
-  }
-  _assert(!found.empty(),
-          "DispatchedModel: no '*_meta.json' in '",
-          dir.string(),
-          "'. Is this a neml2-compile output directory?");
-  return found;
-}
-} // namespace
-
 // ----------------------------------------------------------------------------
 // Impl
 // ----------------------------------------------------------------------------
 struct DispatchedModel::Impl
 {
-  Impl(const std::filesystem::path & artifact_root, std::shared_ptr<WorkScheduler> scheduler)
+  Impl(const std::filesystem::path & artifact_root,
+       std::shared_ptr<WorkScheduler> scheduler,
+       at::ScalarType dtype)
     : _scheduler(std::move(scheduler))
   {
     _assert(static_cast<bool>(_scheduler), "DispatchedModel: scheduler must not be null.");
     classify_scheduler();
 
-    // One Model per scheduler device, from the matching <device-type>/ subfolder,
-    // pinned to that device's concrete index (e.g. one cuda artifact -> cuda:0,
-    // cuda:1). The first device is the primary (metadata + master parameters).
+    // One Model per scheduler device, pinned to that device's concrete index (e.g.
+    // one cuda artifact -> cuda:0, cuda:1). Each Model resolves the shared
+    // <artifact_root>/metadata.json and its own <device>/<dtype>/ binaries. The
+    // first device is the primary (metadata + master parameters).
     const auto devs = _scheduler->devices();
     _assert(!devs.empty(), "DispatchedModel: scheduler reported no devices.");
     for (const auto & dev : devs)
     {
-      const auto subdir = artifact_root / (dev.is_cuda() ? "cuda" : "cpu");
-      auto model = std::make_unique<Model>(find_meta(subdir), dev);
+      auto model = std::make_unique<Model>(artifact_root, dev, dtype);
       if (_active == nullptr)
         _active = model.get();
       _models.emplace(dev.str(), std::move(model));
@@ -718,8 +684,9 @@ private:
 // Facade
 // ----------------------------------------------------------------------------
 DispatchedModel::DispatchedModel(const std::filesystem::path & artifact_root,
-                                 std::shared_ptr<WorkScheduler> scheduler)
-  : _impl(std::make_unique<Impl>(artifact_root, std::move(scheduler)))
+                                 std::shared_ptr<WorkScheduler> scheduler,
+                                 at::ScalarType dtype)
+  : _impl(std::make_unique<Impl>(artifact_root, std::move(scheduler), dtype))
 {
 }
 

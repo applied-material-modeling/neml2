@@ -95,7 +95,8 @@ def _compile(tmp_path: Path, sub: str, *, derivatives, renames=None):
     meta = export_model_for_aoti(
         _MODEL_I, "model", out, promoted={"ys.C"}, derivatives=derivatives, renames=renames
     )
-    return AOTIModel(str(out / "model_meta.json")), meta
+    # Schema v10: pass the artifact ROOT (metadata.json + <device>/<dtype>/).
+    return AOTIModel(str(out)), meta
 
 
 @_skip_win_reextract

@@ -91,11 +91,49 @@ Everything else is baked into the graph as a constant.
       // fixes this upstream, drop this lambda + restore
       // ``py::init<const std::filesystem::path &>()`` once a release
       // with that PR lands.
-      .def(py::init([](const std::string & meta_path)
-                    { return std::make_unique<Model>(std::filesystem::path{meta_path}); }),
-           py::arg("meta_path"),
-           "Load all .pt2 segments + metadata from `meta_path`. Throws on "
-           "any missing file or schema mismatch.")
+      .def(py::init(
+               [](const std::string & artifact_root,
+                  std::optional<std::string> device,
+                  std::optional<std::string> dtype)
+               {
+                 // device/dtype default to the ambient torch defaults so
+                 // `Model(root)` loads the <device>/<dtype>/ leaf matching
+                 // torch.get_default_device() / torch.get_default_dtype() -- the same
+                 // rule the py-aoti shim uses. Explicit strings override.
+                 std::string dev = device.value_or("");
+                 std::string dt = dtype.value_or("");
+                 if (dev.empty())
+                   dev = py::cast<std::string>(py::str(
+                       py::module_::import("torch").attr("get_default_device")().attr("type")));
+                 if (dt.empty())
+                 {
+                   dt = py::cast<std::string>(
+                       py::str(py::module_::import("torch").attr("get_default_dtype")()));
+                   const std::string pfx = "torch.";
+                   if (dt.rfind(pfx, 0) == 0)
+                     dt = dt.substr(pfx.size());
+                 }
+                 // The leaf dtype is always a float type (the model dtype); a small
+                 // local map keeps the binding free of the anon-namespace parser in
+                 // Model.cpp. device uses torch's own string ctor (cpu/cuda/cuda:1).
+                 at::ScalarType st;
+                 if (dt == "float64")
+                   st = at::kDouble;
+                 else if (dt == "float32")
+                   st = at::kFloat;
+                 else
+                   throw std::runtime_error("AOTIModel: unsupported dtype '" + dt +
+                                            "' (expected float64 or float32).");
+                 return std::make_unique<Model>(
+                     std::filesystem::path{artifact_root}, at::Device{dev}, st);
+               }),
+           py::arg("artifact_root"),
+           py::arg("device") = py::none(),
+           py::arg("dtype") = py::none(),
+           "Load the compiled artifact rooted at `artifact_root` (shared "
+           "metadata.json + <device>/<dtype>/ binaries). `device`/`dtype` default "
+           "to torch.get_default_device()/get_default_dtype(). Throws on any missing "
+           "file or schema mismatch.")
       .def_property_readonly(
           "input_names", &Model::input_names, "Master input names in graph-call order.")
       .def_property_readonly(

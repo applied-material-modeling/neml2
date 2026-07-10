@@ -251,7 +251,7 @@ def test_plan_summary_single_segment_forward():
     # A forward-only model is one segment; the last generated file is the stub.
     assert [(i, k) for (i, k, _b, _a) in summary.segments] == [(0, "forward")]
     assert summary.files[-1] == "model_aoti.i"
-    assert "model_meta.json" in summary.files
+    assert "metadata.json" in summary.files
 
 
 def test_plan_summary_composed_multi_segment():

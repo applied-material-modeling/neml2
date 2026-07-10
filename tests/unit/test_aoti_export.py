@@ -200,10 +200,10 @@ def test_plan_export_artifacts_forward():
 
     plan = plan_export_artifacts(_ELASTICITY_I, "model")
     assert [s.kind for s in plan.segments] == ["forward"]
-    assert plan.artifacts == ["model.pt2", "model_meta.json"]
+    assert plan.artifacts == ["model.pt2", "metadata.json"]
 
     plan_d = plan_export_artifacts(_ELASTICITY_I, "model", derivatives=[":"])
-    assert plan_d.artifacts == ["model.pt2", "model_jvp.pt2", "model_meta.json"]
+    assert plan_d.artifacts == ["model.pt2", "model_jvp.pt2", "metadata.json"]
     assert plan_d.total == 3
 
 
@@ -221,7 +221,7 @@ def test_plan_export_artifacts_single_implicit():
         "return_map_step.pt2",
         "return_map_ift.pt2",
         "return_map_predictor.pt2",
-        "return_map_meta.json",
+        "metadata.json",
     ]
 
 
@@ -240,10 +240,10 @@ def test_plan_export_artifacts_composed_multi_segment():
         "model_seg1_ift.pt2",
         "model_seg2.pt2",
         "model_seg2_jvp.pt2",
-        "model_meta.json",
+        "metadata.json",
     ]
-    # The meta.json is always the last generated file for the device.
-    assert plan.artifacts[-1] == "model_meta.json"
+    # The metadata.json is always the last generated file.
+    assert plan.artifacts[-1] == "metadata.json"
 
 
 @pytest.fixture(scope="session")
@@ -254,7 +254,9 @@ def forward_export(tmp_path_factory):
     # Derivative graphs are opt-in (schema v6); request all pairs so the
     # jvp/jacobian assertions below have a graph to exercise.
     meta = export_model_for_aoti(_ELASTICITY_I, "model", out_dir, derivatives=[":"])
-    return meta, out_dir
+    # Schema v10: out_dir is the artifact ROOT. Binaries live under
+    # <device>/<dtype>/; the shared metadata.json sits at the root.
+    return meta, out_dir, out_dir / "cpu" / "float64"
 
 
 @pytest.fixture(scope="session")
@@ -263,7 +265,7 @@ def forward_export_no_deriv(tmp_path_factory):
 
     out_dir = tmp_path_factory.mktemp("aoti_forward_no_deriv")
     meta = export_model_for_aoti(_ELASTICITY_I, "model", out_dir)
-    return meta, out_dir
+    return meta, out_dir, out_dir / "cpu" / "float64"
 
 
 @pytest.fixture(scope="session")
@@ -282,7 +284,7 @@ def param_jac_export(tmp_path_factory):
     meta = export_model_for_aoti(
         _ELASTICITY_I, "model", out_dir, promoted={"model.E"}, derivatives=["stress:model.E"]
     )
-    return meta, out_dir
+    return meta, out_dir, out_dir / "cpu" / "float64"
 
 
 @pytest.fixture(scope="session")
@@ -291,7 +293,7 @@ def implicit_export(tmp_path_factory):
 
     out_dir = tmp_path_factory.mktemp("aoti_implicit")
     meta = export_model_for_aoti(_J2_NATIVE_I, "return_map", out_dir, derivatives=[":"])
-    return meta, out_dir
+    return meta, out_dir, out_dir / "cpu" / "float64"
 
 
 # ---------------------------------------------------------------------------
@@ -300,20 +302,25 @@ def implicit_export(tmp_path_factory):
 
 
 def test_export_forward_model_produces_artifacts(forward_export):
-    meta, out_dir = forward_export
+    meta, out_dir, leaf = forward_export
 
     # Phase-7 unified schema: every export is "composed". A pure forward model
     # is a one-segment composition with kind=forward.
     assert meta["type"] == "composed"
     assert len(meta["segments"]) == 1
     assert meta["segments"][0]["kind"] == "forward"
-    assert (out_dir / "model.pt2").exists()
-    assert (out_dir / "model_meta.json").exists()
+    # Schema v10: the .pt2 binary lives under <device>/<dtype>/; the single
+    # shared metadata.json sits at the artifact root. No device/dtype is
+    # recorded in the meta -- both are derived from the folder path at load.
+    assert (leaf / "model.pt2").exists()
+    assert (out_dir / "metadata.json").exists()
+    assert "device" not in meta
+    assert "dtype" not in meta
 
 
 def test_export_forward_model_metadata(forward_export):
-    _, out_dir = forward_export
-    meta = json.loads((out_dir / "model_meta.json").read_text())
+    _, out_dir, leaf = forward_export
+    meta = json.loads((out_dir / "metadata.json").read_text())
     assert meta["type"] == "composed"
     assert meta["inputs"] == [
         {"name": "strain", "var_size": 6, "var_type": "SR2", "base_shape": [6]}
@@ -335,7 +342,7 @@ def test_export_forward_model_metadata(forward_export):
     assert seg["outputs"] == [{"name": "stress"}]
     # Forward segments carry a `jvp_package` next to the value package.
     assert seg["jvp_package"] == "model_jvp.pt2"
-    assert (out_dir / "model_jvp.pt2").exists()
+    assert (leaf / "model_jvp.pt2").exists()
     # Each pair carries a batch_independent flag; elasticity's Jacobian is the
     # constant stiffness tensor -> batch-independent.
     pair = seg["jacobian_pairs"][0]
@@ -346,7 +353,7 @@ def test_export_forward_model_metadata(forward_export):
 def test_export_forward_default_off_no_derivatives(forward_export_no_deriv):
     """With no -d flags, NO derivative graph is compiled: empty top-level
     `derivatives`, no segment `jvp_package`, no `*_jvp.pt2` on disk."""
-    meta, out_dir = forward_export_no_deriv
+    meta, out_dir, leaf = forward_export_no_deriv
     assert meta["schema_version"] == AOTI_META_SCHEMA_VERSION
     assert meta["derivatives"] == []
     assert meta["parameter_derivatives"] == []
@@ -354,7 +361,7 @@ def test_export_forward_default_off_no_derivatives(forward_export_no_deriv):
     assert "jvp_package" not in seg
     assert "jacobian_pairs" not in seg
     assert "param_jacobian_package" not in seg
-    assert not (out_dir / "model_jvp.pt2").exists()
+    assert not (leaf / "model_jvp.pt2").exists()
 
 
 def test_export_forward_param_jacobian_metadata(param_jac_export):
@@ -362,16 +369,24 @@ def test_export_forward_param_jacobian_metadata(param_jac_export):
     (`parameter_derivatives`) and on the segment (`param_jacobian_package` +
     `param_jacobian_pairs`), with the promoted parameter listed under
     `parameters`."""
-    meta, out_dir = param_jac_export
+    meta, out_dir, leaf = param_jac_export
     assert meta["schema_version"] == AOTI_META_SCHEMA_VERSION
     assert meta["parameter_derivatives"] == [["stress", "model.E"]]
     # No structural derivative was requested, so the input-jvp graph is absent.
     assert meta["derivatives"] == []
-    assert any(p["name"] == "model.E" for p in meta["parameters"])
+    e_param = next(p for p in meta["parameters"] if p["name"] == "model.E")
+    # Schema v10: a parameter entry is device- AND dtype-independent so a single
+    # shared metadata.json backs every <device>/<dtype>/ artifact. No `device`
+    # is recorded; a floating-point parameter (the usual case) also omits
+    # `dtype` -- it inherits the leaf dtype at load. The entry still carries the
+    # dtype-neutral (float64) `values` and its shape metadata.
+    assert "device" not in e_param
+    assert "dtype" not in e_param
+    assert set(e_param) >= {"name", "shape", "param_base_shape", "values", "origin"}
     seg = meta["segments"][0]
     assert "jvp_package" not in seg
     assert seg["param_jacobian_package"] == "model_pjac.pt2"
-    assert (out_dir / "model_pjac.pt2").exists()
+    assert (leaf / "model_pjac.pt2").exists()
     pair = seg["param_jacobian_pairs"][0]
     assert (pair["out_var"], pair["param"]) == ("stress", "model.E")
     assert pair["out_base_shape"] == [6]
@@ -386,10 +401,10 @@ def test_export_forward_param_jacobian_matches_finite_difference(param_jac_expor
     from neml2.models.export import load_package
     from neml2.types import SR2
 
-    meta, out_dir = param_jac_export
+    meta, out_dir, leaf = param_jac_export
     seg = meta["segments"][0]
-    pjac = load_package(str(out_dir / seg["param_jacobian_package"]))
-    value = load_package(str(out_dir / seg["package"]))
+    pjac = load_package(str(leaf / seg["param_jacobian_package"]))
+    value = load_package(str(leaf / seg["package"]))
 
     torch.manual_seed(0)
     b = 5
@@ -416,10 +431,10 @@ def test_export_forward_param_vjp_metadata(param_jac_export):
     """Requesting a parameter derivative also emits the adjoint (VJP) graph:
     `param_vjp_package` + the parameter (grad-output) and output (cotangent-input)
     orderings."""
-    meta, out_dir = param_jac_export
+    meta, out_dir, leaf = param_jac_export
     seg = meta["segments"][0]
     assert seg["param_vjp_package"] == "model_pvjp.pt2"
-    assert (out_dir / "model_pvjp.pt2").exists()
+    assert (leaf / "model_pvjp.pt2").exists()
     assert seg["param_vjp_params"] == ["model.E"]  # grad-output order
     assert seg["param_vjp_outputs"] == ["stress"]  # cotangent-input order
 
@@ -434,10 +449,10 @@ def test_export_forward_param_vjp_matches_finite_difference(param_jac_export):
     from neml2.models.export import load_package
     from neml2.types import SR2
 
-    meta, out_dir = param_jac_export
+    meta, out_dir, leaf = param_jac_export
     seg = meta["segments"][0]
-    pvjp = load_package(str(out_dir / seg["param_vjp_package"]))
-    value = load_package(str(out_dir / seg["package"]))
+    pvjp = load_package(str(leaf / seg["param_vjp_package"]))
+    value = load_package(str(leaf / seg["package"]))
 
     torch.manual_seed(1)
     b = 4
@@ -478,10 +493,10 @@ def test_export_forward_jvp_matches_finite_difference(forward_export):
         # torch.allclose only accepts raw tensors, so unwrap here.
         return x.data if isinstance(x, TensorWrapper) else x
 
-    _, out_dir = forward_export
+    _, out_dir, leaf = forward_export
 
-    val_pkg = load_package(out_dir / "model.pt2")
-    jvp_pkg = load_package(out_dir / "model_jvp.pt2")
+    val_pkg = load_package(leaf / "model.pt2")
+    jvp_pkg = load_package(leaf / "model_jvp.pt2")
 
     gen = torch.Generator().manual_seed(0)
     strain = torch.randn(4, 6, generator=gen, dtype=torch.float64) * 1e-3
@@ -516,7 +531,7 @@ def test_export_forward_jvp_matches_finite_difference(forward_export):
 
 
 def test_export_implicit_model_produces_artifacts(implicit_export):
-    meta, out_dir = implicit_export
+    meta, out_dir, leaf = implicit_export
 
     # Phase-7 unified schema: a single ImplicitUpdate is a one-segment
     # composition with kind=implicit. Artifact filenames keep their original
@@ -524,11 +539,25 @@ def test_export_implicit_model_produces_artifacts(implicit_export):
     assert meta["type"] == "composed"
     assert len(meta["segments"]) == 1
     assert meta["segments"][0]["kind"] == "implicit"
-    assert (out_dir / "return_map_rhs.pt2").exists()
-    assert (out_dir / "return_map_step.pt2").exists()
-    assert (out_dir / "return_map_ift.pt2").exists()
-    assert (out_dir / "return_map_meta.json").exists()
+    # Schema v10: binaries under <device>/<dtype>/, shared metadata.json at root.
+    assert (leaf / "return_map_rhs.pt2").exists()
+    assert (leaf / "return_map_step.pt2").exists()
+    assert (leaf / "return_map_ift.pt2").exists()
+    assert (out_dir / "metadata.json").exists()
     assert meta["segments"][0]["ift_package"] == "return_map_ift.pt2"
+    # An implicit model records the runtime solver config in the shared meta so
+    # the Python-free C++ runtime is configured straight from the artifact.
+    assert "solver_config" in meta
+    assert set(meta["solver_config"]) == {
+        "atol",
+        "rtol",
+        "miters",
+        "ls_type",
+        "ls_max_iters",
+        "ls_cutback",
+        "ls_c",
+    }
+    assert "verbose" not in meta["solver_config"]
 
 
 def test_export_implicit_ift_satisfies_IFT_identity(implicit_export):
@@ -542,8 +571,8 @@ def test_export_implicit_ift_satisfies_IFT_identity(implicit_export):
 
     f = load_input(_J2_NATIVE_I)
     return_map = f.get_model("return_map")
-    _, out_dir = implicit_export
-    ift_pkg = load_package(out_dir / "return_map_ift.pt2")
+    _, out_dir, leaf = implicit_export
+    ift_pkg = load_package(leaf / "return_map_ift.pt2")
 
     system: ModelNonlinearSystem = return_map.system  # type: ignore[attr-defined]
 
@@ -630,8 +659,8 @@ def test_export_implicit_ift_satisfies_IFT_identity(implicit_export):
 
 
 def test_export_implicit_model_metadata(implicit_export):
-    _, out_dir = implicit_export
-    meta = json.loads((out_dir / "return_map_meta.json").read_text())
+    _, out_dir, _ = implicit_export
+    meta = json.loads((out_dir / "metadata.json").read_text())
     assert meta["type"] == "composed"
     seg = meta["segments"][0]
     assert seg["kind"] == "implicit"
@@ -670,9 +699,9 @@ def test_export_implicit_rhs_output_matches_eager(implicit_export):
     f = load_input(_J2_NATIVE_I)
     return_map = f.get_model("return_map")
 
-    _, out_dir = implicit_export
+    _, out_dir, leaf = implicit_export
 
-    rhs_pkg = load_package(out_dir / "return_map_rhs.pt2")
+    rhs_pkg = load_package(leaf / "return_map_rhs.pt2")
 
     system: ModelNonlinearSystem = return_map.system  # type: ignore[attr-defined]
 
@@ -751,11 +780,11 @@ def test_export_implicit_with_predictor_emits_third_artifact(implicit_export):
     Predictor info lives on the (single) implicit segment under the Phase-7
     unified schema."""
 
-    meta, out_dir = implicit_export
+    meta, out_dir, leaf = implicit_export
     seg = meta["segments"][0]
 
     assert "predictor_package" in seg
-    assert (out_dir / seg["predictor_package"]).exists()
+    assert (leaf / seg["predictor_package"]).exists()
 
     # Predictor inputs are the history values for each unknown.
     pred_in_names = [v["name"] for v in seg["predictor_inputs"]]
@@ -843,7 +872,10 @@ def test_export_with_nl_parameter_matches_eager(tmp_path):
     assert len(meta["segments"]) == 1
     assert meta["segments"][0]["kind"] == "forward"
     assert {iv["name"] for iv in meta["inputs"]} == {"temperature", "equivalent_plastic_strain"}
-    assert (tmp_path / "chain.pt2").exists()
+    # Schema v10 layout: binary under <device>/<dtype>/, shared meta at the root.
+    leaf = tmp_path / "cpu" / "float64"
+    assert (leaf / "chain.pt2").exists()
+    assert (tmp_path / "metadata.json").exists()
 
     # Numerical parity with the eager Python-native model.
     from neml2.types import TensorWrapper
@@ -852,7 +884,7 @@ def test_export_with_nl_parameter_matches_eager(tmp_path):
         return x.data if isinstance(x, TensorWrapper) else x
 
     eager = load_model(hit_file, "chain")
-    pkg = load_package(tmp_path / "chain.pt2")
+    pkg = load_package(leaf / "chain.pt2")
     in_order = list(eager.input_spec)
     test_vals = {
         "temperature": torch.tensor([200.0, 500.0, 800.0], dtype=torch.float64),

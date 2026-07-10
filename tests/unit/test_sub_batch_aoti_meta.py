@@ -128,7 +128,13 @@ def test_exported_metadata_carries_schema_version(tmp_path):
     meta = export_model_for_aoti(hit_path, "model", out_dir, device="cpu")
     assert meta["schema_version"] == AOTI_META_SCHEMA_VERSION
 
-    with open(out_dir / "model_meta.json") as f:
+    # Schema v10: out_dir is the artifact ROOT -- a single shared metadata.json
+    # sits there (no per-model name, no device/dtype in the envelope), while the
+    # .pt2 binaries land under <device>/<dtype>/.
+    assert "device" not in meta
+    assert "dtype" not in meta
+    assert (out_dir / "cpu" / "float64" / "model.pt2").exists()
+    with open(out_dir / "metadata.json") as f:
         on_disk = json.load(f)
     assert on_disk["schema_version"] == AOTI_META_SCHEMA_VERSION
 
@@ -149,7 +155,7 @@ def test_forward_segment_metadata_carries_only_names(tmp_path):
     out_dir = tmp_path / "aoti"
 
     export_model_for_aoti(hit_path, "model", out_dir, device="cpu")
-    with open(out_dir / "model_meta.json") as f:
+    with open(out_dir / "metadata.json") as f:
         meta = json.load(f)
 
     # Master level keeps the full info, including the v5 base_shape.

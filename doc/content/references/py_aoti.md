@@ -27,12 +27,13 @@ model = neml2.load_model("elasticity_aoti.i", "elasticity")
 
 To work against the bare runtime directly — raw-tensor calls, JVP,
 Jacobian, promoted-parameter mutation — construct `neml2.aoti.Model`
-from a per-device metadata path:
+from the artifact root folder. The device and dtype default to
+`torch.get_default_device()` and `torch.get_default_dtype()`:
 
 ```python
 from neml2.aoti import Model
 
-binding = Model("aoti/elasticity/cpu/elasticity_meta.json")
+binding = Model("aoti/elasticity")
 ```
 
 ## Call surface
