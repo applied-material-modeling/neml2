@@ -283,6 +283,40 @@ def _mixed_inputs():
     }
 
 
+def test_masking_maxed_out_raises_recoverable(tmp_path: Path):
+    """Exhausting ``max_substepping_level`` in the MASKED cpp-aoti path must raise
+    the RECOVERABLE ``ConvergenceError`` (so a time-stepper like MOOSE cuts the
+    outer step and retries), NOT a fatal error.
+
+    Regression: the masked driver used to signal max-out via ``_assert`` (which
+    throws the non-recoverable ``FatalError``), so a maxed-out substep was
+    unrecoverable downstream -- unlike the whole-batch driver, which re-throws the
+    recoverable ``ConvergenceError``.
+    """
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out = tmp_path / "nl"
+    # Cap substepping low so an extreme row cannot recover even at max depth.
+    export_model_for_aoti(
+        _SUBSTEP_NL,
+        "model",
+        out,
+        additional_args=("Models/model/max_substepping_level:=1",),
+    )
+    aoti = AOTIModel(str(out))
+    # Mixed 1-D batch (-> masked driver): one easy row + one row so hard it
+    # exhausts the level-1 substepping.
+    ins = {
+        "x": torch.tensor([0.2, 0.2], dtype=torch.float64),
+        "x~1": torch.tensor([0.2, 0.2], dtype=torch.float64),
+        "t": torch.tensor([1.0, 1000.0], dtype=torch.float64),
+        "t~1": torch.zeros(2, dtype=torch.float64),
+    }
+    with pytest.raises(ConvergenceError):
+        aoti.forward(ins)
+
+
 def test_substep_trace_env_var(tmp_path: Path, capfd, monkeypatch):
     """NEML2_AOTI_TRACE_SUBSTEP=1 prints a per-solve substep summary to stderr
     (how many elements substepped, max depth, segment-solve count)."""

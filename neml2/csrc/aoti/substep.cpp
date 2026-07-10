@@ -345,12 +345,17 @@ Model::Impl::_run_implicit_segment_substepped_masked(
     }
     if (fail.numel() > 0)
     {
-      _assert(level < seg.max_substepping_level,
-              "aoti::Model substepping: ",
-              fail.numel(),
-              " element(s) failed to converge at max_substepping_level=",
-              seg.max_substepping_level,
-              ". Reduce the outer time step.");
+      // Maxing out substepping is a RECOVERABLE convergence failure -- a
+      // time-stepping consumer (e.g. MOOSE) cuts the outer step and retries -- so
+      // it must throw the recoverable ConvergenceError, NOT `_assert` (which
+      // throws the non-recoverable FatalError, defeating a `recoverable()` retry
+      // and making a maxed-out substep unrecoverable downstream). This mirrors the
+      // whole-batch drivers, which re-throw the caught ConvergenceError.
+      if (level >= seg.max_substepping_level)
+        throw ConvergenceError("aoti::Model substepping: " + std::to_string(fail.numel()) +
+                               " element(s) failed to converge at max_substepping_level=" +
+                               std::to_string(seg.max_substepping_level) +
+                               ". Reduce the outer time step.");
       auto fail_g = active.index_select(0, fail);
       const double mid = 0.5 * (a + b);
       solve_to(a, mid, fail_g, level + 1);
@@ -466,12 +471,17 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
     }
     if (fail.numel() > 0)
     {
-      _assert(level < seg.max_substepping_level,
-              "aoti::Model substepping: ",
-              fail.numel(),
-              " element(s) failed to converge at max_substepping_level=",
-              seg.max_substepping_level,
-              ". Reduce the outer time step.");
+      // Maxing out substepping is a RECOVERABLE convergence failure -- a
+      // time-stepping consumer (e.g. MOOSE) cuts the outer step and retries -- so
+      // it must throw the recoverable ConvergenceError, NOT `_assert` (which
+      // throws the non-recoverable FatalError, defeating a `recoverable()` retry
+      // and making a maxed-out substep unrecoverable downstream). This mirrors the
+      // whole-batch drivers, which re-throw the caught ConvergenceError.
+      if (level >= seg.max_substepping_level)
+        throw ConvergenceError("aoti::Model substepping: " + std::to_string(fail.numel()) +
+                               " element(s) failed to converge at max_substepping_level=" +
+                               std::to_string(seg.max_substepping_level) +
+                               ". Reduce the outer time step.");
       auto fail_g = active.index_select(0, fail);
       const double mid = 0.5 * (a + b);
       solve_to(a, mid, fail_g, level + 1);
