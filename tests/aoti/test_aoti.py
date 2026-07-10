@@ -76,7 +76,7 @@ _REQUIRES_PARAM_DERIV_TORCH = pytest.mark.skipif(
 # randn-driven value/stub tests here cannot supply. ``request_ad_forward`` is a
 # physically-sensitive ML surrogate (Arrhenius exp(-Q/RT) overflows for the
 # negative temperatures randn produces); it is covered by test_request_ad_aoti.py.
-_DEDICATED = {"request_ad_forward", "implicit_substep"}
+_DEDICATED = {"request_ad_forward", "implicit_substep", "implicit_substep_nl"}
 _SCENARIOS = sorted(
     d
     for d in _SCENARIO_DIR.iterdir()

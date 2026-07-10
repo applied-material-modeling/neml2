@@ -371,6 +371,33 @@ struct Model::Impl
                                         std::vector<at::Tensor> & u_solved_groups,
                                         std::vector<at::Tensor> & g_groups) const;
 
+  /// Substepping analogue of `_run_implicit_segment_jacobian`: solves the
+  /// increment by the same bisection AND accumulates the chained consistent
+  /// tangent into `dstate`. At each successfully-solved leaf sub-span it runs
+  /// the value solve then the IFT composition, having first written the span's
+  /// givens into `dstate` per their role -- interpolated force sensitivities,
+  /// scaled increments, and each old-state seeded with the previous span's
+  /// solved-unknown sensitivity -- so one IFT call yields
+  /// `J_k = A_k·J_{k-1} + B_k·frac_k·J_endpoint`. On return `state` holds the
+  /// final unknowns and `dstate[unknown]` the total `du_M/d(master inputs)`.
+  /// Requires `seg.ift_loader`. Only called when `seg.max_substepping_level > 0`.
+  void _run_implicit_segment_substepped_jacobian(const Segment & seg,
+                                                 std::map<std::string, at::Tensor> & state,
+                                                 std::map<std::string, at::Tensor> & dstate) const;
+
+  /// Write the substep sub-span [a, b] transform of a name->tensor map into
+  /// `dst`, reading the endpoint snapshot `orig` and the chained old-state
+  /// `chained`. The coefficient math is identical for the primal state and the
+  /// dstate (chain-rule) carrier -- interpolate a paired force, scale a listed
+  /// increment, take the chained value for an old-state, hold anything else --
+  /// so both the value and Jacobian drivers share it.
+  void _apply_substep_span(const Segment & seg,
+                           const std::map<std::string, at::Tensor> & orig,
+                           double a,
+                           double b,
+                           const std::map<std::string, at::Tensor> & chained,
+                           std::map<std::string, at::Tensor> & dst) const;
+
   /// Pack per-variable ``state`` entries into per-group tensors via the
   /// AssembledVector convention: BLOCK groups cat per-var contributions
   /// along the last base axis preserving sub_batch axes; DENSE groups

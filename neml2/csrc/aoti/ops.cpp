@@ -239,11 +239,20 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
         }
       }
     }
+    else if (seg.max_substepping_level > 0 && seg.ift_loader)
+    {
+      // Substepped solve + chained consistent-tangent accumulation in one
+      // bisection recursion (state + dstate advanced together).
+      _run_implicit_segment_substepped_jacobian(seg, state, dstate);
+    }
     else
     {
       std::vector<at::Tensor> u_solved_groups;
       std::vector<at::Tensor> g_groups;
-      _run_implicit_segment(seg, state, u_solved_groups, g_groups);
+      if (seg.max_substepping_level > 0)
+        _run_implicit_segment_substepped(seg, state, u_solved_groups, g_groups);
+      else
+        _run_implicit_segment(seg, state, u_solved_groups, g_groups);
       if (seg.ift_loader)
         _run_implicit_segment_jacobian(seg, u_solved_groups, g_groups, dstate);
       else
