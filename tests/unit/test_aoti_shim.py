@@ -42,11 +42,6 @@ from neml2 import load_input
 
 def _write_stub(tmp_path, artifact_path_value: str):
     stub = tmp_path / "model_aoti.i"
-    # INTERIM (nmhit-backslash): the HIT lexer rejects backslashes in quoted
-    # strings, so a Windows path string fails to parse. Normalize to forward
-    # slashes here. Revert this once nmhit accepts backslashes in quoted strings
-    # (the real fix); see also the matching workaround in cli/aoti_compile.py.
-    artifact_path_value = artifact_path_value.replace("\\", "/")
     stub.write_text(
         "[Models]\n"
         "  [model]\n"

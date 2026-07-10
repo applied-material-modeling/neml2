@@ -66,7 +66,7 @@ jobs:
   # developer-environment setup is needed. ninja is intentionally NOT installed:
   # the Ninja generator would then need cl.exe on PATH (a dev shell), whereas the
   # VS generator does not.
-  windows:
+  windows-build:
     needs: clang-format
     runs-on: windows-latest
     continue-on-error: true
@@ -91,7 +91,7 @@ jobs:
           # dependencies: torch.version
           pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
           # dependencies: nmhit.version_min
-          pip install "nmhit>=0.3.3"
+          pip install "nmhit>=0.3.6"
       - name: Build + install neml2
         # Non-editable so the shipped CMake package config lands in site-packages
         # for the downstream consumer step below.
@@ -115,56 +115,6 @@ jobs:
           # consumer resolves them at run time.
           $env:PATH = "$prefix\lib;$torchlib;$env:PATH"
           & "$PWD\build\downstream\Release\consumer.exe"
-
-  # Windows Python test suite (neml2 issue #414). Runs the unit tests plus the
-  # AOTI end-to-end suite (neml2-compile -> torch Inductor -> .pt2 -> load ->
-  # run) on Windows. AOTI codegen shells out to the MSVC toolchain at run time,
-  # so ilammy/msvc-dev-cmd puts cl.exe + INCLUDE/LIB on PATH; without a ninja on
-  # PATH, scikit-build still drives the Visual Studio generator for the build.
-  # Best-effort + non-blocking (continue-on-error) while the AOTI-on-Windows path
-  # is shaken out; scoped to tests/unit + tests/aoti for now (the rest of the
-  # suite can be added once these are green).
-  windows-pytest:
-    needs: clang-format
-    runs-on: windows-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          submodules: recursive
-      - uses: actions/setup-python@v5
-        with:
-          # dependencies: python.version_min
-          python-version: "3.10"
-      - name: Set up the MSVC toolchain (cl.exe on PATH for torch Inductor)
-        uses: ilammy/msvc-dev-cmd@v1
-      - name: Install build dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install scikit-build-core
-          # dependencies: torch.version
-          pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
-          # dependencies: nmhit.version_min
-          pip install "nmhit>=0.3.3"
-      - name: Build + install neml2 (with test deps)
-        run: pip install ".[dev]" --no-build-isolation -v
-      - name: Run unit tests
-        # Run from a neutral dir, NOT the repo root: the checked-out ./neml2/
-        # source tree has no compiled _aoti extension and would shadow the
-        # installed wheel if the repo root were importable. (Same reason the
-        # downstream/compat jobs run from elsewhere.) Test paths are absolute.
-        run: |
-          cd $env:RUNNER_TEMP
-          pytest -v -n auto "$env:GITHUB_WORKSPACE\tests\unit"
-      - name: Run AOTI tests (serial)
-        # NOT under -n auto: torch's AOTI loader extracts each .pt2 to a fixed
-        # temp path derived from the artifact's content hash, so xdist workers
-        # loading the same compiled model race to extract the same *.wrapper.pyd
-        # and Windows locks the loaded DLL (RuntimeError "error code: 32 ... file
-        # open failed"). Serial execution avoids the collision.
-        run: |
-          cd $env:RUNNER_TEMP
-          pytest -v "$env:GITHUB_WORKSPACE\tests\aoti"
 
   # Benchmark smoke tests. Each scenario under benchmark/<name>/model.i is
   # compiled through neml2-compile and driven once at batch=2 via the

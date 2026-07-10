@@ -498,13 +498,7 @@ def emit_aoti_stub(
     # Absolute pointer at the per-device artifact folder. Absolute (not
     # relative) by design: the stub is standalone and lives outside the folder,
     # so moving the artifacts requires recompiling or editing this path.
-    # INTERIM (nmhit-backslash): this path is written into a HIT stub, and the
-    # nmhit lexer rejects backslashes in quoted strings ("unexpected character
-    # '\'"), so emit forward slashes (Windows file APIs accept them). Once nmhit
-    # accepts backslashes in quoted strings (the real fix), this can revert to
-    # str(Path(artifact_dir).resolve()); see the matching note in
-    # tests/unit/test_aoti_shim.py.
-    artifact_abs = Path(artifact_dir).resolve().as_posix()
+    artifact_abs = str(Path(artifact_dir).resolve())
 
     # Build the cleaned [Models] block once: one shim, no siblings.
     cleaned_models = nmhit.Section("Models")

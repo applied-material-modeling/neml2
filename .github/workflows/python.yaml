@@ -25,7 +25,7 @@ jobs:
           python-version: "3.10"
       - name: Install nmhit (provides the nmhit-format CLI used by pre-commit)
         # dependencies: nmhit.version_min
-        run: pip install 'nmhit>=0.2.1'
+        run: pip install 'nmhit>=0.3.6'
       - name: Run ruff lint
         uses: pre-commit/action@v3.0.1
         with:
@@ -193,6 +193,50 @@ jobs:
           check_run: false
           action_fail: true
           comment_mode: off
+
+  # Windows Python test suite (neml2 issue #414): the unit tests plus the AOTI
+  # end-to-end suite (neml2-compile -> torch Inductor -> .pt2 -> load -> run) --
+  # the one route the cpp.yaml `windows-build` job doesn't cover. AOTI codegen
+  # shells out to the MSVC toolchain at run time, so ilammy/msvc-dev-cmd puts
+  # cl.exe on PATH; with no ninja installed, scikit-build drives the Visual
+  # Studio generator. Best-effort + non-blocking. Standalone rather than folded
+  # into the `test` matrix above: the Windows setup (dev shell,
+  # --no-build-isolation, serial AOTI, neutral-dir run) diverges too much from
+  # the Unix neml2-ci path to share cleanly.
+  windows-test:
+    needs: lint
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          # dependencies: python.version_min
+          python-version: "3.10"
+      - name: Set up the MSVC toolchain (cl.exe on PATH for torch Inductor)
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-build-core
+          # dependencies: torch.version
+          pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+          # dependencies: nmhit.version_min
+          pip install "nmhit>=0.3.6"
+      - name: Build + install neml2 (with test deps)
+        run: pip install ".[dev]" --no-build-isolation -v
+      - name: Run tests (unit + AOTI)
+        # Run from a neutral dir, NOT the repo root: the checked-out ./neml2/
+        # source tree has no compiled _aoti extension and would shadow the
+        # installed wheel if the repo root were importable. Test paths absolute.
+        # -n auto is safe for the AOTI suite too: tests/aoti/conftest.py isolates
+        # torch's .pt2 extraction temp per test (unique tmp_path), so parallel
+        # workers loading the same compiled model no longer collide on Windows.
+        run: |
+          cd $env:RUNNER_TEMP
+          pytest -v -n auto "$env:GITHUB_WORKSPACE\tests\unit" "$env:GITHUB_WORKSPACE\tests\aoti"
 
   # cibuildwheel build identifiers (cp310, ...) to build wheels for, sourced
   # from compatibility.yaml so the wheel matrix tracks the supported-python set
