@@ -42,6 +42,7 @@ predicate the exporter guards on.
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
@@ -67,6 +68,16 @@ _REQUIRES_PARAM_DERIV_TORCH = pytest.mark.skipif(
     reason=f"reverse-mode AD AOTI compilation {_PARAM_DERIV_UNSUPPORTED}",
 )
 
+# These tests load the plain and renamed artifacts (identical content hash, so
+# the same extracted ``.pyd``) in one process. On Windows torch re-extracts to a
+# hash-keyed temp dir per load and the first load's ``.pyd`` is locked, so the
+# second extraction fails (``WinError 32``). Best-effort AOTI limitation.
+_skip_win_reextract = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="AOTI re-extraction locks a loaded .pyd on Windows (WinError 32); "
+    "same-artifact double-load unsupported (best-effort).",
+)
+
 
 @pytest.fixture(scope="module", autouse=True)
 def _f64():
@@ -87,6 +98,7 @@ def _compile(tmp_path: Path, sub: str, *, derivatives, renames=None):
     return AOTIModel(str(out / "model_meta.json")), meta
 
 
+@_skip_win_reextract
 def test_rename_names_and_value_derivatives_match_plain(tmp_path):
     """A renamed artifact reports boundary names on every surface and its
     forward / jvp / jacobian / promoted-parameter values are identical to an
@@ -135,6 +147,7 @@ def test_rename_names_and_value_derivatives_match_plain(tmp_path):
     )
 
 
+@_skip_win_reextract
 @_REQUIRES_PARAM_DERIV_TORCH
 def test_rename_parameter_derivatives_match_plain(tmp_path):
     """The renamed parameter-derivative blocks (param_jacobian / param_vjp) key by
