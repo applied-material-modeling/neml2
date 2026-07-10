@@ -36,7 +36,9 @@
 #include "neml2/csrc/aoti/internal.h"
 #include "neml2/csrc/dispatchers/batch_chunk.h"
 
+#include <cstdlib>
 #include <functional>
+#include <iostream>
 
 namespace neml2::aoti
 {
@@ -245,6 +247,18 @@ mask_to_idx(const at::Tensor & m)
 {
   return at::nonzero(m).squeeze(-1);
 }
+
+// Substep trace verbosity from NEML2_AOTI_TRACE_SUBSTEP: 0 = off, 1 = one
+// summary line per solve (how many elements substepped, max bisection depth,
+// segment-solve count), 2 = one line per sub-span (active/converged/failed).
+// Mirrors NEML2_AOTI_TRACE_NEWTON so MOOSE users can inspect substepping the
+// same way they inspect the Newton convergence.
+inline int
+substep_trace_level()
+{
+  const char * e = std::getenv("NEML2_AOTI_TRACE_SUBSTEP");
+  return e ? std::atoi(e) : 0;
+}
 } // namespace
 
 bool
@@ -297,6 +311,8 @@ Model::Impl::_run_implicit_segment_substepped_masked(
 
   const auto idx_opts = at::TensorOptions().dtype(at::kLong).device(g0.device());
 
+  const int trace = substep_trace_level();
+  int64_t n_solves = 0, max_depth = 0, n_substepped = 0;
   std::function<void(double, double, const at::Tensor &, int)> solve_to =
       [&](double a, double b, const at::Tensor & active, int level)
   {
@@ -307,6 +323,14 @@ Model::Impl::_run_implicit_segment_substepped_masked(
     auto mask = _run_implicit_segment_masked(seg, span);
     auto conv = mask_to_idx(mask);
     auto fail = mask_to_idx(at::logical_not(mask));
+    ++n_solves;
+    max_depth = std::max(max_depth, static_cast<int64_t>(level));
+    if (level == 0)
+      n_substepped = fail.numel(); // rows that failed the full step need substepping
+    if (trace >= 2)
+      std::cerr << "[aoti substep]   span [" << a << ", " << b << "] L" << level
+                << ": active=" << active.numel() << " -> converged=" << conv.numel()
+                << " failed=" << fail.numel() << std::endl;
     if (conv.numel() > 0)
     {
       auto conv_g = active.index_select(0, conv);
@@ -335,6 +359,10 @@ Model::Impl::_run_implicit_segment_substepped_masked(
   };
 
   solve_to(0.0, 1.0, at::arange(B, idx_opts), 0);
+  if (trace >= 1)
+    std::cerr << "[aoti substep] value: B=" << B << " elements, " << n_substepped
+              << " substepped, max depth=" << max_depth << ", " << n_solves << " segment-solves"
+              << std::endl;
   for (const auto & u : seg.unknowns)
     state[u.name] = result[u.name];
 }
@@ -386,6 +414,8 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
 
   const auto idx_opts = at::TensorOptions().dtype(at::kLong).device(g0.device());
 
+  const int trace = substep_trace_level();
+  int64_t n_solves = 0, max_depth = 0, n_substepped = 0;
   std::function<void(double, double, const at::Tensor &, int)> solve_to =
       [&](double a, double b, const at::Tensor & active, int level)
   {
@@ -399,6 +429,14 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
     auto mask = _run_implicit_segment_masked(seg, span);
     auto conv = mask_to_idx(mask);
     auto fail = mask_to_idx(at::logical_not(mask));
+    ++n_solves;
+    max_depth = std::max(max_depth, static_cast<int64_t>(level));
+    if (level == 0)
+      n_substepped = fail.numel();
+    if (trace >= 2)
+      std::cerr << "[aoti substep]   span [" << a << ", " << b << "] L" << level
+                << ": active=" << active.numel() << " -> converged=" << conv.numel()
+                << " failed=" << fail.numel() << std::endl;
     if (conv.numel() > 0)
     {
       auto conv_g = active.index_select(0, conv);
@@ -442,6 +480,10 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
   };
 
   solve_to(0.0, 1.0, at::arange(B, idx_opts), 0);
+  if (trace >= 1)
+    std::cerr << "[aoti substep] jacobian: B=" << B << " elements, " << n_substepped
+              << " substepped, max depth=" << max_depth << ", " << n_solves << " segment-solves"
+              << std::endl;
   for (const auto & u : seg.unknowns)
   {
     state[u.name] = result[u.name];

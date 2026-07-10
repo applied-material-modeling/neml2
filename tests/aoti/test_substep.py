@@ -271,3 +271,30 @@ def test_masking_mixed_batch_matches_per_element(tmp_path: Path):
             assert jac_b["x"][name][i].item() == pytest.approx(
                 jac_i["x"][name][0].item(), rel=1e-10, abs=1e-12
             ), f"row {i} (dt={dts[i]}) d x/d {name} differs from solved-alone"
+
+
+def _mixed_inputs():
+    # one easy row (dt=1, 1 span) + one hard row (dt=8, deep bisection).
+    return {
+        "x": torch.tensor([0.2, 0.2], dtype=torch.float64),
+        "x~1": torch.tensor([0.2, 0.2], dtype=torch.float64),
+        "t": torch.tensor([1.0, 8.0], dtype=torch.float64),
+        "t~1": torch.zeros(2, dtype=torch.float64),
+    }
+
+
+def test_substep_trace_env_var(tmp_path: Path, capfd, monkeypatch):
+    """NEML2_AOTI_TRACE_SUBSTEP=1 prints a per-solve substep summary to stderr
+    (how many elements substepped, max depth, segment-solve count)."""
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out = tmp_path / "nl"
+    export_model_for_aoti(_SUBSTEP_NL, "model", out)
+    aoti = AOTIModel(str(out / "model_meta.json"))
+
+    monkeypatch.setenv("NEML2_AOTI_TRACE_SUBSTEP", "1")
+    aoti.forward(_mixed_inputs())
+    err = capfd.readouterr().err
+    assert "[aoti substep] value:" in err
+    assert "1 substepped" in err  # exactly the one hard row
