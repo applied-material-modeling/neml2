@@ -35,6 +35,8 @@ import importlib
 import sys
 from pathlib import Path
 
+import pytest
+
 _REGRESSION = Path(__file__).resolve().parent.parent / "regression"
 if str(_REGRESSION) not in sys.path:
     sys.path.insert(0, str(_REGRESSION))
@@ -44,3 +46,24 @@ if str(_REGRESSION) not in sys.path:
 # entry above without pyright flagging an unresolved import (``_fixtures`` lives
 # under tests/regression/, not this directory).
 importlib.import_module("_fixtures")
+
+
+@pytest.fixture(autouse=True)
+def _isolate_aoti_extract_temp(tmp_path, monkeypatch):
+    """Give each AOTI test its own extraction temp (Windows only).
+
+    torch's AOTIModelPackageLoader extracts a ``.pt2`` to a path under the
+    *system* temp keyed by the artifact's content hash, and re-extracts on every
+    load. Two tests that load the same compiled model then collide on Windows:
+    the first test's loaded ``.pyd`` stays locked for the process lifetime, so
+    the second's extraction fails with a sharing violation ("error code: 32 ...
+    file open failed"). Point the system temp at this test's unique ``tmp_path``
+    so each test extracts in isolation. torch reads the temp dir fresh per
+    extraction, so the override takes effect. No-op off Windows, where re-
+    extracting over a loaded ``.so`` is permitted.
+    """
+    if sys.platform == "win32":
+        extract = tmp_path / "_aoti_extract"
+        extract.mkdir()
+        monkeypatch.setenv("TMP", str(extract))
+        monkeypatch.setenv("TEMP", str(extract))

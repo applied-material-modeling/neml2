@@ -34,9 +34,12 @@ pyzag:
     - .github/workflows/compat.yaml
 
 nmhit:
-  version_min: "0.3.3"
+  version_min: "0.3.6"
   files:
     - pyproject.toml
+    - .github/workflows/cpp.yaml
+    - .github/workflows/python.yaml
+    - .github/actions/neml2-ci/action.yaml
 
 clang_format:
   version: "v22.1.3"

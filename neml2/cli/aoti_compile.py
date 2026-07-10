@@ -494,17 +494,23 @@ def emit_aoti_stub(
             f"Available: {sorted(set(all_names))}"
         )
 
-    # Path the shim's meta field will point at -- relative to the stub so
     # Absolute pointer at the per-device artifact folder. Absolute (not
     # relative) by design: the stub is standalone and lives outside the folder,
     # so moving the artifacts requires recompiling or editing this path.
+    #
+    # Single-quote the value so the path round-trips through the HIT lexer
+    # verbatim -- an unquoted scalar rejects characters that are legal in a
+    # filesystem path (Windows backslashes, spaces), whereas a single-quoted
+    # value is raw. This matches the format the reader documents and expects
+    # (see the ``artifact_path = '...'`` examples in ``neml2/aoti/_shim.py`` and
+    # ``doc/content/references/aoti_packages.md``).
     artifact_abs = str(Path(artifact_dir).resolve())
 
     # Build the cleaned [Models] block once: one shim, no siblings.
     cleaned_models = nmhit.Section("Models")
     shim = nmhit.Section(model_name)
     shim.add_child(nmhit.Field("type", "AOTIModel"))
-    shim.add_child(nmhit.Field("artifact_path", artifact_abs))
+    shim.add_child(nmhit.Field("artifact_path", f"'{artifact_abs}'"))
     if solver_name:
         # The carried (minimal) [Solvers] block configures the implicit Newton
         # solve at load -- convergence / line-search knobs only.
@@ -574,7 +580,10 @@ def emit_aoti_stub(
         f"# Do not edit; regenerate via `neml2-compile`.\n"
         f"\n"
     )
-    stub_path.write_text(header + new_root.render())
+    # encoding="utf-8": model/variable names may contain non-ASCII characters
+    # (e.g. Greek symbols like theta). Without an explicit encoding, Windows
+    # writes with the locale codepage (cp1252) and raises UnicodeEncodeError.
+    stub_path.write_text(header + new_root.render(), encoding="utf-8")
 
 
 def _parse_example_batch_shape_cli(entries: list[str]) -> dict[str, str] | str | None:

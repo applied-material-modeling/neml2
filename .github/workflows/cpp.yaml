@@ -66,7 +66,7 @@ jobs:
   # developer-environment setup is needed. ninja is intentionally NOT installed:
   # the Ninja generator would then need cl.exe on PATH (a dev shell), whereas the
   # VS generator does not.
-  windows:
+  windows-build:
     needs: clang-format
     runs-on: windows-latest
     continue-on-error: true
@@ -91,7 +91,7 @@ jobs:
           # dependencies: torch.version
           pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
           # dependencies: nmhit.version_min
-          pip install "nmhit>=0.3.3"
+          pip install "nmhit>=0.3.6"
       - name: Build + install neml2
         # Non-editable so the shipped CMake package config lands in site-packages
         # for the downstream consumer step below.

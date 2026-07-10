@@ -40,6 +40,7 @@ to this directory alone.
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
@@ -48,6 +49,18 @@ import torch
 from neml2.cli.aoti_export import _reverse_ad_aoti_unsupported_reason
 
 _SCENARIO_DIR = Path(__file__).parent
+
+# Best-effort AOTI on Windows: torch's ``AOTIModelPackageLoader`` re-extracts the
+# ``.pt2`` to a temp dir keyed by the artifact's content hash on every load, and
+# a ``.pyd`` already loaded elsewhere in the process holds a file lock. Loading
+# the *same* artifact twice in one process therefore fails to overwrite the
+# locked ``.pyd`` (``WinError 32``). Tests that intentionally load one artifact
+# twice (e.g. pybind-vs-shim parity) are skipped on Windows for this reason.
+_skip_win_reextract = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="AOTI re-extraction locks a loaded .pyd on Windows (WinError 32); "
+    "same-artifact double-load unsupported (best-effort).",
+)
 
 # Reverse-mode-AD AOTI graphs (parameter derivatives) can't be lowered on every
 # torch: < 2.11 lacks trace_autograd_ops, and 2.11.x rejects requires_grad_()
@@ -352,6 +365,7 @@ def test_parameter_base_shapes_map_matches_eager(tmp_path: Path):
 
 
 @_REQUIRES_PARAM_DERIV_TORCH
+@_skip_win_reextract
 def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     """The compiled cpp-aoti parameter-derivative path (schema v7) through the
     pybind Model: ``param_jacobian`` (dense d(out)/d(param)) and ``param_vjp``

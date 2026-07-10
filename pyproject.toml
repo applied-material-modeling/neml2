@@ -76,7 +76,7 @@ dependencies = [
   # dependencies: pyzag.version
   "pyzag==1.1.4",
   # dependencies: nmhit.version_min
-  "nmhit>=0.3.3",
+  "nmhit>=0.3.6",
 ]
 
 [project.optional-dependencies]
@@ -291,8 +291,9 @@ before-all = ""
 # links its static lib via Findnmhit), so -- unlike the pure-runtime pyzag -- it
 # must be installed before the build. pyzag stays out: repair_wheel.py reads the
 # pure-runtime deps from the freshly-built wheel's metadata after install.
+# dependencies: nmhit.version_min
 # dependencies: pybind11_stubgen.version_min
-before-build = "python -m pip install scikit-build-core ninja torch 'nmhit>=0.3.3' wheel pybind11-stubgen>=2.5.5"
+before-build = "python -m pip install scikit-build-core ninja torch 'nmhit>=0.3.6' wheel pybind11-stubgen>=2.5.5"
 
 # dependencies: pyzag.version
 test-requires = "pytest torch pyzag==1.1.4"

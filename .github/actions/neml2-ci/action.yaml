@@ -115,6 +115,6 @@ runs:
       # site-packages/nmhit/{include,lib}; libneml2 links it at build time
       # (Findnmhit discovers it there), so it must be present *before* the build
       # -- the same build-time role torch plays above.
-      # dependencies: nmhit.version_min
       shell: bash
-      run: pip install 'nmhit>=0.3.3'
+      # dependencies: nmhit.version_min
+      run: pip install 'nmhit>=0.3.6'

@@ -227,5 +227,5 @@ def test_shim_records_absolute_artifact_path(tmp_path):
     shim = _shim(sections, "model")
     ap = shim.param_optional_str("artifact_path", "")
     assert ap and Path(ap).is_absolute()
-    assert ap.endswith("/model")  # the per-model artifact folder
+    assert Path(ap).name == "model"  # the per-model artifact folder
     assert shim.find("meta") is None  # superseded by artifact_path

@@ -300,7 +300,7 @@ def main(
     if args.json == "-":
         out_stream.write(text)
     else:
-        Path(args.json).write_text(text)
+        Path(args.json).write_text(text, encoding="utf-8")
     return 0
 
 
