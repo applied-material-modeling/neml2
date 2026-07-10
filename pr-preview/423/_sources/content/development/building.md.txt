@@ -106,5 +106,6 @@ pip install ".[dev]" --no-build-isolation -v
   binaries on Windows, so a Debug build cannot link against them.
 - The embedded-Python eager runtime (`cpp-eager`) is not built on Windows; the
   AOTI routes and the native Python API are unaffected.
-- Write filesystem paths inside HIT (`.i`) input files with forward slashes —
-  they work on every platform.
+- Native Windows paths (with backslashes) work in **quoted** HIT (`.i`) values,
+  e.g. `artifact_path = 'C:\path\to\model'` — quote the value; unquoted paths
+  must use forward slashes.

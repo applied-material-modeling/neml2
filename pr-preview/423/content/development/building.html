@@ -503,8 +503,9 @@ is required. From PowerShell:</p>
 binaries on Windows, so a Debug build cannot link against them.</p></li>
 <li><p>The embedded-Python eager runtime (<code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>) is not built on Windows; the
 AOTI routes and the native Python API are unaffected.</p></li>
-<li><p>Write filesystem paths inside HIT (<code class="docutils literal notranslate"><span class="pre">.i</span></code>) input files with forward slashes —
-they work on every platform.</p></li>
+<li><p>Native Windows paths (with backslashes) work in <strong>quoted</strong> HIT (<code class="docutils literal notranslate"><span class="pre">.i</span></code>) values,
+e.g. <code class="docutils literal notranslate"><span class="pre">artifact_path</span> <span class="pre">=</span> <span class="pre">'C:\path\to\model'</span></code> — quote the value; unquoted paths
+must use forward slashes.</p></li>
 </ul>
 </section>
 </section>
