@@ -75,6 +75,47 @@ slice_batch(const std::map<std::string, at::Tensor> & m, int64_t start, int64_t 
   return out;
 }
 
+/// Select rows ``idx`` (a 1-D int64 index tensor) along dim 0 from every entry
+/// with a batch axis (rank >= 1). The arbitrary-index counterpart of
+/// ``slice_batch`` (which narrows a contiguous range) -- used by the substep
+/// masking driver to solve only the still-unconverged subset of the dynamic
+/// batch. Unlike ``slice_batch`` there is NO size-1 broadcast passthrough: the
+/// masking driver's state entries are all materialized at the full batch size
+/// ``B`` (``_prepare_inputs`` broadcasts them), so a size-1 dim-0 is a genuine
+/// ``B == 1`` batch that must be indexed, not a broadcast. Inverse:
+/// ``scatter_batch_``.
+inline std::map<std::string, at::Tensor>
+index_select_batch(const std::map<std::string, at::Tensor> & m, const at::Tensor & idx)
+{
+  std::map<std::string, at::Tensor> out;
+  for (const auto & [name, t] : m)
+  {
+    if (t.dim() >= 1)
+      out.emplace(name, t.index_select(0, idx).contiguous());
+    else
+      out.emplace(name, t);
+  }
+  return out;
+}
+
+/// Write the rows of ``sub`` (aligned with ``idx``) into ``dst`` in place along
+/// dim 0 at positions ``idx``. Only keys present in both (with rank >= 1) are
+/// scattered. ``dst`` is mutated (the substep driver owns full-batch
+/// accumulators it scatters converged rows into). Companion of
+/// ``index_select_batch`` -- same no-broadcast-passthrough contract.
+inline void
+scatter_batch_(std::map<std::string, at::Tensor> & dst,
+               const at::Tensor & idx,
+               const std::map<std::string, at::Tensor> & sub)
+{
+  for (auto & [name, t] : dst)
+  {
+    auto sit = sub.find(name);
+    if (sit != sub.end() && t.dim() >= 1)
+      t.index_copy_(0, idx, sit->second);
+  }
+}
+
 /// Concatenate per-chunk value maps along dim 0, keyed by the first chunk's
 /// names. Every chunk must carry every key.
 inline std::map<std::string, at::Tensor>

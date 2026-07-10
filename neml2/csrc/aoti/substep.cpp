@@ -34,6 +34,7 @@
 
 #include "neml2/csrc/aoti/Exception.h"
 #include "neml2/csrc/aoti/internal.h"
+#include "neml2/csrc/dispatchers/batch_chunk.h"
 
 #include <functional>
 
@@ -224,5 +225,227 @@ Model::Impl::_run_implicit_segment_substepped_jacobian(
     }
 
   solve_span(0.0, 1.0, chained0_val, chained0_dstate, 0);
+}
+
+// ----------------------------------------------------------------------------
+// Per-element (masked) substepping
+// ----------------------------------------------------------------------------
+// Solve only the still-unconverged subset of the dynamic batch at each sub-step,
+// freeze converged rows at their coarsest converging solution, and bisect only
+// the failing subset -- so a few hard elements no longer drag the whole batch
+// through the deep sub-steps. `a,b` stay scalar per span (uniform interval);
+// masking is purely *which rows are active*, so `_apply_substep_span` and the
+// coefficient math are reused unchanged. Requires a 1-D dynamic batch.
+
+namespace
+{
+// Indices of the true rows of a 1-D bool mask (empty if none).
+inline at::Tensor
+mask_to_idx(const at::Tensor & m)
+{
+  return at::nonzero(m).squeeze(-1);
+}
+} // namespace
+
+bool
+Model::Impl::_masking_ok(const Segment & seg, const std::map<std::string, at::Tensor> & state) const
+{
+  if (seg.givens.empty())
+    return false;
+  auto it = state.find(seg.givens[0].name);
+  if (it == state.end())
+    return false;
+  const auto & g0 = it->second;
+  const auto & g0i = seg.givens[0];
+  const int64_t trail = static_cast<int64_t>(g0i.sub_batch_shape.size() + g0i.base_shape.size());
+  // Masking indexes dim 0; it is well-defined only when the dynamic batch is a
+  // single leading axis (the batch_chunk.h contract). Multi-axis dynamic batches
+  // fall back to the whole-batch driver.
+  return (g0.dim() - trail) == 1;
+}
+
+void
+Model::Impl::_run_implicit_segment_substepped_masked(
+    const Segment & seg, std::map<std::string, at::Tensor> & state) const
+{
+  std::map<std::string, at::Tensor> orig;
+  for (const auto & g : seg.givens)
+    orig[g.name] = state.at(g.name);
+
+  const auto & g0 = orig.at(seg.givens[0].name);
+  const auto & g0i = seg.givens[0];
+  const int64_t g0_trail = static_cast<int64_t>(g0i.sub_batch_shape.size() + g0i.base_shape.size());
+  std::vector<int64_t> batch_shape(g0.sizes().begin(), g0.sizes().end() - g0_trail);
+  const int64_t B = batch_shape[0];
+  const auto opts = g0.options();
+  auto full_shape = [&](const Segment::VarInfo & v)
+  {
+    std::vector<int64_t> s(batch_shape);
+    s.insert(s.end(), v.sub_batch_shape.begin(), v.sub_batch_shape.end());
+    s.insert(s.end(), v.base_shape.begin(), v.base_shape.end());
+    return s;
+  };
+
+  // Full-batch running buffers: chained old-state values + solved unknowns.
+  std::map<std::string, at::Tensor> chained;
+  for (const auto & g : seg.givens)
+    if (g.role == "old_state")
+      chained[g.name] = orig.at(g.name).clone();
+  std::map<std::string, at::Tensor> result;
+  for (const auto & u : seg.unknowns)
+    result[u.name] = at::zeros(full_shape(u), opts);
+
+  const auto idx_opts = at::TensorOptions().dtype(at::kLong).device(g0.device());
+
+  std::function<void(double, double, const at::Tensor &, int)> solve_to =
+      [&](double a, double b, const at::Tensor & active, int level)
+  {
+    auto orig_a = index_select_batch(orig, active);
+    auto chained_a = index_select_batch(chained, active);
+    std::map<std::string, at::Tensor> span;
+    _apply_substep_span(seg, orig_a, a, b, chained_a, span);
+    auto mask = _run_implicit_segment_masked(seg, span);
+    auto conv = mask_to_idx(mask);
+    auto fail = mask_to_idx(at::logical_not(mask));
+    if (conv.numel() > 0)
+    {
+      auto conv_g = active.index_select(0, conv);
+      std::map<std::string, at::Tensor> cs, cc;
+      for (const auto & u : seg.unknowns)
+        cs[u.name] = span.at(u.name).index_select(0, conv);
+      scatter_batch_(result, conv_g, cs);
+      for (const auto & g : seg.givens)
+        if (g.role == "old_state")
+          cc[g.name] = span.at(g.pair).index_select(0, conv);
+      scatter_batch_(chained, conv_g, cc);
+    }
+    if (fail.numel() > 0)
+    {
+      _assert(level < seg.max_substepping_level,
+              "aoti::Model substepping: ",
+              fail.numel(),
+              " element(s) failed to converge at max_substepping_level=",
+              seg.max_substepping_level,
+              ". Reduce the outer time step.");
+      auto fail_g = active.index_select(0, fail);
+      const double mid = 0.5 * (a + b);
+      solve_to(a, mid, fail_g, level + 1);
+      solve_to(mid, b, fail_g, level + 1);
+    }
+  };
+
+  solve_to(0.0, 1.0, at::arange(B, idx_opts), 0);
+  for (const auto & u : seg.unknowns)
+    state[u.name] = result[u.name];
+}
+
+void
+Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
+    const Segment & seg,
+    std::map<std::string, at::Tensor> & state,
+    std::map<std::string, at::Tensor> & dstate) const
+{
+  std::map<std::string, at::Tensor> orig, orig_d;
+  for (const auto & g : seg.givens)
+  {
+    orig[g.name] = state.at(g.name);
+    orig_d[g.name] = dstate.at(g.name);
+  }
+
+  const auto & g0 = orig.at(seg.givens[0].name);
+  const auto & g0i = seg.givens[0];
+  const int64_t g0_trail = static_cast<int64_t>(g0i.sub_batch_shape.size() + g0i.base_shape.size());
+  std::vector<int64_t> batch_shape(g0.sizes().begin(), g0.sizes().end() - g0_trail);
+  const int64_t B = batch_shape[0];
+  const auto opts = g0.options();
+  const int64_t M = orig_d.at(seg.givens[0].name).size(-1);
+  auto full_shape = [&](const Segment::VarInfo & v)
+  {
+    std::vector<int64_t> s(batch_shape);
+    s.insert(s.end(), v.sub_batch_shape.begin(), v.sub_batch_shape.end());
+    s.insert(s.end(), v.base_shape.begin(), v.base_shape.end());
+    return s;
+  };
+
+  std::map<std::string, at::Tensor> chained, chained_d;
+  for (const auto & g : seg.givens)
+    if (g.role == "old_state")
+    {
+      chained[g.name] = orig.at(g.name).clone();
+      chained_d[g.name] = orig_d.at(g.name).clone();
+    }
+  std::map<std::string, at::Tensor> result, result_d;
+  for (const auto & u : seg.unknowns)
+  {
+    result[u.name] = at::zeros(full_shape(u), opts);
+    std::vector<int64_t> sd(batch_shape);
+    sd.push_back(u.var_size);
+    sd.push_back(M);
+    result_d[u.name] = at::zeros(sd, opts);
+  }
+
+  const auto idx_opts = at::TensorOptions().dtype(at::kLong).device(g0.device());
+
+  std::function<void(double, double, const at::Tensor &, int)> solve_to =
+      [&](double a, double b, const at::Tensor & active, int level)
+  {
+    auto orig_a = index_select_batch(orig, active);
+    auto chained_a = index_select_batch(chained, active);
+    auto orig_da = index_select_batch(orig_d, active);
+    auto chained_da = index_select_batch(chained_d, active);
+    std::map<std::string, at::Tensor> span, span_d;
+    _apply_substep_span(seg, orig_a, a, b, chained_a, span);
+    _apply_substep_span(seg, orig_da, a, b, chained_da, span_d);
+    auto mask = _run_implicit_segment_masked(seg, span);
+    auto conv = mask_to_idx(mask);
+    auto fail = mask_to_idx(at::logical_not(mask));
+    if (conv.numel() > 0)
+    {
+      auto conv_g = active.index_select(0, conv);
+      auto conv_span = index_select_batch(span, conv);
+      auto conv_span_d = index_select_batch(span_d, conv);
+      auto u_groups = _pack_groups(conv_span, seg.unknown_groups);
+      auto g_groups = _pack_groups(conv_span, seg.given_groups);
+      // Overwrites conv_span_d[unknown] = Σ (-A⁻¹B)_{u,g}·conv_span_d[g]
+      //   = A_k·J_{k-1} + B_k·frac_k·J_endpoint for this span's converged rows.
+      _run_implicit_segment_jacobian(seg, u_groups, g_groups, conv_span_d);
+      std::map<std::string, at::Tensor> cs, csd, cc, ccd;
+      for (const auto & u : seg.unknowns)
+      {
+        cs[u.name] = conv_span.at(u.name);
+        csd[u.name] = conv_span_d.at(u.name);
+      }
+      scatter_batch_(result, conv_g, cs);
+      scatter_batch_(result_d, conv_g, csd);
+      for (const auto & g : seg.givens)
+        if (g.role == "old_state")
+        {
+          cc[g.name] = conv_span.at(g.pair);
+          ccd[g.name] = conv_span_d.at(g.pair);
+        }
+      scatter_batch_(chained, conv_g, cc);
+      scatter_batch_(chained_d, conv_g, ccd);
+    }
+    if (fail.numel() > 0)
+    {
+      _assert(level < seg.max_substepping_level,
+              "aoti::Model substepping: ",
+              fail.numel(),
+              " element(s) failed to converge at max_substepping_level=",
+              seg.max_substepping_level,
+              ". Reduce the outer time step.");
+      auto fail_g = active.index_select(0, fail);
+      const double mid = 0.5 * (a + b);
+      solve_to(a, mid, fail_g, level + 1);
+      solve_to(mid, b, fail_g, level + 1);
+    }
+  };
+
+  solve_to(0.0, 1.0, at::arange(B, idx_opts), 0);
+  for (const auto & u : seg.unknowns)
+  {
+    state[u.name] = result[u.name];
+    dstate[u.name] = result_d[u.name];
+  }
 }
 } // namespace neml2::aoti

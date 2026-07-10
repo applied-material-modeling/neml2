@@ -234,3 +234,40 @@ def test_eager_aoti_parity_easy_step(tmp_path: Path):
         assert torch.allclose(
             a_jac["x"][name].reshape(()), e_jac["x"][name].data.reshape(()), rtol=1e-8, atol=1e-9
         )
+
+
+def test_masking_mixed_batch_matches_per_element(tmp_path: Path):
+    """The masking payoff: in a batch mixing easy (dt small, 1 span) and hard
+    (dt=8, deep bisection) rows, each row's substepped forward + Jacobian equals
+    that row solved ALONE -- i.e. every element uses its own coarsest converging
+    schedule and easy rows are not dragged to the hard row's schedule."""
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out = tmp_path / "nl"
+    export_model_for_aoti(_SUBSTEP_NL, "model", out, derivatives=["x:x~1", "x:t", "x:t~1"])
+    aoti = AOTIModel(str(out / "model_meta.json"))
+
+    dts = [1.0, 8.0, 2.0, 8.0]  # easy, hard, easy, hard
+    x1s = [0.2, 0.2, 0.3, 0.15]
+    b = len(dts)
+
+    def make(dt_list, x1_list):
+        return {
+            "x": torch.tensor(x1_list, dtype=torch.float64),
+            "x~1": torch.tensor(x1_list, dtype=torch.float64),
+            "t": torch.tensor(dt_list, dtype=torch.float64),
+            "t~1": torch.zeros(len(dt_list), dtype=torch.float64),
+        }
+
+    out_b, jac_b = aoti.jacobian(make(dts, x1s))
+
+    for i in range(b):
+        out_i, jac_i = aoti.jacobian(make([dts[i]], [x1s[i]]))
+        assert out_b["x"][i].item() == pytest.approx(out_i["x"][0].item(), rel=1e-12), (
+            f"row {i} (dt={dts[i]}) forward differs from solved-alone"
+        )
+        for name in ("x~1", "t", "t~1"):
+            assert jac_b["x"][name][i].item() == pytest.approx(
+                jac_i["x"][name][0].item(), rel=1e-10, abs=1e-12
+            ), f"row {i} (dt={dts[i]}) d x/d {name} differs from solved-alone"

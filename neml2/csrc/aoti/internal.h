@@ -371,6 +371,33 @@ struct Model::Impl
                                         std::vector<at::Tensor> & u_solved_groups,
                                         std::vector<at::Tensor> & g_groups) const;
 
+  /// Masked single implicit solve: like `_run_implicit_segment` but drives
+  /// `Newton::solve_masked` and returns the per-element convergence mask (bool,
+  /// dynamic-batch shape) WITHOUT throwing. Converged rows' solved unknowns are
+  /// written to `state`; the mask tells the substep driver which rows to freeze
+  /// vs bisect. `_masking_ok` gates whether masking applies (1-D dynamic batch).
+  at::Tensor _run_implicit_segment_masked(const Segment & seg,
+                                          std::map<std::string, at::Tensor> & state) const;
+
+  /// Per-element (masked) substepping: solve only the still-unconverged subset of
+  /// the dynamic batch at each sub-step, freezing converged rows at their
+  /// coarsest converging solution and bisecting only the failing subset. The
+  /// value + Jacobian variants mirror `_run_implicit_segment_substepped[_jacobian]`
+  /// but scatter converged rows into full-batch accumulators. Require a 1-D
+  /// dynamic batch (see `_masking_ok`); `ops.cpp` falls back to the whole-batch
+  /// driver otherwise. Only called when `seg.max_substepping_level > 0`.
+  void _run_implicit_segment_substepped_masked(const Segment & seg,
+                                               std::map<std::string, at::Tensor> & state) const;
+  void _run_implicit_segment_substepped_masked_jacobian(
+      const Segment & seg,
+      std::map<std::string, at::Tensor> & state,
+      std::map<std::string, at::Tensor> & dstate) const;
+
+  /// True iff masking applies to `state` for this segment: the dynamic batch is
+  /// a single axis (dim 0), so per-row `index_select`/`index_copy` cleanly
+  /// selects elements. Multi-axis dynamic batches fall back to whole-batch.
+  bool _masking_ok(const Segment & seg, const std::map<std::string, at::Tensor> & state) const;
+
   /// Substepping analogue of `_run_implicit_segment_jacobian`: solves the
   /// increment by the same bisection AND accumulates the chained consistent
   /// tangent into `dstate`. At each successfully-solved leaf sub-span it runs
