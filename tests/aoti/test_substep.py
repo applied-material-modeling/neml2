@@ -203,3 +203,32 @@ def test_nonlinear_substepped_jacobian_matches_fd(tmp_path: Path):
         assert torch.allclose(ana, fd, rtol=1e-5, atol=1e-6), (
             f"d x / d {name}: analytic {ana.item():.8e} vs FD {fd.item():.8e}"
         )
+
+
+def test_eager_aoti_parity_easy_step(tmp_path: Path):
+    """Cross-route parity on an EASY (single-span) step: the eager and cpp-aoti
+    substepped forward + Jacobian agree. (On a hard step the adaptive *schedule*
+    can differ between routes -- both produce a valid coarse solution -- so exact
+    cross-route parity is only guaranteed where a single span converges.)"""
+    import neml2
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out = tmp_path / "nl"
+    export_model_for_aoti(_SUBSTEP_NL, "model", out, derivatives=["x:x~1", "x:t", "x:t~1"])
+    aoti = AOTIModel(str(out / "model_meta.json"))
+    eager = neml2.load_model(str(_SUBSTEP_NL), "model").to(torch.float64)
+
+    ins = {
+        "x": torch.full((1,), 0.2, dtype=torch.float64),
+        "x~1": torch.full((1,), 0.2, dtype=torch.float64),
+        "t": torch.full((1,), 1.0, dtype=torch.float64),  # easy: converges in one span
+        "t~1": torch.zeros(1, dtype=torch.float64),
+    }
+    a_out, a_jac = aoti.jacobian(ins)
+    e_out, e_jac = eager.jacobian(ins)
+    assert torch.allclose(a_out["x"], e_out["x"].data, rtol=1e-9, atol=1e-9)
+    for name in ("x~1", "t", "t~1"):
+        assert torch.allclose(
+            a_jac["x"][name].reshape(()), e_jac["x"][name].data.reshape(()), rtol=1e-8, atol=1e-9
+        )

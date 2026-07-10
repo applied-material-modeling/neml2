@@ -173,3 +173,85 @@ def test_incremental_variables_must_be_inputs():
     m = neml2.load_model(str(_IMPLICIT), "model")
     with pytest.raises(ValueError, match="not inputs"):
         neml2.ImplicitUpdate(m.system, m.solver, incremental_variables=["not_a_real_input"])
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: eager (py-eager) substepping -- value recovery + chained tangent
+# (forward-mode via the v-path, reverse-mode via autograd). Pure Python; the
+# nonlinear model's dt=8 step fails the single Newton solve at max_its=5.
+# ---------------------------------------------------------------------------
+
+_NL = _REPO / "tests" / "aoti" / "implicit_substep_nl" / "model.i"
+
+
+def _nl_inputs(dt, x1=0.2):
+    return {
+        "x": torch.full((1,), x1, dtype=torch.float64),
+        "x~1": torch.full((1,), x1, dtype=torch.float64),
+        "t": torch.full((1,), dt, dtype=torch.float64),
+        "t~1": torch.zeros(1, dtype=torch.float64),
+    }
+
+
+def _nl_forward(m, ins):
+    out = m(*(m.input_spec[n](ins[n]) for n in m.input_spec))
+    return (out[0] if isinstance(out, tuple) else out).data
+
+
+def test_eager_substep_recovery_and_noop():
+    """Eager: dt=8 fails single-shot (max_its=5) but recovers substepped; on an
+    easy dt the substepped answer equals the single shot (no-op equivalence)."""
+    m = neml2.load_model(str(_NL), "model").to(torch.float64)
+    assert m.max_substepping_level == 6
+
+    # Recovery: substepped dt=8 succeeds and is finite.
+    x8 = _nl_forward(m, _nl_inputs(8.0)).item()
+    assert x8 == x8 and x8 > 0.2
+
+    # Single-shot (level 0) at dt=8 cannot converge in max_its=5.
+    m.max_substepping_level = 0
+    with pytest.raises(ConvergenceError):
+        _nl_forward(m, _nl_inputs(8.0))
+
+    # No-op equivalence on an easy dt: substepped == single shot.
+    m.solver.miters = 50
+    x1_single = _nl_forward(m, _nl_inputs(1.0)).item()
+    m.max_substepping_level = 6
+    x1_sub = _nl_forward(m, _nl_inputs(1.0)).item()
+    assert x1_sub == pytest.approx(x1_single, rel=1e-10)
+
+
+def test_eager_substep_jacobian_matches_fd():
+    """Eager forward-mode substepped Jacobian (v-path, chained through
+    _output_sensitivities) matches central FD of the substepped forward."""
+    m = neml2.load_model(str(_NL), "model").to(torch.float64)
+    _, jac = m.jacobian(_nl_inputs(8.0))
+
+    h = 1e-6
+    for name in ("x~1", "t", "t~1"):
+        dp, dm = _nl_inputs(8.0), _nl_inputs(8.0)
+        dp[name] = dp[name] + h
+        dm[name] = dm[name] - h
+        fd = ((_nl_forward(m, dp) - _nl_forward(m, dm)) / (2 * h)).item()
+        ana = jac["x"][name].data.reshape(()).item()
+        assert ana == pytest.approx(fd, rel=1e-5, abs=1e-7), f"d x/d {name}: {ana} vs FD {fd}"
+
+
+def test_eager_substep_backward_matches_fd():
+    """Eager reverse-mode (autograd .backward()) through the substepped solve --
+    the chained-Functions replay -- matches central FD."""
+    m = neml2.load_model(str(_NL), "model").to(torch.float64)
+
+    di = {k: v.clone().requires_grad_(True) for k, v in _nl_inputs(8.0).items()}
+    out = m(*(m.input_spec[n](di[n]) for n in m.input_spec))
+    (out[0] if isinstance(out, tuple) else out).data.sum().backward()
+
+    h = 1e-6
+    for name in ("x~1", "t", "t~1"):
+        dp, dm = _nl_inputs(8.0), _nl_inputs(8.0)
+        dp[name] = dp[name] + h
+        dm[name] = dm[name] - h
+        fd = ((_nl_forward(m, dp) - _nl_forward(m, dm)) / (2 * h)).item()
+        grad = di[name].grad
+        assert grad is not None
+        assert grad.item() == pytest.approx(fd, rel=1e-5, abs=1e-7)
