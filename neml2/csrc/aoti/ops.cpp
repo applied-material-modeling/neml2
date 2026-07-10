@@ -173,7 +173,10 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
     {
       std::vector<at::Tensor> u_solved_groups;
       std::vector<at::Tensor> g_groups;
-      _run_implicit_segment(seg, state, u_solved_groups, g_groups);
+      if (seg.max_substepping_level > 0)
+        _run_implicit_segment_substepped(seg, state, u_solved_groups, g_groups);
+      else
+        _run_implicit_segment(seg, state, u_solved_groups, g_groups);
     }
   }
 

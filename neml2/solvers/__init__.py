@@ -25,6 +25,7 @@
 """Python-native linear and nonlinear solvers.
 
 - :mod:`._result` -- :class:`RetCode`, :class:`NonlinearResult`.
+- :mod:`._exceptions` -- :class:`ConvergenceError` (recoverable solve failure).
 - :mod:`.dense_lu` -- :class:`DenseLU`.
 - :mod:`.schur_complement` -- :class:`SchurComplement`.
 - :mod:`.newton` -- :class:`Newton`.
@@ -32,6 +33,7 @@
 - :mod:`._helpers` -- private reduction / scaling helpers.
 """
 
+from ._exceptions import ConvergenceError
 from ._result import NonlinearResult, RetCode
 from .dense_lu import DenseLU
 from .newton import Newton
@@ -41,6 +43,7 @@ from .schur_complement import SchurComplement
 __all__ = [
     "RetCode",
     "NonlinearResult",
+    "ConvergenceError",
     "DenseLU",
     "SchurComplement",
     "Newton",

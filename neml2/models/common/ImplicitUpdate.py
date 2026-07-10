@@ -32,11 +32,16 @@ from typing import TYPE_CHECKING, Any
 import torch
 
 from ...es import AssembledMatrix, AxisLayout, ModelNonlinearSystem, SparseVector
-from ...es._helpers import _flatten_base
+from ...es._helpers import (
+    SubstepRoleInfo,
+    _flatten_base,
+    classify_substep_roles,
+)
 from ...factory import register_neml2_object
-from ...schema import HitSchema, dependency
-from ...solvers import Newton, RetCode
+from ...schema import HitSchema, dependency, option
+from ...solvers import ConvergenceError, Newton, RetCode
 from ...types import Tensor, TensorWrapper
+from .._hit import _opt_list_str
 from ..chain_rule import ChainRuleDict
 from ..model import Model, register_submodule
 
@@ -189,6 +194,27 @@ class ImplicitUpdate(Model):
             "An optional predictor to provide an initial guess for the nonlinear solve.",
             default=None,
         ),
+        option(
+            "max_substepping_level",
+            int,
+            "Adaptive sub-incrementation depth cap. 0 (default) disables substepping. "
+            "Level L allows the solve to recursively bisect a failing increment down to "
+            "depth L (up to 2^L sub-steps), interpolating paired forces and chaining "
+            "state across sub-steps; a sub-step still failing at depth L raises a "
+            "recoverable ConvergenceError so an outer time-stepper can cut the step.",
+            default=0,
+        ),
+        option(
+            "incremental_variables",
+            list,
+            "Names of driving-force inputs to treat as pure increments during "
+            "substepping: each is scaled by the sub-step fraction (its share of the "
+            "full increment) rather than interpolated. Forces that already carry a ~1 "
+            "counterpart are interpolated automatically and need not be listed; a lone "
+            "increment with no ~1 counterpart is held constant unless listed here.",
+            default=[],
+            optional_reader=_opt_list_str,
+        ),
     )
 
     @classmethod
@@ -207,13 +233,21 @@ class ImplicitUpdate(Model):
                     "using no predictor (initial guess = zero).",
                     stacklevel=2,
                 )
-        return cls(system, solver, predictor=predictor)
+        return cls(
+            system,
+            solver,
+            predictor=predictor,
+            max_substepping_level=int(node.param_optional_int("max_substepping_level", 0)),
+            incremental_variables=_opt_list_str(node, "incremental_variables", []),
+        )
 
     def __init__(
         self,
         system: ModelNonlinearSystem,
         solver: Newton,
         predictor: Model | None = None,
+        max_substepping_level: int = 0,
+        incremental_variables: list[str] | None = None,
     ) -> None:
         super().__init__()
         self.system = system
@@ -254,6 +288,25 @@ class ImplicitUpdate(Model):
         self.input_spec = {name: all_specs[name] for name in input_names}
         self.output_spec = {name: system.model.input_spec[name] for name in system.unknown_names}
 
+        # --- Substepping configuration -------------------------------------
+        # ``max_substepping_level == 0`` (default) keeps substepping fully off:
+        # ``forward`` takes the single-shot path and behavior is unchanged. The
+        # role classification is the single source of truth (also serialized
+        # into the AOTI metadata) for how the substep driver treats each input.
+        self.max_substepping_level = int(max_substepping_level)
+        self.incremental_variables = list(incremental_variables or [])
+        unknown_missing = [u for u in self.incremental_variables if u not in self.input_spec]
+        if unknown_missing:
+            raise ValueError(
+                f"ImplicitUpdate: incremental_variables {unknown_missing} are not inputs of "
+                f"this model; valid inputs are {list(self.input_spec)}."
+            )
+        self._substep_roles: dict[str, SubstepRoleInfo] = classify_substep_roles(
+            self.input_spec,
+            system.unknown_names,
+            self.incremental_variables,
+        )
+
     def _initial_unknowns(
         self,
         state: dict[str, TensorWrapper],
@@ -270,11 +323,20 @@ class ImplicitUpdate(Model):
                 unknowns[name] = state[name]
         return unknowns
 
-    def _solve(
+    def _try_solve(
         self,
         state: dict[str, TensorWrapper],
         sub_batch_ndim: dict[str, int] | None = None,
-    ) -> SparseVector:
+    ) -> tuple[SparseVector | None, RetCode]:
+        """Run the nonlinear solve *without raising*.
+
+        Returns ``(solution, ret)``: the disassembled converged unknowns on
+        success, ``None`` otherwise. This is the probe primitive the
+        substepping driver uses — it inspects ``ret`` to decide whether to
+        subdivide, avoiding an exception unwind per attempt. On success the
+        converged state is left in ``self.system`` (so ``_output_sensitivities``
+        can run against it immediately).
+        """
         givens = {name: state[name] for name in self.system.given_names}
         unknowns = self._initial_unknowns(state)
         # Bridge: caller's ``sub_batch_ndim`` dict is keyed by INPUT names
@@ -302,12 +364,32 @@ class ImplicitUpdate(Model):
                 dyn_shape = tuple(val.shape[:dyn_n])
         u_sv, g_sv = self.system.to_sparse(unknowns, givens, full_sbn)
         self.system.initialize(u=u_sv, g=g_sv, dyn_shape=dyn_shape)
-        result = self.solver.solve(self.system)
+        # The shared C++ Newton raises the recoverable ConvergenceError on
+        # divergence / max-iterations rather than returning a non-SUCCESS code;
+        # translate that into a return code so this probe never unwinds.
+        try:
+            result = self.solver.solve(self.system)
+        except ConvergenceError:
+            self.last_status = RetCode.MAXITER
+            return None, RetCode.MAXITER
         self.last_iterations = result.iterations
         self.last_status = result.ret
         if result.ret is not RetCode.SUCCESS:
-            raise RuntimeError(f"Nonlinear solve failed with status {result.ret.name}")
-        return self.system.u().disassemble()
+            return None, result.ret
+        return self.system.u().disassemble(), result.ret
+
+    def _solve(
+        self,
+        state: dict[str, TensorWrapper],
+        sub_batch_ndim: dict[str, int] | None = None,
+    ) -> SparseVector:
+        """Single-shot solve; raises the recoverable :class:`ConvergenceError`
+        on non-convergence so an outer driver (substepping, or MOOSE's
+        time-stepper) can cut the increment and retry."""
+        solution, ret = self._try_solve(state, sub_batch_ndim)
+        if solution is None:
+            raise ConvergenceError(f"Nonlinear solve failed with status {ret.name}")
+        return solution
 
     def _output_sensitivities(self, v: ChainRuleDict) -> ChainRuleDict:
         A, B = self.system.A_and_B()

@@ -48,6 +48,7 @@ from typing import TYPE_CHECKING
 import nmhit
 import torch
 
+from ..es._helpers import lag_order
 from ..factory import register_neml2_object
 from ..schema import HitField, HitSchema, dependency, option
 from ..types import MRP, R2, SR2, SSR4, WR2, MillerIndex, Scalar, TensorWrapper, Vec
@@ -424,12 +425,14 @@ def _as_typed(value, type_cls: type[TensorWrapper]) -> TensorWrapper:
 
 
 def _parse_history(vname: str) -> tuple[str, int]:
-    """Split ``base~k`` -> ``(base, k)``; bare ``base`` -> ``(base, 0)``."""
-    if "~" not in vname:
-        return vname, 0
-    base, suffix = vname.rsplit("~", 1)
+    """Split ``base~k`` -> ``(base, k)``; bare ``base`` -> ``(base, 0)``.
+
+    Thin wrapper over the shared :func:`neml2.es._helpers.lag_order` that keeps
+    the driver's historical leniency: a malformed suffix falls back to lag 0
+    rather than raising.
+    """
     try:
-        return base, int(suffix)
+        return lag_order(vname)
     except ValueError:
         return vname, 0
 

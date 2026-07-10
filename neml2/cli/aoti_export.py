@@ -85,7 +85,7 @@ if TYPE_CHECKING:
 #: ``scripts/dep_manager.py`` (which keeps this literal, the C++ loader, and the
 #: docs in sync).
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 8
+AOTI_META_SCHEMA_VERSION = 9
 
 
 def _var_size(type_cls) -> int:
@@ -2246,6 +2246,24 @@ def _compile_implicit_segment(
     given_infos = [_var_info(system.glayout, n) for n in system.given_names]
     residual_infos = [_var_info(system.blayout, n) for n in system.residual_names]
 
+    # Substep role classification (schema v9): the single source of truth for how
+    # the host-side substep driver treats each given -- interpolate a paired
+    # force, chain an old-state, scale a listed increment, or hold. Computed here
+    # (Python), consumed by the C++ runtime, so the eager and compiled paths
+    # never diverge on the classification. Uses the live residual input set for
+    # pair detection so it is robust to parameter promotion.
+    from ..es._helpers import classify_substep_roles  # noqa: PLC0415
+
+    substep_roles = classify_substep_roles(
+        list(system.model.input_spec),
+        system.unknown_names,
+        inner.incremental_variables,
+    )
+    for gi in given_infos:
+        role_info = substep_roles.get(gi["name"])
+        gi["role"] = role_info.role.value if role_info is not None else "static"
+        gi["pair"] = role_info.pair if role_info is not None else None
+
     group_meta = _enumerate_group_infos(system)
 
     # NB: solver convergence / line-search configuration (atol / rtol / miters /
@@ -2270,6 +2288,12 @@ def _compile_implicit_segment(
         # promoted. The C++ runtime passes the stored scalars to rhs/step/ift and
         # broadcasts them per-batch for the param-IFT graph.
         "param_inputs": list(seg_param_inputs),
+        # Substepping (schema v9): 0 = off (single shot). >0 = adaptive
+        # bisection depth cap; the host-side driver interpolates/chains/scales
+        # the givens per their `role` (attached above) across sub-steps. Carried
+        # per segment so the C++ runtime needs no separate config.
+        "max_substepping_level": int(inner.max_substepping_level),
+        "incremental_variables": list(inner.incremental_variables),
     }
     if emit_ift:
         seg["ift_package"] = ift_name

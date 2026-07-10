@@ -174,6 +174,12 @@ struct Model::Impl
   {
     SegmentKind kind;
 
+    /// Adaptive substepping depth cap (schema v9; implicit segments only).
+    /// 0 = off (single shot). >0 = the host-side driver may recursively bisect a
+    /// failing increment down to this depth, interpolating / chaining / scaling
+    /// the givens by their per-variable ``role``.
+    int max_substepping_level = 0;
+
     // Forward-segment-only.
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> fwd_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> jvp_loader;
@@ -207,6 +213,15 @@ struct Model::Impl
       int64_t var_size = 0;
       std::vector<int64_t> sub_batch_shape;
       std::vector<int64_t> base_shape;
+      // Substep role (schema v9): how the host-side substep driver treats this
+      // given across sub-steps -- "old_state" (chain the solved unknown),
+      // "old_force" / "cur_force" (interpolate the paired force), "incremental"
+      // (scale by the span fraction), "static" / "unknown" (hold). ``pair`` is
+      // the counterpart variable name (the paired force, or the base unknown for
+      // old_state); empty when none. Only populated on an implicit segment's
+      // ``givens``; the defaults leave single-shot behavior unchanged.
+      std::string role = "static";
+      std::string pair;
     };
     std::vector<VarInfo> unknowns;
     std::vector<VarInfo> givens;
@@ -339,6 +354,22 @@ struct Model::Impl
                              std::map<std::string, at::Tensor> & state,
                              std::vector<at::Tensor> & u_solved_groups,
                              std::vector<at::Tensor> & g_groups) const;
+
+  /// Adaptive substepping driver (schema v9): wraps `_run_implicit_segment` in a
+  /// recursive bisection over the increment. Snapshots the segment's endpoint
+  /// givens, then solves the increment in one shot; on a recoverable
+  /// ConvergenceError it halves the span -- interpolating each paired force,
+  /// scaling each listed increment, and chaining each old-state to the previous
+  /// sub-step's solved unknown, per the given's `role` -- recursing up to
+  /// `seg.max_substepping_level` levels before re-raising. On return `state`
+  /// holds the final converged unknowns and the out-params hold the LAST
+  /// sub-step's per-group solved unknowns + givens (the point the IFT path,
+  /// when substepping the Jacobian, evaluates at). Only called when
+  /// `seg.max_substepping_level > 0`.
+  void _run_implicit_segment_substepped(const Segment & seg,
+                                        std::map<std::string, at::Tensor> & state,
+                                        std::vector<at::Tensor> & u_solved_groups,
+                                        std::vector<at::Tensor> & g_groups) const;
 
   /// Pack per-variable ``state`` entries into per-group tensors via the
   /// AssembledVector convention: BLOCK groups cat per-var contributions

@@ -26,13 +26,122 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
+from dataclasses import dataclass
+from enum import Enum
 from math import prod
 
 import torch
 
 from neml2.types import Tensor, TensorWrapper
 from neml2.types._base import KStateFlag, SubBatchStateFlag
+
+# ---------------------------------------------------------------------------
+# Lagged-variable naming + substep role classification
+# ---------------------------------------------------------------------------
+# The ``base~k`` convention marks a variable's value k steps in the past
+# (``x~1`` = one-step-old). These helpers split / re-tag that suffix and, at
+# the implicit-update boundary, classify each input by the role substepping
+# must play for it. They live here (not in the pyzag adapter, where the split
+# helpers used to live) because the equation-system layer + ImplicitUpdate are
+# the primary consumers; pyzag re-imports them.
+
+
+def lag_order(var: str) -> tuple[str, int]:
+    """Split a variable name into ``(base_name, lag)``.
+
+    ``var`` is either ``"name"`` (lag 0) or ``"name~n"`` (lag ``n``).
+    """
+    tokens = var.split("~")
+    if len(tokens) == 1:
+        return tokens[0], 0
+    if len(tokens) == 2:
+        return tokens[0], int(tokens[1])
+    raise ValueError(
+        f"Variable {var!r} has invalid format; expected 'name' or 'name~n' where n is an integer"
+    )
+
+
+def change_lag_order(var: str, new_order: int) -> str:
+    """Re-tag a variable name to a different lag order. Inverse of :func:`lag_order`."""
+    base, _ = lag_order(var)
+    return f"{base}~{new_order}" if new_order != 0 else base
+
+
+class SubstepRole(str, Enum):
+    """The role substepping plays for one ImplicitUpdate input.
+
+    ``str``-valued so it serializes straight into the AOTI ``_meta.json``
+    contract (the C++ host reads the same classification).
+    """
+
+    #: lag-0 current slot of an unknown (initial guess; the solver overwrites it).
+    UNKNOWN = "unknown"
+    #: ``u~1`` of an unknown -> chain (fed the previous span's solved value).
+    OLD_STATE = "old_state"
+    #: ``f~1`` whose current ``f`` is also an input -> interpolate across the span.
+    OLD_FORCE = "old_force"
+    #: ``f`` whose lagged ``f~1`` is also an input -> interpolate across the span.
+    CUR_FORCE = "cur_force"
+    #: user-listed pure increment (no ``~1`` counterpart) -> scale by span fraction.
+    INCREMENTAL = "incremental"
+    #: everything else -> hold constant across spans.
+    STATIC = "static"
+
+
+@dataclass(frozen=True)
+class SubstepRoleInfo:
+    """A variable's substep :class:`SubstepRole` plus its paired variable.
+
+    ``pair`` is the counterpart name: for ``OLD_STATE`` the base unknown, for
+    ``OLD_FORCE`` the current force, for ``CUR_FORCE`` the lagged force;
+    ``None`` for ``UNKNOWN`` / ``INCREMENTAL`` / ``STATIC``.
+    """
+
+    role: SubstepRole
+    pair: str | None = None
+
+
+def classify_substep_roles(
+    input_names: Iterable[str],
+    unknown_names: Iterable[str],
+    incremental_variables: Iterable[str] = (),
+) -> dict[str, SubstepRoleInfo]:
+    """Classify each ImplicitUpdate input by its substep role.
+
+    The single source of truth for how substepping treats every input, shared
+    by the eager path (called live) and the AOTI path (serialized into the
+    artifact metadata). See :class:`SubstepRole` for the meaning of each role.
+    """
+    names = list(input_names)
+    name_set = set(names)
+    unknown_set = set(unknown_names)
+    incremental_set = set(incremental_variables)
+
+    def _lagged_counterpart(base: str) -> str | None:
+        """First lagged ``base~k`` (k>0) appearing as an input, if any."""
+        for other in names:
+            b, lag = lag_order(other)
+            if b == base and lag > 0:
+                return other
+        return None
+
+    roles: dict[str, SubstepRoleInfo] = {}
+    for name in names:
+        base, lag = lag_order(name)
+        if lag == 0 and base in unknown_set:
+            roles[name] = SubstepRoleInfo(SubstepRole.UNKNOWN)
+        elif lag > 0 and base in unknown_set:
+            roles[name] = SubstepRoleInfo(SubstepRole.OLD_STATE, pair=base)
+        elif name in incremental_set:
+            roles[name] = SubstepRoleInfo(SubstepRole.INCREMENTAL)
+        elif lag > 0 and base in name_set:
+            roles[name] = SubstepRoleInfo(SubstepRole.OLD_FORCE, pair=base)
+        elif lag == 0 and (cp := _lagged_counterpart(base)) is not None:
+            roles[name] = SubstepRoleInfo(SubstepRole.CUR_FORCE, pair=cp)
+        else:
+            roles[name] = SubstepRoleInfo(SubstepRole.STATIC)
+    return roles
 
 
 def _storage_size(type_cls: type[TensorWrapper]) -> int:
@@ -319,6 +428,11 @@ def _tangent_block_to_trailing_k(block: TensorWrapper) -> Tensor:
 
 
 __all__ = [
+    "lag_order",
+    "change_lag_order",
+    "SubstepRole",
+    "SubstepRoleInfo",
+    "classify_substep_roles",
     "_storage_size",
     "_batch_shape",
     "_flatten_base",

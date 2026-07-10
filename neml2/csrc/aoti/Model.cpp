@@ -133,7 +133,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
   // a cryptic missing-field error deep in the parser. The canonical value lives
   // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 8;
+  static constexpr int kSupportedSchemaVersion = 9;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -414,6 +414,11 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
         info.sub_batch_shape = v["sub_batch_shape"].get<std::vector<int64_t>>();
       if (v.contains("base_shape"))
         info.base_shape = v["base_shape"].get<std::vector<int64_t>>();
+      // Substep role/pair (schema v9), present on implicit-segment givens.
+      if (v.contains("role") && !v["role"].is_null())
+        info.role = v["role"].get<std::string>();
+      if (v.contains("pair") && !v["pair"].is_null())
+        info.pair = v["pair"].get<std::string>();
       return info;
     };
 
@@ -480,6 +485,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
     else if (seg_kind == "implicit")
     {
       seg.kind = SegmentKind::Implicit;
+      seg.max_substepping_level = seg_meta.value("max_substepping_level", 0);
       seg.rhs_loader = make_loader(cache_dir / seg_meta["rhs_package"].get<std::string>(), dev_idx);
       seg.step_loader =
           make_loader(cache_dir / seg_meta["step_package"].get<std::string>(), dev_idx);
