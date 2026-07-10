@@ -134,6 +134,7 @@ def _eager_single_shot(x1: float, t_end: float, miters: int):
     import neml2
 
     m = neml2.load_model(str(_SUBSTEP_NL), "model")
+    m.max_substepping_level = 0  # true single shot -- disable substepping recovery
     m.solver.miters = miters
     ins = {"x": x1, "x~1": x1, "t": t_end, "t~1": 0.0}
     args = tuple(m.input_spec[n](torch.tensor([ins[n]], dtype=torch.float64)) for n in m.input_spec)
@@ -160,10 +161,11 @@ def test_nonlinear_convergence_recovery(tmp_path: Path):
         }
         return aoti.forward(ins)["x"].item()
 
-    # Contrast: dt=8 single-shot cannot converge in max_its=5 (Newton overshoots
-    # on the cubic rate) -- this is the failure substepping rescues.
+    # Contrast: dt=8 single-shot genuinely diverges (Newton overshoots the cubic
+    # rate to a non-finite residual) even with a generous cap -- this is the
+    # failure substepping rescues.
     with pytest.raises(ConvergenceError):
-        _eager_single_shot(0.2, 8.0, miters=5)
+        _eager_single_shot(0.2, 8.0, miters=25)
 
     # Recovery: the compiled substepped model reaches a finite solution at dt=8.
     x8 = fwd(8.0)

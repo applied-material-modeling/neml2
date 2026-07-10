@@ -202,21 +202,20 @@ def test_eager_substep_recovery_and_noop():
     """Eager: dt=8 fails single-shot (max_its=5) but recovers substepped; on an
     easy dt the substepped answer equals the single shot (no-op equivalence)."""
     m = neml2.load_model(str(_NL), "model").to(torch.float64)
-    assert m.max_substepping_level == 6
+    assert m.max_substepping_level == 8
 
     # Recovery: substepped dt=8 succeeds and is finite.
     x8 = _nl_forward(m, _nl_inputs(8.0)).item()
     assert x8 == x8 and x8 > 0.2
 
-    # Single-shot (level 0) at dt=8 cannot converge in max_its=5.
+    # Single-shot (level 0) at dt=8 genuinely diverges (non-finite overshoot).
     m.max_substepping_level = 0
     with pytest.raises(ConvergenceError):
         _nl_forward(m, _nl_inputs(8.0))
 
     # No-op equivalence on an easy dt: substepped == single shot.
-    m.solver.miters = 50
     x1_single = _nl_forward(m, _nl_inputs(1.0)).item()
-    m.max_substepping_level = 6
+    m.max_substepping_level = 8
     x1_sub = _nl_forward(m, _nl_inputs(1.0)).item()
     assert x1_sub == pytest.approx(x1_single, rel=1e-10)
 

@@ -42,7 +42,11 @@
     type = Newton
     abs_tol = 1e-10
     rel_tol = 1e-08
-    max_its = 5
+    # Generous cap: a hard dt (e.g. dt=8) still fails single-shot -- Newton
+    # overshoots the cubic rate to a non-finite residual -- so the failure and
+    # the substepped recovery are unambiguous (not a marginal max-iters edge)
+    # and deterministic across routes.
+    max_its = 25
     linear_solver = 'lu'
   []
   [lu]
@@ -60,6 +64,6 @@
     equation_system = 'eq_sys'
     solver = 'newton'
     predictor = 'predictor'
-    max_substepping_level = 6
+    max_substepping_level = 8
   []
 []
