@@ -376,6 +376,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#running-the-c-tests">Running the C++ tests</a></li>
 <li><a class="reference internal" href="#build-type-and-other-overrides">Build-type and other overrides</a></li>
 <li><a class="reference internal" href="#iterating-on-the-c-runtime">Iterating on the C++ runtime</a></li>
+<li><a class="reference internal" href="#windows-best-effort">Windows (best-effort)</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -480,6 +481,32 @@ for a fast incremental compile (no <code class="docutils literal notranslate"><s
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">cmake<span class="w"> </span>--build<span class="w"> </span>build/editable
 </span></pre></div>
 </div>
+</section>
+<section id="windows-best-effort">
+<h2>Windows (best-effort)<a class="headerlink" href="#windows-best-effort" title="Link to this heading">#</a></h2>
+<p>Windows is supported on a <strong>best-effort</strong> basis, from a source build only —
+no wheels are published and it is not a primary platform. CI does exercise it
+(compile, install, the Python test suite including AOTI, and a
+<code class="docutils literal notranslate"><span class="pre">find_package(neml2)</span></code> C++ consumer), but expect rough edges.</p>
+<p>You need Visual Studio 2022 (MSVC) and Python. scikit-build-core drives the
+Visual Studio generator, which locates MSVC on its own, so no developer shell
+is required. From PowerShell:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">git</span> <span class="n">clone</span> <span class="n">-b</span> <span class="n">main</span> <span class="n">https</span><span class="p">://</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">applied-material-modeling</span><span class="p">/</span><span class="n">neml2</span><span class="p">.</span><span class="n">git</span>
+</span><span data-line="2"><span class="nb">cd </span><span class="n">neml2</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">nmhit</span> <span class="n">scikit-build-core</span>
+</span><span data-line="5"><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;.[dev]&quot;</span> <span class="p">-</span><span class="n">-no-build-isolation</span> <span class="n">-v</span>
+</span></pre></div>
+</div>
+<ul class="simple">
+<li><p>Build <code class="docutils literal notranslate"><span class="pre">Release</span></code> or <code class="docutils literal notranslate"><span class="pre">RelWithDebInfo</span></code> only: the pip <code class="docutils literal notranslate"><span class="pre">torch</span></code> wheels ship Release
+binaries on Windows, so a Debug build cannot link against them.</p></li>
+<li><p>The embedded-Python eager runtime (<code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>) is not built on Windows; the
+AOTI routes and the native Python API are unaffected.</p></li>
+<li><p>Native Windows paths (with backslashes) work in <strong>quoted</strong> HIT (<code class="docutils literal notranslate"><span class="pre">.i</span></code>) values,
+e.g. <code class="docutils literal notranslate"><span class="pre">artifact_path</span> <span class="pre">=</span> <span class="pre">'C:\path\to\model'</span></code> — quote the value; unquoted paths
+must use forward slashes.</p></li>
+</ul>
 </section>
 </section>
 
