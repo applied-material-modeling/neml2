@@ -32,12 +32,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 
 from ...es import AssembledMatrix, AxisLayout, ModelNonlinearSystem, SparseVector
-from ...es._helpers import (
-    SubstepRole,
-    SubstepRoleInfo,
-    _flatten_base,
-    classify_substep_roles,
-)
+from ...es._helpers import _flatten_base
 from ...factory import register_neml2_object
 from ...schema import HitSchema, dependency, option
 from ...solvers import ConvergenceError, Newton, RetCode
@@ -198,21 +193,25 @@ class ImplicitUpdate(Model):
         option(
             "max_substepping_level",
             int,
-            "Adaptive sub-incrementation depth cap. 0 (default) disables substepping. "
-            "Level L allows the solve to recursively bisect a failing increment down to "
-            "depth L (up to 2^L sub-steps), interpolating paired forces and chaining "
-            "state across sub-steps; a sub-step still failing at depth L raises a "
-            "recoverable ConvergenceError so an outer time-stepper can cut the step.",
+            "Adaptive sub-incrementation depth cap, applied by the COMPILED AOTI "
+            "routes only (``neml2-compile``). 0 (default) disables substepping. Level "
+            "L lets the compiled solve recursively bisect a failing increment down to "
+            "depth L (up to 2^L sub-steps), per-element, interpolating paired forces "
+            "and chaining state; a sub-step still failing at depth L raises a "
+            "recoverable ConvergenceError so an outer time-stepper can cut the step. "
+            "The eager runtime does NOT sub-increment: evaluating an ImplicitUpdate "
+            "eagerly with this set > 0 raises (substepping is an AOTI-only feature).",
             default=0,
         ),
         option(
             "incremental_variables",
             list,
-            "Names of driving-force inputs to treat as pure increments during "
-            "substepping: each is scaled by the sub-step fraction (its share of the "
-            "full increment) rather than interpolated. Forces that already carry a ~1 "
-            "counterpart are interpolated automatically and need not be listed; a lone "
-            "increment with no ~1 counterpart is held constant unless listed here.",
+            "Names of driving-force inputs the COMPILED substep driver treats as pure "
+            "increments (scaled by the sub-step fraction rather than interpolated). "
+            "Forces that already carry a ~1 counterpart are interpolated automatically "
+            "and need not be listed; a lone increment with no ~1 counterpart is held "
+            "constant unless listed here. Like ``max_substepping_level`` this is an "
+            "AOTI-compile directive; setting it rejects eager evaluation.",
             default=[],
             optional_reader=_opt_list_str,
         ),
@@ -289,11 +288,13 @@ class ImplicitUpdate(Model):
         self.input_spec = {name: all_specs[name] for name in input_names}
         self.output_spec = {name: system.model.input_spec[name] for name in system.unknown_names}
 
-        # --- Substepping configuration -------------------------------------
-        # ``max_substepping_level == 0`` (default) keeps substepping fully off:
-        # ``forward`` takes the single-shot path and behavior is unchanged. The
-        # role classification is the single source of truth (also serialized
-        # into the AOTI metadata) for how the substep driver treats each input.
+        # --- Substepping configuration (AOTI-compile directives) -----------
+        # These are consumed ONLY by the compiled AOTI export (which reads them as
+        # attributes to build the per-element masked substep driver's metadata and
+        # classifies roles via ``classify_substep_roles`` itself). The eager runtime
+        # does not sub-increment; ``forward`` rejects a model that sets them (see the
+        # guard in ``forward``). They are stored (not rejected at construction) so
+        # ``neml2-compile`` can load the model and read them.
         self.max_substepping_level = int(max_substepping_level)
         self.incremental_variables = list(incremental_variables or [])
         unknown_missing = [u for u in self.incremental_variables if u not in self.input_spec]
@@ -302,11 +303,6 @@ class ImplicitUpdate(Model):
                 f"ImplicitUpdate: incremental_variables {unknown_missing} are not inputs of "
                 f"this model; valid inputs are {list(self.input_spec)}."
             )
-        self._substep_roles: dict[str, SubstepRoleInfo] = classify_substep_roles(
-            self.input_spec,
-            system.unknown_names,
-            self.incremental_variables,
-        )
 
     def _initial_unknowns(
         self,
@@ -421,215 +417,6 @@ class ImplicitUpdate(Model):
             out[unknown_name] = unknown_sens
         return out
 
-    # ------------------------------------------------------------------
-    # Adaptive substepping (eager) -- the Python mirror of the C++ driver
-    # (neml2/csrc/aoti/substep.cpp). Same classification (shared
-    # ``classify_substep_roles``), same bisection + interpolation/chaining/
-    # scaling coefficient math; reuses ``_try_solve`` (the C++ Newton probe),
-    # ``_output_sensitivities`` (forward-mode tangent), and ``_ImplicitUpdateFn``
-    # (reverse-mode autograd). See substepping_epic in memory.
-    # ------------------------------------------------------------------
-
-    def _span_state(
-        self,
-        orig: dict[str, TensorWrapper],
-        a: float,
-        b: float,
-        chained: dict[str, TensorWrapper],
-    ) -> dict[str, TensorWrapper]:
-        """Inputs for the sub-span ``[a, b]`` (typed): interpolate paired forces,
-        scale listed increments, take the chained value for old-state / the
-        unknown's own guess slot, hold everything else at its endpoint value."""
-        s: dict[str, TensorWrapper] = {}
-        for name, t in orig.items():
-            info = self._substep_roles.get(name)
-            if info is None:
-                s[name] = t
-                continue
-            role = info.role
-            if role in (SubstepRole.OLD_STATE, SubstepRole.UNKNOWN) and name in chained:
-                s[name] = chained[name]
-            elif role is SubstepRole.OLD_FORCE:
-                assert info.pair is not None  # OLD_FORCE always carries its current pair
-                old_e, new_e = orig[name], orig[info.pair]
-                s[name] = old_e + (new_e - old_e) * a
-            elif role is SubstepRole.CUR_FORCE:
-                assert info.pair is not None  # CUR_FORCE always carries its ~1 pair
-                old_e, new_e = orig[info.pair], orig[name]
-                s[name] = old_e + (new_e - old_e) * b
-            elif role is SubstepRole.INCREMENTAL:
-                s[name] = orig[name] * (b - a)
-            else:
-                s[name] = t
-        return s
-
-    def _chain_val(self, solved) -> dict[str, TensorWrapper]:
-        """Old-state (and the unknown's guess slot) for the next sub-span: the
-        just-solved unknown. ``solved`` is name-indexable (SparseVector or dict)."""
-        chained: dict[str, TensorWrapper] = {}
-        for name, info in self._substep_roles.items():
-            if info.role is SubstepRole.OLD_STATE:
-                chained[name] = solved[info.pair]
-            elif info.role is SubstepRole.UNKNOWN:
-                chained[name] = solved[name]
-        return chained
-
-    @staticmethod
-    def _lin_combine(d1, c1: float, d2, c2: float) -> dict[str, TensorWrapper]:
-        """``c1*d1 + c2*d2`` over the union of leaves (a missing leaf is zero)."""
-        out: dict[str, TensorWrapper] = {}
-        for leaf in set(d1) | set(d2):
-            t1, t2 = d1.get(leaf), d2.get(leaf)
-            if t1 is not None and t2 is not None:
-                out[leaf] = t1 * c1 + t2 * c2
-            elif t1 is not None:
-                out[leaf] = t1 * c1
-            else:
-                assert t2 is not None  # leaf is in d1 ∪ d2; t1 is None => in d2
-                out[leaf] = t2 * c2
-        return out
-
-    def _span_v(
-        self,
-        v: ChainRuleDict,
-        a: float,
-        b: float,
-        v_chained: ChainRuleDict,
-    ) -> ChainRuleDict:
-        """The chain-rule seed for sub-span ``[a, b]``: old-state carries the
-        accumulated ``J_{k-1}``; a paired force carries the interpolation-weighted
-        combination of its endpoints' incoming tangents; an increment is scaled;
-        a static force passes through. Mirrors ``_apply_substep_span`` in tangent
-        space so ``_output_sensitivities(v_span)`` yields ``A_k·J_{k-1} + B_k·frac``."""
-        v_span: ChainRuleDict = {}
-        for name, info in self._substep_roles.items():
-            role = info.role
-            if role is SubstepRole.OLD_STATE:
-                v_span[name] = dict(v_chained.get(name, {}))
-            elif role is SubstepRole.OLD_FORCE:
-                assert info.pair is not None
-                v_span[name] = self._lin_combine(v.get(name, {}), 1.0 - a, v.get(info.pair, {}), a)
-            elif role is SubstepRole.CUR_FORCE:
-                assert info.pair is not None
-                v_span[name] = self._lin_combine(v.get(info.pair, {}), 1.0 - b, v.get(name, {}), b)
-            elif role is SubstepRole.INCREMENTAL:
-                v_span[name] = {leaf: t * (b - a) for leaf, t in v.get(name, {}).items()}
-            elif role is SubstepRole.STATIC:
-                v_span[name] = dict(v.get(name, {}))
-            # UNKNOWN: the unknown's own guess slot is not a given -> not seeded.
-        return v_span
-
-    def _chain_v(self, sens: ChainRuleDict) -> ChainRuleDict:
-        """Next sub-span's old-state tangent seed = this span's solved-unknown
-        sensitivity (``J_{k-1}``)."""
-        v_chained: ChainRuleDict = {}
-        for name, info in self._substep_roles.items():
-            if info.role is SubstepRole.OLD_STATE:
-                assert info.pair is not None  # OLD_STATE always carries its base unknown
-                v_chained[name] = dict(sens.get(info.pair, {}))
-        return v_chained
-
-    def _chained0_val(self, orig: dict[str, TensorWrapper]) -> dict[str, TensorWrapper]:
-        """First sub-span's chained state = the increment's own ~1 values / guess."""
-        return {
-            n: orig[n]
-            for n, i in self._substep_roles.items()
-            if i.role in (SubstepRole.OLD_STATE, SubstepRole.UNKNOWN)
-        }
-
-    def _substep_solve_and_sens(
-        self,
-        state: dict[str, TensorWrapper],
-        v: ChainRuleDict,
-        input_sbn: dict[str, int],
-    ) -> tuple[SparseVector, ChainRuleDict]:
-        """Adaptive substepped solve + chained forward-mode tangent (the ``v``
-        path). Recursive bisection on non-convergence; at each solved leaf span
-        compute ``_output_sensitivities`` while the system is at that span's
-        converged state, and chain both the solved state and its sensitivity."""
-        orig = dict(state)
-
-        def solve_span(a, b, chained_val, v_chained, level):
-            s = self._span_state(orig, a, b, chained_val)
-            solved, ret = self._try_solve(s, sub_batch_ndim=input_sbn)
-            if solved is not None:
-                # System is at this span's converged state -> sens is valid now.
-                sens = self._output_sensitivities(self._span_v(v, a, b, v_chained))
-                return solved, sens
-            if level >= self.max_substepping_level:
-                raise ConvergenceError(
-                    f"Substepped solve failed at depth {level} (status {ret.name})"
-                )
-            mid = 0.5 * (a + b)
-            solved_a, sens_a = solve_span(a, mid, chained_val, v_chained, level + 1)
-            return solve_span(mid, b, self._chain_val(solved_a), self._chain_v(sens_a), level + 1)
-
-        v0: ChainRuleDict = {
-            n: dict(v.get(n, {}))
-            for n, i in self._substep_roles.items()
-            if i.role is SubstepRole.OLD_STATE
-        }
-        return solve_span(0.0, 1.0, self._chained0_val(orig), v0, 0)
-
-    def _substep_schedule(
-        self,
-        state: dict[str, TensorWrapper],
-        input_sbn: dict[str, int],
-    ) -> list[tuple[float, float]]:
-        """Discover the adaptive leaf-span schedule (no autograd), left to right.
-        Used by the reverse-mode path to replay a known-convergent schedule."""
-        orig = dict(state)
-        schedule: list[tuple[float, float]] = []
-
-        def rec(a, b, chained_val, level):
-            s = self._span_state(orig, a, b, chained_val)
-            solved, ret = self._try_solve(s, sub_batch_ndim=input_sbn)
-            if solved is not None:
-                schedule.append((a, b))
-                return solved
-            if level >= self.max_substepping_level:
-                raise ConvergenceError(
-                    f"Substepped solve failed at depth {level} (status {ret.name})"
-                )
-            mid = 0.5 * (a + b)
-            solved_a = rec(a, mid, chained_val, level + 1)
-            return rec(mid, b, self._chain_val(solved_a), level + 1)
-
-        rec(0.0, 1.0, self._chained0_val(orig), 0)
-        return schedule
-
-    def _substep_forward_autograd(
-        self,
-        typed_inputs: tuple[TensorWrapper, ...],
-        input_sbn: dict[str, int],
-    ) -> tuple[TensorWrapper, ...]:
-        """Reverse-mode (autograd) substepped forward: discover the schedule, then
-        replay it as a chain of ``_ImplicitUpdateFn`` solves with differentiable
-        force interpolation and state chaining, so ``.backward()`` composes each
-        sub-step's IFT (the correct chained tangent, not a single end IFT)."""
-        state = dict(zip(self.input_spec, typed_inputs, strict=True))
-        schedule = self._substep_schedule(state, input_sbn)
-        orig = dict(state)
-        params = tuple(self.parameters())
-
-        chained_val = self._chained0_val(orig)
-        last: dict[str, TensorWrapper] = {}
-        for a, b in schedule:
-            span_typed = self._span_state(orig, a, b, chained_val)
-            # Autograd.Function boundary: raw tensors carry the graph built by the
-            # (differentiable) interpolation + the previous span's outputs.
-            raw_span = tuple(span_typed[name].data for name in self.input_spec)  # data-ok
-            raw_out = _ImplicitUpdateFn.apply(self, len(raw_span), input_sbn, *raw_span, *params)
-            if not isinstance(raw_out, tuple):
-                raw_out = (raw_out,)
-            template = self.system.u().disassemble()
-            last = {
-                name: self.output_spec[name](raw, sub_batch_ndim=template[name].sub_batch_ndim)
-                for name, raw in zip(self.output_spec, raw_out, strict=True)
-            }
-            chained_val = self._chain_val(last)
-        return tuple(last[name] for name in self.output_spec)
-
     def forward(  # type: ignore[override]
         self,
         *inputs,
@@ -648,25 +435,28 @@ class ImplicitUpdate(Model):
             name: t.sub_batch_ndim for name, t in zip(self.input_spec, typed_inputs, strict=True)
         }
 
+        # Substepping is an AOTI-compile-only feature: the compiled routes read
+        # max_substepping_level / incremental_variables from the metadata and run a
+        # per-element masked substep driver in C++. The eager runtime does NOT
+        # sub-increment, so reject a model that requests it rather than silently
+        # falling back to a whole-batch solve that diverges from the compiled routes.
+        if self.max_substepping_level > 0 or self.incremental_variables:
+            raise NotImplementedError(
+                "ImplicitUpdate: adaptive substepping (max_substepping_level / "
+                "incremental_variables) is only supported by the compiled AOTI routes "
+                "(compile with `neml2-compile`). The eager runtime does not "
+                "sub-increment; remove these options to evaluate this model eagerly."
+            )
+
         if v is not None:
             # Chain-rule pushforward path -- used by the AOTI export wrappers
             # and the v-aware ComposedModel composition. Pure forward, no
             # autograd graph through the Newton solve. (D-039 does not apply
             # here; the IFT is expressed directly in `_output_sensitivities`.)
             state = dict(zip(self.input_spec, typed_inputs, strict=True))
-            if self.max_substepping_level > 0:
-                solved, sens = self._substep_solve_and_sens(state, v, input_sbn)
-                wrapped = tuple(solved[name] for name in self.output_spec)
-                return (*wrapped, sens)
             solved = self._solve(state, sub_batch_ndim=input_sbn)
             wrapped = tuple(solved[name] for name in self.output_spec)
             return (*wrapped, self._output_sensitivities(v))
-
-        if self.max_substepping_level > 0:
-            # Reverse-mode (autograd) substepped forward: chained per-span
-            # _ImplicitUpdateFn solves so `.backward()` composes each sub-step's
-            # IFT. Plain value calls (no grad required) fall through it harmlessly.
-            return self._substep_forward_autograd(typed_inputs, input_sbn)
 
         # Eager autograd path: Newton runs under no_grad inside the
         # autograd.Function's forward; the Function's backward implements IFT,

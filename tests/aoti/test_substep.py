@@ -208,10 +208,12 @@ def test_nonlinear_substepped_jacobian_matches_fd(tmp_path: Path):
 
 
 def test_eager_aoti_parity_easy_step(tmp_path: Path):
-    """Cross-route parity on an EASY (single-span) step: the eager and cpp-aoti
-    substepped forward + Jacobian agree. (On a hard step the adaptive *schedule*
-    can differ between routes -- both produce a valid coarse solution -- so exact
-    cross-route parity is only guaranteed where a single span converges.)"""
+    """Cross-route parity on an EASY (single-span) step: the cpp-aoti substepped
+    forward + Jacobian equal the eager SINGLE-SHOT result. Substepping is an
+    AOTI-only feature (the eager runtime rejects it), so the eager reference runs
+    at level 0; on an easy step the compiled substep driver takes a single span,
+    so the two agree. (On a hard step the compiled route substeps and there is no
+    eager counterpart to compare against.)"""
     import neml2
     from neml2.aoti import Model as AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
@@ -220,6 +222,7 @@ def test_eager_aoti_parity_easy_step(tmp_path: Path):
     export_model_for_aoti(_SUBSTEP_NL, "model", out, derivatives=["x:x~1", "x:t", "x:t~1"])
     aoti = AOTIModel(str(out))
     eager = neml2.load_model(str(_SUBSTEP_NL), "model").to(torch.float64)
+    eager.max_substepping_level = 0  # eager does not substep; single-shot reference
 
     ins = {
         "x": torch.full((1,), 0.2, dtype=torch.float64),
