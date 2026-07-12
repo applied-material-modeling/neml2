@@ -550,3 +550,89 @@ def test_newton_trace_verbose_logs(tmp_path: Path, monkeypatch):
     export_model_for_aoti(src, "model", out)
     x = AOTIModel(str(out)).forward(_scalar_implicit_inputs())["x"]
     assert torch.isfinite(x).all()
+
+
+def test_masked_substepping_mixed_batch(tmp_path: Path):
+    """A 1-D batch mixing an easy row (converges single-shot) with a hard row
+    (needs bisection) exercises per-element masking: the converged row is frozen
+    at level 0 while only the failing row bisects, so a few hard elements don't
+    drag the whole batch through the deep sub-steps. The easy row equals its
+    single-shot answer; the hard row recovers to a finite solution."""
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out = tmp_path / "nl"
+    export_model_for_aoti(_SUBSTEP_NL, "model", out)
+    aoti = AOTIModel(str(out))
+    ins = {
+        "x": torch.tensor([0.2, 0.2], dtype=torch.float64),
+        "x~1": torch.tensor([0.2, 0.2], dtype=torch.float64),
+        "t": torch.tensor([1.0, 8.0], dtype=torch.float64),  # easy row, hard row
+        "t~1": torch.tensor([0.0, 0.0], dtype=torch.float64),
+    }
+    x = aoti.forward(ins)["x"]
+    assert torch.isfinite(x).all() and (x > 0.2).all()
+    # The easy row is unaffected by the hard row's bisection (elements decouple).
+    easy = _eager_single_shot(0.2, 1.0, miters=50)
+    assert x[0].item() == pytest.approx(easy, rel=1e-8)
+    assert x[1] > x[0]  # the harder step integrates further
+
+
+def test_substep_incremental_role(tmp_path: Path):
+    """A given listed in ``incremental_variables`` takes the INCREMENTAL substep
+    role -- its value is scaled by the span fraction ``(b - a)`` rather than
+    interpolated -- exercising that branch of ``_apply_substep_span``. Compiling
+    records the role in metadata; the substepped forward applies it."""
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    # Add the incremental_variables option through a HIT ``:=`` override rather
+    # than editing the input text (same mechanism neml2-run / load_input expose).
+    out = tmp_path / "inc"
+    meta = export_model_for_aoti(
+        _SUBSTEP,
+        "model",
+        out,
+        additional_args=("Models/model/incremental_variables:='x_rate'",),
+    )
+    seg = _implicit_seg(meta)
+    roles = {g["name"]: g["role"] for g in seg["givens"]}
+    assert roles["x_rate"] == "incremental"
+
+    aoti = AOTIModel(str(out))
+    b = 3
+    x = aoti.forward(
+        {
+            "x": torch.zeros(b, dtype=torch.float64),
+            "x~1": torch.full((b,), 0.5, dtype=torch.float64),
+            "t": torch.full((b,), 2.0, dtype=torch.float64),
+            "t~1": torch.zeros(b, dtype=torch.float64),
+            "x_rate": torch.full((b,), 3.0, dtype=torch.float64),
+        }
+    )["x"]
+    assert torch.isfinite(x).all()
+
+
+def test_multiaxis_substep_maxout_raises_recoverable(tmp_path: Path):
+    """A multi-axis (non-masked) batch on a step too hard to rescue even at the
+    depth cap makes the whole-batch substep driver throw a **recoverable**
+    ConvergenceError at ``max_substepping_level`` (so a host can cut the outer
+    step and retry) -- the non-masked counterpart of the masked max-out path."""
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    # Cap the depth via a HIT ``:=`` override so even a very hard step maxes out.
+    out = tmp_path / "nl_low"
+    export_model_for_aoti(
+        _SUBSTEP_NL,
+        "model",
+        out,
+        additional_args=("Models/model/max_substepping_level:=1",),
+    )
+    aoti = AOTIModel(str(out))
+
+    def mk(v):
+        return torch.full((2, 2), v, dtype=torch.float64)
+
+    with pytest.raises(ConvergenceError):
+        aoti.forward({"x": mk(0.2), "x~1": mk(0.2), "t": mk(50.0), "t~1": mk(0.0)})
