@@ -445,8 +445,9 @@ graph (only with <code class="docutils literal notranslate"><span class="pre">-d
 </li>
 </ul>
 <p>Compiling for more devices/dtypes (e.g. <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code>) adds more
-<code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> leaves under the same shared <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>; the loader
-picks the leaf matching the runtime device and dtype.</p>
+<code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> leaves under the same shared <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>; at load you
+pick which leaf via <code class="docutils literal notranslate"><span class="pre">device</span></code> / <code class="docutils literal notranslate"><span class="pre">dtype</span></code> (default <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code>, matching
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>).</p>
 </section>
 <section id="the-input-file">
 <h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">#</a></h2>
@@ -537,8 +538,8 @@ loads it the usual way:</p>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># An AOTI artifact is pinned to a specific device/dtype at compile time, so which</span>
 </span><span data-line="4"><span class="c1"># `&lt;device&gt;/&lt;dtype&gt;/` leaf to load is a decision made *at load time*. We compiled</span>
-</span><span data-line="5"><span class="c1"># a float64 CPU artifact above, so select that leaf explicitly. Both arguments</span>
-</span><span data-line="6"><span class="c1"># default to the ambient torch device/dtype when omitted.</span>
+</span><span data-line="5"><span class="c1"># a float64 CPU artifact above; that is also the default (`device=&quot;cpu&quot;`,</span>
+</span><span data-line="6"><span class="c1"># `dtype=&quot;float64&quot;`, matching `neml2-compile`), shown explicitly here.</span>
 </span><span data-line="7"><span class="n">compiled</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;aoti/elasticity_aoti.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
 </span><span data-line="8"><span class="n">compiled</span>
 </span></pre></div>

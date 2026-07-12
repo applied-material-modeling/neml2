@@ -10,9 +10,10 @@ pointing at the artifact root folder produced by ``neml2-compile`` (the
 folder holding one shared ``metadata.json`` and per-``<device>/<dtype>/``
 ``.pt2`` binaries). The ``<device>/<dtype>/`` leaf is a load-time choice:
 ``load_model(..., device=, dtype=)`` (or ``neml2-run --device/--dtype``)
-selects it, defaulting to ``torch.get_default_device()`` +
-``torch.get_default_dtype()`` -- so ``neml2-run --device cuda`` picks
-``cuda/``. Eager and single-device: no dispatch happens here.
+selects it, defaulting to NEML2's canonical ``cpu`` / ``float64`` (matching
+``neml2-compile``) rather than torch's ambient defaults -- so a stock artifact
+loads without the caller having to match torch's float32 default. Eager and
+single-device: no dispatch happens here.
 
 Plays the native-Model role: ``input_spec`` and ``output_spec`` are
 populated from the metadata's ``var_type`` fields; ``__call__`` takes
@@ -28,5 +29,5 @@ is forwarded to the binding so the py-aoti route matches the others
 ## Other options
 
 `artifact_path` &mdash; `str` &middot; **required**
-: Absolute path to the artifact folder produced by ``neml2-compile`` -- one shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` binaries. The stub is device/dtype-agnostic (only ``artifact_path``); the ``<device>/<dtype>/`` leaf is chosen at load time via ``load_model(..., device=, dtype=)`` (defaulting to ``torch.get_default_device()`` / ``torch.get_default_dtype()``). Solver config is read from the shared metadata, so no ``[Solvers]`` block is needed.
+: Absolute path to the artifact folder produced by ``neml2-compile`` -- one shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` binaries. The stub is device/dtype-agnostic (only ``artifact_path``); the ``<device>/<dtype>/`` leaf is chosen at load time via ``load_model(..., device=, dtype=)``, defaulting to ``cpu`` / ``float64`` (matching ``neml2-compile``). Solver config is read from the shared metadata, so no ``[Solvers]`` block is needed.
 

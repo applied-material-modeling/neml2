@@ -425,8 +425,9 @@ device/dtype-agnostic (it only records the artifact-root <code class="docutils l
 so which <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> leaf to load is a <strong>load-time</strong> decision — an
 AOTI artifact is device/dtype-pinned, unlike a native model you can <code class="docutils literal notranslate"><span class="pre">.to()</span></code>
 afterward. Pass <code class="docutils literal notranslate"><span class="pre">device</span></code> / <code class="docutils literal notranslate"><span class="pre">dtype</span></code> (a <code class="docutils literal notranslate"><span class="pre">torch.device</span></code> / <code class="docutils literal notranslate"><span class="pre">torch.dtype</span></code> or their
-string spellings); both default to <code class="docutils literal notranslate"><span class="pre">torch.get_default_device()</span></code> /
-<code class="docutils literal notranslate"><span class="pre">torch.get_default_dtype()</span></code>:</p>
+string spellings); both default to NEML2’s canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code> — matching
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>, and deliberately <em>not</em> torch’s ambient defaults (whose float32
+would never match a stock float64 artifact):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span>
@@ -440,7 +441,7 @@ matching <code class="docutils literal notranslate"><span class="pre">neml2-comp
 <p>To work against the bare runtime directly — raw-tensor calls, JVP,
 Jacobian, promoted-parameter mutation — construct <code class="docutils literal notranslate"><span class="pre">neml2.aoti.Model</span></code>
 from the artifact root folder. The device and dtype are the same load-time
-choice and default to the ambient torch defaults:</p>
+choice, defaulting to <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.aoti</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">binding</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s2">&quot;aoti/elasticity&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>

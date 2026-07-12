@@ -476,9 +476,10 @@ pointing at the artifact root folder produced by <code class="docutils literal n
 folder holding one shared <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> and per-<code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code>
 <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> binaries). The <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> leaf is a load-time choice:
 <code class="docutils literal notranslate"><span class="pre">load_model(...,</span> <span class="pre">device=,</span> <span class="pre">dtype=)</span></code> (or <code class="docutils literal notranslate"><span class="pre">neml2-run</span> <span class="pre">--device/--dtype</span></code>)
-selects it, defaulting to <code class="docutils literal notranslate"><span class="pre">torch.get_default_device()</span></code> +
-<code class="docutils literal notranslate"><span class="pre">torch.get_default_dtype()</span></code> – so <code class="docutils literal notranslate"><span class="pre">neml2-run</span> <span class="pre">--device</span> <span class="pre">cuda</span></code> picks
-<code class="docutils literal notranslate"><span class="pre">cuda/</span></code>. Eager and single-device: no dispatch happens here.</p>
+selects it, defaulting to NEML2’s canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code> (matching
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>) rather than torch’s ambient defaults – so a stock artifact
+loads without the caller having to match torch’s float32 default. Eager and
+single-device: no dispatch happens here.</p>
 <p>Plays the native-Model role: <code class="docutils literal notranslate"><span class="pre">input_spec</span></code> and <code class="docutils literal notranslate"><span class="pre">output_spec</span></code> are
 populated from the metadata’s <code class="docutils literal notranslate"><span class="pre">var_type</span></code> fields; <code class="docutils literal notranslate"><span class="pre">__call__</span></code> takes
 <code class="docutils literal notranslate"><span class="pre">TensorWrapper</span></code> positional args in <code class="docutils literal notranslate"><span class="pre">input_spec</span></code> order, unwraps them

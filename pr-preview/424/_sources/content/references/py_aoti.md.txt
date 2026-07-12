@@ -21,8 +21,9 @@ device/dtype-agnostic (it only records the artifact-root `artifact_path`),
 so which `<device>/<dtype>/` leaf to load is a **load-time** decision — an
 AOTI artifact is device/dtype-pinned, unlike a native model you can `.to()`
 afterward. Pass `device` / `dtype` (a `torch.device` / `torch.dtype` or their
-string spellings); both default to `torch.get_default_device()` /
-`torch.get_default_dtype()`:
+string spellings); both default to NEML2's canonical `cpu` / `float64` — matching
+`neml2-compile`, and deliberately *not* torch's ambient defaults (whose float32
+would never match a stock float64 artifact):
 
 ```python
 import neml2
@@ -39,7 +40,7 @@ matching `neml2-compile --device/--dtype`).
 To work against the bare runtime directly — raw-tensor calls, JVP,
 Jacobian, promoted-parameter mutation — construct `neml2.aoti.Model`
 from the artifact root folder. The device and dtype are the same load-time
-choice and default to the ambient torch defaults:
+choice, defaulting to `cpu` / `float64`:
 
 ```python
 from neml2.aoti import Model

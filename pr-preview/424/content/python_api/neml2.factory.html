@@ -448,14 +448,16 @@ the file’s own assignments. Mirrors the C++ side’s
 <li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em> | </em><em>None</em>) – Load-time device/dtype for any <strong>compiled</strong> (<code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code>) block in
 the file – they select the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> artifact leaf. Accept
 a <code class="docutils literal notranslate"><span class="pre">torch.device</span></code> / <code class="docutils literal notranslate"><span class="pre">torch.dtype</span></code> or their string spellings;
-<code class="docutils literal notranslate"><span class="pre">None</span></code> (default) falls back to the ambient torch default. This is a
+<code class="docutils literal notranslate"><span class="pre">None</span></code> (default) selects NEML2’s canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code>
+(matching <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>), NOT torch’s ambient defaults. This is a
 load-time decision because an AOTI artifact is device/dtype-pinned; a
 non-compiled model ignores these and is placed with <code class="docutils literal notranslate"><span class="pre">.to(...)</span></code> after
 loading. The compiled stub itself stays device/dtype-agnostic.</p></li>
 <li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em> | </em><em>None</em>) – Load-time device/dtype for any <strong>compiled</strong> (<code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code>) block in
 the file – they select the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> artifact leaf. Accept
 a <code class="docutils literal notranslate"><span class="pre">torch.device</span></code> / <code class="docutils literal notranslate"><span class="pre">torch.dtype</span></code> or their string spellings;
-<code class="docutils literal notranslate"><span class="pre">None</span></code> (default) falls back to the ambient torch default. This is a
+<code class="docutils literal notranslate"><span class="pre">None</span></code> (default) selects NEML2’s canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code>
+(matching <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>), NOT torch’s ambient defaults. This is a
 load-time decision because an AOTI artifact is device/dtype-pinned; a
 non-compiled model ignores these and is placed with <code class="docutils literal notranslate"><span class="pre">.to(...)</span></code> after
 loading. The compiled stub itself stays device/dtype-agnostic.</p></li>
@@ -479,13 +481,15 @@ isn’t registered in <code class="docutils literal notranslate"><span class="pr
 <li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><em>Path</em></a>) – Path to the HIT <code class="docutils literal notranslate"><span class="pre">.i</span></code> file.</p></li>
 <li><p><strong>model_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the model in the <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> section.</p></li>
 <li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em> | </em><em>None</em>) – Load-time device/dtype for a <strong>compiled</strong> model (an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> stub):
-they select the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> artifact leaf and default to the
-ambient torch default. Ignored for a non-compiled model (place it with
-<code class="docutils literal notranslate"><span class="pre">.to(...)</span></code> afterward). See <a class="reference internal" href="#neml2.factory.load_input" title="neml2.factory.load_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input()</span></code></a>.</p></li>
+they select the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> artifact leaf and default to NEML2’s
+canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code> (matching <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>). Ignored for a
+non-compiled model (place it with <code class="docutils literal notranslate"><span class="pre">.to(...)</span></code> afterward). See
+<a class="reference internal" href="#neml2.factory.load_input" title="neml2.factory.load_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input()</span></code></a>.</p></li>
 <li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em> | </em><em>None</em>) – Load-time device/dtype for a <strong>compiled</strong> model (an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> stub):
-they select the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> artifact leaf and default to the
-ambient torch default. Ignored for a non-compiled model (place it with
-<code class="docutils literal notranslate"><span class="pre">.to(...)</span></code> afterward). See <a class="reference internal" href="#neml2.factory.load_input" title="neml2.factory.load_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input()</span></code></a>.</p></li>
+they select the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> artifact leaf and default to NEML2’s
+canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code> (matching <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>). Ignored for a
+non-compiled model (place it with <code class="docutils literal notranslate"><span class="pre">.to(...)</span></code> afterward). See
+<a class="reference internal" href="#neml2.factory.load_input" title="neml2.factory.load_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
