@@ -849,3 +849,44 @@ def test_aoti_saved_output_param_derivative_matches_fd_and_eager(
     assert abs(g - contracted) < 1e-8 * max(abs(contracted), 1.0), (
         f"{scenario} param_vjp != <w, d(out)/dparam> (vjp={g}, contracted={contracted})"
     )
+
+
+def test_load_model_dtype_threads_to_leaf(tmp_path: Path):
+    """``load_model(stub, name, device=, dtype=)`` threads the load-time
+    device/dtype to the ``<device>/<dtype>/`` artifact-leaf selection.
+
+    Device/dtype on the load API is the compiled-model load-time decision (an
+    AOTI artifact is device/dtype-pinned, unlike a native model you can
+    ``.to()`` afterward). A dtype with no compiled leaf raises a clear error --
+    there is deliberately NO silent fallback to the sole available dtype.
+    """
+    import neml2
+    from neml2.cli.aoti_compile import emit_aoti_stub
+    from neml2.cli.aoti_export import export_model_for_aoti
+    from neml2.types import SR2
+
+    src = tmp_path / "model.i"
+    src.write_text(
+        "[Models]\n"
+        "  [model]\n"
+        "    type = LinearIsotropicElasticity\n"
+        "    coefficients = '200e3 0.3'\n"
+        "    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'\n"
+        "  []\n"
+        "[]\n"
+    )
+    artifact_dir = tmp_path / "aoti" / "model"
+    export_model_for_aoti(src, "model", artifact_dir, device="cpu")
+    stub = tmp_path / "aoti" / "model_aoti.i"
+    emit_aoti_stub(src, "model", artifact_dir, stub)
+
+    # Explicit float64 leaf: loads and drives; the dtype is honored end-to-end.
+    m = neml2.load_model(str(stub), "model", device="cpu", dtype="float64")
+    assert m._inner.dtype == torch.float64
+    (stress,) = m(SR2(torch.zeros(2, 6)))
+    assert stress.data.dtype == torch.float64
+
+    # A dtype with no compiled leaf errors clearly -- no silent fallback to the
+    # sole float64 leaf (the point of deciding device/dtype explicitly at load).
+    with pytest.raises(RuntimeError, match="no compiled artifact|Available"):
+        neml2.load_model(str(stub), "model", device="cpu", dtype="float32")

@@ -73,10 +73,11 @@ class AOTIModel(nn.Module):
     Constructed from a HIT ``[Models]`` block with an ``artifact_path`` option
     pointing at the artifact root folder produced by ``neml2-compile`` (the
     folder holding one shared ``metadata.json`` and per-``<device>/<dtype>/``
-    ``.pt2`` binaries). The leaf matching ``torch.get_default_device()`` +
-    ``torch.get_default_dtype()`` is loaded -- so ``neml2-run --device cuda``
-    (which sets the default device) picks ``cuda/``.
-    Eager and single-device: no dispatch happens here.
+    ``.pt2`` binaries). The ``<device>/<dtype>/`` leaf is a load-time choice:
+    ``load_model(..., device=, dtype=)`` (or ``neml2-run --device/--dtype``)
+    selects it, defaulting to ``torch.get_default_device()`` +
+    ``torch.get_default_dtype()`` -- so ``neml2-run --device cuda`` picks
+    ``cuda/``. Eager and single-device: no dispatch happens here.
 
     Plays the native-Model role: ``input_spec`` and ``output_spec`` are
     populated from the metadata's ``var_type`` fields; ``__call__`` takes
@@ -102,9 +103,12 @@ class AOTIModel(nn.Module):
             str,
             "Absolute path to the artifact folder produced by ``neml2-compile`` -- "
             "one shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` "
-            "binaries. The leaf matching ``torch.get_default_device()`` + "
-            "``torch.get_default_dtype()`` is loaded; solver config is read from the "
-            "shared metadata at load time, so no ``[Solvers]`` block is needed.",
+            "binaries. The stub is device/dtype-agnostic (only ``artifact_path``); "
+            "the ``<device>/<dtype>/`` leaf is chosen at load time via "
+            "``load_model(..., device=, dtype=)`` (defaulting to "
+            "``torch.get_default_device()`` / ``torch.get_default_dtype()``). "
+            "Solver config is read from the shared metadata, so no ``[Solvers]`` "
+            "block is needed.",
         ),
     )
 
@@ -117,12 +121,21 @@ class AOTIModel(nn.Module):
         if not artifact_path.is_absolute():
             artifact_path = factory._path.parent / artifact_path
         artifact_path = artifact_path.resolve()
-        # Schema v10: the folder is self-describing (shared metadata.json + solver
-        # config), so no [Solvers] handling is needed here -- the C++ ctor reads the
-        # config from the metadata. The device + dtype select the <device>/<dtype>/
-        # binary leaf; a missing leaf raises a clear error (listing what IS present)
-        # from the C++ ctor.
-        return cls(artifact_path)
+        # The folder is self-describing (shared metadata.json + solver config), so
+        # no [Solvers] handling is needed here -- the C++ ctor reads the config
+        # from the metadata. device + dtype select the <device>/<dtype>/ binary
+        # leaf; a missing leaf raises a clear error (listing what IS present) from
+        # the C++ ctor. They are a LOAD-TIME decision (an AOTI artifact is
+        # device/dtype-pinned, unlike a native model you can .to() afterward),
+        # threaded from load_model / load_input's device=/dtype= args; None => the
+        # ambient torch default. The stub stays device/dtype-agnostic (only
+        # artifact_path) -- which is why it lives in the common area while the
+        # binaries live in <device>/<dtype>/ subfolders.
+        return cls(
+            artifact_path,
+            device=getattr(factory, "_device", None),
+            dtype=getattr(factory, "_dtype", None),
+        )
 
     def __init__(
         self,

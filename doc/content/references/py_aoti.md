@@ -16,24 +16,35 @@ schema, parameter promotion, device/dtype pinning — is documented once in
 ## Two entry points
 
 To drive the artifact through the normal HIT machinery (e.g. a
-`TransientDriver`), load the stub with `neml2.load_model` — the `AOTIModel`
-shim resolves the per-device subfolder for the current default device:
+`TransientDriver`), load the stub with `neml2.load_model`. The stub is
+device/dtype-agnostic (it only records the artifact-root `artifact_path`),
+so which `<device>/<dtype>/` leaf to load is a **load-time** decision — an
+AOTI artifact is device/dtype-pinned, unlike a native model you can `.to()`
+afterward. Pass `device` / `dtype` (a `torch.device` / `torch.dtype` or their
+string spellings); both default to `torch.get_default_device()` /
+`torch.get_default_dtype()`:
 
 ```python
 import neml2
 
-model = neml2.load_model("elasticity_aoti.i", "elasticity")
+model = neml2.load_model(
+    "elasticity_aoti.i", "elasticity", device="cpu", dtype="float64"
+)
 ```
+
+There is no silent fallback: if the requested `<device>/<dtype>/` leaf was not
+compiled, the load raises and lists what *is* present (recompile with the
+matching `neml2-compile --device/--dtype`).
 
 To work against the bare runtime directly — raw-tensor calls, JVP,
 Jacobian, promoted-parameter mutation — construct `neml2.aoti.Model`
-from the artifact root folder. The device and dtype default to
-`torch.get_default_device()` and `torch.get_default_dtype()`:
+from the artifact root folder. The device and dtype are the same load-time
+choice and default to the ambient torch defaults:
 
 ```python
 from neml2.aoti import Model
 
-binding = Model("aoti/elasticity")
+binding = Model("aoti/elasticity", device="cpu", dtype="float64")
 ```
 
 ## Call surface
