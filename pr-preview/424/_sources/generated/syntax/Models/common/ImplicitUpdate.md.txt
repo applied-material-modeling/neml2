@@ -1,0 +1,24 @@
+(models-ImplicitUpdate)=
+# ImplicitUpdate
+
+**Source:** `models/common/ImplicitUpdate.py`
+
+Update an implicit model by solving the underlying nonlinear system of equations.
+
+## Other options
+
+`equation_system` &mdash; `str` &middot; **required**
+: The nonlinear system of equations to solve
+
+`solver` &mdash; `str` &middot; **required**
+: Solver used to solve the nonlinear system of equations
+
+`predictor` &mdash; `str`
+: An optional predictor to provide an initial guess for the nonlinear solve.
+
+`max_substepping_level` &mdash; `int` &middot; default `0`
+: Adaptive sub-incrementation depth cap, applied by the COMPILED AOTI routes only (``neml2-compile``). 0 (default) disables substepping. Level L lets the compiled solve recursively bisect a failing increment down to depth L (up to 2^L sub-steps), per-element, interpolating paired forces and chaining state; a sub-step still failing at depth L raises a recoverable ConvergenceError so an outer time-stepper can cut the step. The eager runtime does NOT sub-increment: evaluating an ImplicitUpdate eagerly with this set > 0 raises (substepping is an AOTI-only feature).
+
+`incremental_variables` &mdash; `list`
+: Names of driving-force inputs the COMPILED substep driver treats as pure increments (scaled by the sub-step fraction rather than interpolated). Forces that already carry a ~1 counterpart are interpolated automatically and need not be listed; a lone increment with no ~1 counterpart is held constant unless listed here. Like ``max_substepping_level`` this is an AOTI-compile directive; setting it rejects eager evaluation.
+

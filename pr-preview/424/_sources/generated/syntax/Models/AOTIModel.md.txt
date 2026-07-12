@@ -1,0 +1,32 @@
+(models-AOTIModel)=
+# AOTIModel
+
+**Source:** `aoti/_shim.py`
+
+HIT-loadable wrapper around `neml2.aoti.Model`.
+
+Constructed from a HIT ``[Models]`` block with an ``artifact_path`` option
+pointing at the artifact root folder produced by ``neml2-compile`` (the
+folder holding one shared ``metadata.json`` and per-``<device>/<dtype>/``
+``.pt2`` binaries). The ``<device>/<dtype>/`` leaf is a load-time choice:
+``load_model(..., device=, dtype=)`` (or ``neml2-run --device/--dtype``)
+selects it, defaulting to ``torch.get_default_device()`` +
+``torch.get_default_dtype()`` -- so ``neml2-run --device cuda`` picks
+``cuda/``. Eager and single-device: no dispatch happens here.
+
+Plays the native-Model role: ``input_spec`` and ``output_spec`` are
+populated from the metadata's ``var_type`` fields; ``__call__`` takes
+``TensorWrapper`` positional args in ``input_spec`` order, unwraps them
+to raw tensors, runs the AOTI ``forward`` graph, and wraps each output
+back in its declared type. Promoted parameters (if any) are *not* part of
+``input_spec``; they are reachable through `named_parameters` (a
+mutable dict) and `set_parameter`. The full sensitivity surface --
+`jvp`, `jacobian`, `param_jacobian`, `param_vjp` --
+is forwarded to the binding so the py-aoti route matches the others
+(CLAUDE.md "six evaluation routes" parity).
+
+## Other options
+
+`artifact_path` &mdash; `str` &middot; **required**
+: Absolute path to the artifact folder produced by ``neml2-compile`` -- one shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` binaries. The stub is device/dtype-agnostic (only ``artifact_path``); the ``<device>/<dtype>/`` leaf is chosen at load time via ``load_model(..., device=, dtype=)`` (defaulting to ``torch.get_default_device()`` / ``torch.get_default_dtype()``). Solver config is read from the shared metadata, so no ``[Solvers]`` block is needed.
+
