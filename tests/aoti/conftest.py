@@ -33,7 +33,9 @@ fires before the AOTI scenarios are collected -- the same mechanism
 
 import importlib
 import os
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -50,7 +52,7 @@ importlib.import_module("_fixtures")
 
 
 @pytest.fixture(autouse=True)
-def _isolate_aoti_extract_temp(tmp_path, monkeypatch):
+def _isolate_aoti_extract_temp(monkeypatch):
     """Give each AOTI test its own extraction temp.
 
     torch's AOTIModelPackageLoader extracts a ``.pt2`` to a path under the
@@ -67,15 +69,24 @@ def _isolate_aoti_extract_temp(tmp_path, monkeypatch):
       file -- surfacing as torch's own nlohmann ``parse error ... empty input`` on
       the ``.pt2``'s metadata.
 
-    Point the system temp at this test's unique ``tmp_path`` so each test (and
-    each worker) extracts in isolation; torch reads the temp dir fresh per
-    extraction, so the override takes effect. Skipped only for a plain sequential
-    run off Windows, where re-extracting over a loaded ``.so`` is permitted and
-    the shared cache is a harmless speedup.
+    Point the system temp at a per-test scratch dir so each test (and each worker)
+    extracts in isolation; torch reads the temp dir fresh per extraction, so the
+    override takes effect. Use a SHORT ``mkdtemp`` under the real system temp, NOT
+    the deeply-nested pytest ``tmp_path``: Python's multiprocessing puts its
+    AF_UNIX socket under ``$TMPDIR`` too, and a long ``tmp_path`` blows the
+    ~108-char socket limit (``OSError: AF_UNIX path too long``) in tests that use a
+    process pool (e.g. the multidevice parallel-compile grid). Skipped for a plain
+    sequential run off Windows, where re-extracting over a loaded ``.so`` is
+    permitted and the shared cache is a harmless speedup.
     """
-    if sys.platform == "win32" or os.environ.get("PYTEST_XDIST_WORKER"):
-        extract = tmp_path / "_aoti_extract"
-        extract.mkdir()
-        # torch/tempfile honors TMPDIR on POSIX and TMP/TEMP on Windows.
-        for var in ("TMPDIR", "TMP", "TEMP"):
-            monkeypatch.setenv(var, str(extract))
+    if sys.platform != "win32" and not os.environ.get("PYTEST_XDIST_WORKER"):
+        yield
+        return
+    extract = tempfile.mkdtemp(prefix="nml_aoti_")  # short, unique per test/worker
+    # torch/tempfile honors TMPDIR on POSIX and TMP/TEMP on Windows.
+    for var in ("TMPDIR", "TMP", "TEMP"):
+        monkeypatch.setenv(var, extract)
+    try:
+        yield
+    finally:
+        shutil.rmtree(extract, ignore_errors=True)
