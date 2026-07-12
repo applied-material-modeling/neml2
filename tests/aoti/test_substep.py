@@ -361,3 +361,192 @@ def test_substep_trace_env_var(tmp_path: Path, capfd, monkeypatch):
     err = capfd.readouterr().err
     assert "[aoti substep] value:" in err
     assert "1 substepped" in err  # exactly the one hard row
+
+
+def test_multiaxis_batch_substepping_forward(tmp_path: Path):
+    """A multi-axis (non-1-D) dynamic batch cannot use per-element masking (that
+    requires a single leading batch axis), so it takes the whole-batch
+    ``_run_implicit_segment_substepped`` driver. On a hard step it bisects and
+    recovers the same finite solution the 1-D masked path reaches."""
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out = tmp_path / "nl"
+    export_model_for_aoti(_SUBSTEP_NL, "model", out)
+    aoti = AOTIModel(str(out))
+
+    def mk(v):
+        return torch.full((2, 2), v, dtype=torch.float64)
+
+    ins2d = {"x": mk(0.2), "x~1": mk(0.2), "t": mk(8.0), "t~1": mk(0.0)}
+    out2d = aoti.forward(ins2d)["x"]
+    assert out2d.shape == (2, 2)
+    assert torch.isfinite(out2d).all() and (out2d > 0.2).all()
+
+    # Same hard step through the 1-D (masked) path -> identical recovered value.
+    ins1d = {k: v.reshape(-1)[:1] for k, v in ins2d.items()}
+    out1d = aoti.forward(ins1d)["x"]
+    assert torch.allclose(out2d, out1d.expand_as(out2d), rtol=1e-8, atol=1e-8)
+
+
+def test_multiaxis_batch_substepped_jacobian_not_implemented(tmp_path: Path):
+    """The whole-batch substepped Jacobian enters the non-masked driver and runs
+    the substepped forward, but the underlying per-block (sub-batch) IFT Jacobian
+    is not implemented -- so a multi-axis batch Jacobian raises a clear error
+    rather than returning a wrong tangent. Pins that contract (and the driver's
+    forward-then-compose entry path)."""
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out = tmp_path / "nl"
+    export_model_for_aoti(_SUBSTEP_NL, "model", out, derivatives=["x:t"])
+    aoti = AOTIModel(str(out))
+
+    def mk(v):
+        return torch.full((2, 2), v, dtype=torch.float64)
+
+    ins2d = {"x": mk(0.2), "x~1": mk(0.2), "t": mk(8.0), "t~1": mk(0.0)}
+    with pytest.raises(RuntimeError, match="not yet implemented|BLOCK"):
+        aoti.jacobian(ins2d)
+
+
+# ---------------------------------------------------------------------------
+# Implicit-solve setup parity: warm start (no predictor) + line search.
+# ---------------------------------------------------------------------------
+
+
+def _scalar_implicit_i(*, solver: str = "Newton", predictor: bool = False, ls_type=None) -> str:
+    """A minimal nonlinear scalar implicit (Perzyna cubic rate + backward Euler)
+    with a configurable solver / predictor, for exercising the compiled implicit
+    solve's setup paths (unknown warm start, Newton line search)."""
+    predblk = (
+        "  [predictor]\n    type = ConstantExtrapolationPredictor\n"
+        "    unknowns_Scalar = 'x'\n  []\n"
+        if predictor
+        else ""
+    )
+    predref = "    predictor = 'predictor'\n" if predictor else ""
+    ls = f"    linesearch_type = {ls_type}\n    max_linesearch_iterations = 4\n" if ls_type else ""
+    return f"""
+[Models]
+  [rate]
+    type = PerzynaPlasticFlowRate
+    yield_function = 'x'
+    flow_rate = 'x_rate'
+    reference_stress = 1.0
+    exponent = 3
+  []
+  [integrate]
+    type = ScalarBackwardEulerTimeIntegration
+    variable = 'x'
+    time = 't'
+  []
+  [residual_model]
+    type = ComposedModel
+    models = 'rate integrate'
+  []
+[]
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'residual_model'
+    unknowns = 'x'
+    residuals = 'x_residual'
+  []
+[]
+[Solvers]
+  [newton]
+    type = {solver}
+    abs_tol = 1e-10
+    rel_tol = 1e-08
+    max_its = 25
+{ls}    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+[Models]
+{predblk}  [model]
+    type = ImplicitUpdate
+    equation_system = 'eq_sys'
+    solver = 'newton'
+{predref}  []
+[]
+"""
+
+
+def _scalar_implicit_inputs():
+    return {
+        "x": torch.full((2,), 0.2, dtype=torch.float64),
+        "x~1": torch.full((2,), 0.2, dtype=torch.float64),
+        "t": torch.full((2,), 1.0, dtype=torch.float64),
+        "t~1": torch.zeros(2, dtype=torch.float64),
+    }
+
+
+def _eager_forward(src: Path, ins: dict) -> torch.Tensor:
+    import neml2
+
+    eager = neml2.load_model(str(src), "model").to(torch.float64)
+    args = tuple(eager.input_spec[n](ins[n]) for n in eager.input_spec)
+    return eager(*args)[0].data
+
+
+def test_no_predictor_warmstart_matches_eager(tmp_path: Path):
+    """Without a predictor the compiled implicit solve must warm-start the unknown
+    from its input value -- as eager's ``ImplicitUpdate._initial_unknowns`` does --
+    not from zeros. Seeding zeros diverged the Newton on this stiff step (Newton
+    overshoots the cubic rate to a non-finite residual) where eager converges: a
+    py-eager <-> cpp-aoti parity violation. Regression for that fix."""
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    src = tmp_path / "np.i"
+    src.write_text(_scalar_implicit_i(solver="Newton", predictor=False))
+    out = tmp_path / "np"
+    export_model_for_aoti(src, "model", out)
+    ins = _scalar_implicit_inputs()
+    a = AOTIModel(str(out)).forward(ins)["x"]
+    assert torch.isfinite(a).all()
+    e = _eager_forward(src, ins)
+    assert torch.allclose(a, e, rtol=1e-9, atol=1e-9), f"aoti {a.tolist()} vs eager {e.tolist()}"
+
+
+@pytest.mark.parametrize("ls_type", ["BACKTRACKING", "STRONG_WOLFE"])
+def test_newton_linesearch_solver_path(tmp_path: Path, ls_type: str):
+    """A NewtonWithLineSearch solver drives the compiled Newton's line-search
+    branch (ls_max_iters > 1) -- the trial loop the default single-step Newton
+    skips. The solver config rides in the artifact metadata; the result matches
+    the eager route (both run the same shared C++ Newton)."""
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    src = tmp_path / f"ls_{ls_type}.i"
+    src.write_text(_scalar_implicit_i(solver="NewtonWithLineSearch", ls_type=ls_type))
+    out = tmp_path / f"ls_{ls_type}"
+    export_model_for_aoti(src, "model", out)
+    ins = _scalar_implicit_inputs()
+    a = AOTIModel(str(out)).forward(ins)["x"]
+    assert torch.isfinite(a).all() and (a > 0.2).all()
+    e = _eager_forward(src, ins)
+    assert torch.allclose(a, e, rtol=1e-9, atol=1e-9)
+
+
+def test_newton_trace_verbose_logs(tmp_path: Path, monkeypatch):
+    """``NEML2_AOTI_TRACE_NEWTON`` drives the compiled Newton's verbose
+    convergence logging -- the per-iteration and per-line-search-iteration stderr
+    trace MOOSE users rely on to inspect a solve. Level 2 with a line-search
+    solver exercises both log blocks."""
+    monkeypatch.setenv("NEML2_AOTI_TRACE_NEWTON", "2")
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    src = tmp_path / "trace.i"
+    src.write_text(
+        _scalar_implicit_i(solver="NewtonWithLineSearch", ls_type="BACKTRACKING", predictor=True)
+    )
+    out = tmp_path / "trace"
+    export_model_for_aoti(src, "model", out)
+    x = AOTIModel(str(out)).forward(_scalar_implicit_inputs())["x"]
+    assert torch.isfinite(x).all()

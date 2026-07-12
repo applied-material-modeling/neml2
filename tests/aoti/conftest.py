@@ -32,6 +32,7 @@ fires before the AOTI scenarios are collected -- the same mechanism
 """
 
 import importlib
+import os
 import sys
 from pathlib import Path
 
@@ -50,20 +51,31 @@ importlib.import_module("_fixtures")
 
 @pytest.fixture(autouse=True)
 def _isolate_aoti_extract_temp(tmp_path, monkeypatch):
-    """Give each AOTI test its own extraction temp (Windows only).
+    """Give each AOTI test its own extraction temp.
 
     torch's AOTIModelPackageLoader extracts a ``.pt2`` to a path under the
-    *system* temp keyed by the artifact's content hash, and re-extracts on every
-    load. Two tests that load the same compiled model then collide on Windows:
-    the first test's loaded ``.pyd`` stays locked for the process lifetime, so
-    the second's extraction fails with a sharing violation ("error code: 32 ...
-    file open failed"). Point the system temp at this test's unique ``tmp_path``
-    so each test extracts in isolation. torch reads the temp dir fresh per
-    extraction, so the override takes effect. No-op off Windows, where re-
-    extracting over a loaded ``.so`` is permitted.
+    *system* temp keyed by the artifact's **content hash**, and re-extracts on
+    every load. Two tests whose compiled graphs are byte-identical -- e.g. models
+    differing only in runtime solver config, whose residual/step ``.pt2`` are the
+    same -- therefore share one extraction dir, which collides two ways:
+
+    * **Windows (any run):** the first test's loaded ``.pyd`` stays locked for the
+      process lifetime, so the second's extraction fails with a sharing violation
+      ("error code: 32 ... file open failed").
+    * **Parallel run (``pytest -n auto``, any OS):** two xdist workers extract
+      into the same content-hash dir concurrently and one reads a half-written
+      file -- surfacing as torch's own nlohmann ``parse error ... empty input`` on
+      the ``.pt2``'s metadata.
+
+    Point the system temp at this test's unique ``tmp_path`` so each test (and
+    each worker) extracts in isolation; torch reads the temp dir fresh per
+    extraction, so the override takes effect. Skipped only for a plain sequential
+    run off Windows, where re-extracting over a loaded ``.so`` is permitted and
+    the shared cache is a harmless speedup.
     """
-    if sys.platform == "win32":
+    if sys.platform == "win32" or os.environ.get("PYTEST_XDIST_WORKER"):
         extract = tmp_path / "_aoti_extract"
         extract.mkdir()
-        monkeypatch.setenv("TMP", str(extract))
-        monkeypatch.setenv("TEMP", str(extract))
+        # torch/tempfile honors TMPDIR on POSIX and TMP/TEMP on Windows.
+        for var in ("TMPDIR", "TMP", "TEMP"):
+            monkeypatch.setenv(var, str(extract))

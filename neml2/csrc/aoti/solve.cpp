@@ -222,9 +222,17 @@ Model::Impl::_run_implicit_segment(const Segment & seg,
     return shape;
   };
 
-  // Seed per-variable zero unknowns into state so the pack picks them up.
+  // Seed each unknown's initial guess from its incoming state value -- the
+  // caller's warm start for a standalone segment, the upstream value in a
+  // composed graph -- matching the eager route, whose
+  // `ImplicitUpdate._initial_unknowns` returns `state[name]` when there is no
+  // predictor. Only fall back to zeros when the unknown has no incoming value;
+  // seeding zeros unconditionally (the previous behavior) diverged the Newton on
+  // stiff no-predictor models that eager solves fine (a parity violation). A
+  // predictor, if present, overrides below.
   for (const auto & v : seg.unknowns)
-    state[v.name] = at::zeros(_full_shape(v), opts);
+    if (state.find(v.name) == state.end())
+      state[v.name] = at::zeros(_full_shape(v), opts);
 
   if (seg.predictor_loader)
   {
@@ -325,8 +333,12 @@ Model::Impl::_run_implicit_segment_masked(const Segment & seg,
     return shape;
   };
 
+  // Warm-start each unknown from its incoming state value (parity with eager's
+  // `ImplicitUpdate._initial_unknowns`); zeros only when none is present. See the
+  // value-path seed above for the rationale.
   for (const auto & v : seg.unknowns)
-    state[v.name] = at::zeros(_full_shape(v), opts);
+    if (state.find(v.name) == state.end())
+      state[v.name] = at::zeros(_full_shape(v), opts);
 
   if (seg.predictor_loader)
   {
