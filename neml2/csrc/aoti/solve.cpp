@@ -54,8 +54,8 @@ Model::Impl::_run_forward_segment(const Segment & seg,
     inputs.push_back(it->second.contiguous());
   }
   // Promoted-parameter tail: the forward value graph takes each parameter as a
-  // per-batch input (schema v7), so broadcast the stored parameter (scalar or
-  // already batched) to the call batch before the call.
+  // per-batch input, so broadcast the stored parameter (scalar or already
+  // batched) to the call batch before the call.
   for (const auto & pname : seg.param_inputs)
     inputs.push_back(broadcast_param_to_batch(
         _resolve_param(pname), batch, static_cast<int64_t>(_param_base_shapes.at(pname).size())));
@@ -277,8 +277,8 @@ Model::Impl::_run_implicit_segment(const Segment & seg,
                           to_layouts(seg.residual_groups),
                           g_groups,
                           _gather_params(seg.param_inputs));
-  // Solver config comes from the loader (set from the stub's [Solvers] block),
-  // not baked metadata. A failed solve (divergence or max-iterations) throws
+  // Solver config is read from the shared metadata.json at construction
+  // (overridable via set_solver_config). A failed solve (divergence or max-iterations) throws
   // ConvergenceError out of solve(), so reaching `.u` means it converged -- the
   // recoverable error propagates up through Model::forward/jacobian to the
   // caller, who can cut the time step and retry.

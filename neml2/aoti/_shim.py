@@ -71,10 +71,11 @@ class AOTIModel(nn.Module):
     """HIT-loadable wrapper around :class:`neml2.aoti.Model`.
 
     Constructed from a HIT ``[Models]`` block with an ``artifact_path`` option
-    pointing at the per-device artifact folder produced by ``neml2-compile``
-    (the folder holding one ``<device>/`` subfolder per compiled device). The
-    subfolder for the current ``torch.get_default_device()`` is loaded -- so
-    ``neml2-run --device cuda`` (which sets the default device) picks ``cuda/``.
+    pointing at the artifact root folder produced by ``neml2-compile`` (the
+    folder holding one shared ``metadata.json`` and per-``<device>/<dtype>/``
+    ``.pt2`` binaries). The leaf matching ``torch.get_default_device()`` +
+    ``torch.get_default_dtype()`` is loaded -- so ``neml2-run --device cuda``
+    (which sets the default device) picks ``cuda/``.
     Eager and single-device: no dispatch happens here.
 
     Plays the native-Model role: ``input_spec`` and ``output_spec`` are
@@ -103,7 +104,7 @@ class AOTIModel(nn.Module):
             "one shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` "
             "binaries. The leaf matching ``torch.get_default_device()`` + "
             "``torch.get_default_dtype()`` is loaded; solver config is read from the "
-            "metadata (schema v10), so no ``[Solvers]`` block is needed.",
+            "shared metadata at load time, so no ``[Solvers]`` block is needed.",
         ),
     )
 

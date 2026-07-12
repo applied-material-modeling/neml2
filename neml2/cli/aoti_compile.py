@@ -25,10 +25,11 @@
 """``neml2-compile`` -- the canonical (and only) path that produces an AOTI
 artifact from a NEML2 input file.
 
-Wraps :func:`neml2.cli.aoti_export.export_model_for_aoti` and emits a
-runnable ``.i`` stub alongside the ``.pt2`` segments and ``_meta.json``. The
-stub is the original input with the named ``[Models]/<name>`` block surgically
-replaced by an AOTIModel shim pointing at the metadata file.
+Wraps :func:`neml2.cli.aoti_export.export_model_for_aoti` and optionally emits
+a runnable ``.i`` stub (``--no-stub`` skips it) alongside the ``.pt2`` segments
+and the shared ``metadata.json``. The stub is the original input with the named
+``[Models]/<name>`` block surgically replaced by an AOTIModel shim pointing at
+the artifact root folder.
 
 Usage:
 
@@ -316,8 +317,8 @@ def compile_and_emit_stub(
     model_name = driver_target_model(input_path, driver) if driver else model
     assert model_name is not None  # for type narrowing
 
-    # Schema v10: export writes binaries to artifact_dir/<device>/<dtype>/ and one
-    # shared artifact_dir/metadata.json (it creates the dirs). The stub is optional.
+    # Export writes binaries to artifact_dir/<device>/<dtype>/ and one shared
+    # artifact_dir/metadata.json (it creates the dirs). The stub is optional.
     artifact_dir = output_dir / model_name
     export_model_for_aoti(
         input_path,
@@ -454,9 +455,9 @@ def emit_aoti_stub(
     ``[Data]``, ``[EquationSystems]`` and ``[Solvers]`` are dropped in both modes.
     ``[Data]`` / ``[EquationSystems]`` state was baked into the ``.pt2`` at compile
     time. ``[Solvers]`` is dropped because the implicit Newton's convergence /
-    line-search config now lives in ``metadata.json`` (schema v10) and is applied by
-    the C++ runtime at load -- a stub ``[Solvers]`` block would be a silent no-op for
-    the Python-free routes, so it is removed rather than left as a misleading knob.
+    line-search config lives in ``metadata.json`` and is applied by the C++ runtime
+    at load -- a stub ``[Solvers]`` block would be a silent no-op for the
+    Python-free routes, so it is removed rather than left as a misleading knob.
     (Verbosity is separate: it is a diagnostic controlled by ``NEML2_AOTI_TRACE_*``
     env vars, not recorded anywhere in the artifact.)
 
@@ -472,10 +473,10 @@ def emit_aoti_stub(
     """
     import nmhit  # noqa: PLC0415
 
-    # [Solvers] is dropped from the stub (schema v10): the implicit Newton's
-    # convergence / line-search config is recorded in metadata.json and applied by
-    # the C++ runtime at load, so a stub [Solvers] block would be a silent no-op for
-    # the Python-free routes (cpp-aoti / cpp-dispatch). [Data]/[EquationSystems] are
+    # [Solvers] is dropped from the stub: the implicit Newton's convergence /
+    # line-search config is recorded in metadata.json and applied by the C++
+    # runtime at load, so a stub [Solvers] block would be a silent no-op for the
+    # Python-free routes (cpp-aoti / cpp-dispatch). [Data]/[EquationSystems] are
     # runtime-irrelevant to the compiled model.
     DROPPED = {"Data", "EquationSystems", "Solvers"}
 
@@ -718,7 +719,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error planning '{model_name}': {exc}", file=sys.stderr)
         return 1
     # plan.total = per-device .pt2 count + 1 (the shared metadata.json). The meta is
-    # written ONCE for all devices (schema v10), and the stub is optional.
+    # written ONCE for all devices, and the stub is optional.
     n_pt2 = plan.total - 1
     total_files = n_pt2 * len(devices) + 1 + (1 if args.emit_stub else 0)
 

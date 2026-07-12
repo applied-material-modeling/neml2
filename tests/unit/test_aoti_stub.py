@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Structural stub emission in ``emit_aoti_stub`` (schema v10).
+"""Structural stub emission in ``emit_aoti_stub``.
 
 ``emit_aoti_stub`` (``neml2.cli.aoti_compile``) is purely structural -- it
 parses the source HIT with ``nmhit`` and clones the sections it keeps; it never

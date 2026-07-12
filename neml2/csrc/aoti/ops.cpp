@@ -159,7 +159,7 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
 
   // Call batch from the first structural input (its base stripped). Forward
   // segments broadcast each promoted parameter to this batch before the call,
-  // since the value graphs take parameters as per-batch inputs (schema v7).
+  // since the value graphs take parameters as per-batch inputs.
   const std::vector<int64_t> batch =
       _input_names.empty() ? std::vector<int64_t>{} : _batch_shape_of(0, state.at(_input_names[0]));
 

@@ -68,7 +68,7 @@ namespace neml2::aoti
  *
  * Artifact layout. `artifact_root` is the directory `neml2-compile` writes: one
  * shared `metadata.json` at the root plus per-`<device>/<dtype>/` `.pt2` binaries
- * (schema v10). One `Model` is loaded per `scheduler->devices()` entry from the
+ * One `Model` is loaded per `scheduler->devices()` entry from the
  * `<device-type>/<dtype>/` leaf, pinned to that device's concrete index; the
  * shared metadata (structural + solver config) backs them all.
  *

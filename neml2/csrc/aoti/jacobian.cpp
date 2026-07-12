@@ -90,8 +90,8 @@ Model::Impl::_forward_pair_blocks(const std::map<std::string, at::Tensor> & inpu
   loader_in.reserve(seg.fwd_inputs.size() + seg.param_inputs.size());
   for (const auto & name : seg.fwd_inputs)
     loader_in.push_back(state.at(name).contiguous());
-  // The jvp graph takes promoted parameters as per-batch inputs (schema v7), so
-  // broadcast each stored parameter to the call batch before the call.
+  // The jvp graph takes promoted parameters as per-batch inputs, so broadcast
+  // each stored parameter to the call batch before the call.
   const auto batch_shape =
       _input_names.empty() ? std::vector<int64_t>{} : _batch_shape_of(0, state.at(_input_names[0]));
   for (const auto & pname : seg.param_inputs)
@@ -467,7 +467,7 @@ Model::Impl::_run_forward_segment_jacobian(const Segment & seg,
     inputs.push_back(it->second.contiguous());
   }
   // Promoted-parameter tail: the jvp/jacobian value graph takes each parameter as
-  // a per-batch input (schema v7), so broadcast the stored parameter to `batch`.
+  // a per-batch input, so broadcast the stored parameter to `batch`.
   for (const auto & pname : seg.param_inputs)
     inputs.push_back(broadcast_param_to_batch(
         _resolve_param(pname), batch, static_cast<int64_t>(_param_base_shapes.at(pname).size())));

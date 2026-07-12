@@ -188,7 +188,7 @@ def test_parallel_matches_serial(tmp_path):
 
     # Same artifacts on disk (compare names, not .pt2 bytes -- Inductor output
     # can differ trivially run-to-run). Gather the shared metadata.json at the
-    # root plus the <device>/<dtype>/ .pt2 binaries (schema v10 layout).
+    # root plus the <device>/<dtype>/ .pt2 binaries (artifact-root layout).
     def _artifact_names(root: Path) -> set[str]:
         names = {p.name for p in root.iterdir() if p.is_file()}
         names |= {p.name for p in (root / "cpu" / "float64").iterdir() if p.is_file()}
@@ -236,14 +236,14 @@ def test_multidevice_matches_single_device_export(tmp_path):
     grid_root = tmp_path / "grid"
     grid_root.mkdir()
 
-    # Both paths use the schema v10 artifact-root layout: shared metadata.json at
+    # Both paths use the artifact-root layout: shared metadata.json at
     # the root, .pt2 binaries under <device>/<dtype>/.
     meta_direct = export_model_for_aoti(_COMPOSED_INPUT, "model", direct_root, derivatives=[":"])
     meta_grid = export_model_multidevice(
         _COMPOSED_INPUT, "model", grid_root, ["cpu"], derivatives=[":"]
     )
 
-    # export_model_multidevice returns a single shared meta dict (schema v10),
+    # export_model_multidevice returns a single shared meta dict,
     # identical to the direct single-device export.
     assert json.dumps(meta_grid, sort_keys=True) == json.dumps(meta_direct, sort_keys=True)
     assert {p.name for p in (grid_root / "cpu" / "float64").iterdir() if p.is_file()} == {
@@ -267,7 +267,7 @@ def test_multidevice_grid_parallel_matches_serial_and_tags_device(tmp_path):
         _COMPOSED_INPUT, "model", par_dir, ["cpu"], jobs=8, progress_cb=reported.append
     )
 
-    # Single shared meta dict per run (schema v10); serial and parallel agree.
+    # Single shared meta dict per run; serial and parallel agree.
     assert json.dumps(meta_serial, sort_keys=True) == json.dumps(meta_par, sort_keys=True)
     # Every reported .pt2 is device-tagged (single-device -> "cpu/"); the shared
     # metadata.json is written once at the root and reported untagged.

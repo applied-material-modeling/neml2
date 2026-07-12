@@ -147,7 +147,7 @@ def test_aoti_export_reload_matches_eager(scenario: Path, tmp_path: Path):
     assert meta["parameters"] == []
 
     # Reload through the pybind binding: pass the artifact ROOT (holding the
-    # shared metadata.json + <device>/<dtype>/ binaries), schema v10.
+    # shared metadata.json + <device>/<dtype>/ binaries).
     aoti = AOTIModel(str(out_dir))
 
     # Build a reproducible structural-input batch shared by eager and AOTI.
@@ -370,7 +370,7 @@ def test_parameter_base_shapes_map_matches_eager(tmp_path: Path):
 @_REQUIRES_PARAM_DERIV_TORCH
 @_skip_win_reextract
 def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
-    """The compiled cpp-aoti parameter-derivative path (schema v7) through the
+    """The compiled cpp-aoti parameter-derivative path through the
     pybind Model: ``param_jacobian`` (dense d(out)/d(param)) and ``param_vjp``
     (adjoint dL/d(param)) both agree with finite differences taken by mutating
     the runtime (promoted) parameter. Exercises the full
@@ -575,7 +575,7 @@ def test_aoti_provider_param_jacobian_and_vjp_match_fd(tmp_path: Path):
 @_REQUIRES_PARAM_DERIV_TORCH
 def test_aoti_implicit_param_jacobian_matches_fd(tmp_path: Path):
     """The compiled cpp-aoti parameter-derivative path through a single
-    ``ImplicitUpdate`` (schema v7): ``param_jacobian`` returns ``du/dθ`` for a
+    ``ImplicitUpdate``: ``param_jacobian`` returns ``du/dθ`` for a
     parameter promoted INSIDE the residual, computed by the ParamIFT graph
     (``-A⁻¹ ∂r/∂θ`` -- analytic-equivalent reverse-mode A + reverse-mode ∂r/∂θ +
     dense solve). Validated against finite differences taken by mutating the
@@ -654,7 +654,7 @@ def test_aoti_implicit_param_jacobian_matches_fd(tmp_path: Path):
 
 @_REQUIRES_PARAM_DERIV_TORCH
 def test_aoti_composed_param_jacobian_matches_fd(tmp_path: Path):
-    """The compiled cpp-aoti MULTI-SEGMENT parameter-Jacobian carrier (schema v7):
+    """The compiled cpp-aoti MULTI-SEGMENT parameter-Jacobian carrier:
     d(out)/d(param) for parameters promoted in EACH segment of a composed
     forward -> implicit -> forward model. The carrier composes the direct
     contribution at the parameter's own segment (forward param-Jacobian /

@@ -39,8 +39,8 @@ namespace neml2::aoti
  *
  * The C++ mirror of Python's `load_model(path, name)`. Parses the stub with
  * `nmhit`: locates `[Models]/<model_name>` (which must be an `AOTIModel` shim),
- * reads its `artifact_path` (the per-device artifact folder), and applies the
- * solver config carried in the referenced `[Solvers]` block.
+ * reads its `artifact_path` (the artifact root directory), and loads the shared
+ * `metadata.json` plus the per-`<device>/<dtype>/` binaries for the chosen device.
  *
  * `scheduler` is the C++-only dispatch opt-in -- it is never read from the `.i`.
  * When omitted (`nullptr`) the model runs without dispatch on `at::kCPU` (the

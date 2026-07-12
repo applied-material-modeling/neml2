@@ -25,7 +25,7 @@
 // ----------------------------------------------------------------------------
 // Model construction: metadata parse + the public-facade forwarders
 // ----------------------------------------------------------------------------
-// Holds `Model::Impl`'s constructor (parses `_meta.json`, loads every `.pt2`
+// Holds `Model::Impl`'s constructor (parses `metadata.json`, loads every `.pt2`
 // segment) and `_gather_params`, plus the thin `Model` facade that forwards
 // every public call onto the opaque Impl. The op/solve/Jacobian method bodies
 // live in ops.cpp / solve.cpp / jacobian.cpp.
@@ -79,7 +79,7 @@ parse_dtype(const std::string & s)
 }
 
 // The folder-name form (inverse of parse_dtype) used for the
-// per-`<device>/<dtype>/` artifact leaf (schema v10).
+// per-`<device>/<dtype>/` artifact leaf.
 std::string
 device_type_str(at::Device d)
 {
@@ -148,8 +148,8 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // does not collide with the Python package's registration (cpp-eager / py-aoti).
   ensure_neml2_custom_ops_registered();
 
-  // Schema v10: device + dtype come from the caller (the folder path), NOT the
-  // metadata -- one shared metadata.json backs every compiled (device, dtype) leaf.
+  // Device + dtype come from the caller (the folder path), NOT the metadata --
+  // one shared metadata.json backs every compiled (device, dtype) leaf.
   _device = device;
   _dtype = dtype;
 
@@ -167,7 +167,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // a cryptic missing-field error deep in the parser. The canonical value lives
   // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 10;
+  static constexpr int kSupportedSchemaVersion = 9;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -304,7 +304,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
     }
   }
 
-  // Master (out, in) derivative pairs the artifact supports (v6+). Absent /
+  // Master (out, in) derivative pairs the artifact supports. Absent /
   // empty => no derivative graphs compiled; jvp() / jacobian() raise. Kept in
   // the metadata's (output-order, input-order) so the public maps iterate
   // rows/cols consistently.
@@ -317,7 +317,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
       _derivatives.emplace_back(std::move(o), std::move(i));
     }
 
-  // Master (out, param) parameter-derivative pairs the artifact supports (v7+).
+  // Master (out, param) parameter-derivative pairs the artifact supports.
   // Absent / empty => no parameter-Jacobian graph; param_jacobian() / param_vjp()
   // raise. Separate from `_derivatives` (which is over structural inputs).
   if (meta.contains("parameter_derivatives"))
@@ -351,19 +351,19 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
     }
   }
 
-  // Promoted parameters (v2; empty in the common fully-baked case).
+  // Promoted parameters (empty in the common fully-baked case).
   if (meta.contains("parameters"))
   {
     for (const auto & p : meta["parameters"])
     {
       const auto name = p["name"].get<std::string>();
-      // Schema v10: a floating parameter records NO dtype and inherits the leaf's
-      // (`_dtype`); a non-floating parameter (int/bool buffer) records its own so
-      // it is not coerced to the float type. Device is always the leaf device
-      // (`_device`, which carries the concrete cuda index) -- no per-param device.
+      // A floating parameter records NO dtype and inherits the leaf's (`_dtype`);
+      // a non-floating parameter (int/bool buffer) records its own so it is not
+      // coerced to the float type. Device is always the leaf device (`_device`,
+      // which carries the concrete cuda index) -- no per-param device.
       const auto dtype = p.contains("dtype") ? parse_dtype(p["dtype"].get<std::string>()) : _dtype;
       const auto shape = p["shape"].get<std::vector<int64_t>>();
-      // Natural base shape (v7). Fallback to the full stored shape (== base for an
+      // Natural base shape. Fallback to the full stored shape (== base for an
       // unbatched parameter) keeps older single-param paths robust.
       _param_base_shapes[name] = p.value("param_base_shape", shape);
       const auto opts = at::TensorOptions().dtype(dtype).device(_device);
@@ -435,12 +435,12 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
     _param_total_size += psize;
   }
 
-  // Solver config (schema v10): the implicit Newton's convergence / line-search
-  // settings ride in the shared metadata so the Python-free runtime is configured
-  // straight from the artifact -- no stub [Solvers] parse. Absent (forward-only) =>
-  // the SolverConfig defaults stand. `verbose` is deliberately never recorded: it
-  // is a diagnostic controlled by the NEML2_AOTI_TRACE_* env vars.
-  // `Model::set_solver_config` still overrides these at runtime.
+  // Solver config: the implicit Newton's convergence / line-search settings ride
+  // in the shared metadata so the Python-free runtime is configured straight from
+  // the artifact. Absent (forward-only) => the SolverConfig defaults stand.
+  // `verbose` is deliberately never recorded: it is a diagnostic controlled by
+  // the NEML2_AOTI_TRACE_* env vars. `Model::set_solver_config` still overrides
+  // these at runtime.
   if (meta.contains("solver_config"))
   {
     const auto & sc = meta["solver_config"];
@@ -475,7 +475,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
         info.sub_batch_shape = v["sub_batch_shape"].get<std::vector<int64_t>>();
       if (v.contains("base_shape"))
         info.base_shape = v["base_shape"].get<std::vector<int64_t>>();
-      // Substep role/pair (schema v9), present on implicit-segment givens.
+      // Substep role/pair, present on implicit-segment givens.
       if (v.contains("role") && !v["role"].is_null())
         info.role = v["role"].get<std::string>();
       if (v.contains("pair") && !v["pair"].is_null())
@@ -494,10 +494,10 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
         seg.fwd_inputs.push_back(v["name"].get<std::string>());
       for (const auto & v : seg_meta["outputs"])
         seg.fwd_outputs.push_back(v["name"].get<std::string>());
-      // v7 per-(out_var, in_var) Jacobian-pair metadata. Present iff
-      // the segment also packaged a JVP loader; orders one entry per
-      // trailing pair tensor in the JVP loader's output tuple
-      // (row-major: outputs outer, structural inputs inner).
+      // Per-(out_var, in_var) Jacobian-pair metadata. Present iff the segment
+      // also packaged a JVP loader; orders one entry per trailing pair tensor
+      // in the JVP loader's output tuple (row-major: outputs outer, structural
+      // inputs inner).
       if (seg_meta.contains("jacobian_pairs"))
       {
         for (const auto & p : seg_meta["jacobian_pairs"])
@@ -515,7 +515,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
           seg.jacobian_pairs.push_back(std::move(pi));
         }
       }
-      // v7 parameter-derivative graphs (present iff parameter derivatives were
+      // Parameter-derivative graphs (present iff parameter derivatives were
       // requested). The param-Jacobian loader returns one dense block per
       // (out, param) pair (ONLY blocks, no value outputs); the param-VJP loader
       // returns one gradient per parameter given output cotangents.
@@ -561,9 +561,9 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
       for (const auto & v : seg_meta["residuals"])
         seg.residuals.push_back(parse_var_info(v));
 
-      // v7 per-group metadata for the per-group I/O contract. Newton
-      // inner loop runs entirely per-group; per-var ↔ per-group conv
-      // happens twice per solve via _pack_groups / _unpack_groups.
+      // Per-group metadata for the per-group I/O contract. Newton inner loop
+      // runs entirely per-group; per-var ↔ per-group conv happens twice per
+      // solve via _pack_groups / _unpack_groups.
       auto parse_group_info = [&parse_var_info](const nlohmann::json & g) -> Segment::GroupInfo
       {
         Segment::GroupInfo gi;
@@ -584,10 +584,10 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
       for (const auto & g : seg_meta["residual_group_infos"])
         seg.residual_groups.push_back(parse_group_info(g));
 
-      // Per-(unknown, given) IFT Jacobian-pair metadata (v6). The IFT loader
-      // emits one block per pair (via AssembledMatrix.disassemble), in
-      // jacobian_pairs order, so the runtime composes them against dg_dmaster
-      // exactly like a forward segment's per-pair blocks.
+      // Per-(unknown, given) IFT Jacobian-pair metadata. The IFT loader emits
+      // one block per pair (via AssembledMatrix.disassemble), in jacobian_pairs
+      // order, so the runtime composes them against dg_dmaster exactly like a
+      // forward segment's per-pair blocks.
       if (seg_meta.contains("jacobian_pairs"))
       {
         for (const auto & p : seg_meta["jacobian_pairs"])
@@ -605,9 +605,9 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
           seg.jacobian_pairs.push_back(std::move(pi));
         }
       }
-      // v8 implicit parameter-derivative graph (ParamIFT). Present iff a
-      // parameter derivative targeting a promoted parameter inside the residual
-      // was requested. Emits one dense du/dθ block per (unknown, param) pair in
+      // Implicit parameter-derivative graph (ParamIFT). Present iff a parameter
+      // derivative targeting a promoted parameter inside the residual was
+      // requested. Emits one dense du/dθ block per (unknown, param) pair in
       // param_jacobian_pairs order (unknowns outer, params inner).
       if (seg_meta.contains("param_ift_package"))
       {
@@ -626,7 +626,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
         }
       }
       // Solver convergence / line-search configuration is read once from the
-      // top-level `solver_config` (schema v10) into `_solver_config` below;
+      // top-level `solver_config` in metadata.json into `_solver_config` below;
       // `Model::set_solver_config` still overrides it at runtime.
       _assert(!seg.unknowns.empty(),
               "aoti::Model: implicit segment ",

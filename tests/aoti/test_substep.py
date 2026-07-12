@@ -25,8 +25,8 @@
 """AOTI (cpp-aoti via the pybind binding) substepping smoke tests.
 
 These exercise the host-side substep driver through the compiled runtime end to
-end: the Python role classification is serialized into the shared ``metadata.json``
-(schema v10), the C++ ``Model`` parses it, and ``_run_implicit_segment_substepped``
+end: the Python role classification is serialized into the shared ``metadata.json``,
+the C++ ``Model`` parses it, and ``_run_implicit_segment_substepped``
 dispatches per the roles. The scenario integration is linear-in-time, so the
 substepped answer equals the single-shot answer -- the "no-op equivalence" that
 validates the interpolation / chaining machinery. Genuine convergence-recovery

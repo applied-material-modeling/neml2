@@ -251,7 +251,7 @@ def forward_export(tmp_path_factory):
     from neml2.cli.aoti_export import export_model_for_aoti
 
     out_dir = tmp_path_factory.mktemp("aoti_forward")
-    # Derivative graphs are opt-in (schema v6); request all pairs so the
+    # Derivative graphs are opt-in; request all pairs so the
     # jvp/jacobian assertions below have a graph to exercise.
     meta = export_model_for_aoti(_ELASTICITY_I, "model", out_dir, derivatives=[":"])
     # Schema v10: out_dir is the artifact ROOT. Binaries live under
@@ -316,6 +316,9 @@ def test_export_forward_model_produces_artifacts(forward_export):
     assert (out_dir / "metadata.json").exists()
     assert "device" not in meta
     assert "dtype" not in meta
+    # A forward-only model has no implicit solve, so no solver config is recorded
+    # (the implicit-model test asserts the symmetric presence).
+    assert "solver_config" not in meta
 
 
 def test_export_forward_model_metadata(forward_export):
@@ -412,7 +415,7 @@ def test_export_forward_param_jacobian_matches_finite_difference(param_jac_expor
 
     def stress(e_val):
         # The value graph now takes the promoted parameter as a PER-BATCH input
-        # (schema v7), so feed it at the batch shape (the runtime broadcasts a
+        # so feed it at the batch shape (the runtime broadcasts a
         # stored scalar; here we pass the value at (b,) directly).
         res = value(SR2(strain), torch.full((b,), float(e_val), dtype=torch.float64))[0]
         return res.data if hasattr(res, "data") else res
@@ -442,7 +445,7 @@ def test_export_forward_param_vjp_metadata(param_jac_export):
 def test_export_forward_param_vjp_matches_finite_difference(param_jac_export):
     """The adjoint graph's dL/dE (L = <w, stress>) agrees with central differences
     of the scalar loss on the value package. The promoted parameter enters the
-    adjoint graph PER-BATCH (schema v7, like the param-Jacobian graph), so the graph
+    adjoint graph PER-BATCH (like the param-Jacobian graph), so the graph
     returns one gradient per batch element; for a global (uniform) E those
     per-element gradients sum to the scalar dL/dE -- which is what the C++ runtime
     returns for an unbatched parameter."""
@@ -460,7 +463,7 @@ def test_export_forward_param_vjp_matches_finite_difference(param_jac_export):
     w = torch.randn(b, 6, dtype=torch.float64)  # output cotangent
 
     def loss(e_val):
-        # Value graph takes the promoted parameter per-batch (schema v7).
+        # Value graph takes the promoted parameter per-batch.
         res = value(SR2(strain), torch.full((b,), float(e_val), dtype=torch.float64))[0]
         s = res.data if hasattr(res, "data") else res
         return (s * w).sum().item()
@@ -680,9 +683,8 @@ def test_export_implicit_model_metadata(implicit_export):
     given_sizes = [g["var_size"] for g in seg["givens"]]
     assert sum(given_sizes) == 15
 
-    # Schema v4+: solver convergence / line-search configuration is no longer
-    # baked into the metadata -- it is carried by the stub's [Solvers] block and
-    # forwarded to the C++ runtime at load via Model.set_solver_config.
+    # Solver convergence / line-search config is not stored PER SEGMENT; it lives
+    # at the top level (meta["solver_config"]), read by the C++ runtime at load.
     assert "atol" not in seg
     assert "rtol" not in seg
     assert "miters" not in seg

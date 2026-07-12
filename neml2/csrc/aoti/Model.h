@@ -43,9 +43,9 @@
 namespace neml2::aoti
 {
 /// Tunables for the implicit-segment Newton solve. Supplied at load time
-/// (schema v4+ no longer bakes these into the artifact) -- the stub `.i`'s
-/// `[Solvers]` block is parsed by the loader and forwarded via
-/// `Model::set_solver_config`. Line search is enabled iff `ls_max_iters > 1`;
+/// via the artifact's `metadata.json` (`solver_config` key); the loader reads
+/// and applies them in the constructor. `set_solver_config` is available to
+/// override at runtime. Line search is enabled iff `ls_max_iters > 1`;
 /// `ls_type` is "BACKTRACKING" or "STRONG_WOLFE".
 struct SolverConfig
 {
@@ -74,8 +74,8 @@ using VariablePairJacobian = std::map<std::string, std::map<std::string, at::Ten
 /**
  * @brief Thin, self-contained runtime for AOTI-exported NEML2 models.
  *
- * Loads the `_meta.json` + per-segment `.pt2` artifacts produced by
- * `neml2-compile` and exposes them as a plain C++ object: three public
+ * Loads the shared `metadata.json` + per-`<device>/<dtype>/` `.pt2` artifacts
+ * produced by `neml2-compile` and exposes them as a plain C++ object: three public
  * operations (`forward` / `jvp` / `jacobian`) keyed by string names, and an
  * owned, mutable parameter surface (`named_parameters()`) for the entries the
  * user explicitly promoted at compile time via `neml2-compile --parameter`.
@@ -122,8 +122,8 @@ class AOTI_EXPORT Model
 public:
   /// Load a compiled artifact from `artifact_root` -- the folder `neml2-compile`
   /// writes: one shared, device/dtype-independent `metadata.json` at the root
-  /// plus per-`<device>/<dtype>/` `.pt2` binaries (schema v10). The structural
-  /// metadata backs every compiled (device, dtype) leaf; the `.pt2` graphs and
+  /// plus per-`<device>/<dtype>/` `.pt2` binaries. The structural metadata backs
+  /// every compiled (device, dtype) leaf; the `.pt2` graphs and
   /// promoted parameters for THIS run are taken from
   /// `<artifact_root>/<device-type>/<dtype>/`. Throws if that leaf is absent
   /// (listing the available leaves), on any missing file, or on schema mismatch.
@@ -192,7 +192,7 @@ public:
   jacobian(const std::map<std::string, at::Tensor> & inputs,
            const std::map<std::string, at::Tensor> & param_overrides = {}) const;
 
-  /// Evaluate + parameter Jacobian (schema v7). Returns `{outputs, P}` where
+  /// Evaluate + parameter Jacobian. Returns `{outputs, P}` where
   /// `P[out_name][param_qname]` is the dense block `(*B, *out_base, *param_base)`
   /// -- the parameter analogue of `jacobian()` (reverse-mode AD over the promoted
   /// parameters). Requires the artifact was compiled with `-d OUT:PARAM` over a
@@ -203,13 +203,13 @@ public:
   param_jacobian(const std::map<std::string, at::Tensor> & inputs,
                  const std::map<std::string, at::Tensor> & param_overrides = {}) const;
 
-  /// Parameter VJP / adjoint (schema v7). Returns `dL/d(param)` keyed by
-  /// parameter qualified name, for the loss `L = sum_o <cotangent_o, out_o>`.
-  /// `cotangents` is keyed by output name (each at the output's `(*B, *out_base)`
-  /// shape); the cheaper form for many-parameter inverse optimization. Same
-  /// compile requirement + single-forward-segment support as `param_jacobian`.
-  /// See `forward` for `param_overrides`. (The adjoint graph keeps parameters
-  /// scalar, so per-element BATCHED parameters are not yet supported here.)
+  /// Parameter VJP / adjoint. Returns `dL/d(param)` keyed by parameter qualified
+  /// name, for the loss `L = sum_o <cotangent_o, out_o>`. `cotangents` is keyed
+  /// by output name (each at the output's `(*B, *out_base)` shape); the cheaper
+  /// form for many-parameter inverse optimization. Same compile requirement +
+  /// single-forward-segment support as `param_jacobian`. See `forward` for
+  /// `param_overrides`. (The adjoint graph keeps parameters scalar, so
+  /// per-element BATCHED parameters are not yet supported here.)
   std::map<std::string, at::Tensor>
   param_vjp(const std::map<std::string, at::Tensor> & inputs,
             const std::map<std::string, at::Tensor> & cotangents,
@@ -245,9 +245,10 @@ public:
   at::ScalarType dtype() const noexcept;
 
   /// Configure the implicit-segment Newton solve (convergence tolerances,
-  /// iteration cap, line search). Schema v4+ no longer bakes these into the
-  /// artifact; the loader parses the stub's `[Solvers]` block and forwards it
-  /// here. If never called, sensible defaults apply (see `SolverConfig`).
+  /// iteration cap, line search). The values are normally read from the artifact's
+  /// `metadata.json` at construction; call this to override them at runtime.
+  /// If never called (and the metadata carries no solver config), sensible
+  /// defaults apply (see `SolverConfig`).
   void set_solver_config(const SolverConfig & config);
 
 private:

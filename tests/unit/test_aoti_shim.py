@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Artifact-root resolution in the ``AOTIModel`` HIT shim (schema v10).
+"""Artifact-root resolution in the ``AOTIModel`` HIT shim.
 
 The shim reads an ``artifact_path`` (absolute or input-relative) pointing at the
 artifact ROOT folder produced by ``neml2-compile`` -- one shared
@@ -72,10 +72,19 @@ def _default_leaf() -> tuple[str, str]:
 
 
 def _write_metadata(root) -> None:
-    """A minimal self-describing metadata.json at the artifact root (schema v10)."""
+    """A minimal self-describing metadata.json at the artifact root."""
+    from neml2.cli.aoti_export import AOTI_META_SCHEMA_VERSION  # noqa: PLC0415
+
     root.mkdir(parents=True, exist_ok=True)
     (root / "metadata.json").write_text(
-        json.dumps({"schema_version": 10, "type": "composed", "inputs": [], "outputs": []})
+        json.dumps(
+            {
+                "schema_version": AOTI_META_SCHEMA_VERSION,
+                "type": "composed",
+                "inputs": [],
+                "outputs": [],
+            }
+        )
     )
 
 

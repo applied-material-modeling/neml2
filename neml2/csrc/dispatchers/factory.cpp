@@ -65,7 +65,7 @@ load_model(const std::filesystem::path & stub_path,
           type,
           "', expected 'AOTIModel'. Pass the stub produced by `neml2-compile`.");
 
-  // artifact_path: the per-device artifact folder (absolute per neml2-compile;
+  // artifact_path: the artifact root directory (absolute per neml2-compile;
   // tolerate a relative path by resolving it against the stub's directory).
   const auto artifact_path_str = model_node->param_optional<std::string>("artifact_path", "");
   _assert(!artifact_path_str.empty(),
@@ -84,9 +84,9 @@ load_model(const std::filesystem::path & stub_path,
 
   // The artifact-root ctor resolves the shared <artifact_path>/metadata.json and
   // the per-<device>/<dtype>/ binaries for the scheduler's device (erroring if the
-  // leaf is absent). Solver config (schema v10) is read from the shared metadata by
-  // each per-device Model -- no stub [Solvers] parse. `set_solver_config` remains
-  // available to a host that wants to override it at runtime.
+  // leaf is absent). Solver config is read from the shared metadata by each
+  // per-device Model. `set_solver_config` remains available to a host that wants
+  // to override it at runtime.
   return DispatchedModel(artifact_path, std::move(sched));
 }
 } // namespace neml2::aoti

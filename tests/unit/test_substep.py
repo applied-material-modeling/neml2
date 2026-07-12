@@ -214,3 +214,5 @@ def test_eager_rejects_incremental_variables():
     args = tuple(m.input_spec[n](_nl_inputs(1.0)[n]) for n in m.input_spec)
     with pytest.raises(NotImplementedError, match="substepping"):
         m(*args)
+    with pytest.raises(NotImplementedError, match="substepping"):
+        m.jacobian(_nl_inputs(1.0))

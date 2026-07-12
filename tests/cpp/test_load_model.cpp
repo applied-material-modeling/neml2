@@ -87,8 +87,8 @@ main(int argc, char ** argv)
 
   at::manual_seed(0);
 
-  // Single-shot reference straight off the cpu artifact root (schema v10: the
-  // Model ctor takes the artifact folder + device + dtype and resolves
+  // Single-shot reference straight off the cpu artifact root (the Model ctor
+  // takes the artifact folder + device + dtype and resolves
   // metadata.json + the <device>/<dtype>/ binaries itself).
   Model ref(artifact_root, at::kCPU, at::kDouble);
   const int64_t b = 10;

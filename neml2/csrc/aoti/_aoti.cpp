@@ -23,10 +23,10 @@
 // THE SOFTWARE.
 
 // Pybind11 binding for neml2::aoti::Model -- the thin C++ runtime that loads
-// AOTI-exported NEML2 model artifacts (.pt2 + _meta.json). Lives under
-// python/neml2/native/aoti/ so it's adjacent to its Python-side neighbors
-// (loader helpers, drivers) and stays isolated from the legacy bindings in
-// python/src/, which will eventually be retired.
+// AOTI-exported NEML2 model artifacts (shared metadata.json + per-device/.pt2).
+// Lives under python/neml2/native/aoti/ so it's adjacent to its Python-side
+// neighbors (loader helpers, drivers) and stays isolated from the legacy
+// bindings in python/src/, which will eventually be retired.
 
 #include <cstddef>
 #include <filesystem>
@@ -50,10 +50,11 @@ using neml2::aoti::Model;
 PYBIND11_MODULE(_aoti, m)
 {
   m.doc() = "Pybind11 binding for neml2::aoti::Model. The bare C++ runtime "
-            "loads AOTI-exported NEML2 model artifacts (.pt2 + _meta.json) "
-            "and exposes three operations -- forward / jvp / jacobian -- "
-            "plus a mutable named_parameters() surface for the entries that "
-            "were promoted at compile time via `neml2-compile --parameter`.";
+            "loads AOTI-exported NEML2 model artifacts (shared metadata.json "
+            "+ per-<device>/<dtype>/ .pt2 binaries) and exposes three "
+            "operations -- forward / jvp / jacobian -- plus a mutable "
+            "named_parameters() surface for the entries that were promoted at "
+            "compile time via `neml2-compile --parameter`.";
 
   // Force PyTorch's pybind tensor caster initialization.
   py::module_::import("torch");
@@ -71,8 +72,9 @@ PYBIND11_MODULE(_aoti, m)
   py::class_<Model>(m, "Model", R"(
 Thin C++ runtime for an AOTI-exported NEML2 model.
 
-Construct from the path to the metadata JSON produced by ``neml2-compile``;
-the loader resolves the per-segment ``.pt2`` files relative to that path.
+Construct from the artifact root directory produced by ``neml2-compile``:
+one shared ``metadata.json`` plus per-``<device>/<dtype>/`` ``.pt2`` binaries.
+The loader selects the leaf matching the requested device and dtype.
 
 The artifact is device- and dtype-pinned at export time; there is no
 runtime ``to()``. To target a different device, re-run ``neml2-compile``.
@@ -82,15 +84,15 @@ compile time are reachable through ``named_parameters()`` and may be
 mutated in-place (e.g. ``model.named_parameters()['E'].fill_(210000.0)``).
 Everything else is baked into the graph as a constant.
 )")
-      // Take ``meta_path`` as ``std::string`` (rather than
+      // Take ``artifact_root`` as ``std::string`` (rather than
       // ``std::filesystem::path`` via the stl/filesystem caster) so the
       // pybind11-stubgen-generated annotation comes out as ``str``
       // instead of ``os.PathLike``. The current stubgen release
       // (≤2.5.5) emits ``os.PathLike`` without an accompanying
       // ``import os``, which trips pyright; pybind/pybind11-stubgen#280
       // fixes this upstream, drop this lambda + restore
-      // ``py::init<const std::filesystem::path &>()`` once a release
-      // with that PR lands.
+      // ``py::init<const std::filesystem::path &, ...>()`` once a
+      // release with that PR lands.
       .def(py::init(
                [](const std::string & artifact_root,
                   std::optional<std::string> device,
@@ -221,7 +223,7 @@ inputs are not exposed in J).
            py::arg("inputs"),
            py::arg("param_overrides") = std::map<std::string, at::Tensor>{},
            R"(
-Evaluate + parameter Jacobian as unflattened variable-pair blocks (schema v7).
+Evaluate + parameter Jacobian as unflattened variable-pair blocks.
 
 Returns a 2-tuple ``(outputs, P)`` where ``P`` is a nested
 ``dict[str, dict[str, Tensor]]``: ``P[out_name][param_qname]`` is the block
@@ -236,7 +238,7 @@ a promoted parameter; otherwise raises.
            py::arg("cotangents"),
            py::arg("param_overrides") = std::map<std::string, at::Tensor>{},
            R"(
-Parameter VJP / adjoint (schema v7): ``dL/d(param)`` for the loss
+Parameter VJP / adjoint: ``dL/d(param)`` for the loss
 ``L = sum_o <cotangent_o, out_o>``.
 
 ``cotangents`` is a ``dict[str, Tensor]`` keyed by output name, each at the
@@ -295,8 +297,8 @@ Empty when the model was compiled with no ``--parameter`` flags.
           py::arg("ls_max_iters"),
           py::arg("ls_cutback"),
           py::arg("ls_c"),
-          "Configure the implicit-segment Newton solve (from the stub's "
-          "[Solvers] block). Schema v4+ no longer bakes these into the artifact.");
+          "Configure the implicit-segment Newton solve (override the values "
+          "read from metadata.json at load time).");
 
   // Eager-path entry point: the same C++ Newton solver the AOTI runtime uses,
   // driven over Python-supplied residual/step callables (RHS / NewtonStep).

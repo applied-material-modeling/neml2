@@ -71,8 +71,8 @@ def change_lag_order(var: str, new_order: int) -> str:
 class SubstepRole(str, Enum):
     """The role substepping plays for one ImplicitUpdate input.
 
-    ``str``-valued so it serializes straight into the AOTI ``_meta.json``
-    contract (the C++ host reads the same classification).
+    ``str``-valued so it serializes straight into the artifact metadata
+    (the C++ host reads the same classification).
     """
 
     #: lag-0 current slot of an unknown (initial guess; the solver overwrites it).
@@ -109,9 +109,9 @@ def classify_substep_roles(
 ) -> dict[str, SubstepRoleInfo]:
     """Classify each ImplicitUpdate input by its substep role.
 
-    The single source of truth for how substepping treats every input, shared
-    by the eager path (called live) and the AOTI path (serialized into the
-    artifact metadata). See :class:`SubstepRole` for the meaning of each role.
+    The single source of truth for how substepping treats every input. Called
+    by the AOTI exporter to build the substep metadata serialized into the
+    artifact. See :class:`SubstepRole` for the meaning of each role.
     """
     names = list(input_names)
     name_set = set(names)
