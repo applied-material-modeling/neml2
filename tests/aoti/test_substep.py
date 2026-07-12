@@ -98,6 +98,9 @@ def test_forward_noop_equivalence(tmp_path: Path):
 def test_forward_matches_non_substepped_build(tmp_path: Path):
     """A substepping build (level=2) and the plain implicit_simple build (level=0)
     produce identical forward output on the same easy step."""
+    import os
+    from contextlib import contextmanager
+
     from neml2.aoti import Model as AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
 
@@ -106,8 +109,6 @@ def test_forward_matches_non_substepped_build(tmp_path: Path):
     out_plain = tmp_path / "plain"
     export_model_for_aoti(_SUBSTEP, "model", out_sub)
     export_model_for_aoti(plain_i, "model", out_plain)
-    m_sub = AOTIModel(str(out_sub))
-    m_plain = AOTIModel(str(out_plain))
 
     b = 3
     inputs = {
@@ -117,8 +118,33 @@ def test_forward_matches_non_substepped_build(tmp_path: Path):
         "t~1": torch.zeros(b, dtype=torch.float64),
         "x_rate": torch.linspace(-1.0, 2.0, b, dtype=torch.float64),
     }
-    a = m_sub.forward(inputs)["x"]
-    c = m_plain.forward(inputs)["x"]
+
+    # The substepping and plain builds share an identical residual graph
+    # (substepping is runtime-only), so their `.pt2` segments hash the same. On
+    # Windows torch extracts each `.pt2` to a system-temp path keyed by that hash
+    # and keeps the loaded `.pyd` locked for the process lifetime, so loading both
+    # under one temp collides (sharing violation). Load each under its own
+    # extraction temp so the identical segments land in distinct roots. No-op-ish
+    # elsewhere (the override just points torch at a fresh scratch dir).
+    @contextmanager
+    def _own_extract_temp(name):
+        d = tmp_path / name
+        d.mkdir(exist_ok=True)
+        saved = {k: os.environ.get(k) for k in ("TMP", "TEMP")}
+        os.environ["TMP"] = os.environ["TEMP"] = str(d)
+        try:
+            yield
+        finally:
+            for k, v in saved.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+    with _own_extract_temp("ex_sub"):
+        a = AOTIModel(str(out_sub)).forward(inputs)["x"]
+    with _own_extract_temp("ex_plain"):
+        c = AOTIModel(str(out_plain)).forward(inputs)["x"]
     assert torch.allclose(a, c, rtol=1e-10, atol=1e-10)
 
 
