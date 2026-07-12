@@ -222,8 +222,10 @@ def test_aoti_stub_loads_through_native_factory(scenario: Path, tmp_path: Path):
     emit_aoti_stub(hit_path, "model", artifact_dir, stub_path)
     assert stub_path.exists()
 
-    # Load the stub through the same path neml2-run / TransientDriver use.
-    shim = load_input(stub_path).get_model("model")
+    # Load the stub through the same path neml2-run / TransientDriver use, for the
+    # device it was compiled for (the load APIs default to cpu/float64, not torch's
+    # ambient defaults).
+    shim = load_input(stub_path, device=dev).get_model("model")
     assert type(shim).__name__ == "AOTIModel"
     assert hasattr(shim, "input_spec") and hasattr(shim, "output_spec")
 

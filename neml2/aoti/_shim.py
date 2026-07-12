@@ -75,9 +75,10 @@ class AOTIModel(nn.Module):
     folder holding one shared ``metadata.json`` and per-``<device>/<dtype>/``
     ``.pt2`` binaries). The ``<device>/<dtype>/`` leaf is a load-time choice:
     ``load_model(..., device=, dtype=)`` (or ``neml2-run --device/--dtype``)
-    selects it, defaulting to ``torch.get_default_device()`` +
-    ``torch.get_default_dtype()`` -- so ``neml2-run --device cuda`` picks
-    ``cuda/``. Eager and single-device: no dispatch happens here.
+    selects it, defaulting to NEML2's canonical ``cpu`` / ``float64`` (matching
+    ``neml2-compile``) rather than torch's ambient defaults -- so a stock artifact
+    loads without the caller having to match torch's float32 default. Eager and
+    single-device: no dispatch happens here.
 
     Plays the native-Model role: ``input_spec`` and ``output_spec`` are
     populated from the metadata's ``var_type`` fields; ``__call__`` takes
@@ -105,10 +106,9 @@ class AOTIModel(nn.Module):
             "one shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` "
             "binaries. The stub is device/dtype-agnostic (only ``artifact_path``); "
             "the ``<device>/<dtype>/`` leaf is chosen at load time via "
-            "``load_model(..., device=, dtype=)`` (defaulting to "
-            "``torch.get_default_device()`` / ``torch.get_default_dtype()``). "
-            "Solver config is read from the shared metadata, so no ``[Solvers]`` "
-            "block is needed.",
+            "``load_model(..., device=, dtype=)``, defaulting to ``cpu`` / "
+            "``float64`` (matching ``neml2-compile``). Solver config is read from "
+            "the shared metadata, so no ``[Solvers]`` block is needed.",
         ),
     )
 
@@ -128,9 +128,10 @@ class AOTIModel(nn.Module):
         # the C++ ctor. They are a LOAD-TIME decision (an AOTI artifact is
         # device/dtype-pinned, unlike a native model you can .to() afterward),
         # threaded from load_model / load_input's device=/dtype= args; None => the
-        # ambient torch default. The stub stays device/dtype-agnostic (only
-        # artifact_path) -- which is why it lives in the common area while the
-        # binaries live in <device>/<dtype>/ subfolders.
+        # NEML2-canonical cpu/float64 leaf (matching `neml2-compile`'s defaults).
+        # The stub stays device/dtype-agnostic (only artifact_path) -- which is why
+        # it lives in the common area while the binaries live in <device>/<dtype>/
+        # subfolders.
         return cls(
             artifact_path,
             device=getattr(factory, "_device", None),
@@ -145,12 +146,16 @@ class AOTIModel(nn.Module):
     ) -> None:
         super().__init__()
         artifact_root = Path(artifact_root)
-        # Default device + dtype come from the ambient torch defaults (the leaf the
-        # C++ ctor loads). Callers may pin them explicitly (e.g. a fixed cuda index).
+        # device / dtype select the <device>/<dtype>/ binary leaf. They default to
+        # NEML2's canonical target -- cpu, float64 -- NOT the ambient torch default:
+        # an AOTI artifact is device/dtype-pinned (float64-first; `neml2-compile`
+        # likewise defaults to cpu/float64), and torch's ambient dtype is float32,
+        # which would never match a stock artifact. Callers pin a different leaf
+        # explicitly (e.g. `dtype="float32"`, or a concrete `device="cuda:1"`).
         if device is None:
-            device = torch.get_default_device().type
+            device = "cpu"
         if dtype is None:
-            dtype = str(torch.get_default_dtype()).removeprefix("torch.")
+            dtype = "float64"
         meta_path = artifact_root / "metadata.json"
         if not meta_path.is_file():
             raise FileNotFoundError(

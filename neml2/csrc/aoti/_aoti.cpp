@@ -98,23 +98,18 @@ Everything else is baked into the graph as a constant.
                   std::optional<std::string> device,
                   std::optional<std::string> dtype)
                {
-                 // device/dtype default to the ambient torch defaults so
-                 // `Model(root)` loads the <device>/<dtype>/ leaf matching
-                 // torch.get_default_device() / torch.get_default_dtype() -- the same
-                 // rule the py-aoti shim uses. Explicit strings override.
-                 std::string dev = device.value_or("");
-                 std::string dt = dtype.value_or("");
+                 // device/dtype default to NEML2's canonical cpu/float64 leaf --
+                 // matching `neml2-compile` and the py-aoti shim -- NOT torch's
+                 // ambient defaults: an AOTI artifact is device/dtype-pinned
+                 // (float64-first), and torch's ambient dtype is float32, which
+                 // would never match a stock artifact. Explicit strings override
+                 // (e.g. "float32", or a concrete "cuda:1").
+                 std::string dev = device.value_or("cpu");
+                 std::string dt = dtype.value_or("float64");
                  if (dev.empty())
-                   dev = py::cast<std::string>(py::str(
-                       py::module_::import("torch").attr("get_default_device")().attr("type")));
+                   dev = "cpu";
                  if (dt.empty())
-                 {
-                   dt = py::cast<std::string>(
-                       py::str(py::module_::import("torch").attr("get_default_dtype")()));
-                   const std::string pfx = "torch.";
-                   if (dt.rfind(pfx, 0) == 0)
-                     dt = dt.substr(pfx.size());
-                 }
+                   dt = "float64";
                  // The leaf dtype is always a float type (the model dtype); a small
                  // local map keeps the binding free of the anon-namespace parser in
                  // Model.cpp. device uses torch's own string ctor (cpu/cuda/cuda:1).
@@ -134,8 +129,8 @@ Everything else is baked into the graph as a constant.
            py::arg("dtype") = py::none(),
            "Load the compiled artifact rooted at `artifact_root` (shared "
            "metadata.json + <device>/<dtype>/ binaries). `device`/`dtype` default "
-           "to torch.get_default_device()/get_default_dtype(). Throws on any missing "
-           "file or schema mismatch.")
+           "to NEML2's canonical cpu/float64 (matching neml2-compile), not torch's "
+           "ambient defaults. Throws on any missing file or schema mismatch.")
       .def_property_readonly(
           "input_names", &Model::input_names, "Master input names in graph-call order.")
       .def_property_readonly(

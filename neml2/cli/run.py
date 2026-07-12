@@ -74,12 +74,13 @@ def main(argv: list[str] | None = None) -> int:
     # subsequent flags too.
     args, additional_args = _build_parser().parse_known_args(argv)
 
-    # Set process-wide torch defaults BEFORE load_input. [Tensors] Python
-    # expressions (``torch.tensor([...])``, ``torch.linspace(...)``, ...)
-    # build their initial conditions on the active dtype/device. Without
-    # this, a fresh process's default float32 would mismatch an AOTI
-    # artifact compiled as float64 -- and the runtime correctly refuses
-    # to silently coerce, surfacing a confusing dtype error.
+    # Set process-wide torch defaults BEFORE load_input so [Tensors] Python
+    # expressions (``torch.tensor([...])``, ``torch.linspace(...)``, ...) build
+    # their initial conditions on the active dtype/device -- otherwise a fresh
+    # process's float32 default would mismatch a float64 artifact's inputs, and
+    # the runtime correctly refuses to silently coerce. (The AOTI <device>/<dtype>/
+    # leaf itself is selected by the explicit device/dtype passed to load_input
+    # below, not by these ambient defaults.)
     import torch  # noqa: PLC0415
 
     torch.set_default_dtype(getattr(torch, args.dtype))
@@ -87,7 +88,13 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         load_user_extensions(args.load)
-        factory = load_input(args.input, additional_args=additional_args)
+        # Pass device/dtype explicitly so a compiled (AOTIModel) block loads the
+        # matching <device>/<dtype>/ leaf. The load APIs no longer read torch's
+        # ambient defaults for that choice; the set_default_* above remains only so
+        # [Tensors] Python expressions build their tensors on the active dtype/device.
+        factory = load_input(
+            args.input, additional_args=additional_args, device=args.device, dtype=args.dtype
+        )
         # ``run()`` writes its output to disk iff the driver's ``save_as`` is
         # set (TransientDriver); nothing CLI-specific to do here.
         factory.get_driver(args.driver).run()

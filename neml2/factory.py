@@ -137,7 +137,8 @@ class _NativeInputFile:
         # load time because an AOTI artifact is device/dtype-pinned (unlike a
         # native model, which materializes at the ambient default and can be
         # moved later with ``.to(...)``). ``None`` => ``AOTIModel`` falls back to
-        # the ambient torch default. Non-compiled models ignore these entirely.
+        # NEML2's canonical cpu/float64 (matching ``neml2-compile``), NOT torch's
+        # ambient defaults. Non-compiled models ignore these entirely.
         self._device = device
         self._dtype = dtype
 
@@ -434,10 +435,10 @@ def _normalize_load_target(device: Any, dtype: Any) -> tuple[str | None, str | N
     ``AOTIModel`` shim and the C++ ctor accept.
 
     Accepts a ``torch.device`` / ``torch.dtype``, their string spellings
-    (``"cuda:1"`` / ``"float64"``), or ``None`` (=> ambient torch default,
-    resolved downstream). ``str()`` handles both torch objects and plain
-    strings, so no torch import is needed here; the ``torch.`` prefix on a
-    dtype's ``str()`` (``"torch.float64"``) is stripped.
+    (``"cuda:1"`` / ``"float64"``), or ``None`` (=> the AOTIModel shim's canonical
+    cpu/float64 default, resolved downstream). ``str()`` handles both torch objects
+    and plain strings, so no torch import is needed here; the ``torch.`` prefix on
+    a dtype's ``str()`` (``"torch.float64"``) is stripped.
     """
     dev = None if device is None else str(device)
     dt = None if dtype is None else str(dtype).removeprefix("torch.")
@@ -472,7 +473,8 @@ def load_input(
         Load-time device/dtype for any **compiled** (``AOTIModel``) block in
         the file -- they select the ``<device>/<dtype>/`` artifact leaf. Accept
         a ``torch.device`` / ``torch.dtype`` or their string spellings;
-        ``None`` (default) falls back to the ambient torch default. This is a
+        ``None`` (default) selects NEML2's canonical ``cpu`` / ``float64``
+        (matching ``neml2-compile``), NOT torch's ambient defaults. This is a
         load-time decision because an AOTI artifact is device/dtype-pinned; a
         non-compiled model ignores these and is placed with ``.to(...)`` after
         loading. The compiled stub itself stays device/dtype-agnostic.
@@ -527,9 +529,10 @@ def load_model(
         Name of the model in the ``[Models]`` section.
     device, dtype:
         Load-time device/dtype for a **compiled** model (an ``AOTIModel`` stub):
-        they select the ``<device>/<dtype>/`` artifact leaf and default to the
-        ambient torch default. Ignored for a non-compiled model (place it with
-        ``.to(...)`` afterward). See :func:`load_input`.
+        they select the ``<device>/<dtype>/`` artifact leaf and default to NEML2's
+        canonical ``cpu`` / ``float64`` (matching ``neml2-compile``). Ignored for a
+        non-compiled model (place it with ``.to(...)`` afterward). See
+        :func:`load_input`.
     """
     return load_input(path, device=device, dtype=dtype).get_model(model_name)
 
