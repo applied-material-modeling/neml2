@@ -28,8 +28,8 @@ Covers the multi-device output layout: ``main()`` and the
 ``compile_and_emit_stub`` helper both emit one artifact folder per model
 (``<out>/<model>/`` holding one shared ``metadata.json`` + per-``<device>/<dtype>/``
 binaries) plus a single standalone ``<out>/<model>_aoti.i`` stub that points at
-the folder via an absolute ``artifact_path``. Also exercises the two cheap error
-exits (missing input, unknown model).
+the folder via a stub-relative ``artifact_path``. Also exercises the two cheap
+error exits (missing input, unknown model).
 
 The forward_single leaf is the smallest scenario; the second compile of it hits
 the warm Inductor cache, so the per-device-layout assertions cost roughly one

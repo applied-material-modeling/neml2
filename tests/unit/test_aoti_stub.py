@@ -39,7 +39,7 @@ solver config straight from ``metadata.json`` at load (that round-trip is
 covered by ``tests/unit/test_aoti_export.py``). The stub is reduced to:
 
 * a single ``[Models]`` block holding only the ``AOTIModel`` shim -- ``type`` +
-  an absolute ``artifact_path`` pointing at the artifact ROOT folder;
+  a stub-relative ``artifact_path`` pointing at the artifact ROOT folder;
 * ``[Settings]`` from the original (``aoti_*`` keys stripped);
 * ``[Tensors]`` verbatim;
 * ``[Drivers]`` verbatim, only when ``keep_drivers=True`` (``--driver`` mode).
@@ -146,14 +146,17 @@ _WITH_RUNTIME_SECTIONS = """
 
 
 def test_shim_has_only_type_and_artifact_path(tmp_path):
-    """The shim carries exactly ``type = AOTIModel`` + an absolute
-    ``artifact_path`` pointing at the artifact ROOT folder -- no ``solver`` field
-    (v10: solver config lives in metadata.json) and no legacy ``meta`` field."""
+    """The shim carries exactly ``type = AOTIModel`` + a ``artifact_path``
+    **relative** to the stub, pointing at the artifact ROOT folder -- no ``solver``
+    field (v10: solver config lives in metadata.json) and no legacy ``meta`` field.
+    Relative (not absolute) so the stub + artifact folder relocate together as a
+    portable bundle; the loader resolves it against the stub's directory."""
     sections = _emit(tmp_path, _DIRECT_IMPLICIT, "model")
     shim = _shim(sections, "model")
     assert shim.param_str("type") == "AOTIModel"
     ap = shim.param_optional_str("artifact_path", "")
-    assert ap and Path(ap).is_absolute()
+    # Stub at ``<tmp>/model_aoti.i``, artifact at ``<tmp>/model/`` -> relative "model".
+    assert ap and not Path(ap).is_absolute()
     assert Path(ap).name == "model"  # the per-model artifact root folder
     # Superseded fields are gone.
     assert shim.find("solver") is None

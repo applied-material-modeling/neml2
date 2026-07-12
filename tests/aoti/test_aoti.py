@@ -892,3 +892,43 @@ def test_load_model_dtype_threads_to_leaf(tmp_path: Path):
     # sole float64 leaf (the point of deciding device/dtype explicitly at load).
     with pytest.raises(RuntimeError, match="no compiled artifact|Available"):
         neml2.load_model(str(stub), "model", device="cpu", dtype="float32")
+
+
+def test_stub_artifact_bundle_is_relocatable(tmp_path: Path):
+    """The stub records a **stub-relative** ``artifact_path``, so moving the stub
+    and its artifact folder together to a new location still loads -- a portable
+    bundle with no absolute (machine-specific) path baked in. Regression for the
+    relative-path design (compile once, ship the folder, load anywhere)."""
+    import shutil
+
+    import neml2
+    from neml2.cli.aoti_compile import emit_aoti_stub
+    from neml2.cli.aoti_export import export_model_for_aoti
+    from neml2.types import SR2
+
+    orig = tmp_path / "orig"
+    orig.mkdir()
+    src = orig / "model.i"
+    src.write_text(
+        "[Models]\n"
+        "  [model]\n"
+        "    type = LinearIsotropicElasticity\n"
+        "    coefficients = '200e3 0.3'\n"
+        "    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'\n"
+        "  []\n"
+        "[]\n"
+    )
+    artifact = orig / "model"
+    export_model_for_aoti(src, "model", artifact, device="cpu")
+    stub = orig / "model_aoti.i"
+    emit_aoti_stub(src, "model", artifact, stub)
+    assert not Path(stub.read_text().split("artifact_path")[1].split("'")[1]).is_absolute()
+
+    # Move the whole bundle (stub + artifact folder) to a fresh location; the
+    # relative artifact_path resolves against the stub's new directory.
+    moved = tmp_path / "relocated"
+    shutil.move(str(orig), str(moved))
+
+    m = neml2.load_model(str(moved / "model_aoti.i"), "model", device="cpu", dtype="float64")
+    (stress,) = m(SR2(torch.zeros(2, 6)))
+    assert torch.isfinite(stress.data).all()

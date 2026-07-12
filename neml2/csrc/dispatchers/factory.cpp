@@ -65,8 +65,9 @@ load_model(const std::filesystem::path & stub_path,
           type,
           "', expected 'AOTIModel'. Pass the stub produced by `neml2-compile`.");
 
-  // artifact_path: the artifact root directory (absolute per neml2-compile;
-  // tolerate a relative path by resolving it against the stub's directory).
+  // artifact_path: the artifact root directory. neml2-compile writes it relative
+  // to the stub (so the stub + folder relocate together as a portable bundle);
+  // resolve a relative value against the stub's directory. Absolute is honored too.
   const auto artifact_path_str = model_node->param_optional<std::string>("artifact_path", "");
   _assert(!artifact_path_str.empty(),
           "aoti::load_model: [Models/",

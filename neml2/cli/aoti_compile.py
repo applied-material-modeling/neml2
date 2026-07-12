@@ -53,6 +53,7 @@ attribute to be a graph input -- mutable at runtime through
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -425,8 +426,8 @@ def emit_aoti_stub(
     The stub is a standalone file that sits next to (not inside) the
     *artifact_dir* -- the artifact folder holding one shared ``metadata.json`` at
     its root and per-``<device>/<dtype>/`` ``.pt2`` binaries. The shim points at
-    the folder via an absolute ``artifact_path``; the loader (Python shim or C++
-    ``load_model``) reads ``<artifact_path>/metadata.json`` and the
+    the folder via an ``artifact_path`` relative to the stub; the loader (Python
+    shim or C++ ``load_model``) reads ``<artifact_path>/metadata.json`` and the
     ``<device>/<dtype>/`` binaries for the device + dtype it runs on. The folder is
     self-describing (structural metadata + solver config), so cpp-aoti /
     cpp-dispatch never need this stub -- it is a ``neml2-run`` / py-aoti convenience.
@@ -461,8 +462,10 @@ def emit_aoti_stub(
     (Verbosity is separate: it is a diagnostic controlled by ``NEML2_AOTI_TRACE_*``
     env vars, not recorded anywhere in the artifact.)
 
-    The artifact folder is recorded as an absolute ``artifact_path`` -- the
-    stub is standalone, so the artifacts are not relocatable without a recompile.
+    The artifact folder is recorded as an ``artifact_path`` **relative** to the
+    stub, so the stub + its artifact folder move together as a portable bundle
+    (see the emission site below). Relocating the stub away from its artifact is
+    intentionally unsupported.
 
     Implementation note: we build a fresh ``nmhit.Root`` and clone the
     sections we want into it, rather than mutating the parsed input. nmhit
@@ -503,9 +506,16 @@ def emit_aoti_stub(
             f"Available: {sorted(set(all_names))}"
         )
 
-    # Absolute pointer at the artifact folder (root). Absolute (not
-    # relative) by design: the stub is standalone and lives outside the folder,
-    # so moving the artifacts requires recompiling or editing this path.
+    # Pointer at the artifact folder (root), written RELATIVE to the stub's own
+    # directory -- the loader (Python shim `from_hit` and C++ `factory::load_model`)
+    # resolves a relative `artifact_path` against the directory of the stub itself.
+    # Relative, not absolute, so the whole bundle (stub + its artifact folder) is
+    # portable: copy or move the two together anywhere -- another directory,
+    # machine, or user -- and it still loads, with no machine-specific path baked
+    # in and no recompile. Moving the stub *away* from its artifact folder is
+    # intentionally unsupported (keep them together). Absolute fallback only when a
+    # relative path can't be expressed (a Windows artifact on a different drive
+    # than the stub).
     #
     # Single-quote the value so the path round-trips through the HIT lexer
     # verbatim -- an unquoted scalar rejects characters that are legal in a
@@ -513,13 +523,18 @@ def emit_aoti_stub(
     # value is raw. This matches the format the reader documents and expects
     # (see the ``artifact_path = '...'`` examples in ``neml2/aoti/_shim.py`` and
     # ``doc/content/references/aoti_packages.md``).
-    artifact_abs = str(Path(artifact_dir).resolve())
+    artifact_abs = Path(artifact_dir).resolve()
+    stub_dir = Path(stub_path).resolve().parent
+    try:
+        artifact_ref = os.path.relpath(artifact_abs, stub_dir)
+    except ValueError:  # different drives on Windows -- no relative path exists
+        artifact_ref = str(artifact_abs)
 
     # Build the cleaned [Models] block once: one shim, no siblings.
     cleaned_models = nmhit.Section("Models")
     shim = nmhit.Section(model_name)
     shim.add_child(nmhit.Field("type", "AOTIModel"))
-    shim.add_child(nmhit.Field("artifact_path", f"'{artifact_abs}'"))
+    shim.add_child(nmhit.Field("artifact_path", f"'{artifact_ref}'"))
     cleaned_models.add_child(shim)
 
     # Walk the source top-level children IN ORDER and clone each into the

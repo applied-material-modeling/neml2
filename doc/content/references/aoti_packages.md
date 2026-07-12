@@ -248,17 +248,22 @@ A typical stub:
 [Models]
   [elasticity]
     type = AOTIModel
-    artifact_path = '/abs/path/to/aoti/elasticity'
+    artifact_path = 'elasticity'
   []
 []
 ```
 
-The `artifact_path` is an **absolute** path to the artifact folder
-(`<output-dir>/<name>/`). The loader reads `metadata.json` from that
-root and resolves `<artifact_path>/<device>/<dtype>/` for the device
-and dtype it runs on. Because the path is absolute and the stub lives
-outside that folder, the artifacts are **not relocatable** — moving the
-folder requires editing `artifact_path` or recompiling.
+The `artifact_path` is a path to the artifact folder (`<output-dir>/<name>/`),
+written **relative to the stub** — usually just the folder name, since the stub
+(`<output-dir>/<name>_aoti.i`) sits right next to it. The loader (Python shim and
+C++ `load_model`) resolves a relative `artifact_path` against the stub's own
+directory, reads `metadata.json` from that root, and resolves
+`<artifact_path>/<device>/<dtype>/` for the device and dtype it runs on. Because
+the path is relative, the stub and its artifact folder form a **portable bundle**:
+copy or move the two together — to another directory, machine, or user — and it
+still loads, with no machine-specific path baked in and no recompile. Moving the
+stub *away* from its artifact folder is intentionally unsupported; keep them
+together. (An absolute `artifact_path` is also accepted if you hand-edit one.)
 
 The shim has the same surface as a native model — same `input_spec`,
 same `output_spec`, same call convention — but inside it dispatches

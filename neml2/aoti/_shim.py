@@ -102,9 +102,12 @@ class AOTIModel(nn.Module):
         option(
             "artifact_path",
             str,
-            "Absolute path to the artifact folder produced by ``neml2-compile`` -- "
-            "one shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` "
-            "binaries. The stub is device/dtype-agnostic (only ``artifact_path``); "
+            "Path to the artifact folder produced by ``neml2-compile`` -- one "
+            "shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` "
+            "binaries. Written by ``neml2-compile`` relative to the stub (so the "
+            "stub + folder relocate together); resolved against the stub's "
+            "directory, and an absolute path is also accepted. The stub is "
+            "device/dtype-agnostic (only ``artifact_path``); "
             "the ``<device>/<dtype>/`` leaf is chosen at load time via "
             "``load_model(..., device=, dtype=)``, defaulting to ``cpu`` / "
             "``float64`` (matching ``neml2-compile``). Solver config is read from "
@@ -115,8 +118,9 @@ class AOTIModel(nn.Module):
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> AOTIModel:
         artifact_str = node.param_str("artifact_path")
-        # Absolute per `neml2-compile`; tolerate a relative path by resolving it
-        # against the input file's directory.
+        # `neml2-compile` writes a path relative to the stub, so resolve a relative
+        # value against the stub's own directory (which keeps the stub + artifact
+        # folder a portable bundle). An absolute path is also honored as-is.
         artifact_path = Path(artifact_str)
         if not artifact_path.is_absolute():
             artifact_path = factory._path.parent / artifact_path
