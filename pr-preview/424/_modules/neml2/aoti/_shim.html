@@ -511,421 +511,425 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="102">        <span class="n">option</span><span class="p">(</span>
 </span><span data-line="103">            <span class="s2">&quot;artifact_path&quot;</span><span class="p">,</span>
 </span><span data-line="104">            <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="105">            <span class="s2">&quot;Absolute path to the artifact folder produced by ``neml2-compile`` -- &quot;</span>
-</span><span data-line="106">            <span class="s2">&quot;one shared ``metadata.json`` plus ``&lt;device&gt;/&lt;dtype&gt;/`` ``.pt2`` &quot;</span>
-</span><span data-line="107">            <span class="s2">&quot;binaries. The stub is device/dtype-agnostic (only ``artifact_path``); &quot;</span>
-</span><span data-line="108">            <span class="s2">&quot;the ``&lt;device&gt;/&lt;dtype&gt;/`` leaf is chosen at load time via &quot;</span>
-</span><span data-line="109">            <span class="s2">&quot;``load_model(..., device=, dtype=)``, defaulting to ``cpu`` / &quot;</span>
-</span><span data-line="110">            <span class="s2">&quot;``float64`` (matching ``neml2-compile``). Solver config is read from &quot;</span>
-</span><span data-line="111">            <span class="s2">&quot;the shared metadata, so no ``[Solvers]`` block is needed.&quot;</span><span class="p">,</span>
-</span><span data-line="112">        <span class="p">),</span>
-</span><span data-line="113">    <span class="p">)</span>
-</span><span data-line="114">
+</span><span data-line="105">            <span class="s2">&quot;Path to the artifact folder produced by ``neml2-compile`` -- one &quot;</span>
+</span><span data-line="106">            <span class="s2">&quot;shared ``metadata.json`` plus ``&lt;device&gt;/&lt;dtype&gt;/`` ``.pt2`` &quot;</span>
+</span><span data-line="107">            <span class="s2">&quot;binaries. Written by ``neml2-compile`` relative to the stub (so the &quot;</span>
+</span><span data-line="108">            <span class="s2">&quot;stub + folder relocate together); resolved against the stub&#39;s &quot;</span>
+</span><span data-line="109">            <span class="s2">&quot;directory, and an absolute path is also accepted. The stub is &quot;</span>
+</span><span data-line="110">            <span class="s2">&quot;device/dtype-agnostic (only ``artifact_path``); &quot;</span>
+</span><span data-line="111">            <span class="s2">&quot;the ``&lt;device&gt;/&lt;dtype&gt;/`` leaf is chosen at load time via &quot;</span>
+</span><span data-line="112">            <span class="s2">&quot;``load_model(..., device=, dtype=)``, defaulting to ``cpu`` / &quot;</span>
+</span><span data-line="113">            <span class="s2">&quot;``float64`` (matching ``neml2-compile``). Solver config is read from &quot;</span>
+</span><span data-line="114">            <span class="s2">&quot;the shared metadata, so no ``[Solvers]`` block is needed.&quot;</span><span class="p">,</span>
+</span><span data-line="115">        <span class="p">),</span>
+</span><span data-line="116">    <span class="p">)</span>
+</span><span data-line="117">
 <div class="viewcode-block" id="AOTIModel.from_hit">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.from_hit">[docs]</a>
-</span><span data-line="115">    <span class="nd">@classmethod</span>
-</span><span data-line="116">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AOTIModel</span><span class="p">:</span>
-</span><span data-line="117">        <span class="n">artifact_str</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;artifact_path&quot;</span><span class="p">)</span>
-</span><span data-line="118">        <span class="c1"># Absolute per `neml2-compile`; tolerate a relative path by resolving it</span>
-</span><span data-line="119">        <span class="c1"># against the input file&#39;s directory.</span>
-</span><span data-line="120">        <span class="n">artifact_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">artifact_str</span><span class="p">)</span>
-</span><span data-line="121">        <span class="k">if</span> <span class="ow">not</span> <span class="n">artifact_path</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
-</span><span data-line="122">            <span class="n">artifact_path</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">artifact_path</span>
-</span><span data-line="123">        <span class="n">artifact_path</span> <span class="o">=</span> <span class="n">artifact_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-</span><span data-line="124">        <span class="c1"># The folder is self-describing (shared metadata.json + solver config), so</span>
-</span><span data-line="125">        <span class="c1"># no [Solvers] handling is needed here -- the C++ ctor reads the config</span>
-</span><span data-line="126">        <span class="c1"># from the metadata. device + dtype select the &lt;device&gt;/&lt;dtype&gt;/ binary</span>
-</span><span data-line="127">        <span class="c1"># leaf; a missing leaf raises a clear error (listing what IS present) from</span>
-</span><span data-line="128">        <span class="c1"># the C++ ctor. They are a LOAD-TIME decision (an AOTI artifact is</span>
-</span><span data-line="129">        <span class="c1"># device/dtype-pinned, unlike a native model you can .to() afterward),</span>
-</span><span data-line="130">        <span class="c1"># threaded from load_model / load_input&#39;s device=/dtype= args; None =&gt; the</span>
-</span><span data-line="131">        <span class="c1"># NEML2-canonical cpu/float64 leaf (matching `neml2-compile`&#39;s defaults).</span>
-</span><span data-line="132">        <span class="c1"># The stub stays device/dtype-agnostic (only artifact_path) -- which is why</span>
-</span><span data-line="133">        <span class="c1"># it lives in the common area while the binaries live in &lt;device&gt;/&lt;dtype&gt;/</span>
-</span><span data-line="134">        <span class="c1"># subfolders.</span>
-</span><span data-line="135">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-</span><span data-line="136">            <span class="n">artifact_path</span><span class="p">,</span>
-</span><span data-line="137">            <span class="n">device</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="s2">&quot;_device&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-</span><span data-line="138">            <span class="n">dtype</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="s2">&quot;_dtype&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-</span><span data-line="139">        <span class="p">)</span></div>
+</span><span data-line="118">    <span class="nd">@classmethod</span>
+</span><span data-line="119">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AOTIModel</span><span class="p">:</span>
+</span><span data-line="120">        <span class="n">artifact_str</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;artifact_path&quot;</span><span class="p">)</span>
+</span><span data-line="121">        <span class="c1"># `neml2-compile` writes a path relative to the stub, so resolve a relative</span>
+</span><span data-line="122">        <span class="c1"># value against the stub&#39;s own directory (which keeps the stub + artifact</span>
+</span><span data-line="123">        <span class="c1"># folder a portable bundle). An absolute path is also honored as-is.</span>
+</span><span data-line="124">        <span class="n">artifact_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">artifact_str</span><span class="p">)</span>
+</span><span data-line="125">        <span class="k">if</span> <span class="ow">not</span> <span class="n">artifact_path</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
+</span><span data-line="126">            <span class="n">artifact_path</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">artifact_path</span>
+</span><span data-line="127">        <span class="n">artifact_path</span> <span class="o">=</span> <span class="n">artifact_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+</span><span data-line="128">        <span class="c1"># The folder is self-describing (shared metadata.json + solver config), so</span>
+</span><span data-line="129">        <span class="c1"># no [Solvers] handling is needed here -- the C++ ctor reads the config</span>
+</span><span data-line="130">        <span class="c1"># from the metadata. device + dtype select the &lt;device&gt;/&lt;dtype&gt;/ binary</span>
+</span><span data-line="131">        <span class="c1"># leaf; a missing leaf raises a clear error (listing what IS present) from</span>
+</span><span data-line="132">        <span class="c1"># the C++ ctor. They are a LOAD-TIME decision (an AOTI artifact is</span>
+</span><span data-line="133">        <span class="c1"># device/dtype-pinned, unlike a native model you can .to() afterward),</span>
+</span><span data-line="134">        <span class="c1"># threaded from load_model / load_input&#39;s device=/dtype= args; None =&gt; the</span>
+</span><span data-line="135">        <span class="c1"># NEML2-canonical cpu/float64 leaf (matching `neml2-compile`&#39;s defaults).</span>
+</span><span data-line="136">        <span class="c1"># The stub stays device/dtype-agnostic (only artifact_path) -- which is why</span>
+</span><span data-line="137">        <span class="c1"># it lives in the common area while the binaries live in &lt;device&gt;/&lt;dtype&gt;/</span>
+</span><span data-line="138">        <span class="c1"># subfolders.</span>
+</span><span data-line="139">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+</span><span data-line="140">            <span class="n">artifact_path</span><span class="p">,</span>
+</span><span data-line="141">            <span class="n">device</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="s2">&quot;_device&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+</span><span data-line="142">            <span class="n">dtype</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="s2">&quot;_dtype&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+</span><span data-line="143">        <span class="p">)</span></div>
 
-</span><span data-line="140">
-</span><span data-line="141">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-</span><span data-line="142">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="143">        <span class="n">artifact_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
-</span><span data-line="144">        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="145">        <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="146">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="147">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-</span><span data-line="148">        <span class="n">artifact_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">artifact_root</span><span class="p">)</span>
-</span><span data-line="149">        <span class="c1"># device / dtype select the &lt;device&gt;/&lt;dtype&gt;/ binary leaf. They default to</span>
-</span><span data-line="150">        <span class="c1"># NEML2&#39;s canonical target -- cpu, float64 -- NOT the ambient torch default:</span>
-</span><span data-line="151">        <span class="c1"># an AOTI artifact is device/dtype-pinned (float64-first; `neml2-compile`</span>
-</span><span data-line="152">        <span class="c1"># likewise defaults to cpu/float64), and torch&#39;s ambient dtype is float32,</span>
-</span><span data-line="153">        <span class="c1"># which would never match a stock artifact. Callers pin a different leaf</span>
-</span><span data-line="154">        <span class="c1"># explicitly (e.g. `dtype=&quot;float32&quot;`, or a concrete `device=&quot;cuda:1&quot;`).</span>
-</span><span data-line="155">        <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="156">            <span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span>
-</span><span data-line="157">        <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="158">            <span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;float64&quot;</span>
-</span><span data-line="159">        <span class="n">meta_path</span> <span class="o">=</span> <span class="n">artifact_root</span> <span class="o">/</span> <span class="s2">&quot;metadata.json&quot;</span>
-</span><span data-line="160">        <span class="k">if</span> <span class="ow">not</span> <span class="n">meta_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-</span><span data-line="161">            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-</span><span data-line="162">                <span class="sa">f</span><span class="s2">&quot;AOTIModel: no metadata.json in </span><span class="si">{</span><span class="n">artifact_root</span><span class="si">}</span><span class="s2">. Is this a &quot;</span>
-</span><span data-line="163">                <span class="sa">f</span><span class="s2">&quot;`neml2-compile` output folder (metadata.json + &lt;device&gt;/&lt;dtype&gt;/ &quot;</span>
-</span><span data-line="164">                <span class="sa">f</span><span class="s2">&quot;binaries)?&quot;</span>
-</span><span data-line="165">            <span class="p">)</span>
-</span><span data-line="166">        <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span> <span class="o">=</span> <span class="n">_BoundModel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">artifact_root</span><span class="p">),</span> <span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
-</span><span data-line="167">        <span class="c1"># Pull typed-wrapper class info from the metadata. The binding&#39;s</span>
-</span><span data-line="168">        <span class="c1"># `input_names`/`input_sizes` give names + flat sizes; for the</span>
-</span><span data-line="169">        <span class="c1"># native-driver surface we additionally need the TensorWrapper class</span>
-</span><span data-line="170">        <span class="c1"># (e.g. Scalar vs SR2) which the metadata records under `var_type`.</span>
-</span><span data-line="171">        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">meta_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-</span><span data-line="172">            <span class="n">meta</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-</span><span data-line="173">        <span class="c1"># Boundary renames (shallow): the metadata records each variable&#39;s</span>
-</span><span data-line="174">        <span class="c1"># ORIGINAL authored name plus an optional ``boundary_aliases`` map. The</span>
-</span><span data-line="175">        <span class="c1"># C++ binding&#39;s public surface (``input_names`` / ``forward`` / ...)</span>
-</span><span data-line="176">        <span class="c1"># already speaks the boundary names, so the shim keys its own</span>
-</span><span data-line="177">        <span class="c1"># ``input_spec`` / ``output_spec`` / per-input metadata by the boundary</span>
-</span><span data-line="178">        <span class="c1"># name too -- keeping ``raw_inputs`` / ``raw_outs`` aligned with what</span>
-</span><span data-line="179">        <span class="c1"># ``self._inner`` expects and returns. Absent =&gt; original names.</span>
-</span><span data-line="180">        <span class="n">aliases</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;boundary_aliases&quot;</span><span class="p">,</span> <span class="p">{})</span>
-</span><span data-line="181">        <span class="n">in_alias</span> <span class="o">=</span> <span class="n">aliases</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inputs&quot;</span><span class="p">,</span> <span class="p">{})</span>
-</span><span data-line="182">        <span class="n">out_alias</span> <span class="o">=</span> <span class="n">aliases</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">,</span> <span class="p">{})</span>
-</span><span data-line="183">        <span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spec_from_meta</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">],</span> <span class="n">in_alias</span><span class="p">)</span>
-</span><span data-line="184">        <span class="bp">self</span><span class="o">.</span><span class="n">output_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spec_from_meta</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;outputs&quot;</span><span class="p">],</span> <span class="n">out_alias</span><span class="p">)</span>
-</span><span data-line="185">        <span class="c1"># Per-input sub-batch shape (empty tuple when the input has none).</span>
-</span><span data-line="186">        <span class="c1"># ``_broadcast_to_common_batch`` consults this to split each input&#39;s</span>
-</span><span data-line="187">        <span class="c1"># batch axes into (dyn, sub) and broadcast only the dyn portion --</span>
-</span><span data-line="188">        <span class="c1"># the sub-batch axis is part of the input&#39;s identity and must not</span>
-</span><span data-line="189">        <span class="c1"># be flattened against a global (no-sub-batch) sibling.</span>
-</span><span data-line="190">        <span class="bp">self</span><span class="o">.</span><span class="n">input_sub_batch</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="191">            <span class="n">in_alias</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]):</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sub_batch_shape&quot;</span><span class="p">,</span> <span class="p">()))</span>
-</span><span data-line="192">            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">]</span>
-</span><span data-line="193">        <span class="p">}</span>
-</span><span data-line="194">        <span class="c1"># Per-input / per-output sub-batch labels (empty tuple when the</span>
-</span><span data-line="195">        <span class="c1"># variable carries none). Persisted at export time via</span>
-</span><span data-line="196">        <span class="c1"># :func:`~neml2.cli.aoti_export._var_infos`; re-attached when</span>
-</span><span data-line="197">        <span class="c1"># wrapping AOTI raw outputs back into typed wrappers so the</span>
-</span><span data-line="198">        <span class="c1"># per-axis label dispatch (preserved-label storage, BLOCK-aware</span>
-</span><span data-line="199">        <span class="c1"># matmul) survives the export-and-load round-trip.</span>
-</span><span data-line="200">        <span class="bp">self</span><span class="o">.</span><span class="n">input_labels</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="201">            <span class="n">in_alias</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]):</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sub_batch_labels&quot;</span><span class="p">,</span> <span class="p">()))</span>
-</span><span data-line="202">            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">]</span>
-</span><span data-line="203">        <span class="p">}</span>
-</span><span data-line="204">        <span class="bp">self</span><span class="o">.</span><span class="n">output_labels</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="205">            <span class="n">out_alias</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]):</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sub_batch_labels&quot;</span><span class="p">,</span> <span class="p">()))</span>
-</span><span data-line="206">            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;outputs&quot;</span><span class="p">]</span>
+</span><span data-line="144">
+</span><span data-line="145">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+</span><span data-line="146">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="147">        <span class="n">artifact_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="148">        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="149">        <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="150">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="151">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span><span data-line="152">        <span class="n">artifact_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">artifact_root</span><span class="p">)</span>
+</span><span data-line="153">        <span class="c1"># device / dtype select the &lt;device&gt;/&lt;dtype&gt;/ binary leaf. They default to</span>
+</span><span data-line="154">        <span class="c1"># NEML2&#39;s canonical target -- cpu, float64 -- NOT the ambient torch default:</span>
+</span><span data-line="155">        <span class="c1"># an AOTI artifact is device/dtype-pinned (float64-first; `neml2-compile`</span>
+</span><span data-line="156">        <span class="c1"># likewise defaults to cpu/float64), and torch&#39;s ambient dtype is float32,</span>
+</span><span data-line="157">        <span class="c1"># which would never match a stock artifact. Callers pin a different leaf</span>
+</span><span data-line="158">        <span class="c1"># explicitly (e.g. `dtype=&quot;float32&quot;`, or a concrete `device=&quot;cuda:1&quot;`).</span>
+</span><span data-line="159">        <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="160">            <span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span>
+</span><span data-line="161">        <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="162">            <span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;float64&quot;</span>
+</span><span data-line="163">        <span class="n">meta_path</span> <span class="o">=</span> <span class="n">artifact_root</span> <span class="o">/</span> <span class="s2">&quot;metadata.json&quot;</span>
+</span><span data-line="164">        <span class="k">if</span> <span class="ow">not</span> <span class="n">meta_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+</span><span data-line="165">            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+</span><span data-line="166">                <span class="sa">f</span><span class="s2">&quot;AOTIModel: no metadata.json in </span><span class="si">{</span><span class="n">artifact_root</span><span class="si">}</span><span class="s2">. Is this a &quot;</span>
+</span><span data-line="167">                <span class="sa">f</span><span class="s2">&quot;`neml2-compile` output folder (metadata.json + &lt;device&gt;/&lt;dtype&gt;/ &quot;</span>
+</span><span data-line="168">                <span class="sa">f</span><span class="s2">&quot;binaries)?&quot;</span>
+</span><span data-line="169">            <span class="p">)</span>
+</span><span data-line="170">        <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span> <span class="o">=</span> <span class="n">_BoundModel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">artifact_root</span><span class="p">),</span> <span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+</span><span data-line="171">        <span class="c1"># Pull typed-wrapper class info from the metadata. The binding&#39;s</span>
+</span><span data-line="172">        <span class="c1"># `input_names`/`input_sizes` give names + flat sizes; for the</span>
+</span><span data-line="173">        <span class="c1"># native-driver surface we additionally need the TensorWrapper class</span>
+</span><span data-line="174">        <span class="c1"># (e.g. Scalar vs SR2) which the metadata records under `var_type`.</span>
+</span><span data-line="175">        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">meta_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span data-line="176">            <span class="n">meta</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</span><span data-line="177">        <span class="c1"># Boundary renames (shallow): the metadata records each variable&#39;s</span>
+</span><span data-line="178">        <span class="c1"># ORIGINAL authored name plus an optional ``boundary_aliases`` map. The</span>
+</span><span data-line="179">        <span class="c1"># C++ binding&#39;s public surface (``input_names`` / ``forward`` / ...)</span>
+</span><span data-line="180">        <span class="c1"># already speaks the boundary names, so the shim keys its own</span>
+</span><span data-line="181">        <span class="c1"># ``input_spec`` / ``output_spec`` / per-input metadata by the boundary</span>
+</span><span data-line="182">        <span class="c1"># name too -- keeping ``raw_inputs`` / ``raw_outs`` aligned with what</span>
+</span><span data-line="183">        <span class="c1"># ``self._inner`` expects and returns. Absent =&gt; original names.</span>
+</span><span data-line="184">        <span class="n">aliases</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;boundary_aliases&quot;</span><span class="p">,</span> <span class="p">{})</span>
+</span><span data-line="185">        <span class="n">in_alias</span> <span class="o">=</span> <span class="n">aliases</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inputs&quot;</span><span class="p">,</span> <span class="p">{})</span>
+</span><span data-line="186">        <span class="n">out_alias</span> <span class="o">=</span> <span class="n">aliases</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">,</span> <span class="p">{})</span>
+</span><span data-line="187">        <span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spec_from_meta</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">],</span> <span class="n">in_alias</span><span class="p">)</span>
+</span><span data-line="188">        <span class="bp">self</span><span class="o">.</span><span class="n">output_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spec_from_meta</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;outputs&quot;</span><span class="p">],</span> <span class="n">out_alias</span><span class="p">)</span>
+</span><span data-line="189">        <span class="c1"># Per-input sub-batch shape (empty tuple when the input has none).</span>
+</span><span data-line="190">        <span class="c1"># ``_broadcast_to_common_batch`` consults this to split each input&#39;s</span>
+</span><span data-line="191">        <span class="c1"># batch axes into (dyn, sub) and broadcast only the dyn portion --</span>
+</span><span data-line="192">        <span class="c1"># the sub-batch axis is part of the input&#39;s identity and must not</span>
+</span><span data-line="193">        <span class="c1"># be flattened against a global (no-sub-batch) sibling.</span>
+</span><span data-line="194">        <span class="bp">self</span><span class="o">.</span><span class="n">input_sub_batch</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="195">            <span class="n">in_alias</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]):</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sub_batch_shape&quot;</span><span class="p">,</span> <span class="p">()))</span>
+</span><span data-line="196">            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">]</span>
+</span><span data-line="197">        <span class="p">}</span>
+</span><span data-line="198">        <span class="c1"># Per-input / per-output sub-batch labels (empty tuple when the</span>
+</span><span data-line="199">        <span class="c1"># variable carries none). Persisted at export time via</span>
+</span><span data-line="200">        <span class="c1"># :func:`~neml2.cli.aoti_export._var_infos`; re-attached when</span>
+</span><span data-line="201">        <span class="c1"># wrapping AOTI raw outputs back into typed wrappers so the</span>
+</span><span data-line="202">        <span class="c1"># per-axis label dispatch (preserved-label storage, BLOCK-aware</span>
+</span><span data-line="203">        <span class="c1"># matmul) survives the export-and-load round-trip.</span>
+</span><span data-line="204">        <span class="bp">self</span><span class="o">.</span><span class="n">input_labels</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="205">            <span class="n">in_alias</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]):</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sub_batch_labels&quot;</span><span class="p">,</span> <span class="p">()))</span>
+</span><span data-line="206">            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">]</span>
 </span><span data-line="207">        <span class="p">}</span>
-</span><span data-line="208">
-</span><span data-line="209">    <span class="nd">@staticmethod</span>
-</span><span data-line="210">    <span class="k">def</span><span class="w"> </span><span class="nf">_spec_from_meta</span><span class="p">(</span>
-</span><span data-line="211">        <span class="n">infos</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">alias</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="212">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]]:</span>
-</span><span data-line="213"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Map each metadata ``var_type`` string to the TensorWrapper class.</span>
-</span><span data-line="214">
-</span><span data-line="215"><span class="sd">        *alias* is the boundary-rename sub-map for this namespace (``{original:</span>
-</span><span data-line="216"><span class="sd">        boundary}``); each entry&#39;s key is remapped to its boundary name so the</span>
-</span><span data-line="217"><span class="sd">        returned spec matches the C++ binding&#39;s renamed public surface. Empty /</span>
-</span><span data-line="218"><span class="sd">        ``None`` =&gt; original names.</span>
-</span><span data-line="219"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="220">        <span class="n">alias</span> <span class="o">=</span> <span class="n">alias</span> <span class="ow">or</span> <span class="p">{}</span>
-</span><span data-line="221">        <span class="n">spec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="222">        <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">infos</span><span class="p">:</span>
-</span><span data-line="223">            <span class="n">orig</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
-</span><span data-line="224">            <span class="n">name</span> <span class="o">=</span> <span class="n">alias</span><span class="p">[</span><span class="n">orig</span><span class="p">]</span> <span class="k">if</span> <span class="n">orig</span> <span class="ow">in</span> <span class="n">alias</span> <span class="k">else</span> <span class="n">orig</span>
-</span><span data-line="225">            <span class="n">type_name</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;var_type&quot;</span><span class="p">]</span>
-</span><span data-line="226">            <span class="n">type_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_types</span><span class="p">,</span> <span class="n">type_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-</span><span data-line="227">            <span class="k">if</span> <span class="n">type_cls</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span>
-</span><span data-line="228">                <span class="nb">isinstance</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span>
-</span><span data-line="229">            <span class="p">):</span>
-</span><span data-line="230">                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="231">                    <span class="sa">f</span><span class="s2">&quot;AOTIModel: metadata reports var_type=</span><span class="si">{</span><span class="n">type_name</span><span class="si">!r}</span><span class="s2"> for &quot;</span>
-</span><span data-line="232">                    <span class="sa">f</span><span class="s2">&quot;variable </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">, but neml2.types has no such &quot;</span>
-</span><span data-line="233">                    <span class="sa">f</span><span class="s2">&quot;TensorWrapper subclass.&quot;</span>
-</span><span data-line="234">                <span class="p">)</span>
-</span><span data-line="235">            <span class="n">spec</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">type_cls</span>
-</span><span data-line="236">        <span class="k">return</span> <span class="n">spec</span>
-</span><span data-line="237">
-</span><span data-line="238">    <span class="k">def</span><span class="w"> </span><span class="nf">_check_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="239"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Strict device + dtype check; raise TypeError on mismatch.</span>
-</span><span data-line="240">
-</span><span data-line="241"><span class="sd">        Thin wrapper over the shared</span>
-</span><span data-line="242"><span class="sd">        :func:`neml2.types._boundary.check_tensor` (the device/dtype</span>
-</span><span data-line="243"><span class="sd">        validation is identical across the AOTI + eager boundaries). ``kind``</span>
-</span><span data-line="244"><span class="sd">        is ``&#39;input&#39;`` or ``&#39;parameter&#39;``; the AOTI-specific remediation</span>
-</span><span data-line="245"><span class="sd">        guidance is supplied here as the ``hint``.</span>
-</span><span data-line="246"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="247">        <span class="n">target_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">device</span>
-</span><span data-line="248">        <span class="n">target_dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">dtype</span>
-</span><span data-line="249">        <span class="n">hint</span> <span class="o">=</span> <span class="p">(</span>
-</span><span data-line="250">            <span class="sa">f</span><span class="s2">&quot;The .pt2 artifact is compile-pinned to &quot;</span>
-</span><span data-line="251">            <span class="sa">f</span><span class="s2">&quot;(device=</span><span class="si">{</span><span class="n">target_device</span><span class="si">}</span><span class="s2">, dtype=</span><span class="si">{</span><span class="n">target_dtype</span><span class="si">}</span><span class="s2">) and the runtime &quot;</span>
-</span><span data-line="252">            <span class="sa">f</span><span class="s2">&quot;refuses to silently coerce -- silent coercion would mask the &quot;</span>
-</span><span data-line="253">            <span class="sa">f</span><span class="s2">&quot;silent-garbage / SEGV failure mode where a stride-based kernel &quot;</span>
-</span><span data-line="254">            <span class="sa">f</span><span class="s2">&quot;reads off the end of a mistyped buffer. Cast the tensor &quot;</span>
-</span><span data-line="255">            <span class="sa">f</span><span class="s2">&quot;explicitly with ``.to(device=..., dtype=...)`` at the call &quot;</span>
-</span><span data-line="256">            <span class="sa">f</span><span class="s2">&quot;site, or set process-wide defaults (e.g. &quot;</span>
-</span><span data-line="257">            <span class="sa">f</span><span class="s2">&quot;``torch.set_default_dtype(torch.float64)`` + &quot;</span>
-</span><span data-line="258">            <span class="sa">f</span><span class="s2">&quot;``torch.set_default_device(...)``) before constructing inputs.&quot;</span>
-</span><span data-line="259">        <span class="p">)</span>
-</span><span data-line="260">        <span class="n">check_tensor</span><span class="p">(</span>
-</span><span data-line="261">            <span class="n">t</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">target_device</span><span class="p">,</span> <span class="n">target_dtype</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s2">&quot;AOTIModel&quot;</span><span class="p">,</span> <span class="n">hint</span><span class="o">=</span><span class="n">hint</span>
-</span><span data-line="262">        <span class="p">)</span>
-</span><span data-line="263">
+</span><span data-line="208">        <span class="bp">self</span><span class="o">.</span><span class="n">output_labels</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="209">            <span class="n">out_alias</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]):</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sub_batch_labels&quot;</span><span class="p">,</span> <span class="p">()))</span>
+</span><span data-line="210">            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;outputs&quot;</span><span class="p">]</span>
+</span><span data-line="211">        <span class="p">}</span>
+</span><span data-line="212">
+</span><span data-line="213">    <span class="nd">@staticmethod</span>
+</span><span data-line="214">    <span class="k">def</span><span class="w"> </span><span class="nf">_spec_from_meta</span><span class="p">(</span>
+</span><span data-line="215">        <span class="n">infos</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">alias</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="216">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]]:</span>
+</span><span data-line="217"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Map each metadata ``var_type`` string to the TensorWrapper class.</span>
+</span><span data-line="218">
+</span><span data-line="219"><span class="sd">        *alias* is the boundary-rename sub-map for this namespace (``{original:</span>
+</span><span data-line="220"><span class="sd">        boundary}``); each entry&#39;s key is remapped to its boundary name so the</span>
+</span><span data-line="221"><span class="sd">        returned spec matches the C++ binding&#39;s renamed public surface. Empty /</span>
+</span><span data-line="222"><span class="sd">        ``None`` =&gt; original names.</span>
+</span><span data-line="223"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="224">        <span class="n">alias</span> <span class="o">=</span> <span class="n">alias</span> <span class="ow">or</span> <span class="p">{}</span>
+</span><span data-line="225">        <span class="n">spec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="226">        <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">infos</span><span class="p">:</span>
+</span><span data-line="227">            <span class="n">orig</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+</span><span data-line="228">            <span class="n">name</span> <span class="o">=</span> <span class="n">alias</span><span class="p">[</span><span class="n">orig</span><span class="p">]</span> <span class="k">if</span> <span class="n">orig</span> <span class="ow">in</span> <span class="n">alias</span> <span class="k">else</span> <span class="n">orig</span>
+</span><span data-line="229">            <span class="n">type_name</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;var_type&quot;</span><span class="p">]</span>
+</span><span data-line="230">            <span class="n">type_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_types</span><span class="p">,</span> <span class="n">type_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span data-line="231">            <span class="k">if</span> <span class="n">type_cls</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span>
+</span><span data-line="232">                <span class="nb">isinstance</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span>
+</span><span data-line="233">            <span class="p">):</span>
+</span><span data-line="234">                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+</span><span data-line="235">                    <span class="sa">f</span><span class="s2">&quot;AOTIModel: metadata reports var_type=</span><span class="si">{</span><span class="n">type_name</span><span class="si">!r}</span><span class="s2"> for &quot;</span>
+</span><span data-line="236">                    <span class="sa">f</span><span class="s2">&quot;variable </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">, but neml2.types has no such &quot;</span>
+</span><span data-line="237">                    <span class="sa">f</span><span class="s2">&quot;TensorWrapper subclass.&quot;</span>
+</span><span data-line="238">                <span class="p">)</span>
+</span><span data-line="239">            <span class="n">spec</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">type_cls</span>
+</span><span data-line="240">        <span class="k">return</span> <span class="n">spec</span>
+</span><span data-line="241">
+</span><span data-line="242">    <span class="k">def</span><span class="w"> </span><span class="nf">_check_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="243"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Strict device + dtype check; raise TypeError on mismatch.</span>
+</span><span data-line="244">
+</span><span data-line="245"><span class="sd">        Thin wrapper over the shared</span>
+</span><span data-line="246"><span class="sd">        :func:`neml2.types._boundary.check_tensor` (the device/dtype</span>
+</span><span data-line="247"><span class="sd">        validation is identical across the AOTI + eager boundaries). ``kind``</span>
+</span><span data-line="248"><span class="sd">        is ``&#39;input&#39;`` or ``&#39;parameter&#39;``; the AOTI-specific remediation</span>
+</span><span data-line="249"><span class="sd">        guidance is supplied here as the ``hint``.</span>
+</span><span data-line="250"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="251">        <span class="n">target_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">device</span>
+</span><span data-line="252">        <span class="n">target_dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">dtype</span>
+</span><span data-line="253">        <span class="n">hint</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="254">            <span class="sa">f</span><span class="s2">&quot;The .pt2 artifact is compile-pinned to &quot;</span>
+</span><span data-line="255">            <span class="sa">f</span><span class="s2">&quot;(device=</span><span class="si">{</span><span class="n">target_device</span><span class="si">}</span><span class="s2">, dtype=</span><span class="si">{</span><span class="n">target_dtype</span><span class="si">}</span><span class="s2">) and the runtime &quot;</span>
+</span><span data-line="256">            <span class="sa">f</span><span class="s2">&quot;refuses to silently coerce -- silent coercion would mask the &quot;</span>
+</span><span data-line="257">            <span class="sa">f</span><span class="s2">&quot;silent-garbage / SEGV failure mode where a stride-based kernel &quot;</span>
+</span><span data-line="258">            <span class="sa">f</span><span class="s2">&quot;reads off the end of a mistyped buffer. Cast the tensor &quot;</span>
+</span><span data-line="259">            <span class="sa">f</span><span class="s2">&quot;explicitly with ``.to(device=..., dtype=...)`` at the call &quot;</span>
+</span><span data-line="260">            <span class="sa">f</span><span class="s2">&quot;site, or set process-wide defaults (e.g. &quot;</span>
+</span><span data-line="261">            <span class="sa">f</span><span class="s2">&quot;``torch.set_default_dtype(torch.float64)`` + &quot;</span>
+</span><span data-line="262">            <span class="sa">f</span><span class="s2">&quot;``torch.set_default_device(...)``) before constructing inputs.&quot;</span>
+</span><span data-line="263">        <span class="p">)</span>
+</span><span data-line="264">        <span class="n">check_tensor</span><span class="p">(</span>
+</span><span data-line="265">            <span class="n">t</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">target_device</span><span class="p">,</span> <span class="n">target_dtype</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s2">&quot;AOTIModel&quot;</span><span class="p">,</span> <span class="n">hint</span><span class="o">=</span><span class="n">hint</span>
+</span><span data-line="266">        <span class="p">)</span>
+</span><span data-line="267">
 <div class="viewcode-block" id="AOTIModel.forward">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.forward">[docs]</a>
-</span><span data-line="264">    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vh</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span data-line="265"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Drive the AOTI graph.</span>
-</span><span data-line="266">
-</span><span data-line="267"><span class="sd">        Accepts ``input_spec`` positional args as ``TensorWrapper`` instances</span>
-</span><span data-line="268"><span class="sd">        (mirroring the native ``ComposedModel`` boundary). Returns a tuple of</span>
-</span><span data-line="269"><span class="sd">        typed wrappers in ``output_spec`` order -- always a tuple, even for</span>
-</span><span data-line="270"><span class="sd">        single-output models, so consumers can iterate uniformly.</span>
-</span><span data-line="271">
-</span><span data-line="272"><span class="sd">        ``v`` / ``v2`` / ``vh`` (the native chain-rule hooks) are accepted</span>
-</span><span data-line="273"><span class="sd">        only for signature compatibility with other native models; passing</span>
-</span><span data-line="274"><span class="sd">        them is rejected because the AOTI graph&#39;s JVP path is structurally</span>
-</span><span data-line="275"><span class="sd">        different (it&#39;s a separate ``_jvp.pt2`` graph, exposed via the</span>
-</span><span data-line="276"><span class="sd">        :meth:`jvp` / :meth:`jacobian` methods rather than the typed</span>
-</span><span data-line="277"><span class="sd">        chain-rule protocol). Drivers that don&#39;t need sensitivities -- e.g.</span>
-</span><span data-line="278"><span class="sd">        ``TransientDriver``, ``TransientRegression`` -- work as-is.</span>
-</span><span data-line="279"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="280">        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">v2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="281">            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-</span><span data-line="282">                <span class="s2">&quot;AOTIModel does not support the native chain-rule v=/v2=/vh= &quot;</span>
-</span><span data-line="283">                <span class="s2">&quot;arguments. Use the jvp() / jacobian() methods for sensitivities &quot;</span>
-</span><span data-line="284">                <span class="s2">&quot;(the AOTI derivative graph is a separate compiled artifact).&quot;</span>
-</span><span data-line="285">            <span class="p">)</span>
-</span><span data-line="286">
-</span><span data-line="287">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">):</span>
-</span><span data-line="288">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="289">                <span class="sa">f</span><span class="s2">&quot;AOTIModel: expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">)</span><span class="si">}</span><span class="s2"> positional inputs &quot;</span>
-</span><span data-line="290">                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">)</span><span class="si">}</span><span class="s2">), got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
-</span><span data-line="291">            <span class="p">)</span>
-</span><span data-line="292">
-</span><span data-line="293">        <span class="c1"># Unwrap typed wrappers to raw torch.Tensors and strictly validate</span>
-</span><span data-line="294">        <span class="c1"># device + dtype against the artifact&#39;s pinned values. An AOTI .pt2</span>
-</span><span data-line="295">        <span class="c1"># is compile-pinned to a specific (device, dtype) and the kernel</span>
-</span><span data-line="296">        <span class="c1"># strides through input buffers assuming those exact widths; a wrong</span>
-</span><span data-line="297">        <span class="c1"># device dereferences a host pointer in a CUDA kernel (illegal</span>
-</span><span data-line="298">        <span class="c1"># access), and a wrong dtype reinterprets bytes (silent garbage at</span>
-</span><span data-line="299">        <span class="c1"># small batches, SEGV at larger ones once the wrong-stride read</span>
-</span><span data-line="300">        <span class="c1"># crosses past the mapped buffer end). We refuse to silently coerce</span>
-</span><span data-line="301">        <span class="c1"># because that hides bugs in caller code and makes NEML2-as-library</span>
-</span><span data-line="302">        <span class="c1"># surprising in larger pipelines -- the caller owns dtype/device</span>
-</span><span data-line="303">        <span class="c1"># placement, mirroring v2&#39;s [Settings]-gated dtype policy. Compare</span>
-</span><span data-line="304">        <span class="c1"># the v2 main()s (e.g. ``neml2-time.cxx`` calling</span>
-</span><span data-line="305">        <span class="c1"># ``set_default_dtype(kFloat64)``) -- end applications set defaults,</span>
-</span><span data-line="306">        <span class="c1"># the model boundary validates.</span>
-</span><span data-line="307">        <span class="c1">#</span>
-</span><span data-line="308">        <span class="c1"># Also record per-input ``sub_batch_ndim``: when the caller passes</span>
-</span><span data-line="309">        <span class="c1"># a TensorWrapper, read it off the instance (the export-time</span>
-</span><span data-line="310">        <span class="c1"># typed-wrapper trace baked the per-input split into the artifact,</span>
-</span><span data-line="311">        <span class="c1"># so the caller&#39;s sub_batch_ndim is the authoritative source);</span>
-</span><span data-line="312">        <span class="c1"># for raw torch.Tensor inputs, fall back to the metadata&#39;s</span>
-</span><span data-line="313">        <span class="c1"># ``sub_batch_shape`` (the legacy path).</span>
-</span><span data-line="314">        <span class="n">raw_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="315">        <span class="n">per_input_sub_ndim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="316">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span data-line="317">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
-</span><span data-line="318">                <span class="n">t</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">data</span>
-</span><span data-line="319">                <span class="n">per_input_sub_ndim</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="320">            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-</span><span data-line="321">                <span class="n">t</span> <span class="o">=</span> <span class="n">arg</span>
-</span><span data-line="322">                <span class="n">per_input_sub_ndim</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_sub_batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">()))</span>
-</span><span data-line="323">            <span class="k">else</span><span class="p">:</span>
-</span><span data-line="324">                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="325">                    <span class="sa">f</span><span class="s2">&quot;AOTIModel: input </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> must be a TensorWrapper or &quot;</span>
-</span><span data-line="326">                    <span class="sa">f</span><span class="s2">&quot;torch.Tensor, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
-</span><span data-line="327">                <span class="p">)</span>
-</span><span data-line="328">            <span class="bp">self</span><span class="o">.</span><span class="n">_check_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;input&quot;</span><span class="p">)</span>
-</span><span data-line="329">            <span class="n">raw_inputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
-</span><span data-line="330">
-</span><span data-line="331">        <span class="c1"># Also validate any promoted parameters the caller may have mutated</span>
-</span><span data-line="332">        <span class="c1"># in place via ``self._inner.named_parameters()``. The .pt2 stores</span>
-</span><span data-line="333">        <span class="c1"># them pinned to (target_device, target_dtype); if the user</span>
-</span><span data-line="334">        <span class="c1"># overwrote with a tensor on a different device/dtype, the kernel</span>
-</span><span data-line="335">        <span class="c1"># would silently dereference garbage.</span>
-</span><span data-line="336">        <span class="k">for</span> <span class="n">pname</span><span class="p">,</span> <span class="n">ptensor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="337">            <span class="bp">self</span><span class="o">.</span><span class="n">_check_tensor</span><span class="p">(</span><span class="n">ptensor</span><span class="p">,</span> <span class="n">pname</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;parameter&quot;</span><span class="p">)</span>
-</span><span data-line="338">
-</span><span data-line="339">        <span class="c1"># Normalize batch shapes. The .pt2 was traced with every input</span>
-</span><span data-line="340">        <span class="c1"># carrying a single leading batch axis (``_example_inputs_for`` uses</span>
-</span><span data-line="341">        <span class="c1"># ``zeros(2, *BASE_SHAPE)``) and torch.export installs a *shared*</span>
-</span><span data-line="342">        <span class="c1"># dynamic Dim across all inputs -- they must agree on that dim at</span>
-</span><span data-line="343">        <span class="c1"># runtime. Eager NEML2 callers freely pass base-only defaults (e.g.</span>
-</span><span data-line="344">        <span class="c1"># ``TransientDriver._zero_for_step`` makes an SR2 input of shape</span>
-</span><span data-line="345">        <span class="c1"># ``(6,)`` for unset history slots) and rely on the leaves&#39;</span>
-</span><span data-line="346">        <span class="c1"># TensorWrapper arithmetic to broadcast; the .pt2 graph has no such</span>
-</span><span data-line="347">        <span class="c1"># broadcasting layer. Broadcast everything to the common batch</span>
-</span><span data-line="348">        <span class="c1"># shape before crossing.</span>
-</span><span data-line="349">        <span class="n">raw_inputs</span><span class="p">,</span> <span class="n">common_dyn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_to_common_batch</span><span class="p">(</span><span class="n">raw_inputs</span><span class="p">,</span> <span class="n">per_input_sub_ndim</span><span class="p">)</span>
-</span><span data-line="350">
-</span><span data-line="351">        <span class="n">raw_outs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">raw_inputs</span><span class="p">)</span>
-</span><span data-line="352">        <span class="c1"># Wrap each output and recover ``sub_batch_ndim`` from the runtime</span>
-</span><span data-line="353">        <span class="c1"># tensor shape. This is the same arithmetic v2&#39;s ``neml2::Tensor``</span>
-</span><span data-line="354">        <span class="c1"># did at construction time:</span>
-</span><span data-line="355">        <span class="c1">#</span>
-</span><span data-line="356">        <span class="c1">#     out.shape == (*dyn, *sub, *base)</span>
-</span><span data-line="357">        <span class="c1">#     dyn = common_dyn (broadcast across all inputs; outputs share)</span>
-</span><span data-line="358">        <span class="c1">#     base = ``BASE_SHAPE`` from the typed wrapper class</span>
-</span><span data-line="359">        <span class="c1">#     sub = whatever&#39;s left in the middle</span>
-</span><span data-line="360">        <span class="c1">#</span>
-</span><span data-line="361">        <span class="c1"># Solving for ``sub_n = out.ndim - dyn_n - BASE_NDIM``. Not a</span>
-</span><span data-line="362">        <span class="c1"># heuristic -- there&#39;s exactly one structural decomposition that</span>
-</span><span data-line="363">        <span class="c1"># fits. Without this step the default ``sub_batch_ndim=0`` wrap</span>
-</span><span data-line="364">        <span class="c1"># mis-classifies a per-site axis as dyn, which breaks downstream</span>
-</span><span data-line="365">        <span class="c1"># consumers that feed the output back as input (e.g.</span>
-</span><span data-line="366">        <span class="c1"># ``TransientDriver.advance_step`` using step-N&#39;s per-crystal</span>
-</span><span data-line="367">        <span class="c1"># output as step-(N+1)&#39;s ``~1`` history).</span>
-</span><span data-line="368">        <span class="c1">#</span>
-</span><span data-line="369">        <span class="c1"># The assumption that output dyn == input common_dyn holds for</span>
-</span><span data-line="370">        <span class="c1"># every shape-preserving forward operator NEML2 currently ships;</span>
-</span><span data-line="371">        <span class="c1"># if a future model collapses batch axes inside the AOTI graph</span>
-</span><span data-line="372">        <span class="c1"># (e.g. a reduction to a global summary), this would need to be</span>
-</span><span data-line="373">        <span class="c1"># superseded by per-output sub_batch_shape carried in the</span>
-</span><span data-line="374">        <span class="c1"># metadata. Cross that bridge when a model needs it.</span>
-</span><span data-line="375">        <span class="n">out_wrappers</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="376">        <span class="n">dyn_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">common_dyn</span><span class="p">)</span>
-</span><span data-line="377">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">type_cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_spec</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="378">            <span class="n">raw</span> <span class="o">=</span> <span class="n">raw_outs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-</span><span data-line="379">            <span class="n">sub_n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">dyn_n</span> <span class="o">-</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-</span><span data-line="380">            <span class="c1"># NOTE: sub_batch_labels are persisted in meta.json (see</span>
-</span><span data-line="381">            <span class="c1"># ``output_labels``) but the static-base ``TensorWrapper``</span>
-</span><span data-line="382">            <span class="c1"># subclasses do not accept a labels kwarg today, so the</span>
-</span><span data-line="383">            <span class="c1"># re-attachment is a no-op. The shim still loads the labels</span>
-</span><span data-line="384">            <span class="c1"># so that callers can introspect them (see</span>
-</span><span data-line="385">            <span class="c1"># ``test_aoti_grain_label_round_trip``). Once labels become</span>
-</span><span data-line="386">            <span class="c1"># load-bearing on static-base wrappers, set them here.</span>
-</span><span data-line="387">            <span class="n">out_wrappers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">type_cls</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sub_n</span><span class="p">))</span>
-</span><span data-line="388">        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">out_wrappers</span><span class="p">)</span></div>
+</span><span data-line="268">    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vh</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span data-line="269"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Drive the AOTI graph.</span>
+</span><span data-line="270">
+</span><span data-line="271"><span class="sd">        Accepts ``input_spec`` positional args as ``TensorWrapper`` instances</span>
+</span><span data-line="272"><span class="sd">        (mirroring the native ``ComposedModel`` boundary). Returns a tuple of</span>
+</span><span data-line="273"><span class="sd">        typed wrappers in ``output_spec`` order -- always a tuple, even for</span>
+</span><span data-line="274"><span class="sd">        single-output models, so consumers can iterate uniformly.</span>
+</span><span data-line="275">
+</span><span data-line="276"><span class="sd">        ``v`` / ``v2`` / ``vh`` (the native chain-rule hooks) are accepted</span>
+</span><span data-line="277"><span class="sd">        only for signature compatibility with other native models; passing</span>
+</span><span data-line="278"><span class="sd">        them is rejected because the AOTI graph&#39;s JVP path is structurally</span>
+</span><span data-line="279"><span class="sd">        different (it&#39;s a separate ``_jvp.pt2`` graph, exposed via the</span>
+</span><span data-line="280"><span class="sd">        :meth:`jvp` / :meth:`jacobian` methods rather than the typed</span>
+</span><span data-line="281"><span class="sd">        chain-rule protocol). Drivers that don&#39;t need sensitivities -- e.g.</span>
+</span><span data-line="282"><span class="sd">        ``TransientDriver``, ``TransientRegression`` -- work as-is.</span>
+</span><span data-line="283"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="284">        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">v2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="285">            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+</span><span data-line="286">                <span class="s2">&quot;AOTIModel does not support the native chain-rule v=/v2=/vh= &quot;</span>
+</span><span data-line="287">                <span class="s2">&quot;arguments. Use the jvp() / jacobian() methods for sensitivities &quot;</span>
+</span><span data-line="288">                <span class="s2">&quot;(the AOTI derivative graph is a separate compiled artifact).&quot;</span>
+</span><span data-line="289">            <span class="p">)</span>
+</span><span data-line="290">
+</span><span data-line="291">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">):</span>
+</span><span data-line="292">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+</span><span data-line="293">                <span class="sa">f</span><span class="s2">&quot;AOTIModel: expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">)</span><span class="si">}</span><span class="s2"> positional inputs &quot;</span>
+</span><span data-line="294">                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">)</span><span class="si">}</span><span class="s2">), got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+</span><span data-line="295">            <span class="p">)</span>
+</span><span data-line="296">
+</span><span data-line="297">        <span class="c1"># Unwrap typed wrappers to raw torch.Tensors and strictly validate</span>
+</span><span data-line="298">        <span class="c1"># device + dtype against the artifact&#39;s pinned values. An AOTI .pt2</span>
+</span><span data-line="299">        <span class="c1"># is compile-pinned to a specific (device, dtype) and the kernel</span>
+</span><span data-line="300">        <span class="c1"># strides through input buffers assuming those exact widths; a wrong</span>
+</span><span data-line="301">        <span class="c1"># device dereferences a host pointer in a CUDA kernel (illegal</span>
+</span><span data-line="302">        <span class="c1"># access), and a wrong dtype reinterprets bytes (silent garbage at</span>
+</span><span data-line="303">        <span class="c1"># small batches, SEGV at larger ones once the wrong-stride read</span>
+</span><span data-line="304">        <span class="c1"># crosses past the mapped buffer end). We refuse to silently coerce</span>
+</span><span data-line="305">        <span class="c1"># because that hides bugs in caller code and makes NEML2-as-library</span>
+</span><span data-line="306">        <span class="c1"># surprising in larger pipelines -- the caller owns dtype/device</span>
+</span><span data-line="307">        <span class="c1"># placement, mirroring v2&#39;s [Settings]-gated dtype policy. Compare</span>
+</span><span data-line="308">        <span class="c1"># the v2 main()s (e.g. ``neml2-time.cxx`` calling</span>
+</span><span data-line="309">        <span class="c1"># ``set_default_dtype(kFloat64)``) -- end applications set defaults,</span>
+</span><span data-line="310">        <span class="c1"># the model boundary validates.</span>
+</span><span data-line="311">        <span class="c1">#</span>
+</span><span data-line="312">        <span class="c1"># Also record per-input ``sub_batch_ndim``: when the caller passes</span>
+</span><span data-line="313">        <span class="c1"># a TensorWrapper, read it off the instance (the export-time</span>
+</span><span data-line="314">        <span class="c1"># typed-wrapper trace baked the per-input split into the artifact,</span>
+</span><span data-line="315">        <span class="c1"># so the caller&#39;s sub_batch_ndim is the authoritative source);</span>
+</span><span data-line="316">        <span class="c1"># for raw torch.Tensor inputs, fall back to the metadata&#39;s</span>
+</span><span data-line="317">        <span class="c1"># ``sub_batch_shape`` (the legacy path).</span>
+</span><span data-line="318">        <span class="n">raw_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="319">        <span class="n">per_input_sub_ndim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="320">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span data-line="321">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
+</span><span data-line="322">                <span class="n">t</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">data</span>
+</span><span data-line="323">                <span class="n">per_input_sub_ndim</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="324">            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+</span><span data-line="325">                <span class="n">t</span> <span class="o">=</span> <span class="n">arg</span>
+</span><span data-line="326">                <span class="n">per_input_sub_ndim</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_sub_batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">()))</span>
+</span><span data-line="327">            <span class="k">else</span><span class="p">:</span>
+</span><span data-line="328">                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+</span><span data-line="329">                    <span class="sa">f</span><span class="s2">&quot;AOTIModel: input </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> must be a TensorWrapper or &quot;</span>
+</span><span data-line="330">                    <span class="sa">f</span><span class="s2">&quot;torch.Tensor, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
+</span><span data-line="331">                <span class="p">)</span>
+</span><span data-line="332">            <span class="bp">self</span><span class="o">.</span><span class="n">_check_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;input&quot;</span><span class="p">)</span>
+</span><span data-line="333">            <span class="n">raw_inputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+</span><span data-line="334">
+</span><span data-line="335">        <span class="c1"># Also validate any promoted parameters the caller may have mutated</span>
+</span><span data-line="336">        <span class="c1"># in place via ``self._inner.named_parameters()``. The .pt2 stores</span>
+</span><span data-line="337">        <span class="c1"># them pinned to (target_device, target_dtype); if the user</span>
+</span><span data-line="338">        <span class="c1"># overwrote with a tensor on a different device/dtype, the kernel</span>
+</span><span data-line="339">        <span class="c1"># would silently dereference garbage.</span>
+</span><span data-line="340">        <span class="k">for</span> <span class="n">pname</span><span class="p">,</span> <span class="n">ptensor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="341">            <span class="bp">self</span><span class="o">.</span><span class="n">_check_tensor</span><span class="p">(</span><span class="n">ptensor</span><span class="p">,</span> <span class="n">pname</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;parameter&quot;</span><span class="p">)</span>
+</span><span data-line="342">
+</span><span data-line="343">        <span class="c1"># Normalize batch shapes. The .pt2 was traced with every input</span>
+</span><span data-line="344">        <span class="c1"># carrying a single leading batch axis (``_example_inputs_for`` uses</span>
+</span><span data-line="345">        <span class="c1"># ``zeros(2, *BASE_SHAPE)``) and torch.export installs a *shared*</span>
+</span><span data-line="346">        <span class="c1"># dynamic Dim across all inputs -- they must agree on that dim at</span>
+</span><span data-line="347">        <span class="c1"># runtime. Eager NEML2 callers freely pass base-only defaults (e.g.</span>
+</span><span data-line="348">        <span class="c1"># ``TransientDriver._zero_for_step`` makes an SR2 input of shape</span>
+</span><span data-line="349">        <span class="c1"># ``(6,)`` for unset history slots) and rely on the leaves&#39;</span>
+</span><span data-line="350">        <span class="c1"># TensorWrapper arithmetic to broadcast; the .pt2 graph has no such</span>
+</span><span data-line="351">        <span class="c1"># broadcasting layer. Broadcast everything to the common batch</span>
+</span><span data-line="352">        <span class="c1"># shape before crossing.</span>
+</span><span data-line="353">        <span class="n">raw_inputs</span><span class="p">,</span> <span class="n">common_dyn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_to_common_batch</span><span class="p">(</span><span class="n">raw_inputs</span><span class="p">,</span> <span class="n">per_input_sub_ndim</span><span class="p">)</span>
+</span><span data-line="354">
+</span><span data-line="355">        <span class="n">raw_outs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">raw_inputs</span><span class="p">)</span>
+</span><span data-line="356">        <span class="c1"># Wrap each output and recover ``sub_batch_ndim`` from the runtime</span>
+</span><span data-line="357">        <span class="c1"># tensor shape. This is the same arithmetic v2&#39;s ``neml2::Tensor``</span>
+</span><span data-line="358">        <span class="c1"># did at construction time:</span>
+</span><span data-line="359">        <span class="c1">#</span>
+</span><span data-line="360">        <span class="c1">#     out.shape == (*dyn, *sub, *base)</span>
+</span><span data-line="361">        <span class="c1">#     dyn = common_dyn (broadcast across all inputs; outputs share)</span>
+</span><span data-line="362">        <span class="c1">#     base = ``BASE_SHAPE`` from the typed wrapper class</span>
+</span><span data-line="363">        <span class="c1">#     sub = whatever&#39;s left in the middle</span>
+</span><span data-line="364">        <span class="c1">#</span>
+</span><span data-line="365">        <span class="c1"># Solving for ``sub_n = out.ndim - dyn_n - BASE_NDIM``. Not a</span>
+</span><span data-line="366">        <span class="c1"># heuristic -- there&#39;s exactly one structural decomposition that</span>
+</span><span data-line="367">        <span class="c1"># fits. Without this step the default ``sub_batch_ndim=0`` wrap</span>
+</span><span data-line="368">        <span class="c1"># mis-classifies a per-site axis as dyn, which breaks downstream</span>
+</span><span data-line="369">        <span class="c1"># consumers that feed the output back as input (e.g.</span>
+</span><span data-line="370">        <span class="c1"># ``TransientDriver.advance_step`` using step-N&#39;s per-crystal</span>
+</span><span data-line="371">        <span class="c1"># output as step-(N+1)&#39;s ``~1`` history).</span>
+</span><span data-line="372">        <span class="c1">#</span>
+</span><span data-line="373">        <span class="c1"># The assumption that output dyn == input common_dyn holds for</span>
+</span><span data-line="374">        <span class="c1"># every shape-preserving forward operator NEML2 currently ships;</span>
+</span><span data-line="375">        <span class="c1"># if a future model collapses batch axes inside the AOTI graph</span>
+</span><span data-line="376">        <span class="c1"># (e.g. a reduction to a global summary), this would need to be</span>
+</span><span data-line="377">        <span class="c1"># superseded by per-output sub_batch_shape carried in the</span>
+</span><span data-line="378">        <span class="c1"># metadata. Cross that bridge when a model needs it.</span>
+</span><span data-line="379">        <span class="n">out_wrappers</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="380">        <span class="n">dyn_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">common_dyn</span><span class="p">)</span>
+</span><span data-line="381">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">type_cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_spec</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="382">            <span class="n">raw</span> <span class="o">=</span> <span class="n">raw_outs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+</span><span data-line="383">            <span class="n">sub_n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">dyn_n</span> <span class="o">-</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span><span data-line="384">            <span class="c1"># NOTE: sub_batch_labels are persisted in meta.json (see</span>
+</span><span data-line="385">            <span class="c1"># ``output_labels``) but the static-base ``TensorWrapper``</span>
+</span><span data-line="386">            <span class="c1"># subclasses do not accept a labels kwarg today, so the</span>
+</span><span data-line="387">            <span class="c1"># re-attachment is a no-op. The shim still loads the labels</span>
+</span><span data-line="388">            <span class="c1"># so that callers can introspect them (see</span>
+</span><span data-line="389">            <span class="c1"># ``test_aoti_grain_label_round_trip``). Once labels become</span>
+</span><span data-line="390">            <span class="c1"># load-bearing on static-base wrappers, set them here.</span>
+</span><span data-line="391">            <span class="n">out_wrappers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">type_cls</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sub_n</span><span class="p">))</span>
+</span><span data-line="392">        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">out_wrappers</span><span class="p">)</span></div>
 
-</span><span data-line="389">
+</span><span data-line="393">
 <div class="viewcode-block" id="AOTIModel.jvp">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.jvp">[docs]</a>
-</span><span data-line="390">    <span class="k">def</span><span class="w"> </span><span class="nf">jvp</span><span class="p">(</span>
-</span><span data-line="391">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="392">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="393">        <span class="n">tangents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="394">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="395">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
-</span><span data-line="396"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Outputs + the directional derivative ``J @ v`` from the compiled</span>
-</span><span data-line="397"><span class="sd">        ``jvp`` graph.</span>
-</span><span data-line="398">
-</span><span data-line="399"><span class="sd">        ``inputs`` / ``tangents`` are ``{variable_name: tensor}`` dicts (same</span>
-</span><span data-line="400"><span class="sd">        keys as :attr:`input_spec`); ``tangents`` carries the seed direction</span>
-</span><span data-line="401"><span class="sd">        per input. Returns ``(outputs, jvp)`` keyed by output name -- the same</span>
-</span><span data-line="402"><span class="sd">        raw-tensor surface the eager runtime exposes. Requires the artifact to</span>
-</span><span data-line="403"><span class="sd">        carry the derivative graph (compiled with ``neml2-compile ... -d</span>
-</span><span data-line="404"><span class="sd">        OUT:IN``); otherwise the underlying binding raises.</span>
-</span><span data-line="405"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="406">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">jvp</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">tangents</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
+</span><span data-line="394">    <span class="k">def</span><span class="w"> </span><span class="nf">jvp</span><span class="p">(</span>
+</span><span data-line="395">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="396">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="397">        <span class="n">tangents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="398">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="399">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+</span><span data-line="400"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Outputs + the directional derivative ``J @ v`` from the compiled</span>
+</span><span data-line="401"><span class="sd">        ``jvp`` graph.</span>
+</span><span data-line="402">
+</span><span data-line="403"><span class="sd">        ``inputs`` / ``tangents`` are ``{variable_name: tensor}`` dicts (same</span>
+</span><span data-line="404"><span class="sd">        keys as :attr:`input_spec`); ``tangents`` carries the seed direction</span>
+</span><span data-line="405"><span class="sd">        per input. Returns ``(outputs, jvp)`` keyed by output name -- the same</span>
+</span><span data-line="406"><span class="sd">        raw-tensor surface the eager runtime exposes. Requires the artifact to</span>
+</span><span data-line="407"><span class="sd">        carry the derivative graph (compiled with ``neml2-compile ... -d</span>
+</span><span data-line="408"><span class="sd">        OUT:IN``); otherwise the underlying binding raises.</span>
+</span><span data-line="409"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="410">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">jvp</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">tangents</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
 
-</span><span data-line="407">
+</span><span data-line="411">
 <div class="viewcode-block" id="AOTIModel.jacobian">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.jacobian">[docs]</a>
-</span><span data-line="408">    <span class="k">def</span><span class="w"> </span><span class="nf">jacobian</span><span class="p">(</span>
-</span><span data-line="409">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="410">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="411">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="412">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
-</span><span data-line="413"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Outputs + the per-(output, input) Jacobian blocks from the compiled</span>
-</span><span data-line="414"><span class="sd">        ``jacobian`` graph.</span>
-</span><span data-line="415">
-</span><span data-line="416"><span class="sd">        ``inputs`` is a ``{variable_name: tensor}`` dict. Returns</span>
-</span><span data-line="417"><span class="sd">        ``(outputs, J)`` where ``J[out][in]`` is the block ``d(out)/d(in)``,</span>
-</span><span data-line="418"><span class="sd">        shaped ``(batch, *out_base, *in_base)``. Like :meth:`jvp`, needs an</span>
-</span><span data-line="419"><span class="sd">        artifact compiled with ``-d``.</span>
-</span><span data-line="420"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="421">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
+</span><span data-line="412">    <span class="k">def</span><span class="w"> </span><span class="nf">jacobian</span><span class="p">(</span>
+</span><span data-line="413">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="414">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="415">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="416">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
+</span><span data-line="417"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Outputs + the per-(output, input) Jacobian blocks from the compiled</span>
+</span><span data-line="418"><span class="sd">        ``jacobian`` graph.</span>
+</span><span data-line="419">
+</span><span data-line="420"><span class="sd">        ``inputs`` is a ``{variable_name: tensor}`` dict. Returns</span>
+</span><span data-line="421"><span class="sd">        ``(outputs, J)`` where ``J[out][in]`` is the block ``d(out)/d(in)``,</span>
+</span><span data-line="422"><span class="sd">        shaped ``(batch, *out_base, *in_base)``. Like :meth:`jvp`, needs an</span>
+</span><span data-line="423"><span class="sd">        artifact compiled with ``-d``.</span>
+</span><span data-line="424"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="425">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
 
-</span><span data-line="422">
+</span><span data-line="426">
 <div class="viewcode-block" id="AOTIModel.param_jacobian">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.param_jacobian">[docs]</a>
-</span><span data-line="423">    <span class="k">def</span><span class="w"> </span><span class="nf">param_jacobian</span><span class="p">(</span>
-</span><span data-line="424">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="425">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="426">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="427">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
-</span><span data-line="428"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Outputs + the per-(output, parameter) Jacobian blocks ``d(out)/d(param)``.</span>
-</span><span data-line="429">
-</span><span data-line="430"><span class="sd">        The reverse-mode parameter-derivative counterpart to :meth:`jacobian`</span>
-</span><span data-line="431"><span class="sd">        (mirrors :meth:`neml2.models.model.Model.param_jacobian` on the other</span>
-</span><span data-line="432"><span class="sd">        routes): ``inputs`` is a ``{variable_name: tensor}`` dict and the result</span>
-</span><span data-line="433"><span class="sd">        is ``(outputs, P)`` with ``P[out][param]`` the block ``d(out)/d(param)``,</span>
-</span><span data-line="434"><span class="sd">        keyed by qualified promoted-parameter name (see :meth:`named_parameters`).</span>
-</span><span data-line="435"><span class="sd">        Needs an artifact with the parameter promoted (``neml2-compile ... -p</span>
-</span><span data-line="436"><span class="sd">        NAME``) and its derivative graph (``-d``).</span>
-</span><span data-line="437"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="438">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">param_jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
+</span><span data-line="427">    <span class="k">def</span><span class="w"> </span><span class="nf">param_jacobian</span><span class="p">(</span>
+</span><span data-line="428">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="429">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="430">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="431">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
+</span><span data-line="432"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Outputs + the per-(output, parameter) Jacobian blocks ``d(out)/d(param)``.</span>
+</span><span data-line="433">
+</span><span data-line="434"><span class="sd">        The reverse-mode parameter-derivative counterpart to :meth:`jacobian`</span>
+</span><span data-line="435"><span class="sd">        (mirrors :meth:`neml2.models.model.Model.param_jacobian` on the other</span>
+</span><span data-line="436"><span class="sd">        routes): ``inputs`` is a ``{variable_name: tensor}`` dict and the result</span>
+</span><span data-line="437"><span class="sd">        is ``(outputs, P)`` with ``P[out][param]`` the block ``d(out)/d(param)``,</span>
+</span><span data-line="438"><span class="sd">        keyed by qualified promoted-parameter name (see :meth:`named_parameters`).</span>
+</span><span data-line="439"><span class="sd">        Needs an artifact with the parameter promoted (``neml2-compile ... -p</span>
+</span><span data-line="440"><span class="sd">        NAME``) and its derivative graph (``-d``).</span>
+</span><span data-line="441"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="442">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">param_jacobian</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
 
-</span><span data-line="439">
+</span><span data-line="443">
 <div class="viewcode-block" id="AOTIModel.param_vjp">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.param_vjp">[docs]</a>
-</span><span data-line="440">    <span class="k">def</span><span class="w"> </span><span class="nf">param_vjp</span><span class="p">(</span>
-</span><span data-line="441">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="442">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="443">        <span class="n">cotangents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="444">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="445">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-</span><span data-line="446"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Reverse-mode parameter VJP -- ``cotangent`` contracted with ``d(out)/d(param)``.</span>
-</span><span data-line="447">
-</span><span data-line="448"><span class="sd">        The reverse-mode counterpart to :meth:`param_jacobian` (mirrors</span>
-</span><span data-line="449"><span class="sd">        :meth:`neml2.models.model.Model.param_vjp`): ``inputs`` is a</span>
-</span><span data-line="450"><span class="sd">        ``{variable_name: tensor}`` dict, ``cotangents`` is keyed by output name,</span>
-</span><span data-line="451"><span class="sd">        and the result is keyed by qualified promoted-parameter name. Needs a</span>
-</span><span data-line="452"><span class="sd">        ``-p`` / ``-d`` artifact.</span>
-</span><span data-line="453"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="454">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">param_vjp</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">cotangents</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
+</span><span data-line="444">    <span class="k">def</span><span class="w"> </span><span class="nf">param_vjp</span><span class="p">(</span>
+</span><span data-line="445">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="446">        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="447">        <span class="n">cotangents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="448">        <span class="n">param_overrides</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="449">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+</span><span data-line="450"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Reverse-mode parameter VJP -- ``cotangent`` contracted with ``d(out)/d(param)``.</span>
+</span><span data-line="451">
+</span><span data-line="452"><span class="sd">        The reverse-mode counterpart to :meth:`param_jacobian` (mirrors</span>
+</span><span data-line="453"><span class="sd">        :meth:`neml2.models.model.Model.param_vjp`): ``inputs`` is a</span>
+</span><span data-line="454"><span class="sd">        ``{variable_name: tensor}`` dict, ``cotangents`` is keyed by output name,</span>
+</span><span data-line="455"><span class="sd">        and the result is keyed by qualified promoted-parameter name. Needs a</span>
+</span><span data-line="456"><span class="sd">        ``-p`` / ``-d`` artifact.</span>
+</span><span data-line="457"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="458">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">param_vjp</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">cotangents</span><span class="p">,</span> <span class="n">param_overrides</span> <span class="ow">or</span> <span class="p">{})</span></div>
 
-</span><span data-line="455">
+</span><span data-line="459">
 <div class="viewcode-block" id="AOTIModel.named_parameters">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.named_parameters">[docs]</a>
-</span><span data-line="456">    <span class="k">def</span><span class="w"> </span><span class="nf">named_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>  <span class="c1"># type: ignore[override]</span>
-</span><span data-line="457"><span class="w">        </span><span class="sd">&quot;&quot;&quot;The promoted parameters as a mutable ``{qualified_name: tensor}`` dict.</span>
-</span><span data-line="458">
-</span><span data-line="459"><span class="sd">        Overrides ``nn.Module.named_parameters`` -- whose ``(name, Parameter)``</span>
-</span><span data-line="460"><span class="sd">        iterator would be empty here, since the shim registers no</span>
-</span><span data-line="461"><span class="sd">        ``nn.Parameter``s of its own (the calibratable values live in the</span>
-</span><span data-line="462"><span class="sd">        compiled binding). This returns the binding&#39;s promoted-parameter surface,</span>
-</span><span data-line="463"><span class="sd">        the same dict the eager runtime and the C++ routes expose. Entries may be</span>
-</span><span data-line="464"><span class="sd">        mutated in place (``m.named_parameters()[&quot;elasticity.E&quot;].fill_(...)``) or</span>
-</span><span data-line="465"><span class="sd">        replaced via :meth:`set_parameter`; the change is seen on the next call.</span>
-</span><span data-line="466"><span class="sd">        Only parameters promoted at compile time (``neml2-compile ... -p NAME``)</span>
-</span><span data-line="467"><span class="sd">        appear -- with none promoted the dict is empty.</span>
-</span><span data-line="468"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="469">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span></div>
+</span><span data-line="460">    <span class="k">def</span><span class="w"> </span><span class="nf">named_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>  <span class="c1"># type: ignore[override]</span>
+</span><span data-line="461"><span class="w">        </span><span class="sd">&quot;&quot;&quot;The promoted parameters as a mutable ``{qualified_name: tensor}`` dict.</span>
+</span><span data-line="462">
+</span><span data-line="463"><span class="sd">        Overrides ``nn.Module.named_parameters`` -- whose ``(name, Parameter)``</span>
+</span><span data-line="464"><span class="sd">        iterator would be empty here, since the shim registers no</span>
+</span><span data-line="465"><span class="sd">        ``nn.Parameter``s of its own (the calibratable values live in the</span>
+</span><span data-line="466"><span class="sd">        compiled binding). This returns the binding&#39;s promoted-parameter surface,</span>
+</span><span data-line="467"><span class="sd">        the same dict the eager runtime and the C++ routes expose. Entries may be</span>
+</span><span data-line="468"><span class="sd">        mutated in place (``m.named_parameters()[&quot;elasticity.E&quot;].fill_(...)``) or</span>
+</span><span data-line="469"><span class="sd">        replaced via :meth:`set_parameter`; the change is seen on the next call.</span>
+</span><span data-line="470"><span class="sd">        Only parameters promoted at compile time (``neml2-compile ... -p NAME``)</span>
+</span><span data-line="471"><span class="sd">        appear -- with none promoted the dict is empty.</span>
+</span><span data-line="472"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="473">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span></div>
 
-</span><span data-line="470">
+</span><span data-line="474">
 <div class="viewcode-block" id="AOTIModel.set_parameter">
 <a class="viewcode-back" href="../../../content/python_api/neml2.aoti.html#neml2.aoti.AOTIModel.set_parameter">[docs]</a>
-</span><span data-line="471">    <span class="k">def</span><span class="w"> </span><span class="nf">set_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="472"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace a promoted parameter&#39;s value (forwarded to the binding).</span>
-</span><span data-line="473">
-</span><span data-line="474"><span class="sd">        ``name`` is a qualified promoted-parameter name (a key of</span>
-</span><span data-line="475"><span class="sd">        :meth:`named_parameters`); ``value`` must match the artifact&#39;s pinned</span>
-</span><span data-line="476"><span class="sd">        device/dtype. The new value is used on the next forward / derivative call.</span>
-</span><span data-line="477"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="478">        <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">set_parameter</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+</span><span data-line="475">    <span class="k">def</span><span class="w"> </span><span class="nf">set_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="476"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace a promoted parameter&#39;s value (forwarded to the binding).</span>
+</span><span data-line="477">
+</span><span data-line="478"><span class="sd">        ``name`` is a qualified promoted-parameter name (a key of</span>
+</span><span data-line="479"><span class="sd">        :meth:`named_parameters`); ``value`` must match the artifact&#39;s pinned</span>
+</span><span data-line="480"><span class="sd">        device/dtype. The new value is used on the next forward / derivative call.</span>
+</span><span data-line="481"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="482">        <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">set_parameter</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
-</span><span data-line="479">
-</span><span data-line="480">    <span class="k">def</span><span class="w"> </span><span class="nf">_broadcast_to_common_batch</span><span class="p">(</span>
-</span><span data-line="481">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="482">        <span class="n">raw_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="483">        <span class="n">per_input_sub_ndim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-</span><span data-line="484">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">]:</span>
-</span><span data-line="485"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Bring every input tensor to its declared ``(*dyn, *sub, *base)`` shape,</span>
-</span><span data-line="486"><span class="sd">        with the dynamic-batch axes broadcast to a single common shape.</span>
-</span><span data-line="487">
-</span><span data-line="488"><span class="sd">        Thin wrapper over the shared</span>
-</span><span data-line="489"><span class="sd">        :func:`neml2.types._boundary.broadcast_to_common_batch`; see there for</span>
-</span><span data-line="490"><span class="sd">        the (dyn, sub, base) per-input split rationale. The per-input</span>
-</span><span data-line="491"><span class="sd">        ``sub_batch_ndim`` is resolved from the caller&#39;s typed wrapper instance</span>
-</span><span data-line="492"><span class="sd">        (or the legacy metadata ``sub_batch_shape`` when the caller passes a</span>
-</span><span data-line="493"><span class="sd">        raw tensor) before this call.</span>
-</span><span data-line="494"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="495">        <span class="k">return</span> <span class="n">broadcast_to_common_batch</span><span class="p">(</span><span class="n">raw_inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">per_input_sub_ndim</span><span class="p">)</span></div>
+</span><span data-line="483">
+</span><span data-line="484">    <span class="k">def</span><span class="w"> </span><span class="nf">_broadcast_to_common_batch</span><span class="p">(</span>
+</span><span data-line="485">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="486">        <span class="n">raw_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="487">        <span class="n">per_input_sub_ndim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+</span><span data-line="488">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">]:</span>
+</span><span data-line="489"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Bring every input tensor to its declared ``(*dyn, *sub, *base)`` shape,</span>
+</span><span data-line="490"><span class="sd">        with the dynamic-batch axes broadcast to a single common shape.</span>
+</span><span data-line="491">
+</span><span data-line="492"><span class="sd">        Thin wrapper over the shared</span>
+</span><span data-line="493"><span class="sd">        :func:`neml2.types._boundary.broadcast_to_common_batch`; see there for</span>
+</span><span data-line="494"><span class="sd">        the (dyn, sub, base) per-input split rationale. The per-input</span>
+</span><span data-line="495"><span class="sd">        ``sub_batch_ndim`` is resolved from the caller&#39;s typed wrapper instance</span>
+</span><span data-line="496"><span class="sd">        (or the legacy metadata ``sub_batch_shape`` when the caller passes a</span>
+</span><span data-line="497"><span class="sd">        raw tensor) before this call.</span>
+</span><span data-line="498"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="499">        <span class="k">return</span> <span class="n">broadcast_to_common_batch</span><span class="p">(</span><span class="n">raw_inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">per_input_sub_ndim</span><span class="p">)</span></div>
 
 </span></pre></div>
         </article><button class="back-to-top" type="button">

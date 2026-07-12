@@ -678,17 +678,22 @@ require the stub.</p>
 </span><span data-line="5"><span class="k">[Models]</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[elasticity]</span>
 </span><span data-line="7"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">AOTIModel</span>
-</span><span data-line="8"><span class="w">    </span><span class="na">artifact_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;/abs/path/to/aoti/elasticity&#39;</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">artifact_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elasticity&#39;</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="10"><span class="k">[]</span>
 </span></pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> is an <strong>absolute</strong> path to the artifact folder
-(<code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;name&gt;/</span></code>). The loader reads <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> from that
-root and resolves <code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;dtype&gt;/</span></code> for the device
-and dtype it runs on. Because the path is absolute and the stub lives
-outside that folder, the artifacts are <strong>not relocatable</strong> — moving the
-folder requires editing <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> or recompiling.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> is a path to the artifact folder (<code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;name&gt;/</span></code>),
+written <strong>relative to the stub</strong> — usually just the folder name, since the stub
+(<code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;name&gt;_aoti.i</span></code>) sits right next to it. The loader (Python shim and
+C++ <code class="docutils literal notranslate"><span class="pre">load_model</span></code>) resolves a relative <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> against the stub’s own
+directory, reads <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> from that root, and resolves
+<code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;dtype&gt;/</span></code> for the device and dtype it runs on. Because
+the path is relative, the stub and its artifact folder form a <strong>portable bundle</strong>:
+copy or move the two together — to another directory, machine, or user — and it
+still loads, with no machine-specific path baked in and no recompile. Moving the
+stub <em>away</em> from its artifact folder is intentionally unsupported; keep them
+together. (An absolute <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> is also accepted if you hand-edit one.)</p>
 <p>The shim has the same surface as a native model — same <code class="docutils literal notranslate"><span class="pre">input_spec</span></code>,
 same <code class="docutils literal notranslate"><span class="pre">output_spec</span></code>, same call convention — but inside it dispatches
 to the compiled <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> instead of executing the Python <code class="docutils literal notranslate"><span class="pre">forward</span></code>.

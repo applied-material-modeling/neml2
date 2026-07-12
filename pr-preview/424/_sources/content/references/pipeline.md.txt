@@ -241,13 +241,15 @@ stub (suppressed by `--no-stub`):
   baked into the `.pt2` or the `metadata.json` `solver_config`.
 
 The stub is written to `<output-dir>/<model>_aoti.i`, *next to* (not
-inside) the `<output-dir>/<model>/` artifact folder. Because the
-`artifact_path` is recorded as an absolute path, the stub is
-standalone but **not relocatable**: moving the artifacts requires
-recompiling (or hand-editing the path). The loader (the Python shim
-or the C++ `load_model`) reads `<artifact_path>/metadata.json` and
-resolves `<artifact_path>/<device>/<dtype>/` for the device and dtype
-it runs on.
+inside) the `<output-dir>/<model>/` artifact folder. The `artifact_path`
+is recorded **relative to the stub** (usually just the folder name), so
+the stub and its artifact folder form a **portable bundle**: move the two
+together — to another directory, machine, or user — and it still loads,
+no recompile or path edit needed. (Moving the stub away from its folder
+is intentionally unsupported.) The loader (the Python shim or the C++
+`load_model`) resolves the relative `artifact_path` against the stub's
+directory, reads `<artifact_path>/metadata.json`, and resolves
+`<artifact_path>/<device>/<dtype>/` for the device and dtype it runs on.
 
 ## See also
 

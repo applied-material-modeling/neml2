@@ -29,5 +29,5 @@ is forwarded to the binding so the py-aoti route matches the others
 ## Other options
 
 `artifact_path` &mdash; `str` &middot; **required**
-: Absolute path to the artifact folder produced by ``neml2-compile`` -- one shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` binaries. The stub is device/dtype-agnostic (only ``artifact_path``); the ``<device>/<dtype>/`` leaf is chosen at load time via ``load_model(..., device=, dtype=)``, defaulting to ``cpu`` / ``float64`` (matching ``neml2-compile``). Solver config is read from the shared metadata, so no ``[Solvers]`` block is needed.
+: Path to the artifact folder produced by ``neml2-compile`` -- one shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` binaries. Written by ``neml2-compile`` relative to the stub (so the stub + folder relocate together); resolved against the stub's directory, and an absolute path is also accepted. The stub is device/dtype-agnostic (only ``artifact_path``); the ``<device>/<dtype>/`` leaf is chosen at load time via ``load_model(..., device=, dtype=)``, defaulting to ``cpu`` / ``float64`` (matching ``neml2-compile``). Solver config is read from the shared metadata, so no ``[Solvers]`` block is needed.
 

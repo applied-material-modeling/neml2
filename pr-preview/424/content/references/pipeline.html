@@ -639,13 +639,15 @@ from the original; keep <code class="docutils literal notranslate"><span class="
 baked into the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> or the <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> <code class="docutils literal notranslate"><span class="pre">solver_config</span></code>.</p></li>
 </ul>
 <p>The stub is written to <code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;model&gt;_aoti.i</span></code>, <em>next to</em> (not
-inside) the <code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;model&gt;/</span></code> artifact folder. Because the
-<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> is recorded as an absolute path, the stub is
-standalone but <strong>not relocatable</strong>: moving the artifacts requires
-recompiling (or hand-editing the path). The loader (the Python shim
-or the C++ <code class="docutils literal notranslate"><span class="pre">load_model</span></code>) reads <code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/metadata.json</span></code> and
-resolves <code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;dtype&gt;/</span></code> for the device and dtype
-it runs on.</p>
+inside) the <code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;model&gt;/</span></code> artifact folder. The <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code>
+is recorded <strong>relative to the stub</strong> (usually just the folder name), so
+the stub and its artifact folder form a <strong>portable bundle</strong>: move the two
+together — to another directory, machine, or user — and it still loads,
+no recompile or path edit needed. (Moving the stub away from its folder
+is intentionally unsupported.) The loader (the Python shim or the C++
+<code class="docutils literal notranslate"><span class="pre">load_model</span></code>) resolves the relative <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> against the stub’s
+directory, reads <code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/metadata.json</span></code>, and resolves
+<code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;dtype&gt;/</span></code> for the device and dtype it runs on.</p>
 </section>
 <section id="see-also">
 <h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
