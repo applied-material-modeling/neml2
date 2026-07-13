@@ -183,6 +183,99 @@ check_flatten()
   NEML2_CHECK_THROWS(assert_all_dense(block_layout, "unknown"));
   return 0;
 }
+
+// krylov_solve_dense: solve `A X = B` over an ALREADY-ASSEMBLED dense operator
+// (matvec = A@v) for both a vector RHS `(B, N)` and a matrix RHS `(B, N, M)`, vs
+// the batched direct solve. This is the C++ path the iterative IFT / ParamIFT
+// sensitivity solves take (the assembled Jacobian is on hand at the converged
+// point), driven with the default GMRES config the sensitivity solvers write.
+int
+check_dense_solve()
+{
+  at::manual_seed(99);
+  const auto opts = at::TensorOptions().dtype(at::kDouble);
+  const int64_t Bsz = 5, n = 12, M = 3;
+  auto A = make_operator(Bsz, n, opts);
+
+  KrylovConfig cfg; // defaults: GMRES, restart 40 (>= n -> exact in one cycle)
+  cfg.rel_tol = 1e-11;
+
+  // Vector RHS -> (B, N).
+  auto bvec = at::randn({Bsz, n}, opts);
+  auto xv = krylov_solve_dense(A, bvec, cfg);
+  NEML2_CHECK(xv.sizes() == bvec.sizes());
+  auto xv_direct = at::linalg_solve(A, bvec.unsqueeze(-1)).squeeze(-1);
+  NEML2_CHECK((xv - xv_direct).norm().item<double>() /
+                  xv_direct.norm().clamp_min(1e-30).item<double>() <
+              1e-8);
+
+  // Matrix RHS -> (B, N, M) (solved column by column), vs the batched direct solve.
+  auto Bmat = at::randn({Bsz, n, M}, opts);
+  auto Xm = krylov_solve_dense(A, Bmat, cfg);
+  NEML2_CHECK(Xm.sizes() == Bmat.sizes());
+  auto Xm_direct = at::linalg_solve(A, Bmat);
+  NEML2_CHECK((Xm - Xm_direct).norm().item<double>() /
+                  Xm_direct.norm().clamp_min(1e-30).item<double>() <
+              1e-8);
+  return 0;
+}
+
+// N=1 (single-DOF) dense solve -- the smallest system, exercised by scalar
+// implicit models' sensitivity solves (e.g. implicit_param). GMRES on a 1x1
+// batch must still return A^{-1}b exactly.
+int
+check_dense_solve_n1()
+{
+  const auto opts = at::TensorOptions().dtype(at::kDouble);
+  auto A = 2.0 * at::ones({4, 1, 1}, opts);
+  auto b = at::randn({4, 1}, opts);
+  KrylovConfig cfg;
+  cfg.rel_tol = 1e-12;
+  auto x = krylov_solve_dense(A, b, cfg);
+  NEML2_CHECK(x.sizes() == b.sizes());
+  NEML2_CHECK((x - b / 2.0).abs().max().item<double>() < 1e-12);
+  return 0;
+}
+
+// String -> enum parsing (valid values + rejection of an unknown one).
+int
+check_parse()
+{
+  KrylovMethod m = KrylovMethod::GMRES;
+  CacheStrategy c = CacheStrategy::None;
+  NEML2_CHECK(parse_krylov_method("gmres", m) && m == KrylovMethod::GMRES);
+  NEML2_CHECK(parse_krylov_method("bicgstab", m) && m == KrylovMethod::BiCGStab);
+  NEML2_CHECK(!parse_krylov_method("nope", m));
+  NEML2_CHECK(parse_cache_strategy("none", c) && c == CacheStrategy::None);
+  NEML2_CHECK(parse_cache_strategy("chord", c) && c == CacheStrategy::Chord);
+  NEML2_CHECK(parse_cache_strategy("max_its", c) && c == CacheStrategy::MaxLinearIters);
+  NEML2_CHECK(!parse_cache_strategy("bogus", c));
+  return 0;
+}
+
+// Non-convergence: a tiny iteration budget on a harder (non-clustered) operator
+// leaves batch elements unconverged -- exercises the max_its exit + the
+// per-element `converged` mask (not just the happy converged-in-one-cycle path).
+int
+check_nonconvergence()
+{
+  at::manual_seed(7);
+  const auto opts = at::TensorOptions().dtype(at::kDouble);
+  const int64_t Bsz = 4, n = 30;
+  auto A = 0.6 * at::randn({Bsz, n, n}, opts) + at::eye(n, opts);
+  auto b = at::randn({Bsz, n}, opts);
+  const auto matvec = [&A](const at::Tensor & v) { return apply_dense(A, v); };
+  const PrecondFn identity = [](const at::Tensor & v) { return v; };
+  KrylovConfig cfg;
+  cfg.method = KrylovMethod::GMRES;
+  cfg.restart = 2; // tiny subspace
+  cfg.max_its = 2; // and a single restart cycle
+  cfg.rel_tol = 1e-12;
+  cfg.abs_tol = 0.0;
+  auto res = krylov_solve(matvec, identity, b, cfg);
+  NEML2_CHECK(!res.converged.all().item<bool>()); // budget too small for full convergence
+  return 0;
+}
 } // namespace
 
 int
@@ -213,6 +306,13 @@ main()
 
   // Cross-group flatten/unflatten roundtrip + BLOCK rejection.
   NEML2_CHECK(check_flatten() == 0);
+
+  // Dense assembled-operator solve (the C++ iterative-sensitivity path): vector +
+  // matrix RHS, the N=1 edge case, string->enum parsing, and non-convergence.
+  NEML2_CHECK(check_dense_solve() == 0);
+  NEML2_CHECK(check_dense_solve_n1() == 0);
+  NEML2_CHECK(check_parse() == 0);
+  NEML2_CHECK(check_nonconvergence() == 0);
 
   std::printf("test_krylov: all checks passed\n");
   return 0;
