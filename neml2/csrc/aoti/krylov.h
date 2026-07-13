@@ -182,14 +182,25 @@ gmres(const MatvecFn & matvec,
 
   for (int64_t restart = 0; restart < max_restarts; ++restart)
   {
-    auto r = minv(b - matvec(x));
+    // First cycle: x is still zero, so `b - A x == b` -- skip the matvec of a
+    // zero vector. That matvec is a full model pushforward (the dominant cost)
+    // whose result is identically 0, so for a solve that converges in one restart
+    // cycle (the common case here) this removes ~1 of every ~k+1 matvecs.
+    auto r = (restart == 0) ? minv(b) : minv(b - matvec(x));
     auto beta = detail::row_norm(r); // (B,)
     done = at::logical_or(done, at::logical_or(beta < cfg.abs_tol, beta / bnorm < cfg.rel_tol));
     if (done.all().item<bool>())
       break;
 
-    auto V = at::zeros({B, m + 1, n}, opts);
-    auto H = at::zeros({B, m + 1, m}, opts);
+    // V and H are `empty` (not `zeros`): only columns 0..jmax of V and the
+    // upper-Hessenberg band of H are ever written, and every entry read is
+    // written first (V column j before the CGS2 slice reads it; H's column j by
+    // copy-first-reorth below + the row-norm subdiagonal; the back-sub reads only
+    // the built 0..jmax window). Skipping the zero-fill of the full restart-width
+    // (m+1) buffers -- most of which go unused when the solve converges in a few
+    // iterations -- removes the dominant Krylov-arithmetic kernel (`aten::fill_`).
+    auto V = at::empty({B, m + 1, n}, opts);
+    auto H = at::empty({B, m + 1, m}, opts);
     auto cs = at::zeros({B, m}, opts);
     auto sn = at::zeros({B, m}, opts);
     auto g = at::zeros({B, m + 1}, opts);
@@ -202,12 +213,18 @@ gmres(const MatvecFn & matvec,
     {
       auto w = minv(matvec(V.select(1, j))); // (B, n)
       // CGS2: classical Gram-Schmidt + one reorthogonalization (BLAS-2 friendly).
+      // First pass copies into H's column (no pre-zero needed -> H can be `empty`);
+      // the reorthogonalization pass accumulates.
       for (int reorth = 0; reorth < 2; ++reorth)
       {
         auto Vj = V.slice(1, 0, j + 1);              // (B, j+1, n)
         auto hj = at::einsum("bkn,bn->bk", {Vj, w}); // (B, j+1)
         w = w - at::einsum("bk,bkn->bn", {hj, Vj});  // (B, n)
-        H.slice(1, 0, j + 1).select(2, j).add_(hj);
+        auto Hcol = H.slice(1, 0, j + 1).select(2, j);
+        if (reorth == 0)
+          Hcol.copy_(hj);
+        else
+          Hcol.add_(hj);
       }
       auto hjp = detail::row_norm(w); // (B,)
       H.select(1, j + 1).select(1, j).copy_(hjp);
@@ -296,7 +313,9 @@ bicgstab(const MatvecFn & matvec,
   const double eps = detail::dtype_eps(b.scalar_type());
 
   auto x = at::zeros({B, n}, opts);
-  auto r = b - matvec(x);
+  // x starts at zero, so `b - A x == b`; skip the matvec of a zero vector (a
+  // full model pushforward whose result is identically 0).
+  auto r = b.clone();
   auto rhat = r.clone();
   const auto bnorm = detail::row_norm(b).clamp_min(eps);
   auto rho = at::ones({B}, opts);
