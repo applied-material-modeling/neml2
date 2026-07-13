@@ -47,7 +47,7 @@ clang_format:
     - .pre-commit-config.yaml
 
 ruff:
-  version: "0.15.20"
+  version: "0.15.21"
   files:
     - .pre-commit-config.yaml
     - pyproject.toml
