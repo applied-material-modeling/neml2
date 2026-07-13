@@ -1,9 +1,10 @@
-# chaboche12_gmres: 12-backstress Chaboche viscoplasticity (U=79, a large DENSE
+# neml2
+# chaboche12gmres: 12-backstress Chaboche viscoplasticity (U=79, a large DENSE
 # single-group implicit system) -- the iterative-solver scaling benchmark.
 # Load history is the first 10 steps of the standard chaboche sweep (same
 # per-step increment, 1/10 the wall-clock) so direct vs iterative timing is
 # cheap to measure. This dir = the matrix-free GMRES case; chaboche12 (DenseLU)
-# is generated from it by swapping the [Solvers] block to matrix-free GMRES.
+# is the DIRECT baseline (identical model, [Solvers] swapped to DenseLU).
 [Settings]
   example_batch_shape = '(${nbatch},)'
 []
