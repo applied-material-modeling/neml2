@@ -15,10 +15,14 @@
 # CMakeLists), leaving the CPython symbols to be supplied by whatever embeds it.
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Embed)
 
+# /wd4251;/wd4275 mirror the aoti target (top-level CMakeLists): these exes
+# include the exported PImpl facade headers, so under /W3 MSVC would otherwise
+# emit the same "needs dll-interface" noise for the std:: members carried across
+# the boundary (harmless -- same toolchain/runtime on both sides).
 function(neml2_add_test_warning_flags target)
       target_compile_options(${target} PRIVATE
             $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall;-Wextra>
-            $<$<CXX_COMPILER_ID:MSVC>:/W3>)
+            $<$<CXX_COMPILER_ID:MSVC>:/W3;/wd4251;/wd4275>)
 endfunction()
 
 # torch Inductor nests two ~52-char hash directories (plus a ~52-char filename)
