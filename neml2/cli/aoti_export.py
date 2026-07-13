@@ -58,6 +58,8 @@ CLI
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from math import prod
@@ -1027,8 +1029,35 @@ def _parameter_infos(
 
 
 def _write_meta(path: Path, meta: dict) -> None:
-    with open(path, "w") as f:
-        json.dump(meta, f, indent=2)
+    """Write ``metadata.json`` atomically and durably.
+
+    A reader -- notably the C++ ``aoti::Model`` loader, which opens
+    ``metadata.json`` immediately after this returns in the same process --
+    must never observe a partial or empty file. A plain ``open(path, "w")``
+    truncates to zero, then writes, leaving a window where the file exists at
+    zero bytes; on Windows (write-behind cache + a virus scanner touching the
+    freshly created file, amplified by the parallel ``-n auto`` test run) a
+    concurrent open then reads empty, and ``nlohmann::json::parse`` fails with
+    "attempting to parse an empty input". Write to a temp file in the same
+    directory, ``flush`` + ``fsync``, then ``os.replace`` (atomic on POSIX and
+    Windows) so the final name only ever appears with complete, durable content.
+    """
+    data = json.dumps(meta, indent=2)
+    # Same directory as the target so os.replace stays on one filesystem (atomic).
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    except BaseException:
+        # Don't leave a stray temp file behind if the write/replace failed.
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 # ---------------------------------------------------------------------------
