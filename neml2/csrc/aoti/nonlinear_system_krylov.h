@@ -85,9 +85,16 @@ public:
     FlatSpec bspec;
     auto b_flat = flatten_dense(b_groups, _residual_layout, bspec);
 
-    // Capture the unknown-side spec so the matvec/du round-trip is exact.
+    // Capture the unknown-side spec so the matvec/du round-trip is exact. The
+    // Krylov vectors (v, du) live in the *batched* residual space, but the
+    // initial guess u0 may be an unbatched broadcast (e.g. a predictor scalar,
+    // shape (N,) not (*B, N)) -- the direct path only becomes batched after the
+    // first u + du. Take the widths from the unknown groups but the batch from
+    // the (authoritative, always-batched) residual so unflatten reshapes v/du to
+    // (*B, w) rather than the batchless (w,).
     FlatSpec uspec;
     (void)flatten_dense(u, _unknown_layout, uspec);
+    uspec.batch_shape = bspec.batch_shape;
 
     // Matrix-free operator A.v = dr/du . v at the current u (compiled/callback
     // matvec), flattened/unflattened at the boundary.

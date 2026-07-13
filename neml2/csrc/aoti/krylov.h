@@ -220,6 +220,7 @@ gmres(const MatvecFn & matvec,
     V.select(1, 0).copy_(r / beta.clamp_min(eps).unsqueeze(-1));
     const auto active = at::logical_not(done);
 
+    int64_t jmax = m; // columns actually built this cycle (< m if it exits early)
     for (int64_t j = 0; j < m; ++j)
     {
       auto w = minv(matvec(V.select(1, j))); // (B, n)
@@ -271,19 +272,31 @@ gmres(const MatvecFn & matvec,
           at::logical_and(at::logical_and(active, at::logical_not(done)),
                           at::logical_or(resid < cfg.abs_tol, resid / bnorm < cfg.rel_tol));
       done = at::logical_or(done, newly);
+      // Early exit: stop building the Krylov basis once every batch element has
+      // converged (its Givens-estimated residual is below tol). The spectrum of
+      // these implicit backward-Euler systems clusters near 1, so this is
+      // typically a handful of iterations, not the full restart width -- running
+      // to `m` regardless would do ~m matvecs per solve where a few suffice
+      // (the dominant cost). The one d2h sync per inner iter is far cheaper than
+      // a wasted compiled matvec, and mirrors the Newton loop's per-iter sync.
+      if (done.all().item<bool>())
+      {
+        jmax = j + 1;
+        break;
+      }
     }
 
-    // Back-substitute R y = g on the full [0:m] window per element; x += V y.
-    auto R = H.slice(1, 0, m).slice(2, 0, m);  // (B, m, m)
-    auto rhs = g.slice(1, 0, m).unsqueeze(-1); // (B, m, 1)
-    auto R_reg = R + eps * at::eye(m, opts);
+    // Back-substitute R y = g on the [0:jmax] window actually built; x += V y.
+    auto R = H.slice(1, 0, jmax).slice(2, 0, jmax); // (B, jmax, jmax)
+    auto rhs = g.slice(1, 0, jmax).unsqueeze(-1);   // (B, jmax, 1)
+    auto R_reg = R + eps * at::eye(jmax, opts);
     auto y = at::linalg_solve_triangular(R_reg,
                                          rhs,
                                          /*upper=*/true,
                                          /*left=*/true,
                                          /*unitriangular=*/false)
-                 .squeeze(-1); // (B, m)
-    x = x + at::einsum("bjn,bj->bn", {V.slice(1, 0, m), y});
+                 .squeeze(-1); // (B, jmax)
+    x = x + at::einsum("bjn,bj->bn", {V.slice(1, 0, jmax), y});
   }
 
   return {x, iters.max().item<int64_t>(), done};

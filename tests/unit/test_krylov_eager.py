@@ -160,3 +160,41 @@ def test_iterative_matches_dense_lu_coupled(solver):
     got = _solve(_coupled_system, solver)
     assert _allclose(got["x"], gold["x"], atol=1e-8)
     assert _allclose(got["y"], gold["y"], atol=1e-8)
+
+
+def _coupled_system_unbatched_u0() -> ModelNonlinearSystem:
+    """Batched givens but an UNBATCHED initial guess -- a broadcast u0 (shape
+    ``(base,)`` not ``(*B, base)``), the common case for a predictor/scalar IC.
+    The direct path handles this by broadcasting on ``u + du``; the Krylov path
+    must take its vector batch from the (batched) residual, not from u0.
+    """
+    sys = ModelNonlinearSystem(CoupledResidual(), unknowns=[["x", "y"]])
+    sys.initialize(
+        u=SparseVector(
+            sys.ulayout,
+            {  # unbatched scalars -- no leading batch axis
+                "x": Scalar(torch.tensor(1.0, dtype=torch.float64)),
+                "y": Scalar(torch.tensor(1.0, dtype=torch.float64)),
+            },
+        ),
+        g=SparseVector(
+            sys.glayout,
+            {  # batched givens (batch 2)
+                "c": Scalar(torch.tensor([4.5, 6.0], dtype=torch.float64)),
+                "d": Scalar(torch.tensor([9.25, 12.0], dtype=torch.float64)),
+            },
+        ),
+    )
+    return sys
+
+
+@pytest.mark.parametrize("solver", _CONFIGS, ids=_config_id)
+def test_iterative_handles_unbatched_initial_guess(solver):
+    """Regression: an unbatched u0 with batched givens must solve (and match the
+    direct route) rather than crashing in the Krylov flatten/unflatten -- the
+    Krylov batch comes from the residual, not u0. (chaboche12's driver hits this;
+    the earlier batched-u0 tests did not.)"""
+    gold = _solve(_coupled_system_unbatched_u0, DenseLU())
+    got = _solve(_coupled_system_unbatched_u0, solver)
+    assert _allclose(got["x"], gold["x"], atol=1e-8)
+    assert _allclose(got["y"], gold["y"], atol=1e-8)
