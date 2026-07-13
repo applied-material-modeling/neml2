@@ -39,27 +39,7 @@
    "cell_type": "markdown",
    "id": "b049f18b",
    "metadata": {},
-   "source": [
-    "## The pipeline\n",
-    "\n",
-    "`neml2-compile input.i --model elasticity` turns the eager model into a\n",
-    "self-contained package and emits:\n",
-    "\n",
-    "- **`elasticity_aoti.i`** — a standalone drop-in *stub*: a copy of the input\n",
-    "  with the `[Models]/elasticity` block swapped for an `AOTIModel` shim that\n",
-    "  points at the artifact folder via an absolute `artifact_path`. Everything\n",
-    "  else (drivers, settings, tensors) is copied through verbatim, so the stub is\n",
-    "  a drop-in replacement anywhere a `Driver` consumes the model by name.\n",
-    "- **`elasticity/<device>/`** — one artifact folder per device, holding:\n",
-    "  - `elasticity_meta.json` — variable layout, dtype, device\n",
-    "  - `elasticity.pt2` — the AOTI-compiled `forward` kernels\n",
-    "  - `elasticity_jvp.pt2` — the per-pair `jvp` / `jacobian` graph (only with `-d`)\n",
-    "\n",
-    "Compiling for several devices at once (`--device cpu cuda`) adds more\n",
-    "`<device>/` subfolders; the loader picks the one matching the device it runs on.\n",
-    "\n",
-    "## The input file"
-   ]
+   "source": "## The pipeline\n\n`neml2-compile input.i --model elasticity` turns the eager model into a\nself-contained package and emits:\n\n- **`elasticity_aoti.i`** — a standalone drop-in *stub*: a copy of the input\n  with the `[Models]/elasticity` block swapped for an `AOTIModel` shim that\n  points at the artifact folder via an absolute `artifact_path`. Everything\n  else (drivers, settings, tensors) is copied through verbatim, so the stub is\n  a drop-in replacement anywhere a `Driver` consumes the model by name. The\n  stub is optional — pass `--no-stub` to skip it.\n- **`elasticity/`** — the self-describing artifact folder: a shared\n  `metadata.json` at the root plus per-`<device>/<dtype>/` binaries:\n  - `metadata.json` — variable layout, promoted-parameter values, and (for\n    implicit models) the solver configuration; shared across every device/dtype\n  - `<device>/<dtype>/elasticity.pt2` — the AOTI-compiled `forward` kernels\n  - `<device>/<dtype>/elasticity_jvp.pt2` — the per-pair `jvp` / `jacobian`\n    graph (only with `-d`)\n\nCompiling for more devices/dtypes (e.g. `--device cpu cuda`) adds more\n`<device>/<dtype>/` leaves under the same shared `metadata.json`; at load you\npick which leaf via `device` / `dtype` (default `cpu` / `float64`, matching\n`neml2-compile`).\n\n## The input file"
   },
   {
    "cell_type": "code",
@@ -110,12 +90,7 @@
    "cell_type": "markdown",
    "id": "46bd6f7a",
    "metadata": {},
-   "source": [
-    "Compilation is a one-time cost (Inductor + C++ compile, typically\n",
-    "seconds); the resulting artifact loads quickly on every subsequent\n",
-    "run. With no `--output-dir` the output lands in `aoti/` — the standalone\n",
-    "`aoti/<model>_aoti.i` stub next to the per-device folder `aoti/<model>/<device>/`:"
-   ]
+   "source": "Compilation is a one-time cost (Inductor + C++ compile, typically\nseconds); the resulting artifact loads quickly on every subsequent\nrun. With no `--output-dir` the output lands in `aoti/` — the standalone\n`aoti/<model>_aoti.i` stub next to the artifact folder `aoti/<model>/`\n(a shared `metadata.json` plus the `<device>/<dtype>/` binaries):"
   },
   {
    "cell_type": "code",
@@ -124,7 +99,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "!ls aoti aoti/elasticity aoti/elasticity/cpu"
+    "!ls aoti aoti/elasticity aoti/elasticity/cpu/float64"
    ]
   },
   {
@@ -144,12 +119,7 @@
    "id": "16b14678",
    "metadata": {},
    "outputs": [],
-   "source": [
-    "import neml2\n",
-    "\n",
-    "compiled = neml2.load_model(\"aoti/elasticity_aoti.i\", \"elasticity\")\n",
-    "compiled"
-   ]
+   "source": "import neml2\n\n# An AOTI artifact is pinned to a specific device/dtype at compile time, so which\n# `<device>/<dtype>/` leaf to load is a decision made *at load time*. We compiled\n# a float64 CPU artifact above; that is also the default (`device=\"cpu\"`,\n# `dtype=\"float64\"`, matching `neml2-compile`), shown explicitly here.\ncompiled = neml2.load_model(\"aoti/elasticity_aoti.i\", \"elasticity\", device=\"cpu\", dtype=\"float64\")\ncompiled"
   },
   {
    "cell_type": "markdown",
@@ -309,7 +279,21 @@
    "id": "7134eaa6",
    "metadata": {},
    "outputs": [],
-   "source": "m = neml2.load_model(\"aoti_promoted/elasticity_aoti.i\", \"elasticity\")\n\n# Initial value comes from the snapshot taken at compile time.\n(stress0,) = m(strain)\n\n# Mutate the promoted E in place via the shim's public named_parameters()\n# surface (only promoted `-p` names appear there). The next call sees it.\nm.named_parameters()[\"elasticity.E\"].fill_(100e3)\n(stress1,) = m(strain)\n\nprint(\"initial E=200e3 stress[0,0]:\", stress0.data[0, 0].item())\nprint(\"after   E=100e3 stress[0,0]:\", stress1.data[0, 0].item())\nprint(\"ratio (expect 0.5):         \", (stress1.data[0, 0] / stress0.data[0, 0]).item())"
+   "source": [
+    "m = neml2.load_model(\"aoti_promoted/elasticity_aoti.i\", \"elasticity\", device=\"cpu\", dtype=\"float64\")\n",
+    "\n",
+    "# Initial value comes from the snapshot taken at compile time.\n",
+    "(stress0,) = m(strain)\n",
+    "\n",
+    "# Mutate the promoted E in place via the shim's public named_parameters()\n",
+    "# surface (only promoted `-p` names appear there). The next call sees it.\n",
+    "m.named_parameters()[\"elasticity.E\"].fill_(100e3)\n",
+    "(stress1,) = m(strain)\n",
+    "\n",
+    "print(\"initial E=200e3 stress[0,0]:\", stress0.data[0, 0].item())\n",
+    "print(\"after   E=100e3 stress[0,0]:\", stress1.data[0, 0].item())\n",
+    "print(\"ratio (expect 0.5):         \", (stress1.data[0, 0] / stress0.data[0, 0]).item())"
+   ]
   },
   {
    "cell_type": "markdown",

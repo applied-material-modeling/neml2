@@ -39,20 +39,22 @@ $ neml2-compile tests/aoti/forward_single/model.i --model model --device cpu cud
 A batch-independent block is returned unbatched and the dispatcher passes
 it through unchanged (it is identical across batch chunks).
 
-produces a standalone stub next to a per-device artifact folder:
+produces a standalone stub next to an artifact folder:
 
 ```text
 aoti/
   model_aoti.i            # standalone stub; points at the folder via artifact_path
   model/
-    cpu/   model_meta.json + *.pt2
-    cuda/  model_meta.json + *.pt2
+    metadata.json         # shared: structural info, promoted-param values, solver config
+    cpu/float64/  *.pt2
+    cuda/float64/ *.pt2
 ```
 
-The loader resolves `<artifact_path>/<device>/` for the device it runs on. The
-Python shim picks the subfolder matching `torch.get_default_device()` (so
-`neml2-run --device cuda` loads `cuda/`); the C++ loader picks it from the
-scheduler (below).
+The loader reads `metadata.json` from the artifact root and resolves
+`<artifact_path>/<device>/<dtype>/` for the device and dtype it runs on. The
+Python shim picks the subfolder matching `torch.get_default_device()` /
+`torch.get_default_dtype()` (so `neml2-run --device cuda` loads `cuda/`);
+the C++ loader picks it from the scheduler (below).
 
 ## Load and dispatch from C++
 

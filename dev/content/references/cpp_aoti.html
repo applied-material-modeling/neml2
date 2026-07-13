@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -420,8 +420,8 @@ This page is the C++ loading-and-calling API.</p>
 <h2>Loading and calling<a class="headerlink" href="#loading-and-calling" title="Link to this heading">#</a></h2>
 <p>The entry point that mirrors Python’s <code class="docutils literal notranslate"><span class="pre">load_model(path,</span> <span class="pre">name)</span></code> is
 <code class="docutils literal notranslate"><span class="pre">neml2::aoti::load_model</span></code>: hand it the stub <code class="docutils literal notranslate"><span class="pre">.i</span></code> and the model name, and
-it parses the stub, resolves the per-device artifact folder from
-<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code>, and forwards any <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> settings to the runtime:</p>
+it parses the stub, resolves the artifact folder from <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code>,
+and reads solver configuration directly from <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;neml2/csrc/dispatchers/factory.h&quot;</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="k">auto</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">neml2</span><span class="o">::</span><span class="n">aoti</span><span class="o">::</span><span class="n">load_model</span><span class="p">(</span><span class="s">&quot;aoti/elasticity_aoti.i&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;elasticity&quot;</span><span class="p">);</span>
@@ -441,13 +441,14 @@ it parses the stub, resolves the per-device artifact folder from
 <p><code class="docutils literal notranslate"><span class="pre">load_model</span></code> returns a <code class="docutils literal notranslate"><span class="pre">Model</span></code>-shaped handle. Passing an optional
 scheduler turns on multi-device dispatch (chunking a batch across
 CPU + GPU(s)); see <a class="reference internal" href="cpp_dispatch.html#model-dispatch"><span class="std std-ref">cpp-dispatch — dispatching across devices</span></a> for the scheduler surface.</p>
-<p>If you already have a per-device metadata path and want to skip HIT
-parsing entirely, construct the bare <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code> directly. It
-takes a single filesystem path to a <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;name&gt;_meta.json</span></code>; the
-per-segment <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> files are resolved relative to that path:</p>
+<p>If you want to skip HIT parsing entirely, construct the bare
+<code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code> directly from the artifact root. Device and dtype
+default to <code class="docutils literal notranslate"><span class="pre">at::kCPU</span></code> and <code class="docutils literal notranslate"><span class="pre">at::kDouble</span></code>:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;neml2/csrc/aoti/Model.h&quot;</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">neml2</span><span class="o">::</span><span class="n">aoti</span><span class="o">::</span><span class="n">Model</span><span class="w"> </span><span class="n">model</span><span class="p">(</span><span class="s">&quot;aoti/elasticity/cpu/elasticity_meta.json&quot;</span><span class="p">);</span>
+</span><span data-line="3"><span class="n">neml2</span><span class="o">::</span><span class="n">aoti</span><span class="o">::</span><span class="n">Model</span><span class="w"> </span><span class="n">model</span><span class="p">(</span><span class="s">&quot;aoti/elasticity&quot;</span><span class="p">);</span>
+</span><span data-line="4"><span class="c1">// or with explicit device / dtype:</span>
+</span><span data-line="5"><span class="n">neml2</span><span class="o">::</span><span class="n">aoti</span><span class="o">::</span><span class="n">Model</span><span class="w"> </span><span class="n">model</span><span class="p">(</span><span class="s">&quot;aoti/elasticity&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">at</span><span class="o">::</span><span class="n">kCPU</span><span class="p">,</span><span class="w"> </span><span class="n">at</span><span class="o">::</span><span class="n">kDouble</span><span class="p">);</span>
 </span></pre></div>
 </div>
 <p>The bare <code class="docutils literal notranslate"><span class="pre">Model</span></code> is non-copyable and non-movable; hold it as a

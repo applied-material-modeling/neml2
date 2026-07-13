@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -373,206 +373,206 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#neml2.types.MRP"><code class="docutils literal notranslate"><span class="pre">MRP</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.MRP.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.from_axis_angle"><code class="docutils literal notranslate">from_axis_angle()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.from_axis_angle_standard"><code class="docutils literal notranslate">from_axis_angle_standard()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.from_matrix"><code class="docutils literal notranslate">from_matrix()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.identity"><code class="docutils literal notranslate">identity()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.rand"><code class="docutils literal notranslate">rand()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.rotation_from_to"><code class="docutils literal notranslate">rotation_from_to()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MRP.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.BASE_NDIM"><code class="docutils literal notranslate"><span class="pre">MRP.BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.BASE_SHAPE"><code class="docutils literal notranslate"><span class="pre">MRP.BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.data"><code class="docutils literal notranslate"><span class="pre">MRP.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.from_axis_angle"><code class="docutils literal notranslate"><span class="pre">MRP.from_axis_angle()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.from_axis_angle_standard"><code class="docutils literal notranslate"><span class="pre">MRP.from_axis_angle_standard()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.from_matrix"><code class="docutils literal notranslate"><span class="pre">MRP.from_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.identity"><code class="docutils literal notranslate"><span class="pre">MRP.identity()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.k_ndim"><code class="docutils literal notranslate"><span class="pre">MRP.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.k_pairing"><code class="docutils literal notranslate"><span class="pre">MRP.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.k_state"><code class="docutils literal notranslate"><span class="pre">MRP.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.rand"><code class="docutils literal notranslate"><span class="pre">MRP.rand()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.rotation_from_to"><code class="docutils literal notranslate"><span class="pre">MRP.rotation_from_to()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">MRP.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">MRP.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MRP.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">MRP.sub_batch_state</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.MillerIndex"><code class="docutils literal notranslate"><span class="pre">MillerIndex</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.MillerIndex.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MillerIndex.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MillerIndex.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MillerIndex.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MillerIndex.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MillerIndex.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MillerIndex.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MillerIndex.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.MillerIndex.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MillerIndex.BASE_NDIM"><code class="docutils literal notranslate"><span class="pre">MillerIndex.BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MillerIndex.BASE_SHAPE"><code class="docutils literal notranslate"><span class="pre">MillerIndex.BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MillerIndex.data"><code class="docutils literal notranslate"><span class="pre">MillerIndex.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MillerIndex.k_ndim"><code class="docutils literal notranslate"><span class="pre">MillerIndex.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MillerIndex.k_pairing"><code class="docutils literal notranslate"><span class="pre">MillerIndex.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MillerIndex.k_state"><code class="docutils literal notranslate"><span class="pre">MillerIndex.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MillerIndex.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">MillerIndex.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MillerIndex.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">MillerIndex.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.MillerIndex.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">MillerIndex.sub_batch_state</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.PrimitiveTensor"><code class="docutils literal notranslate"><span class="pre">PrimitiveTensor</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.empty"><code class="docutils literal notranslate">empty()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.fill"><code class="docutils literal notranslate">fill()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.full"><code class="docutils literal notranslate">full()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.ones"><code class="docutils literal notranslate">ones()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.zeros"><code class="docutils literal notranslate">zeros()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.zeros_like"><code class="docutils literal notranslate">zeros_like()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.empty"><code class="docutils literal notranslate"><span class="pre">PrimitiveTensor.empty()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.fill"><code class="docutils literal notranslate"><span class="pre">PrimitiveTensor.fill()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.full"><code class="docutils literal notranslate"><span class="pre">PrimitiveTensor.full()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.ones"><code class="docutils literal notranslate"><span class="pre">PrimitiveTensor.ones()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.zeros"><code class="docutils literal notranslate"><span class="pre">PrimitiveTensor.zeros()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.PrimitiveTensor.zeros_like"><code class="docutils literal notranslate"><span class="pre">PrimitiveTensor.zeros_like()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.Quaternion"><code class="docutils literal notranslate"><span class="pre">Quaternion</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.Quaternion.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Quaternion.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Quaternion.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Quaternion.identity"><code class="docutils literal notranslate">identity()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Quaternion.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Quaternion.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Quaternion.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Quaternion.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Quaternion.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Quaternion.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.BASE_NDIM"><code class="docutils literal notranslate"><span class="pre">Quaternion.BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.BASE_SHAPE"><code class="docutils literal notranslate"><span class="pre">Quaternion.BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.data"><code class="docutils literal notranslate"><span class="pre">Quaternion.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.identity"><code class="docutils literal notranslate"><span class="pre">Quaternion.identity()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.k_ndim"><code class="docutils literal notranslate"><span class="pre">Quaternion.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.k_pairing"><code class="docutils literal notranslate"><span class="pre">Quaternion.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.k_state"><code class="docutils literal notranslate"><span class="pre">Quaternion.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">Quaternion.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">Quaternion.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Quaternion.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">Quaternion.sub_batch_state</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.R2"><code class="docutils literal notranslate"><span class="pre">R2</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.R2.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.R2.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.R2.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.R2.identity"><code class="docutils literal notranslate">identity()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.R2.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.R2.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.R2.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.R2.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.R2.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.R2.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.R2.BASE_NDIM"><code class="docutils literal notranslate"><span class="pre">R2.BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.R2.BASE_SHAPE"><code class="docutils literal notranslate"><span class="pre">R2.BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.R2.data"><code class="docutils literal notranslate"><span class="pre">R2.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.R2.identity"><code class="docutils literal notranslate"><span class="pre">R2.identity()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.R2.k_ndim"><code class="docutils literal notranslate"><span class="pre">R2.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.R2.k_pairing"><code class="docutils literal notranslate"><span class="pre">R2.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.R2.k_state"><code class="docutils literal notranslate"><span class="pre">R2.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.R2.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">R2.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.R2.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">R2.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.R2.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">R2.sub_batch_state</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.SR2"><code class="docutils literal notranslate"><span class="pre">SR2</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.SR2.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SR2.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SR2.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SR2.fill"><code class="docutils literal notranslate">fill()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SR2.identity"><code class="docutils literal notranslate">identity()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SR2.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SR2.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SR2.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SR2.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SR2.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SR2.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.BASE_NDIM"><code class="docutils literal notranslate"><span class="pre">SR2.BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.BASE_SHAPE"><code class="docutils literal notranslate"><span class="pre">SR2.BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.data"><code class="docutils literal notranslate"><span class="pre">SR2.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.fill"><code class="docutils literal notranslate"><span class="pre">SR2.fill()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.identity"><code class="docutils literal notranslate"><span class="pre">SR2.identity()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.k_ndim"><code class="docutils literal notranslate"><span class="pre">SR2.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.k_pairing"><code class="docutils literal notranslate"><span class="pre">SR2.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.k_state"><code class="docutils literal notranslate"><span class="pre">SR2.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">SR2.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">SR2.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SR2.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">SR2.sub_batch_state</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.SSR4"><code class="docutils literal notranslate"><span class="pre">SSR4</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.SSR4.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.identity"><code class="docutils literal notranslate">identity()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.identity_C1"><code class="docutils literal notranslate">identity_C1()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.identity_C2"><code class="docutils literal notranslate">identity_C2()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.identity_C3"><code class="docutils literal notranslate">identity_C3()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.identity_dev"><code class="docutils literal notranslate">identity_dev()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.identity_sym"><code class="docutils literal notranslate">identity_sym()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.identity_vol"><code class="docutils literal notranslate">identity_vol()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.SSR4.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.BASE_NDIM"><code class="docutils literal notranslate"><span class="pre">SSR4.BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.BASE_SHAPE"><code class="docutils literal notranslate"><span class="pre">SSR4.BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.data"><code class="docutils literal notranslate"><span class="pre">SSR4.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.identity"><code class="docutils literal notranslate"><span class="pre">SSR4.identity()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.identity_C1"><code class="docutils literal notranslate"><span class="pre">SSR4.identity_C1()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.identity_C2"><code class="docutils literal notranslate"><span class="pre">SSR4.identity_C2()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.identity_C3"><code class="docutils literal notranslate"><span class="pre">SSR4.identity_C3()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.identity_dev"><code class="docutils literal notranslate"><span class="pre">SSR4.identity_dev()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.identity_sym"><code class="docutils literal notranslate"><span class="pre">SSR4.identity_sym()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.identity_vol"><code class="docutils literal notranslate"><span class="pre">SSR4.identity_vol()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.k_ndim"><code class="docutils literal notranslate"><span class="pre">SSR4.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.k_pairing"><code class="docutils literal notranslate"><span class="pre">SSR4.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.k_state"><code class="docutils literal notranslate"><span class="pre">SSR4.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">SSR4.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">SSR4.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.SSR4.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">SSR4.sub_batch_state</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.Scalar"><code class="docutils literal notranslate"><span class="pre">Scalar</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.Scalar.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.arange"><code class="docutils literal notranslate">arange()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.from_value"><code class="docutils literal notranslate">from_value()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.full"><code class="docutils literal notranslate">full()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.ones"><code class="docutils literal notranslate">ones()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Scalar.zeros"><code class="docutils literal notranslate">zeros()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.BASE_NDIM"><code class="docutils literal notranslate"><span class="pre">Scalar.BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.BASE_SHAPE"><code class="docutils literal notranslate"><span class="pre">Scalar.BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.arange"><code class="docutils literal notranslate"><span class="pre">Scalar.arange()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.data"><code class="docutils literal notranslate"><span class="pre">Scalar.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.from_value"><code class="docutils literal notranslate"><span class="pre">Scalar.from_value()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.full"><code class="docutils literal notranslate"><span class="pre">Scalar.full()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.k_ndim"><code class="docutils literal notranslate"><span class="pre">Scalar.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.k_pairing"><code class="docutils literal notranslate"><span class="pre">Scalar.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.k_state"><code class="docutils literal notranslate"><span class="pre">Scalar.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.ones"><code class="docutils literal notranslate"><span class="pre">Scalar.ones()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">Scalar.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">Scalar.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">Scalar.sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Scalar.zeros"><code class="docutils literal notranslate"><span class="pre">Scalar.zeros()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.Tensor"><code class="docutils literal notranslate"><span class="pre">Tensor</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.Tensor.as_typed"><code class="docutils literal notranslate">as_typed()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.base"><code class="docutils literal notranslate">base</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.base_ndim"><code class="docutils literal notranslate">base_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.base_shape"><code class="docutils literal notranslate">base_shape</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.batch"><code class="docutils literal notranslate">batch</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.batch_ndim"><code class="docutils literal notranslate">batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.batch_shape"><code class="docutils literal notranslate">batch_shape</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.device"><code class="docutils literal notranslate">device</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.dtype"><code class="docutils literal notranslate">dtype</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.flatten_base"><code class="docutils literal notranslate">flatten_base()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.flatten_sub_batch"><code class="docutils literal notranslate">flatten_sub_batch()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.flatten_sub_batch_into_first_base_axis"><code class="docutils literal notranslate">flatten_sub_batch_into_first_base_axis()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.fold_preserving"><code class="docutils literal notranslate">fold_preserving()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.from_typed"><code class="docutils literal notranslate">from_typed()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.ndim"><code class="docutils literal notranslate">ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.new_zeros"><code class="docutils literal notranslate">new_zeros()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.shape"><code class="docutils literal notranslate">shape</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.solve"><code class="docutils literal notranslate">solve()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.sub_batch"><code class="docutils literal notranslate">sub_batch</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.sub_batch_shape"><code class="docutils literal notranslate">sub_batch_shape</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.to"><code class="docutils literal notranslate">to()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.unflatten_base"><code class="docutils literal notranslate">unflatten_base()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.zeros"><code class="docutils literal notranslate">zeros()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Tensor.zeros_like"><code class="docutils literal notranslate">zeros_like()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.as_typed"><code class="docutils literal notranslate"><span class="pre">Tensor.as_typed()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.base"><code class="docutils literal notranslate"><span class="pre">Tensor.base</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.base_ndim"><code class="docutils literal notranslate"><span class="pre">Tensor.base_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.base_shape"><code class="docutils literal notranslate"><span class="pre">Tensor.base_shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.batch"><code class="docutils literal notranslate"><span class="pre">Tensor.batch</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.batch_ndim"><code class="docutils literal notranslate"><span class="pre">Tensor.batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.batch_shape"><code class="docutils literal notranslate"><span class="pre">Tensor.batch_shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.data"><code class="docutils literal notranslate"><span class="pre">Tensor.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.device"><code class="docutils literal notranslate"><span class="pre">Tensor.device</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.dtype"><code class="docutils literal notranslate"><span class="pre">Tensor.dtype</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.flatten_base"><code class="docutils literal notranslate"><span class="pre">Tensor.flatten_base()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.flatten_sub_batch"><code class="docutils literal notranslate"><span class="pre">Tensor.flatten_sub_batch()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.flatten_sub_batch_into_first_base_axis"><code class="docutils literal notranslate"><span class="pre">Tensor.flatten_sub_batch_into_first_base_axis()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.fold_preserving"><code class="docutils literal notranslate"><span class="pre">Tensor.fold_preserving()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.from_typed"><code class="docutils literal notranslate"><span class="pre">Tensor.from_typed()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.k_ndim"><code class="docutils literal notranslate"><span class="pre">Tensor.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.k_pairing"><code class="docutils literal notranslate"><span class="pre">Tensor.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.k_state"><code class="docutils literal notranslate"><span class="pre">Tensor.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.ndim"><code class="docutils literal notranslate"><span class="pre">Tensor.ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.new_zeros"><code class="docutils literal notranslate"><span class="pre">Tensor.new_zeros()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.shape"><code class="docutils literal notranslate"><span class="pre">Tensor.shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.solve"><code class="docutils literal notranslate"><span class="pre">Tensor.solve()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.sub_batch"><code class="docutils literal notranslate"><span class="pre">Tensor.sub_batch</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">Tensor.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">Tensor.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.sub_batch_shape"><code class="docutils literal notranslate"><span class="pre">Tensor.sub_batch_shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">Tensor.sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.to"><code class="docutils literal notranslate"><span class="pre">Tensor.to()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.unflatten_base"><code class="docutils literal notranslate"><span class="pre">Tensor.unflatten_base()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.zeros"><code class="docutils literal notranslate"><span class="pre">Tensor.zeros()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.zeros_like"><code class="docutils literal notranslate"><span class="pre">Tensor.zeros_like()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.TensorWrapper"><code class="docutils literal notranslate"><span class="pre">TensorWrapper</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.base"><code class="docutils literal notranslate">base</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.base_shape"><code class="docutils literal notranslate">base_shape</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.batch"><code class="docutils literal notranslate">batch</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.batch_shape"><code class="docutils literal notranslate">batch_shape</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.device"><code class="docutils literal notranslate">device</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.dtype"><code class="docutils literal notranslate">dtype</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.dynamic_batch"><code class="docutils literal notranslate">dynamic_batch</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.dynamic_batch_shape"><code class="docutils literal notranslate">dynamic_batch_shape</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.k"><code class="docutils literal notranslate">k</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.k_shape"><code class="docutils literal notranslate">k_shape</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.materialize"><code class="docutils literal notranslate">materialize()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.ndim"><code class="docutils literal notranslate">ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.shape"><code class="docutils literal notranslate">shape</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.sub_batch"><code class="docutils literal notranslate">sub_batch</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.sub_batch_shape"><code class="docutils literal notranslate">sub_batch_shape</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.to"><code class="docutils literal notranslate">to()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.TensorWrapper.with_sub_batch_ndim"><code class="docutils literal notranslate">with_sub_batch_ndim()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.BASE_NDIM"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.BASE_SHAPE"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.base"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.base</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.base_shape"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.base_shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.batch"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.batch</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.batch_shape"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.batch_shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.data"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.device"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.device</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.dtype"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.dtype</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.dynamic_batch"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.dynamic_batch</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.dynamic_batch_shape"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.dynamic_batch_shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.k"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.k</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.k_ndim"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.k_pairing"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.k_shape"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.k_shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.k_state"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.materialize"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.materialize()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.ndim"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.shape"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.sub_batch"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.sub_batch</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.sub_batch_shape"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.sub_batch_shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.to"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.to()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.TensorWrapper.with_sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">TensorWrapper.with_sub_batch_ndim()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.Vec"><code class="docutils literal notranslate"><span class="pre">Vec</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.Vec.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Vec.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Vec.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Vec.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Vec.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Vec.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Vec.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Vec.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.Vec.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Vec.BASE_NDIM"><code class="docutils literal notranslate"><span class="pre">Vec.BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Vec.BASE_SHAPE"><code class="docutils literal notranslate"><span class="pre">Vec.BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Vec.data"><code class="docutils literal notranslate"><span class="pre">Vec.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Vec.k_ndim"><code class="docutils literal notranslate"><span class="pre">Vec.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Vec.k_pairing"><code class="docutils literal notranslate"><span class="pre">Vec.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Vec.k_state"><code class="docutils literal notranslate"><span class="pre">Vec.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Vec.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">Vec.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Vec.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">Vec.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Vec.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">Vec.sub_batch_state</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.WR2"><code class="docutils literal notranslate"><span class="pre">WR2</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.types.WR2.BASE_NDIM"><code class="docutils literal notranslate">BASE_NDIM</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.WR2.BASE_SHAPE"><code class="docutils literal notranslate">BASE_SHAPE</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.WR2.data"><code class="docutils literal notranslate">data</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.WR2.identity"><code class="docutils literal notranslate">identity()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.WR2.k_ndim"><code class="docutils literal notranslate">k_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.WR2.k_pairing"><code class="docutils literal notranslate">k_pairing</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.WR2.k_state"><code class="docutils literal notranslate">k_state</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.WR2.sub_batch_meta"><code class="docutils literal notranslate">sub_batch_meta</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.WR2.sub_batch_ndim"><code class="docutils literal notranslate">sub_batch_ndim</span></code></a></li>
-<li><a class="reference internal" href="#neml2.types.WR2.sub_batch_state"><code class="docutils literal notranslate">sub_batch_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.WR2.BASE_NDIM"><code class="docutils literal notranslate"><span class="pre">WR2.BASE_NDIM</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.WR2.BASE_SHAPE"><code class="docutils literal notranslate"><span class="pre">WR2.BASE_SHAPE</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.WR2.data"><code class="docutils literal notranslate"><span class="pre">WR2.data</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.WR2.identity"><code class="docutils literal notranslate"><span class="pre">WR2.identity()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.WR2.k_ndim"><code class="docutils literal notranslate"><span class="pre">WR2.k_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.WR2.k_pairing"><code class="docutils literal notranslate"><span class="pre">WR2.k_pairing</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.WR2.k_state"><code class="docutils literal notranslate"><span class="pre">WR2.k_state</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.WR2.sub_batch_meta"><code class="docutils literal notranslate"><span class="pre">WR2.sub_batch_meta</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.WR2.sub_batch_ndim"><code class="docutils literal notranslate"><span class="pre">WR2.sub_batch_ndim</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.WR2.sub_batch_state"><code class="docutils literal notranslate"><span class="pre">WR2.sub_batch_state</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.types.abs"><code class="docutils literal notranslate"><span class="pre">abs()</span></code></a></li>

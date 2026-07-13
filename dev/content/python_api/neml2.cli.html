@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -481,10 +481,10 @@ for variable substitution use <em>pre</em>.</p></li>
 <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">1</span></code> compiles independent segments concurrently in a spawn process
 pool – effective only for a multi-segment model (a <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code>
 containing an <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>); single-segment models ignore it. The
-resulting <code class="docutils literal notranslate"><span class="pre">_meta.json</span></code> is identical to a serial run (segment metadata
+resulting <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> is identical to a serial run (segment metadata
 is reassembled in segment order regardless of completion order).</p></li>
 <li><p><strong>progress_cb</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><em>Callable</em></a><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>None</em><em>] </em><em>| </em><em>None</em>) – Optional callback invoked with the bare filename of each generated file
-as it is written – every <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graph and the <code class="docutils literal notranslate"><span class="pre">&lt;model&gt;_meta.json</span></code>.
+as it is written – every <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graph and <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>.
 The CLI passes a printer that renders <code class="docutils literal notranslate"><span class="pre">[k/N]</span> <span class="pre">&lt;name&gt;</span></code> progress. <code class="docutils literal notranslate"><span class="pre">None</span></code>
 (default) is silent. Under <code class="docutils literal notranslate"><span class="pre">jobs</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> the callback still fires per
 <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> (forwarded from workers), then once for the metadata.</p></li>

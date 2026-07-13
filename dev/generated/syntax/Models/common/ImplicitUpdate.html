@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -427,6 +427,10 @@ data-aria-dark="Switch to auto color mode">
 <dt><code class="docutils literal notranslate"><span class="pre">solver</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · <strong>required</strong></dt><dd><p>Solver used to solve the nonlinear system of equations</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">predictor</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>An optional predictor to provide an initial guess for the nonlinear solve.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">max_substepping_level</span></code> — <code class="docutils literal notranslate"><span class="pre">int</span></code> · default <code class="docutils literal notranslate"><span class="pre">0</span></code></dt><dd><p>Adaptive sub-incrementation depth cap, applied by the COMPILED AOTI routes only (<code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>). 0 (default) disables substepping. Level L lets the compiled solve recursively bisect a failing increment down to depth L (up to 2^L sub-steps), per-element, interpolating paired forces and chaining state; a sub-step still failing at depth L raises a recoverable ConvergenceError so an outer time-stepper can cut the step. The eager runtime does NOT sub-increment: evaluating an ImplicitUpdate eagerly with this set &gt; 0 raises (substepping is an AOTI-only feature).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">incremental_variables</span></code> — <code class="docutils literal notranslate"><span class="pre">list</span></code></dt><dd><p>Names of driving-force inputs the COMPILED substep driver treats as pure increments (scaled by the sub-step fraction rather than interpolated). Forces that already carry a ~1 counterpart are interpolated automatically and need not be listed; a lone increment with no ~1 counterpart is held constant unless listed here. Like <code class="docutils literal notranslate"><span class="pre">max_substepping_level</span></code> this is an AOTI-compile directive; setting it rejects eager evaluation.</p>
 </dd>
 </dl>
 </section>

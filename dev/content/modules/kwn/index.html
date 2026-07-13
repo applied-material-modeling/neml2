@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
@@ -517,9 +517,9 @@ growth rate vanishes as <span class="math notranslate nohighlight">\(x^\infty_\s
 <p>The more general <strong>SFFK</strong> form (Svoboda–Fischer–Fratzl–Kozeschnik)
 handles multi-component diffusion in the dilute, diffusion-limited
 regime,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-300c67e7-72a9-4e76-b300-cb26e7c97df1">
-<div class="amsmath math notranslate nohighlight" id="equation-300c67e7-72a9-4e76-b300-cb26e7c97df1">
-<span class="eqno">(6)<a class="headerlink" href="#equation-300c67e7-72a9-4e76-b300-cb26e7c97df1" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-67c3f73d-81ed-4853-b763-9bf6c9c69509">
+<div class="amsmath math notranslate nohighlight" id="equation-67c3f73d-81ed-4853-b763-9bf6c9c69509">
+<span class="eqno">(6)<a class="headerlink" href="#equation-67c3f73d-81ed-4853-b763-9bf6c9c69509" title="Permalink to this equation">#</a></span>\[\begin{align}
 \dot{R}^{(j)} &amp;= \frac{1}{R^{(j)}} \,
   \frac{\Delta G^{(j)}_{\text{chem}}
       + \Delta G^{(j)}_{\text{surf}}
@@ -532,9 +532,9 @@ S^{(j)} &amp;= \sum_{k \in \mathcal{S}_j}
 <p>with <span class="math notranslate nohighlight">\(\Delta x^{(j)}_k = x^{(j)}_k - x^{*,(j)}_k\)</span> and <span class="math notranslate nohighlight">\(D_k\)</span> the matrix
 diffusivity of species <span class="math notranslate nohighlight">\(k\)</span>. The driving force is split into chemical,
 surface, and elastic contributions:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-a0d48bc1-e198-4029-8bd0-cb5dc6e8e2c7">
-<div class="amsmath math notranslate nohighlight" id="equation-a0d48bc1-e198-4029-8bd0-cb5dc6e8e2c7">
-<span class="eqno">(7)<a class="headerlink" href="#equation-a0d48bc1-e198-4029-8bd0-cb5dc6e8e2c7" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-001e5bb1-5c57-4b08-a6a7-665a5a99b69e">
+<div class="amsmath math notranslate nohighlight" id="equation-001e5bb1-5c57-4b08-a6a7-665a5a99b69e">
+<span class="eqno">(7)<a class="headerlink" href="#equation-001e5bb1-5c57-4b08-a6a7-665a5a99b69e" title="Permalink to this equation">#</a></span>\[\begin{align}
 \Delta G^{(j)}_{\text{chem}} &amp;=
   \sum_{k \in \mathcal{S}_j} \Delta x^{(j)}_k
   \bigl[\mu^{\text{matrix}}_k(x^\infty) - \mu^{\text{equil},(j)}_k\bigr],
@@ -566,9 +566,9 @@ J^{(j)}_{\text{nuc}} =
 \]</div>
 </div>
 <p>with the classical-nucleation-theory expressions</p>
-<div class="math-wrapper amsmath docutils container" id="equation-d80f698f-1f9f-453c-a735-3c494f95bdd7">
-<div class="amsmath math notranslate nohighlight" id="equation-d80f698f-1f9f-453c-a735-3c494f95bdd7">
-<span class="eqno">(8)<a class="headerlink" href="#equation-d80f698f-1f9f-453c-a735-3c494f95bdd7" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-f695877e-37fb-4585-9c53-fb1be836b8b0">
+<div class="amsmath math notranslate nohighlight" id="equation-f695877e-37fb-4585-9c53-fb1be836b8b0">
+<span class="eqno">(8)<a class="headerlink" href="#equation-f695877e-37fb-4585-9c53-fb1be836b8b0" title="Permalink to this equation">#</a></span>\[\begin{align}
 R^{(j)}_{\text{crit}} &amp;=
   \frac{2 \gamma^{(j)} V_m^{(j)}}{\Delta g^{(j)}_v}, \\
 \Delta G^{*,(j)} &amp;=

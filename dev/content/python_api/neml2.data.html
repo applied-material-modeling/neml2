@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -373,21 +373,21 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#neml2.data.CrystalGeometry"><code class="docutils literal notranslate"><span class="pre">CrystalGeometry</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.data.CrystalGeometry.A"><code class="docutils literal notranslate">A</span></code></a></li>
-<li><a class="reference internal" href="#neml2.data.CrystalGeometry.M"><code class="docutils literal notranslate">M</span></code></a></li>
-<li><a class="reference internal" href="#neml2.data.CrystalGeometry.W"><code class="docutils literal notranslate">W</span></code></a></li>
-<li><a class="reference internal" href="#neml2.data.CrystalGeometry.nslip"><code class="docutils literal notranslate">nslip</span></code></a></li>
-<li><a class="reference internal" href="#neml2.data.CrystalGeometry.nslip_groups"><code class="docutils literal notranslate">nslip_groups</span></code></a></li>
-<li><a class="reference internal" href="#neml2.data.CrystalGeometry.nslip_in_group"><code class="docutils literal notranslate">nslip_in_group()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.data.CrystalGeometry.slip_directions"><code class="docutils literal notranslate">slip_directions</span></code></a></li>
-<li><a class="reference internal" href="#neml2.data.CrystalGeometry.slip_planes"><code class="docutils literal notranslate">slip_planes</span></code></a></li>
-<li><a class="reference internal" href="#neml2.data.CrystalGeometry.sym_ops"><code class="docutils literal notranslate">sym_ops</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CrystalGeometry.A"><code class="docutils literal notranslate"><span class="pre">CrystalGeometry.A</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CrystalGeometry.M"><code class="docutils literal notranslate"><span class="pre">CrystalGeometry.M</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CrystalGeometry.W"><code class="docutils literal notranslate"><span class="pre">CrystalGeometry.W</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CrystalGeometry.nslip"><code class="docutils literal notranslate"><span class="pre">CrystalGeometry.nslip</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CrystalGeometry.nslip_groups"><code class="docutils literal notranslate"><span class="pre">CrystalGeometry.nslip_groups</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CrystalGeometry.nslip_in_group"><code class="docutils literal notranslate"><span class="pre">CrystalGeometry.nslip_in_group()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CrystalGeometry.slip_directions"><code class="docutils literal notranslate"><span class="pre">CrystalGeometry.slip_directions</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CrystalGeometry.slip_planes"><code class="docutils literal notranslate"><span class="pre">CrystalGeometry.slip_planes</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CrystalGeometry.sym_ops"><code class="docutils literal notranslate"><span class="pre">CrystalGeometry.sym_ops</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.data.CubicCrystal"><code class="docutils literal notranslate"><span class="pre">CubicCrystal</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.data.CubicCrystal.SECTION"><code class="docutils literal notranslate">SECTION</span></code></a></li>
-<li><a class="reference internal" href="#neml2.data.CubicCrystal.from_hit"><code class="docutils literal notranslate">from_hit()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.data.CubicCrystal.hit"><code class="docutils literal notranslate">hit</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CubicCrystal.SECTION"><code class="docutils literal notranslate"><span class="pre">CubicCrystal.SECTION</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CubicCrystal.from_hit"><code class="docutils literal notranslate"><span class="pre">CubicCrystal.from_hit()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.data.CubicCrystal.hit"><code class="docutils literal notranslate"><span class="pre">CubicCrystal.hit</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.data.cubic_symmetry_operators"><code class="docutils literal notranslate"><span class="pre">cubic_symmetry_operators()</span></code></a></li>

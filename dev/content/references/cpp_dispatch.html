@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -459,18 +459,20 @@ several devices needs one artifact per device. <code class="docutils literal not
 <code class="docutils literal notranslate"><span class="pre">jvp</span></code> work; drop it for a forward-only artifact, or name specific pairs.)
 A batch-independent block is returned unbatched and the dispatcher passes
 it through unchanged (it is identical across batch chunks).</p>
-<p>produces a standalone stub next to a per-device artifact folder:</p>
+<p>produces a standalone stub next to an artifact folder:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">aoti/
 </span><span data-line="2">  model_aoti.i            # standalone stub; points at the folder via artifact_path
 </span><span data-line="3">  model/
-</span><span data-line="4">    cpu/   model_meta.json + *.pt2
-</span><span data-line="5">    cuda/  model_meta.json + *.pt2
+</span><span data-line="4">    metadata.json         # shared: structural info, promoted-param values, solver config
+</span><span data-line="5">    cpu/float64/  *.pt2
+</span><span data-line="6">    cuda/float64/ *.pt2
 </span></pre></div>
 </div>
-<p>The loader resolves <code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/</span></code> for the device it runs on. The
-Python shim picks the subfolder matching <code class="docutils literal notranslate"><span class="pre">torch.get_default_device()</span></code> (so
-<code class="docutils literal notranslate"><span class="pre">neml2-run</span> <span class="pre">--device</span> <span class="pre">cuda</span></code> loads <code class="docutils literal notranslate"><span class="pre">cuda/</span></code>); the C++ loader picks it from the
-scheduler (below).</p>
+<p>The loader reads <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> from the artifact root and resolves
+<code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;dtype&gt;/</span></code> for the device and dtype it runs on. The
+Python shim picks the subfolder matching <code class="docutils literal notranslate"><span class="pre">torch.get_default_device()</span></code> /
+<code class="docutils literal notranslate"><span class="pre">torch.get_default_dtype()</span></code> (so <code class="docutils literal notranslate"><span class="pre">neml2-run</span> <span class="pre">--device</span> <span class="pre">cuda</span></code> loads <code class="docutils literal notranslate"><span class="pre">cuda/</span></code>);
+the C++ loader picks it from the scheduler (below).</p>
 </section>
 <section id="load-and-dispatch-from-c">
 <h2>Load and dispatch from C++<a class="headerlink" href="#load-and-dispatch-from-c" title="Link to this heading">#</a></h2>

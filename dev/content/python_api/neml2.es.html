@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -373,112 +373,112 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.AssembledMatrix.col_layout"><code class="docutils literal notranslate">col_layout</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AssembledMatrix.disassemble"><code class="docutils literal notranslate">disassemble()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AssembledMatrix.group"><code class="docutils literal notranslate">group()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AssembledMatrix.row_layout"><code class="docutils literal notranslate">row_layout</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AssembledMatrix.select_blocks"><code class="docutils literal notranslate">select_blocks()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AssembledMatrix.tensors"><code class="docutils literal notranslate">tensors</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.col_layout"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.col_layout</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.disassemble"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.disassemble()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.group"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.group()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.row_layout"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.row_layout</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.select_blocks"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.select_blocks()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.tensors"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.tensors</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector"><code class="docutils literal notranslate"><span class="pre">AssembledVector</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.AssembledVector.disassemble"><code class="docutils literal notranslate">disassemble()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AssembledVector.from_dict"><code class="docutils literal notranslate">from_dict()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AssembledVector.group"><code class="docutils literal notranslate">group()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AssembledVector.layout"><code class="docutils literal notranslate">layout</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AssembledVector.tensors"><code class="docutils literal notranslate">tensors</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.disassemble"><code class="docutils literal notranslate"><span class="pre">AssembledVector.disassemble()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.from_dict"><code class="docutils literal notranslate"><span class="pre">AssembledVector.from_dict()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.group"><code class="docutils literal notranslate"><span class="pre">AssembledVector.group()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.layout"><code class="docutils literal notranslate"><span class="pre">AssembledVector.layout</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.tensors"><code class="docutils literal notranslate"><span class="pre">AssembledVector.tensors</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout"><code class="docutils literal notranslate"><span class="pre">AxisLayout</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.block_size"><code class="docutils literal notranslate">block_size()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.group_size"><code class="docutils literal notranslate">group_size()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.group_sub_batch_shape"><code class="docutils literal notranslate">group_sub_batch_shape()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.groups"><code class="docutils literal notranslate">groups</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.ngroup"><code class="docutils literal notranslate">ngroup</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.nvar"><code class="docutils literal notranslate">nvar</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.specs"><code class="docutils literal notranslate">specs</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.storage_size"><code class="docutils literal notranslate">storage_size()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.structure"><code class="docutils literal notranslate">structure</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.sub_batch_shape"><code class="docutils literal notranslate">sub_batch_shape()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.sub_batch_shapes"><code class="docutils literal notranslate">sub_batch_shapes</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.sub_layout"><code class="docutils literal notranslate">sub_layout()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.type_of"><code class="docutils literal notranslate">type_of()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.var_size"><code class="docutils literal notranslate">var_size()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.vars"><code class="docutils literal notranslate">vars()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.AxisLayout.with_sub_batch_shapes"><code class="docutils literal notranslate">with_sub_batch_shapes()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.block_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.block_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.group_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.group_sub_batch_shape"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_sub_batch_shape()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.groups"><code class="docutils literal notranslate"><span class="pre">AxisLayout.groups</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.ngroup"><code class="docutils literal notranslate"><span class="pre">AxisLayout.ngroup</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.nvar"><code class="docutils literal notranslate"><span class="pre">AxisLayout.nvar</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.specs"><code class="docutils literal notranslate"><span class="pre">AxisLayout.specs</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.storage_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.storage_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.structure"><code class="docutils literal notranslate"><span class="pre">AxisLayout.structure</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.sub_batch_shape"><code class="docutils literal notranslate"><span class="pre">AxisLayout.sub_batch_shape()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.sub_batch_shapes"><code class="docutils literal notranslate"><span class="pre">AxisLayout.sub_batch_shapes</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.sub_layout"><code class="docutils literal notranslate"><span class="pre">AxisLayout.sub_layout()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.type_of"><code class="docutils literal notranslate"><span class="pre">AxisLayout.type_of()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.var_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.var_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.vars"><code class="docutils literal notranslate"><span class="pre">AxisLayout.vars()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.with_sub_batch_shapes"><code class="docutils literal notranslate"><span class="pre">AxisLayout.with_sub_batch_shapes()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.IFT"><code class="docutils literal notranslate"><span class="pre">IFT</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.IFT.emitted_pairs"><code class="docutils literal notranslate">emitted_pairs()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.IFT.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.IFT.emitted_pairs"><code class="docutils literal notranslate"><span class="pre">IFT.emitted_pairs()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.IFT.forward"><code class="docutils literal notranslate"><span class="pre">IFT.forward()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.LinearSystem"><code class="docutils literal notranslate"><span class="pre">LinearSystem</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.A"><code class="docutils literal notranslate">A()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.A_and_B"><code class="docutils literal notranslate">A_and_B()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.A_and_B_and_b"><code class="docutils literal notranslate">A_and_B_and_b()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.A_and_b"><code class="docutils literal notranslate">A_and_b()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.SECTION"><code class="docutils literal notranslate">SECTION</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.assemble"><code class="docutils literal notranslate">assemble()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.b"><code class="docutils literal notranslate">b()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.blayout"><code class="docutils literal notranslate">blayout</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.g"><code class="docutils literal notranslate">g()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.glayout"><code class="docutils literal notranslate">glayout</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.set_g"><code class="docutils literal notranslate">set_g()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.set_u"><code class="docutils literal notranslate">set_u()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.setup_blayout"><code class="docutils literal notranslate">setup_blayout()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.setup_glayout"><code class="docutils literal notranslate">setup_glayout()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.setup_ulayout"><code class="docutils literal notranslate">setup_ulayout()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.u"><code class="docutils literal notranslate">u()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.LinearSystem.ulayout"><code class="docutils literal notranslate">ulayout</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.A"><code class="docutils literal notranslate"><span class="pre">LinearSystem.A()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.A_and_B"><code class="docutils literal notranslate"><span class="pre">LinearSystem.A_and_B()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.A_and_B_and_b"><code class="docutils literal notranslate"><span class="pre">LinearSystem.A_and_B_and_b()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.A_and_b"><code class="docutils literal notranslate"><span class="pre">LinearSystem.A_and_b()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.SECTION"><code class="docutils literal notranslate"><span class="pre">LinearSystem.SECTION</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.assemble"><code class="docutils literal notranslate"><span class="pre">LinearSystem.assemble()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.b"><code class="docutils literal notranslate"><span class="pre">LinearSystem.b()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.blayout"><code class="docutils literal notranslate"><span class="pre">LinearSystem.blayout</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.g"><code class="docutils literal notranslate"><span class="pre">LinearSystem.g()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.glayout"><code class="docutils literal notranslate"><span class="pre">LinearSystem.glayout</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.set_g"><code class="docutils literal notranslate"><span class="pre">LinearSystem.set_g()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.set_u"><code class="docutils literal notranslate"><span class="pre">LinearSystem.set_u()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.setup_blayout"><code class="docutils literal notranslate"><span class="pre">LinearSystem.setup_blayout()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.setup_glayout"><code class="docutils literal notranslate"><span class="pre">LinearSystem.setup_glayout()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.setup_ulayout"><code class="docutils literal notranslate"><span class="pre">LinearSystem.setup_ulayout()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.u"><code class="docutils literal notranslate"><span class="pre">LinearSystem.u()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.LinearSystem.ulayout"><code class="docutils literal notranslate"><span class="pre">LinearSystem.ulayout</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.assemble"><code class="docutils literal notranslate">assemble()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.from_hit"><code class="docutils literal notranslate">from_hit()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.g"><code class="docutils literal notranslate">g()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.hit"><code class="docutils literal notranslate">hit</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.initialize"><code class="docutils literal notranslate">initialize()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.set_g"><code class="docutils literal notranslate">set_g()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.set_u"><code class="docutils literal notranslate">set_u()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.set_u_from_group_raws"><code class="docutils literal notranslate">set_u_from_group_raws()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.setup_blayout"><code class="docutils literal notranslate">setup_blayout()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.setup_glayout"><code class="docutils literal notranslate">setup_glayout()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.setup_ulayout"><code class="docutils literal notranslate">setup_ulayout()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.to"><code class="docutils literal notranslate">to()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.to_sparse"><code class="docutils literal notranslate">to_sparse()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.u"><code class="docutils literal notranslate">u()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.assemble"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.assemble()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.from_hit"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.from_hit()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.g"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.g()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.hit"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.hit</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.initialize"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.set_g"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.set_g()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.set_u"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.set_u()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.set_u_from_group_raws"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.set_u_from_group_raws()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.setup_blayout"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.setup_blayout()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.setup_glayout"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.setup_glayout()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.setup_ulayout"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.setup_ulayout()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.to"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.to()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.to_sparse"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.to_sparse()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.u"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.u()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.NewtonStep"><code class="docutils literal notranslate"><span class="pre">NewtonStep</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.NewtonStep.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.NewtonStep.forward"><code class="docutils literal notranslate"><span class="pre">NewtonStep.forward()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.NonlinearSystem"><code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.ParamIFT"><code class="docutils literal notranslate"><span class="pre">ParamIFT</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.ParamIFT.emitted_param_pairs"><code class="docutils literal notranslate">emitted_param_pairs()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.ParamIFT.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ParamIFT.emitted_param_pairs"><code class="docutils literal notranslate"><span class="pre">ParamIFT.emitted_param_pairs()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ParamIFT.forward"><code class="docutils literal notranslate"><span class="pre">ParamIFT.forward()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.RHS"><code class="docutils literal notranslate"><span class="pre">RHS</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.RHS.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.RHS.forward"><code class="docutils literal notranslate"><span class="pre">RHS.forward()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.SparseMatrix"><code class="docutils literal notranslate"><span class="pre">SparseMatrix</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.SparseMatrix.assemble"><code class="docutils literal notranslate">assemble()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.SparseMatrix.cells"><code class="docutils literal notranslate">cells</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.SparseMatrix.col_layout"><code class="docutils literal notranslate">col_layout</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.SparseMatrix.row_layout"><code class="docutils literal notranslate">row_layout</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.SparseMatrix.to"><code class="docutils literal notranslate">to()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseMatrix.assemble"><code class="docutils literal notranslate"><span class="pre">SparseMatrix.assemble()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseMatrix.cells"><code class="docutils literal notranslate"><span class="pre">SparseMatrix.cells</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseMatrix.col_layout"><code class="docutils literal notranslate"><span class="pre">SparseMatrix.col_layout</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseMatrix.row_layout"><code class="docutils literal notranslate"><span class="pre">SparseMatrix.row_layout</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseMatrix.to"><code class="docutils literal notranslate"><span class="pre">SparseMatrix.to()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.SparseVector"><code class="docutils literal notranslate"><span class="pre">SparseVector</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.es.SparseVector.assemble"><code class="docutils literal notranslate">assemble()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.SparseVector.items"><code class="docutils literal notranslate">items()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.SparseVector.keys"><code class="docutils literal notranslate">keys()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.SparseVector.layout"><code class="docutils literal notranslate">layout</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.SparseVector.to"><code class="docutils literal notranslate">to()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.es.SparseVector.values"><code class="docutils literal notranslate">values</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseVector.assemble"><code class="docutils literal notranslate"><span class="pre">SparseVector.assemble()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseVector.items"><code class="docutils literal notranslate"><span class="pre">SparseVector.items()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseVector.keys"><code class="docutils literal notranslate"><span class="pre">SparseVector.keys()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseVector.layout"><code class="docutils literal notranslate"><span class="pre">SparseVector.layout</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseVector.to"><code class="docutils literal notranslate"><span class="pre">SparseVector.to()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.SparseVector.values"><code class="docutils literal notranslate"><span class="pre">SparseVector.values</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.norm"><code class="docutils literal notranslate"><span class="pre">norm()</span></code></a></li>

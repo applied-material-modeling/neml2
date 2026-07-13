@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -420,19 +420,31 @@ schema, parameter promotion, device/dtype pinning — is documented once in
 <section id="two-entry-points">
 <h2>Two entry points<a class="headerlink" href="#two-entry-points" title="Link to this heading">#</a></h2>
 <p>To drive the artifact through the normal HIT machinery (e.g. a
-<code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>), load the stub with <code class="docutils literal notranslate"><span class="pre">neml2.load_model</span></code> — the <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code>
-shim resolves the per-device subfolder for the current default device:</p>
+<code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>), load the stub with <code class="docutils literal notranslate"><span class="pre">neml2.load_model</span></code>. The stub is
+device/dtype-agnostic (it only records the artifact-root <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code>),
+so which <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> leaf to load is a <strong>load-time</strong> decision — an
+AOTI artifact is device/dtype-pinned, unlike a native model you can <code class="docutils literal notranslate"><span class="pre">.to()</span></code>
+afterward. Pass <code class="docutils literal notranslate"><span class="pre">device</span></code> / <code class="docutils literal notranslate"><span class="pre">dtype</span></code> (a <code class="docutils literal notranslate"><span class="pre">torch.device</span></code> / <code class="docutils literal notranslate"><span class="pre">torch.dtype</span></code> or their
+string spellings); both default to NEML2’s canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code> — matching
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>, and deliberately <em>not</em> torch’s ambient defaults (whose float32
+would never match a stock float64 artifact):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;elasticity_aoti.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span>
+</span><span data-line="4">    <span class="s2">&quot;elasticity_aoti.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span>
+</span><span data-line="5"><span class="p">)</span>
 </span></pre></div>
 </div>
+<p>There is no silent fallback: if the requested <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> leaf was not
+compiled, the load raises and lists what <em>is</em> present (recompile with the
+matching <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">--device/--dtype</span></code>).</p>
 <p>To work against the bare runtime directly — raw-tensor calls, JVP,
 Jacobian, promoted-parameter mutation — construct <code class="docutils literal notranslate"><span class="pre">neml2.aoti.Model</span></code>
-from a per-device metadata path:</p>
+from the artifact root folder. The device and dtype are the same load-time
+choice, defaulting to <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.aoti</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">binding</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s2">&quot;aoti/elasticity/cpu/elasticity_meta.json&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">binding</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s2">&quot;aoti/elasticity&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
