@@ -26,6 +26,17 @@ foreach(t test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exce
       set_tests_properties(${t} PROPERTIES LABELS "dispatcher" TIMEOUT 120)
 endforeach()
 
+# --- Krylov linear solvers: batched GMRES / BiCGStab numerics (krylov.h) ------
+# Pure numerics: an in-memory dense matvec (no compiled artifact, no
+# NonlinearSystem) validated against at::linalg_solve. `krylov.h` is header-only
+# so nothing new links; its own `krylov` label runs it via `ctest -L krylov`.
+add_executable(test_krylov test_krylov.cpp)
+target_link_libraries(test_krylov PRIVATE aoti)
+target_compile_options(test_krylov PRIVATE -Wall -Wextra)
+set_target_properties(test_krylov PROPERTIES BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
+add_test(NAME test_krylov COMMAND test_krylov)
+set_tests_properties(test_krylov PROPERTIES LABELS "krylov" TIMEOUT 120)
+
 # --- End-to-end tests: need a compiled artifact ------------------------------
 # A ctest fixture compiles the forward_promoted leaf (LinearIsotropicElasticity
 # with E + nu promoted to mutable parameters) via `neml2-compile`, emitting the

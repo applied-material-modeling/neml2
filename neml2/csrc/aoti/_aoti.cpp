@@ -353,4 +353,108 @@ Run the shared C++ Newton solver over an eager (Python-delegating) system.
 ``unknown_layout`` / ``residual_layout`` are ``(structure, sub_batch_shape)``
 per group. Returns ``(u_solved, converged, iterations)``.
 )");
+
+  // Eager iterative path: the SAME C++ Newton loop, but each Newton step's linear
+  // solve is a matrix-free Krylov iteration (krylov.h) instead of a direct solve.
+  // The outer Newton config drives convergence/line-search; the krylov_* args
+  // configure the inner solve (method / restart / preconditioner / cache).
+  m.def(
+      "krylov_solve_eager",
+      [](py::object residual_fn,
+         py::object matvec_fn,
+         py::object jacobian_fn,
+         std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
+         std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
+         std::vector<int64_t> block_sizes,
+         std::vector<at::Tensor> u0,
+         double atol,
+         double rtol,
+         std::size_t miters,
+         const std::string & ls_type,
+         std::size_t ls_max_iters,
+         double ls_cutback,
+         double ls_c,
+         bool collect_log,
+         const std::string & method,
+         int64_t restart,
+         int64_t max_krylov_iters,
+         double krylov_abs_tol,
+         double krylov_rel_tol,
+         const std::string & preconditioner,
+         const std::string & cache_strategy,
+         int64_t cache_threshold)
+      {
+        neml2::aoti::SolverConfig ncfg;
+        ncfg.atol = atol;
+        ncfg.rtol = rtol;
+        ncfg.miters = miters;
+        ncfg.ls_type = ls_type;
+        ncfg.ls_max_iters = ls_max_iters;
+        ncfg.ls_cutback = ls_cutback;
+        ncfg.ls_c = ls_c;
+        ncfg.collect_log = collect_log;
+
+        neml2::aoti::KrylovConfig kcfg;
+        neml2::aoti::_assert(neml2::aoti::parse_krylov_method(method, kcfg.method),
+                             "krylov_solve_eager: unknown method '",
+                             method,
+                             "' (expected gmres | bicgstab)");
+        neml2::aoti::_assert(neml2::aoti::parse_precond_kind(preconditioner, kcfg.precond),
+                             "krylov_solve_eager: unknown preconditioner '",
+                             preconditioner,
+                             "' (expected none | jacobi | block_jacobi | full)");
+        neml2::aoti::_assert(neml2::aoti::parse_cache_strategy(cache_strategy, kcfg.cache),
+                             "krylov_solve_eager: unknown cache_strategy '",
+                             cache_strategy,
+                             "' (expected none | chord | quality_threshold)");
+        kcfg.restart = restart;
+        kcfg.max_iters = max_krylov_iters;
+        kcfg.abs_tol = krylov_abs_tol;
+        kcfg.rel_tol = krylov_rel_tol;
+        kcfg.quality_threshold = cache_threshold;
+
+        return neml2::aoti::run_eager_krylov(ncfg,
+                                             kcfg,
+                                             std::move(residual_fn),
+                                             std::move(matvec_fn),
+                                             std::move(jacobian_fn),
+                                             std::move(unknown_layout),
+                                             std::move(residual_layout),
+                                             std::move(block_sizes),
+                                             std::move(u0));
+      },
+      py::arg("residual_fn"),
+      py::arg("matvec_fn"),
+      py::arg("jacobian_fn"),
+      py::arg("unknown_layout"),
+      py::arg("residual_layout"),
+      py::arg("block_sizes"),
+      py::arg("u0"),
+      py::arg("atol"),
+      py::arg("rtol"),
+      py::arg("miters"),
+      py::arg("ls_type"),
+      py::arg("ls_max_iters"),
+      py::arg("ls_cutback"),
+      py::arg("ls_c"),
+      py::arg("collect_log") = false,
+      py::arg("method") = "gmres",
+      py::arg("restart") = 40,
+      py::arg("max_krylov_iters") = 1000,
+      py::arg("krylov_abs_tol") = 0.0,
+      py::arg("krylov_rel_tol") = 1.0e-8,
+      py::arg("preconditioner") = "none",
+      py::arg("cache_strategy") = "none",
+      py::arg("cache_threshold") = 0,
+      R"(
+Run the shared C++ Newton solver over an eager system whose inner linear solve is
+a matrix-free Krylov iteration (GMRES / BiCGStab) rather than a direct solve.
+
+``residual_fn(u) -> b`` and ``matvec_fn(u, v) -> Jv`` supply the residual and the
+matrix-free ``J.v`` (the eager ``RHS`` / ``Matvec`` modules). ``jacobian_fn(u) ->
+Tensor`` returns the dense operator ``(*B, N, N)`` for the preconditioner (pass a
+callable only when ``preconditioner != "none"``). ``block_sizes`` are the
+per-variable widths of the single dense unknown group (BlockJacobi). Returns
+``(u_solved, converged, iterations, log)``.
+)");
 }

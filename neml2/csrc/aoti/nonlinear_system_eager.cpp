@@ -24,6 +24,7 @@
 
 #include "neml2/csrc/aoti/nonlinear_system_eager.h"
 #include "neml2/csrc/aoti/nonlinear_system.h"
+#include "neml2/csrc/aoti/nonlinear_system_krylov.h"
 
 #include <utility>
 
@@ -84,6 +85,56 @@ to_layouts(const std::vector<std::pair<std::string, std::vector<int64_t>>> & spe
     out.push_back(GroupLayout{structure, sub_batch_shape});
   return out;
 }
+
+// KrylovNonlinearSystem backed by Python callables: the residual (RHS) and the
+// matrix-free J.v (Matvec) modules, plus an optional dense-Jacobian assembler
+// (Jacobian) for the preconditioner. The shared base owns the Krylov numerics +
+// preconditioner cache; this only marshals the raw per-group ops across the
+// embedded-Python boundary (GIL held by the caller for the whole solve).
+class KrylovEagerNonlinearSystem : public KrylovNonlinearSystem
+{
+public:
+  KrylovEagerNonlinearSystem(py::object residual_fn,
+                             py::object matvec_fn,
+                             py::object jacobian_fn,
+                             std::vector<GroupLayout> unknown_layout,
+                             std::vector<GroupLayout> residual_layout,
+                             KrylovConfig cfg,
+                             std::vector<int64_t> block_sizes)
+    : KrylovNonlinearSystem(
+          std::move(unknown_layout), std::move(residual_layout), cfg, std::move(block_sizes)),
+      _residual_fn(std::move(residual_fn)),
+      _matvec_fn(std::move(matvec_fn)),
+      _jacobian_fn(std::move(jacobian_fn))
+  {
+  }
+
+protected:
+  std::vector<at::Tensor> residual_raw(const std::vector<at::Tensor> & u) const override
+  {
+    return _residual_fn(u).cast<std::vector<at::Tensor>>();
+  }
+
+  std::vector<at::Tensor> matvec_raw(const std::vector<at::Tensor> & u,
+                                     const std::vector<at::Tensor> & v) const override
+  {
+    return _matvec_fn(u, v).cast<std::vector<at::Tensor>>();
+  }
+
+  at::Tensor assemble_dense_A(const std::vector<at::Tensor> & u) const override
+  {
+    // The Python assembler returns the single dense Jacobian block (*B, N, N);
+    // fold the dynamic batch to (Bflat, N, N) for the preconditioner factor.
+    auto A = _jacobian_fn(u).cast<at::Tensor>();
+    const auto N = A.size(-1);
+    return A.reshape({-1, N, N});
+  }
+
+private:
+  py::object _residual_fn;
+  py::object _matvec_fn;
+  py::object _jacobian_fn;
+};
 } // namespace
 
 std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
@@ -99,6 +150,28 @@ run_eager_newton(const SolverConfig & cfg,
                            to_layouts(unknown_layout),
                            to_layouts(residual_layout));
   NewtonResult result = Newton(cfg).solve(sys, u0);
+  return {std::move(result.u), result.converged, result.iterations, std::move(result.log)};
+}
+
+std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
+run_eager_krylov(const SolverConfig & newton_cfg,
+                 const KrylovConfig & krylov_cfg,
+                 py::object residual_fn,
+                 py::object matvec_fn,
+                 py::object jacobian_fn,
+                 std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
+                 std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
+                 std::vector<int64_t> block_sizes,
+                 std::vector<at::Tensor> u0)
+{
+  KrylovEagerNonlinearSystem sys(std::move(residual_fn),
+                                 std::move(matvec_fn),
+                                 std::move(jacobian_fn),
+                                 to_layouts(unknown_layout),
+                                 to_layouts(residual_layout),
+                                 krylov_cfg,
+                                 std::move(block_sizes));
+  NewtonResult result = Newton(newton_cfg).solve(sys, u0);
   return {std::move(result.u), result.converged, result.iterations, std::move(result.log)};
 }
 } // namespace neml2::aoti

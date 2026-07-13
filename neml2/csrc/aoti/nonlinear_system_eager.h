@@ -38,6 +38,7 @@
 #include <ATen/core/Tensor.h>
 #include <pybind11/pybind11.h>
 
+#include "neml2/csrc/aoti/krylov.h"
 #include "neml2/csrc/aoti/newton.h"
 
 namespace neml2::aoti
@@ -58,5 +59,27 @@ run_eager_newton(const SolverConfig & cfg,
                  pybind11::object step_fn,
                  std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
                  std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
+                 std::vector<at::Tensor> u0);
+
+/// Drive the shared C++ Newton solver over an eager system whose inner linear
+/// solve is a matrix-free Krylov iteration (krylov.h) rather than a direct solve.
+///
+/// ``residual_fn(list[Tensor] u) -> list[Tensor] b`` and
+/// ``matvec_fn(list[Tensor] u, list[Tensor] v) -> list[Tensor] Jv`` supply the
+/// residual and the matrix-free `J.v` (the eager RHS / Matvec modules).
+/// ``jacobian_fn(list[Tensor] u) -> Tensor`` returns the dense operator
+/// ``(*B, N, N)`` for the preconditioner (may be ``None`` when
+/// ``krylov_cfg.precond == None``). ``block_sizes`` are the per-variable widths
+/// of the single dense unknown group (for BlockJacobi). Same return tuple as
+/// ``run_eager_newton``. Must be called with the GIL held.
+std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
+run_eager_krylov(const SolverConfig & newton_cfg,
+                 const KrylovConfig & krylov_cfg,
+                 pybind11::object residual_fn,
+                 pybind11::object matvec_fn,
+                 pybind11::object jacobian_fn,
+                 std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
+                 std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
+                 std::vector<int64_t> block_sizes,
                  std::vector<at::Tensor> u0);
 } // namespace neml2::aoti
