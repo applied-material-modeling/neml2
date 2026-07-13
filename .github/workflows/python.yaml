@@ -308,12 +308,22 @@ jobs:
       - name: Smoke-test the built wheel
         # Install + import the wheel this cell just built. cibuildwheel's own
         # test-command only runs on tag releases, so this gives every
-        # (os, python) cell a basic packaging check on PRs too. pip resolves the
-        # runtime deps (torch / pyzag / nmhit) straight from pyproject.toml.
+        # (os, python) cell a basic packaging check on PRs too. Pin torch to the
+        # reference version BEFORE installing the wheel so pip's resolver keeps
+        # it (pyproject.toml leaves torch's upper bound open): the compat matrix
+        # is the one place that sweeps torch versions; this smoke test must stay
+        # reproducible and not drift onto every new PyTorch release.
         shell: bash
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            # dependencies: torch.version
+            python -m pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+          else
+            # dependencies: torch.version
+            python -m pip install torch==2.12.1
+          fi
           python -m pip install wheelhouse/*.whl
           python -c "import neml2; print(f'neml2 {neml2.__version__} loads from {neml2.__file__}')"
       - uses: actions/upload-artifact@v7

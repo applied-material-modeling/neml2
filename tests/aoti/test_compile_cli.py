@@ -39,6 +39,7 @@ compile.
 from __future__ import annotations
 
 import json
+import textwrap
 from pathlib import Path
 
 import pytest
@@ -218,6 +219,160 @@ def test_jobs_ignored_for_single_segment(tmp_path):
         return names
 
     assert _artifact_names(j1_dir) == _artifact_names(j4_dir)
+
+
+# ---------------------------------------------------------------------------
+# --load user extensions under parallel (-j N) compilation
+# ---------------------------------------------------------------------------
+
+# An out-of-package Scalar leaf: its @register_neml2_object type is invisible to
+# the factory unless the module is imported via --load. Modeled on
+# tests/cpp/fixtures/ext_model.py.
+_EXT_MODEL_BODY = textwrap.dedent(
+    '''
+    """External (out-of-package) Scalar model for the --load + -j compile test."""
+
+    from __future__ import annotations
+
+    from neml2.factory import register_neml2_object
+    from neml2.models.chain_rule import ChainRuleDict
+    from neml2.models.model import Model
+    from neml2.schema import HitSchema, input, output
+    from neml2.types import Scalar
+
+
+    @register_neml2_object("ExtScaleScalar")
+    class ExtScaleScalar(Model):
+        """out = 2 * in -- a trivial external Scalar model."""
+
+        hit = HitSchema(
+            input("from_var", Scalar, "Input scalar"),
+            output("to_var", Scalar, "Output scalar (= 2 * input)"),
+        )
+
+        def forward(  # type: ignore[override]
+            self,
+            from_var: Scalar,
+            v: ChainRuleDict | None = None,
+        ) -> Scalar | tuple[Scalar, ChainRuleDict]:
+            out = from_var * 2.0
+            if v is None:
+                return out
+            return out, self.apply_chain_rule(
+                v, "to_var", {"from_var": lambda V: V * 2.0}, output=out
+            )
+    '''
+)
+
+# A ComposedModel containing an ImplicitUpdate -> 3 segments (forward / implicit
+# / forward), the shape that engages the parallel worker pool. The first forward
+# leaf is the out-of-package ExtScaleScalar, so every worker must re-import the
+# --load module before it can re-derive its segment. Mirrors composed_param/model.i
+# with `scale` swapped for the custom type.
+_EXT_COMPOSED_INPUT = textwrap.dedent(
+    """
+    [Models]
+      [extscale]
+        type = ExtScaleScalar
+        from_var = 'f'
+        to_var = 'x_rate_ext'
+      []
+      [modrate]
+        type = ScalarLinearCombination
+        from = 'x_rate_ext'
+        to = 'x_rate'
+        weights = '1.3'
+      []
+      [intg]
+        type = ScalarBackwardEulerTimeIntegration
+        variable = 'x'
+        time = 't'
+      []
+      [impl_residual]
+        type = ComposedModel
+        models = 'modrate intg'
+      []
+      [out]
+        type = ScalarLinearCombination
+        from = 'x'
+        to = 'y'
+        weights = '2.0'
+      []
+    []
+
+    [EquationSystems]
+      [eq_sys]
+        type = NonlinearSystem
+        model = 'impl_residual'
+        unknowns = 'x'
+        residuals = 'x_residual'
+      []
+    []
+
+    [Solvers]
+      [newton]
+        type = Newton
+        abs_tol = 1e-12
+        rel_tol = 1e-10
+        max_its = 25
+        linear_solver = 'lu'
+      []
+      [lu]
+        type = DenseLU
+      []
+    []
+
+    [Models]
+      [return_map]
+        type = ImplicitUpdate
+        equation_system = 'eq_sys'
+        solver = 'newton'
+      []
+      [model]
+        type = ComposedModel
+        models = 'extscale return_map out'
+      []
+    []
+    """
+)
+
+
+def test_load_extension_parallel_compile(tmp_path):
+    """A --load user extension used by a multi-segment model must compile under
+    -j N. Spawn workers re-derive their segment in a fresh interpreter, so they
+    have to re-import the --load module -- otherwise the custom @register_neml2_object
+    type is unknown and the worker dies (the reported bug)."""
+    ext_py = tmp_path / "ext_scale.py"
+    ext_py.write_text(_EXT_MODEL_BODY)
+    model_i = tmp_path / "model.i"
+    model_i.write_text(_EXT_COMPOSED_INPUT)
+
+    # Regression guard, run FIRST (before --load registers the type in this
+    # process): without --load, the parent can't even resolve the custom type at
+    # planning time, so main() returns 1. This proves the fixture genuinely
+    # depends on the extension.
+    noload_out = tmp_path / "noload"
+    assert main([str(model_i), "--model", "model", "--output-dir", str(noload_out)]) == 1
+
+    # With --load and jobs>1: the parent plans successfully AND every worker
+    # re-imports the extension, so the full 3-segment compile succeeds.
+    out = tmp_path / "out"
+    rc = main(
+        [
+            str(model_i),
+            "--model",
+            "model",
+            "--output-dir",
+            str(out),
+            "--load",
+            str(ext_py),
+            "-j",
+            "2",
+        ]
+    )
+    assert rc == 0
+    assert (out / "model" / "metadata.json").exists()
+    assert (out / "model" / "cpu" / "float64").is_dir()
 
 
 # ---------------------------------------------------------------------------
