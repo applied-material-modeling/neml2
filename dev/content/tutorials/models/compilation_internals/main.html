@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>How compilation works - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Declaring inputs, outputs, and parameters" href="../../extension/argument_declaration/main.html" /><link rel="prev" title="Compiled models" href="../compiled_models/main.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>How compilation works - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Declaring inputs, outputs, and parameters" href="../../extension/argument_declaration/main.html" /><link rel="prev" title="Compiled models" href="../compiled_models/main.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -562,12 +562,14 @@ same command from the previous tutorial) and then read what it generated:</p>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[1/3] cpu/eq.pt2
-</span><span data-line="2">[2/3] metadata.json
-</span><span data-line="3">[3/3] eq_aoti.i
-</span><span data-line="4">Compiled &#39;eq&#39; (composed, fully baked, no derivative graphs (use -d to compile jvp/jacobian)) for [cpu] -&gt; aoti/eq
-</span><span data-line="5">  metadata: aoti/eq/metadata.json
-</span><span data-line="6">  stub: aoti/eq_aoti.i
-</span><span data-line="7">  cpu: aoti/eq/cpu/float64/
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[2/3] metadata.json
+</span><span data-line="2">[3/3] eq_aoti.i
+</span><span data-line="3">Compiled &#39;eq&#39; (composed, fully baked, no derivative graphs (use -d to compile jvp/jacobian)) for [cpu] -&gt; aoti/eq
+</span><span data-line="4">  metadata: aoti/eq/metadata.json
+</span><span data-line="5">  stub: aoti/eq_aoti.i
+</span><span data-line="6">  cpu: aoti/eq/cpu/float64/
 </span></pre></div>
 </div>
 </div>
@@ -588,9 +590,9 @@ same command from the previous tutorial) and then read what it generated:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">cr2pvutsngf23znknbuqrxhc7qxzmxpsxxlplo2axi5r36cr2rvf.wrapper.cpp
-</span><span data-line="2">c4x6rpqev7wuvvctheyorfxcv7fh7oifc3aycgnipojdpk3xk7l2.kernel.cpp
-</span><span data-line="3">cr2pvutsngf23znknbuqrxhc7qxzmxpsxxlplo2axi5r36cr2rvf.wrapper.so
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">c4hibo4n5aodibrlo45j2c3rfza3yfwgt6dpllt6y5gcaznz4qa6.wrapper.cpp
+</span><span data-line="2">cjwug2uxpgkc4axympik6anvhxjim6fmu62hrp45rwnhedol4ceb.kernel.cpp
+</span><span data-line="3">c4hibo4n5aodibrlo45j2c3rfza3yfwgt6dpllt6y5gcaznz4qa6.wrapper.so
 </span></pre></div>
 </div>
 </div>
@@ -759,7 +761,7 @@ running a compiled model.</p></li>
     </div>
   </div>
 </footer>
-      <script src="../../../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
