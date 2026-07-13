@@ -15,11 +15,32 @@
 # CMakeLists), leaving the CPython symbols to be supplied by whatever embeds it.
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Embed)
 
+function(neml2_add_test_warning_flags target)
+      target_compile_options(${target} PRIVATE
+            $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall;-Wextra>
+            $<$<CXX_COMPILER_ID:MSVC>:/W3>)
+endfunction()
+
+# torch Inductor nests two ~52-char hash directories (plus a ~52-char filename)
+# under TORCHINDUCTOR_CACHE_DIR. Rooted at <fixture_dir>/aoti-cache deep in the
+# build tree, the resulting paths exceed Windows' 260-char MAX_PATH and MASM
+# (ml64.exe) fails with "fatal error A1000: cannot open file". On Windows root
+# the per-fixture caches in the short system temp dir instead; elsewhere keep
+# them build-tree-local so `ctest --parallel` runs stay isolated per fixture.
+function(neml2_inductor_cache_dir out_var fixture_name default_dir)
+      if(WIN32)
+            file(TO_CMAKE_PATH "$ENV{TEMP}" _tmp)
+            set(${out_var} "${_tmp}/neml2-ic/${fixture_name}" PARENT_SCOPE)
+      else()
+            set(${out_var} "${default_dir}/aoti-cache" PARENT_SCOPE)
+      endif()
+endfunction()
+
 # --- Pure-logic tests: schedulers + batch slice/cat helpers + exceptions + log -
 foreach(t test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions test_log)
       add_executable(${t} ${t}.cpp)
       target_link_libraries(${t} PRIVATE aoti)
-      target_compile_options(${t} PRIVATE -Wall -Wextra)
+      neml2_add_test_warning_flags(${t})
       # Resolve libneml2 + torch at runtime from the build tree.
       set_target_properties(${t} PROPERTIES BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
       add_test(NAME ${t} COMMAND ${t})
@@ -32,7 +53,7 @@ endforeach()
 # so nothing new links; its own `krylov` label runs it via `ctest -L krylov`.
 add_executable(test_krylov test_krylov.cpp)
 target_link_libraries(test_krylov PRIVATE aoti)
-target_compile_options(test_krylov PRIVATE -Wall -Wextra)
+neml2_add_test_warning_flags(test_krylov)
 set_target_properties(test_krylov PROPERTIES BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
 add_test(NAME test_krylov COMMAND test_krylov)
 set_tests_properties(test_krylov PROPERTIES LABELS "krylov" TIMEOUT 120)
@@ -68,11 +89,12 @@ add_test(
               --output-dir ${_fixture_dir}
       WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
 )
+neml2_inductor_cache_dir(_fixture_cache dispatch_fixture ${_fixture_dir})
 set_tests_properties(dispatcher_fixture_compile PROPERTIES
       FIXTURES_SETUP dispatch_artifact
       LABELS "dispatcher"
       TIMEOUT 600
-      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_fixture_dir}/aoti-cache"
+      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_fixture_cache}"
 )
 
 # Loading a .pt2 dlopen's its internal compiled .so, which links libtorch.so.
@@ -81,7 +103,7 @@ set_tests_properties(dispatcher_fixture_compile PROPERTIES
 foreach(t test_dispatcher test_load_model)
       add_executable(${t} ${t}.cpp)
       target_link_libraries(${t} PRIVATE aoti)
-      target_compile_options(${t} PRIVATE -Wall -Wextra)
+      neml2_add_test_warning_flags(${t})
       set_target_properties(${t} PROPERTIES BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
 endforeach()
 
@@ -114,16 +136,17 @@ add_test(
               --output-dir ${_ren_dir}
       WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
 )
+neml2_inductor_cache_dir(_ren_cache rename_fixture ${_ren_dir})
 set_tests_properties(rename_fixture_compile PROPERTIES
       FIXTURES_SETUP rename_artifact
       LABELS "dispatcher"
       TIMEOUT 600
-      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_ren_dir}/aoti-cache"
+      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_ren_cache}"
 )
 
 add_executable(test_dispatcher_rename test_dispatcher_rename.cpp)
 target_link_libraries(test_dispatcher_rename PRIVATE aoti)
-target_compile_options(test_dispatcher_rename PRIVATE -Wall -Wextra)
+neml2_add_test_warning_flags(test_dispatcher_rename)
 set_target_properties(test_dispatcher_rename PROPERTIES
       BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
 add_test(NAME test_dispatcher_rename COMMAND test_dispatcher_rename ${_ren_artifact_dir})
@@ -151,16 +174,17 @@ add_test(
               --output-dir ${_pz_dir}
       WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
 )
+neml2_inductor_cache_dir(_pz_cache custom_op_fixture ${_pz_dir})
 set_tests_properties(custom_op_fixture_compile PROPERTIES
       FIXTURES_SETUP custom_op_artifact
       LABELS "dispatcher"
       TIMEOUT 600
-      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_pz_dir}/aoti-cache"
+      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_pz_cache}"
 )
 
 add_executable(test_custom_ops test_custom_ops.cpp)
 target_link_libraries(test_custom_ops PRIVATE aoti)
-target_compile_options(test_custom_ops PRIVATE -Wall -Wextra)
+neml2_add_test_warning_flags(test_custom_ops)
 set_target_properties(test_custom_ops PROPERTIES BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
 add_test(NAME test_custom_ops COMMAND test_custom_ops ${_pz_dir})
 set_tests_properties(test_custom_ops PROPERTIES
@@ -186,16 +210,17 @@ add_test(
               --output-dir ${_bc_dir}
       WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
 )
+neml2_inductor_cache_dir(_bc_cache broadcast_fixture ${_bc_dir})
 set_tests_properties(broadcast_fixture_compile PROPERTIES
       FIXTURES_SETUP broadcast_artifact
       LABELS "dispatcher"
       TIMEOUT 600
-      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_bc_dir}/aoti-cache"
+      ENVIRONMENT "TORCHINDUCTOR_CACHE_DIR=${_bc_cache}"
 )
 
 add_executable(test_input_broadcast test_input_broadcast.cpp)
 target_link_libraries(test_input_broadcast PRIVATE aoti)
-target_compile_options(test_input_broadcast PRIVATE -Wall -Wextra)
+neml2_add_test_warning_flags(test_input_broadcast)
 set_target_properties(test_input_broadcast PROPERTIES BUILD_RPATH "${NEML2_BINARY_DIR};${torch_LINK_DIR}")
 add_test(NAME test_input_broadcast COMMAND test_input_broadcast ${_bc_dir})
 set_tests_properties(test_input_broadcast PROPERTIES
@@ -215,7 +240,7 @@ add_executable(test_eager test_eager.cpp)
 # This pure-C++ exe supplies libpython (Python3::Python) for the interpreter that
 # libneml2_eager embeds; libneml2_eager itself links only Python3::Module.
 target_link_libraries(test_eager PRIVATE eager aoti Python3::Python)
-target_compile_options(test_eager PRIVATE -Wall -Wextra)
+neml2_add_test_warning_flags(test_eager)
 # libneml2_eager deliberately leaves the torch_python (+ CPython) symbols undefined
 # for the host process to supply at load time, so the wheel never has to ship
 # libpython. Linking that .so into an executable therefore needs the linker to
