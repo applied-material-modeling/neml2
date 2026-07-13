@@ -41,7 +41,7 @@ are strings validated here to mirror the C++ ``parse_*`` in ``krylov.h``.
 from __future__ import annotations
 
 _PRECONDITIONERS = ("none", "jacobi", "block_jacobi", "full")
-_CACHE_STRATEGIES = ("none", "chord", "quality_threshold")
+_CACHE_STRATEGIES = ("none", "chord", "max_its")
 
 
 def _validate_choice(value: str, allowed: tuple[str, ...], field: str) -> str:
@@ -69,20 +69,20 @@ class _KrylovSolver:
         self,
         *,
         restart: int = 40,
-        max_krylov_its: int = 1000,
-        krylov_abs_tol: float = 0.0,
-        krylov_rel_tol: float = 1.0e-8,
+        max_its: int = 1000,
+        abs_tol: float = 0.0,
+        rel_tol: float = 1.0e-4,
         preconditioner: str = "none",
         cache_strategy: str = "none",
-        cache_threshold: int = 0,
+        cache_max_its: int = 10,
     ) -> None:
         self.restart = int(restart)
-        self.max_krylov_its = int(max_krylov_its)
-        self.krylov_abs_tol = float(krylov_abs_tol)
-        self.krylov_rel_tol = float(krylov_rel_tol)
+        self.max_its = int(max_its)
+        self.abs_tol = float(abs_tol)
+        self.rel_tol = float(rel_tol)
         self.preconditioner = _validate_choice(preconditioner, _PRECONDITIONERS, "preconditioner")
         self.cache_strategy = _validate_choice(cache_strategy, _CACHE_STRATEGIES, "cache_strategy")
-        self.cache_threshold = int(cache_threshold)
+        self.cache_max_its = int(cache_max_its)
 
     def krylov_config(self) -> dict:
         """Config forwarded to ``krylov_solve_eager`` and written to AOTI metadata.
@@ -93,10 +93,10 @@ class _KrylovSolver:
         return {
             "method": self.method,
             "restart": self.restart,
-            "max_krylov_iters": self.max_krylov_its,
-            "krylov_abs_tol": self.krylov_abs_tol,
-            "krylov_rel_tol": self.krylov_rel_tol,
+            "max_its": self.max_its,
+            "abs_tol": self.abs_tol,
+            "rel_tol": self.rel_tol,
             "preconditioner": self.preconditioner,
             "cache_strategy": self.cache_strategy,
-            "cache_threshold": self.cache_threshold,
+            "cache_max_its": self.cache_max_its,
         }

@@ -82,8 +82,8 @@ check_solve(at::ScalarType dtype,
 
   KrylovConfig cfg;
   cfg.method = method;
-  cfg.restart = n;       // full restart width -> converges within a cycle
-  cfg.max_iters = 8 * n; // a few restarts of headroom
+  cfg.restart = n;     // full restart width -> converges within a cycle
+  cfg.max_its = 8 * n; // a few restarts of headroom
   // A strict-but-achievable inner tolerance: GMRES(m=n) reaches ~machine eps in
   // one cycle, but BiCGStab stagnates near ~1e-10 on this problem (as it does in
   // general) -- 1e-11 would be unreachable for it. Production inner-Krylov tols
@@ -149,7 +149,7 @@ check_precond(PrecondKind kind, const std::vector<int64_t> & blocks)
 
   KrylovConfig cfg;
   cfg.restart = n;
-  cfg.max_iters = 8 * n;
+  cfg.max_its = 8 * n;
   cfg.rel_tol = 1e-9;
   auto res = krylov_solve(matvec, minv, b, cfg);
   NEML2_CHECK(res.converged.all().item<bool>());

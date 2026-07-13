@@ -147,8 +147,8 @@ private:
         return true;
       case CacheStrategy::Chord:
         return !_precond.ready();
-      case CacheStrategy::QualityThreshold:
-        return !_precond.ready() || _last_iters > _cfg.quality_threshold;
+      case CacheStrategy::MaxLinearIters:
+        return !_precond.ready() || _last_iters > _cfg.cache_max_its;
     }
     return true;
   }

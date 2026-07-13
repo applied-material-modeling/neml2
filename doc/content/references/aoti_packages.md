@@ -180,11 +180,11 @@ folder path. It records, at a high level:
   `solver_kind` selects the implicit linear solve: `"direct"` (the default —
   `_jacobian` → `_solve`) or `"krylov"` (matrix-free GMRES/BiCGStab over
   `_matvec`). When `"krylov"`, a nested `krylov` block records the iterative
-  settings — `method`, `restart`, `max_krylov_iters`, `krylov_abs_tol`,
-  `krylov_rel_tol`, `preconditioner` (`none` / `jacobi` / `block_jacobi` /
-  `full`), `cache_strategy` (`none` / `chord` / `quality_threshold`), and
-  `cache_threshold`. The forward Newton solve honors it; the IFT / parameter
-  derivative solves stay direct.
+  settings — `method`, `restart`, `max_its` (inner-iteration budget), `abs_tol`,
+  `rel_tol`, `preconditioner` (`none` / `jacobi` / `block_jacobi` / `full`),
+  `cache_strategy` (`none` / `chord` / `max_its`), and `cache_max_its` (the
+  rebuild bar for the `max_its` cache strategy). The forward Newton solve honors
+  it; the IFT / parameter derivative solves stay direct.
 - **Boundary aliases** (optional `boundary_aliases`) — shallow renames
   applied at the interface only. Present only when the artifact was
   compiled with `--rename-input` / `--rename-output` / `--rename-parameter`;

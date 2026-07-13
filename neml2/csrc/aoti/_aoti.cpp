@@ -378,12 +378,12 @@ per group. Returns ``(u_solved, converged, iterations)``.
          bool collect_log,
          const std::string & method,
          int64_t restart,
-         int64_t max_krylov_iters,
-         double krylov_abs_tol,
-         double krylov_rel_tol,
+         int64_t max_its,
+         double abs_tol,
+         double rel_tol,
          const std::string & preconditioner,
          const std::string & cache_strategy,
-         int64_t cache_threshold)
+         int64_t cache_max_its)
       {
         neml2::aoti::SolverConfig ncfg;
         ncfg.atol = atol;
@@ -407,12 +407,12 @@ per group. Returns ``(u_solved, converged, iterations)``.
         neml2::aoti::_assert(neml2::aoti::parse_cache_strategy(cache_strategy, kcfg.cache),
                              "krylov_solve_eager: unknown cache_strategy '",
                              cache_strategy,
-                             "' (expected none | chord | quality_threshold)");
+                             "' (expected none | chord | max_its)");
         kcfg.restart = restart;
-        kcfg.max_iters = max_krylov_iters;
-        kcfg.abs_tol = krylov_abs_tol;
-        kcfg.rel_tol = krylov_rel_tol;
-        kcfg.quality_threshold = cache_threshold;
+        kcfg.max_its = max_its;
+        kcfg.abs_tol = abs_tol;
+        kcfg.rel_tol = rel_tol;
+        kcfg.cache_max_its = cache_max_its;
 
         return neml2::aoti::run_eager_krylov(ncfg,
                                              kcfg,
@@ -441,12 +441,12 @@ per group. Returns ``(u_solved, converged, iterations)``.
       py::arg("collect_log") = false,
       py::arg("method") = "gmres",
       py::arg("restart") = 40,
-      py::arg("max_krylov_iters") = 1000,
-      py::arg("krylov_abs_tol") = 0.0,
-      py::arg("krylov_rel_tol") = 1.0e-8,
+      py::arg("max_its") = 1000,
+      py::arg("abs_tol") = 0.0,
+      py::arg("rel_tol") = 1.0e-4,
       py::arg("preconditioner") = "none",
       py::arg("cache_strategy") = "none",
-      py::arg("cache_threshold") = 0,
+      py::arg("cache_max_its") = 10,
       R"(
 Run the shared C++ Newton solver over an eager system whose inner linear solve is
 a matrix-free Krylov iteration (GMRES / BiCGStab) rather than a direct solve.

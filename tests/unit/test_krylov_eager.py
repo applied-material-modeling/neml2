@@ -122,7 +122,7 @@ def _solve(system_factory, linear_solver) -> dict[str, Scalar]:
     # Library-default Newton tolerances (rtol 1e-8): the inner Krylov solve is
     # accurate enough that the iterative and direct routes take identical Newton
     # steps and land on the same root. (A far tighter outer rtol than the inner
-    # ``krylov_rel_tol`` would expose the usual inexact-Newton floor for a
+    # ``rel_tol`` would expose the usual inexact-Newton floor for a
     # genuinely inexact inner solver like BiCGStab -- not a parity concern.)
     sys = system_factory()
     result = Newton(atol=1e-10, rtol=1e-8, miters=50, linear_solver=linear_solver).solve(sys)
@@ -143,7 +143,7 @@ _CONFIGS = [
     GMRES(preconditioner="jacobi"),
     GMRES(preconditioner="block_jacobi", cache_strategy="chord"),
     GMRES(preconditioner="full", cache_strategy="chord"),
-    GMRES(preconditioner="full", cache_strategy="quality_threshold", cache_threshold=2),
+    GMRES(preconditioner="full", cache_strategy="max_its", cache_max_its=2),
     GMRES(restart=1),  # forces multiple restarts on the 2-D system
     BiCGStab(),
     BiCGStab(preconditioner="block_jacobi", cache_strategy="chord"),

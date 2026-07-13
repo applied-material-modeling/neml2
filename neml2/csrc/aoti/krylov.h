@@ -74,12 +74,12 @@ enum class PrecondKind
 /// the outer Newton iterations (consumed by the `NonlinearSystem` layer).
 enum class CacheStrategy
 {
-  None,             // rebuild every Newton step
-  Chord,            // build once at the first step, reuse
-  QualityThreshold, // rebuild when the last Krylov iteration count exceeds a bar
+  None,           // rebuild every Newton step
+  Chord,          // build once at the first step, reuse
+  MaxLinearIters, // rebuild when a solve's linear-iteration count exceeds a bar
 };
 
-/// Iterative linear-solver tunables. `restart` is the GMRES(m) width; `max_iters`
+/// Iterative linear-solver tunables. `restart` is the GMRES(m) width; `max_its`
 /// is the total inner-iteration (matvec) budget shared by both methods.
 struct KrylovConfig
 {
@@ -87,10 +87,10 @@ struct KrylovConfig
   PrecondKind precond = PrecondKind::None;
   CacheStrategy cache = CacheStrategy::None;
   int64_t restart = 40;
-  int64_t max_iters = 1000;
+  int64_t max_its = 1000;
   double abs_tol = 0.0; // absolute Krylov residual stop (0 = relative only)
-  double rel_tol = 1.0e-8;
-  int64_t quality_threshold = 0; // for CacheStrategy::QualityThreshold
+  double rel_tol = 1.0e-4;
+  int64_t cache_max_its = 10; // rebuild bar for CacheStrategy::MaxLinearIters
 };
 
 /// String tags (as they appear in the input file / metadata) -> enums. Unknown
@@ -131,8 +131,8 @@ parse_cache_strategy(const std::string & s, CacheStrategy & out)
     out = CacheStrategy::None;
   else if (s == "chord")
     out = CacheStrategy::Chord;
-  else if (s == "quality_threshold")
-    out = CacheStrategy::QualityThreshold;
+  else if (s == "max_its")
+    out = CacheStrategy::MaxLinearIters;
   else
     return false;
   return true;
@@ -196,7 +196,7 @@ gmres(const MatvecFn & matvec,
   const auto opts = b.options();
   const double eps = detail::dtype_eps(b.scalar_type());
   const int64_t m = cfg.restart;
-  const int64_t max_restarts = (cfg.max_iters + m - 1) / m;
+  const int64_t max_restarts = (cfg.max_its + m - 1) / m;
 
   auto x = at::zeros({B, n}, opts);
   const auto bnorm = detail::row_norm(b).clamp_min(eps); // (B,)
@@ -335,7 +335,7 @@ bicgstab(const MatvecFn & matvec,
   const auto dot = [](const at::Tensor & a, const at::Tensor & c)
   { return at::einsum("bn,bn->b", {a, c}); };
 
-  for (int64_t it = 0; it < cfg.max_iters; ++it)
+  for (int64_t it = 0; it < cfg.max_its; ++it)
   {
     if (done.all().item<bool>())
       break;

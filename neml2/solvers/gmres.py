@@ -54,18 +54,25 @@ class GMRES(_KrylovSolver):
     hit = HitSchema(
         option("restart", int, "GMRES(m) restart width (Krylov subspace size)", default=40),
         option(
-            "max_krylov_its",
+            "max_its",
             int,
-            "Maximum inner Krylov iterations (matvecs) per Newton step",
+            "Maximum inner (Krylov) iterations per Newton step",
             default=1000,
         ),
         option(
-            "krylov_abs_tol",
+            "abs_tol",
             float,
             "Absolute inner-residual tolerance (0 disables the absolute test)",
             default=0.0,
         ),
-        option("krylov_rel_tol", float, "Relative inner-residual tolerance", default=1.0e-8),
+        option(
+            "rel_tol",
+            float,
+            "Relative inner-residual tolerance. Loose is fine (and faster): the "
+            "outer Newton re-solves each step, so an inexact inner solve still "
+            "converges -- tighten only for stiff/ill-conditioned systems",
+            default=1.0e-4,
+        ),
         option(
             "preconditioner",
             str,
@@ -76,15 +83,15 @@ class GMRES(_KrylovSolver):
             "cache_strategy",
             str,
             "Preconditioner rebuild policy across Newton iterations: "
-            "none | chord | quality_threshold",
+            "none (rebuild each step) | chord (build once, reuse) | "
+            "max_its (rebuild when a solve exceeds cache_max_its iterations)",
             default="none",
         ),
         option(
-            "cache_threshold",
+            "cache_max_its",
             int,
-            "Krylov-iteration bar that triggers a rebuild under the "
-            "quality_threshold cache strategy",
-            default=0,
+            "Iteration bar that triggers a preconditioner rebuild under the max_its cache strategy",
+            default=10,
         ),
     )
 
@@ -93,12 +100,12 @@ class GMRES(_KrylovSolver):
         del factory
         return cls(
             restart=node.param_optional_int("restart", 40),
-            max_krylov_its=node.param_optional_int("max_krylov_its", 1000),
-            krylov_abs_tol=node.param_optional_float("krylov_abs_tol", 0.0),
-            krylov_rel_tol=node.param_optional_float("krylov_rel_tol", 1.0e-8),
+            max_its=node.param_optional_int("max_its", 1000),
+            abs_tol=node.param_optional_float("abs_tol", 0.0),
+            rel_tol=node.param_optional_float("rel_tol", 1.0e-4),
             preconditioner=node.param_optional_str("preconditioner", "none"),
             cache_strategy=node.param_optional_str("cache_strategy", "none"),
-            cache_threshold=node.param_optional_int("cache_threshold", 0),
+            cache_max_its=node.param_optional_int("cache_max_its", 10),
         )
 
 

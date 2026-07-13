@@ -468,11 +468,10 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
                                    _krylov_config.cache),
               "aoti::Model: unknown krylov cache_strategy in metadata");
       _krylov_config.restart = kc.value("restart", _krylov_config.restart);
-      _krylov_config.max_iters = kc.value("max_krylov_iters", _krylov_config.max_iters);
-      _krylov_config.abs_tol = kc.value("krylov_abs_tol", _krylov_config.abs_tol);
-      _krylov_config.rel_tol = kc.value("krylov_rel_tol", _krylov_config.rel_tol);
-      _krylov_config.quality_threshold =
-          kc.value("cache_threshold", _krylov_config.quality_threshold);
+      _krylov_config.max_its = kc.value("max_its", _krylov_config.max_its);
+      _krylov_config.abs_tol = kc.value("abs_tol", _krylov_config.abs_tol);
+      _krylov_config.rel_tol = kc.value("rel_tol", _krylov_config.rel_tol);
+      _krylov_config.cache_max_its = kc.value("cache_max_its", _krylov_config.cache_max_its);
     }
   }
 
