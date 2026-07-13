@@ -1,0 +1,18 @@
+(models-CrystalPlasticityStrainPredictor)=
+# CrystalPlasticityStrainPredictor
+
+**Source:** `models/solid_mechanics/crystal_plasticity/CrystalPlasticityStrainPredictor.py`
+
+Warm-up predictor for crystal plasticity models. Computes an initial guess
+for the elastic strain as $\varepsilon^e = s \cdot \Delta t \cdot d$
+where $\Delta t = t - t_n$ is the time increment, $d$ is the
+deformation rate, and $s$ is a scale factor.
+
+## Parameters
+
+`scale` &mdash; `parameter` &middot; `Scalar` &middot; default `1.0`
+: Scale factor applied to the strain increment
+
+`threshold` &mdash; `parameter` &middot; `Scalar` &middot; default `1e-3`
+: Only apply the predictor if the old elastic strain norm is below this threshold.
+
