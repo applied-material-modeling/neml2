@@ -553,14 +553,26 @@ boundary into separate <strong>segments</strong>, each numbered <code class="doc
 <tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_jvp.pt2</span></code></p></td>
 <td class="text-left"><p>Forward-segment per-pair Jacobian graph (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a pair this segment contributes to).</p></td>
 </tr>
-<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_rhs.pt2</span></code></p></td>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_residual.pt2</span></code></p></td>
 <td class="text-left"><p>Implicit-segment Newton residual <code class="docutils literal notranslate"><span class="pre">-r(u,</span> <span class="pre">g)</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_step.pt2</span></code></p></td>
-<td class="text-left"><p>Implicit-segment fused assemble + solve + update.</p></td>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_jacobian.pt2</span></code></p></td>
+<td class="text-left"><p>Implicit-segment residual Jacobian operator <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">=</span> <span class="pre">∂r/∂u</span></code> (+ <code class="docutils literal notranslate"><span class="pre">b</span></code>); no baked solve.</p></td>
 </tr>
-<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_ift.pt2</span></code></p></td>
-<td class="text-left"><p>Implicit-function-theorem sensitivity <code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">B</span></code> (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a pair routed through this segment).</p></td>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_solve.pt2</span></code></p></td>
+<td class="text-left"><p>Implicit-segment linear solve <code class="docutils literal notranslate"><span class="pre">du</span> <span class="pre">=</span> <span class="pre">A^{-1}</span> <span class="pre">b</span></code> (the configured linear solver, un-baked from the operator).</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_jacobian_given.pt2</span></code></p></td>
+<td class="text-left"><p>IFT given-side operator <code class="docutils literal notranslate"><span class="pre">B</span> <span class="pre">=</span> <span class="pre">∂r/∂g</span></code> (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested an input-derivative pair routed through this segment).</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_solve_ift.pt2</span></code></p></td>
+<td class="text-left"><p>IFT solve <code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">B</span></code> disassembled to per-<code class="docutils literal notranslate"><span class="pre">(unknown,</span> <span class="pre">given)</span></code> blocks (paired with <code class="docutils literal notranslate"><span class="pre">_jacobian_given</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_dr_dparam.pt2</span></code></p></td>
+<td class="text-left"><p>Parameter-derivative operators: dense <code class="docutils literal notranslate"><span class="pre">A</span></code> + <code class="docutils literal notranslate"><span class="pre">∂r/∂θ</span></code> (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a promoted-parameter pair).</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_solve_param.pt2</span></code></p></td>
+<td class="text-left"><p>Parameter-sensitivity solve <code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">∂r/∂θ</span></code> per <code class="docutils literal notranslate"><span class="pre">(unknown,</span> <span class="pre">param)</span></code> block.</p></td>
 </tr>
 <tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_predictor.pt2</span></code></p></td>
 <td class="text-left"><p>Newton initial guess (only if the source had one).</p></td>
@@ -602,8 +614,10 @@ models, absent for forward-only. Records convergence tolerances
 (<code class="docutils literal notranslate"><span class="pre">atol</span></code>, <code class="docutils literal notranslate"><span class="pre">rtol</span></code>, <code class="docutils literal notranslate"><span class="pre">miters</span></code>) and line-search settings (<code class="docutils literal notranslate"><span class="pre">ls_type</span></code>,
 <code class="docutils literal notranslate"><span class="pre">ls_max_iters</span></code>, <code class="docutils literal notranslate"><span class="pre">ls_cutback</span></code>, <code class="docutils literal notranslate"><span class="pre">ls_c</span></code>). The C++ runtime reads this
 directly from the metadata; it can be overridden at runtime via
-<code class="docutils literal notranslate"><span class="pre">set_solver_config</span></code>. Only the linear solver is baked into the compiled
-<code class="docutils literal notranslate"><span class="pre">_step.pt2</span></code> / <code class="docutils literal notranslate"><span class="pre">_ift.pt2</span></code> graphs and cannot be changed without recompiling.</p></li>
+<code class="docutils literal notranslate"><span class="pre">set_solver_config</span></code>. The linear solve is un-baked from the residual Jacobian
+operator: the choice of linear solver lives in the <code class="docutils literal notranslate"><span class="pre">_solve.pt2</span></code> / <code class="docutils literal notranslate"><span class="pre">_solve_ift.pt2</span></code>
+/ <code class="docutils literal notranslate"><span class="pre">_solve_param.pt2</span></code> graphs (recompile to change it), while the C++ runtime
+drives the operator → solve chain generically.</p></li>
 <li><p><strong>Boundary aliases</strong> (optional <code class="docutils literal notranslate"><span class="pre">boundary_aliases</span></code>) — shallow renames
 applied at the interface only. Present only when the artifact was
 compiled with <code class="docutils literal notranslate"><span class="pre">--rename-input</span></code> / <code class="docutils literal notranslate"><span class="pre">--rename-output</span></code> / <code class="docutils literal notranslate"><span class="pre">--rename-parameter</span></code>;
@@ -620,7 +634,7 @@ not mirrored field-by-field here. The metadata carries an integer
 refuses any non-matching version with a clear “regenerate via
 <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>” message; the only remediation is a re-compile.</p>
 <!-- dependencies: aoti.schema_version -->
-<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">9</span></code>.</p>
+<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">10</span></code>.</p>
 </section>
 <section id="segment-kinds">
 <h3>Segment kinds<a class="headerlink" href="#segment-kinds" title="Link to this heading">#</a></h3>
@@ -631,20 +645,23 @@ per-variable-pair Jacobian graph (<code class="docutils literal notranslate"><sp
 requested a derivative pair this segment contributes to (a block that
 does not depend on the dynamic batch is emitted unbatched). Call shape
 is <code class="docutils literal notranslate"><span class="pre">(*user_inputs,</span> <span class="pre">*promoted_params)</span> <span class="pre">-&gt;</span> <span class="pre">outputs</span></code>.</p></li>
-<li><p><strong>Implicit</strong> segments always lower <code class="docutils literal notranslate"><span class="pre">_rhs.pt2</span></code> (Newton residual) and
-<code class="docutils literal notranslate"><span class="pre">_step.pt2</span></code> (fused assemble + LU solve + update + post-update
-residual), plus an optional <code class="docutils literal notranslate"><span class="pre">_predictor.pt2</span></code> graph when the source had
-a <code class="docutils literal notranslate"><span class="pre">Predictor</span></code>. They additionally lower <code class="docutils literal notranslate"><span class="pre">_ift.pt2</span></code> (<code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">B</span></code>
-implicit-function-theorem sensitivity at the converged state) <strong>only
-when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a pair whose derivative path runs through this
-segment</strong>. The Newton loop body is one loader call per iteration plus a
-convergence sync; the IFT graph, when present, is consumed by
-<code class="docutils literal notranslate"><span class="pre">jacobian()</span></code> and <code class="docutils literal notranslate"><span class="pre">jvp()</span></code>.</p>
+<li><p><strong>Implicit</strong> segments always lower <code class="docutils literal notranslate"><span class="pre">_residual.pt2</span></code> (Newton residual),
+<code class="docutils literal notranslate"><span class="pre">_jacobian.pt2</span></code> (the residual Jacobian operator <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">=</span> <span class="pre">∂r/∂u</span></code> + <code class="docutils literal notranslate"><span class="pre">b</span></code>), and
+<code class="docutils literal notranslate"><span class="pre">_solve.pt2</span></code> (the linear solve <code class="docutils literal notranslate"><span class="pre">du</span> <span class="pre">=</span> <span class="pre">A^{-1}</span> <span class="pre">b</span></code>), plus an optional
+<code class="docutils literal notranslate"><span class="pre">_predictor.pt2</span></code> graph when the source had a <code class="docutils literal notranslate"><span class="pre">Predictor</span></code>. The linear solve
+is <strong>un-baked</strong> from the operator: the C++ runtime chains <code class="docutils literal notranslate"><span class="pre">_jacobian</span> <span class="pre">→</span> <span class="pre">_solve</span></code>
+per Newton iteration, so the same operator can feed an iterative solver.
+They additionally lower <code class="docutils literal notranslate"><span class="pre">_jacobian_given.pt2</span></code> (<code class="docutils literal notranslate"><span class="pre">B</span> <span class="pre">=</span> <span class="pre">∂r/∂g</span></code>) + <code class="docutils literal notranslate"><span class="pre">_solve_ift.pt2</span></code>
+(<code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">B</span></code> implicit-function-theorem sensitivity at the converged state,
+reusing <code class="docutils literal notranslate"><span class="pre">_jacobian</span></code>’s <code class="docutils literal notranslate"><span class="pre">A</span></code>) <strong>only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested an input-derivative pair
+routed through this segment</strong>, and <code class="docutils literal notranslate"><span class="pre">_dr_dparam.pt2</span></code> + <code class="docutils literal notranslate"><span class="pre">_solve_param.pt2</span></code> for a
+promoted-parameter derivative. The Newton loop body is two loader calls
+(jacobian → solve) per iteration plus a convergence sync; the IFT / param
+graphs, when present, are consumed by <code class="docutils literal notranslate"><span class="pre">jacobian()</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp()</span></code> / <code class="docutils literal notranslate"><span class="pre">param_jacobian()</span></code>.</p>
 <p>The Newton solve’s convergence tolerances, iteration cap, and line-search
 settings are recorded in <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> under <code class="docutils literal notranslate"><span class="pre">solver_config</span></code> and read
 directly by the C++ runtime (see <a class="reference internal" href="#whats-in-the-metadata-json">What’s in the metadata JSON</a>
-above). Only the linear solver is baked — it lives inside the compiled
-<code class="docutils literal notranslate"><span class="pre">_step.pt2</span></code> / <code class="docutils literal notranslate"><span class="pre">_ift.pt2</span></code> graphs.</p>
+above). The linear-solver choice is baked into the <code class="docutils literal notranslate"><span class="pre">_solve*.pt2</span></code> graphs.</p>
 </li>
 </ul>
 <p>Each segment declares its inputs / outputs / promoted-parameter inputs

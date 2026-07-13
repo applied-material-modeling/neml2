@@ -128,9 +128,13 @@ boundary into separate **segments**, each numbered `_seg{i}_`:
 | :------------------------------ | :------------------------------------------------------ |
 | `<name>_seg{i}.pt2`             | Forward-segment value graph.                            |
 | `<name>_seg{i}_jvp.pt2`         | Forward-segment per-pair Jacobian graph (only when `-d` requested a pair this segment contributes to). |
-| `<name>_seg{i}_rhs.pt2`         | Implicit-segment Newton residual `-r(u, g)`.            |
-| `<name>_seg{i}_step.pt2`        | Implicit-segment fused assemble + solve + update.       |
-| `<name>_seg{i}_ift.pt2`         | Implicit-function-theorem sensitivity `-A^{-1} B` (only when `-d` requested a pair routed through this segment). |
+| `<name>_seg{i}_residual.pt2`    | Implicit-segment Newton residual `-r(u, g)`.            |
+| `<name>_seg{i}_jacobian.pt2`    | Implicit-segment residual Jacobian operator `A = ∂r/∂u` (+ `b`); no baked solve. |
+| `<name>_seg{i}_solve.pt2`       | Implicit-segment linear solve `du = A^{-1} b` (the configured linear solver, un-baked from the operator). |
+| `<name>_seg{i}_jacobian_given.pt2` | IFT given-side operator `B = ∂r/∂g` (only when `-d` requested an input-derivative pair routed through this segment). |
+| `<name>_seg{i}_solve_ift.pt2`   | IFT solve `-A^{-1} B` disassembled to per-`(unknown, given)` blocks (paired with `_jacobian_given`). |
+| `<name>_seg{i}_dr_dparam.pt2`   | Parameter-derivative operators: dense `A` + `∂r/∂θ` (only when `-d` requested a promoted-parameter pair). |
+| `<name>_seg{i}_solve_param.pt2` | Parameter-sensitivity solve `-A^{-1} ∂r/∂θ` per `(unknown, param)` block. |
 | `<name>_seg{i}_predictor.pt2`   | Newton initial guess (only if the source had one).      |
 
 The `_seg0_` infix is dropped in the single-segment shortcut, so
@@ -168,8 +172,10 @@ folder path. It records, at a high level:
   (`atol`, `rtol`, `miters`) and line-search settings (`ls_type`,
   `ls_max_iters`, `ls_cutback`, `ls_c`). The C++ runtime reads this
   directly from the metadata; it can be overridden at runtime via
-  `set_solver_config`. Only the linear solver is baked into the compiled
-  `_step.pt2` / `_ift.pt2` graphs and cannot be changed without recompiling.
+  `set_solver_config`. The linear solve is un-baked from the residual Jacobian
+  operator: the choice of linear solver lives in the `_solve.pt2` / `_solve_ift.pt2`
+  / `_solve_param.pt2` graphs (recompile to change it), while the C++ runtime
+  drives the operator → solve chain generically.
 - **Boundary aliases** (optional `boundary_aliases`) — shallow renames
   applied at the interface only. Present only when the artifact was
   compiled with `--rename-input` / `--rename-output` / `--rename-parameter`;
@@ -187,7 +193,7 @@ refuses any non-matching version with a clear "regenerate via
 `neml2-compile`" message; the only remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `9`.
+The current schema version is `10`.
 
 ### Segment kinds
 
@@ -198,21 +204,24 @@ Two segment kinds appear inside `segments`:
   requested a derivative pair this segment contributes to (a block that
   does not depend on the dynamic batch is emitted unbatched). Call shape
   is `(*user_inputs, *promoted_params) -> outputs`.
-- **Implicit** segments always lower `_rhs.pt2` (Newton residual) and
-  `_step.pt2` (fused assemble + LU solve + update + post-update
-  residual), plus an optional `_predictor.pt2` graph when the source had
-  a `Predictor`. They additionally lower `_ift.pt2` (`-A^{-1} B`
-  implicit-function-theorem sensitivity at the converged state) **only
-  when `-d` requested a pair whose derivative path runs through this
-  segment**. The Newton loop body is one loader call per iteration plus a
-  convergence sync; the IFT graph, when present, is consumed by
-  `jacobian()` and `jvp()`.
+- **Implicit** segments always lower `_residual.pt2` (Newton residual),
+  `_jacobian.pt2` (the residual Jacobian operator `A = ∂r/∂u` + `b`), and
+  `_solve.pt2` (the linear solve `du = A^{-1} b`), plus an optional
+  `_predictor.pt2` graph when the source had a `Predictor`. The linear solve
+  is **un-baked** from the operator: the C++ runtime chains `_jacobian → _solve`
+  per Newton iteration, so the same operator can feed an iterative solver.
+  They additionally lower `_jacobian_given.pt2` (`B = ∂r/∂g`) + `_solve_ift.pt2`
+  (`-A^{-1} B` implicit-function-theorem sensitivity at the converged state,
+  reusing `_jacobian`'s `A`) **only when `-d` requested an input-derivative pair
+  routed through this segment**, and `_dr_dparam.pt2` + `_solve_param.pt2` for a
+  promoted-parameter derivative. The Newton loop body is two loader calls
+  (jacobian → solve) per iteration plus a convergence sync; the IFT / param
+  graphs, when present, are consumed by `jacobian()` / `jvp()` / `param_jacobian()`.
 
   The Newton solve's convergence tolerances, iteration cap, and line-search
   settings are recorded in `metadata.json` under `solver_config` and read
   directly by the C++ runtime (see [What's in the metadata JSON](#whats-in-the-metadata-json)
-  above). Only the linear solver is baked — it lives inside the compiled
-  `_step.pt2` / `_ift.pt2` graphs.
+  above). The linear-solver choice is baked into the `_solve*.pt2` graphs.
 
 Each segment declares its inputs / outputs / promoted-parameter inputs
 in the same per-variable structure as the top-level layout.

@@ -558,9 +558,10 @@ sub-batch axes (if any) batch naturally as independent LUs per site
 <dd><p>Solve the nonlinear system via the shared C++ Newton solver.</p>
 <p>The iteration control (convergence test, line search) lives in C++ and
 is shared with the AOTI runtime; this wrapper supplies the residual /
-Newton-step callbacks (the <code class="docutils literal notranslate"><span class="pre">RHS</span></code> / <code class="docutils literal notranslate"><span class="pre">NewtonStep</span></code> export modules, run
-eagerly) plus the per-group layouts, then commits the converged iterate
-back into the system.</p>
+Newton-step callbacks (the <code class="docutils literal notranslate"><span class="pre">RHS</span></code> residual + the <code class="docutils literal notranslate"><span class="pre">Jacobian</span></code> operator
+chained into <code class="docutils literal notranslate"><span class="pre">LinearSolve</span></code>, the same modules the AOTI runtime compiles,
+run eagerly here) plus the per-group layouts, then commits the converged
+iterate back into the system.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>system</strong> (<a class="reference internal" href="neml2.es.html#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p>
