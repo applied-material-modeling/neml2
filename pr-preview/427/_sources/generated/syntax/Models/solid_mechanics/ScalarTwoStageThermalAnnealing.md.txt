@@ -1,0 +1,36 @@
+(models-ScalarTwoStageThermalAnnealing)=
+# ScalarTwoStageThermalAnnealing
+
+**Source:** `models/solid_mechanics/TwoStageThermalAnnealing.py`
+
+Scalar-valued two-stage thermal annealing. Mirrors ``TwoStageThermalAnnealing<Scalar>``.
+
+## Inputs
+
+`base_rate` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Base hardening rate
+
+`base` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Underlying base hardening variable
+
+`temperature` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Temperature
+
+
+## Outputs
+
+`modified_rate` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Output for the modified hardening rate.
+
+
+## Parameters
+
+`T1` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: First stage annealing temperature
+
+`T2` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Second stage annealing temperature
+
+`tau` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Recovery rate for second stage annealing.
+

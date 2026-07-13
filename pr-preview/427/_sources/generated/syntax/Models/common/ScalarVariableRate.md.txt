@@ -1,0 +1,17 @@
+(models-ScalarVariableRate)=
+# ScalarVariableRate
+
+**Source:** `models/common/VariableRate.py`
+
+Calculate the first order discrete time derivative of a variable as
+$\dot{f} = \frac{f-f_n}{t-t_n}$, where $f$ is the variable, $f_n$ is the variable at the
+previous time step, and $t$ is time.
+
+## Inputs
+
+`variable` &mdash; `input` &middot; `Scalar` &middot; **required**
+: The variable being differentiated
+
+`time` &mdash; `input` &middot; `Scalar` &middot; default `t`
+: Time
+
