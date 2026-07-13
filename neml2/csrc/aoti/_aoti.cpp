@@ -296,7 +296,7 @@ Empty when the model was compiled with no ``--parameter`` flags.
           "read from metadata.json at load time).");
 
   // Eager-path entry point: the same C++ Newton solver the AOTI runtime uses,
-  // driven over Python-supplied residual/step callables (RHS / NewtonStep).
+  // driven over Python-supplied residual/step callables (RHS / (Jacobian -> LinearSolve)).
   // This is what unifies the eager solve with the compiled one -- a single
   // iteration-control implementation.
   m.def(
@@ -349,7 +349,7 @@ Run the shared C++ Newton solver over an eager (Python-delegating) system.
 
 ``residual_fn(list[Tensor]) -> list[Tensor]`` and ``step_fn(list[Tensor]) ->
 (list[Tensor], list[Tensor])`` supply the per-group residual and Newton step
-(they bind the givens + linear solver, e.g. ``RHS`` / ``NewtonStep``).
+(they bind the givens + linear solver, e.g. ``RHS`` + ``Jacobian`` -> ``LinearSolve``).
 ``unknown_layout`` / ``residual_layout`` are ``(structure, sub_batch_shape)``
 per group. Returns ``(u_solved, converged, iterations)``.
 )");

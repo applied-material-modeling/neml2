@@ -37,7 +37,7 @@ namespace py = pybind11;
 namespace
 {
 // NonlinearSystem backed by two Python callables. The givens + linear solver
-// are already bound inside the callables (RHS / NewtonStep), so this only ever
+// are already bound inside the callables (RHS / (Jacobian -> LinearSolve)), so this only ever
 // forwards the unknowns. The GIL is held by the caller for the whole solve, so
 // the Python calls happen inline with no extra acquire/release.
 class EagerNonlinearSystem : public NonlinearSystem

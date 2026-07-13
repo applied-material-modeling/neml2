@@ -35,14 +35,23 @@ Layered:
   boundary surface).
 - :mod:`.system` -- :class:`LinearSystem`, :class:`NonlinearSystem`,
   :class:`ModelNonlinearSystem`.
-- :mod:`.implicit` -- AOTI export wrappers (:class:`RHS`,
-  :class:`NewtonStep`, :class:`IFT`, :class:`ParamIFT`) for the
-  implicit-segment Newton path.
+- :mod:`.implicit` -- AOTI export wrappers for the implicit-segment Newton
+  path: operator graphs (:class:`RHS`, :class:`Jacobian`, :class:`JacobianGiven`,
+  :class:`DrDParam`) + solve graphs (:class:`LinearSolve`, :class:`LinearSolveIFT`,
+  :class:`LinearSolveParam`); the linear solve is un-baked from the operators.
 """
 
 from .assembled import AssembledMatrix, AssembledVector, norm, norm_sq
 from .axis_layout import AxisLayout
-from .implicit import IFT, RHS, NewtonStep, ParamIFT
+from .implicit import (
+    RHS,
+    DrDParam,
+    Jacobian,
+    JacobianGiven,
+    LinearSolve,
+    LinearSolveIFT,
+    LinearSolveParam,
+)
 from .sparse import SparseMatrix, SparseVector
 from .system import LinearSystem, ModelNonlinearSystem, NonlinearSystem
 
@@ -56,9 +65,12 @@ __all__ = [
     "NonlinearSystem",
     "ModelNonlinearSystem",
     "RHS",
-    "NewtonStep",
-    "IFT",
-    "ParamIFT",
+    "Jacobian",
+    "LinearSolve",
+    "JacobianGiven",
+    "LinearSolveIFT",
+    "DrDParam",
+    "LinearSolveParam",
     "norm",
     "norm_sq",
 ]

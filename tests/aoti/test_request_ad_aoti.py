@@ -141,9 +141,10 @@ def test_request_ad_in_implicit_residual_matches_eager(tmp_path: Path):
 
     out_dir = tmp_path / "implicit_request_ad"
     meta = export_model_for_aoti(_IMPLICIT_I, "model", out_dir, derivatives=(":",))
-    # The implicit segment carries an IFT graph with the residual's du/dg pairs.
-    seg = next(s for s in meta["segments"] if s.get("rhs_package"))
-    assert "ift_package" in seg
+    # The implicit segment carries the IFT operator + solve graphs with the
+    # residual's du/dg pairs.
+    seg = next(s for s in meta["segments"] if s.get("jacobian_package"))
+    assert "solve_ift_package" in seg
     # d(equivalent_plastic_strain)/d(temperature) flows through the request_AD
     # surrogate inside the residual.
     pairs = {(p["out_var"], p["in_var"]) for p in seg["jacobian_pairs"]}

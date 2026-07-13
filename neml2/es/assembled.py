@@ -246,6 +246,48 @@ def wrap_group_raw(
     return Tensor(raw, batch_ndim=raw.ndim - 1, sub_batch_ndim=0)
 
 
+def group_block_sub_batch_ndim(
+    row_layout: AxisLayout,
+    row_gi: int,
+    col_layout: AxisLayout,
+    col_gi: int,
+) -> int:
+    """The ``sub_batch_ndim`` of the assembled ``(row_gi, col_gi)`` block.
+
+    Single source of truth mirroring the storage convention in
+    :func:`_build_group_block` / :func:`_zero_block` /
+    :func:`_convert_tangent_to_paired_block`: a DENSE side folds its sub_batch
+    into base (0 intmd axes); a BLOCK side keeps its sub_batch as intmd axes; a
+    BLOCK+BLOCK pair with identical per-site shape is stored on the compact
+    paired diagonal (a single per-site axis, not the full grid).
+
+    Used to reconstruct a typed :class:`AssembledMatrix` from raw per-block
+    tensors at the solver graph boundary (:class:`~neml2.es.implicit.LinearSolve`):
+    only the (structural) ``sub_batch_ndim`` is needed there -- ``batch_ndim``
+    follows from the runtime tensor's ndim.
+    """
+    rs = row_layout.structure[row_gi]
+    cs = col_layout.structure[col_gi]
+    r_sub = tuple(int(s) for s in row_layout.group_sub_batch_shape(row_gi))
+    c_sub = tuple(int(s) for s in col_layout.group_sub_batch_shape(col_gi))
+    if rs == "block" and cs == "block" and r_sub == c_sub and len(r_sub) > 0:
+        return len(r_sub)  # paired diagonal (compact)
+    r_intmd = len(r_sub) if rs == "block" else 0
+    c_intmd = len(c_sub) if cs == "block" else 0
+    return r_intmd + c_intmd
+
+
+def wrap_block_raw(raw: torch.Tensor, sub_batch_ndim: int) -> Tensor:
+    """Wrap a raw assembled-matrix block into a typed dynamic-base :class:`Tensor`.
+
+    Inverse of the per-block ``.data`` extraction at the solver graph boundary: a
+    block is ``(*dyn, *sub, row_storage, col_storage)`` (``base_ndim=2``), so
+    ``batch_ndim = raw.ndim - sub_batch_ndim - 2``. ``sub_batch_ndim`` comes from
+    :func:`group_block_sub_batch_ndim`.
+    """
+    return Tensor(raw, batch_ndim=raw.ndim - sub_batch_ndim - 2, sub_batch_ndim=sub_batch_ndim)
+
+
 # ---------------------------------------------------------------------------
 # AssembledMatrix
 # ---------------------------------------------------------------------------
@@ -1083,5 +1125,7 @@ __all__ = [
     "norm",
     "norm_sq",
     "wrap_group_raw",
+    "wrap_block_raw",
+    "group_block_sub_batch_ndim",
     "_build_block_matrix",
 ]

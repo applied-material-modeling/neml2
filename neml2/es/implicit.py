@@ -24,33 +24,40 @@
 
 """AOTI export wrappers for the implicit-segment Newton path.
 
-Four ``nn.Module`` graphs, one per piece of the Newton orchestration:
+The linear solve is **un-baked** from the operators (schema v10): each graph
+either ASSEMBLES an operator or SOLVES; the C++ runtime chains operator -> solve.
+This lets the same residual Jacobian feed a direct solve today or a matrix-free
+iterative solver later, and keeps a single solver implementation (the Python
+``[Solvers]`` classes, run live for eager and compiled for AOTI).
 
-- :class:`RHS`        -- ``(*u_groups, *g_groups, *params) -> (*b_groups)``
-                         (residual eval, cheap; called every line-search
-                         trial).
-- :class:`NewtonStep` -- ``(*u_groups, *g_groups, *params) ->
-                         (*du_groups, *b_groups)`` (Newton step direction +
-                         residual at the current iterate).
-- :class:`IFT`        -- ``(*u_groups, *g_groups, *params) -> *blocks``
-                         (implicit function theorem Jacobian
-                         ``du/dg = -A^{-1} B`` at the converged state, emitted
-                         as one block per ``(unknown, given)`` pair via
-                         ``AssembledMatrix.disassemble``; the C++ runtime
-                         composes each block against ``dg_dmaster`` with the
-                         same per-pair path a forward segment uses).
-- :class:`ParamIFT`   -- ``(*u_groups, *g_groups, *params) -> *blocks``
-                         (parameter sensitivity ``du/dθ = -A^{-1} ∂r/∂θ`` at
-                         the converged state, one block per ``(unknown,
-                         param)`` pair). ``A = ∂r/∂u`` is assembled
-                         analytically through the chain rule exactly as in
-                         :class:`IFT`; ``∂r/∂θ`` comes from reverse-mode
-                         ``torch.autograd.grad`` over the residual w.r.t. the
-                         promoted parameter (the only AD that lowers through
-                         AOTInductor). The parameter enters this graph as a
-                         PER-BATCH input so the reverse pass is per batch
-                         element; the C++ runtime broadcasts the stored scalar
-                         parameter to the batch before the call.
+Operator graphs (assemble; no solve):
+
+- :class:`RHS`          -- ``(*u,*g,*params) -> (*b_groups)`` (residual eval,
+                           cheap; every line-search trial).
+- :class:`Jacobian`     -- ``(*u,*g,*params) -> (*A_blocks, *b_groups)``
+                           (``A = ∂r/∂u`` row-major (residual × unknown) grid +
+                           ``b = -r``; the Newton-step operator).
+- :class:`JacobianGiven`-- ``(*u,*g,*params) -> (*B_blocks)`` (``B = ∂r/∂g``;
+                           the IFT's given-side operator, paired with
+                           ``Jacobian``'s ``A``).
+- :class:`DrDParam`     -- ``(*u,*g,*params_per_batch) -> (A_dense, ∂r/∂θ)``
+                           (dense operators for the parameter sensitivity, via
+                           reverse-mode ``torch.autograd.grad`` -- the only AD
+                           that lowers through AOTInductor; strict + per-batch
+                           parameter, the runtime broadcasts the stored scalar).
+
+Solve graphs (consume operators; no assembly):
+
+- :class:`LinearSolve`     -- ``(*A_blocks, *b_groups) -> (*du_groups)`` (Newton
+                              step ``du = A^{-1} b`` via the configured solver).
+- :class:`LinearSolveIFT`  -- ``(*A_blocks, *B_blocks) -> *blocks`` (IFT
+                              ``du/dg = -A^{-1} B``, one block per ``(unknown,
+                              given)`` pair via ``AssembledMatrix.disassemble``;
+                              the C++ runtime composes each against ``dg_dmaster``
+                              with the same per-pair path a forward segment uses).
+- :class:`LinearSolveParam`-- ``(A_dense, ∂r/∂θ) -> *blocks`` (parameter
+                              sensitivity ``du/dθ = -A^{-1} ∂r/∂θ``, one dense
+                              block per ``(unknown, param)`` pair).
 
 The promoted-parameter tail (``*params``) is empty in the common case (no
 ``--parameter`` targeting an attribute inside the implicit region); when
@@ -58,20 +65,20 @@ present it lists, in graph-call order, the promoted parameters that live
 inside the implicit segment's residual model. After
 :func:`~neml2.cli.aoti_export._promote_parameters` these appear in
 ``system.model.input_spec`` but are neither unknowns nor givens, so the
-wrappers inject them into the per-variable state from the trailing forward
-args. ``RHS`` / ``NewtonStep`` / ``IFT`` take them as the stored scalar
-(constant across the solve and the input-Jacobian); ``ParamIFT`` takes them
-per-batch.
+operator wrappers inject them into the per-variable state from the trailing
+forward args. The operator graphs take them as the stored scalar (constant
+across the solve and the input-Jacobian); ``DrDParam`` takes them per-batch.
 
-The first three segments take and return per-group raw tensors at the natural
-``AssembledVector`` / ``AssembledMatrix`` group shape -- BLOCK groups
-preserve their ``sub_batch_shape`` axes, DENSE groups have sub_batch
-folded into the last base axis. The C++ runtime maintains per-variable
-``dstate`` for downstream forward composition; the per-variable ↔
-per-group conversion happens twice per solve (once at solve start to
-pack ``u_groups`` / ``g_groups``, once at solve end to unpack converged
-``u_groups`` back to ``dstate``). The Newton inner loop is fully
-per-group.
+The operator graphs take/return per-group raw tensors at the natural
+``AssembledVector`` / ``AssembledMatrix`` group shape -- BLOCK groups preserve
+their ``sub_batch_shape`` axes, DENSE groups have sub_batch folded into the last
+base axis. The solve graphs reconstruct the typed operands from those raw blocks
+(:func:`~neml2.es.assembled.group_block_sub_batch_ndim` /
+:func:`~neml2.es.assembled.wrap_block_raw`). The C++ runtime maintains
+per-variable ``dstate`` for downstream forward composition; the per-variable ↔
+per-group conversion happens twice per solve (once at solve start to pack
+``u_groups`` / ``g_groups``, once at solve end to unpack converged
+``u_groups`` back to ``dstate``). The Newton inner loop is fully per-group.
 """
 
 from __future__ import annotations
@@ -85,7 +92,14 @@ from neml2.models.chain_rule import ChainRuleDict
 from neml2.types import TensorWrapper
 
 from ._helpers import _flatten_base, build_identity_seed
-from .assembled import AssembledMatrix, AssembledVector, _build_block_matrix, wrap_group_raw
+from .assembled import (
+    AssembledMatrix,
+    AssembledVector,
+    _build_block_matrix,
+    group_block_sub_batch_ndim,
+    wrap_block_raw,
+    wrap_group_raw,
+)
 from .axis_layout import AxisLayout
 from .system import ModelNonlinearSystem
 
@@ -104,9 +118,9 @@ def enumerate_group_var_names(layout: AxisLayout) -> tuple[tuple[str, ...], ...]
 class _SystemModule(nn.Module):
     """Tensor-only export surface for a frozen :class:`ModelNonlinearSystem`.
 
-    Segment subclasses (:class:`RHS`, :class:`NewtonStep`, :class:`IFT`,
-    :class:`ParamIFT`) take per-group raw tensors at the graph signature --
-    ``forward(*u_groups, *g_groups, *params)`` where the leading
+    The operator subclasses (:class:`RHS`, :class:`Jacobian`,
+    :class:`JacobianGiven`, :class:`DrDParam`) take per-group raw tensors at the
+    graph signature -- ``forward(*u_groups, *g_groups, *params)`` where the leading
     ``len(unknown_groups)`` positional args are the unknown groups (in
     ``ulayout.groups`` order), the next ``len(given_groups)`` are the given
     groups (in ``glayout.groups`` order), and the trailing ``len(param_names)``
@@ -164,7 +178,7 @@ class _SystemModule(nn.Module):
         reshapes as standard torch ops, compiled in by Inductor. Promoted
         parameters are injected verbatim (wrapped to their typed class);
         wrapping preserves any autograd graph on the incoming tensor so the
-        :class:`ParamIFT` reverse pass can differentiate through them.
+        :class:`DrDParam` reverse pass can differentiate through them.
         """
         n_u = len(self.unknown_groups)
         n_g = len(self.given_groups)
@@ -281,6 +295,20 @@ def _vector_to_per_group_raws(vec: AssembledVector) -> tuple[torch.Tensor, ...]:
     return tuple(t.data for t in vec.tensors)  # data-ok AOTI
 
 
+def _matrix_to_per_block_raws(mat: AssembledMatrix) -> tuple[torch.Tensor, ...]:
+    """Row-major per-``(row_group, col_group)`` raw blocks of an AssembledMatrix.
+
+    The legitimate framework-imposed ``.data`` exception at the AOTI
+    segment-output boundary (CLAUDE.md rule 2), mirroring
+    :func:`_vector_to_per_group_raws` for the matrix operator.
+    """
+    return tuple(
+        mat.tensors[i][j].data  # data-ok AOTI
+        for i in range(mat.row_layout.ngroup)
+        for j in range(mat.col_layout.ngroup)
+    )
+
+
 class RHS(_SystemModule):
     """Exportable residual graph.
 
@@ -299,17 +327,40 @@ class RHS(_SystemModule):
         return _vector_to_per_group_raws(b)
 
 
-class NewtonStep(_SystemModule):
-    """Exportable Newton step-direction graph.
+class Jacobian(_SystemModule):
+    """Exportable residual-Jacobian operator graph.
 
-    Contract: ``(*u_groups, *g_groups, *params) -> (*du_groups, *b_groups)``
-    where ``du_groups`` are the per-unknown-group step directions (in
-    ``ulayout.groups`` order) and ``b_groups`` are the per-residual-group
-    ``b = -r(u)`` at the current iterate (in ``blayout.groups`` order).
-    The C++ runtime applies ``u_groups[i] = u_groups[i] + alpha *
-    du_groups[i]`` per-group for line-search trials via cheap
-    :class:`RHS` evaluations. The promoted-parameter tail is empty in the
-    common case (scalar, constant across the solve).
+    Contract: ``(*u_groups, *g_groups, *params) -> (*A_blocks, *b_groups)`` where
+    ``A_blocks`` is the row-major ``(residual_group × unknown_group)`` grid of
+    ``A = ∂r/∂u`` and ``b_groups`` is ``b = -r`` at the current iterate. The
+    linear solve is NOT baked here -- it lives in the separate :class:`LinearSolve`
+    graph, so the same operator can feed a direct solve today or a matrix-free
+    iterative solver later. The C++ runtime chains ``Jacobian -> LinearSolve`` for
+    the Newton step (``step``) and reuses the ``b_groups`` tail for the
+    line-search residual. The promoted-parameter tail is empty in the common case.
+    """
+
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        state = self._state_from_per_group_args(args)
+        output_state, v_out = self._call_model_from_state(state, self.unknown_names)
+        A = self._assembled_matrix(self.ulayout, v_out, output_state)
+        b = self._assembled_b(output_state)
+        return (*_matrix_to_per_block_raws(A), *_vector_to_per_group_raws(b))
+
+
+class LinearSolve(_SystemModule):
+    """Exportable linear-solve graph: ``(*A_blocks, *b_groups) -> (*du_groups)``.
+
+    Reconstructs the typed ``AssembledMatrix`` ``A`` (row_layout = residuals,
+    col_layout = unknowns) and ``AssembledVector`` ``b`` from the raw per-group
+    blocks emitted by :class:`Jacobian`, then applies the configured Python linear
+    solver (``DenseLU`` / ``SchurComplement``). Un-baked from :class:`Jacobian` so
+    the solver is a separate, swappable stage and the same operator can feed an
+    iterative solver. Per-block ``sub_batch_ndim`` is a structural constant of the
+    layouts (:func:`~neml2.es.assembled.group_block_sub_batch_ndim`); ``batch_ndim``
+    follows from the runtime tensor ndim, so this graph is batch-size agnostic.
+    The promoted-parameter tail carries no state here (the solve is pure linear
+    algebra over the assembled operators) but is accepted for a uniform signature.
     """
 
     def __init__(
@@ -320,36 +371,70 @@ class NewtonStep(_SystemModule):
     ) -> None:
         super().__init__(system, param_names)
         self._linear_solver = linear_solver
+        self._n_r = len(self.residual_groups)
+        self._n_u = len(self.unknown_groups)
+        # Structural sub_batch_ndim per (residual_group, unknown_group) A block --
+        # the reconstruction key at the raw solver boundary.
+        self._block_sub_ndims: list[list[int]] = [
+            [group_block_sub_batch_ndim(self.blayout, i, self.ulayout, j) for j in range(self._n_u)]
+            for i in range(self._n_r)
+        ]
+
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        n_a = self._n_r * self._n_u
+        a_raws = args[:n_a]
+        b_raws = args[n_a : n_a + self._n_r]
+        a_blocks = [
+            [
+                wrap_block_raw(a_raws[i * self._n_u + j], self._block_sub_ndims[i][j])
+                for j in range(self._n_u)
+            ]
+            for i in range(self._n_r)
+        ]
+        A = AssembledMatrix(self.blayout, self.ulayout, a_blocks)
+        b_tensors = [
+            wrap_group_raw(raw, gnames, structure, self.blayout)
+            for raw, gnames, structure in zip(
+                b_raws, self.residual_groups, self.blayout.structure, strict=True
+            )
+        ]
+        b = AssembledVector(self.blayout, b_tensors)
+        du = self._linear_solver.solve(A, b)
+        return _vector_to_per_group_raws(du)
+
+
+class JacobianGiven(_SystemModule):
+    """Exportable ``∂r/∂g`` operator graph -- the IFT's given-side Jacobian.
+
+    Contract: ``(*u_groups, *g_groups, *params) -> (*B_blocks)`` where ``B_blocks``
+    is the row-major ``(residual_group × given_group)`` grid of ``B = ∂r/∂g`` at
+    the converged state. The un-baked given-side companion of :class:`Jacobian`
+    (which supplies ``A = ∂r/∂u``): the C++ runtime runs ``Jacobian`` (for ``A``)
+    + ``JacobianGiven`` (for ``B``) at the converged point and feeds both to
+    :class:`LinearSolveIFT` for the implicit-function-theorem solve
+    ``du/dg = -A^{-1} B``. Seeds the givens only. The promoted-parameter tail is
+    the stored scalar (constant across the input Jacobian).
+    """
 
     def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
         state = self._state_from_per_group_args(args)
-        output_state, v_out = self._call_model_from_state(state, self.unknown_names)
-        A = self._assembled_matrix(self.ulayout, v_out, output_state)
-        b = self._assembled_b(output_state)
-        du = self._linear_solver.solve(A, b)
-        return (*_vector_to_per_group_raws(du), *_vector_to_per_group_raws(b))
+        output_state, v_out = self._call_model_from_state(state, self.given_names)
+        B = self._assembled_matrix(self.glayout, v_out, output_state)
+        return _matrix_to_per_block_raws(B)
 
 
-class IFT(_SystemModule):
-    """Exportable IFT Jacobian $du/dg = -A^{-1} B$ for a converged
-    :class:`ImplicitUpdate`.
+class LinearSolveIFT(_SystemModule):
+    """Exportable IFT solve: ``(*A_blocks, *B_blocks) -> *du_dg_pair_blocks``.
 
-    Contract: ``(*u_groups, *g_groups, *params) -> *blocks`` where each block
-    is one per-variable-pair ``(unknown, given)`` entry of ``-du_dg``, emitted
-    in ``unknown_names`` (outer) × ``given_names`` (inner) order -- matching
-    the ``jacobian_pairs`` metadata in
-    :func:`~neml2.cli.aoti_export._compile_implicit_segment`.
-
-    The equation system assembles the dense ``A`` / ``B`` (via the model's
-    per-variable chain rule), applies the IFT solve, then ``disassemble()``\\ s
-    the resulting :class:`~neml2.es.assembled.AssembledMatrix` into
-    per-(unknown, given) blocks. Each block keeps its natural per-structure
-    shape (``"dense"`` -> ``(*B, u_storage, g_storage)``; a BLOCK side stays
-    block-diagonal-compact, no N² fold). The C++ runtime then composes these
-    blocks against ``dg_dmaster`` exactly like a forward segment's per-pair
-    Jacobian blocks -- one uniform per-pair path for forward and implicit.
-    The promoted-parameter tail (scalar) lets ``A``/``B`` see the same
-    parameter value the solve used; empty in the common case.
+    Reconstructs the typed ``A = ∂r/∂u`` (blayout × ulayout, from :class:`Jacobian`)
+    and ``B = ∂r/∂g`` (blayout × glayout, from :class:`JacobianGiven`) from the raw
+    per-group blocks, applies the configured linear solver (``du/dg = -A^{-1} B``,
+    matrix RHS), then disassembles into per-``(unknown, given)`` blocks in
+    :meth:`emitted_pairs` order -- matching the ``jacobian_pairs`` metadata. Shares
+    the same solver as the forward Newton step (un-baked from the operators). The
+    emitted pairs are plain-batch (guarded at compile time), but ``A`` itself may
+    carry BLOCK unknown groups; per-block ``sub_batch_ndim`` follows the layout
+    convention (:func:`~neml2.es.assembled.group_block_sub_batch_ndim`).
     """
 
     def __init__(
@@ -361,9 +446,19 @@ class IFT(_SystemModule):
     ) -> None:
         super().__init__(system, param_names)
         self._linear_solver = linear_solver
-        # Local (unknown, given) pairs to emit; ``None`` = all. Emitted in
-        # unknown x given order to match the metadata.
+        # Local (unknown, given) pairs to emit; ``None`` = all.
         self._selected_pairs = selected_pairs
+        self._n_r = len(self.residual_groups)
+        self._n_u = len(self.unknown_groups)
+        self._n_g = len(self.given_groups)
+        self._a_sub: list[list[int]] = [
+            [group_block_sub_batch_ndim(self.blayout, i, self.ulayout, j) for j in range(self._n_u)]
+            for i in range(self._n_r)
+        ]
+        self._b_sub: list[list[int]] = [
+            [group_block_sub_batch_ndim(self.blayout, i, self.glayout, j) for j in range(self._n_g)]
+            for i in range(self._n_r)
+        ]
 
     def emitted_pairs(self) -> list[tuple[str, str]]:
         """The (unknown, given) pairs this graph emits, in emission order."""
@@ -375,22 +470,43 @@ class IFT(_SystemModule):
         ]
 
     def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
-        state = self._state_from_per_group_args(args)
-        seed_names = (*self.unknown_names, *self.given_names)
-        output_state, v_out = self._call_model_from_state(state, seed_names)
-        A = self._assembled_matrix(self.ulayout, v_out, output_state)
-        B = self._assembled_matrix(self.glayout, v_out, output_state)
+        n_a = self._n_r * self._n_u
+        n_b = self._n_r * self._n_g
+        a_raws = args[:n_a]
+        b_raws = args[n_a : n_a + n_b]
+        A = AssembledMatrix(
+            self.blayout,
+            self.ulayout,
+            [
+                [
+                    wrap_block_raw(a_raws[i * self._n_u + j], self._a_sub[i][j])
+                    for j in range(self._n_u)
+                ]
+                for i in range(self._n_r)
+            ],
+        )
+        B = AssembledMatrix(
+            self.blayout,
+            self.glayout,
+            [
+                [
+                    wrap_block_raw(b_raws[i * self._n_g + j], self._b_sub[i][j])
+                    for j in range(self._n_g)
+                ]
+                for i in range(self._n_r)
+            ],
+        )
         du_dg = self._linear_solver.solve(A, B)
         cells = (-du_dg).disassemble().cells
-        # Emit per-(unknown, given) raw blocks in the canonical order. The
-        # ``.data`` reads are the legitimate AOTI segment-output boundary.
+        # Emit per-(unknown, given) raw blocks in the canonical order. The ``.data``
+        # reads are the legitimate AOTI segment-output boundary.
         return tuple(
             cells[u][g].data  # data-ok AOTI
             for (u, g) in self.emitted_pairs()
         )
 
 
-class ParamIFT(_SystemModule):
+class _ParamIFTBase(_SystemModule):
     r"""Exportable parameter sensitivity $du/d\theta = -A^{-1}\,\partial r/\partial\theta$
     for a converged :class:`ImplicitUpdate`.
 
@@ -515,6 +631,22 @@ class ParamIFT(_SystemModule):
     # never sees these source lines even though the AOTI implicit parameter-
     # derivative tests exercise it end-to-end (compile + run + FD check). Hence the
     # coverage exclusion on the def below.
+
+
+class DrDParam(_ParamIFTBase):
+    """Exportable operator graph for the implicit parameter sensitivity.
+
+    Contract: ``(*u_groups, *g_groups, *params_per_batch) -> (A_dense, Bp)`` where
+    ``A = ∂r/∂u`` is the dense ``(*batch, R, U)`` residual Jacobian and ``Bp =
+    ∂r/∂θ`` the dense ``(*batch, R, P)`` parameter Jacobian, both formed by
+    reverse-mode ``torch.autograd.grad`` over the flat residual (the only AD that
+    lowers through AOTInductor -- so this graph, like the old ``ParamIFT``, is
+    compiled strict + ``trace_autograd_ops``). The solve is un-baked into
+    :class:`LinearSolveParam`. Plain-batch only (the implicit-promotion guard
+    rejects sub-batched unknowns / givens / params, so ``R == U`` and the system
+    is a single dense block).
+    """
+
     def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:  # pragma: no cover
         n_u = len(self.unknown_groups)
         n_g = len(self.given_groups)
@@ -605,12 +737,26 @@ class ParamIFT(_SystemModule):
 
         A = torch.stack(a_rows, dim=-2)  # (*batch, R, U), R == U
         Bp = torch.stack(bp_rows, dim=-2)  # (*batch, R, P)
+        # Emit the dense operators; the solve lives in LinearSolveParam. Detach:
+        # AOTAutograd drops requires_grad on graph outputs.
+        return A.detach(), Bp.detach()
 
+
+class LinearSolveParam(_ParamIFTBase):
+    """Exportable parameter-sensitivity solve: ``(A_dense, Bp) -> *du_dparam_blocks``.
+
+    Solves ``A du/dθ = -∂r/∂θ`` with a dense ``torch.linalg.solve`` (exact for the
+    plain-batch square system :class:`DrDParam` emits) and slices per-``(unknown,
+    param)`` block in :meth:`emitted_param_pairs` order -- matching the
+    ``param_jacobian_pairs`` metadata. Un-baked from :class:`DrDParam`; pure
+    linear algebra (plain compile).
+    """
+
+    def forward(self, A: torch.Tensor, Bp: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        batch = tuple(A.shape[:-2])
         # du/dθ = -A^{-1} ∂r/∂θ via a full dense solve (exact for plain batch).
         du_dtheta = -torch.linalg.solve(A, Bp)  # (*batch, U, P)
 
-        # Slice per-(unknown, param) block (*batch, *u_base, *param_base). Detach:
-        # AOTAutograd drops requires_grad on graph outputs.
         u_off = {name: off for name, _b, _st, off in self._u_flat}
         u_base = {name: base for name, base, _st, _off in self._u_flat}
         u_storage = {name: st for name, _b, st, _off in self._u_flat}
@@ -627,8 +773,17 @@ class ParamIFT(_SystemModule):
         blocks: list[torch.Tensor] = []
         for u, p in self.emitted_param_pairs():
             sub = du_dtheta.narrow(-2, u_off[u], u_storage[u]).narrow(-1, p_off[p], p_storage[p])
-            blocks.append(sub.reshape(*batch, *u_base[u], *p_base[p]).detach())
+            blocks.append(sub.reshape(*batch, *u_base[u], *p_base[p]))
         return tuple(blocks)
 
 
-__all__ = ["RHS", "NewtonStep", "IFT", "ParamIFT", "enumerate_group_var_names"]
+__all__ = [
+    "RHS",
+    "Jacobian",
+    "LinearSolve",
+    "JacobianGiven",
+    "LinearSolveIFT",
+    "DrDParam",
+    "LinearSolveParam",
+    "enumerate_group_var_names",
+]

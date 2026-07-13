@@ -26,7 +26,7 @@
 
 // Lives in the pybind module (NOT the free-standing aoti library): bridges the
 // shared C++ Newton solver to the eager Python path. `EagerNonlinearSystem`
-// delegates residual/step to Python callables (typically RHS / NewtonStep from
+// delegates residual/step to Python callables (typically RHS / (Jacobian -> LinearSolve) from
 // neml2.es.implicit), so the eager and AOTI paths run the *same* C++ iteration.
 
 #include <cstddef>
@@ -46,8 +46,8 @@ namespace neml2::aoti
 ///
 /// ``residual_fn(list[Tensor] u) -> list[Tensor] b`` and
 /// ``step_fn(list[Tensor] u) -> (list[Tensor] du, list[Tensor] b)`` are Python
-/// callables that already bind the givens + linear solver (e.g. RHS /
-/// NewtonStep). ``unknown_layout`` / ``residual_layout`` are ``(structure,
+/// callables that already bind the givens + linear solver (e.g. RHS +
+/// Jacobian->LinearSolve). ``unknown_layout`` / ``residual_layout`` are ``(structure,
 /// sub_batch_shape)`` per group. Returns ``(u_solved, converged, iterations,
 /// log)`` where ``log`` is the per-iteration convergence history (empty unless
 /// ``cfg.collect_log`` is set). Must be called with the GIL held (it invokes

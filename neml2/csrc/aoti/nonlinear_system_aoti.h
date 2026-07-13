@@ -24,11 +24,13 @@
 
 #pragma once
 
-// Internal header -- NOT shipped. The AOTI-backed `NonlinearSystem`: residual /
-// step come from a compiled implicit segment's `.pt2` loaders. Deliberately
-// decoupled from the private `Model::Impl`/`Segment` -- the owning Impl member
-// builds the layouts and hands over the two loaders, so this class depends only
-// on the loader type and `NonlinearSystem`. Givens and the promoted-parameter
+// Internal header -- NOT shipped. The AOTI-backed `NonlinearSystem`. `residual`
+// runs the compiled `residual` graph; `step` chains the compiled `jacobian`
+// operator graph (`(*u,*g,*p) -> (*A_blocks, *b)`) into the compiled `solve`
+// graph (`(*A_blocks, *b) -> (*du)`) -- the linear solve is a separate graph, so
+// this class is a generic driver with no solver algebra. Deliberately decoupled
+// from the private `Model::Impl`/`Segment` -- the owning Impl member builds the
+// layouts and hands over the three loaders. Givens and the promoted-parameter
 // tail are bound once at construction (constant across the solve); only the
 // unknowns vary per iteration.
 
@@ -49,11 +51,12 @@ namespace neml2::aoti
 class AOTINonlinearSystem : public NonlinearSystem
 {
 public:
-  /// ``rhs_loader``/``step_loader`` must outlive this system (owned by the
-  /// segment). ``g_groups`` are the per-group given tensors; ``params`` is the
-  /// promoted-parameter tail in graph-call order.
-  AOTINonlinearSystem(torch::inductor::AOTIModelPackageLoader & rhs_loader,
-                      torch::inductor::AOTIModelPackageLoader & step_loader,
+  /// ``residual_loader``/``jacobian_loader``/``solve_loader`` must outlive this
+  /// system (owned by the segment). ``g_groups`` are the per-group given tensors;
+  /// ``params`` is the promoted-parameter tail in graph-call order.
+  AOTINonlinearSystem(torch::inductor::AOTIModelPackageLoader & residual_loader,
+                      torch::inductor::AOTIModelPackageLoader & jacobian_loader,
+                      torch::inductor::AOTIModelPackageLoader & solve_loader,
                       std::vector<GroupLayout> unknown_layout,
                       std::vector<GroupLayout> residual_layout,
                       std::vector<at::Tensor> g_groups,
@@ -69,8 +72,9 @@ private:
   /// Loader-call input list: ``(*u_groups, *g_groups, *params)``.
   std::vector<at::Tensor> build_inputs(const std::vector<at::Tensor> & u) const;
 
-  torch::inductor::AOTIModelPackageLoader & _rhs_loader;
-  torch::inductor::AOTIModelPackageLoader & _step_loader;
+  torch::inductor::AOTIModelPackageLoader & _residual_loader;
+  torch::inductor::AOTIModelPackageLoader & _jacobian_loader;
+  torch::inductor::AOTIModelPackageLoader & _solve_loader;
   std::vector<GroupLayout> _unknown_layout;
   std::vector<GroupLayout> _residual_layout;
   std::vector<at::Tensor> _g;

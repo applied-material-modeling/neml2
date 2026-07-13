@@ -36,8 +36,10 @@ Unified on-disk schema: every export emits
 * **Forward** (root is a non-Implicit model, no ``ImplicitUpdate`` children):
   one segment, ``"kind": "forward"`` → one ``.pt2``.
 * **Implicit** (root is an ``ImplicitUpdate``): one segment,
-  ``"kind": "implicit"`` → two ``.pt2``\\ s (``_rhs`` + ``_step``) plus
-  optional ``_predictor.pt2``.
+  ``"kind": "implicit"`` → three ``.pt2``\\ s (``_residual`` + ``_jacobian`` +
+  ``_solve`` -- the operator + un-baked linear solve) plus optional
+  ``_jacobian_given`` + ``_solve_ift`` (input derivatives), ``_dr_dparam`` +
+  ``_solve_param`` (parameter derivatives), and ``_predictor.pt2``.
 * **Composed** (root is a ``ComposedModel`` whose dependency graph contains an
   ``ImplicitUpdate`` child): partitioned at each ``ImplicitUpdate`` boundary
   into a sequence of segments (alternating forward / implicit / forward / …),
@@ -87,7 +89,7 @@ if TYPE_CHECKING:
 #: ``scripts/dep_manager.py`` (which keeps this literal, the C++ loader, and the
 #: docs in sync).
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 9
+AOTI_META_SCHEMA_VERSION = 10
 
 
 def _var_size(type_cls) -> int:
@@ -2048,12 +2050,18 @@ def _compile_implicit_segment(
     selected_param_pairs: set[tuple[str, str]] | None = None,
     progress_cb: Callable[[str], None] | None = None,
 ) -> dict:
-    """Compile an ImplicitUpdate to ``<pkg_basename>_rhs.pt2`` + ``_step.pt2``
-    (+ ``_ift.pt2`` when *emit_ift*) (+ ``_pift.pt2`` when *selected_param_pairs*)
-    (+ optional ``_predictor.pt2``), returning the metadata dict (without the
-    outer ``"type"`` key — caller adds it).
+    """Compile an ImplicitUpdate to ``<pkg_basename>_residual.pt2`` +
+    ``_jacobian.pt2`` + ``_solve.pt2`` (+ ``_jacobian_given.pt2`` + ``_solve_ift.pt2``
+    when *emit_ift*) (+ ``_dr_dparam.pt2`` + ``_solve_param.pt2`` when
+    *selected_param_pairs*) (+ optional ``_predictor.pt2``), returning the metadata
+    dict (without the outer ``"type"`` key — caller adds it).
 
-    *selected_ift_pairs* restricts the IFT graph to the requested
+    The linear solve is un-baked (schema v10): ``jacobian`` emits the residual
+    Jacobian operator ``A = ∂r/∂u`` (+ ``b``) and ``solve`` applies the configured
+    linear solver ``du = A^{-1} b``. The C++ runtime chains ``jacobian -> solve``
+    for the Newton step, so the operator can also feed an iterative solver.
+
+    *selected_ift_pairs* restricts the input-derivative pairs to the requested
     ``(unknown, given)`` pairs (``None`` = all). A requested pair whose unknown
     or given is **sub-batched** (per-grain, e.g. crystal plasticity) is rejected
     here with a clear compile-time error: the per-pair IFT consumer only supports
@@ -2061,29 +2069,41 @@ def _compile_implicit_segment(
     derivative of a crystal-plasticity model compiles, while a per-grain pair
     fails fast at ``neml2-compile`` rather than at runtime.
 
-    ``rhs`` + ``step`` drive the forward Newton solve and are always compiled.
-    ``ift`` is the user-facing input-derivative graph (the implicit-function-
-    theorem sensitivity ``du/dg``); it is compiled only when *emit_ift* is True
-    (some ``-d`` pair targets a structural input). ``pift`` is the parameter
-    sensitivity graph (:class:`~neml2.es.implicit.ParamIFT`, ``du/dθ``); it is
-    compiled only when *selected_param_pairs* is non-empty (some ``-d`` pair
-    targets a promoted parameter inside the residual). When a graph is not
-    compiled its package key is omitted and the runtime leaves that loader null.
+    ``residual`` + ``jacobian`` + ``solve`` drive the forward Newton solve and are
+    always compiled. ``jacobian_given`` (``B = ∂r/∂g``) + ``solve_ift`` are the
+    user-facing input-derivative graphs (the implicit-function-theorem sensitivity
+    ``du/dg = -A^{-1} B``, reusing ``jacobian``'s ``A``); compiled only when
+    *emit_ift* is True (some ``-d`` pair targets a structural input). ``dr_dparam``
+    (dense ``A`` + ``∂r/∂θ``) + ``solve_param`` are the parameter-sensitivity
+    graphs (``du/dθ = -A^{-1} ∂r/∂θ``); compiled only when *selected_param_pairs*
+    is non-empty (some ``-d`` pair targets a promoted parameter inside the
+    residual). When a graph is not compiled its package key is omitted and the
+    runtime leaves that loader null.
 
-    Per-variable I/O at the AOTI graph boundary (v5+): each unknown,
-    given, and residual is its own positional tensor in the segment
-    signature. Preserved-label per-group sub_batch storage stays
-    heterogeneous-ndim end-to-end; no cross-group cat or fold-to-flat
-    inside the graph (except IFT's once-per-solve flat ``du/dg`` slab).
+    Per-variable I/O at the AOTI graph boundary (v5+): each unknown, given, and
+    residual is its own positional tensor in the operator-graph signatures.
+    Preserved-label per-group sub_batch storage stays heterogeneous-ndim
+    end-to-end; the solve graphs reconstruct the typed operands from the raw
+    per-block tensors.
 
     Promoted parameters living inside the implicit residual are threaded as a
-    positional tail through every graph. ``rhs`` / ``step`` / ``ift``
-    take the stored SCALAR (constant across the solve / input-Jacobian); the C++
-    runtime passes ``_gather_params(seg.param_inputs)`` for them. ``pift`` takes
-    the parameter PER-BATCH (the reverse pass must be per batch element); the C++
-    runtime broadcasts the stored scalar to the runtime batch before calling it.
+    positional tail through the operator graphs. ``residual`` / ``jacobian`` /
+    ``jacobian_given`` take the stored SCALAR (constant across the solve /
+    input-Jacobian); the C++ runtime passes ``_gather_params(seg.param_inputs)``
+    for them. ``dr_dparam`` takes the parameter PER-BATCH (the reverse pass must be
+    per batch element); the C++ runtime broadcasts the stored scalar to the runtime
+    batch before calling it.
     """
-    from ..es import IFT, RHS, AssembledVector, NewtonStep, ParamIFT
+    from ..es import (
+        RHS,
+        AssembledVector,
+        DrDParam,
+        Jacobian,
+        JacobianGiven,
+        LinearSolve,
+        LinearSolveIFT,
+        LinearSolveParam,
+    )
     from ..models.common import ComposedModel
     from ..models.export import compile_model
 
@@ -2106,11 +2126,20 @@ def _compile_implicit_segment(
     emit_pift = bool(selected_param_pairs)
 
     rhs = RHS(system, param_names=param_tail).to(device)
-    step = NewtonStep(system, solver.linear_solver, param_names=param_tail).to(device)
-    ift = IFT(
+    jacobian = Jacobian(system, param_names=param_tail).to(device)
+    linear_solve = LinearSolve(system, solver.linear_solver, param_names=param_tail).to(device)
+    # IFT (input-derivative) operators + solve: `jacobian` supplies A = ∂r/∂u;
+    # `jacobian_given` supplies B = ∂r/∂g; `solve_ift` applies A^{-1}B and emits
+    # per-(unknown, given) blocks. ParamIFT: `dr_dparam` emits the dense A + ∂r/∂θ
+    # (strict + reverse-AD); `solve_param` does the dense sensitivity solve.
+    jacobian_given = JacobianGiven(system, param_names=param_tail).to(device)
+    solve_ift = LinearSolveIFT(
         system, solver.linear_solver, selected_pairs=selected_ift_pairs, param_names=param_tail
     ).to(device)
-    pift = ParamIFT(
+    dr_dparam = DrDParam(
+        system, solver.linear_solver, param_tail, selected_pairs=selected_param_pairs
+    ).to(device)
+    solve_param = LinearSolveParam(
         system, solver.linear_solver, param_tail, selected_pairs=selected_param_pairs
     ).to(device)
 
@@ -2120,7 +2149,7 @@ def _compile_implicit_segment(
     # supported; fail fast here with a clear message instead of at runtime. A
     # global-output / global-input pair of the same model compiles fine.
     if emit_ift:
-        for u, g in ift.emitted_pairs():
+        for u, g in solve_ift.emitted_pairs():
             u_sub = tuple(system.ulayout.sub_batch_shape(u))
             g_sub = tuple(system.glayout.sub_batch_shape(g))
             if u_sub or g_sub:
@@ -2166,7 +2195,7 @@ def _compile_implicit_segment(
 
     u_group_examples = _per_group_examples(system.ulayout, _example_for_unknown)
     g_group_examples = _per_group_examples(system.glayout, _example_for_given)
-    # Promoted-parameter tail. rhs/step/ift take the stored SCALAR (natural
+    # Promoted-parameter tail. The operator graphs take the stored SCALAR (natural
     # shape -- typically ()); ParamIFT takes the parameter PER-BATCH
     # ((*dyn, *param_base)) so its reverse pass is per batch element (the same
     # scalar-vs-per-batch split the forward value vs param-Jacobian graphs use).
@@ -2185,14 +2214,17 @@ def _compile_implicit_segment(
     example_inputs = base_examples + tuple(scalar_param_examples)
     pift_example_inputs = base_examples + tuple(per_batch_param_examples)
 
-    rhs_name = f"{pkg_basename}_rhs.pt2"
-    step_name = f"{pkg_basename}_step.pt2"
-    ift_name = f"{pkg_basename}_ift.pt2"
-    pift_name = f"{pkg_basename}_pift.pt2"
+    residual_name = f"{pkg_basename}_residual.pt2"
+    jacobian_name = f"{pkg_basename}_jacobian.pt2"
+    solve_name = f"{pkg_basename}_solve.pt2"
+    jacobian_given_name = f"{pkg_basename}_jacobian_given.pt2"
+    solve_ift_name = f"{pkg_basename}_solve_ift.pt2"
+    dr_dparam_name = f"{pkg_basename}_dr_dparam.pt2"
+    solve_param_name = f"{pkg_basename}_solve_param.pt2"
 
     dynamic_dim = 0 if dynamic_batch else None
     # A request_AD leaf inside the residual makes the residual Jacobian (``A=∂r/∂u``
-    # in ``step``, ``∂r/∂g`` in ``ift``) carry an embedded reverse-mode
+    # in ``jacobian``, ``∂r/∂g`` in ``jacobian_given``) carry an embedded reverse-mode
     # ``torch.autograd.grad``, which lowers only under ``trace_autograd_ops`` +
     # ``strict``. The equation-system assembly that both graphs use was made
     # strict-export-friendly (no in-``forward`` generators -- the static layout math
@@ -2200,10 +2232,23 @@ def _compile_implicit_segment(
     # the residual VALUE (no autograd), always plain compile.
     uses_ad = _model_uses_request_ad(system.model)
     _compile_jac = _compile_param_derivative_graph if uses_ad else compile_model
-    compile_model(rhs, example_inputs, output_dir / rhs_name, dynamic_batch_dim=dynamic_dim)
-    _report(progress_cb, rhs_name)
-    _compile_jac(step, example_inputs, output_dir / step_name, dynamic_batch_dim=dynamic_dim)
-    _report(progress_cb, step_name)
+    compile_model(rhs, example_inputs, output_dir / residual_name, dynamic_batch_dim=dynamic_dim)
+    _report(progress_cb, residual_name)
+    _compile_jac(
+        jacobian, example_inputs, output_dir / jacobian_name, dynamic_batch_dim=dynamic_dim
+    )
+    _report(progress_cb, jacobian_name)
+    # The solve graph consumes the Jacobian's raw outputs ``(*A_blocks, *b)`` and
+    # returns ``du``. Trace it on an eager Jacobian evaluation of the same example
+    # inputs so the solve's input shapes match the jacobian graph's outputs
+    # exactly. Pure linear algebra (no embedded autograd), so plain ``compile_model``
+    # even for a request_AD residual (only the ``jacobian`` assembly carries AD).
+    with torch.no_grad():
+        solve_example_inputs = tuple(t.detach().contiguous() for t in jacobian(*example_inputs))
+    compile_model(
+        linear_solve, solve_example_inputs, output_dir / solve_name, dynamic_batch_dim=dynamic_dim
+    )
+    _report(progress_cb, solve_name)
     # Per-(unknown, given) pair metadata for the IFT graph. The IFT emits one
     # block per variable pair (via AssembledMatrix.disassemble), in
     # ift.emitted_pairs() order, so the C++ runtime composes them against
@@ -2224,10 +2269,32 @@ def _compile_implicit_segment(
                 "in_sub_batch_shape": [],
                 "batch_independent": False,
             }
-            for (u, g) in ift.emitted_pairs()
+            for (u, g) in solve_ift.emitted_pairs()
         ]
-        _compile_jac(ift, example_inputs, output_dir / ift_name, dynamic_batch_dim=dynamic_dim)
-        _report(progress_cb, ift_name)
+        # `jacobian_given` (B = ∂r/∂g) is a chain-rule operator (strict-if-AD, like
+        # `jacobian`). `solve_ift` reconstructs A (from `jacobian`) + B and applies
+        # A^{-1}B -- pure linear algebra (plain compile). Trace `solve_ift` on eager
+        # A blocks (jacobian output minus the trailing b groups) + B blocks.
+        _compile_jac(
+            jacobian_given,
+            example_inputs,
+            output_dir / jacobian_given_name,
+            dynamic_batch_dim=dynamic_dim,
+        )
+        _report(progress_cb, jacobian_given_name)
+        n_a = system.blayout.ngroup * system.ulayout.ngroup
+        with torch.no_grad():
+            a_blocks_example = solve_example_inputs[:n_a]
+            b_blocks_example = tuple(
+                t.detach().contiguous() for t in jacobian_given(*example_inputs)
+            )
+        compile_model(
+            solve_ift,
+            a_blocks_example + b_blocks_example,
+            output_dir / solve_ift_name,
+            dynamic_batch_dim=dynamic_dim,
+        )
+        _report(progress_cb, solve_ift_name)
 
     # Per-(unknown, param) parameter-Jacobian graph (ParamIFT). Emits one dense
     # ``du/dθ`` block per requested ``(unknown, param)`` pair, in
@@ -2245,12 +2312,30 @@ def _compile_implicit_segment(
                 "out_base_shape": [int(s) for s in system.ulayout.specs[u].BASE_SHAPE],
                 "param_base_shape": [int(s) for s in promoted_snapshots[p].shape],
             }
-            for (u, p) in pift.emitted_param_pairs()
+            for (u, p) in solve_param.emitted_param_pairs()
         ]
+        # `dr_dparam` emits the dense A + ∂r/∂θ via reverse-mode AD (strict +
+        # trace_autograd_ops). `solve_param` does the dense sensitivity solve on
+        # those two operators -- plain compile. Trace it on an eager `dr_dparam`
+        # evaluation so the solve's input shapes match.
         _compile_param_derivative_graph(
-            pift, pift_example_inputs, output_dir / pift_name, dynamic_batch_dim=dynamic_dim
+            dr_dparam,
+            pift_example_inputs,
+            output_dir / dr_dparam_name,
+            dynamic_batch_dim=dynamic_dim,
         )
-        _report(progress_cb, pift_name)
+        _report(progress_cb, dr_dparam_name)
+        # DrDParam forms A / ∂r/∂θ via reverse-mode autograd.grad internally, so it
+        # must run with grad ENABLED (not under torch.no_grad) to build the graph;
+        # its outputs are already detached, so nothing leaks into solve_param's trace.
+        param_op_example = tuple(t.detach().contiguous() for t in dr_dparam(*pift_example_inputs))
+        compile_model(
+            solve_param,
+            param_op_example,
+            output_dir / solve_param_name,
+            dynamic_batch_dim=dynamic_dim,
+        )
+        _report(progress_cb, solve_param_name)
 
     # Per-variable infos retained at the segment level as the source of
     # truth for the C++ runtime's per-variable state map (predictor
@@ -2297,11 +2382,13 @@ def _compile_implicit_segment(
     # NB: solver convergence / line-search configuration (atol / rtol / miters /
     # linesearch) is NOT baked per-segment. It rides in the shared metadata.json
     # (written by _build_meta) and is applied by the C++ runtime at load time.
-    # Only the linear solver is baked -- it lives inside the compiled step/ift
-    # graphs above.
+    # The residual Jacobian is emitted as an OPERATOR (`_jacobian`); the linear
+    # solve is a separate `_solve` graph (which bakes the configured linear
+    # solver). The C++ runtime chains `_jacobian -> _solve` for the Newton step.
     seg: dict = {
-        "rhs_package": rhs_name,
-        "step_package": step_name,
+        "residual_package": residual_name,
+        "jacobian_package": jacobian_name,
+        "solve_package": solve_name,
         "unknowns": unknown_infos,
         "givens": given_infos,
         "residuals": residual_infos,
@@ -2324,13 +2411,18 @@ def _compile_implicit_segment(
         "incremental_variables": list(inner.incremental_variables),
     }
     if emit_ift:
-        seg["ift_package"] = ift_name
-        # Per-(unknown, given) pair metadata for the IFT loader's output tuple,
-        # in the same order the IFT graph emits blocks. Consumed via the
-        # per-pair Jacobian composition (same path as a forward segment).
+        # IFT operators (B = ∂r/∂g) + solve; A is reused from the forward
+        # `jacobian` graph. The C++ runtime chains jacobian + jacobian_given ->
+        # solve_ift -> per-pair blocks.
+        seg["jacobian_given_package"] = jacobian_given_name
+        seg["solve_ift_package"] = solve_ift_name
+        # Per-(unknown, given) pair metadata for the solve_ift loader's output
+        # tuple, in emission order. Consumed via the per-pair Jacobian
+        # composition (same path as a forward segment).
         seg["jacobian_pairs"] = ift_jacobian_pairs
     if emit_pift:
-        seg["param_ift_package"] = pift_name
+        seg["dr_dparam_package"] = dr_dparam_name
+        seg["solve_param_package"] = solve_param_name
         # Per-(unknown, param) pair metadata for the ParamIFT loader's output
         # tuple, in pift.emitted_param_pairs() order (unknowns outer, params
         # inner). Consumed by the C++ implicit parameter-Jacobian path.
@@ -2763,11 +2855,13 @@ def _predict_implicit_artifacts(
 ) -> list[str]:
     """Ordered ``.pt2`` names an implicit segment emits -- mirrors, in emission
     order, the ``compile_model`` calls in :func:`_compile_implicit_segment`."""
-    arts = [f"{basename}_rhs.pt2", f"{basename}_step.pt2"]
+    arts = [f"{basename}_residual.pt2", f"{basename}_jacobian.pt2", f"{basename}_solve.pt2"]
     if emit_ift:
-        arts.append(f"{basename}_ift.pt2")
+        arts.append(f"{basename}_jacobian_given.pt2")
+        arts.append(f"{basename}_solve_ift.pt2")
     if emit_pift:
-        arts.append(f"{basename}_pift.pt2")
+        arts.append(f"{basename}_dr_dparam.pt2")
+        arts.append(f"{basename}_solve_param.pt2")
     if has_predictor:
         arts.append(f"{basename}_predictor.pt2")
     return arts

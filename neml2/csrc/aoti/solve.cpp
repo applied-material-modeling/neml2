@@ -279,8 +279,9 @@ Model::Impl::_run_implicit_segment(const Segment & seg,
       out.push_back(GroupLayout{g.structure, g.sub_batch_shape});
     return out;
   };
-  AOTINonlinearSystem sys(*seg.rhs_loader,
-                          *seg.step_loader,
+  AOTINonlinearSystem sys(*seg.residual_loader,
+                          *seg.jacobian_loader,
+                          *seg.solve_loader,
                           to_layouts(seg.unknown_groups),
                           to_layouts(seg.residual_groups),
                           g_groups,
@@ -376,8 +377,9 @@ Model::Impl::_run_implicit_segment_masked(const Segment & seg,
       out.push_back(GroupLayout{g.structure, g.sub_batch_shape});
     return out;
   };
-  AOTINonlinearSystem sys(*seg.rhs_loader,
-                          *seg.step_loader,
+  AOTINonlinearSystem sys(*seg.residual_loader,
+                          *seg.jacobian_loader,
+                          *seg.solve_loader,
                           to_layouts(seg.unknown_groups),
                           to_layouts(seg.residual_groups),
                           g_groups,
