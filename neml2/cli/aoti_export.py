@@ -89,7 +89,7 @@ if TYPE_CHECKING:
 #: ``scripts/dep_manager.py`` (which keeps this literal, the C++ loader, and the
 #: docs in sync).
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 11
+AOTI_META_SCHEMA_VERSION = 12
 
 
 def _var_size(type_cls) -> int:
@@ -2134,6 +2134,15 @@ def _compile_implicit_segment(
     # needs internally) -- so it does NOT pull in the standalone `jacobian` A graph.
     iterative, precond_on = _iterative_solver_flags(solver)
     need_a = (not iterative) or emit_ift
+    # Sensitivity (derivative) linear solvers -- separately configurable on the
+    # ImplicitUpdate, each defaulting to the Newton's linear_solver. An iterative
+    # (matrix-free) sensitivity solver runs a C++ Krylov solve over the assembled A
+    # at runtime, so its `_solve_ift` / `_solve_param` graph is NOT compiled (the
+    # operators `_jacobian` / `_jacobian_given` / `_dr_dparam` still are).
+    in_sens_solver = getattr(inner, "input_sensitivity_solver", None) or solver.linear_solver
+    param_sens_solver = getattr(inner, "param_sensitivity_solver", None) or solver.linear_solver
+    in_sens_iterative = bool(getattr(in_sens_solver, "is_iterative", False))
+    param_sens_iterative = bool(getattr(param_sens_solver, "is_iterative", False))
 
     rhs = RHS(system, param_names=param_tail).to(device)
     jacobian = Jacobian(system, param_names=param_tail).to(device)
@@ -2163,13 +2172,13 @@ def _compile_implicit_segment(
     # (strict + reverse-AD); `solve_param` does the dense sensitivity solve.
     jacobian_given = JacobianGiven(system, param_names=param_tail).to(device)
     solve_ift = LinearSolveIFT(
-        system, solver.linear_solver, selected_pairs=selected_ift_pairs, param_names=param_tail
+        system, in_sens_solver, selected_pairs=selected_ift_pairs, param_names=param_tail
     ).to(device)
     dr_dparam = DrDParam(
-        system, solver.linear_solver, param_tail, selected_pairs=selected_param_pairs
+        system, param_sens_solver, param_tail, selected_pairs=selected_param_pairs
     ).to(device)
     solve_param = LinearSolveParam(
-        system, solver.linear_solver, param_tail, selected_pairs=selected_param_pairs
+        system, param_sens_solver, param_tail, selected_pairs=selected_param_pairs
     ).to(device)
 
     # Compile-time guard: the per-pair IFT consumer only supports plain-batch
@@ -2341,6 +2350,13 @@ def _compile_implicit_segment(
     # pair is plain-batch, so ``in_sub_batch_shape`` is empty.
     ift_jacobian_pairs: list[dict] | None = None
     if emit_ift:
+        # Flat row (unknown) / col (given) offsets into the -A^{-1}B sensitivity
+        # matrix, used by the iterative C++ IFT path to slice per-pair blocks
+        # (the direct solve_ift loader disassembles internally). Row order =
+        # ulayout flat; col order = glayout flat (= cat of the per-given-group B
+        # blocks the C++ builds).
+        u_off = _flat_var_offsets(system.ulayout)
+        g_off = _flat_var_offsets(system.glayout)
         ift_jacobian_pairs = [
             {
                 "out_var": u,
@@ -2349,13 +2365,16 @@ def _compile_implicit_segment(
                 "in_base_shape": [int(s) for s in system.glayout.specs[g].BASE_SHAPE],
                 "in_sub_batch_shape": [],
                 "batch_independent": False,
+                "row_offset": u_off[u],
+                "col_offset": g_off[g],
             }
             for (u, g) in solve_ift.emitted_pairs()
         ]
         # `jacobian_given` (B = ∂r/∂g) is a chain-rule operator (strict-if-AD, like
-        # `jacobian`). `solve_ift` reconstructs A (from `jacobian`) + B and applies
-        # A^{-1}B -- pure linear algebra (plain compile). Trace `solve_ift` on eager
-        # A blocks (jacobian output minus the trailing b groups) + B blocks.
+        # `jacobian`), emitted whenever an input derivative is requested. `solve_ift`
+        # (the baked direct solve of A^{-1}B) is emitted ONLY for a direct
+        # input-sensitivity solver; an iterative one runs a C++ Krylov solve over the
+        # assembled A at runtime (schema v12), so its graph is skipped.
         _compile_jac(
             jacobian_given,
             example_inputs,
@@ -2363,21 +2382,22 @@ def _compile_implicit_segment(
             dynamic_batch_dim=dynamic_dim,
         )
         _report(progress_cb, jacobian_given_name)
-        # emit_ift implies need_a, so the jacobian graph (and its eager eval) ran.
-        assert solve_example_inputs is not None
-        n_a = system.blayout.ngroup * system.ulayout.ngroup
-        with torch.no_grad():
-            a_blocks_example = solve_example_inputs[:n_a]
-            b_blocks_example = tuple(
-                t.detach().contiguous() for t in jacobian_given(*example_inputs)
+        if not in_sens_iterative:
+            # emit_ift implies need_a, so the jacobian graph (and its eager eval) ran.
+            assert solve_example_inputs is not None
+            n_a = system.blayout.ngroup * system.ulayout.ngroup
+            with torch.no_grad():
+                a_blocks_example = solve_example_inputs[:n_a]
+                b_blocks_example = tuple(
+                    t.detach().contiguous() for t in jacobian_given(*example_inputs)
+                )
+            compile_model(
+                solve_ift,
+                a_blocks_example + b_blocks_example,
+                output_dir / solve_ift_name,
+                dynamic_batch_dim=dynamic_dim,
             )
-        compile_model(
-            solve_ift,
-            a_blocks_example + b_blocks_example,
-            output_dir / solve_ift_name,
-            dynamic_batch_dim=dynamic_dim,
-        )
-        _report(progress_cb, solve_ift_name)
+            _report(progress_cb, solve_ift_name)
 
     # Per-(unknown, param) parameter-Jacobian graph (ParamIFT). Emits one dense
     # ``du/dθ`` block per requested ``(unknown, param)`` pair, in
@@ -2388,19 +2408,31 @@ def _compile_implicit_segment(
     # graphs use (reverse-mode autograd is the only AD that lowers).
     param_jacobian_pairs: list[dict] | None = None
     if emit_pift:
+        # Flat row (unknown) / col (param) offsets into the -A^{-1} ∂r/∂θ matrix for
+        # the iterative C++ ParamIFT path. Row order = ulayout flat; col order = the
+        # ∂r/∂θ param order = the segment's promoted-param tail (DrDParam's Bp).
+        u_off = _flat_var_offsets(system.ulayout)
+        p_col_off: dict[str, int] = {}
+        _poff = 0
+        for _p in seg_param_inputs:
+            p_col_off[_p] = _poff
+            _poff += int(prod(int(s) for s in promoted_snapshots[_p].shape))
         param_jacobian_pairs = [
             {
                 "out_var": u,
                 "param": p,
                 "out_base_shape": [int(s) for s in system.ulayout.specs[u].BASE_SHAPE],
                 "param_base_shape": [int(s) for s in promoted_snapshots[p].shape],
+                "row_offset": u_off[u],
+                "col_offset": p_col_off[p],
             }
             for (u, p) in solve_param.emitted_param_pairs()
         ]
         # `dr_dparam` emits the dense A + ∂r/∂θ via reverse-mode AD (strict +
-        # trace_autograd_ops). `solve_param` does the dense sensitivity solve on
-        # those two operators -- plain compile. Trace it on an eager `dr_dparam`
-        # evaluation so the solve's input shapes match.
+        # trace_autograd_ops), emitted whenever a parameter derivative is requested.
+        # `solve_param` (the baked direct sensitivity solve) is emitted ONLY for a
+        # direct param-sensitivity solver; an iterative one runs a C++ Krylov solve
+        # over the dense A at runtime (schema v12), so its graph is skipped.
         _compile_param_derivative_graph(
             dr_dparam,
             pift_example_inputs,
@@ -2408,17 +2440,20 @@ def _compile_implicit_segment(
             dynamic_batch_dim=dynamic_dim,
         )
         _report(progress_cb, dr_dparam_name)
-        # DrDParam forms A / ∂r/∂θ via reverse-mode autograd.grad internally, so it
-        # must run with grad ENABLED (not under torch.no_grad) to build the graph;
-        # its outputs are already detached, so nothing leaks into solve_param's trace.
-        param_op_example = tuple(t.detach().contiguous() for t in dr_dparam(*pift_example_inputs))
-        compile_model(
-            solve_param,
-            param_op_example,
-            output_dir / solve_param_name,
-            dynamic_batch_dim=dynamic_dim,
-        )
-        _report(progress_cb, solve_param_name)
+        if not param_sens_iterative:
+            # DrDParam forms A / ∂r/∂θ via reverse-mode autograd.grad internally, so
+            # it must run with grad ENABLED (not under torch.no_grad) to build the
+            # graph; its outputs are already detached, so nothing leaks into the trace.
+            param_op_example = tuple(
+                t.detach().contiguous() for t in dr_dparam(*pift_example_inputs)
+            )
+            compile_model(
+                solve_param,
+                param_op_example,
+                output_dir / solve_param_name,
+                dynamic_batch_dim=dynamic_dim,
+            )
+            _report(progress_cb, solve_param_name)
 
     # Per-variable infos retained at the segment level as the source of
     # truth for the C++ runtime's per-variable state map (predictor
@@ -2507,18 +2542,24 @@ def _compile_implicit_segment(
     else:
         seg["solve_package"] = solve_name
     if emit_ift:
-        # IFT operators (B = ∂r/∂g) + solve; A is reused from the forward
-        # `jacobian` graph. The C++ runtime chains jacobian + jacobian_given ->
-        # solve_ift -> per-pair blocks.
+        # IFT operators (B = ∂r/∂g); A is reused from the forward `jacobian` graph.
+        # A DIRECT input-sensitivity solver additionally bakes `solve_ift`
+        # (jacobian + jacobian_given -> solve_ift -> per-pair blocks); an ITERATIVE
+        # one omits it and the C++ Krylov-solves over the assembled A (schema v12,
+        # `input_sensitivity` descriptor). The pair offsets drive that slice.
         seg["jacobian_given_package"] = jacobian_given_name
-        seg["solve_ift_package"] = solve_ift_name
+        if not in_sens_iterative:
+            seg["solve_ift_package"] = solve_ift_name
+        seg["input_sensitivity"] = _sensitivity_descriptor(in_sens_solver)
         # Per-(unknown, given) pair metadata for the solve_ift loader's output
         # tuple, in emission order. Consumed via the per-pair Jacobian
         # composition (same path as a forward segment).
         seg["jacobian_pairs"] = ift_jacobian_pairs
     if emit_pift:
         seg["dr_dparam_package"] = dr_dparam_name
-        seg["solve_param_package"] = solve_param_name
+        if not param_sens_iterative:
+            seg["solve_param_package"] = solve_param_name
+        seg["param_sensitivity"] = _sensitivity_descriptor(param_sens_solver)
         # Per-(unknown, param) pair metadata for the ParamIFT loader's output
         # tuple, in pift.emitted_param_pairs() order (unknowns outer, params
         # inner). Consumed by the C++ implicit parameter-Jacobian path.
@@ -2966,6 +3007,48 @@ def _krylov_config_of(solver) -> dict:
     return solver.linear_solver.krylov_config()
 
 
+def _sensitivity_iterative_flags(impl) -> tuple[bool, bool]:
+    """``(input_sensitivity_iterative, param_sensitivity_iterative)`` for an
+    ImplicitUpdate -- whether each derivative solve uses a matrix-free (Krylov)
+    solver (so its ``solve_ift`` / ``solve_param`` graph is skipped). Shared by the
+    artifact predictor and the segment compiler so they cannot drift.
+    """
+    return (
+        bool(getattr(getattr(impl, "input_sensitivity_solver", None), "is_iterative", False)),
+        bool(getattr(getattr(impl, "param_sensitivity_solver", None), "is_iterative", False)),
+    )
+
+
+def _sensitivity_descriptor(sensitivity_solver) -> dict:
+    """Per-segment metadata descriptor for a derivative (IFT / ParamIFT) linear
+    solve: ``{kind, [krylov]}``. ``kind`` is ``"krylov"`` for a matrix-free
+    solver (the C++ runs a Krylov solve over the assembled A -- its ``_solve_ift``
+    / ``_solve_param`` graph is not compiled) else ``"direct"``. The nested
+    ``krylov`` block (the solver's ``linear_solve_config``) is present only when
+    iterative.
+    """
+    if bool(getattr(sensitivity_solver, "is_iterative", False)):
+        return {"kind": "krylov", "krylov": sensitivity_solver.linear_solve_config()}
+    return {"kind": "direct"}
+
+
+def _flat_var_offsets(layout) -> dict[str, int]:
+    """``{var_name: flat_storage_offset}`` over *layout*'s group-then-var DENSE
+    flat storage -- the column/row order obtained by concatenating the per-group
+    blocks. Used to slice the iterative sensitivity Krylov solution per pair.
+    """
+    from ..es.assembled import AssembledMatrix  # noqa: PLC0415
+
+    offsets: dict[str, int] = {}
+    off = 0
+    for gi in range(layout.ngroup):
+        structure = layout.structure[gi]
+        for name in layout.groups[gi]:
+            offsets[name] = off
+            off += AssembledMatrix._var_storage(layout, gi, name, structure)
+    return offsets
+
+
 def _predict_implicit_artifacts(
     basename: str,
     *,
@@ -2974,14 +3057,18 @@ def _predict_implicit_artifacts(
     emit_ift: bool,
     emit_pift: bool,
     has_predictor: bool,
+    input_sensitivity_iterative: bool = False,
+    param_sensitivity_iterative: bool = False,
 ) -> list[str]:
     """Ordered ``.pt2`` names an implicit segment emits -- mirrors, in emission
     order, the ``compile_model`` calls in :func:`_compile_implicit_segment`.
 
-    A direct solve emits ``jacobian`` + ``solve``; a matrix-free Krylov solve
-    emits ``matvec`` instead of ``solve`` (plus ``precond_setup`` + ``precond_apply``
-    when preconditioned) and ``jacobian`` only when an input/parameter derivative
-    needs the assembled ``A``.
+    A direct forward solve emits ``jacobian`` + ``solve``; a matrix-free Krylov
+    solve emits ``matvec`` instead of ``solve`` (plus ``precond_setup`` +
+    ``precond_apply`` when preconditioned) and ``jacobian`` only when an
+    input/parameter derivative needs the assembled ``A``. A derivative site emits
+    its ``solve_ift`` / ``solve_param`` graph only for a DIRECT sensitivity solver
+    -- an iterative one Krylov-solves over the assembled A at runtime (schema v12).
     """
     # A (the jacobian operator) is needed for: a direct solve or an input
     # derivative (IFT reuses A). A preconditioner authors its own self-contained
@@ -3000,10 +3087,12 @@ def _predict_implicit_artifacts(
         arts.append(f"{basename}_solve.pt2")
     if emit_ift:
         arts.append(f"{basename}_jacobian_given.pt2")
-        arts.append(f"{basename}_solve_ift.pt2")
+        if not input_sensitivity_iterative:
+            arts.append(f"{basename}_solve_ift.pt2")
     if emit_pift:
         arts.append(f"{basename}_dr_dparam.pt2")
-        arts.append(f"{basename}_solve_param.pt2")
+        if not param_sensitivity_iterative:
+            arts.append(f"{basename}_solve_param.pt2")
     if has_predictor:
         arts.append(f"{basename}_predictor.pt2")
     return arts
@@ -3038,6 +3127,7 @@ def _plan_segments(prepared: _PreparedExport, model_name: str) -> list[_SegmentP
             (o, p) for (o, p) in param_pairs if o in isys.unknown_names and p in promoted_qnames
         }
         _it, _pc = _iterative_solver_flags(inner.solver)
+        _in_sens_it, _param_sens_it = _sensitivity_iterative_flags(inner)
         arts = _predict_implicit_artifacts(
             model_name,
             iterative=_it,
@@ -3045,6 +3135,8 @@ def _plan_segments(prepared: _PreparedExport, model_name: str) -> list[_SegmentP
             emit_ift=bool(selected_ift_pairs),
             emit_pift=bool(selected_param_pairs),
             has_predictor=inner.predictor is not None,
+            input_sensitivity_iterative=_in_sens_it,
+            param_sensitivity_iterative=_param_sens_it,
         )
         return [
             _SegmentPlan(
@@ -3119,6 +3211,7 @@ def _plan_segments(prepared: _PreparedExport, model_name: str) -> list[_SegmentP
                     if reach.keep_param_pair(u, p)
                 }
                 _it, _pc = _iterative_solver_flags(impl_model.solver)
+                _in_sens_it, _param_sens_it = _sensitivity_iterative_flags(impl_model)
                 arts = _predict_implicit_artifacts(
                     basename,
                     iterative=_it,
@@ -3126,6 +3219,8 @@ def _plan_segments(prepared: _PreparedExport, model_name: str) -> list[_SegmentP
                     emit_ift=bool(selected_ift_pairs),
                     emit_pift=bool(selected_param_pairs),
                     has_predictor=impl_model.predictor is not None,
+                    input_sensitivity_iterative=_in_sens_it,
+                    param_sensitivity_iterative=_param_sens_it,
                 )
                 plans.append(
                     _SegmentPlan(

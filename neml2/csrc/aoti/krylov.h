@@ -359,4 +359,40 @@ krylov_solve(const MatvecFn & matvec,
   return cfg.method == KrylovMethod::BiCGStab ? bicgstab(matvec, minv, b, cfg)
                                               : gmres(matvec, minv, b, cfg);
 }
+
+/// Solve `A X = B` with the shared Krylov loop over an ALREADY-ASSEMBLED dense
+/// operator `A` (matvec = `A·v`, a batched matmul -- no matrix-free graph) and
+/// an identity preconditioner. Used by the derivative (IFT / ParamIFT) solves
+/// when the configured sensitivity solver is iterative: the residual Jacobian is
+/// on hand at the converged point, so the operator is dense.
+///
+/// `A` is `(*batch, N, N)`; `B` is `(*batch, N)` (vector RHS) or `(*batch, N, M)`
+/// (matrix RHS), and the return matches `B`'s shape. Leading batch dims are
+/// flattened to one axis for the loop (mirroring the forward Krylov flatten).
+/// Matrix RHS is solved column-by-column -- `M` is a small storage width and each
+/// column reuses the same `A`.
+inline at::Tensor
+krylov_solve_dense(const at::Tensor & A, const at::Tensor & B, const KrylovConfig & cfg)
+{
+  const int64_t N = A.size(-1);
+  const auto A2 = A.reshape({-1, N, N}); // (Bflat, N, N)
+  const MatvecFn matvec = [&A2](const at::Tensor & v) -> at::Tensor
+  { return at::matmul(A2, v.unsqueeze(-1)).squeeze(-1); };
+  const PrecondFn identity = [](const at::Tensor & r) -> at::Tensor { return r; };
+
+  if (B.dim() == A.dim() - 1) // vector RHS (*batch, N)
+  {
+    const auto x = krylov_solve(matvec, identity, B.reshape({-1, N}), cfg).du;
+    return x.reshape(B.sizes());
+  }
+
+  // Matrix RHS (*batch, N, M): solve each column, reassemble.
+  const int64_t M = B.size(-1);
+  const auto B3 = B.reshape({-1, N, M});
+  std::vector<at::Tensor> cols;
+  cols.reserve(static_cast<std::size_t>(M));
+  for (int64_t j = 0; j < M; ++j)
+    cols.push_back(krylov_solve(matvec, identity, B3.select(-1, j).contiguous(), cfg).du);
+  return at::stack(cols, -1).reshape(B.sizes());
+}
 } // namespace neml2::aoti

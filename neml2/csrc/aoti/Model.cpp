@@ -59,6 +59,22 @@ make_loader(const std::filesystem::path & path, int device_index = -1)
                                                                    device_index);
 }
 
+// Parse a `krylov` metadata block into a KrylovConfig (shared by the top-level
+// forward-solve config and the per-segment sensitivity-solve descriptors).
+void
+parse_krylov_json(const nlohmann::json & kc, KrylovConfig & out)
+{
+  _assert(parse_krylov_method(kc.value("method", std::string("gmres")), out.method),
+          "aoti::Model: unknown krylov method in metadata");
+  _assert(parse_cache_strategy(kc.value("cache_strategy", std::string("none")), out.cache),
+          "aoti::Model: unknown krylov cache_strategy in metadata");
+  out.restart = kc.value("restart", out.restart);
+  out.max_its = kc.value("max_its", out.max_its);
+  out.abs_tol = kc.value("abs_tol", out.abs_tol);
+  out.rel_tol = kc.value("rel_tol", out.rel_tol);
+  out.cache_max_its = kc.value("cache_max_its", out.cache_max_its);
+}
+
 at::ScalarType
 parse_dtype(const std::string & s)
 {
@@ -167,7 +183,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // a cryptic missing-field error deep in the parser. The canonical value lives
   // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 11;
+  static constexpr int kSupportedSchemaVersion = 12;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -457,19 +473,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
     // configured by the nested `krylov` block.
     _solver_kind = sc.value("solver_kind", std::string("direct"));
     if (sc.contains("krylov"))
-    {
-      const auto & kc = sc["krylov"];
-      _assert(parse_krylov_method(kc.value("method", std::string("gmres")), _krylov_config.method),
-              "aoti::Model: unknown krylov method in metadata");
-      _assert(parse_cache_strategy(kc.value("cache_strategy", std::string("none")),
-                                   _krylov_config.cache),
-              "aoti::Model: unknown krylov cache_strategy in metadata");
-      _krylov_config.restart = kc.value("restart", _krylov_config.restart);
-      _krylov_config.max_its = kc.value("max_its", _krylov_config.max_its);
-      _krylov_config.abs_tol = kc.value("abs_tol", _krylov_config.abs_tol);
-      _krylov_config.rel_tol = kc.value("rel_tol", _krylov_config.rel_tol);
-      _krylov_config.cache_max_its = kc.value("cache_max_its", _krylov_config.cache_max_its);
-    }
+      parse_krylov_json(sc["krylov"], _krylov_config);
   }
 
   // Segments.
@@ -531,6 +535,8 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
           if (p.contains("in_sub_batch_shape"))
             pi.in_sub_batch_shape = p["in_sub_batch_shape"].get<std::vector<int64_t>>();
           pi.batch_independent = p.value("batch_independent", false);
+          pi.row_offset = p.value("row_offset", static_cast<int64_t>(0));
+          pi.col_offset = p.value("col_offset", static_cast<int64_t>(0));
           seg.jacobian_pairs.push_back(std::move(pi));
         }
       }
@@ -551,6 +557,8 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
             pi.out_base_shape = p["out_base_shape"].get<std::vector<int64_t>>();
           if (p.contains("param_base_shape"))
             pi.param_base_shape = p["param_base_shape"].get<std::vector<int64_t>>();
+          pi.row_offset = p.value("row_offset", static_cast<int64_t>(0));
+          pi.col_offset = p.value("col_offset", static_cast<int64_t>(0));
           seg.param_jacobian_pairs.push_back(std::move(pi));
         }
       }
@@ -589,12 +597,23 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
         seg.precond_apply_loader =
             make_loader(cache_dir / seg_meta["precond_apply_package"].get<std::string>(), dev_idx);
       }
-      if (seg_meta.contains("solve_ift_package"))
-      {
+      // IFT: `jacobian_given` (B = ∂r/∂g) is emitted whenever an input derivative
+      // is compiled; `solve_ift` (the baked direct solve) only when the
+      // input-sensitivity solver is direct -- an iterative sensitivity solve
+      // (`input_sensitivity_kind == "krylov"`) runs `krylov_solve_dense` over the
+      // assembled A instead (schema v12).
+      if (seg_meta.contains("jacobian_given_package"))
         seg.jacobian_given_loader =
             make_loader(cache_dir / seg_meta["jacobian_given_package"].get<std::string>(), dev_idx);
+      if (seg_meta.contains("solve_ift_package"))
         seg.solve_ift_loader =
             make_loader(cache_dir / seg_meta["solve_ift_package"].get<std::string>(), dev_idx);
+      if (seg_meta.contains("input_sensitivity"))
+      {
+        const auto & isd = seg_meta["input_sensitivity"];
+        seg.input_sensitivity_kind = isd.value("kind", std::string("direct"));
+        if (isd.contains("krylov"))
+          parse_krylov_json(isd["krylov"], seg.input_sensitivity_krylov);
       }
 
       for (const auto & v : seg_meta["unknowns"])
@@ -645,6 +664,8 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
           if (p.contains("in_sub_batch_shape"))
             pi.in_sub_batch_shape = p["in_sub_batch_shape"].get<std::vector<int64_t>>();
           pi.batch_independent = p.value("batch_independent", false);
+          pi.row_offset = p.value("row_offset", static_cast<int64_t>(0));
+          pi.col_offset = p.value("col_offset", static_cast<int64_t>(0));
           seg.jacobian_pairs.push_back(std::move(pi));
         }
       }
@@ -652,12 +673,19 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
       // derivative targeting a promoted parameter inside the residual was
       // requested. Emits one dense du/dθ block per (unknown, param) pair in
       // param_jacobian_pairs order (unknowns outer, params inner).
-      if (seg_meta.contains("solve_param_package"))
-      {
+      // ParamIFT: `dr_dparam` (dense A + ∂r/∂θ) is emitted whenever a parameter
+      // derivative is compiled; `solve_param` (the baked direct solve) only when
+      // the param-sensitivity solver is direct -- an iterative sensitivity solve
+      // (`param_sensitivity_kind == "krylov"`) runs `krylov_solve_dense` over the
+      // dense A instead (schema v12).
+      if (seg_meta.contains("dr_dparam_package"))
         seg.dr_dparam_loader =
             make_loader(cache_dir / seg_meta["dr_dparam_package"].get<std::string>(), dev_idx);
+      if (seg_meta.contains("solve_param_package"))
         seg.solve_param_loader =
             make_loader(cache_dir / seg_meta["solve_param_package"].get<std::string>(), dev_idx);
+      if (seg_meta.contains("param_jacobian_pairs"))
+      {
         for (const auto & p : seg_meta["param_jacobian_pairs"])
         {
           Segment::ParamPairInfo pi;
@@ -667,8 +695,17 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
             pi.out_base_shape = p["out_base_shape"].get<std::vector<int64_t>>();
           if (p.contains("param_base_shape"))
             pi.param_base_shape = p["param_base_shape"].get<std::vector<int64_t>>();
+          pi.row_offset = p.value("row_offset", static_cast<int64_t>(0));
+          pi.col_offset = p.value("col_offset", static_cast<int64_t>(0));
           seg.param_jacobian_pairs.push_back(std::move(pi));
         }
+      }
+      if (seg_meta.contains("param_sensitivity"))
+      {
+        const auto & psd = seg_meta["param_sensitivity"];
+        seg.param_sensitivity_kind = psd.value("kind", std::string("direct"));
+        if (psd.contains("krylov"))
+          parse_krylov_json(psd["krylov"], seg.param_sensitivity_krylov);
       }
       // Solver convergence / line-search configuration is read once from the
       // top-level `solver_config` in metadata.json into `_solver_config` below;

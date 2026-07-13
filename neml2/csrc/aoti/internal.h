@@ -238,6 +238,19 @@ struct Model::Impl
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> solve_param_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> predictor_loader;
 
+    /// Sensitivity (derivative) linear-solve kind per site (schema v12). "direct"
+    /// runs the compiled `solve_ift_loader` / `solve_param_loader` graph; "krylov"
+    /// runs the shared C++ Krylov loop (`krylov_solve_dense`) over the assembled A
+    /// (matvec = A.v) using `input_sensitivity_krylov` / `param_sensitivity_krylov`.
+    /// A krylov site's `solve_*` loader is absent -- the operators still come from
+    /// `jacobian` + `jacobian_given` (IFT) or `dr_dparam` (ParamIFT). Independent of
+    /// the FORWARD solve kind (`_solver_kind`): a direct forward can have an
+    /// iterative sensitivity solve and vice versa.
+    std::string input_sensitivity_kind = "direct";
+    std::string param_sensitivity_kind = "direct";
+    KrylovConfig input_sensitivity_krylov;
+    KrylovConfig param_sensitivity_krylov;
+
     /// Per-variable metadata. The natural ``(*B, *sub_batch, *base)``
     /// shape is what the AOTI graph was traced with; the C++ side
     /// packs per-variable tensors into the segment loader's positional
@@ -301,6 +314,14 @@ struct Model::Impl
       /// size-1 leading dynamic-batch axis; the single-forward-segment Jacobian
       /// path squeezes that axis and returns the block unbatched.
       bool batch_independent = false;
+      /// Row/col offset of this (out_var, in_var) block within the flat
+      /// `-A^{-1}B` sensitivity matrix (row = unknown storage, col = given
+      /// storage). Used only by the iterative (`input_sensitivity_kind ==
+      /// "krylov"`) path to slice the Krylov solution; the direct `solve_ift`
+      /// loader disassembles internally. Sizes are `prod(out_base_shape)` /
+      /// `prod(in_base_shape)` (plain-batch / dense).
+      int64_t row_offset = 0;
+      int64_t col_offset = 0;
     };
     std::vector<PairInfo> jacobian_pairs;
 
@@ -314,6 +335,13 @@ struct Model::Impl
       std::string param;
       std::vector<int64_t> out_base_shape;
       std::vector<int64_t> param_base_shape;
+      /// Row/col offset of this (out_var, param) block within the flat
+      /// `-A^{-1} ∂r/∂θ` matrix (row = unknown storage, col = ∂r/∂θ param
+      /// storage). Used only by the iterative (`param_sensitivity_kind ==
+      /// "krylov"`) path to slice the Krylov solution; the direct `solve_param`
+      /// loader disassembles internally.
+      int64_t row_offset = 0;
+      int64_t col_offset = 0;
     };
     std::vector<ParamPairInfo> param_jacobian_pairs;
     /// Forward-segment parameter-Jacobian graph. Its promoted-parameter inputs

@@ -28,6 +28,7 @@
 // ----------------------------------------------------------------------------
 
 #include "neml2/csrc/aoti/internal.h"
+#include "neml2/csrc/aoti/krylov.h"
 
 #include <torch/csrc/inductor/aoti_package/model_package_loader.h>
 
@@ -241,9 +242,35 @@ Model::Impl::_implicit_param_pair_blocks(const std::map<std::string, at::Tensor>
                                  static_cast<int64_t>(_param_base_shapes.at(pname).size())));
 
   // One dense du/dθ block per (unknown, param) pair, in param_jacobian_pairs
-  // order (unknowns outer, params inner).
-  const auto op_out = seg.dr_dparam_loader->run(pift_in);  // (A_dense, Bp)
-  const auto blocks = seg.solve_param_loader->run(op_out); // per-(unknown, param) blocks
+  // order (unknowns outer, params inner). A direct param-sensitivity solver runs
+  // the baked `solve_param` graph; an iterative one Krylov-solves over the dense A
+  // (`dr_dparam`'s A_dense) and slices -A^{-1}∂r/∂θ into the same per-pair blocks.
+  const auto op_out = seg.dr_dparam_loader->run(pift_in); // (A_dense, Bp)
+  std::vector<at::Tensor> blocks;
+  if (seg.param_sensitivity_kind == "krylov")
+  {
+    _assert(op_out.size() >= 2, "aoti::Model: dr_dparam loader must emit (A_dense, dr_dparam).");
+    const auto negX = -krylov_solve_dense(op_out[0], op_out[1], seg.param_sensitivity_krylov);
+    blocks.reserve(seg.param_jacobian_pairs.size());
+    for (const auto & pinfo : seg.param_jacobian_pairs)
+    {
+      int64_t out_sz = 1;
+      for (auto s : pinfo.out_base_shape)
+        out_sz *= s;
+      const int64_t psize = _req_param_size.at(pinfo.param);
+      auto blk = negX.narrow(-2, pinfo.row_offset, out_sz).narrow(-1, pinfo.col_offset, psize);
+      std::vector<int64_t> tgt(batch_shape.begin(), batch_shape.end());
+      for (auto s : pinfo.out_base_shape)
+        tgt.push_back(s);
+      for (auto s : pinfo.param_base_shape)
+        tgt.push_back(s);
+      blocks.push_back(blk.reshape(tgt).contiguous());
+    }
+  }
+  else
+  {
+    blocks = seg.solve_param_loader->run(op_out); // per-(unknown, param) blocks
+  }
   const std::size_t n_pairs = seg.param_jacobian_pairs.size();
   _assert(blocks.size() == n_pairs,
           "aoti::Model::param_jacobian: ParamIFT loader returned ",
@@ -340,10 +367,33 @@ Model::Impl::_add_implicit_param_direct(const Segment & seg,
                                  common_dyn,
                                  static_cast<int64_t>(_param_base_shapes.at(pname).size())));
 
-  const auto op_out = seg.dr_dparam_loader->run(pift_in);  // (A_dense, Bp)
-  const auto blocks = seg.solve_param_loader->run(op_out); // per-(unknown, param) blocks
+  const auto op_out = seg.dr_dparam_loader->run(pift_in); // (A_dense, Bp)
+  std::vector<at::Tensor> blocks;
+  if (seg.param_sensitivity_kind == "krylov")
+  {
+    // Iterative param-sensitivity solve: X = A^{-1} ∂r/∂θ over the dense A via the
+    // shared C++ Krylov loop; slice -X into the same per-(unknown, param) blocks
+    // the direct `solve_param` loader would emit (offsets baked into the metadata).
+    _assert(op_out.size() >= 2, "aoti::Model: dr_dparam loader must emit (A_dense, dr_dparam).");
+    const auto negX = -krylov_solve_dense(op_out[0], op_out[1], seg.param_sensitivity_krylov);
+    blocks.reserve(seg.param_jacobian_pairs.size());
+    for (const auto & pinfo : seg.param_jacobian_pairs)
+    {
+      int64_t out_sz = 1;
+      for (auto s : pinfo.out_base_shape)
+        out_sz *= s;
+      const int64_t psize = _req_param_size.at(pinfo.param);
+      blocks.push_back(negX.narrow(-2, pinfo.row_offset, out_sz)
+                           .narrow(-1, pinfo.col_offset, psize)
+                           .contiguous());
+    }
+  }
+  else
+  {
+    blocks = seg.solve_param_loader->run(op_out); // per-(unknown, param) blocks
+  }
   _assert(blocks.size() == seg.param_jacobian_pairs.size(),
-          "aoti::Model::param_jacobian: ParamIFT loader returned ",
+          "aoti::Model::param_jacobian: ParamIFT solve returned ",
           blocks.size(),
           " blocks, expected ",
           seg.param_jacobian_pairs.size(),
@@ -430,7 +480,13 @@ Model::Impl::_param_jacobian_dstate(const std::map<std::string, at::Tensor> & in
       std::vector<at::Tensor> u_solved_groups;
       std::vector<at::Tensor> g_groups;
       _run_implicit_segment(seg, state, u_solved_groups, g_groups);
-      if (seg.solve_ift_loader)
+      // The IFT / ParamIFT solves are requested iff their OPERATOR graph was
+      // emitted (`jacobian_given` / `dr_dparam`), independent of the sensitivity
+      // solver kind: a direct sensitivity solver additionally carries the baked
+      // `solve_ift` / `solve_param` loader, while an iterative one Krylov-solves
+      // over the assembled A inside these methods (schema v12). Gating on the
+      // operator loader (not the solve loader) so the iterative path still runs.
+      if (seg.jacobian_given_loader)
         _run_implicit_segment_jacobian(seg, u_solved_groups, g_groups, dpstate); // indirect
       else
         for (const auto & u : seg.unknowns)
@@ -440,7 +496,7 @@ Model::Impl::_param_jacobian_dstate(const std::map<std::string, at::Tensor> & in
           shp.push_back(P);
           dpstate[u.name] = at::zeros(shp, ref.options());
         }
-      if (seg.solve_param_loader)
+      if (seg.dr_dparam_loader)
         _add_implicit_param_direct(seg, u_solved_groups, g_groups, common_dyn, dpstate); // direct
     }
   }
@@ -671,10 +727,39 @@ Model::Impl::_run_implicit_segment_jacobian(const Segment & seg,
       solve_in.end(), jac_out.begin(), jac_out.begin() + static_cast<std::ptrdiff_t>(n_a));
   solve_in.insert(solve_in.end(), given_out.begin(), given_out.end());
 
-  const auto blocks = seg.solve_ift_loader->run(solve_in);
   const std::size_t n_pairs = seg.jacobian_pairs.size();
+  std::vector<at::Tensor> blocks;
+  if (seg.input_sensitivity_kind == "krylov")
+  {
+    // Iterative input-sensitivity solve: X = A^{-1} B over the ALREADY-ASSEMBLED A
+    // (single dense group) via the shared C++ Krylov loop, then slice -X into the
+    // same per-(unknown, given) blocks the direct `solve_ift` loader would emit.
+    // The flat row/col offsets are baked into the pair metadata at export.
+    _assert(n_a == 1,
+            "aoti::Model: iterative input-sensitivity solve requires a single dense "
+            "unknown group.");
+    const at::Tensor Bcat = given_out.size() == 1 ? given_out[0] : at::cat(given_out, -1);
+    const auto negX = -krylov_solve_dense(jac_out[0], Bcat, seg.input_sensitivity_krylov);
+    blocks.reserve(n_pairs);
+    for (const auto & pinfo : seg.jacobian_pairs)
+    {
+      int64_t out_sz = 1;
+      for (auto s : pinfo.out_base_shape)
+        out_sz *= s;
+      int64_t in_sz = 1;
+      for (auto s : pinfo.in_base_shape)
+        in_sz *= s;
+      blocks.push_back(negX.narrow(-2, pinfo.row_offset, out_sz)
+                           .narrow(-1, pinfo.col_offset, in_sz)
+                           .contiguous());
+    }
+  }
+  else
+  {
+    blocks = seg.solve_ift_loader->run(solve_in);
+  }
   _assert(blocks.size() == n_pairs,
-          "aoti::Model: IFT loader returned ",
+          "aoti::Model: IFT solve returned ",
           blocks.size(),
           " blocks, expected ",
           n_pairs,

@@ -214,7 +214,8 @@ def test_predict_implicit_artifacts_krylov():
     assert _predict_implicit_artifacts(
         "m", iterative=True, precond_on=True, emit_ift=False, emit_pift=False, has_predictor=False
     ) == ["m_residual.pt2", "m_matvec.pt2", "m_precond_setup.pt2", "m_precond_apply.pt2"]
-    # An input derivative reuses A (jacobian) and keeps the direct IFT solve.
+    # An input derivative reuses A (jacobian); a DIRECT input-sensitivity solver
+    # keeps the baked IFT solve.
     assert _predict_implicit_artifacts(
         "m", iterative=True, precond_on=False, emit_ift=True, emit_pift=False, has_predictor=False
     ) == [
@@ -223,6 +224,24 @@ def test_predict_implicit_artifacts_krylov():
         "m_matvec.pt2",
         "m_jacobian_given.pt2",
         "m_solve_ift.pt2",
+    ]
+    # An ITERATIVE input/param sensitivity solver omits its solve_ift / solve_param
+    # graph (the C++ Krylov-solves over the assembled A); the operators stay.
+    assert _predict_implicit_artifacts(
+        "m",
+        iterative=False,
+        precond_on=False,
+        emit_ift=True,
+        emit_pift=True,
+        has_predictor=False,
+        input_sensitivity_iterative=True,
+        param_sensitivity_iterative=True,
+    ) == [
+        "m_residual.pt2",
+        "m_jacobian.pt2",
+        "m_solve.pt2",
+        "m_jacobian_given.pt2",
+        "m_dr_dparam.pt2",
     ]
 
 

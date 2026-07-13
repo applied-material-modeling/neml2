@@ -42,6 +42,7 @@
 #include "neml2/csrc/aoti/Exception.h"
 #include "neml2/csrc/aoti/Model.h"
 #include "neml2/csrc/aoti/assertions.h"
+#include "neml2/csrc/aoti/krylov.h"
 #include "neml2/csrc/aoti/newton.h"
 #include "neml2/csrc/aoti/nonlinear_system_eager.h"
 
@@ -450,5 +451,51 @@ matrix-free ``J.v`` (the eager ``RHS`` / ``Matvec`` modules). ``precond_setup_fn
 -> state`` and ``precond_apply_fn(state, r_flat) -> z_flat`` are the authored
 preconditioner's setup/apply modules (pass ``None`` for both when unpreconditioned).
 Returns ``(u_solved, converged, iterations, log)``.
+)");
+
+  // Bare matrix-free LINEAR solve: run the shared Krylov loop over a Python
+  // matvec callback with an identity preconditioner (no outer Newton, no
+  // preconditioner). Used by the eager iterative ``.solve(A, b)`` for the
+  // derivative (IFT / ParamIFT) solves, where the residual Jacobian is already
+  // assembled so ``matvec(v) = A @ v``.
+  m.def(
+      "krylov_solve_linear",
+      [](py::object matvec_fn,
+         at::Tensor b,
+         const std::string & method,
+         int64_t restart,
+         int64_t max_its,
+         double abs_tol,
+         double rel_tol)
+      {
+        neml2::aoti::KrylovConfig kcfg;
+        neml2::aoti::_assert(neml2::aoti::parse_krylov_method(method, kcfg.method),
+                             "krylov_solve_linear: unknown method '",
+                             method,
+                             "' (expected gmres | bicgstab)");
+        kcfg.restart = restart;
+        kcfg.max_its = max_its;
+        kcfg.abs_tol = abs_tol;
+        kcfg.rel_tol = rel_tol;
+
+        const neml2::aoti::MatvecFn matvec = [&matvec_fn](const at::Tensor & v) -> at::Tensor
+        { return matvec_fn(v).cast<at::Tensor>(); };
+        const neml2::aoti::PrecondFn identity = [](const at::Tensor & r) -> at::Tensor
+        { return r; };
+        return neml2::aoti::krylov_solve(matvec, identity, b, kcfg).du;
+      },
+      py::arg("matvec_fn"),
+      py::arg("b"),
+      py::arg("method") = "gmres",
+      py::arg("restart") = 40,
+      py::arg("max_its") = 1000,
+      py::arg("abs_tol") = 0.0,
+      py::arg("rel_tol") = 1.0e-4,
+      R"(
+Solve ``A x = b`` with the shared C++ Krylov loop (GMRES / BiCGStab) over a Python
+``matvec_fn(v) -> A @ v`` callback and an identity preconditioner -- a bare linear
+solve, no outer Newton. ``b`` is a flat ``(Bflat, N)`` batch (solve the columns of a
+matrix RHS separately). Used by the eager iterative ``.solve(A, b)`` for the
+derivative (IFT / ParamIFT) solves, where the assembled Jacobian is on hand.
 )");
 }

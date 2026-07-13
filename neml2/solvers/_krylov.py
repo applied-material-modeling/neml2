@@ -109,3 +109,28 @@ class _KrylovSolver:
             "cache_strategy": self.cache_strategy,
             "cache_max_its": self.cache_max_its,
         }
+
+    def linear_solve_config(self) -> dict:
+        """Config for a bare one-shot linear Krylov solve (``.solve`` / the
+        C++ ``krylov_solve_dense`` sensitivity path): the cache strategy does
+        not apply (no Newton loop to amortize over)."""
+        return {
+            "method": self.method,
+            "restart": self.restart,
+            "max_its": self.max_its,
+            "abs_tol": self.abs_tol,
+            "rel_tol": self.rel_tol,
+        }
+
+    def solve(self, A, b):
+        """Solve ``A x = b`` over the assembled operator ``A`` with the shared
+        matrix-free Krylov loop (``matvec = A.v``), mirroring ``DenseLU.solve``'s
+        typed surface (``AssembledVector`` -> ``AssembledVector``,
+        ``AssembledMatrix`` -> ``AssembledMatrix``). Unlike the forward Newton
+        step (which never assembles ``A``), the derivative (IFT) solves have the
+        Jacobian on hand, so this is a bare linear solve over the dense operator.
+        Requires a single dense group (v1).
+        """
+        from neml2.es.implicit import krylov_solve_assembled  # noqa: PLC0415
+
+        return krylov_solve_assembled(A, b, **self.linear_solve_config())

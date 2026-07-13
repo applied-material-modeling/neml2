@@ -89,7 +89,7 @@ import torch
 from torch import nn
 
 from neml2.models.chain_rule import ChainRuleDict
-from neml2.types import TensorWrapper
+from neml2.types import Tensor, TensorWrapper
 
 from ._helpers import _flatten_base, build_identity_seed
 from .assembled import (
@@ -306,6 +306,108 @@ def _matrix_to_per_block_raws(mat: AssembledMatrix) -> tuple[torch.Tensor, ...]:
         mat.tensors[i][j].data  # data-ok AOTI
         for i in range(mat.row_layout.ngroup)
         for j in range(mat.col_layout.ngroup)
+    )
+
+
+def krylov_solve_raw(
+    A_raw: torch.Tensor,
+    b_raw: torch.Tensor,
+    *,
+    method: str,
+    restart: int,
+    max_its: int,
+    abs_tol: float,
+    rel_tol: float,
+) -> torch.Tensor:
+    """Solve ``A x = b`` over an ALREADY-ASSEMBLED dense operator ``A`` via the
+    shared C++ matrix-free Krylov loop (``matvec(v) = A @ v``, identity
+    preconditioner) -- the Python mirror of ``krylov.h::krylov_solve_dense`` used
+    by the eager derivative solves. ``A_raw`` is ``(*batch, N, N)``; ``b_raw`` is
+    ``(*batch, N)`` (vector) or ``(*batch, N, M)`` (matrix); the return matches
+    ``b_raw``. Leading batch dims are flattened for the loop; a matrix RHS is
+    solved column by column. Raw-tensor in/out: this IS the krylov-binding
+    framework boundary (callers pass tensors already unwrapped at an AOTI /
+    autograd.Function boundary).
+    """
+    from neml2.aoti._aoti import krylov_solve_linear  # noqa: PLC0415
+
+    n = A_raw.shape[-1]
+    a_flat = A_raw.reshape(-1, n, n)
+
+    def matvec(v: torch.Tensor) -> torch.Tensor:  # (Bflat, N) -> (Bflat, N)
+        return torch.matmul(a_flat, v.unsqueeze(-1)).squeeze(-1)
+
+    def _one(rhs_flat: torch.Tensor) -> torch.Tensor:  # (Bflat, N) -> (Bflat, N)
+        return krylov_solve_linear(
+            matvec,
+            rhs_flat,
+            method=method,
+            restart=restart,
+            max_its=max_its,
+            abs_tol=abs_tol,
+            rel_tol=rel_tol,
+        )
+
+    if b_raw.dim() == A_raw.dim() - 1:  # vector RHS (*batch, N)
+        return _one(b_raw.reshape(-1, n)).reshape(b_raw.shape)
+    # Matrix RHS (*batch, N, M): solve each column, reassemble.
+    m = b_raw.shape[-1]
+    b_flat = b_raw.reshape(-1, n, m)
+    cols = [_one(b_flat[..., j].contiguous()) for j in range(m)]
+    return torch.stack(cols, dim=-1).reshape(b_raw.shape)
+
+
+def krylov_solve_assembled(
+    A: AssembledMatrix,
+    b: AssembledVector | AssembledMatrix,
+    *,
+    method: str,
+    restart: int,
+    max_its: int,
+    abs_tol: float,
+    rel_tol: float,
+) -> AssembledVector | AssembledMatrix:
+    """Typed ``A x = b`` over the assembled single-dense-group operator via
+    :func:`krylov_solve_raw`, returning a typed ``AssembledVector`` /
+    ``AssembledMatrix`` matching ``b`` (the same surface as ``DenseLU.solve``).
+    Used by the eager iterative linear solvers' ``.solve`` for the input-IFT.
+    The ``.data`` extract / rewrap is the krylov-binding framework boundary.
+    """
+    if A.row_layout.ngroup != 1 or A.col_layout.ngroup != 1:
+        raise ValueError(
+            "iterative linear solve requires a single dense group "
+            f"(A has {A.row_layout.ngroup}x{A.col_layout.ngroup} groups)"
+        )
+    a_raw = A.tensors[0][0].data  # data-ok krylov boundary
+
+    def _solve(rhs_raw: torch.Tensor) -> torch.Tensor:
+        return krylov_solve_raw(
+            a_raw,
+            rhs_raw,
+            method=method,
+            restart=restart,
+            max_its=max_its,
+            abs_tol=abs_tol,
+            rel_tol=rel_tol,
+        )
+
+    if isinstance(b, AssembledVector):
+        if b.layout.ngroup != 1:
+            raise ValueError("iterative linear solve requires a single-group vector RHS")
+        b_t = b.tensors[0]
+        x = _solve(b_t.data)  # data-ok krylov boundary
+        return AssembledVector(
+            A.col_layout,
+            [Tensor(x, batch_ndim=b_t.batch_ndim, sub_batch_ndim=b_t.sub_batch_ndim)],
+        )
+    if b.row_layout.ngroup != 1 or b.col_layout.ngroup != 1:
+        raise ValueError("iterative linear solve requires a single-group matrix RHS")
+    b_t = b.tensors[0][0]
+    x = _solve(b_t.data)  # data-ok krylov boundary
+    return AssembledMatrix(
+        A.col_layout,
+        b.col_layout,
+        [[Tensor(x, batch_ndim=b_t.batch_ndim, sub_batch_ndim=b_t.sub_batch_ndim)]],
     )
 
 
