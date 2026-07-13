@@ -363,10 +363,10 @@ per group. Returns ``(u_solved, converged, iterations)``.
       "krylov_solve_eager",
       [](py::object residual_fn,
          py::object matvec_fn,
-         py::object jacobian_fn,
+         py::object precond_setup_fn,
+         py::object precond_apply_fn,
          std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
          std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
-         std::vector<int64_t> block_sizes,
          std::vector<at::Tensor> u0,
          double atol,
          double rtol,
@@ -381,7 +381,6 @@ per group. Returns ``(u_solved, converged, iterations)``.
          int64_t max_its,
          double abs_tol,
          double rel_tol,
-         const std::string & preconditioner,
          const std::string & cache_strategy,
          int64_t cache_max_its)
       {
@@ -400,10 +399,6 @@ per group. Returns ``(u_solved, converged, iterations)``.
                              "krylov_solve_eager: unknown method '",
                              method,
                              "' (expected gmres | bicgstab)");
-        neml2::aoti::_assert(neml2::aoti::parse_precond_kind(preconditioner, kcfg.precond),
-                             "krylov_solve_eager: unknown preconditioner '",
-                             preconditioner,
-                             "' (expected none | jacobi | block_jacobi | full)");
         neml2::aoti::_assert(neml2::aoti::parse_cache_strategy(cache_strategy, kcfg.cache),
                              "krylov_solve_eager: unknown cache_strategy '",
                              cache_strategy,
@@ -418,18 +413,18 @@ per group. Returns ``(u_solved, converged, iterations)``.
                                              kcfg,
                                              std::move(residual_fn),
                                              std::move(matvec_fn),
-                                             std::move(jacobian_fn),
+                                             std::move(precond_setup_fn),
+                                             std::move(precond_apply_fn),
                                              std::move(unknown_layout),
                                              std::move(residual_layout),
-                                             std::move(block_sizes),
                                              std::move(u0));
       },
       py::arg("residual_fn"),
       py::arg("matvec_fn"),
-      py::arg("jacobian_fn"),
+      py::arg("precond_setup_fn"),
+      py::arg("precond_apply_fn"),
       py::arg("unknown_layout"),
       py::arg("residual_layout"),
-      py::arg("block_sizes"),
       py::arg("u0"),
       py::arg("atol"),
       py::arg("rtol"),
@@ -444,7 +439,6 @@ per group. Returns ``(u_solved, converged, iterations)``.
       py::arg("max_its") = 1000,
       py::arg("abs_tol") = 0.0,
       py::arg("rel_tol") = 1.0e-4,
-      py::arg("preconditioner") = "none",
       py::arg("cache_strategy") = "none",
       py::arg("cache_max_its") = 10,
       R"(
@@ -452,10 +446,9 @@ Run the shared C++ Newton solver over an eager system whose inner linear solve i
 a matrix-free Krylov iteration (GMRES / BiCGStab) rather than a direct solve.
 
 ``residual_fn(u) -> b`` and ``matvec_fn(u, v) -> Jv`` supply the residual and the
-matrix-free ``J.v`` (the eager ``RHS`` / ``Matvec`` modules). ``jacobian_fn(u) ->
-Tensor`` returns the dense operator ``(*B, N, N)`` for the preconditioner (pass a
-callable only when ``preconditioner != "none"``). ``block_sizes`` are the
-per-variable widths of the single dense unknown group (BlockJacobi). Returns
-``(u_solved, converged, iterations, log)``.
+matrix-free ``J.v`` (the eager ``RHS`` / ``Matvec`` modules). ``precond_setup_fn(u)
+-> state`` and ``precond_apply_fn(state, r_flat) -> z_flat`` are the authored
+preconditioner's setup/apply modules (pass ``None`` for both when unpreconditioned).
+Returns ``(u_solved, converged, iterations, log)``.
 )");
 }

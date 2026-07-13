@@ -400,6 +400,115 @@ class Matvec(_SystemModule):
         return _vector_to_per_group_raws(Jv)
 
 
+class _PrecondSetup(_SystemModule):
+    """Base for a preconditioner's compiled *setup* graph: assemble the single
+    dense unknown group's Jacobian ``A = ∂r/∂u`` as one ``(Bflat, N, N)`` block.
+
+    v1 targets a single dense unknown group. Concrete setups (Full / Jacobi /
+    BlockJacobi) factor / select from ``A`` and return the preconditioner *state*
+    (raw graph outputs) that the matching apply consumes. (A future targeted
+    seed-side assembly -- computing only the blocks a preconditioner needs so
+    dead-code elimination prunes the rest -- keeps this same setup->state
+    interface.)
+    """
+
+    def _dense_a(self, args: tuple[torch.Tensor, ...]) -> torch.Tensor:
+        if len(self.unknown_groups) != 1:
+            raise ValueError(
+                "preconditioned Krylov currently requires a single dense unknown "
+                "group (v1); use preconditioner=none for multi-group systems."
+            )
+        state = self._state_from_per_group_args(args)
+        output_state, v_out = self._call_model_from_state(state, self.unknown_names)
+        A = self._assembled_matrix(self.ulayout, v_out, output_state)
+        a = _matrix_to_per_block_raws(A)[0]  # single group -> (*B, N, N)
+        n = a.shape[-1]
+        return a.reshape(-1, n, n)  # (Bflat, N, N)
+
+
+class FullPrecondSetup(_PrecondSetup):
+    """Full preconditioner setup: ``(*u,*g,*params) -> (LU, pivots)`` = the LU
+    factorization of the assembled Jacobian (M = A, so M^-1 is the exact solve)."""
+
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        A = self._dense_a(args)
+        LU, piv = torch.linalg.lu_factor(A)
+        return LU, piv
+
+
+class JacobiPrecondSetup(_PrecondSetup):
+    """Jacobi preconditioner setup: ``(*u,*g,*params) -> (1/diag(A),)`` with a
+    sign-preserving floor so a ~0 pivot cannot produce an inf apply."""
+
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        A = self._dense_a(args)
+        diag = torch.diagonal(A, dim1=-2, dim2=-1)  # (Bflat, N)
+        eps = torch.finfo(diag.dtype).eps
+        sign = torch.where(diag.sign() == 0, torch.ones_like(diag), diag.sign())
+        safe = torch.where(diag.abs() < eps, sign * eps, diag)
+        return (1.0 / safe,)
+
+
+class BlockJacobiPrecondSetup(_PrecondSetup):
+    """Block-Jacobi preconditioner setup: ``(*u,*g,*params) -> (*inv_blocks)`` =
+    the inverse of each per-variable on-diagonal block of ``A`` (one tensor per
+    unknown variable, in ``unknown_names`` order)."""
+
+    def __init__(
+        self,
+        system: ModelNonlinearSystem,
+        block_sizes: tuple[int, ...],
+        param_names: tuple[str, ...] = (),
+    ) -> None:
+        super().__init__(system, param_names)
+        self._block_sizes = tuple(int(s) for s in block_sizes)
+
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        A = self._dense_a(args)  # (Bflat, N, N)
+        invs: list[torch.Tensor] = []
+        o = 0
+        for s in self._block_sizes:
+            invs.append(torch.linalg.inv(A[:, o : o + s, o : o + s]))
+            o += s
+        return tuple(invs)
+
+
+class FullPrecondApply(nn.Module):
+    """``(LU, pivots, r_flat) -> z_flat`` = ``A^-1 r`` via the cached LU."""
+
+    def forward(self, LU: torch.Tensor, piv: torch.Tensor, r_flat: torch.Tensor) -> torch.Tensor:
+        return torch.linalg.lu_solve(LU, piv, r_flat.unsqueeze(-1)).squeeze(-1)
+
+
+class JacobiPrecondApply(nn.Module):
+    """``(diag_recip, r_flat) -> z_flat`` = elementwise ``r / diag(A)``."""
+
+    def forward(self, diag_recip: torch.Tensor, r_flat: torch.Tensor) -> torch.Tensor:
+        return r_flat * diag_recip
+
+
+class BlockJacobiPrecondApply(nn.Module):
+    """``(*inv_blocks, r_flat) -> z_flat`` = block-diagonal apply of the per-variable
+    inverses to the matching slices of the flat residual."""
+
+    def __init__(self, block_sizes: tuple[int, ...]) -> None:
+        super().__init__()
+        self._block_sizes = tuple(int(s) for s in block_sizes)
+
+    def forward(self, *args: torch.Tensor) -> torch.Tensor:
+        *invs, r_flat = args
+        pieces: list[torch.Tensor] = []
+        o = 0
+        for inv, s in zip(invs, self._block_sizes, strict=True):
+            # Batched block matvec inv @ r_block; explicit matmul (einsum is
+            # guard-blocked inside an active Model.forward -- the preconditioner
+            # apply runs during the ImplicitUpdate Newton solve).
+            piece = torch.matmul(inv, r_flat[:, o : o + s].unsqueeze(-1)).squeeze(-1)
+            pieces.append(piece)
+            o += s
+        return torch.cat(pieces, dim=-1)
+
+
 class LinearSolve(_SystemModule):
     """Exportable linear-solve graph: ``(*A_blocks, *b_groups) -> (*du_groups)``.
 

@@ -34,18 +34,18 @@ namespace neml2::aoti
 KrylovAOTINonlinearSystem::KrylovAOTINonlinearSystem(
     torch::inductor::AOTIModelPackageLoader & residual_loader,
     torch::inductor::AOTIModelPackageLoader & matvec_loader,
-    torch::inductor::AOTIModelPackageLoader * jacobian_loader,
+    torch::inductor::AOTIModelPackageLoader * precond_setup_loader,
+    torch::inductor::AOTIModelPackageLoader * precond_apply_loader,
     std::vector<GroupLayout> unknown_layout,
     std::vector<GroupLayout> residual_layout,
     std::vector<at::Tensor> g_groups,
     std::vector<at::Tensor> params,
-    KrylovConfig cfg,
-    std::vector<int64_t> block_sizes)
-  : KrylovNonlinearSystem(
-        std::move(unknown_layout), std::move(residual_layout), cfg, std::move(block_sizes)),
+    KrylovConfig cfg)
+  : KrylovNonlinearSystem(std::move(unknown_layout), std::move(residual_layout), cfg),
     _residual_loader(residual_loader),
     _matvec_loader(matvec_loader),
-    _jacobian_loader(jacobian_loader),
+    _precond_setup_loader(precond_setup_loader),
+    _precond_apply_loader(precond_apply_loader),
     _g(std::move(g_groups)),
     _params(std::move(params))
 {
@@ -83,18 +83,30 @@ KrylovAOTINonlinearSystem::matvec_raw(const std::vector<at::Tensor> & u,
   return _matvec_loader.run(inputs);
 }
 
-at::Tensor
-KrylovAOTINonlinearSystem::assemble_dense_A(const std::vector<at::Tensor> & u) const
+std::vector<at::Tensor>
+KrylovAOTINonlinearSystem::precond_setup_raw(const std::vector<at::Tensor> & u) const
 {
-  _assert(_jacobian_loader != nullptr,
-          "KrylovAOTINonlinearSystem: a preconditioner was configured but no "
-          "jacobian graph was compiled (recompile with the preconditioner).");
-  // The jacobian graph returns (*A_blocks, *b_groups); for the single dense group
-  // the first output is the full (*B, N, N) operator. Fold the dynamic batch.
-  const auto outs = _jacobian_loader->run(build_inputs(u));
-  _assert(!outs.empty(), "KrylovAOTINonlinearSystem: jacobian loader returned no tensors");
-  const auto & A = outs.front();
-  const auto N = A.size(-1);
-  return A.reshape({-1, N, N});
+  // The authored setup graph maps (*u, *g, *params) -> the preconditioner state
+  // tensors (e.g. an LU + pivots, per-variable inverses, a diagonal reciprocal).
+  _assert(_precond_setup_loader != nullptr,
+          "KrylovAOTINonlinearSystem: no preconditioner setup graph");
+  return _precond_setup_loader->run(build_inputs(u));
+}
+
+at::Tensor
+KrylovAOTINonlinearSystem::precond_apply_raw(const std::vector<at::Tensor> & state,
+                                             const at::Tensor & r_flat) const
+{
+  // The authored apply graph maps (*state, r_flat) -> z_flat = M^-1 r.
+  _assert(_precond_apply_loader != nullptr,
+          "KrylovAOTINonlinearSystem: no preconditioner apply graph");
+  std::vector<at::Tensor> inputs;
+  inputs.reserve(state.size() + 1);
+  for (const auto & s : state)
+    inputs.push_back(s);
+  inputs.push_back(r_flat.contiguous());
+  const auto outs = _precond_apply_loader->run(inputs);
+  _assert(outs.size() == 1, "KrylovAOTINonlinearSystem: precond apply must return one tensor");
+  return outs.front();
 }
 } // namespace neml2::aoti

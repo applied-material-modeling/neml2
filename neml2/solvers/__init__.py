@@ -42,6 +42,13 @@ from .dense_lu import DenseLU
 from .gmres import GMRES
 from .newton import Newton
 from .newton_linesearch import NewtonWithLineSearch
+from .preconditioners import (
+    BlockJacobiPreconditioner,
+    FullPreconditioner,
+    JacobiPreconditioner,
+    NoPreconditioner,
+    Preconditioner,
+)
 from .schur_complement import SchurComplement
 
 __all__ = [
@@ -50,6 +57,11 @@ __all__ = [
     "ConvergenceError",
     "DenseLU",
     "SchurComplement",
+    "Preconditioner",
+    "NoPreconditioner",
+    "JacobiPreconditioner",
+    "BlockJacobiPreconditioner",
+    "FullPreconditioner",
     "GMRES",
     "BiCGStab",
     "Newton",

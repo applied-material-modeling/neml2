@@ -127,11 +127,12 @@ check_solve(at::ScalarType dtype,
   return 0;
 }
 
-// Build the Preconditioner of the given kind from a dense A and check that (a)
-// its apply drives GMRES to the direct solution, and (b) for Full it makes GMRES
-// converge in a single iteration (M^-1 == A^-1). Returns 0 on success.
+// The preconditioner reaches krylov_solve as a PrecondFn functor (the authored
+// Python setup/apply graphs are wrapped into one at the NonlinearSystem layer).
+// Verify that path with the exact inverse M^-1 = A^-1: GMRES must converge in a
+// single iteration. Returns 0 on success.
 int
-check_precond(PrecondKind kind, const std::vector<int64_t> & blocks)
+check_precond_functor()
 {
   at::manual_seed(1234);
   const auto opts = at::TensorOptions().dtype(at::kDouble);
@@ -139,27 +140,21 @@ check_precond(PrecondKind kind, const std::vector<int64_t> & blocks)
   auto A = make_operator(Bsz, n, opts);
   auto b = at::randn({Bsz, n}, opts);
 
-  Preconditioner pc(kind, blocks);
-  NEML2_CHECK(pc.kind() != PrecondKind::None ? !pc.ready() : pc.ready());
-  pc.setup(A);
-  NEML2_CHECK(pc.ready());
-
   const auto matvec = [&A](const at::Tensor & v) { return apply_dense(A, v); };
-  const PrecondFn minv = [&pc](const at::Tensor & r) { return pc.apply(r); };
+  auto lu = at::linalg_lu_factor_ex(A, /*pivot=*/true, /*check_errors=*/false);
+  const auto LU = std::get<0>(lu);
+  const auto piv = std::get<1>(lu);
+  const PrecondFn exact = [&](const at::Tensor & r)
+  { return at::linalg_lu_solve(LU, piv, r.unsqueeze(-1)).squeeze(-1); };
 
   KrylovConfig cfg;
   cfg.restart = n;
   cfg.max_its = 8 * n;
   cfg.rel_tol = 1e-9;
-  auto res = krylov_solve(matvec, minv, b, cfg);
+  auto res = krylov_solve(matvec, exact, b, cfg);
   NEML2_CHECK(res.converged.all().item<bool>());
-
-  const double rr = rel_residual(A, res.du, b);
-  NEML2_CHECK(rr < 1e-8);
-
-  // A full-Jacobian preconditioner is exact -> GMRES converges in one iteration.
-  if (kind == PrecondKind::Full)
-    NEML2_CHECK(res.max_iters <= 1);
+  NEML2_CHECK(rel_residual(A, res.du, b) < 1e-8);
+  NEML2_CHECK(res.max_iters <= 1); // exact preconditioner -> one iteration
   return 0;
 }
 
@@ -213,11 +208,8 @@ main()
     NEML2_CHECK(check_solve(at::kDouble, KrylovMethod::BiCGStab, jacobi, 1e-8, 1e-6) == 0);
   }
 
-  // The Preconditioner class (setup from a dense A + cached apply), each kind.
-  NEML2_CHECK(check_precond(PrecondKind::None, {}) == 0);
-  NEML2_CHECK(check_precond(PrecondKind::Jacobi, {}) == 0);
-  NEML2_CHECK(check_precond(PrecondKind::BlockJacobi, {5, 5, 5, 5}) == 0);
-  NEML2_CHECK(check_precond(PrecondKind::Full, {}) == 0);
+  // The preconditioner functor path (exact inverse -> 1 iteration).
+  NEML2_CHECK(check_precond_functor() == 0);
 
   // Cross-group flatten/unflatten roundtrip + BLOCK rejection.
   NEML2_CHECK(check_flatten() == 0);

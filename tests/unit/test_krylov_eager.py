@@ -40,7 +40,16 @@ import torch
 
 from neml2.es import ModelNonlinearSystem, SparseVector
 from neml2.models.model import Model
-from neml2.solvers import GMRES, BiCGStab, DenseLU, Newton, RetCode
+from neml2.solvers import (
+    GMRES,
+    BiCGStab,
+    BlockJacobiPreconditioner,
+    DenseLU,
+    FullPreconditioner,
+    JacobiPreconditioner,
+    Newton,
+    RetCode,
+)
 from neml2.types import Scalar
 from neml2.types import allclose as _allclose
 
@@ -140,18 +149,18 @@ def test_gmres_bicgstab_match_dense_lu_scalar():
 # GMRES/BiCGStab x preconditioner x cache-strategy, all must hit the DenseLU root.
 _CONFIGS = [
     GMRES(),
-    GMRES(preconditioner="jacobi"),
-    GMRES(preconditioner="block_jacobi", cache_strategy="chord"),
-    GMRES(preconditioner="full", cache_strategy="chord"),
-    GMRES(preconditioner="full", cache_strategy="max_its", cache_max_its=2),
+    GMRES(preconditioner=JacobiPreconditioner()),
+    GMRES(preconditioner=BlockJacobiPreconditioner(), cache_strategy="chord"),
+    GMRES(preconditioner=FullPreconditioner(), cache_strategy="chord"),
+    GMRES(preconditioner=FullPreconditioner(), cache_strategy="max_its", cache_max_its=2),
     GMRES(restart=1),  # forces multiple restarts on the 2-D system
     BiCGStab(),
-    BiCGStab(preconditioner="block_jacobi", cache_strategy="chord"),
+    BiCGStab(preconditioner=BlockJacobiPreconditioner(), cache_strategy="chord"),
 ]
 
 
 def _config_id(s) -> str:
-    return f"{type(s).__name__}-{s.preconditioner}-{s.cache_strategy}"
+    return f"{type(s).__name__}-{s.preconditioner.kind}-{s.cache_strategy}"
 
 
 @pytest.mark.parametrize("solver", _CONFIGS, ids=_config_id)

@@ -200,18 +200,20 @@ def test_predict_implicit_artifacts_emit_order():
 
 
 def test_predict_implicit_artifacts_krylov():
-    """A matrix-free Krylov solve emits matvec instead of solve, and jacobian only
-    when a preconditioner (or input derivative) needs the assembled A."""
+    """A matrix-free Krylov solve emits matvec instead of solve; a preconditioner
+    adds its authored precond_setup/precond_apply graphs (not the standalone
+    jacobian A -- the setup assembles what it needs itself); an input derivative
+    still needs the assembled A (jacobian) for the direct IFT solve."""
     from neml2.cli.aoti_export import _predict_implicit_artifacts
 
     # Pure matrix-free (no preconditioner, no derivatives): residual + matvec only.
     assert _predict_implicit_artifacts(
         "m", iterative=True, precond_on=False, emit_ift=False, emit_pift=False, has_predictor=False
     ) == ["m_residual.pt2", "m_matvec.pt2"]
-    # A preconditioner needs the assembled A -> jacobian is emitted too.
+    # A preconditioner authors its own setup/apply graphs (no standalone jacobian).
     assert _predict_implicit_artifacts(
         "m", iterative=True, precond_on=True, emit_ift=False, emit_pift=False, has_predictor=False
-    ) == ["m_residual.pt2", "m_jacobian.pt2", "m_matvec.pt2"]
+    ) == ["m_residual.pt2", "m_matvec.pt2", "m_precond_setup.pt2", "m_precond_apply.pt2"]
     # An input derivative reuses A (jacobian) and keeps the direct IFT solve.
     assert _predict_implicit_artifacts(
         "m", iterative=True, precond_on=False, emit_ift=True, emit_pift=False, has_predictor=False

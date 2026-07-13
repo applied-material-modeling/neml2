@@ -62,19 +62,6 @@ def _group_layout_descriptor(layout: AxisLayout) -> list[tuple[str, list[int]]]:
     ]
 
 
-def _unknown_block_sizes(layout: AxisLayout) -> list[int]:
-    """Per-variable storage widths of the unknown group(s) -- the BlockJacobi
-    preconditioner's diagonal block sizes (summing to the flat unknown count).
-    """
-    from neml2.es.assembled import AssembledMatrix  # noqa: PLC0415
-
-    return [
-        AssembledMatrix._var_storage(layout, gi, name, layout.structure[gi])
-        for gi in range(layout.ngroup)
-        for name in layout.groups[gi]
-    ]
-
-
 @register_neml2_object("Newton")
 class Newton:
     """The standard Newton-Raphson solver which always takes the 'full' Newton step."""
@@ -245,31 +232,24 @@ class Newton:
         C++ loop, convergence test, line search); only the inner linear solve
         differs. Instead of the ``Jacobian`` -> ``LinearSolve`` chain, each step
         runs a Krylov iteration (``krylov_solve_eager``) over the ``Matvec``
-        (``J.v``) callback -- never assembling ``A`` unless a preconditioner needs
-        it (then via the ``Jacobian`` callback). This runs the *same* C++
-        ``krylov_solve`` the AOTI runtime uses, so eager and compiled cannot
-        diverge.
+        (``J.v``) callback -- never assembling ``A`` unless the preconditioner's
+        authored setup needs it. This runs the *same* C++ ``krylov_solve`` the
+        AOTI runtime uses, so eager and compiled cannot diverge.
         """
         from neml2.aoti._aoti import krylov_solve_eager  # noqa: PLC0415
-        from neml2.es.implicit import (  # noqa: PLC0415
-            RHS,
-            Jacobian,
-            Matvec,
-            _vector_to_per_group_raws,
-        )
+        from neml2.es.implicit import RHS, Matvec, _vector_to_per_group_raws  # noqa: PLC0415
 
         # Reached only when the linear solver is iterative (GMRES / BiCGStab);
         # narrow the DenseLU|SchurComplement|... union so the config access types.
         ls = cast("GMRES | BiCGStab", self.linear_solver)
         kcfg = ls.krylov_config()
-        needs_precond = kcfg["preconditioner"] != "none"
 
         rhs = RHS(system)
         matvec = Matvec(system)
-        jac = Jacobian(system) if needs_precond else None
-        block_sizes = (
-            _unknown_block_sizes(system.ulayout) if kcfg["preconditioner"] == "block_jacobi" else []
-        )
+        # The preconditioner authors a setup + apply module (both None for the
+        # no-preconditioner case); run them live as eager callbacks.
+        pc_setup = ls.preconditioner.setup_module(system)
+        pc_apply = ls.preconditioner.apply_module(system)
 
         # Fixed-point solve: gradients flow through the converged state via the
         # IFT (see ImplicitUpdate), never the iterations, so this runs detached.
@@ -285,18 +265,26 @@ class Newton:
             ) -> list[torch.Tensor]:
                 return list(matvec(*u_raws, *g_raws, *v_raws))
 
-            def jacobian_fn(u_raws: list[torch.Tensor]) -> torch.Tensor:
-                # The single dense A block (*B, N, N) = Jacobian's first output.
-                assert jac is not None
-                return jac(*u_raws, *g_raws)[0]
+            # Defined unconditionally (closing over the possibly-None modules) but
+            # passed only when a preconditioner is present -- else None reaches the
+            # binding and the C++ applies identity. The asserts hold whenever these
+            # are actually invoked (has_precond => both modules are non-None).
+            def precond_setup_fn(u_raws: list[torch.Tensor]) -> list[torch.Tensor]:
+                assert pc_setup is not None
+                return list(pc_setup(*u_raws, *g_raws))
 
+            def precond_apply_fn(state: list[torch.Tensor], r_flat: torch.Tensor) -> torch.Tensor:
+                assert pc_apply is not None
+                return pc_apply(*state, r_flat)
+
+            has_precond = pc_setup is not None
             u_star, converged, iterations, log = krylov_solve_eager(
                 residual_fn=residual_fn,
                 matvec_fn=matvec_fn,
-                jacobian_fn=jacobian_fn if needs_precond else None,
+                precond_setup_fn=precond_setup_fn if has_precond else None,
+                precond_apply_fn=precond_apply_fn if has_precond else None,
                 unknown_layout=_group_layout_descriptor(system.ulayout),
                 residual_layout=_group_layout_descriptor(system.blayout),
-                block_sizes=block_sizes,
                 u0=u0_raws,
                 collect_log=self.verbose,
                 **self._solver_config(),

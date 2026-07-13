@@ -207,27 +207,17 @@ Model::Impl::_make_implicit_system(const Segment & seg,
     _assert(seg.matvec_loader != nullptr,
             "aoti::Model: solver_kind is 'krylov' but the segment has no matvec "
             "graph. Regenerate the artifact via `neml2-compile`.");
-    // Per-variable storage widths of the unknowns (the BlockJacobi block sizes);
-    // dense storage folds any sub-batch into the base, matching the Python
-    // AssembledMatrix._var_storage the eager path uses.
-    std::vector<int64_t> block_sizes;
-    block_sizes.reserve(seg.unknowns.size());
-    for (const auto & v : seg.unknowns)
-    {
-      int64_t storage = v.var_size;
-      for (auto s : v.sub_batch_shape)
-        storage *= s;
-      block_sizes.push_back(storage);
-    }
+    // The preconditioner (if any) is a pair of authored setup/apply graphs; both
+    // null => unpreconditioned. The C++ just drives them.
     return std::make_unique<KrylovAOTINonlinearSystem>(*seg.residual_loader,
                                                        *seg.matvec_loader,
-                                                       seg.jacobian_loader.get(),
+                                                       seg.precond_setup_loader.get(),
+                                                       seg.precond_apply_loader.get(),
                                                        std::move(u_layouts),
                                                        std::move(r_layouts),
                                                        g_groups,
                                                        std::move(params),
-                                                       _krylov_config,
-                                                       std::move(block_sizes));
+                                                       _krylov_config);
   }
   return std::make_unique<AOTINonlinearSystem>(*seg.residual_loader,
                                                *seg.jacobian_loader,

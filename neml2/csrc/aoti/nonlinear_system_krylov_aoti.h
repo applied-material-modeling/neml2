@@ -50,25 +50,27 @@ class KrylovAOTINonlinearSystem : public KrylovNonlinearSystem
 {
 public:
   /// `residual_loader` / `matvec_loader` must outlive this system (owned by the
-  /// segment). `jacobian_loader` may be null (no preconditioner). `g_groups` are
-  /// the per-group givens; `params` the promoted-parameter tail in graph-call
-  /// order; `block_sizes` the per-variable widths of the (single dense) unknown
-  /// group for BlockJacobi.
+  /// segment). `precond_setup_loader` / `precond_apply_loader` are the authored
+  /// preconditioner graphs (both null iff no preconditioner). `g_groups` are the
+  /// per-group givens; `params` the promoted-parameter tail in graph-call order.
   KrylovAOTINonlinearSystem(torch::inductor::AOTIModelPackageLoader & residual_loader,
                             torch::inductor::AOTIModelPackageLoader & matvec_loader,
-                            torch::inductor::AOTIModelPackageLoader * jacobian_loader,
+                            torch::inductor::AOTIModelPackageLoader * precond_setup_loader,
+                            torch::inductor::AOTIModelPackageLoader * precond_apply_loader,
                             std::vector<GroupLayout> unknown_layout,
                             std::vector<GroupLayout> residual_layout,
                             std::vector<at::Tensor> g_groups,
                             std::vector<at::Tensor> params,
-                            KrylovConfig cfg,
-                            std::vector<int64_t> block_sizes);
+                            KrylovConfig cfg);
 
 protected:
   std::vector<at::Tensor> residual_raw(const std::vector<at::Tensor> & u) const override;
   std::vector<at::Tensor> matvec_raw(const std::vector<at::Tensor> & u,
                                      const std::vector<at::Tensor> & v) const override;
-  at::Tensor assemble_dense_A(const std::vector<at::Tensor> & u) const override;
+  bool has_preconditioner() const override { return _precond_setup_loader != nullptr; }
+  std::vector<at::Tensor> precond_setup_raw(const std::vector<at::Tensor> & u) const override;
+  at::Tensor precond_apply_raw(const std::vector<at::Tensor> & state,
+                               const at::Tensor & r_flat) const override;
 
 private:
   /// Loader-call input list: `(*u_groups, *g_groups, *params)`.
@@ -76,7 +78,8 @@ private:
 
   torch::inductor::AOTIModelPackageLoader & _residual_loader;
   torch::inductor::AOTIModelPackageLoader & _matvec_loader;
-  torch::inductor::AOTIModelPackageLoader * _jacobian_loader;
+  torch::inductor::AOTIModelPackageLoader * _precond_setup_loader;
+  torch::inductor::AOTIModelPackageLoader * _precond_apply_loader;
   std::vector<at::Tensor> _g;
   std::vector<at::Tensor> _params;
 };

@@ -40,7 +40,11 @@ are strings validated here to mirror the C++ ``parse_*`` in ``krylov.h``.
 
 from __future__ import annotations
 
-_PRECONDITIONERS = ("none", "jacobi", "block_jacobi", "full")
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .preconditioners import Preconditioner
+
 _CACHE_STRATEGIES = ("none", "chord", "max_its")
 
 
@@ -55,7 +59,10 @@ class _KrylovSolver:
 
     Concrete subclasses set :attr:`method` and provide the ``hit`` schema +
     ``from_hit``; this base provides the constructor, validation, and the config
-    dict consumed by both the eager binding and the AOTI metadata.
+    dict consumed by both the eager binding and the AOTI metadata. The
+    ``preconditioner`` is a manufacturable :class:`~neml2.solvers.preconditioners.Preconditioner`
+    object (a factory dependency), not a string -- it authors the setup/apply
+    graphs the Krylov runtime drives.
     """
 
     SECTION = "Solvers"
@@ -72,23 +79,26 @@ class _KrylovSolver:
         max_its: int = 1000,
         abs_tol: float = 0.0,
         rel_tol: float = 1.0e-4,
-        preconditioner: str = "none",
+        preconditioner: Preconditioner | None = None,
         cache_strategy: str = "none",
         cache_max_its: int = 10,
     ) -> None:
+        from .preconditioners import NoPreconditioner  # noqa: PLC0415
+
         self.restart = int(restart)
         self.max_its = int(max_its)
         self.abs_tol = float(abs_tol)
         self.rel_tol = float(rel_tol)
-        self.preconditioner = _validate_choice(preconditioner, _PRECONDITIONERS, "preconditioner")
+        #: The preconditioner object (authors the setup/apply modules). Default =
+        #: no preconditioner.
+        self.preconditioner: Preconditioner = preconditioner or NoPreconditioner()
         self.cache_strategy = _validate_choice(cache_strategy, _CACHE_STRATEGIES, "cache_strategy")
         self.cache_max_its = int(cache_max_its)
 
     def krylov_config(self) -> dict:
-        """Config forwarded to ``krylov_solve_eager`` and written to AOTI metadata.
-
-        Keys match the ``krylov_solve_eager`` pybind kwargs and the C++
-        ``KrylovConfig`` fields.
+        """Config forwarded to ``krylov_solve_eager`` (kwargs) and the C++
+        ``KrylovConfig``. The preconditioner is NOT here -- it is supplied
+        separately as authored setup/apply modules/callbacks.
         """
         return {
             "method": self.method,
@@ -96,7 +106,6 @@ class _KrylovSolver:
             "max_its": self.max_its,
             "abs_tol": self.abs_tol,
             "rel_tol": self.rel_tol,
-            "preconditioner": self.preconditioner,
             "cache_strategy": self.cache_strategy,
             "cache_max_its": self.cache_max_its,
         }

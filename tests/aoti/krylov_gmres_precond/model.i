@@ -1,9 +1,10 @@
 # krylov_gmres_precond: same DENSE implicit return as krylov_gmres, but the GMRES
 # solver uses a Block-Jacobi preconditioner with the chord cache strategy. This
-# exercises the compiled PRECONDITIONED Krylov path -- the artifact carries the
-# jacobian graph too (the C++ builds the preconditioner from the assembled A and
-# caches its factor across Newton iterations). Auto-discovered by test_aoti.py for
-# py-eager == py-aoti/cpp-aoti parity.
+# exercises the compiled PRECONDITIONED Krylov path -- the preconditioner is an
+# authored [Solvers] object (BlockJacobiPreconditioner) referenced by GMRES, so
+# the artifact carries the precond_setup / precond_apply graphs (the C++ holds the
+# returned state and caches it across Newton iterations per the chord strategy).
+# Auto-discovered by test_aoti.py for py-eager == py-aoti/cpp-aoti parity.
 
 [Models]
   [mandel_stress]
@@ -81,8 +82,11 @@
   []
   [gmres]
     type = GMRES
-    preconditioner = 'block_jacobi'
+    preconditioner = 'bjac'
     cache_strategy = 'chord'
+  []
+  [bjac]
+    type = BlockJacobiPreconditioner
   []
 []
 

@@ -60,18 +60,8 @@ enum class KrylovMethod
   BiCGStab,
 };
 
-/// Which preconditioner `M^-1 ~= A^-1` to apply (built from the assembled `A`;
-/// consumed by the `NonlinearSystem` layer, not by the bare solvers here).
-enum class PrecondKind
-{
-  None,
-  Jacobi,
-  BlockJacobi,
-  Full,
-};
-
-/// How often the preconditioner setup (assemble + factor `A`) is rebuilt across
-/// the outer Newton iterations (consumed by the `NonlinearSystem` layer).
+/// How often the preconditioner setup is rebuilt across the outer Newton
+/// iterations (consumed by the `NonlinearSystem` layer).
 enum class CacheStrategy
 {
   None,           // rebuild every Newton step
@@ -80,11 +70,14 @@ enum class CacheStrategy
 };
 
 /// Iterative linear-solver tunables. `restart` is the GMRES(m) width; `max_its`
-/// is the total inner-iteration (matvec) budget shared by both methods.
+/// is the total inner-iteration (matvec) budget shared by both methods. The
+/// preconditioner itself is NOT named here -- it is a pair of authored
+/// setup/apply graphs (or eager callbacks) supplied by the `NonlinearSystem`
+/// layer; this struct only carries the cache policy that governs when its setup
+/// is rebuilt.
 struct KrylovConfig
 {
   KrylovMethod method = KrylovMethod::GMRES;
-  PrecondKind precond = PrecondKind::None;
   CacheStrategy cache = CacheStrategy::None;
   int64_t restart = 40;
   int64_t max_its = 1000;
@@ -103,22 +96,6 @@ parse_krylov_method(const std::string & s, KrylovMethod & out)
     out = KrylovMethod::GMRES;
   else if (s == "bicgstab")
     out = KrylovMethod::BiCGStab;
-  else
-    return false;
-  return true;
-}
-
-inline bool
-parse_precond_kind(const std::string & s, PrecondKind & out)
-{
-  if (s == "none")
-    out = PrecondKind::None;
-  else if (s == "jacobi")
-    out = PrecondKind::Jacobi;
-  else if (s == "block_jacobi")
-    out = PrecondKind::BlockJacobi;
-  else if (s == "full")
-    out = PrecondKind::Full;
   else
     return false;
   return true;
@@ -382,103 +359,4 @@ krylov_solve(const MatvecFn & matvec,
   return cfg.method == KrylovMethod::BiCGStab ? bicgstab(matvec, minv, b, cfg)
                                               : gmres(matvec, minv, b, cfg);
 }
-
-/// A left preconditioner `M^-1 ~= A^-1`, built from the assembled dense operator
-/// `A` (shape `(B, N, N)`) and applied to a flat `(B, N)` residual. Holds its
-/// factored/inverted state so the `NonlinearSystem` layer can cache it across
-/// Newton iterations (chord / quality-threshold strategies). A port of the
-/// spike's `make_preconditioners`, using the `_ex` linalg variants so a singular
-/// batch member yields an `info != 0` flag rather than throwing for the whole
-/// batch (the offending row's inexact step is then caught by the outer Newton's
-/// divergence check).
-class Preconditioner
-{
-public:
-  Preconditioner() = default;
-  Preconditioner(PrecondKind kind, std::vector<int64_t> block_sizes)
-    : _kind(kind),
-      _block_sizes(std::move(block_sizes))
-  {
-  }
-
-  PrecondKind kind() const { return _kind; }
-  /// None is always "ready" (identity, no setup); the others need `setup`.
-  bool ready() const { return _kind == PrecondKind::None || _ready; }
-  void invalidate() { _ready = false; }
-
-  /// Build `M^-1` from the dense operator `A` (`(B, N, N)`).
-  void setup(const at::Tensor & A)
-  {
-    const double eps = detail::dtype_eps(A.scalar_type());
-    switch (_kind)
-    {
-      case PrecondKind::None:
-        break;
-      case PrecondKind::Jacobi:
-        // Reciprocal of the diagonal, sign-preserving floor so a ~0 pivot cannot
-        // produce an inf apply.
-        _diag = detail::safe_denom(at::diagonal(A, 0, -2, -1).clone(), eps);
-        break;
-      case PrecondKind::BlockJacobi:
-      {
-        _blk_inv.clear();
-        _blk_offs.clear();
-        int64_t o = 0;
-        for (auto s : _block_sizes)
-        {
-          const int64_t i = o, j = o + s;
-          auto blk = A.slice(-2, i, j).slice(-1, i, j); // (B, s, s)
-          _blk_inv.push_back(std::get<0>(at::linalg_inv_ex(blk, /*check_errors=*/false)));
-          _blk_offs.emplace_back(i, j);
-          o = j;
-        }
-        break;
-      }
-      case PrecondKind::Full:
-      {
-        auto res = at::linalg_lu_factor_ex(A, /*pivot=*/true, /*check_errors=*/false);
-        _lu = std::get<0>(res);
-        _piv = std::get<1>(res);
-        break;
-      }
-    }
-    _ready = true;
-  }
-
-  /// Apply `M^-1` to `r` (`(B, N)`), returning `(B, N)`. Identity until `setup`.
-  at::Tensor apply(const at::Tensor & r) const
-  {
-    switch (_kind)
-    {
-      case PrecondKind::None:
-        return r;
-      case PrecondKind::Jacobi:
-        return _ready ? r / _diag : r;
-      case PrecondKind::BlockJacobi:
-      {
-        if (!_ready)
-          return r;
-        auto out = at::empty_like(r);
-        for (std::size_t k = 0; k < _blk_offs.size(); ++k)
-        {
-          const auto [i, j] = _blk_offs[k];
-          out.slice(-1, i, j).copy_(at::einsum("bpq,bq->bp", {_blk_inv[k], r.slice(-1, i, j)}));
-        }
-        return out;
-      }
-      case PrecondKind::Full:
-        return _ready ? at::linalg_lu_solve(_lu, _piv, r.unsqueeze(-1)).squeeze(-1) : r;
-    }
-    return r;
-  }
-
-private:
-  PrecondKind _kind = PrecondKind::None;
-  std::vector<int64_t> _block_sizes;
-  at::Tensor _diag;                 // Jacobi
-  std::vector<at::Tensor> _blk_inv; // BlockJacobi
-  std::vector<std::pair<int64_t, int64_t>> _blk_offs;
-  at::Tensor _lu, _piv; // Full
-  bool _ready = false;
-};
 } // namespace neml2::aoti

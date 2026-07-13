@@ -67,19 +67,19 @@ run_eager_newton(const SolverConfig & cfg,
 /// ``residual_fn(list[Tensor] u) -> list[Tensor] b`` and
 /// ``matvec_fn(list[Tensor] u, list[Tensor] v) -> list[Tensor] Jv`` supply the
 /// residual and the matrix-free `J.v` (the eager RHS / Matvec modules).
-/// ``jacobian_fn(list[Tensor] u) -> Tensor`` returns the dense operator
-/// ``(*B, N, N)`` for the preconditioner (may be ``None`` when
-/// ``krylov_cfg.precond == None``). ``block_sizes`` are the per-variable widths
-/// of the single dense unknown group (for BlockJacobi). Same return tuple as
-/// ``run_eager_newton``. Must be called with the GIL held.
+/// ``precond_setup_fn(list[Tensor] u) -> list[Tensor] state`` and
+/// ``precond_apply_fn(list[Tensor] state, Tensor r_flat) -> Tensor z_flat`` are
+/// the authored preconditioner's setup/apply modules (both ``None`` when
+/// unpreconditioned). Same return tuple as ``run_eager_newton``. Must be called
+/// with the GIL held.
 std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
 run_eager_krylov(const SolverConfig & newton_cfg,
                  const KrylovConfig & krylov_cfg,
                  pybind11::object residual_fn,
                  pybind11::object matvec_fn,
-                 pybind11::object jacobian_fn,
+                 pybind11::object precond_setup_fn,
+                 pybind11::object precond_apply_fn,
                  std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
                  std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
-                 std::vector<int64_t> block_sizes,
                  std::vector<at::Tensor> u0);
 } // namespace neml2::aoti

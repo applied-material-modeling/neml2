@@ -56,16 +56,12 @@ namespace neml2::aoti
 class KrylovNonlinearSystem : public NonlinearSystem
 {
 public:
-  /// `block_sizes` are the per-variable widths of the (single, dense) unknown
-  /// group, used by the BlockJacobi preconditioner (ignored otherwise).
   KrylovNonlinearSystem(std::vector<GroupLayout> unknown_layout,
                         std::vector<GroupLayout> residual_layout,
-                        KrylovConfig cfg,
-                        std::vector<int64_t> block_sizes)
+                        KrylovConfig cfg)
     : _unknown_layout(std::move(unknown_layout)),
       _residual_layout(std::move(residual_layout)),
-      _cfg(cfg),
-      _precond(cfg.precond, std::move(block_sizes))
+      _cfg(cfg)
   {
   }
 
@@ -106,16 +102,23 @@ public:
       return flatten_dense(jv_groups, _residual_layout, tmp);
     };
 
-    // Preconditioner: (re)build per the cache policy, then apply.
-    if (_cfg.precond != PrecondKind::None)
+    // Preconditioner: a pair of authored setup/apply ops (compiled graphs on the
+    // AOTI route, Python callbacks on the eager route) supplied by the subclass.
+    // `precond_setup_raw` builds the state (factored/inverted from the model, e.g.
+    // an LU or per-variable inverses) per the cache policy; `precond_apply_raw`
+    // applies M^-1 to the flat residual. Absent (`has_preconditioner()==false`)
+    // => identity (unpreconditioned).
+    PrecondFn minv = [](const at::Tensor & r) -> at::Tensor { return r; };
+    if (has_preconditioner())
     {
-      _assert(_unknown_layout.size() == 1,
-              "preconditioned Krylov currently requires a single dense unknown "
-              "group (v1); use preconditioner=none for multi-group systems.");
       if (needs_precond_rebuild())
-        _precond.setup(assemble_dense_A(u));
+      {
+        _precond_state = precond_setup_raw(u);
+        _precond_ready = true;
+      }
+      minv = [&](const at::Tensor & r) -> at::Tensor
+      { return precond_apply_raw(_precond_state, r); };
     }
-    const PrecondFn minv = [&](const at::Tensor & r) -> at::Tensor { return _precond.apply(r); };
 
     auto res = krylov_solve(matvec, minv, b_flat, _cfg);
     _last_iters = res.max_iters;
@@ -132,13 +135,19 @@ protected:
   /// J.v = dr/du . v at u; `v` is per unknown group, result per residual group.
   virtual std::vector<at::Tensor> matvec_raw(const std::vector<at::Tensor> & u,
                                              const std::vector<at::Tensor> & v) const = 0;
-  /// The assembled dense Jacobian `(Bflat, N, N)` at u -- only called when a
-  /// preconditioner is configured (single dense group).
-  virtual at::Tensor assemble_dense_A(const std::vector<at::Tensor> & u) const = 0;
+  /// Whether a preconditioner is configured (its setup/apply ops are present).
+  virtual bool has_preconditioner() const = 0;
+  /// Build the preconditioner state from the model at u (authored setup graph /
+  /// callback) -- the raw tensors `precond_apply_raw` consumes. Only called when
+  /// `has_preconditioner()` and the cache policy requests a rebuild.
+  virtual std::vector<at::Tensor> precond_setup_raw(const std::vector<at::Tensor> & u) const = 0;
+  /// Apply M^-1 to the flat `(Bflat, N)` residual using the cached state.
+  virtual at::Tensor precond_apply_raw(const std::vector<at::Tensor> & state,
+                                       const at::Tensor & r_flat) const = 0;
 
 private:
   // Cache policy: None rebuilds every step; Chord builds once and reuses;
-  // QualityThreshold rebuilds when the last Krylov iteration count exceeded a bar.
+  // MaxLinearIters rebuilds when the last solve's iteration count exceeded a bar.
   bool needs_precond_rebuild() const
   {
     switch (_cfg.cache)
@@ -146,9 +155,9 @@ private:
       case CacheStrategy::None:
         return true;
       case CacheStrategy::Chord:
-        return !_precond.ready();
+        return !_precond_ready;
       case CacheStrategy::MaxLinearIters:
-        return !_precond.ready() || _last_iters > _cfg.cache_max_its;
+        return !_precond_ready || _last_iters > _cfg.cache_max_its;
     }
     return true;
   }
@@ -158,7 +167,8 @@ private:
   KrylovConfig _cfg;
   // Cache state lives one Newton solve: the system is constructed fresh per
   // `_run_implicit_segment` call, so `mutable` here resets naturally each solve.
-  mutable Preconditioner _precond;
+  mutable std::vector<at::Tensor> _precond_state;
+  mutable bool _precond_ready = false;
   mutable int64_t _last_iters = 0;
 };
 } // namespace neml2::aoti

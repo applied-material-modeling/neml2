@@ -221,8 +221,11 @@ graphs are lowered depends on the source model's linear solver:
   (`du = A^{-1} b`);
 - a **matrix-free Krylov** solver (`GMRES` / `BiCGStab`) lowers a `matvec`
   graph (`J·v = ∂r/∂u·v`) that the C++ runtime drives a batched Krylov
-  iteration over, never assembling `A` (the Jacobian operator is lowered
-  too only when a preconditioner or an input derivative needs it).
+  iteration over, never assembling `A`. A preconditioner (an authored
+  `[Solvers]` `JacobiPreconditioner` / `BlockJacobiPreconditioner` /
+  `FullPreconditioner` referenced by the solver) additionally lowers a
+  `precond_setup` + `precond_apply` graph pair; the standalone Jacobian
+  operator is lowered only when an input derivative needs it.
 
 The C++ orchestrator sees the same flat `(u_flat, g_flat) →
 (u_new, b_new)` contract either way — the multi-group / sub-batch

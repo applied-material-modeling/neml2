@@ -214,6 +214,12 @@ struct Model::Impl
     /// direct solve). `KrylovAOTINonlinearSystem::step()` drives it per inner
     /// Krylov iteration in place of chaining jacobian -> solve.
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> matvec_loader;
+    /// Authored preconditioner graphs (Krylov + a preconditioner only; both null
+    /// for no preconditioner). `precond_setup_loader`: (*u,*g,*p) -> (*state);
+    /// `precond_apply_loader`: (*state, r_flat) -> z_flat. The C++ holds the state
+    /// between setup and applies, rebuilding per the cache strategy.
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> precond_setup_loader;
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> precond_apply_loader;
     /// IFT (input-derivative) operator + solve graphs. `jacobian_given_loader`
     /// emits B = ∂r/∂g; A = ∂r/∂u is reused from `jacobian_loader`. `solve_ift_loader`
     /// takes `(*A_blocks, *B_blocks)` and emits one `-du/dg` block per (unknown,

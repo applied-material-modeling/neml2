@@ -29,7 +29,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from neml2.factory import register_neml2_object
-from neml2.schema import HitSchema, option
+from neml2.schema import HitSchema, dependency, option
 
 from ._krylov import _KrylovSolver
 
@@ -73,11 +73,12 @@ class BiCGStab(_KrylovSolver):
             "converges -- tighten only for stiff/ill-conditioned systems",
             default=1.0e-4,
         ),
-        option(
+        dependency(
             "preconditioner",
-            str,
-            "Preconditioner: none | jacobi | block_jacobi | full",
-            default="none",
+            "get_solver",
+            "Preconditioner object (a [Solvers] NoPreconditioner / Jacobi / "
+            "BlockJacobi / FullPreconditioner); unset = no preconditioner",
+            default=None,
         ),
         option(
             "cache_strategy",
@@ -97,12 +98,12 @@ class BiCGStab(_KrylovSolver):
 
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> BiCGStab:
-        del factory
+        pc_name = node.param_optional_str("preconditioner", "")
         return cls(
             max_its=node.param_optional_int("max_its", 1000),
             abs_tol=node.param_optional_float("abs_tol", 0.0),
             rel_tol=node.param_optional_float("rel_tol", 1.0e-4),
-            preconditioner=node.param_optional_str("preconditioner", "none"),
+            preconditioner=factory.get_solver(pc_name) if pc_name else None,
             cache_strategy=node.param_optional_str("cache_strategy", "none"),
             cache_max_its=node.param_optional_int("cache_max_its", 10),
         )

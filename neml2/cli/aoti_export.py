@@ -2129,14 +2129,34 @@ def _compile_implicit_segment(
     # Linear-solver kind. A matrix-free Krylov solver (GMRES / BiCGStab) emits a
     # `matvec` (J.v) graph and drives the C++ Krylov loop; the assembled `A`
     # (`jacobian`) + baked `solve` graphs are for the direct path (and A is still
-    # needed for a preconditioner or the IFT input-derivative).
+    # needed for the IFT input-derivative). A preconditioner (schema v11) authors
+    # its OWN `_precond_setup` graph -- self-contained (it assembles just what it
+    # needs internally) -- so it does NOT pull in the standalone `jacobian` A graph.
     iterative, precond_on = _iterative_solver_flags(solver)
-    need_a = (not iterative) or precond_on or emit_ift
+    need_a = (not iterative) or emit_ift
 
     rhs = RHS(system, param_names=param_tail).to(device)
     jacobian = Jacobian(system, param_names=param_tail).to(device)
     matvec = Matvec(system, param_names=param_tail).to(device) if iterative else None
     linear_solve = LinearSolve(system, solver.linear_solver, param_names=param_tail).to(device)
+    # Preconditioner (schema v11): the authored Preconditioner object supplies a
+    # setup module ((*u,*g,*params) -> state) and an apply module ((*state, r_flat)
+    # -> z_flat), compiled to `_precond_setup` / `_precond_apply`. The setup carries
+    # the model Jacobian assembly (so it lowers under the same strict + trace_autograd
+    # recipe as `jacobian` when the residual has a request_AD leaf); the apply is
+    # pure linear algebra. NB: `param_names` is NOT threaded into the authored
+    # modules here -- v1 preconditioners target the single-dense-group forward
+    # solve; promoted-param tails on preconditioned segments are a follow-up.
+    pc_setup = None
+    pc_apply = None
+    if precond_on:
+        precond = solver.linear_solver.preconditioner
+        setup_mod = precond.setup_module(system)
+        apply_mod = precond.apply_module(system)
+        # A non-identity preconditioner (precond_on) always authors both modules.
+        assert setup_mod is not None and apply_mod is not None
+        pc_setup = setup_mod.to(device)
+        pc_apply = apply_mod.to(device)
     # IFT (input-derivative) operators + solve: `jacobian` supplies A = ∂r/∂u;
     # `jacobian_given` supplies B = ∂r/∂g; `solve_ift` applies A^{-1}B and emits
     # per-(unknown, given) blocks. ParamIFT: `dr_dparam` emits the dense A + ∂r/∂θ
@@ -2227,6 +2247,8 @@ def _compile_implicit_segment(
     jacobian_name = f"{pkg_basename}_jacobian.pt2"
     solve_name = f"{pkg_basename}_solve.pt2"
     matvec_name = f"{pkg_basename}_matvec.pt2"
+    precond_setup_name = f"{pkg_basename}_precond_setup.pt2"
+    precond_apply_name = f"{pkg_basename}_precond_apply.pt2"
     jacobian_given_name = f"{pkg_basename}_jacobian_given.pt2"
     solve_ift_name = f"{pkg_basename}_solve_ift.pt2"
     dr_dparam_name = f"{pkg_basename}_dr_dparam.pt2"
@@ -2268,6 +2290,32 @@ def _compile_implicit_segment(
             matvec, matvec_example_inputs, output_dir / matvec_name, dynamic_batch_dim=dynamic_dim
         )
         _report(progress_cb, matvec_name)
+        if precond_on:
+            # Setup: (*u,*g,*params) -> state. Carries the model Jacobian
+            # assembly, so it lowers under the same recipe as `matvec`/`jacobian`.
+            assert pc_setup is not None and pc_apply is not None
+            _compile_jac(
+                pc_setup,
+                example_inputs,
+                output_dir / precond_setup_name,
+                dynamic_batch_dim=dynamic_dim,
+            )
+            _report(progress_cb, precond_setup_name)
+            # Apply: (*state, r_flat) -> z_flat. Trace on the eager setup state +
+            # a flat residual example (Bflat, N) so the apply graph's input shapes
+            # match the setup graph's outputs exactly. Pure linear algebra (no
+            # embedded autograd), so plain compile even for a request_AD residual.
+            with torch.no_grad():
+                state_examples = tuple(t.detach().contiguous() for t in pc_setup(*example_inputs))
+            n_flat = int(u_group_examples[0].shape[-1])
+            r_flat_example = u_group_examples[0].reshape(-1, n_flat)
+            compile_model(
+                pc_apply,
+                state_examples + (r_flat_example,),
+                output_dir / precond_apply_name,
+                dynamic_batch_dim=dynamic_dim,
+            )
+            _report(progress_cb, precond_apply_name)
     else:
         # The solve graph consumes the Jacobian's raw outputs ``(*A_blocks, *b)`` and
         # returns ``du``. Trace it on the eager Jacobian evaluation so the solve's
@@ -2451,6 +2499,11 @@ def _compile_implicit_segment(
         seg["jacobian_package"] = jacobian_name
     if iterative:
         seg["matvec_package"] = matvec_name
+        if precond_on:
+            # Authored preconditioner setup/apply graphs. The C++ Krylov runtime
+            # loads both iff present; absent = unpreconditioned (identity M^-1).
+            seg["precond_setup_package"] = precond_setup_name
+            seg["precond_apply_package"] = precond_apply_name
     else:
         seg["solve_package"] = solve_name
     if emit_ift:
@@ -2893,13 +2946,15 @@ def _iterative_solver_flags(solver) -> tuple[bool, bool]:
     """``(iterative, preconditioner_active)`` for a nonlinear solver's linear
     solver. ``iterative`` is a matrix-free Krylov solver (``GMRES`` / ``BiCGStab``,
     marked by ``is_iterative``); ``preconditioner_active`` is True when that
-    solver's preconditioner is not ``none`` (so the assembled ``A`` graph is still
-    needed). Single source of truth shared by the artifact predictor and the
-    implicit-segment compiler so they cannot drift.
+    solver's preconditioner is not the identity ``none`` (so the authored
+    ``_precond_setup`` / ``_precond_apply`` graphs are emitted). Single source of
+    truth shared by the artifact predictor and the implicit-segment compiler so
+    they cannot drift.
     """
     ls = getattr(solver, "linear_solver", None)
     iterative = bool(getattr(ls, "is_iterative", False))
-    precond_on = iterative and ls is not None and ls.krylov_config()["preconditioner"] != "none"
+    pc = getattr(ls, "preconditioner", None)
+    precond_on = iterative and getattr(pc, "kind", "none") != "none"
     return iterative, precond_on
 
 
@@ -2924,17 +2979,25 @@ def _predict_implicit_artifacts(
     order, the ``compile_model`` calls in :func:`_compile_implicit_segment`.
 
     A direct solve emits ``jacobian`` + ``solve``; a matrix-free Krylov solve
-    emits ``matvec`` instead of ``solve`` and ``jacobian`` only when a
-    preconditioner or an input/parameter derivative needs the assembled ``A``.
+    emits ``matvec`` instead of ``solve`` (plus ``precond_setup`` + ``precond_apply``
+    when preconditioned) and ``jacobian`` only when an input/parameter derivative
+    needs the assembled ``A``.
     """
-    # A (the jacobian operator) is needed for: a direct solve, a preconditioner,
-    # or an input derivative (IFT reuses A). PIFT is self-contained (its own dense
-    # A via dr_dparam), so it does not require the forward jacobian.
-    need_a = (not iterative) or precond_on or emit_ift
+    # A (the jacobian operator) is needed for: a direct solve or an input
+    # derivative (IFT reuses A). A preconditioner authors its own self-contained
+    # setup graph, so it does NOT pull in the standalone jacobian. PIFT is
+    # self-contained (its own dense A via dr_dparam) too.
+    need_a = (not iterative) or emit_ift
     arts = [f"{basename}_residual.pt2"]
     if need_a:
         arts.append(f"{basename}_jacobian.pt2")
-    arts.append(f"{basename}_matvec.pt2" if iterative else f"{basename}_solve.pt2")
+    if iterative:
+        arts.append(f"{basename}_matvec.pt2")
+        if precond_on:
+            arts.append(f"{basename}_precond_setup.pt2")
+            arts.append(f"{basename}_precond_apply.pt2")
+    else:
+        arts.append(f"{basename}_solve.pt2")
     if emit_ift:
         arts.append(f"{basename}_jacobian_given.pt2")
         arts.append(f"{basename}_solve_ift.pt2")

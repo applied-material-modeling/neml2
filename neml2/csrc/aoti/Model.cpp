@@ -461,9 +461,6 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
       const auto & kc = sc["krylov"];
       _assert(parse_krylov_method(kc.value("method", std::string("gmres")), _krylov_config.method),
               "aoti::Model: unknown krylov method in metadata");
-      _assert(parse_precond_kind(kc.value("preconditioner", std::string("none")),
-                                 _krylov_config.precond),
-              "aoti::Model: unknown krylov preconditioner in metadata");
       _assert(parse_cache_strategy(kc.value("cache_strategy", std::string("none")),
                                    _krylov_config.cache),
               "aoti::Model: unknown krylov cache_strategy in metadata");
@@ -585,6 +582,13 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
       if (seg_meta.contains("matvec_package"))
         seg.matvec_loader =
             make_loader(cache_dir / seg_meta["matvec_package"].get<std::string>(), dev_idx);
+      if (seg_meta.contains("precond_setup_package"))
+      {
+        seg.precond_setup_loader =
+            make_loader(cache_dir / seg_meta["precond_setup_package"].get<std::string>(), dev_idx);
+        seg.precond_apply_loader =
+            make_loader(cache_dir / seg_meta["precond_apply_package"].get<std::string>(), dev_idx);
+      }
       if (seg_meta.contains("solve_ift_package"))
       {
         seg.jacobian_given_loader =

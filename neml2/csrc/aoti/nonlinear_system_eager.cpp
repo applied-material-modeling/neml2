@@ -87,25 +87,26 @@ to_layouts(const std::vector<std::pair<std::string, std::vector<int64_t>>> & spe
 }
 
 // KrylovNonlinearSystem backed by Python callables: the residual (RHS) and the
-// matrix-free J.v (Matvec) modules, plus an optional dense-Jacobian assembler
-// (Jacobian) for the preconditioner. The shared base owns the Krylov numerics +
-// preconditioner cache; this only marshals the raw per-group ops across the
-// embedded-Python boundary (GIL held by the caller for the whole solve).
+// matrix-free J.v (Matvec) modules, plus an optional preconditioner setup/apply
+// pair (the authored Preconditioner's modules, run live). The shared base owns
+// the Krylov numerics + preconditioner cache; this only marshals the raw ops
+// across the embedded-Python boundary (GIL held by the caller for the whole
+// solve). `precond_setup_fn` / `precond_apply_fn` are None when unpreconditioned.
 class KrylovEagerNonlinearSystem : public KrylovNonlinearSystem
 {
 public:
   KrylovEagerNonlinearSystem(py::object residual_fn,
                              py::object matvec_fn,
-                             py::object jacobian_fn,
+                             py::object precond_setup_fn,
+                             py::object precond_apply_fn,
                              std::vector<GroupLayout> unknown_layout,
                              std::vector<GroupLayout> residual_layout,
-                             KrylovConfig cfg,
-                             std::vector<int64_t> block_sizes)
-    : KrylovNonlinearSystem(
-          std::move(unknown_layout), std::move(residual_layout), cfg, std::move(block_sizes)),
+                             KrylovConfig cfg)
+    : KrylovNonlinearSystem(std::move(unknown_layout), std::move(residual_layout), cfg),
       _residual_fn(std::move(residual_fn)),
       _matvec_fn(std::move(matvec_fn)),
-      _jacobian_fn(std::move(jacobian_fn))
+      _precond_setup_fn(std::move(precond_setup_fn)),
+      _precond_apply_fn(std::move(precond_apply_fn))
   {
   }
 
@@ -121,19 +122,24 @@ protected:
     return _matvec_fn(u, v).cast<std::vector<at::Tensor>>();
   }
 
-  at::Tensor assemble_dense_A(const std::vector<at::Tensor> & u) const override
+  bool has_preconditioner() const override { return !_precond_setup_fn.is_none(); }
+
+  std::vector<at::Tensor> precond_setup_raw(const std::vector<at::Tensor> & u) const override
   {
-    // The Python assembler returns the single dense Jacobian block (*B, N, N);
-    // fold the dynamic batch to (Bflat, N, N) for the preconditioner factor.
-    auto A = _jacobian_fn(u).cast<at::Tensor>();
-    const auto N = A.size(-1);
-    return A.reshape({-1, N, N});
+    return _precond_setup_fn(u).cast<std::vector<at::Tensor>>();
+  }
+
+  at::Tensor precond_apply_raw(const std::vector<at::Tensor> & state,
+                               const at::Tensor & r_flat) const override
+  {
+    return _precond_apply_fn(state, r_flat).cast<at::Tensor>();
   }
 
 private:
   py::object _residual_fn;
   py::object _matvec_fn;
-  py::object _jacobian_fn;
+  py::object _precond_setup_fn;
+  py::object _precond_apply_fn;
 };
 } // namespace
 
@@ -158,19 +164,19 @@ run_eager_krylov(const SolverConfig & newton_cfg,
                  const KrylovConfig & krylov_cfg,
                  py::object residual_fn,
                  py::object matvec_fn,
-                 py::object jacobian_fn,
+                 py::object precond_setup_fn,
+                 py::object precond_apply_fn,
                  std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
                  std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
-                 std::vector<int64_t> block_sizes,
                  std::vector<at::Tensor> u0)
 {
   KrylovEagerNonlinearSystem sys(std::move(residual_fn),
                                  std::move(matvec_fn),
-                                 std::move(jacobian_fn),
+                                 std::move(precond_setup_fn),
+                                 std::move(precond_apply_fn),
                                  to_layouts(unknown_layout),
                                  to_layouts(residual_layout),
-                                 krylov_cfg,
-                                 std::move(block_sizes));
+                                 krylov_cfg);
   NewtonResult result = Newton(newton_cfg).solve(sys, u0);
   return {std::move(result.u), result.converged, result.iterations, std::move(result.log)};
 }

@@ -58,7 +58,8 @@ def _inputs(input_spec: dict, seed: int = 0) -> dict[str, torch.Tensor]:
 def test_krylov_metadata_contract(tmp_path: Path):
     """A matrix-free GMRES export records solver_kind=krylov + the krylov block,
     and emits the matvec graph in place of the baked solve (no preconditioner ->
-    no jacobian either)."""
+    no jacobian either). The krylov block carries only the numeric config; the
+    preconditioner is per-segment (its own graphs), not a metadata tag."""
     from neml2.cli.aoti_export import AOTI_META_SCHEMA_VERSION, export_model_for_aoti
 
     out = tmp_path / "gmres"
@@ -68,31 +69,34 @@ def test_krylov_metadata_contract(tmp_path: Path):
     sc = meta["solver_config"]
     assert sc["solver_kind"] == "krylov"
     assert sc["krylov"]["method"] == "gmres"
-    assert sc["krylov"]["preconditioner"] == "none"
     assert sc["krylov"]["cache_strategy"] == "none"
+    assert "preconditioner" not in sc["krylov"]  # per-segment graphs, not metadata
 
     seg = next(s for s in meta["segments"] if s.get("kind") == "implicit")
     # Matrix-free, no preconditioner: residual + matvec only.
     assert "matvec_package" in seg
     assert "solve_package" not in seg
     assert "jacobian_package" not in seg
+    assert "precond_setup_package" not in seg
 
 
 def test_krylov_precond_metadata_contract(tmp_path: Path):
-    """A preconditioned GMRES export additionally emits the jacobian graph (the
-    C++ builds the preconditioner from the assembled A)."""
+    """A preconditioned GMRES export additionally emits the authored
+    precond_setup / precond_apply graphs (schema v11); the preconditioner is
+    self-contained, so no standalone jacobian A graph is emitted."""
     from neml2.cli.aoti_export import export_model_for_aoti
 
     out = tmp_path / "gmres_pc"
     meta = export_model_for_aoti(_GMRES_PC, "model", out)
     sc = meta["solver_config"]
     assert sc["solver_kind"] == "krylov"
-    assert sc["krylov"]["preconditioner"] == "block_jacobi"
     assert sc["krylov"]["cache_strategy"] == "chord"
 
     seg = next(s for s in meta["segments"] if s.get("kind") == "implicit")
     assert "matvec_package" in seg
-    assert "jacobian_package" in seg  # needed to assemble A for the preconditioner
+    assert "precond_setup_package" in seg
+    assert "precond_apply_package" in seg
+    assert "jacobian_package" not in seg  # preconditioner authors its own setup
     assert "solve_package" not in seg
 
 

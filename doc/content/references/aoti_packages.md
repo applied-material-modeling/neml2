@@ -129,9 +129,11 @@ boundary into separate **segments**, each numbered `_seg{i}_`:
 | `<name>_seg{i}.pt2`             | Forward-segment value graph.                            |
 | `<name>_seg{i}_jvp.pt2`         | Forward-segment per-pair Jacobian graph (only when `-d` requested a pair this segment contributes to). |
 | `<name>_seg{i}_residual.pt2`    | Implicit-segment Newton residual `-r(u, g)`.            |
-| `<name>_seg{i}_jacobian.pt2`    | Implicit-segment residual Jacobian operator `A = ∂r/∂u` (+ `b`); no baked solve. Direct solve always; a Krylov solve only when a preconditioner or an input derivative needs the assembled `A`. |
+| `<name>_seg{i}_jacobian.pt2`    | Implicit-segment residual Jacobian operator `A = ∂r/∂u` (+ `b`); no baked solve. Direct solve always; a Krylov solve only when an input derivative needs the assembled `A`. |
 | `<name>_seg{i}_solve.pt2`       | Implicit-segment linear solve `du = A^{-1} b` (the configured direct linear solver, un-baked from the operator). Direct solve only. |
 | `<name>_seg{i}_matvec.pt2`      | Implicit-segment matrix-free operator `J·v = ∂r/∂u·v` (a Krylov solve only, in place of `_solve`); the C++ runtime drives GMRES/BiCGStab over it. |
+| `<name>_seg{i}_precond_setup.pt2` | Preconditioner setup `(*u, *g, *params) → state` (Krylov solve with a preconditioner only): the authored `[Solvers]` preconditioner factors/inverts what it needs from the model; the C++ holds the returned state and rebuilds it per the cache strategy. |
+| `<name>_seg{i}_precond_apply.pt2` | Preconditioner apply `(*state, r_flat) → z_flat = M^{-1} r` (paired with `_precond_setup`). |
 | `<name>_seg{i}_jacobian_given.pt2` | IFT given-side operator `B = ∂r/∂g` (only when `-d` requested an input-derivative pair routed through this segment). |
 | `<name>_seg{i}_solve_ift.pt2`   | IFT solve `-A^{-1} B` disassembled to per-`(unknown, given)` blocks (paired with `_jacobian_given`). |
 | `<name>_seg{i}_dr_dparam.pt2`   | Parameter-derivative operators: dense `A` + `∂r/∂θ` (only when `-d` requested a promoted-parameter pair). |
@@ -181,10 +183,12 @@ folder path. It records, at a high level:
   `_jacobian` → `_solve`) or `"krylov"` (matrix-free GMRES/BiCGStab over
   `_matvec`). When `"krylov"`, a nested `krylov` block records the iterative
   settings — `method`, `restart`, `max_its` (inner-iteration budget), `abs_tol`,
-  `rel_tol`, `preconditioner` (`none` / `jacobi` / `block_jacobi` / `full`),
-  `cache_strategy` (`none` / `chord` / `max_its`), and `cache_max_its` (the
-  rebuild bar for the `max_its` cache strategy). The forward Newton solve honors
-  it; the IFT / parameter derivative solves stay direct.
+  `rel_tol`, `cache_strategy` (`none` / `chord` / `max_its`), and `cache_max_its`
+  (the rebuild bar for the `max_its` cache strategy). The preconditioner is **not**
+  a `krylov` field: it is an authored `[Solvers]` object whose behavior is carried
+  by the per-segment `_precond_setup` / `_precond_apply` graphs (present iff
+  preconditioned). The forward Newton solve honors it; the IFT / parameter
+  derivative solves stay direct.
 - **Boundary aliases** (optional `boundary_aliases`) — shallow renames
   applied at the interface only. Present only when the artifact was
   compiled with `--rename-input` / `--rename-output` / `--rename-parameter`;
@@ -222,9 +226,12 @@ Two segment kinds appear inside `segments`:
     operator: the C++ runtime chains `_jacobian → _solve` per Newton iteration.
   - a **matrix-free Krylov** solve (`GMRES` / `BiCGStab`) lowers `_matvec.pt2`
     (`J·v = ∂r/∂u·v`) instead of `_solve`; the C++ runtime runs a batched Krylov
-    iteration over it (never assembling `A`). `_jacobian.pt2` is lowered too only
-    when a preconditioner (`jacobi` / `block_jacobi` / `full`) or an input
-    derivative needs the assembled `A`.
+    iteration over it (never assembling `A`). A preconditioner (an authored
+    `[Solvers]` `JacobiPreconditioner` / `BlockJacobiPreconditioner` /
+    `FullPreconditioner`) additionally lowers `_precond_setup.pt2` +
+    `_precond_apply.pt2` (self-contained — it assembles what it needs internally,
+    so no standalone `_jacobian.pt2`). `_jacobian.pt2` is lowered under a Krylov
+    solve only when an input derivative needs the assembled `A`.
 
   Either kind additionally lowers `_jacobian_given.pt2` (`B = ∂r/∂g`) +
   `_solve_ift.pt2` (`-A^{-1} B` implicit-function-theorem sensitivity at the
