@@ -900,3 +900,80 @@ def test_export_with_nl_parameter_matches_eager(tmp_path):
     if isinstance(aoti_out, tuple):
         aoti_out = aoti_out[0]
     assert torch.allclose(_as_tensor(eager_out), _as_tensor(aoti_out), rtol=1e-10, atol=1e-10)
+
+
+# ---------------------------------------------------------------------------
+# metadata.json atomic write (_write_meta)
+# ---------------------------------------------------------------------------
+
+
+def test_write_meta_roundtrip_no_temp_left(tmp_path):
+    """Happy path: metadata.json holds the exact dict and no *.tmp file lingers."""
+    from neml2.cli.aoti_export import _write_meta
+
+    p = tmp_path / "metadata.json"
+    meta = {"schema_version": "9", "inputs": [{"name": "x"}], "nested": {"a": 1}}
+    _write_meta(p, meta)
+    assert json.loads(p.read_text()) == meta
+    # The temp file is renamed onto the target, never left behind.
+    assert list(tmp_path.glob("*.tmp")) == []
+
+
+def test_write_meta_atomic_overwrite(tmp_path):
+    """A second write replaces the file wholesale (atomic overwrite)."""
+    from neml2.cli.aoti_export import _write_meta
+
+    p = tmp_path / "metadata.json"
+    _write_meta(p, {"v": 1})
+    _write_meta(p, {"v": 2})
+    assert json.loads(p.read_text()) == {"v": 2}
+    assert list(tmp_path.glob("*.tmp")) == []
+
+
+def test_write_meta_cleans_temp_on_failure(tmp_path, monkeypatch):
+    """If the atomic replace fails, the exception propagates AND the temp file is
+    removed (no partial/stray metadata left in the artifact dir)."""
+    import os
+
+    from neml2.cli.aoti_export import _write_meta
+
+    def _boom(*_a, **_k):
+        raise OSError("simulated replace failure")
+
+    # _write_meta calls os.replace via the shared os module; patch it there.
+    monkeypatch.setattr(os, "replace", _boom)
+    p = tmp_path / "metadata.json"
+    with pytest.raises(OSError, match="simulated replace failure"):
+        _write_meta(p, {"v": 1})
+    # Target never appeared, and the temp was cleaned up on the failure path.
+    assert not p.exists()
+    assert list(tmp_path.glob("*")) == []
+
+
+# ---------------------------------------------------------------------------
+# spawn-worker extension re-import (_prepare_opts_in_worker)
+# ---------------------------------------------------------------------------
+
+
+def test_prepare_opts_in_worker_imports_load(tmp_path):
+    """A spawn worker re-imports the ``--load`` extensions and strips ``load``
+    from the kwargs it forwards to ``_prepare_export``."""
+    from neml2.cli.aoti_export import _prepare_opts_in_worker
+
+    # An extension whose top-level code has an observable side effect on import.
+    sentinel = tmp_path / "loaded.flag"
+    ext = tmp_path / "ext_mod.py"
+    ext.write_text(f"from pathlib import Path\nPath({str(sentinel)!r}).write_text('loaded')\n")
+    opts = _prepare_opts_in_worker({"load": (str(ext),), "promoted": ["a"]})
+    assert sentinel.exists()  # the extension module was executed
+    assert opts == {"promoted": ["a"]}  # 'load' consumed, rest forwarded verbatim
+
+
+def test_prepare_opts_in_worker_no_load_is_identity_copy():
+    """With no ``load`` key the kwargs pass through unchanged, as a fresh copy."""
+    from neml2.cli.aoti_export import _prepare_opts_in_worker
+
+    src = {"promoted": ["a"], "renames": None, "derivatives": ()}
+    opts = _prepare_opts_in_worker(src)
+    assert opts == src
+    assert opts is not src  # a copy -- never mutate the caller's dict
