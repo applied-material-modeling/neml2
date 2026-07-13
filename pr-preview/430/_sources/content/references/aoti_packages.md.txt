@@ -135,9 +135,9 @@ boundary into separate **segments**, each numbered `_seg{i}_`:
 | `<name>_seg{i}_precond_setup.pt2` | Preconditioner setup `(*u, *g, *params) → state` (Krylov solve with a preconditioner only): the authored `[Solvers]` preconditioner factors/inverts what it needs from the model; the C++ holds the returned state and rebuilds it per the cache strategy. |
 | `<name>_seg{i}_precond_apply.pt2` | Preconditioner apply `(*state, r_flat) → z_flat = M^{-1} r` (paired with `_precond_setup`). |
 | `<name>_seg{i}_jacobian_given.pt2` | IFT given-side operator `B = ∂r/∂g` (only when `-d` requested an input-derivative pair routed through this segment). |
-| `<name>_seg{i}_solve_ift.pt2`   | IFT solve `-A^{-1} B` disassembled to per-`(unknown, given)` blocks (paired with `_jacobian_given`). |
+| `<name>_seg{i}_solve_ift.pt2`   | IFT solve `-A^{-1} B` disassembled to per-`(unknown, given)` blocks (paired with `_jacobian_given`). Emitted only when `input_sensitivity_solver` is direct; a matrix-free one Krylov-solves over the assembled `A` at runtime. |
 | `<name>_seg{i}_dr_dparam.pt2`   | Parameter-derivative operators: dense `A` + `∂r/∂θ` (only when `-d` requested a promoted-parameter pair). |
-| `<name>_seg{i}_solve_param.pt2` | Parameter-sensitivity solve `-A^{-1} ∂r/∂θ` per `(unknown, param)` block. |
+| `<name>_seg{i}_solve_param.pt2` | Parameter-sensitivity solve `-A^{-1} ∂r/∂θ` per `(unknown, param)` block. Emitted only when `param_sensitivity_solver` is direct (else Krylov-solved over the dense `A`). |
 | `<name>_seg{i}_predictor.pt2`   | Newton initial guess (only if the source had one).      |
 
 The `_seg0_` infix is dropped in the single-segment shortcut, so
@@ -206,7 +206,7 @@ refuses any non-matching version with a clear "regenerate via
 `neml2-compile`" message; the only remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `11`.
+The current schema version is `12`.
 
 ### Segment kinds
 
@@ -237,9 +237,20 @@ Two segment kinds appear inside `segments`:
   `_solve_ift.pt2` (`-A^{-1} B` implicit-function-theorem sensitivity at the
   converged state, reusing `_jacobian`'s `A`) **only when `-d` requested an
   input-derivative pair routed through this segment**, and `_dr_dparam.pt2` +
-  `_solve_param.pt2` for a promoted-parameter derivative (the derivative solves
-  are always direct, even under a Krylov forward). The IFT / param graphs, when
-  present, are consumed by `jacobian()` / `jvp()` / `param_jacobian()`.
+  `_solve_param.pt2` for a promoted-parameter derivative. The IFT / param graphs,
+  when present, are consumed by `jacobian()` / `jvp()` / `param_jacobian()`.
+
+  The derivative (sensitivity) linear solves are separately configurable on the
+  `ImplicitUpdate` (`input_sensitivity_solver` for `du/dg`,
+  `param_sensitivity_solver` for `du/dθ`), each defaulting to a direct solve
+  (schema v12). A direct sensitivity solver bakes its `_solve_ift` /
+  `_solve_param` graph as above; a **matrix-free** one (`GMRES` / `BiCGStab`)
+  omits that graph and the C++ runtime instead runs a Krylov solve over the
+  assembled `A` (from `_jacobian` / `_dr_dparam`). The per-segment
+  `input_sensitivity` / `param_sensitivity` metadata records `{kind: direct |
+  krylov[, krylov: {...}]}`; the pair metadata (`jacobian_pairs` /
+  `param_jacobian_pairs`) additionally carries the flat `row_offset` / `col_offset`
+  the Krylov path uses to slice the solution into per-pair blocks.
 
   The Newton solve's convergence tolerances, iteration cap, and line-search
   settings are recorded in `metadata.json` under `solver_config` and read
