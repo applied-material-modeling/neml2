@@ -48,6 +48,7 @@
 
 #include "neml2/csrc/aoti/Model.h"
 #include "neml2/csrc/aoti/assertions.h"
+#include "neml2/csrc/aoti/krylov.h"
 
 namespace torch::inductor
 {
@@ -56,6 +57,11 @@ class AOTIModelPackageLoader;
 
 namespace neml2::aoti
 {
+// The abstract residual/step provider the shared Newton loop drives; concrete
+// backends (AOTINonlinearSystem / KrylovAOTINonlinearSystem) are built by
+// `_make_implicit_system`. Defined in nonlinear_system.h.
+class NonlinearSystem;
+
 /// Lazily register NEML2's custom Torch operators (currently `neml2::opaque_pow`)
 /// into the dispatcher -- once per process, only if absent. Called from the aoti
 /// `Model` constructor rather than a static initializer so a process that also
@@ -194,9 +200,20 @@ struct Model::Impl
     // that bakes the configured linear solver. `AOTINonlinearSystem::step()`
     // chains jacobian -> solve. `residual_loader` is the cheap residual eval for
     // line-search trials.
+    //
+    // Which loaders are present depends on the solver kind (top-level
+    // `solver_config.solver_kind`): a DIRECT solve has jacobian + solve; a KRYLOV
+    // (matrix-free) solve has `matvec_loader` (J.v) instead of `solve_loader`, and
+    // `jacobian_loader` only when a preconditioner or an input derivative needs
+    // the assembled A. Each loader is therefore constructed iff its package key is
+    // present in the segment metadata.
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> residual_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> jacobian_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> solve_loader;
+    /// Matrix-free residual jvp J.v = ∂r/∂u . v (Krylov solvers only; null for a
+    /// direct solve). `KrylovAOTINonlinearSystem::step()` drives it per inner
+    /// Krylov iteration in place of chaining jacobian -> solve.
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> matvec_loader;
     /// IFT (input-derivative) operator + solve graphs. `jacobian_given_loader`
     /// emits B = ∂r/∂g; A = ∂r/∂u is reused from `jacobian_loader`. `solve_ift_loader`
     /// takes `(*A_blocks, *B_blocks)` and emits one `-du/dg` block per (unknown,
@@ -370,6 +387,14 @@ struct Model::Impl
                              std::map<std::string, at::Tensor> & state,
                              std::vector<at::Tensor> & u_solved_groups,
                              std::vector<at::Tensor> & g_groups) const;
+
+  /// Build the `NonlinearSystem` the shared C++ Newton loop drives for an
+  /// implicit segment: an `AOTINonlinearSystem` (direct: jacobian -> solve) or a
+  /// `KrylovAOTINonlinearSystem` (matrix-free Krylov over the matvec graph),
+  /// chosen by `_solver_kind`. `g_groups` are the per-group givens (bound into
+  /// the system). Shared by the plain + masked implicit solve paths.
+  std::unique_ptr<NonlinearSystem>
+  _make_implicit_system(const Segment & seg, const std::vector<at::Tensor> & g_groups) const;
 
   /// Adaptive substepping driver: wraps `_run_implicit_segment` in a
   /// recursive bisection over the increment. Snapshots the segment's endpoint
@@ -718,5 +743,12 @@ struct Model::Impl
   // Implicit-segment Newton configuration, supplied at load time via
   // Model::set_solver_config (defaults if never set).
   SolverConfig _solver_config;
+
+  // Implicit linear-solver kind (baked at compile, read from metadata):
+  // "direct" chains jacobian -> solve; "krylov" runs a matrix-free Krylov solve
+  // (`_krylov_config`) over `matvec_loader`. `_run_implicit_segment` branches on
+  // this to pick the AOTI / Krylov NonlinearSystem.
+  std::string _solver_kind = "direct";
+  KrylovConfig _krylov_config;
 };
 } // namespace neml2::aoti

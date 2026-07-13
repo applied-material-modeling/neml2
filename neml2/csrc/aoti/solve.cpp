@@ -32,6 +32,9 @@
 #include "neml2/csrc/aoti/internal.h"
 #include "neml2/csrc/aoti/newton.h"
 #include "neml2/csrc/aoti/nonlinear_system_aoti.h"
+#include "neml2/csrc/aoti/nonlinear_system_krylov_aoti.h"
+
+#include <memory>
 
 #include <torch/csrc/inductor/aoti_package/model_package_loader.h>
 
@@ -183,6 +186,58 @@ Model::Impl::_unpack_groups(const std::vector<at::Tensor> & group_tensors,
   }
 }
 
+std::unique_ptr<NonlinearSystem>
+Model::Impl::_make_implicit_system(const Segment & seg,
+                                   const std::vector<at::Tensor> & g_groups) const
+{
+  auto to_layouts = [](const std::vector<Segment::GroupInfo> & groups)
+  {
+    std::vector<GroupLayout> out;
+    out.reserve(groups.size());
+    for (const auto & g : groups)
+      out.push_back(GroupLayout{g.structure, g.sub_batch_shape});
+    return out;
+  };
+  auto u_layouts = to_layouts(seg.unknown_groups);
+  auto r_layouts = to_layouts(seg.residual_groups);
+  auto params = _gather_params(seg.param_inputs);
+
+  if (_solver_kind == "krylov")
+  {
+    _assert(seg.matvec_loader != nullptr,
+            "aoti::Model: solver_kind is 'krylov' but the segment has no matvec "
+            "graph. Regenerate the artifact via `neml2-compile`.");
+    // Per-variable storage widths of the unknowns (the BlockJacobi block sizes);
+    // dense storage folds any sub-batch into the base, matching the Python
+    // AssembledMatrix._var_storage the eager path uses.
+    std::vector<int64_t> block_sizes;
+    block_sizes.reserve(seg.unknowns.size());
+    for (const auto & v : seg.unknowns)
+    {
+      int64_t storage = v.var_size;
+      for (auto s : v.sub_batch_shape)
+        storage *= s;
+      block_sizes.push_back(storage);
+    }
+    return std::make_unique<KrylovAOTINonlinearSystem>(*seg.residual_loader,
+                                                       *seg.matvec_loader,
+                                                       seg.jacobian_loader.get(),
+                                                       std::move(u_layouts),
+                                                       std::move(r_layouts),
+                                                       g_groups,
+                                                       std::move(params),
+                                                       _krylov_config,
+                                                       std::move(block_sizes));
+  }
+  return std::make_unique<AOTINonlinearSystem>(*seg.residual_loader,
+                                               *seg.jacobian_loader,
+                                               *seg.solve_loader,
+                                               std::move(u_layouts),
+                                               std::move(r_layouts),
+                                               g_groups,
+                                               std::move(params));
+}
+
 void
 Model::Impl::_run_implicit_segment(const Segment & seg,
                                    std::map<std::string, at::Tensor> & state,
@@ -268,30 +323,17 @@ Model::Impl::_run_implicit_segment(const Segment & seg,
   g_groups = _pack_groups(state, seg.given_groups);
   auto u0_groups = _pack_groups(state, seg.unknown_groups);
 
-  // Drive the shared Newton solver over an AOTI-backed system. The givens +
-  // promoted-parameter tail are bound into the system (constant across the
-  // solve); the solver config comes from the segment metadata.
-  auto to_layouts = [](const std::vector<Segment::GroupInfo> & groups)
-  {
-    std::vector<GroupLayout> out;
-    out.reserve(groups.size());
-    for (const auto & g : groups)
-      out.push_back(GroupLayout{g.structure, g.sub_batch_shape});
-    return out;
-  };
-  AOTINonlinearSystem sys(*seg.residual_loader,
-                          *seg.jacobian_loader,
-                          *seg.solve_loader,
-                          to_layouts(seg.unknown_groups),
-                          to_layouts(seg.residual_groups),
-                          g_groups,
-                          _gather_params(seg.param_inputs));
+  // Drive the shared Newton solver over an AOTI-backed system (direct or
+  // matrix-free Krylov, per `_solver_kind`). The givens + promoted-parameter tail
+  // are bound into the system (constant across the solve); the solver config comes
+  // from the segment metadata.
+  auto sys = _make_implicit_system(seg, g_groups);
   // Solver config is read from the shared metadata.json at construction
   // (overridable via set_solver_config). A failed solve (divergence or max-iterations) throws
   // ConvergenceError out of solve(), so reaching `.u` means it converged -- the
   // recoverable error propagates up through Model::forward/jacobian to the
   // caller, who can cut the time step and retry.
-  u_solved_groups = Newton(_solver_config).solve(sys, u0_groups).u;
+  u_solved_groups = Newton(_solver_config).solve(*sys, u0_groups).u;
 
   // Unpack converged per-group unknowns back to per-variable state for
   // downstream forward segments / master outputs to read by name.
@@ -369,22 +411,8 @@ Model::Impl::_run_implicit_segment_masked(const Segment & seg,
   auto g_groups = _pack_groups(state, seg.given_groups);
   auto u0_groups = _pack_groups(state, seg.unknown_groups);
 
-  auto to_layouts = [](const std::vector<Segment::GroupInfo> & groups)
-  {
-    std::vector<GroupLayout> out;
-    out.reserve(groups.size());
-    for (const auto & g : groups)
-      out.push_back(GroupLayout{g.structure, g.sub_batch_shape});
-    return out;
-  };
-  AOTINonlinearSystem sys(*seg.residual_loader,
-                          *seg.jacobian_loader,
-                          *seg.solve_loader,
-                          to_layouts(seg.unknown_groups),
-                          to_layouts(seg.residual_groups),
-                          g_groups,
-                          _gather_params(seg.param_inputs));
-  auto res = Newton(_solver_config).solve_masked(sys, u0_groups);
+  auto sys = _make_implicit_system(seg, g_groups);
+  auto res = Newton(_solver_config).solve_masked(*sys, u0_groups);
   _unpack_groups(res.u, seg.unknown_groups, state);
   return res.converged_mask;
 }

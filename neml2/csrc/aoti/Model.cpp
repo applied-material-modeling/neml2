@@ -167,7 +167,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // a cryptic missing-field error deep in the parser. The canonical value lives
   // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 10;
+  static constexpr int kSupportedSchemaVersion = 11;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -451,6 +451,29 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
     _solver_config.ls_max_iters = sc.value("ls_max_iters", _solver_config.ls_max_iters);
     _solver_config.ls_cutback = sc.value("ls_cutback", _solver_config.ls_cutback);
     _solver_config.ls_c = sc.value("ls_c", _solver_config.ls_c);
+
+    // Linear-solver kind (schema v11). "direct" (default) chains jacobian ->
+    // solve; "krylov" runs a matrix-free Krylov solve over the matvec graph,
+    // configured by the nested `krylov` block.
+    _solver_kind = sc.value("solver_kind", std::string("direct"));
+    if (sc.contains("krylov"))
+    {
+      const auto & kc = sc["krylov"];
+      _assert(parse_krylov_method(kc.value("method", std::string("gmres")), _krylov_config.method),
+              "aoti::Model: unknown krylov method in metadata");
+      _assert(parse_precond_kind(kc.value("preconditioner", std::string("none")),
+                                 _krylov_config.precond),
+              "aoti::Model: unknown krylov preconditioner in metadata");
+      _assert(parse_cache_strategy(kc.value("cache_strategy", std::string("none")),
+                                   _krylov_config.cache),
+              "aoti::Model: unknown krylov cache_strategy in metadata");
+      _krylov_config.restart = kc.value("restart", _krylov_config.restart);
+      _krylov_config.max_iters = kc.value("max_krylov_iters", _krylov_config.max_iters);
+      _krylov_config.abs_tol = kc.value("krylov_abs_tol", _krylov_config.abs_tol);
+      _krylov_config.rel_tol = kc.value("krylov_rel_tol", _krylov_config.rel_tol);
+      _krylov_config.quality_threshold =
+          kc.value("cache_threshold", _krylov_config.quality_threshold);
+    }
   }
 
   // Segments.
@@ -547,14 +570,22 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
     {
       seg.kind = SegmentKind::Implicit;
       seg.max_substepping_level = seg_meta.value("max_substepping_level", 0);
-      // Operator + solve graphs (schema v10): the Jacobian is emitted as an
+      // Operator + solve graphs (schema v10+): the Jacobian is emitted as an
       // operator and the linear solve is a separate graph the C++ driver chains.
+      // Which graphs are present depends on the solver kind -- a direct solve has
+      // jacobian + solve; a Krylov solve has matvec (+ jacobian only when a
+      // preconditioner / input derivative needs A). Load each iff its key exists.
       seg.residual_loader =
           make_loader(cache_dir / seg_meta["residual_package"].get<std::string>(), dev_idx);
-      seg.jacobian_loader =
-          make_loader(cache_dir / seg_meta["jacobian_package"].get<std::string>(), dev_idx);
-      seg.solve_loader =
-          make_loader(cache_dir / seg_meta["solve_package"].get<std::string>(), dev_idx);
+      if (seg_meta.contains("jacobian_package"))
+        seg.jacobian_loader =
+            make_loader(cache_dir / seg_meta["jacobian_package"].get<std::string>(), dev_idx);
+      if (seg_meta.contains("solve_package"))
+        seg.solve_loader =
+            make_loader(cache_dir / seg_meta["solve_package"].get<std::string>(), dev_idx);
+      if (seg_meta.contains("matvec_package"))
+        seg.matvec_loader =
+            make_loader(cache_dir / seg_meta["matvec_package"].get<std::string>(), dev_idx);
       if (seg_meta.contains("solve_ift_package"))
       {
         seg.jacobian_given_loader =
