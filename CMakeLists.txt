@@ -4,7 +4,7 @@
 # dependencies: cmake.version_min
 cmake_minimum_required(VERSION 3.26.1)
 # dependencies: neml2.version
-project(NEML2 VERSION 3.0.6 LANGUAGES C CXX)
+project(NEML2 VERSION 3.0.7 LANGUAGES C CXX)
 
 # ----------------------------------------------------------------------------
 # Testing (enable_testing + ctest plumbing)

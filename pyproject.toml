@@ -57,7 +57,7 @@ build.targets = ["aoti", "eager", "pyneml2", "cpp_tests"]
 [project]
 name = "neml2"
 # dependencies: neml2.version
-version = "3.0.6"
+version = "3.0.7"
 authors = [
   { name = "Mark Messner", email = "messner@anl.gov" },
   { name = "Gary Hu", email = "thu@anl.gov" },
@@ -291,12 +291,19 @@ before-all = ""
 # links its static lib via Findnmhit), so -- unlike the pure-runtime pyzag -- it
 # must be installed before the build. pyzag stays out: repair_wheel.py reads the
 # pure-runtime deps from the freshly-built wheel's metadata after install.
+# torch is pinned (not left bare) so the published wheels compile against the
+# reference build_torch, not whatever PyTorch has most recently released.
+# dependencies: torch.version
 # dependencies: nmhit.version_min
 # dependencies: pybind11_stubgen.version_min
-before-build = "python -m pip install scikit-build-core ninja torch 'nmhit>=0.3.6' wheel pybind11-stubgen>=2.5.5"
+before-build = "python -m pip install scikit-build-core ninja torch==2.12.1 'nmhit>=0.3.6' wheel pybind11-stubgen>=2.5.5"
 
+# Pin torch here too: this is the release wheel's own test gate, so it must run
+# against the reference torch, not drift onto every new PyTorch release. The
+# compat matrix (.github/workflows/compat.yaml) is the one place torch is swept.
+# dependencies: torch.version
 # dependencies: pyzag.version
-test-requires = "pytest torch pyzag==1.1.4"
+test-requires = "pytest torch==2.12.1 pyzag==1.1.4"
 test-command = "pytest -v {project}/tests"
 
 [tool.cibuildwheel.linux]
