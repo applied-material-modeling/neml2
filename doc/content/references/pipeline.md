@@ -208,17 +208,26 @@ requested with `-d/--derivative` (none by default). **Forward segments**
 always lower a value graph and, when a requested pair runs through them, a
 per-variable-pair `jvp` graph emitting just the on-path blocks — a block
 that does not depend on the dynamic batch is traced, and returned,
-unbatched. **Implicit segments** always lower a Newton residual and a
-fused assemble + solve + update step (plus an optional predictor), and
+unbatched. **Implicit segments** lower a Newton residual plus the
+operators the linear solve needs (the solve is **un-baked** from the
+operator — the C++ runtime chains them per Newton iteration), and
 additionally an implicit-function-theorem sensitivity graph only when a
-requested pair's derivative path runs through them. The implicit-segment
-graphs forward to whichever linear solver the source model is configured
-with (`DenseLU` for the common single-group case; `SchurComplement` for
-the `BLOCK + DENSE` 2-group factorisation).
+requested pair's derivative path runs through them. Which forward-solve
+graphs are lowered depends on the source model's linear solver:
+
+- a **direct** solver (`DenseLU` for the common single-group case;
+  `SchurComplement` for the `BLOCK + DENSE` 2-group factorisation) lowers
+  a residual-Jacobian operator (`A = ∂r/∂u`) + a `solve` graph
+  (`du = A^{-1} b`);
+- a **matrix-free Krylov** solver (`GMRES` / `BiCGStab`) lowers a `matvec`
+  graph (`J·v = ∂r/∂u·v`) that the C++ runtime drives a batched Krylov
+  iteration over, never assembling `A` (the Jacobian operator is lowered
+  too only when a preconditioner or an input derivative needs it).
 
 The C++ orchestrator sees the same flat `(u_flat, g_flat) →
 (u_new, b_new)` contract either way — the multi-group / sub-batch
-structure is internal to the `.pt2`.
+structure, and the direct-vs-iterative linear solve, are internal to the
+segment's graphs + `solver_config`.
 
 ## After export: emit the HIT stub
 

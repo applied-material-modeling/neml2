@@ -129,8 +129,9 @@ boundary into separate **segments**, each numbered `_seg{i}_`:
 | `<name>_seg{i}.pt2`             | Forward-segment value graph.                            |
 | `<name>_seg{i}_jvp.pt2`         | Forward-segment per-pair Jacobian graph (only when `-d` requested a pair this segment contributes to). |
 | `<name>_seg{i}_residual.pt2`    | Implicit-segment Newton residual `-r(u, g)`.            |
-| `<name>_seg{i}_jacobian.pt2`    | Implicit-segment residual Jacobian operator `A = ∂r/∂u` (+ `b`); no baked solve. |
-| `<name>_seg{i}_solve.pt2`       | Implicit-segment linear solve `du = A^{-1} b` (the configured linear solver, un-baked from the operator). |
+| `<name>_seg{i}_jacobian.pt2`    | Implicit-segment residual Jacobian operator `A = ∂r/∂u` (+ `b`); no baked solve. Direct solve always; a Krylov solve only when a preconditioner or an input derivative needs the assembled `A`. |
+| `<name>_seg{i}_solve.pt2`       | Implicit-segment linear solve `du = A^{-1} b` (the configured direct linear solver, un-baked from the operator). Direct solve only. |
+| `<name>_seg{i}_matvec.pt2`      | Implicit-segment matrix-free operator `J·v = ∂r/∂u·v` (a Krylov solve only, in place of `_solve`); the C++ runtime drives GMRES/BiCGStab over it. |
 | `<name>_seg{i}_jacobian_given.pt2` | IFT given-side operator `B = ∂r/∂g` (only when `-d` requested an input-derivative pair routed through this segment). |
 | `<name>_seg{i}_solve_ift.pt2`   | IFT solve `-A^{-1} B` disassembled to per-`(unknown, given)` blocks (paired with `_jacobian_given`). |
 | `<name>_seg{i}_dr_dparam.pt2`   | Parameter-derivative operators: dense `A` + `∂r/∂θ` (only when `-d` requested a promoted-parameter pair). |
@@ -176,6 +177,14 @@ folder path. It records, at a high level:
   operator: the choice of linear solver lives in the `_solve.pt2` / `_solve_ift.pt2`
   / `_solve_param.pt2` graphs (recompile to change it), while the C++ runtime
   drives the operator → solve chain generically.
+  `solver_kind` selects the implicit linear solve: `"direct"` (the default —
+  `_jacobian` → `_solve`) or `"krylov"` (matrix-free GMRES/BiCGStab over
+  `_matvec`). When `"krylov"`, a nested `krylov` block records the iterative
+  settings — `method`, `restart`, `max_krylov_iters`, `krylov_abs_tol`,
+  `krylov_rel_tol`, `preconditioner` (`none` / `jacobi` / `block_jacobi` /
+  `full`), `cache_strategy` (`none` / `chord` / `quality_threshold`), and
+  `cache_threshold`. The forward Newton solve honors it; the IFT / parameter
+  derivative solves stay direct.
 - **Boundary aliases** (optional `boundary_aliases`) — shallow renames
   applied at the interface only. Present only when the artifact was
   compiled with `--rename-input` / `--rename-output` / `--rename-parameter`;
@@ -204,24 +213,32 @@ Two segment kinds appear inside `segments`:
   requested a derivative pair this segment contributes to (a block that
   does not depend on the dynamic batch is emitted unbatched). Call shape
   is `(*user_inputs, *promoted_params) -> outputs`.
-- **Implicit** segments always lower `_residual.pt2` (Newton residual),
-  `_jacobian.pt2` (the residual Jacobian operator `A = ∂r/∂u` + `b`), and
-  `_solve.pt2` (the linear solve `du = A^{-1} b`), plus an optional
-  `_predictor.pt2` graph when the source had a `Predictor`. The linear solve
-  is **un-baked** from the operator: the C++ runtime chains `_jacobian → _solve`
-  per Newton iteration, so the same operator can feed an iterative solver.
-  They additionally lower `_jacobian_given.pt2` (`B = ∂r/∂g`) + `_solve_ift.pt2`
-  (`-A^{-1} B` implicit-function-theorem sensitivity at the converged state,
-  reusing `_jacobian`'s `A`) **only when `-d` requested an input-derivative pair
-  routed through this segment**, and `_dr_dparam.pt2` + `_solve_param.pt2` for a
-  promoted-parameter derivative. The Newton loop body is two loader calls
-  (jacobian → solve) per iteration plus a convergence sync; the IFT / param
-  graphs, when present, are consumed by `jacobian()` / `jvp()` / `param_jacobian()`.
+- **Implicit** segments always lower `_residual.pt2` (Newton residual), plus an
+  optional `_predictor.pt2` graph when the source had a `Predictor`. The
+  remaining forward-solve graphs depend on `solver_config.solver_kind`:
+  - a **direct** solve (`DenseLU` / `SchurComplement`) lowers `_jacobian.pt2`
+    (the residual Jacobian operator `A = ∂r/∂u` + `b`) and `_solve.pt2` (the
+    linear solve `du = A^{-1} b`). The linear solve is **un-baked** from the
+    operator: the C++ runtime chains `_jacobian → _solve` per Newton iteration.
+  - a **matrix-free Krylov** solve (`GMRES` / `BiCGStab`) lowers `_matvec.pt2`
+    (`J·v = ∂r/∂u·v`) instead of `_solve`; the C++ runtime runs a batched Krylov
+    iteration over it (never assembling `A`). `_jacobian.pt2` is lowered too only
+    when a preconditioner (`jacobi` / `block_jacobi` / `full`) or an input
+    derivative needs the assembled `A`.
+
+  Either kind additionally lowers `_jacobian_given.pt2` (`B = ∂r/∂g`) +
+  `_solve_ift.pt2` (`-A^{-1} B` implicit-function-theorem sensitivity at the
+  converged state, reusing `_jacobian`'s `A`) **only when `-d` requested an
+  input-derivative pair routed through this segment**, and `_dr_dparam.pt2` +
+  `_solve_param.pt2` for a promoted-parameter derivative (the derivative solves
+  are always direct, even under a Krylov forward). The IFT / param graphs, when
+  present, are consumed by `jacobian()` / `jvp()` / `param_jacobian()`.
 
   The Newton solve's convergence tolerances, iteration cap, and line-search
   settings are recorded in `metadata.json` under `solver_config` and read
   directly by the C++ runtime (see [What's in the metadata JSON](#whats-in-the-metadata-json)
-  above). The linear-solver choice is baked into the `_solve*.pt2` graphs.
+  above). The linear-solver choice (direct vs Krylov, preconditioner, cache
+  strategy) is baked into the graph set + `solver_config`.
 
 Each segment declares its inputs / outputs / promoted-parameter inputs
 in the same per-variable structure as the top-level layout.
