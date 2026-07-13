@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -298,7 +298,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -558,6 +557,26 @@ non-implicit leaves coalesce into a single forward segment, every
 inputs from that map. The shared map plus topological order is
 what lets a multi-segment artifact present a single forward
 contract to the loader.</p>
+<p>The segments are coupled <strong>only</strong> at runtime, through that state map;
+their compiles are independent. <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">-j</span> <span class="pre">N</span></code> therefore flattens
+the whole <code class="docutils literal notranslate"><span class="pre">(device</span> <span class="pre">×</span> <span class="pre">segment)</span></code> grid into a single spawn process pool of up
+to <code class="docutils literal notranslate"><span class="pre">N</span></code> workers — each worker re-derives its assigned segment from the input
+file (live models can’t cross the process boundary), and the per-segment
+metadata is reassembled in segment order so the emitted artifacts are
+identical to a serial run. Because the grid spans devices, a
+<code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code> build of a two-segment model saturates <code class="docutils literal notranslate"><span class="pre">-j</span> <span class="pre">4</span></code> (and the
+devices compile concurrently); <code class="docutils literal notranslate"><span class="pre">N</span></code> is capped at the number of grid cells.
+Only work that actually partitions benefits — a single-segment model on one
+device has one cell, so <code class="docutils literal notranslate"><span class="pre">-j</span></code> is a no-op there. With <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cuda</span></code> each
+worker initializes its own CUDA context and invokes the CUDA compiler, so a
+<code class="docutils literal notranslate"><span class="pre">cpu</span></code>-target and a <code class="docutils literal notranslate"><span class="pre">cuda</span></code>-target compile running at once share CPU cores;
+watch memory when raising <code class="docutils literal notranslate"><span class="pre">N</span></code>.</p>
+<p>The set of segments — and every file the compile will produce — can be
+enumerated ahead of time, without compiling, via
+<code class="docutils literal notranslate"><span class="pre">neml2.cli.aoti_export.plan_export_artifacts</span></code>. <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> uses it to
+size the <code class="docutils literal notranslate"><span class="pre">[k/N]</span></code> per-file progress it prints as each <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>
+(each tagged with its device, e.g. <code class="docutils literal notranslate"><span class="pre">cpu/float64/model_seg0.pt2</span></code>),
+the shared <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>, and the optional <code class="docutils literal notranslate"><span class="pre">_aoti.i</span></code> stub is written.</p>
 </section>
 <section id="stage-7-trace-lower-package">
 <h2>Stage 7 — Trace, lower, package<a class="headerlink" href="#stage-7-trace-lower-package" title="Link to this heading">#</a></h2>
@@ -601,9 +620,9 @@ structure is internal to the <code class="docutils literal notranslate"><span cl
 </section>
 <section id="after-export-emit-the-hit-stub">
 <h2>After export: emit the HIT stub<a class="headerlink" href="#after-export-emit-the-hit-stub" title="Link to this heading">#</a></h2>
-<p>Once each device’s metadata JSON and <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs have been
-written, the exporter rewrites the source HIT file into a standalone
-stub:</p>
+<p>Once the metadata JSON and <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs have been written, the
+exporter optionally rewrites the source HIT file into a standalone
+stub (suppressed by <code class="docutils literal notranslate"><span class="pre">--no-stub</span></code>):</p>
 <ul class="simple">
 <li><p>find the top-level <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> block containing the target model
 (HIT allows multiple <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> blocks — all of them are walked);</p></li>
@@ -612,28 +631,23 @@ stub:</p>
 unrelated <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> entries are dropped — they’re unreachable
 from the shim at runtime;</p></li>
 <li><p>point the shim at the compiled artifact via an absolute
-<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> field (the <code class="docutils literal notranslate"><span class="pre">&lt;model&gt;/</span></code> folder holding one
-<code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolder per compiled device);</p></li>
+<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> field (the <code class="docutils literal notranslate"><span class="pre">&lt;model&gt;/</span></code> artifact root folder);</p></li>
 <li><p>carry <code class="docutils literal notranslate"><span class="pre">[Settings]</span></code> (with the legacy <code class="docutils literal notranslate"><span class="pre">aoti_*</span></code> keys stripped, since
 they would fail the v3 factory’s strict-key check) and <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code>
 from the original; keep <code class="docutils literal notranslate"><span class="pre">[Drivers]</span></code> only in <code class="docutils literal notranslate"><span class="pre">--driver</span></code> mode; drop
-<code class="docutils literal notranslate"><span class="pre">[Data]</span></code> and <code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> (their state is baked into the
-<code class="docutils literal notranslate"><span class="pre">.pt2</span></code>);</p></li>
-<li><p>for an implicit model, carry a <em>minimal</em> <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> block — only
-the implicit model’s solver, and only its honored convergence /
-line-search knobs — and reference it from the shim via a
-<code class="docutils literal notranslate"><span class="pre">solver</span> <span class="pre">=</span> <span class="pre">&lt;name&gt;</span></code> field. The <code class="docutils literal notranslate"><span class="pre">linear_solver</span></code> field is dropped on
-purpose: it is baked into the compiled step / IFT graphs, so
-editing it in the stub would have no effect.</p></li>
+<code class="docutils literal notranslate"><span class="pre">[Data]</span></code>, <code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code>, and <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> — their state is
+baked into the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> or the <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> <code class="docutils literal notranslate"><span class="pre">solver_config</span></code>.</p></li>
 </ul>
 <p>The stub is written to <code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;model&gt;_aoti.i</span></code>, <em>next to</em> (not
-inside) the <code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;model&gt;/</span></code> artifact folder. Because the
-<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> is recorded as an absolute path, the stub is
-standalone but <strong>not relocatable</strong>: moving the artifacts requires
-recompiling (or hand-editing the path). The loader (the Python shim
-or the C++ <code class="docutils literal notranslate"><span class="pre">load_model</span></code>) resolves
-<code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;model&gt;_meta.json</span></code> for the device it runs
-on.</p>
+inside) the <code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;model&gt;/</span></code> artifact folder. The <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code>
+is recorded <strong>relative to the stub</strong> (usually just the folder name), so
+the stub and its artifact folder form a <strong>portable bundle</strong>: move the two
+together — to another directory, machine, or user — and it still loads,
+no recompile or path edit needed. (Moving the stub away from its folder
+is intentionally unsupported.) The loader (the Python shim or the C++
+<code class="docutils literal notranslate"><span class="pre">load_model</span></code>) resolves the relative <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> against the stub’s
+directory, reads <code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/metadata.json</span></code>, and resolves
+<code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;dtype&gt;/</span></code> for the device and dtype it runs on.</p>
 </section>
 <section id="see-also">
 <h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>

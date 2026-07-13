@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -298,7 +298,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -453,9 +452,9 @@ chemical-reactions types slot into that machinery.</p>
 <p>A reaction mechanism is a constitutive relation between the conversion
 degree <span class="math notranslate nohighlight">\(\alpha \in [0, 1]\)</span> and the reaction rate
 <span class="math notranslate nohighlight">\(\dot{\alpha} = f(\alpha)\)</span>. The three mechanisms in this module are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-3616a0a3-9bbc-4318-87b6-fb278632ec46">
-<div class="amsmath math notranslate nohighlight" id="equation-3616a0a3-9bbc-4318-87b6-fb278632ec46">
-<span class="eqno">(4)<a class="headerlink" href="#equation-3616a0a3-9bbc-4318-87b6-fb278632ec46" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-cc76afdf-3ee3-40f5-87f9-e581d0dea883">
+<div class="amsmath math notranslate nohighlight" id="equation-cc76afdf-3ee3-40f5-87f9-e581d0dea883">
+<span class="eqno">(4)<a class="headerlink" href="#equation-cc76afdf-3ee3-40f5-87f9-e581d0dea883" title="Permalink to this equation">#</a></span>\[\begin{align}
 \dot{\alpha} &amp;= k \, (1 - \alpha)^n
   &amp;&amp;\text{(contracting geometry)} \\
 \dot{\alpha} &amp;= k \, (1 - \alpha) \, \bigl(-\ln(1 - \alpha)\bigr)^n

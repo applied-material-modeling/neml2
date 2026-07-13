@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -298,7 +298,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -707,11 +706,11 @@ dropping the HIT parser from a deployment image, baking parameters
 into a frozen graph for performance.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">usage: neml2-compile [-h] [-i] [--model NAME | --driver NAME]
 </span><span data-line="2">                     [--output-dir DIR] [--device DEVICE [DEVICE ...]]
-</span><span data-line="3">                     [--dtype {float64,float32}] [-p NAME] [-d OUT:IN]
-</span><span data-line="4">                     [--example-batch-shape SPEC] [--dynamic-batch]
-</span><span data-line="5">                     [--no-dynamic-batch] [--rename-input ORIG:NEW]
-</span><span data-line="6">                     [--rename-output ORIG:NEW] [--rename-parameter ORIG:NEW]
-</span><span data-line="7">                     [--load PATH]
+</span><span data-line="3">                     [--dtype {float64,float32}] [-j N] [--no-stub] [-p NAME]
+</span><span data-line="4">                     [-d OUT:IN] [--example-batch-shape SPEC]
+</span><span data-line="5">                     [--dynamic-batch] [--no-dynamic-batch]
+</span><span data-line="6">                     [--rename-input ORIG:NEW] [--rename-output ORIG:NEW]
+</span><span data-line="7">                     [--rename-parameter ORIG:NEW] [--load PATH]
 </span><span data-line="8">                     INPUT.i
 </span><span data-line="9">
 </span><span data-line="10">Compile a NEML2 Python-native model to AOTI artifacts (.pt2 + metadata JSON)
@@ -738,67 +737,82 @@ into a frozen graph for performance.</p>
 </span><span data-line="31">                        contained, drop-in replacement for the original
 </span><span data-line="32">                        driver.
 </span><span data-line="33">  --output-dir DIR      Collection dir for the compiled artifacts (default:
-</span><span data-line="34">                        ./aoti/). Each model lands in &lt;DIR&gt;/&lt;NAME&gt;/&lt;device&gt;/
-</span><span data-line="35">                        with a standalone &lt;DIR&gt;/&lt;NAME&gt;_aoti.i stub next to it.
-</span><span data-line="36">  --device DEVICE [DEVICE ...]
-</span><span data-line="37">                        Target device(s) for the artifact, baked at export
-</span><span data-line="38">                        time. Accepts more than one (e.g. --device cpu cuda):
-</span><span data-line="39">                        one complete artifact is emitted per device into a
-</span><span data-line="40">                        subfolder named by the device (&lt;output-dir&gt;/cpu/,
-</span><span data-line="41">                        &lt;output-dir&gt;/cuda/), ready for a multi-device
-</span><span data-line="42">                        dispatcher to load.
-</span><span data-line="43">  --dtype {float64,float32}
-</span><span data-line="44">                        Floating-point dtype for the artifact (baked at export
-</span><span data-line="45">                        time).
-</span><span data-line="46">  -p NAME, --parameter NAME
-</span><span data-line="47">                        Promote a parameter or buffer (fully-qualified dotted
-</span><span data-line="48">                        name) to runtime-flexible status -- it becomes a graph
-</span><span data-line="49">                        input rather than a baked constant. Repeatable. With
-</span><span data-line="50">                        no -p flags the model is fully baked.
-</span><span data-line="51">  -d OUT:IN, --derivative OUT:IN
-</span><span data-line="52">                        Compile the derivative (Jacobian / JVP) graph for the
-</span><span data-line="53">                        OUT:IN output-input pair. Repeatable. Omit a side to
-</span><span data-line="54">                        select all on that side: &#39;stress:strain&#39; is one pair,
-</span><span data-line="55">                        &#39;stress:&#39; all inputs of stress, &#39;:strain&#39; all outputs
-</span><span data-line="56">                        wrt strain, &#39;:&#39; all pairs. With no -d flags NO
-</span><span data-line="57">                        derivative graphs are compiled (smallest artifact) and
-</span><span data-line="58">                        the runtime jvp()/jacobian() raise until recompiled
-</span><span data-line="59">                        with -d.
-</span><span data-line="60">  --example-batch-shape SPEC
-</span><span data-line="61">                        Example shape used when tracing. Two forms: --example-
-</span><span data-line="62">                        batch-shape &#39;(2,)&#39; (uniform across all inputs)
-</span><span data-line="63">                        --example-batch-shape strain=&#39;(2;100)&#39; --example-
-</span><span data-line="64">                        batch-shape temperature=&#39;(2,)&#39; (per-variable;
-</span><span data-line="65">                        repeatable) The semicolon delimits dynamic-batch from
-</span><span data-line="66">                        sub-batch axes -- &#39;(2;100)&#39; means dyn=(2,),
-</span><span data-line="67">                        sub=(100,). Overrides [Settings]/example_batch_shape.
-</span><span data-line="68">  --dynamic-batch       Compile a dynamic-batch artifact: the leading batch
-</span><span data-line="69">                        dim of the example shape becomes a runtime-variable
-</span><span data-line="70">                        torch.export Dim. Default unless overridden by
-</span><span data-line="71">                        [Settings]/dynamic_batch in the input.
-</span><span data-line="72">  --no-dynamic-batch    Pin the batch dim at the example shape. Required when
-</span><span data-line="73">                        a baked parameter has rank&gt;=1 and would specialize the
-</span><span data-line="74">                        dynamic dim.
-</span><span data-line="75">  --rename-input ORIG:NEW
-</span><span data-line="76">                        Rename an input variable at the compiled artifact&#39;s
-</span><span data-line="77">                        boundary: a downstream consumer sees NEW while the
-</span><span data-line="78">                        model&#39;s internal wiring keeps ORIG. Repeatable. Only
-</span><span data-line="79">                        valid with --model (not --driver).
-</span><span data-line="80">  --rename-output ORIG:NEW
-</span><span data-line="81">                        Rename an output variable at the boundary (the
-</span><span data-line="82">                        consumer sees NEW; the internals keep ORIG).
-</span><span data-line="83">                        Repeatable. Only valid with --model.
-</span><span data-line="84">  --rename-parameter ORIG:NEW
-</span><span data-line="85">                        Rename a promoted parameter at the boundary (the
-</span><span data-line="86">                        consumer sees NEW; the internals keep the qualified
-</span><span data-line="87">                        ORIG). ORIG must be a promoted parameter (see -p).
-</span><span data-line="88">                        Repeatable. Only valid with --model.
-</span><span data-line="89">  --load PATH           Import a user extension before processing. PATH is
-</span><span data-line="90">                        either a filesystem path to a .py file / package
-</span><span data-line="91">                        directory, or a dotted module name already importable
-</span><span data-line="92">                        from sys.path. Repeatable; modules are imported in the
-</span><span data-line="93">                        order given so later modules may depend on names
-</span><span data-line="94">                        registered by earlier ones.
+</span><span data-line="34">                        ./aoti/). Each model lands in &lt;DIR&gt;/&lt;NAME&gt;/ (one
+</span><span data-line="35">                        shared metadata.json + &lt;device&gt;/&lt;dtype&gt;/ .pt2
+</span><span data-line="36">                        binaries), with a standalone &lt;DIR&gt;/&lt;NAME&gt;_aoti.i stub
+</span><span data-line="37">                        next to it unless --no-stub.
+</span><span data-line="38">  --device DEVICE [DEVICE ...]
+</span><span data-line="39">                        Target device(s) for the artifact, baked at export
+</span><span data-line="40">                        time. Accepts more than one (e.g. --device cpu cuda):
+</span><span data-line="41">                        one complete artifact is emitted per device into a
+</span><span data-line="42">                        subfolder named by the device (&lt;output-dir&gt;/cpu/,
+</span><span data-line="43">                        &lt;output-dir&gt;/cuda/), ready for a multi-device
+</span><span data-line="44">                        dispatcher to load.
+</span><span data-line="45">  --dtype {float64,float32}
+</span><span data-line="46">                        Floating-point dtype for the artifact (baked at export
+</span><span data-line="47">                        time).
+</span><span data-line="48">  -j N, --jobs N        Compile independent segments in parallel using up to N
+</span><span data-line="49">                        worker processes (spawn). Default 1 (serial). Only a
+</span><span data-line="50">                        multi-segment model (a ComposedModel containing an
+</span><span data-line="51">                        ImplicitUpdate) benefits; single-segment models ignore
+</span><span data-line="52">                        N, and N is capped at the number of segments (one task
+</span><span data-line="53">                        per segment). With --device cuda each worker spawns
+</span><span data-line="54">                        its own CUDA context and invokes nvcc -- watch memory.
+</span><span data-line="55">  --no-stub             Skip the standalone &lt;model&gt;_aoti.i stub (compile the
+</span><span data-line="56">                        artifact folder only). The stub is a neml2-run / py-
+</span><span data-line="57">                        aoti convenience; the artifact folder (metadata.json +
+</span><span data-line="58">                        &lt;device&gt;/&lt;dtype&gt;/ binaries) is self-describing, so
+</span><span data-line="59">                        cpp-aoti / cpp-dispatch never need it. Default: the
+</span><span data-line="60">                        stub is emitted.
+</span><span data-line="61">  -p NAME, --parameter NAME
+</span><span data-line="62">                        Promote a parameter or buffer (fully-qualified dotted
+</span><span data-line="63">                        name) to runtime-flexible status -- it becomes a graph
+</span><span data-line="64">                        input rather than a baked constant. Repeatable. With
+</span><span data-line="65">                        no -p flags the model is fully baked.
+</span><span data-line="66">  -d OUT:IN, --derivative OUT:IN
+</span><span data-line="67">                        Compile the derivative (Jacobian / JVP) graph for the
+</span><span data-line="68">                        OUT:IN output-input pair. Repeatable. Omit a side to
+</span><span data-line="69">                        select all on that side: &#39;stress:strain&#39; is one pair,
+</span><span data-line="70">                        &#39;stress:&#39; all inputs of stress, &#39;:strain&#39; all outputs
+</span><span data-line="71">                        wrt strain, &#39;:&#39; all pairs. With no -d flags NO
+</span><span data-line="72">                        derivative graphs are compiled (smallest artifact) and
+</span><span data-line="73">                        the runtime jvp()/jacobian() raise until recompiled
+</span><span data-line="74">                        with -d.
+</span><span data-line="75">  --example-batch-shape SPEC
+</span><span data-line="76">                        Example shape used when tracing. Two forms: --example-
+</span><span data-line="77">                        batch-shape &#39;(2,)&#39; (uniform across all inputs)
+</span><span data-line="78">                        --example-batch-shape strain=&#39;(2;100)&#39; --example-
+</span><span data-line="79">                        batch-shape temperature=&#39;(2,)&#39; (per-variable;
+</span><span data-line="80">                        repeatable) The semicolon delimits dynamic-batch from
+</span><span data-line="81">                        sub-batch axes -- &#39;(2;100)&#39; means dyn=(2,),
+</span><span data-line="82">                        sub=(100,). Overrides [Settings]/example_batch_shape.
+</span><span data-line="83">  --dynamic-batch       Compile a dynamic-batch artifact: the leading batch
+</span><span data-line="84">                        dim of the example shape becomes a runtime-variable
+</span><span data-line="85">                        torch.export Dim. Default unless overridden by
+</span><span data-line="86">                        [Settings]/dynamic_batch in the input.
+</span><span data-line="87">  --no-dynamic-batch    Pin the batch dim at the example shape. Required when
+</span><span data-line="88">                        a baked parameter has rank&gt;=1 and would specialize the
+</span><span data-line="89">                        dynamic dim.
+</span><span data-line="90">  --rename-input ORIG:NEW
+</span><span data-line="91">                        Rename an input variable at the compiled artifact&#39;s
+</span><span data-line="92">                        boundary: a downstream consumer sees NEW while the
+</span><span data-line="93">                        model&#39;s internal wiring keeps ORIG. Repeatable. Only
+</span><span data-line="94">                        valid with --model (not --driver).
+</span><span data-line="95">  --rename-output ORIG:NEW
+</span><span data-line="96">                        Rename an output variable at the boundary (the
+</span><span data-line="97">                        consumer sees NEW; the internals keep ORIG).
+</span><span data-line="98">                        Repeatable. Only valid with --model.
+</span><span data-line="99">  --rename-parameter ORIG:NEW
+</span><span data-line="100">                        Rename a promoted parameter at the boundary (the
+</span><span data-line="101">                        consumer sees NEW; the internals keep the qualified
+</span><span data-line="102">                        ORIG). ORIG must be a promoted parameter (see -p).
+</span><span data-line="103">                        Repeatable. Only valid with --model.
+</span><span data-line="104">  --load PATH           Import a user extension before processing. PATH is
+</span><span data-line="105">                        either a filesystem path to a .py file / package
+</span><span data-line="106">                        directory, or a dotted module name already importable
+</span><span data-line="107">                        from sys.path. Repeatable; modules are imported in the
+</span><span data-line="108">                        order given so later modules may depend on names
+</span><span data-line="109">                        registered by earlier ones.
 </span></pre></div>
 </div>
 <p>Derivative graphs are opt-in: with no <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag only <code class="docutils literal notranslate"><span class="pre">forward</span></code> is

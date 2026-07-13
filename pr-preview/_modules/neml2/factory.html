@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -298,7 +298,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -529,397 +528,456 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="118"><span class="sd">    routing through the C++ Python bindings.</span>
 </span><span data-line="119"><span class="sd">    &quot;&quot;&quot;</span>
 </span><span data-line="120">
-</span><span data-line="121">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Root</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="122">        <span class="bp">self</span><span class="o">.</span><span class="n">_root</span> <span class="o">=</span> <span class="n">root</span>
-</span><span data-line="123">        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="n">path</span>
-</span><span data-line="124">        <span class="c1"># (section_plural, name) → built object</span>
-</span><span data-line="125">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="126">        <span class="c1"># names currently being evaluated — used to detect circular cross-references</span>
-</span><span data-line="127">        <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-</span><span data-line="128">
-</span><span data-line="129">    <span class="c1"># ── section lookup ────────────────────────────────────────────────────────</span>
-</span><span data-line="130">
-</span><span data-line="131">    <span class="k">def</span><span class="w"> </span><span class="nf">_find_in_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="132"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Search *all* top-level blocks named *section* for a child named *name*.</span>
-</span><span data-line="133">
-</span><span data-line="134"><span class="sd">        nmhit does not automatically merge repeated explicit `[section]` blocks,</span>
-</span><span data-line="135"><span class="sd">        so we must scan all of them.</span>
-</span><span data-line="136"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="137">        <span class="k">for</span> <span class="n">top</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">nmhit</span><span class="o">.</span><span class="n">NodeType</span><span class="o">.</span><span class="n">Section</span><span class="p">):</span>
-</span><span data-line="138">            <span class="k">if</span> <span class="n">top</span><span class="o">.</span><span class="n">path</span><span class="p">()</span> <span class="o">==</span> <span class="n">section</span><span class="p">:</span>
-</span><span data-line="139">                <span class="n">node</span> <span class="o">=</span> <span class="n">top</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-</span><span data-line="140">                <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="141">                    <span class="k">return</span> <span class="n">node</span>
-</span><span data-line="142">        <span class="k">return</span> <span class="kc">None</span>
-</span><span data-line="143">
-</span><span data-line="144">    <span class="c1"># ── generic dispatcher ────────────────────────────────────────────────────</span>
-</span><span data-line="145">
-</span><span data-line="146">    <span class="k">def</span><span class="w"> </span><span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="147">        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-</span><span data-line="148">        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
-</span><span data-line="149">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-</span><span data-line="150">
-</span><span data-line="151">        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_in_section</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-</span><span data-line="152">        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="153">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No [</span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="154">
-</span><span data-line="155">        <span class="n">type_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
-</span><span data-line="156">
-</span><span data-line="157">        <span class="k">if</span> <span class="n">type_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_registry</span><span class="p">:</span>
-</span><span data-line="158">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-</span><span data-line="159">                <span class="sa">f</span><span class="s2">&quot;Type </span><span class="si">{</span><span class="n">type_name</span><span class="si">!r}</span><span class="s2"> is not registered in NativeRegistry &quot;</span>
-</span><span data-line="160">                <span class="sa">f</span><span class="s2">&quot;(section=</span><span class="si">{</span><span class="n">section</span><span class="si">!r}</span><span class="s2">, name=</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">). The Python-native &quot;</span>
-</span><span data-line="161">                <span class="s2">&quot;object surface must cover every HIT type loaded through &quot;</span>
-</span><span data-line="162">                <span class="s2">&quot;neml2; port the type or remove the [</span><span class="si">{section}</span><span class="s2">/</span><span class="si">{name}</span><span class="s2">] &quot;</span>
-</span><span data-line="163">                <span class="s2">&quot;block from the input.&quot;</span>
-</span><span data-line="164">            <span class="p">)</span>
-</span><span data-line="165">
-</span><span data-line="166">        <span class="bp">cls</span> <span class="o">=</span> <span class="n">_registry</span><span class="p">[</span><span class="n">type_name</span><span class="p">]</span>
-</span><span data-line="167">        <span class="c1"># Block names cross the user→Python boundary here; if the name is a</span>
-</span><span data-line="168">        <span class="c1"># Python keyword it survives setattr() / hasattr() fine but breaks</span>
-</span><span data-line="169">        <span class="c1"># torch.export&#39;s GraphModule.recompile (see _check_python_attr_name).</span>
-</span><span data-line="170">        <span class="c1"># Refuse early so the failure is loud and local instead of a SyntaxError</span>
-</span><span data-line="171">        <span class="c1"># deep inside the AOTI lowering.</span>
-</span><span data-line="172">        <span class="n">_check_python_attr_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;HIT block&quot;</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
-</span><span data-line="173">        <span class="c1"># Reject unknown HIT fields against the class&#39;s declared schema.</span>
-</span><span data-line="174">        <span class="c1"># Catches stale options (e.g. a removed `priority` on ComposedModel)</span>
-</span><span data-line="175">        <span class="c1"># and typos before they&#39;re silently ignored -- runs uniformly whether</span>
-</span><span data-line="176">        <span class="c1"># the class uses the schema-driven kwargs_from_hit path or owns its</span>
-</span><span data-line="177">        <span class="c1"># own from_hit.</span>
-</span><span data-line="178">        <span class="kn">from</span><span class="w"> </span><span class="nn">.schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">HitSchema</span>  <span class="c1"># noqa: PLC0415</span>
-</span><span data-line="179">
-</span><span data-line="180">        <span class="n">schema</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;hit&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-</span><span data-line="181">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">HitSchema</span><span class="p">):</span>
-</span><span data-line="182">            <span class="n">schema</span><span class="o">.</span><span class="n">reject_unknown_fields</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-</span><span data-line="183">        <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_hit</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-</span><span data-line="184">        <span class="c1"># Variable-name resolution (HIT override → schema default → option name)</span>
-</span><span data-line="185">        <span class="c1"># happens inside _store_schema_values via the input()/output() / var_*</span>
-</span><span data-line="186">        <span class="c1"># schema fields, so there is no longer a boundary-wrapping pass here.</span>
-</span><span data-line="187">        <span class="c1">#</span>
-</span><span data-line="188">        <span class="c1"># Stash the HIT block name on the constructed object so downstream</span>
-</span><span data-line="189">        <span class="c1"># consumers (notably ComposedModel) can register children under</span>
-</span><span data-line="190">        <span class="c1"># readable HIT names instead of opaque _child_N indices. Falls back</span>
-</span><span data-line="191">        <span class="c1"># silently if the object&#39;s class blocks attribute assignment (frozen</span>
-</span><span data-line="192">        <span class="c1"># dataclass etc.) — composed models built directly from Python still</span>
-</span><span data-line="193">        <span class="c1"># work, they just lose the HIT-name overlay.</span>
-</span><span data-line="194">        <span class="k">try</span><span class="p">:</span>
-</span><span data-line="195">            <span class="n">obj</span><span class="o">.</span><span class="n">_hit_name</span> <span class="o">=</span> <span class="n">name</span>
-</span><span data-line="196">        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
-</span><span data-line="197">            <span class="k">pass</span>
-</span><span data-line="198">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
-</span><span data-line="199">        <span class="k">return</span> <span class="n">obj</span>
-</span><span data-line="200">
-</span><span data-line="201">    <span class="c1"># ── public get_* API (mirrors NEML2Object::get_model / get_solver / …) ───</span>
-</span><span data-line="202">
-</span><span data-line="203">    <span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="204"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the model named *name* from ``[Models]``.</span>
-</span><span data-line="205">
-</span><span data-line="206"><span class="sd">        Raises ``KeyError`` if the type isn&#39;t registered in ``NativeRegistry``</span>
-</span><span data-line="207"><span class="sd">        (D-054 — no fallback to C++).</span>
-</span><span data-line="208"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="209">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Models&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-</span><span data-line="210">
-</span><span data-line="211">    <span class="k">def</span><span class="w"> </span><span class="nf">has_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span data-line="212"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether a ``[Models/&lt;name&gt;]`` entry exists (does not build it).&quot;&quot;&quot;</span>
-</span><span data-line="213">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_in_section</span><span class="p">(</span><span class="s2">&quot;Models&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-</span><span data-line="214">
-</span><span data-line="215">    <span class="k">def</span><span class="w"> </span><span class="nf">get_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="216"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the solver named *name* from ``[Solvers]``.&quot;&quot;&quot;</span>
-</span><span data-line="217">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Solvers&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="121">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+</span><span data-line="122">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="123">        <span class="n">root</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Root</span><span class="p">,</span>
+</span><span data-line="124">        <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="125">        <span class="o">*</span><span class="p">,</span>
+</span><span data-line="126">        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="127">        <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="128">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="129">        <span class="bp">self</span><span class="o">.</span><span class="n">_root</span> <span class="o">=</span> <span class="n">root</span>
+</span><span data-line="130">        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="n">path</span>
+</span><span data-line="131">        <span class="c1"># (section_plural, name) → built object</span>
+</span><span data-line="132">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="133">        <span class="c1"># names currently being evaluated — used to detect circular cross-references</span>
+</span><span data-line="134">        <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+</span><span data-line="135">        <span class="c1"># Load-time device/dtype for compiled (AOTI) models: these select the</span>
+</span><span data-line="136">        <span class="c1"># ``&lt;device&gt;/&lt;dtype&gt;/`` artifact leaf, a decision that must be made at</span>
+</span><span data-line="137">        <span class="c1"># load time because an AOTI artifact is device/dtype-pinned (unlike a</span>
+</span><span data-line="138">        <span class="c1"># native model, which materializes at the ambient default and can be</span>
+</span><span data-line="139">        <span class="c1"># moved later with ``.to(...)``). ``None`` =&gt; ``AOTIModel`` falls back to</span>
+</span><span data-line="140">        <span class="c1"># NEML2&#39;s canonical cpu/float64 (matching ``neml2-compile``), NOT torch&#39;s</span>
+</span><span data-line="141">        <span class="c1"># ambient defaults. Non-compiled models ignore these entirely.</span>
+</span><span data-line="142">        <span class="bp">self</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="n">device</span>
+</span><span data-line="143">        <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+</span><span data-line="144">
+</span><span data-line="145">    <span class="c1"># ── section lookup ────────────────────────────────────────────────────────</span>
+</span><span data-line="146">
+</span><span data-line="147">    <span class="k">def</span><span class="w"> </span><span class="nf">_find_in_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="148"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Search *all* top-level blocks named *section* for a child named *name*.</span>
+</span><span data-line="149">
+</span><span data-line="150"><span class="sd">        nmhit does not automatically merge repeated explicit `[section]` blocks,</span>
+</span><span data-line="151"><span class="sd">        so we must scan all of them.</span>
+</span><span data-line="152"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="153">        <span class="k">for</span> <span class="n">top</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">nmhit</span><span class="o">.</span><span class="n">NodeType</span><span class="o">.</span><span class="n">Section</span><span class="p">):</span>
+</span><span data-line="154">            <span class="k">if</span> <span class="n">top</span><span class="o">.</span><span class="n">path</span><span class="p">()</span> <span class="o">==</span> <span class="n">section</span><span class="p">:</span>
+</span><span data-line="155">                <span class="n">node</span> <span class="o">=</span> <span class="n">top</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="156">                <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="157">                    <span class="k">return</span> <span class="n">node</span>
+</span><span data-line="158">        <span class="k">return</span> <span class="kc">None</span>
+</span><span data-line="159">
+</span><span data-line="160">    <span class="c1"># ── generic dispatcher ────────────────────────────────────────────────────</span>
+</span><span data-line="161">
+</span><span data-line="162">    <span class="k">def</span><span class="w"> </span><span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="163">        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="164">        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+</span><span data-line="165">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</span><span data-line="166">
+</span><span data-line="167">        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_in_section</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="168">        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="169">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No [</span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="170">
+</span><span data-line="171">        <span class="n">type_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+</span><span data-line="172">
+</span><span data-line="173">        <span class="k">if</span> <span class="n">type_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_registry</span><span class="p">:</span>
+</span><span data-line="174">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+</span><span data-line="175">                <span class="sa">f</span><span class="s2">&quot;Type </span><span class="si">{</span><span class="n">type_name</span><span class="si">!r}</span><span class="s2"> is not registered in NativeRegistry &quot;</span>
+</span><span data-line="176">                <span class="sa">f</span><span class="s2">&quot;(section=</span><span class="si">{</span><span class="n">section</span><span class="si">!r}</span><span class="s2">, name=</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">). The Python-native &quot;</span>
+</span><span data-line="177">                <span class="s2">&quot;object surface must cover every HIT type loaded through &quot;</span>
+</span><span data-line="178">                <span class="s2">&quot;neml2; port the type or remove the [</span><span class="si">{section}</span><span class="s2">/</span><span class="si">{name}</span><span class="s2">] &quot;</span>
+</span><span data-line="179">                <span class="s2">&quot;block from the input.&quot;</span>
+</span><span data-line="180">            <span class="p">)</span>
+</span><span data-line="181">
+</span><span data-line="182">        <span class="bp">cls</span> <span class="o">=</span> <span class="n">_registry</span><span class="p">[</span><span class="n">type_name</span><span class="p">]</span>
+</span><span data-line="183">        <span class="c1"># Block names cross the user→Python boundary here; if the name is a</span>
+</span><span data-line="184">        <span class="c1"># Python keyword it survives setattr() / hasattr() fine but breaks</span>
+</span><span data-line="185">        <span class="c1"># torch.export&#39;s GraphModule.recompile (see _check_python_attr_name).</span>
+</span><span data-line="186">        <span class="c1"># Refuse early so the failure is loud and local instead of a SyntaxError</span>
+</span><span data-line="187">        <span class="c1"># deep inside the AOTI lowering.</span>
+</span><span data-line="188">        <span class="n">_check_python_attr_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;HIT block&quot;</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+</span><span data-line="189">        <span class="c1"># Reject unknown HIT fields against the class&#39;s declared schema.</span>
+</span><span data-line="190">        <span class="c1"># Catches stale options (e.g. a removed `priority` on ComposedModel)</span>
+</span><span data-line="191">        <span class="c1"># and typos before they&#39;re silently ignored -- runs uniformly whether</span>
+</span><span data-line="192">        <span class="c1"># the class uses the schema-driven kwargs_from_hit path or owns its</span>
+</span><span data-line="193">        <span class="c1"># own from_hit.</span>
+</span><span data-line="194">        <span class="kn">from</span><span class="w"> </span><span class="nn">.schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">HitSchema</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="195">
+</span><span data-line="196">        <span class="n">schema</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;hit&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span data-line="197">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">HitSchema</span><span class="p">):</span>
+</span><span data-line="198">            <span class="n">schema</span><span class="o">.</span><span class="n">reject_unknown_fields</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+</span><span data-line="199">        <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_hit</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</span><span data-line="200">        <span class="c1"># Variable-name resolution (HIT override → schema default → option name)</span>
+</span><span data-line="201">        <span class="c1"># happens inside _store_schema_values via the input()/output() / var_*</span>
+</span><span data-line="202">        <span class="c1"># schema fields, so there is no longer a boundary-wrapping pass here.</span>
+</span><span data-line="203">        <span class="c1">#</span>
+</span><span data-line="204">        <span class="c1"># Stash the HIT block name on the constructed object so downstream</span>
+</span><span data-line="205">        <span class="c1"># consumers (notably ComposedModel) can register children under</span>
+</span><span data-line="206">        <span class="c1"># readable HIT names instead of opaque _child_N indices. Falls back</span>
+</span><span data-line="207">        <span class="c1"># silently if the object&#39;s class blocks attribute assignment (frozen</span>
+</span><span data-line="208">        <span class="c1"># dataclass etc.) — composed models built directly from Python still</span>
+</span><span data-line="209">        <span class="c1"># work, they just lose the HIT-name overlay.</span>
+</span><span data-line="210">        <span class="k">try</span><span class="p">:</span>
+</span><span data-line="211">            <span class="n">obj</span><span class="o">.</span><span class="n">_hit_name</span> <span class="o">=</span> <span class="n">name</span>
+</span><span data-line="212">        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+</span><span data-line="213">            <span class="k">pass</span>
+</span><span data-line="214">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
+</span><span data-line="215">        <span class="k">return</span> <span class="n">obj</span>
+</span><span data-line="216">
+</span><span data-line="217">    <span class="c1"># ── public get_* API (mirrors NEML2Object::get_model / get_solver / …) ───</span>
 </span><span data-line="218">
-</span><span data-line="219">    <span class="k">def</span><span class="w"> </span><span class="nf">get_equation_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="220"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the system from ``[EquationSystems]``.&quot;&quot;&quot;</span>
-</span><span data-line="221">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;EquationSystems&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-</span><span data-line="222">
-</span><span data-line="223">    <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="224"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the data object from ``[Data]``.</span>
-</span><span data-line="225">
-</span><span data-line="226"><span class="sd">        ``[Data]`` blocks are construction-time inputs shared by reference</span>
-</span><span data-line="227"><span class="sd">        across consumers — currently ``CrystalGeometry`` / ``CubicCrystal``</span>
-</span><span data-line="228"><span class="sd">        for crystal-plasticity Schmid tensor lookup. No C++ fallback:</span>
-</span><span data-line="229"><span class="sd">        ``[Data]`` is small, self-contained, and natively registered types</span>
-</span><span data-line="230"><span class="sd">        cover everything  needs.</span>
-</span><span data-line="231"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="232">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Data&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-</span><span data-line="233">
-</span><span data-line="234">    <span class="k">def</span><span class="w"> </span><span class="nf">get_driver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="235"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the driver from ``[Drivers]``.</span>
-</span><span data-line="236">
-</span><span data-line="237"><span class="sd">        ``[Drivers]`` blocks are top-level workflow objects (e.g.</span>
-</span><span data-line="238"><span class="sd">        ``TransientDriver`` for the regression suite, ``ModelUnitTest`` for</span>
-</span><span data-line="239"><span class="sd">        the unit-test suite). The C++ side wires them through Factory; we</span>
-</span><span data-line="240"><span class="sd">        mirror that here so a ``.i`` file&#39;s ``[Drivers]`` blocks resolve to</span>
-</span><span data-line="241"><span class="sd">        Python-native classes.</span>
-</span><span data-line="242"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="243">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Drivers&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-</span><span data-line="244">
-</span><span data-line="245">    <span class="c1"># ── [Tensors] support (mode 2 of declare_typed_parameter) ────────────────</span>
-</span><span data-line="246">
-</span><span data-line="247">    <span class="k">def</span><span class="w"> </span><span class="nf">get_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="248"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the ``[Tensors/&lt;name&gt;]`` value.</span>
+</span><span data-line="219">    <span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="220"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the model named *name* from ``[Models]``.</span>
+</span><span data-line="221">
+</span><span data-line="222"><span class="sd">        Raises ``KeyError`` if the type isn&#39;t registered in ``NativeRegistry``</span>
+</span><span data-line="223"><span class="sd">        (D-054 — no fallback to C++).</span>
+</span><span data-line="224"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="225">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Models&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="226">
+</span><span data-line="227">    <span class="k">def</span><span class="w"> </span><span class="nf">has_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span data-line="228"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether a ``[Models/&lt;name&gt;]`` entry exists (does not build it).&quot;&quot;&quot;</span>
+</span><span data-line="229">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_in_section</span><span class="p">(</span><span class="s2">&quot;Models&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+</span><span data-line="230">
+</span><span data-line="231">    <span class="k">def</span><span class="w"> </span><span class="nf">get_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="232"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the solver named *name* from ``[Solvers]``.&quot;&quot;&quot;</span>
+</span><span data-line="233">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Solvers&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="234">
+</span><span data-line="235">    <span class="k">def</span><span class="w"> </span><span class="nf">get_equation_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="236"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the system from ``[EquationSystems]``.&quot;&quot;&quot;</span>
+</span><span data-line="237">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;EquationSystems&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="238">
+</span><span data-line="239">    <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="240"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the data object from ``[Data]``.</span>
+</span><span data-line="241">
+</span><span data-line="242"><span class="sd">        ``[Data]`` blocks are construction-time inputs shared by reference</span>
+</span><span data-line="243"><span class="sd">        across consumers — currently ``CrystalGeometry`` / ``CubicCrystal``</span>
+</span><span data-line="244"><span class="sd">        for crystal-plasticity Schmid tensor lookup. No C++ fallback:</span>
+</span><span data-line="245"><span class="sd">        ``[Data]`` is small, self-contained, and natively registered types</span>
+</span><span data-line="246"><span class="sd">        cover everything  needs.</span>
+</span><span data-line="247"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="248">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Data&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 </span><span data-line="249">
-</span><span data-line="250"><span class="sd">        Dispatches on the block&#39;s ``type`` to a class in the native registry —</span>
-</span><span data-line="251"><span class="sd">        ``type = Python`` resolves to</span>
-</span><span data-line="252"><span class="sd">        :class:`~neml2.user_tensors.PythonTensor.PythonTensor` (inline Python</span>
-</span><span data-line="253"><span class="sd">        expression evaluated in the typed-tensor namespace),</span>
-</span><span data-line="254"><span class="sd">        ``type = CSV&lt;T&gt;`` to the corresponding CSV reader, and so on.</span>
-</span><span data-line="255">
-</span><span data-line="256"><span class="sd">        Returns the raw value produced by the registered class — either a</span>
-</span><span data-line="257"><span class="sd">        ``torch.Tensor`` or a ``TensorWrapper`` subclass. The call site</span>
-</span><span data-line="258"><span class="sd">        (``declare_typed_parameter`` mode 2) is responsible for wrapping a raw</span>
-</span><span data-line="259"><span class="sd">        ``torch.Tensor`` into the appropriate typed wrapper.</span>
+</span><span data-line="250">    <span class="k">def</span><span class="w"> </span><span class="nf">get_driver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="251"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the driver from ``[Drivers]``.</span>
+</span><span data-line="252">
+</span><span data-line="253"><span class="sd">        ``[Drivers]`` blocks are top-level workflow objects (e.g.</span>
+</span><span data-line="254"><span class="sd">        ``TransientDriver`` for the regression suite, ``ModelUnitTest`` for</span>
+</span><span data-line="255"><span class="sd">        the unit-test suite). The C++ side wires them through Factory; we</span>
+</span><span data-line="256"><span class="sd">        mirror that here so a ``.i`` file&#39;s ``[Drivers]`` blocks resolve to</span>
+</span><span data-line="257"><span class="sd">        Python-native classes.</span>
+</span><span data-line="258"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="259">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">(</span><span class="s2">&quot;Drivers&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 </span><span data-line="260">
-</span><span data-line="261"><span class="sd">        Raises ``KeyError`` if no ``[Tensors/&lt;name&gt;]`` block exists or its</span>
-</span><span data-line="262"><span class="sd">        ``type`` isn&#39;t registered.</span>
-</span><span data-line="263"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="264">        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Tensors&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-</span><span data-line="265">        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
-</span><span data-line="266">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-</span><span data-line="267">
-</span><span data-line="268">        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_in_section</span><span class="p">(</span><span class="s2">&quot;Tensors&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-</span><span data-line="269">        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="270">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No [Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="261">    <span class="c1"># ── [Tensors] support (mode 2 of declare_typed_parameter) ────────────────</span>
+</span><span data-line="262">
+</span><span data-line="263">    <span class="k">def</span><span class="w"> </span><span class="nf">get_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="264"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build (or return cached) the ``[Tensors/&lt;name&gt;]`` value.</span>
+</span><span data-line="265">
+</span><span data-line="266"><span class="sd">        Dispatches on the block&#39;s ``type`` to a class in the native registry —</span>
+</span><span data-line="267"><span class="sd">        ``type = Python`` resolves to</span>
+</span><span data-line="268"><span class="sd">        :class:`~neml2.user_tensors.PythonTensor.PythonTensor` (inline Python</span>
+</span><span data-line="269"><span class="sd">        expression evaluated in the typed-tensor namespace),</span>
+</span><span data-line="270"><span class="sd">        ``type = CSV&lt;T&gt;`` to the corresponding CSV reader, and so on.</span>
 </span><span data-line="271">
-</span><span data-line="272">        <span class="n">type_str</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
-</span><span data-line="273">        <span class="k">if</span> <span class="n">type_str</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_registry</span><span class="p">:</span>
-</span><span data-line="274">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="275">                <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] has type=</span><span class="si">{</span><span class="n">type_str</span><span class="si">!r}</span><span class="s2">; expected a registered tensor &quot;</span>
-</span><span data-line="276">                <span class="s2">&quot;type. For an inline Python expression use:</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="277">                <span class="sa">f</span><span class="s2">&quot;  [Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="278">                <span class="s2">&quot;    type = Python</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="279">                <span class="s2">&quot;    expr = &#39;...pytorch expression...&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span data-line="280">                <span class="s2">&quot;  []&quot;</span>
-</span><span data-line="281">            <span class="p">)</span>
-</span><span data-line="282">
-</span><span data-line="283">        <span class="c1"># Cycle detection wraps the dispatch itself because registered tensor</span>
-</span><span data-line="284">        <span class="c1"># classes (notably ``Python``) may recursively call back into</span>
-</span><span data-line="285">        <span class="c1"># ``get_tensor`` through the eval namespace&#39;s ``__missing__`` hook.</span>
-</span><span data-line="286">        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="p">:</span>
-</span><span data-line="287">            <span class="k">raise</span> <span class="ne">RecursionError</span><span class="p">(</span>
-</span><span data-line="288">                <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] cross-references itself (directly or indirectly).&quot;</span>
-</span><span data-line="289">            <span class="p">)</span>
-</span><span data-line="290">        <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-</span><span data-line="291">        <span class="k">try</span><span class="p">:</span>
-</span><span data-line="292">            <span class="n">result</span> <span class="o">=</span> <span class="n">_registry</span><span class="p">[</span><span class="n">type_str</span><span class="p">]</span><span class="o">.</span><span class="n">from_hit</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-</span><span data-line="293">        <span class="k">finally</span><span class="p">:</span>
-</span><span data-line="294">            <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-</span><span data-line="295">
-</span><span data-line="296">        <span class="c1"># Sub-batch tagging happens inside ``expr`` via method chaining on the</span>
-</span><span data-line="297">        <span class="c1"># returned wrapper — e.g. ``Scalar.zeros(5).sub_batch.retag(1)`` or</span>
-</span><span data-line="298">        <span class="c1"># ``linspace(Scalar(0).sub_batch, Scalar(1).sub_batch, 5)``.</span>
-</span><span data-line="299">        <span class="c1"># That keeps a single source of truth for the tensor pipeline (and lets</span>
-</span><span data-line="300">        <span class="c1"># users compose ``.sub_batch.expand_at(...)``, ``.sub_batch.diagonalize()``</span>
-</span><span data-line="301">        <span class="c1"># etc. without a parallel HIT option for each).</span>
-</span><span data-line="302">
-</span><span data-line="303">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
-</span><span data-line="304">        <span class="k">return</span> <span class="n">result</span>
-</span><span data-line="305">
-</span><span data-line="306">
-</span><span data-line="307"><span class="c1"># ── [Tensors] Python-expression helpers ───────────────────────────────────────</span>
-</span><span data-line="308">
-</span><span data-line="309">
-</span><span data-line="310"><span class="k">class</span><span class="w"> </span><span class="nc">_TensorNamespace</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-</span><span data-line="311"><span class="w">    </span><span class="sd">&quot;&quot;&quot;eval/exec namespace that lazily resolves unknown names as tensor cross-references.</span>
-</span><span data-line="312">
-</span><span data-line="313"><span class="sd">    When an identifier is not found in the pre-populated symbols (``torch``,</span>
-</span><span data-line="314"><span class="sd">    ``neml2.types`` exports, ``math``, ``np``), Python&#39;s name-lookup</span>
-</span><span data-line="315"><span class="sd">    calls ``__missing__``.  We intercept that and try ``factory.get_tensor(key)``</span>
-</span><span data-line="316"><span class="sd">    so users can write ``base`` in an expression instead of ``tensor(&#39;base&#39;)``,</span>
-</span><span data-line="317"><span class="sd">    avoiding HIT&#39;s restriction that quotes may not appear inside quoted strings.</span>
+</span><span data-line="272"><span class="sd">        Returns the raw value produced by the registered class — either a</span>
+</span><span data-line="273"><span class="sd">        ``torch.Tensor`` or a ``TensorWrapper`` subclass. The call site</span>
+</span><span data-line="274"><span class="sd">        (``declare_typed_parameter`` mode 2) is responsible for wrapping a raw</span>
+</span><span data-line="275"><span class="sd">        ``torch.Tensor`` into the appropriate typed wrapper.</span>
+</span><span data-line="276">
+</span><span data-line="277"><span class="sd">        Raises ``KeyError`` if no ``[Tensors/&lt;name&gt;]`` block exists or its</span>
+</span><span data-line="278"><span class="sd">        ``type`` isn&#39;t registered.</span>
+</span><span data-line="279"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="280">        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Tensors&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="281">        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+</span><span data-line="282">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</span><span data-line="283">
+</span><span data-line="284">        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_in_section</span><span class="p">(</span><span class="s2">&quot;Tensors&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span data-line="285">        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="286">            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No [Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="287">
+</span><span data-line="288">        <span class="n">type_str</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+</span><span data-line="289">        <span class="k">if</span> <span class="n">type_str</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_registry</span><span class="p">:</span>
+</span><span data-line="290">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="291">                <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] has type=</span><span class="si">{</span><span class="n">type_str</span><span class="si">!r}</span><span class="s2">; expected a registered tensor &quot;</span>
+</span><span data-line="292">                <span class="s2">&quot;type. For an inline Python expression use:</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="293">                <span class="sa">f</span><span class="s2">&quot;  [Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="294">                <span class="s2">&quot;    type = Python</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="295">                <span class="s2">&quot;    expr = &#39;...pytorch expression...&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span data-line="296">                <span class="s2">&quot;  []&quot;</span>
+</span><span data-line="297">            <span class="p">)</span>
+</span><span data-line="298">
+</span><span data-line="299">        <span class="c1"># Cycle detection wraps the dispatch itself because registered tensor</span>
+</span><span data-line="300">        <span class="c1"># classes (notably ``Python``) may recursively call back into</span>
+</span><span data-line="301">        <span class="c1"># ``get_tensor`` through the eval namespace&#39;s ``__missing__`` hook.</span>
+</span><span data-line="302">        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="p">:</span>
+</span><span data-line="303">            <span class="k">raise</span> <span class="ne">RecursionError</span><span class="p">(</span>
+</span><span data-line="304">                <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] cross-references itself (directly or indirectly).&quot;</span>
+</span><span data-line="305">            <span class="p">)</span>
+</span><span data-line="306">        <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="307">        <span class="k">try</span><span class="p">:</span>
+</span><span data-line="308">            <span class="n">result</span> <span class="o">=</span> <span class="n">_registry</span><span class="p">[</span><span class="n">type_str</span><span class="p">]</span><span class="o">.</span><span class="n">from_hit</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</span><span data-line="309">        <span class="k">finally</span><span class="p">:</span>
+</span><span data-line="310">            <span class="bp">self</span><span class="o">.</span><span class="n">_evaluating</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="311">
+</span><span data-line="312">        <span class="c1"># Sub-batch tagging happens inside ``expr`` via method chaining on the</span>
+</span><span data-line="313">        <span class="c1"># returned wrapper — e.g. ``Scalar.zeros(5).sub_batch.retag(1)`` or</span>
+</span><span data-line="314">        <span class="c1"># ``linspace(Scalar(0).sub_batch, Scalar(1).sub_batch, 5)``.</span>
+</span><span data-line="315">        <span class="c1"># That keeps a single source of truth for the tensor pipeline (and lets</span>
+</span><span data-line="316">        <span class="c1"># users compose ``.sub_batch.expand_at(...)``, ``.sub_batch.diagonalize()``</span>
+</span><span data-line="317">        <span class="c1"># etc. without a parallel HIT option for each).</span>
 </span><span data-line="318">
-</span><span data-line="319"><span class="sd">    Cycle detection is handled by ``_NativeInputFile.get_tensor`` itself.</span>
-</span><span data-line="320"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="319">        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+</span><span data-line="320">        <span class="k">return</span> <span class="n">result</span>
 </span><span data-line="321">
-</span><span data-line="322">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">,</span> <span class="n">base_ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="323">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">base_ns</span><span class="p">)</span>
-</span><span data-line="324">        <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span> <span class="o">=</span> <span class="n">factory</span>
+</span><span data-line="322">
+</span><span data-line="323"><span class="c1"># ── [Tensors] Python-expression helpers ───────────────────────────────────────</span>
+</span><span data-line="324">
 </span><span data-line="325">
-</span><span data-line="326">    <span class="k">def</span><span class="w"> </span><span class="fm">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="327">        <span class="k">try</span><span class="p">:</span>
-</span><span data-line="328">            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-</span><span data-line="329">        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-</span><span data-line="330">            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> is not defined&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-</span><span data-line="331">        <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>  <span class="c1"># cache resolved value in the namespace</span>
-</span><span data-line="332">        <span class="k">return</span> <span class="n">val</span>
-</span><span data-line="333">
+</span><span data-line="326"><span class="k">class</span><span class="w"> </span><span class="nc">_TensorNamespace</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+</span><span data-line="327"><span class="w">    </span><span class="sd">&quot;&quot;&quot;eval/exec namespace that lazily resolves unknown names as tensor cross-references.</span>
+</span><span data-line="328">
+</span><span data-line="329"><span class="sd">    When an identifier is not found in the pre-populated symbols (``torch``,</span>
+</span><span data-line="330"><span class="sd">    ``neml2.types`` exports, ``math``, ``np``), Python&#39;s name-lookup</span>
+</span><span data-line="331"><span class="sd">    calls ``__missing__``.  We intercept that and try ``factory.get_tensor(key)``</span>
+</span><span data-line="332"><span class="sd">    so users can write ``base`` in an expression instead of ``tensor(&#39;base&#39;)``,</span>
+</span><span data-line="333"><span class="sd">    avoiding HIT&#39;s restriction that quotes may not appear inside quoted strings.</span>
 </span><span data-line="334">
-</span><span data-line="335"><span class="k">def</span><span class="w"> </span><span class="nf">_build_tensor_eval_namespace</span><span class="p">(</span><span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_TensorNamespace</span><span class="p">:</span>
-</span><span data-line="336"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the eval namespace for ``[Tensors]`` Python expressions.</span>
+</span><span data-line="335"><span class="sd">    Cycle detection is handled by ``_NativeInputFile.get_tensor`` itself.</span>
+</span><span data-line="336"><span class="sd">    &quot;&quot;&quot;</span>
 </span><span data-line="337">
-</span><span data-line="338"><span class="sd">    Exposes the entire ``neml2.types`` public namespace (all names listed</span>
-</span><span data-line="339"><span class="sd">    in its ``__all__``) so that new types or free functions added there are</span>
-</span><span data-line="340"><span class="sd">    automatically available without touching this file.</span>
+</span><span data-line="338">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">,</span> <span class="n">base_ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="339">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">base_ns</span><span class="p">)</span>
+</span><span data-line="340">        <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span> <span class="o">=</span> <span class="n">factory</span>
 </span><span data-line="341">
-</span><span data-line="342"><span class="sd">    Cross-references to other ``[Tensors]`` entries are resolved implicitly: an</span>
-</span><span data-line="343"><span class="sd">    unknown identifier is looked up as ``factory.get_tensor(name)``, so users</span>
-</span><span data-line="344"><span class="sd">    write ``base`` in the expression rather than ``tensor(&#39;base&#39;)`` (which would</span>
-</span><span data-line="345"><span class="sd">    conflict with HIT&#39;s restriction on quotes inside quoted strings).</span>
-</span><span data-line="346"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="347">    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span> <span class="k">as</span> <span class="n">_types_mod</span>
-</span><span data-line="348">
-</span><span data-line="349">    <span class="n">base_ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_types_mod</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_types_mod</span><span class="o">.</span><span class="n">__all__</span><span class="p">}</span>
-</span><span data-line="350">    <span class="n">base_ns</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-</span><span data-line="351">        <span class="p">{</span>
-</span><span data-line="352">            <span class="s2">&quot;torch&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="p">,</span>
-</span><span data-line="353">            <span class="s2">&quot;math&quot;</span><span class="p">:</span> <span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;math&quot;</span><span class="p">),</span>
-</span><span data-line="354">        <span class="p">}</span>
-</span><span data-line="355">    <span class="p">)</span>
-</span><span data-line="356">    <span class="k">try</span><span class="p">:</span>
-</span><span data-line="357">        <span class="n">base_ns</span><span class="p">[</span><span class="s2">&quot;np&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
-</span><span data-line="358">    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
-</span><span data-line="359">        <span class="k">pass</span>
-</span><span data-line="360">    <span class="k">return</span> <span class="n">_TensorNamespace</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="n">base_ns</span><span class="p">)</span>
-</span><span data-line="361">
-</span><span data-line="362">
-</span><span data-line="363"><span class="k">def</span><span class="w"> </span><span class="nf">_dedent_hit_expr</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span data-line="364"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dedent a multi-line expression string as returned by ``nmhit.param_str``.</span>
-</span><span data-line="365">
-</span><span data-line="366"><span class="sd">    nmhit strips the leading whitespace from the first line of a quoted value</span>
-</span><span data-line="367"><span class="sd">    (the newline and spaces between the opening quote and the first content</span>
-</span><span data-line="368"><span class="sd">    character) but leaves subsequent lines intact.  Standard ``textwrap.dedent``</span>
-</span><span data-line="369"><span class="sd">    therefore sees the first line with 0 indent and cannot strip anything.</span>
-</span><span data-line="370">
-</span><span data-line="371"><span class="sd">    This helper deduces the common indentation from lines 2 onwards and strips</span>
-</span><span data-line="372"><span class="sd">    it from the entire block, leaving relative indentation inside the code</span>
-</span><span data-line="373"><span class="sd">    unchanged.</span>
-</span><span data-line="374"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="375">    <span class="n">lines</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
-</span><span data-line="376">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="377">        <span class="k">return</span> <span class="n">code</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-</span><span data-line="378">    <span class="c1"># Lines 2+ still carry the original HIT indentation.</span>
-</span><span data-line="379">    <span class="n">rest_nonempty</span> <span class="o">=</span> <span class="p">[</span><span class="n">ln</span> <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
-</span><span data-line="380">    <span class="k">if</span> <span class="ow">not</span> <span class="n">rest_nonempty</span><span class="p">:</span>
-</span><span data-line="381">        <span class="k">return</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-</span><span data-line="382">    <span class="n">min_indent</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span> <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">rest_nonempty</span><span class="p">)</span>
-</span><span data-line="383">    <span class="n">dedented</span> <span class="o">=</span> <span class="p">[</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>  <span class="c1"># first line already has no leading whitespace</span>
-</span><span data-line="384">    <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-</span><span data-line="385">        <span class="n">dedented</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ln</span><span class="p">[</span><span class="n">min_indent</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-</span><span data-line="386">    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dedented</span><span class="p">)</span>
-</span><span data-line="387">
-</span><span data-line="388">
-</span><span data-line="389"><span class="k">def</span><span class="w"> </span><span class="nf">_eval_tensor_code</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="390"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Eval a single-expression or exec a multi-line block; return the result.&quot;&quot;&quot;</span>
-</span><span data-line="391">    <span class="n">src</span> <span class="o">=</span> <span class="n">_dedent_hit_expr</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-</span><span data-line="392">    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&gt;&quot;</span>
-</span><span data-line="393">    <span class="k">try</span><span class="p">:</span>
-</span><span data-line="394">        <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;eval&quot;</span><span class="p">),</span> <span class="n">ns</span><span class="p">)</span>  <span class="c1"># noqa: S307</span>
-</span><span data-line="395">    <span class="k">except</span> <span class="ne">SyntaxError</span><span class="p">:</span>
-</span><span data-line="396">        <span class="k">pass</span>
-</span><span data-line="397">    <span class="k">except</span> <span class="ne">RecursionError</span><span class="p">:</span>
-</span><span data-line="398">        <span class="k">raise</span>
-</span><span data-line="399">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-</span><span data-line="400">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] expr raised </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-</span><span data-line="401">    <span class="k">try</span><span class="p">:</span>
-</span><span data-line="402">        <span class="n">exec</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;exec&quot;</span><span class="p">),</span> <span class="n">ns</span><span class="p">)</span>  <span class="c1"># noqa: S102</span>
-</span><span data-line="403">    <span class="k">except</span> <span class="ne">RecursionError</span><span class="p">:</span>
-</span><span data-line="404">        <span class="k">raise</span>
-</span><span data-line="405">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-</span><span data-line="406">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] code raised </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-</span><span data-line="407">    <span class="k">if</span> <span class="s2">&quot;result&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ns</span><span class="p">:</span>
-</span><span data-line="408">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="409">            <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] multi-line code block must assign its output to &#39;result&#39;.&quot;</span>
-</span><span data-line="410">        <span class="p">)</span>
-</span><span data-line="411">    <span class="k">return</span> <span class="n">ns</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
-</span><span data-line="412">
-</span><span data-line="413">
-</span><span data-line="414"><span class="c1"># ── public entry points ────────────────────────────────────────────────────────</span>
-</span><span data-line="415">
-</span><span data-line="416">
+</span><span data-line="342">    <span class="k">def</span><span class="w"> </span><span class="fm">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="343">        <span class="k">try</span><span class="p">:</span>
+</span><span data-line="344">            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</span><span data-line="345">        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+</span><span data-line="346">            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;name </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> is not defined&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+</span><span data-line="347">        <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>  <span class="c1"># cache resolved value in the namespace</span>
+</span><span data-line="348">        <span class="k">return</span> <span class="n">val</span>
+</span><span data-line="349">
+</span><span data-line="350">
+</span><span data-line="351"><span class="k">def</span><span class="w"> </span><span class="nf">_build_tensor_eval_namespace</span><span class="p">(</span><span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_TensorNamespace</span><span class="p">:</span>
+</span><span data-line="352"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the eval namespace for ``[Tensors]`` Python expressions.</span>
+</span><span data-line="353">
+</span><span data-line="354"><span class="sd">    Exposes the entire ``neml2.types`` public namespace (all names listed</span>
+</span><span data-line="355"><span class="sd">    in its ``__all__``) so that new types or free functions added there are</span>
+</span><span data-line="356"><span class="sd">    automatically available without touching this file.</span>
+</span><span data-line="357">
+</span><span data-line="358"><span class="sd">    Cross-references to other ``[Tensors]`` entries are resolved implicitly: an</span>
+</span><span data-line="359"><span class="sd">    unknown identifier is looked up as ``factory.get_tensor(name)``, so users</span>
+</span><span data-line="360"><span class="sd">    write ``base`` in the expression rather than ``tensor(&#39;base&#39;)`` (which would</span>
+</span><span data-line="361"><span class="sd">    conflict with HIT&#39;s restriction on quotes inside quoted strings).</span>
+</span><span data-line="362"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="363">    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span> <span class="k">as</span> <span class="n">_types_mod</span>
+</span><span data-line="364">
+</span><span data-line="365">    <span class="n">base_ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_types_mod</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_types_mod</span><span class="o">.</span><span class="n">__all__</span><span class="p">}</span>
+</span><span data-line="366">    <span class="n">base_ns</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+</span><span data-line="367">        <span class="p">{</span>
+</span><span data-line="368">            <span class="s2">&quot;torch&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="p">,</span>
+</span><span data-line="369">            <span class="s2">&quot;math&quot;</span><span class="p">:</span> <span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;math&quot;</span><span class="p">),</span>
+</span><span data-line="370">        <span class="p">}</span>
+</span><span data-line="371">    <span class="p">)</span>
+</span><span data-line="372">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="373">        <span class="n">base_ns</span><span class="p">[</span><span class="s2">&quot;np&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+</span><span data-line="374">    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+</span><span data-line="375">        <span class="k">pass</span>
+</span><span data-line="376">    <span class="k">return</span> <span class="n">_TensorNamespace</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="n">base_ns</span><span class="p">)</span>
+</span><span data-line="377">
+</span><span data-line="378">
+</span><span data-line="379"><span class="k">def</span><span class="w"> </span><span class="nf">_dedent_hit_expr</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span data-line="380"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dedent a multi-line expression string as returned by ``nmhit.param_str``.</span>
+</span><span data-line="381">
+</span><span data-line="382"><span class="sd">    nmhit strips the leading whitespace from the first line of a quoted value</span>
+</span><span data-line="383"><span class="sd">    (the newline and spaces between the opening quote and the first content</span>
+</span><span data-line="384"><span class="sd">    character) but leaves subsequent lines intact.  Standard ``textwrap.dedent``</span>
+</span><span data-line="385"><span class="sd">    therefore sees the first line with 0 indent and cannot strip anything.</span>
+</span><span data-line="386">
+</span><span data-line="387"><span class="sd">    This helper deduces the common indentation from lines 2 onwards and strips</span>
+</span><span data-line="388"><span class="sd">    it from the entire block, leaving relative indentation inside the code</span>
+</span><span data-line="389"><span class="sd">    unchanged.</span>
+</span><span data-line="390"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="391">    <span class="n">lines</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+</span><span data-line="392">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="393">        <span class="k">return</span> <span class="n">code</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span><span data-line="394">    <span class="c1"># Lines 2+ still carry the original HIT indentation.</span>
+</span><span data-line="395">    <span class="n">rest_nonempty</span> <span class="o">=</span> <span class="p">[</span><span class="n">ln</span> <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+</span><span data-line="396">    <span class="k">if</span> <span class="ow">not</span> <span class="n">rest_nonempty</span><span class="p">:</span>
+</span><span data-line="397">        <span class="k">return</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span><span data-line="398">    <span class="n">min_indent</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span> <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">rest_nonempty</span><span class="p">)</span>
+</span><span data-line="399">    <span class="n">dedented</span> <span class="o">=</span> <span class="p">[</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>  <span class="c1"># first line already has no leading whitespace</span>
+</span><span data-line="400">    <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+</span><span data-line="401">        <span class="n">dedented</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ln</span><span class="p">[</span><span class="n">min_indent</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span data-line="402">    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dedented</span><span class="p">)</span>
+</span><span data-line="403">
+</span><span data-line="404">
+</span><span data-line="405"><span class="k">def</span><span class="w"> </span><span class="nf">_eval_tensor_code</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ns</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="406"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Eval a single-expression or exec a multi-line block; return the result.&quot;&quot;&quot;</span>
+</span><span data-line="407">    <span class="n">src</span> <span class="o">=</span> <span class="n">_dedent_hit_expr</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+</span><span data-line="408">    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&gt;&quot;</span>
+</span><span data-line="409">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="410">        <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;eval&quot;</span><span class="p">),</span> <span class="n">ns</span><span class="p">)</span>  <span class="c1"># noqa: S307</span>
+</span><span data-line="411">    <span class="k">except</span> <span class="ne">SyntaxError</span><span class="p">:</span>
+</span><span data-line="412">        <span class="k">pass</span>
+</span><span data-line="413">    <span class="k">except</span> <span class="ne">RecursionError</span><span class="p">:</span>
+</span><span data-line="414">        <span class="k">raise</span>
+</span><span data-line="415">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+</span><span data-line="416">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] expr raised </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+</span><span data-line="417">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="418">        <span class="n">exec</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;exec&quot;</span><span class="p">),</span> <span class="n">ns</span><span class="p">)</span>  <span class="c1"># noqa: S102</span>
+</span><span data-line="419">    <span class="k">except</span> <span class="ne">RecursionError</span><span class="p">:</span>
+</span><span data-line="420">        <span class="k">raise</span>
+</span><span data-line="421">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+</span><span data-line="422">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] code raised </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+</span><span data-line="423">    <span class="k">if</span> <span class="s2">&quot;result&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ns</span><span class="p">:</span>
+</span><span data-line="424">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="425">            <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] multi-line code block must assign its output to &#39;result&#39;.&quot;</span>
+</span><span data-line="426">        <span class="p">)</span>
+</span><span data-line="427">    <span class="k">return</span> <span class="n">ns</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
+</span><span data-line="428">
+</span><span data-line="429">
+</span><span data-line="430"><span class="c1"># ── public entry points ────────────────────────────────────────────────────────</span>
+</span><span data-line="431">
+</span><span data-line="432">
+</span><span data-line="433"><span class="k">def</span><span class="w"> </span><span class="nf">_normalize_load_target</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+</span><span data-line="434"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize load-time ``device`` / ``dtype`` to the string form the</span>
+</span><span data-line="435"><span class="sd">    ``AOTIModel`` shim and the C++ ctor accept.</span>
+</span><span data-line="436">
+</span><span data-line="437"><span class="sd">    Accepts a ``torch.device`` / ``torch.dtype``, their string spellings</span>
+</span><span data-line="438"><span class="sd">    (``&quot;cuda:1&quot;`` / ``&quot;float64&quot;``), or ``None`` (=&gt; the AOTIModel shim&#39;s canonical</span>
+</span><span data-line="439"><span class="sd">    cpu/float64 default, resolved downstream). ``str()`` handles both torch objects</span>
+</span><span data-line="440"><span class="sd">    and plain strings, so no torch import is needed here; the ``torch.`` prefix on</span>
+</span><span data-line="441"><span class="sd">    a dtype&#39;s ``str()`` (``&quot;torch.float64&quot;``) is stripped.</span>
+</span><span data-line="442"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="443">    <span class="n">dev</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="444">    <span class="n">dt</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;torch.&quot;</span><span class="p">)</span>
+</span><span data-line="445">    <span class="k">return</span> <span class="n">dev</span><span class="p">,</span> <span class="n">dt</span>
+</span><span data-line="446">
+</span><span data-line="447">
 <div class="viewcode-block" id="load_input">
 <a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_input">[docs]</a>
-</span><span data-line="417"><span class="k">def</span><span class="w"> </span><span class="nf">load_input</span><span class="p">(</span>
-</span><span data-line="418">    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
-</span><span data-line="419">    <span class="o">*</span><span class="p">,</span>
-</span><span data-line="420">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="421">    <span class="n">post</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="422">    <span class="n">additional_args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="423"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NativeInputFile</span><span class="p">:</span>
-</span><span data-line="424"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a HIT input file and return a lazy native factory.</span>
-</span><span data-line="425">
-</span><span data-line="426"><span class="sd">    Parameters</span>
-</span><span data-line="427"><span class="sd">    ----------</span>
-</span><span data-line="428"><span class="sd">    path:</span>
-</span><span data-line="429"><span class="sd">        Path to the HIT ``.i`` file.</span>
-</span><span data-line="430"><span class="sd">    pre, post:</span>
-</span><span data-line="431"><span class="sd">        Optional HIT snippets prepended / appended before parsing (same</span>
-</span><span data-line="432"><span class="sd">        semantics as ``nmhit.parse_file``).</span>
-</span><span data-line="433"><span class="sd">    additional_args:</span>
-</span><span data-line="434"><span class="sd">        Trailing command-line HIT overrides (e.g.</span>
-</span><span data-line="435"><span class="sd">        ``[&quot;Models/elasticity/E:=210000&quot;]``). Each element is a HIT snippet</span>
-</span><span data-line="436"><span class="sd">        appended after ``post`` so any ``:=`` override takes effect after</span>
-</span><span data-line="437"><span class="sd">        the file&#39;s own assignments. Mirrors the C++ side&#39;s</span>
-</span><span data-line="438"><span class="sd">        ``neml2::load_input(path, additional_cliargs)``.</span>
-</span><span data-line="439"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="440">    <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</span><span data-line="441">    <span class="n">full_post</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">post</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_args</span><span class="p">)</span>
-</span><span data-line="442">    <span class="n">root</span> <span class="o">=</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">parse_file</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">full_post</span><span class="p">))</span>
-</span><span data-line="443">    <span class="k">return</span> <span class="n">_NativeInputFile</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></div>
+</span><span data-line="448"><span class="k">def</span><span class="w"> </span><span class="nf">load_input</span><span class="p">(</span>
+</span><span data-line="449">    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="450">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="451">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="452">    <span class="n">post</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="453">    <span class="n">additional_args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="454">    <span class="n">device</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="455">    <span class="n">dtype</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="456"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NativeInputFile</span><span class="p">:</span>
+</span><span data-line="457"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a HIT input file and return a lazy native factory.</span>
+</span><span data-line="458">
+</span><span data-line="459"><span class="sd">    Parameters</span>
+</span><span data-line="460"><span class="sd">    ----------</span>
+</span><span data-line="461"><span class="sd">    path:</span>
+</span><span data-line="462"><span class="sd">        Path to the HIT ``.i`` file.</span>
+</span><span data-line="463"><span class="sd">    pre, post:</span>
+</span><span data-line="464"><span class="sd">        Optional HIT snippets prepended / appended before parsing (same</span>
+</span><span data-line="465"><span class="sd">        semantics as ``nmhit.parse_file``).</span>
+</span><span data-line="466"><span class="sd">    additional_args:</span>
+</span><span data-line="467"><span class="sd">        Trailing command-line HIT overrides (e.g.</span>
+</span><span data-line="468"><span class="sd">        ``[&quot;Models/elasticity/E:=210000&quot;]``). Each element is a HIT snippet</span>
+</span><span data-line="469"><span class="sd">        appended after ``post`` so any ``:=`` override takes effect after</span>
+</span><span data-line="470"><span class="sd">        the file&#39;s own assignments. Mirrors the C++ side&#39;s</span>
+</span><span data-line="471"><span class="sd">        ``neml2::load_input(path, additional_cliargs)``.</span>
+</span><span data-line="472"><span class="sd">    device, dtype:</span>
+</span><span data-line="473"><span class="sd">        Load-time device/dtype for any **compiled** (``AOTIModel``) block in</span>
+</span><span data-line="474"><span class="sd">        the file -- they select the ``&lt;device&gt;/&lt;dtype&gt;/`` artifact leaf. Accept</span>
+</span><span data-line="475"><span class="sd">        a ``torch.device`` / ``torch.dtype`` or their string spellings;</span>
+</span><span data-line="476"><span class="sd">        ``None`` (default) selects NEML2&#39;s canonical ``cpu`` / ``float64``</span>
+</span><span data-line="477"><span class="sd">        (matching ``neml2-compile``), NOT torch&#39;s ambient defaults. This is a</span>
+</span><span data-line="478"><span class="sd">        load-time decision because an AOTI artifact is device/dtype-pinned; a</span>
+</span><span data-line="479"><span class="sd">        non-compiled model ignores these and is placed with ``.to(...)`` after</span>
+</span><span data-line="480"><span class="sd">        loading. The compiled stub itself stays device/dtype-agnostic.</span>
+</span><span data-line="481"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="482">    <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span data-line="483">    <span class="n">full_post</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">post</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_args</span><span class="p">)</span>
+</span><span data-line="484">    <span class="n">dev</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">_normalize_load_target</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+</span><span data-line="485">    <span class="n">root</span> <span class="o">=</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">parse_file</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">full_post</span><span class="p">))</span>
+</span><span data-line="486">    <span class="k">return</span> <span class="n">_NativeInputFile</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span></div>
 
-</span><span data-line="444">
-</span><span data-line="445">
+</span><span data-line="487">
+</span><span data-line="488">
 <div class="viewcode-block" id="load_string">
 <a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_string">[docs]</a>
-</span><span data-line="446"><span class="k">def</span><span class="w"> </span><span class="nf">load_string</span><span class="p">(</span>
-</span><span data-line="447">    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="448">    <span class="o">*</span><span class="p">,</span>
-</span><span data-line="449">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="450">    <span class="n">post</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="451">    <span class="n">additional_args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="452"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NativeInputFile</span><span class="p">:</span>
-</span><span data-line="453"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse an in-memory HIT snippet and return a lazy native factory.</span>
-</span><span data-line="454">
-</span><span data-line="455"><span class="sd">    Same semantics as :func:`load_input` but reads from a string (via</span>
-</span><span data-line="456"><span class="sd">    ``nmhit.parse_text``) instead of a file. Used by</span>
-</span><span data-line="457"><span class="sd">    :meth:`neml2.drivers.ModelUnitTest.from_string` so a unit test can</span>
-</span><span data-line="458"><span class="sd">    embed its ``[Models]`` / ``[Tensors]`` / ``[Drivers]`` blocks inline.</span>
-</span><span data-line="459"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="460">    <span class="n">full_post</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">post</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_args</span><span class="p">)</span>
-</span><span data-line="461">    <span class="n">root</span> <span class="o">=</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">parse_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">full_post</span><span class="p">))</span>
-</span><span data-line="462">    <span class="k">return</span> <span class="n">_NativeInputFile</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">))</span></div>
+</span><span data-line="489"><span class="k">def</span><span class="w"> </span><span class="nf">load_string</span><span class="p">(</span>
+</span><span data-line="490">    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="491">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="492">    <span class="n">pre</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="493">    <span class="n">post</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="494">    <span class="n">additional_args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+</span><span data-line="495">    <span class="n">device</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="496">    <span class="n">dtype</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="497"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NativeInputFile</span><span class="p">:</span>
+</span><span data-line="498"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse an in-memory HIT snippet and return a lazy native factory.</span>
+</span><span data-line="499">
+</span><span data-line="500"><span class="sd">    Same semantics as :func:`load_input` (including the ``device`` / ``dtype``</span>
+</span><span data-line="501"><span class="sd">    load-time selection for compiled ``AOTIModel`` blocks) but reads from a</span>
+</span><span data-line="502"><span class="sd">    string (via ``nmhit.parse_text``) instead of a file. Used by</span>
+</span><span data-line="503"><span class="sd">    :meth:`neml2.drivers.ModelUnitTest.from_string` so a unit test can</span>
+</span><span data-line="504"><span class="sd">    embed its ``[Models]`` / ``[Tensors]`` / ``[Drivers]`` blocks inline.</span>
+</span><span data-line="505"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="506">    <span class="n">full_post</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">post</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_args</span><span class="p">)</span>
+</span><span data-line="507">    <span class="n">dev</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">_normalize_load_target</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+</span><span data-line="508">    <span class="n">root</span> <span class="o">=</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">parse_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pre</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">full_post</span><span class="p">))</span>
+</span><span data-line="509">    <span class="k">return</span> <span class="n">_NativeInputFile</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span></div>
 
-</span><span data-line="463">
-</span><span data-line="464">
+</span><span data-line="510">
+</span><span data-line="511">
 <div class="viewcode-block" id="load_model">
 <a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_model">[docs]</a>
-</span><span data-line="465"><span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="466"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a named model from a HIT input file as a Python-native model.</span>
-</span><span data-line="467">
-</span><span data-line="468"><span class="sd">    Raises ``KeyError`` if the model&#39;s type (or any of its sub-object types)</span>
-</span><span data-line="469"><span class="sd">    isn&#39;t registered in ``NativeRegistry``.</span>
-</span><span data-line="470">
-</span><span data-line="471"><span class="sd">    Parameters</span>
-</span><span data-line="472"><span class="sd">    ----------</span>
-</span><span data-line="473"><span class="sd">    path:</span>
-</span><span data-line="474"><span class="sd">        Path to the HIT ``.i`` file.</span>
-</span><span data-line="475"><span class="sd">    model_name:</span>
-</span><span data-line="476"><span class="sd">        Name of the model in the ``[Models]`` section.</span>
-</span><span data-line="477"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="478">    <span class="k">return</span> <span class="n">load_input</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span></div>
+</span><span data-line="512"><span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span>
+</span><span data-line="513">    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+</span><span data-line="514">    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="515">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="516">    <span class="n">device</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="517">    <span class="n">dtype</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="518"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="519"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a named model from a HIT input file as a Python-native model.</span>
+</span><span data-line="520">
+</span><span data-line="521"><span class="sd">    Raises ``KeyError`` if the model&#39;s type (or any of its sub-object types)</span>
+</span><span data-line="522"><span class="sd">    isn&#39;t registered in ``NativeRegistry``.</span>
+</span><span data-line="523">
+</span><span data-line="524"><span class="sd">    Parameters</span>
+</span><span data-line="525"><span class="sd">    ----------</span>
+</span><span data-line="526"><span class="sd">    path:</span>
+</span><span data-line="527"><span class="sd">        Path to the HIT ``.i`` file.</span>
+</span><span data-line="528"><span class="sd">    model_name:</span>
+</span><span data-line="529"><span class="sd">        Name of the model in the ``[Models]`` section.</span>
+</span><span data-line="530"><span class="sd">    device, dtype:</span>
+</span><span data-line="531"><span class="sd">        Load-time device/dtype for a **compiled** model (an ``AOTIModel`` stub):</span>
+</span><span data-line="532"><span class="sd">        they select the ``&lt;device&gt;/&lt;dtype&gt;/`` artifact leaf and default to NEML2&#39;s</span>
+</span><span data-line="533"><span class="sd">        canonical ``cpu`` / ``float64`` (matching ``neml2-compile``). Ignored for a</span>
+</span><span data-line="534"><span class="sd">        non-compiled model (place it with ``.to(...)`` afterward). See</span>
+</span><span data-line="535"><span class="sd">        :func:`load_input`.</span>
+</span><span data-line="536"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="537">    <span class="k">return</span> <span class="n">load_input</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span></div>
 
-</span><span data-line="479">
-</span><span data-line="480">
+</span><span data-line="538">
+</span><span data-line="539">
 <div class="viewcode-block" id="load_nonlinear_system">
 <a class="viewcode-back" href="../../content/python_api/neml2.factory.html#neml2.factory.load_nonlinear_system">[docs]</a>
-</span><span data-line="481"><span class="k">def</span><span class="w"> </span><span class="nf">load_nonlinear_system</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-</span><span data-line="482"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a named system from ``[EquationSystems]`` as a Python-native object.</span>
-</span><span data-line="483">
-</span><span data-line="484"><span class="sd">    Convenience wrapper around ``load_input(path).get_equation_system(name)``</span>
-</span><span data-line="485"><span class="sd">    — mirrors :func:`load_model`. Returns a</span>
-</span><span data-line="486"><span class="sd">    :class:`~neml2.es.NonlinearSystem` (typically a</span>
-</span><span data-line="487"><span class="sd">    :class:`~neml2.es.ModelNonlinearSystem`).</span>
-</span><span data-line="488"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="489">    <span class="k">return</span> <span class="n">load_input</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get_equation_system</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+</span><span data-line="540"><span class="k">def</span><span class="w"> </span><span class="nf">load_nonlinear_system</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span data-line="541"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a named system from ``[EquationSystems]`` as a Python-native object.</span>
+</span><span data-line="542">
+</span><span data-line="543"><span class="sd">    Convenience wrapper around ``load_input(path).get_equation_system(name)``</span>
+</span><span data-line="544"><span class="sd">    — mirrors :func:`load_model`. Returns a</span>
+</span><span data-line="545"><span class="sd">    :class:`~neml2.es.NonlinearSystem` (typically a</span>
+</span><span data-line="546"><span class="sd">    :class:`~neml2.es.ModelNonlinearSystem`).</span>
+</span><span data-line="547"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="548">    <span class="k">return</span> <span class="n">load_input</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get_equation_system</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
-</span><span data-line="490">
-</span><span data-line="491">
-</span><span data-line="492"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="493">    <span class="s2">&quot;register_neml2_object&quot;</span><span class="p">,</span>
-</span><span data-line="494">    <span class="s2">&quot;load_input&quot;</span><span class="p">,</span>
-</span><span data-line="495">    <span class="s2">&quot;load_string&quot;</span><span class="p">,</span>
-</span><span data-line="496">    <span class="s2">&quot;load_model&quot;</span><span class="p">,</span>
-</span><span data-line="497">    <span class="s2">&quot;load_nonlinear_system&quot;</span><span class="p">,</span>
-</span><span data-line="498">    <span class="s2">&quot;_NativeInputFile&quot;</span><span class="p">,</span>
-</span><span data-line="499"><span class="p">]</span>
+</span><span data-line="549">
+</span><span data-line="550">
+</span><span data-line="551"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+</span><span data-line="552">    <span class="s2">&quot;register_neml2_object&quot;</span><span class="p">,</span>
+</span><span data-line="553">    <span class="s2">&quot;load_input&quot;</span><span class="p">,</span>
+</span><span data-line="554">    <span class="s2">&quot;load_string&quot;</span><span class="p">,</span>
+</span><span data-line="555">    <span class="s2">&quot;load_model&quot;</span><span class="p">,</span>
+</span><span data-line="556">    <span class="s2">&quot;load_nonlinear_system&quot;</span><span class="p">,</span>
+</span><span data-line="557">    <span class="s2">&quot;_NativeInputFile&quot;</span><span class="p">,</span>
+</span><span data-line="558"><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

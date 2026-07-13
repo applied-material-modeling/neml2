@@ -15,6 +15,12 @@ them in automatically. See [](torch-compat) for the torch versions
 every wheel is regression-tested against, and [](dependency-management)
 for the full dependency list.
 
+:::{note}
+Prebuilt wheels cover Linux and macOS. **Windows is partially supported
+on a best-effort basis**: build from source (see [](source-builds)) — no
+wheels are published on PyPI.
+:::
+
 Verify the install:
 
 ```python
@@ -53,12 +59,17 @@ C++ consumers point their build system at the relevant subdirectories of
 the wheel — both CMake and `pkg-config` are supported. The wiring is
 covered in [](external-project-integration).
 
+(source-builds)=
 ## Source builds
 
 If you are contributing to NEML2 itself or need a build flavor the
 wheels don't ship (CUDA-only toolchain, debug build, sanitizer build,
 …), see [](build-customization) for the developer source-build
 workflow.
+
+On **Windows** this source build is the only supported path, and support
+is best-effort: no wheels are published, and the embedded-Python eager
+runtime (`cpp-eager`) is unavailable.
 
 ## Choosing a torch variant
 

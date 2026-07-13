@@ -82,3 +82,30 @@ for a fast incremental compile (no `pip` round-trip):
 ```shell
 cmake --build build/editable
 ```
+
+## Windows (best-effort)
+
+Windows is supported on a **best-effort** basis, from a source build only —
+no wheels are published and it is not a primary platform. CI does exercise it
+(compile, install, the Python test suite including AOTI, and a
+`find_package(neml2)` C++ consumer), but expect rough edges.
+
+You need Visual Studio 2022 (MSVC) and Python. scikit-build-core drives the
+Visual Studio generator, which locates MSVC on its own, so no developer shell
+is required. From PowerShell:
+
+```powershell
+git clone -b main https://github.com/applied-material-modeling/neml2.git
+cd neml2
+
+pip install torch nmhit scikit-build-core
+pip install ".[dev]" --no-build-isolation -v
+```
+
+- Build `Release` or `RelWithDebInfo` only: the pip `torch` wheels ship Release
+  binaries on Windows, so a Debug build cannot link against them.
+- The embedded-Python eager runtime (`cpp-eager`) is not built on Windows; the
+  AOTI routes and the native Python API are unaffected.
+- Native Windows paths (with backslashes) work in **quoted** HIT (`.i`) values,
+  e.g. `artifact_path = 'C:\path\to\model'` — quote the value; unquoted paths
+  must use forward slashes.

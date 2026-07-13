@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -298,7 +298,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -374,7 +373,7 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#a-model-with-a-shared-subexpression">A model with a shared subexpression</a></li>
-<li><a class="reference internal" href="#stage-1-capture-torch-export-the-fx-graph">Stage 1 &#8212; capture: <code class="docutils literal notranslate">export</span></code> &#8594; the FX graph</a></li>
+<li><a class="reference internal" href="#stage-1-capture-torch-export-the-fx-graph">Stage 1 &#8212; capture: <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> &#8594; the FX graph</a></li>
 <li><a class="reference internal" href="#stage-2-lower-aotinductor-native-code">Stage 2 &#8212; lower: AOTInductor &#8594; native code</a></li>
 <li><a class="reference internal" href="#the-ir-in-between">The IR in between</a></li>
 <li><a class="reference internal" href="#what-changes-when-we-compile-for-the-gpu">What changes when we compile for the GPU</a></li>
@@ -562,9 +561,13 @@ same command from the previous tutorial) and then read what it generated:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">Compiled &#39;eq&#39; (composed, fully baked, no derivative graphs (use -d to compile jvp/jacobian)) for [cpu] -&gt; aoti/eq
-</span><span data-line="2">  stub: aoti/eq_aoti.i
-</span><span data-line="3">  cpu: aoti/eq/cpu/eq_meta.json
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[1/3] cpu/eq.pt2
+</span><span data-line="2">[2/3] metadata.json
+</span><span data-line="3">[3/3] eq_aoti.i
+</span><span data-line="4">Compiled &#39;eq&#39; (composed, fully baked, no derivative graphs (use -d to compile jvp/jacobian)) for [cpu] -&gt; aoti/eq
+</span><span data-line="5">  metadata: aoti/eq/metadata.json
+</span><span data-line="6">  stub: aoti/eq_aoti.i
+</span><span data-line="7">  cpu: aoti/eq/cpu/float64/
 </span></pre></div>
 </div>
 </div>
@@ -576,7 +579,7 @@ same command from the previous tutorial) and then read what it generated:</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">pt2</span> <span class="o">=</span> <span class="s2">&quot;aoti/eq/cpu/eq.pt2&quot;</span>
+</span><span data-line="3"><span class="n">pt2</span> <span class="o">=</span> <span class="s2">&quot;aoti/eq/cpu/float64/eq.pt2&quot;</span>
 </span><span data-line="4"><span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">pt2</span><span class="p">)</span> <span class="k">as</span> <span class="n">z</span><span class="p">:</span>
 </span><span data-line="5">    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">z</span><span class="o">.</span><span class="n">namelist</span><span class="p">():</span>
 </span><span data-line="6">        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;.so&quot;</span><span class="p">)):</span>
@@ -685,9 +688,9 @@ configurations for the target shape and keeping the fastest. It’s a one-time
 compile cost baked into the artifact. CUDA-graph capture (replaying a whole
 launch sequence as one unit) is also available for launch-bound graphs.</p></li>
 <li><p><strong>Same artifact contract.</strong> The result is still a <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>, just holding a CUDA
-<code class="docutils literal notranslate"><span class="pre">.so</span></code>; <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code> builds both and the loader picks the folder matching
-the runtime device (see <a class="reference internal" href="../compiled_models/main.html#tutorials-models-compiled"><span class="std std-ref">Compiled models</span></a>). Device and dtype are
-pinned at compile time.</p></li>
+<code class="docutils literal notranslate"><span class="pre">.so</span></code>; <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code> builds both under sibling <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> leaves,
+and the load-time <code class="docutils literal notranslate"><span class="pre">device</span></code>/<code class="docutils literal notranslate"><span class="pre">dtype</span></code> pick which one (see
+<a class="reference internal" href="../compiled_models/main.html#tutorials-models-compiled"><span class="std std-ref">Compiled models</span></a>). Device and dtype are pinned at compile time.</p></li>
 </ul>
 </section>
 <section id="recap">

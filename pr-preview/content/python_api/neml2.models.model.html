@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -298,7 +298,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -376,37 +375,37 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.models.model.ChainRuleAction"><code class="docutils literal notranslate"><span class="pre">ChainRuleAction</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.ChainRuleDict"><code class="docutils literal notranslate"><span class="pre">ChainRuleDict</span></code></a></li>
 <li><a class="reference internal" href="#neml2.models.model.Model"><code class="docutils literal notranslate"><span class="pre">Model</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.models.model.Model.SECTION"><code class="docutils literal notranslate">SECTION</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.SUPPORTS_SECOND_ORDER"><code class="docutils literal notranslate">SUPPORTS_SECOND_ORDER</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.apply_chain_rule"><code class="docutils literal notranslate">apply_chain_rule()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.apply_chain_rule_2"><code class="docutils literal notranslate">apply_chain_rule_2()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.call_by_name"><code class="docutils literal notranslate">call_by_name()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.consumed_items"><code class="docutils literal notranslate">consumed_items</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.declare_typed_buffer"><code class="docutils literal notranslate">declare_typed_buffer()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.declare_typed_parameter"><code class="docutils literal notranslate">declare_typed_parameter()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.from_hit"><code class="docutils literal notranslate">from_hit()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.hit"><code class="docutils literal notranslate">hit</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.input_spec"><code class="docutils literal notranslate">input_spec</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.jacobian"><code class="docutils literal notranslate">jacobian()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.jvp"><code class="docutils literal notranslate">jvp()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.output_priorities"><code class="docutils literal notranslate">output_priorities</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.output_spec"><code class="docutils literal notranslate">output_spec</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.param_jacobian"><code class="docutils literal notranslate">param_jacobian()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.param_vjp"><code class="docutils literal notranslate">param_vjp()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.parameter_base_shapes"><code class="docutils literal notranslate">parameter_base_shapes</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.propagate_tangents"><code class="docutils literal notranslate">propagate_tangents()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.provided_items"><code class="docutils literal notranslate">provided_items</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.register_typed_buffer"><code class="docutils literal notranslate">register_typed_buffer()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.register_typed_parameter"><code class="docutils literal notranslate">register_typed_parameter()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.request_AD"><code class="docutils literal notranslate">request_AD()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.Model.set_parameter"><code class="docutils literal notranslate">set_parameter()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.SECTION"><code class="docutils literal notranslate"><span class="pre">Model.SECTION</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.SUPPORTS_SECOND_ORDER"><code class="docutils literal notranslate"><span class="pre">Model.SUPPORTS_SECOND_ORDER</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.apply_chain_rule"><code class="docutils literal notranslate"><span class="pre">Model.apply_chain_rule()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.apply_chain_rule_2"><code class="docutils literal notranslate"><span class="pre">Model.apply_chain_rule_2()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.call_by_name"><code class="docutils literal notranslate"><span class="pre">Model.call_by_name()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.consumed_items"><code class="docutils literal notranslate"><span class="pre">Model.consumed_items</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.declare_typed_buffer"><code class="docutils literal notranslate"><span class="pre">Model.declare_typed_buffer()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.declare_typed_parameter"><code class="docutils literal notranslate"><span class="pre">Model.declare_typed_parameter()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.from_hit"><code class="docutils literal notranslate"><span class="pre">Model.from_hit()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.hit"><code class="docutils literal notranslate"><span class="pre">Model.hit</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.input_spec"><code class="docutils literal notranslate"><span class="pre">Model.input_spec</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.jacobian"><code class="docutils literal notranslate"><span class="pre">Model.jacobian()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.jvp"><code class="docutils literal notranslate"><span class="pre">Model.jvp()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.output_priorities"><code class="docutils literal notranslate"><span class="pre">Model.output_priorities</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.output_spec"><code class="docutils literal notranslate"><span class="pre">Model.output_spec</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.param_jacobian"><code class="docutils literal notranslate"><span class="pre">Model.param_jacobian()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.param_vjp"><code class="docutils literal notranslate"><span class="pre">Model.param_vjp()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.parameter_base_shapes"><code class="docutils literal notranslate"><span class="pre">Model.parameter_base_shapes</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.propagate_tangents"><code class="docutils literal notranslate"><span class="pre">Model.propagate_tangents()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.provided_items"><code class="docutils literal notranslate"><span class="pre">Model.provided_items</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.register_typed_buffer"><code class="docutils literal notranslate"><span class="pre">Model.register_typed_buffer()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.register_typed_parameter"><code class="docutils literal notranslate"><span class="pre">Model.register_typed_parameter()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.request_AD"><code class="docutils literal notranslate"><span class="pre">Model.request_AD()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.Model.set_parameter"><code class="docutils literal notranslate"><span class="pre">Model.set_parameter()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.models.model.PromotedParam"><code class="docutils literal notranslate"><span class="pre">PromotedParam</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.models.model.PromotedParam.input_name"><code class="docutils literal notranslate">input_name</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.PromotedParam.provider"><code class="docutils literal notranslate">provider</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.PromotedParam.provider_output"><code class="docutils literal notranslate">provider_output</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.model.PromotedParam.tail_index"><code class="docutils literal notranslate">tail_index</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.PromotedParam.input_name"><code class="docutils literal notranslate"><span class="pre">PromotedParam.input_name</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.PromotedParam.provider"><code class="docutils literal notranslate"><span class="pre">PromotedParam.provider</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.PromotedParam.provider_output"><code class="docutils literal notranslate"><span class="pre">PromotedParam.provider_output</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.model.PromotedParam.tail_index"><code class="docutils literal notranslate"><span class="pre">PromotedParam.tail_index</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.models.model.SecondOrderChainRuleAction"><code class="docutils literal notranslate"><span class="pre">SecondOrderChainRuleAction</span></code></a></li>

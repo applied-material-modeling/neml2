@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -298,7 +298,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -374,10 +373,10 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#neml2.pyzag.NEML2PyzagModel"><code class="docutils literal notranslate"><span class="pre">NEML2PyzagModel</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.pyzag.NEML2PyzagModel.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.pyzag.NEML2PyzagModel.lookback"><code class="docutils literal notranslate">lookback</span></code></a></li>
-<li><a class="reference internal" href="#neml2.pyzag.NEML2PyzagModel.nforce"><code class="docutils literal notranslate">nforce</span></code></a></li>
-<li><a class="reference internal" href="#neml2.pyzag.NEML2PyzagModel.nstate"><code class="docutils literal notranslate">nstate</span></code></a></li>
+<li><a class="reference internal" href="#neml2.pyzag.NEML2PyzagModel.forward"><code class="docutils literal notranslate"><span class="pre">NEML2PyzagModel.forward()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.pyzag.NEML2PyzagModel.lookback"><code class="docutils literal notranslate"><span class="pre">NEML2PyzagModel.lookback</span></code></a></li>
+<li><a class="reference internal" href="#neml2.pyzag.NEML2PyzagModel.nforce"><code class="docutils literal notranslate"><span class="pre">NEML2PyzagModel.nforce</span></code></a></li>
+<li><a class="reference internal" href="#neml2.pyzag.NEML2PyzagModel.nstate"><code class="docutils literal notranslate"><span class="pre">NEML2PyzagModel.nstate</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.pyzag.change_lag_order"><code class="docutils literal notranslate"><span class="pre">change_lag_order()</span></code></a></li>
@@ -488,7 +487,7 @@ mutually exclusive: omit both to train every parameter, pass
 
 <dl class="py function">
 <dt class="sig sig-object py" id="neml2.pyzag.change_lag_order">
-<span class="sig-prename descclassname"><span class="pre">neml2.pyzag.</span></span><span class="sig-name descname"><span class="pre">change_lag_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/pyzag/interface.html#change_lag_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.pyzag.change_lag_order" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">neml2.pyzag.</span></span><span class="sig-name descname"><span class="pre">change_lag_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/_helpers.html#change_lag_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.pyzag.change_lag_order" title="Link to this definition">#</a></dt>
 <dd><p>Re-tag a variable name to a different lag order. Inverse of <a class="reference internal" href="#neml2.pyzag.lag_order" title="neml2.pyzag.lag_order"><code class="xref py py-func docutils literal notranslate"><span class="pre">lag_order()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -505,13 +504,9 @@ mutually exclusive: omit both to train every parameter, pass
 
 <dl class="py function">
 <dt class="sig sig-object py" id="neml2.pyzag.lag_order">
-<span class="sig-prename descclassname"><span class="pre">neml2.pyzag.</span></span><span class="sig-name descname"><span class="pre">lag_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/pyzag/interface.html#lag_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.pyzag.lag_order" title="Link to this definition">#</a></dt>
-<dd><p>Split a variable name into its base name and lag order.</p>
-<p><code class="docutils literal notranslate"><span class="pre">var</span></code> is either <code class="docutils literal notranslate"><span class="pre">&quot;name&quot;</span></code> (lag 0) or <code class="docutils literal notranslate"><span class="pre">&quot;name~n&quot;</span></code> (lag <code class="docutils literal notranslate"><span class="pre">n</span></code>). Used by
-the interface to identify <em>old-state</em> / <em>old-force</em> variables — pyzag
-wants a contiguous-in-time state and forces tensor, while the NEML2
-nonlinear system keeps current values on the unknown axis and old values
-on the given axis with a <code class="docutils literal notranslate"><span class="pre">~1</span></code> suffix.</p>
+<span class="sig-prename descclassname"><span class="pre">neml2.pyzag.</span></span><span class="sig-name descname"><span class="pre">lag_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/_helpers.html#lag_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.pyzag.lag_order" title="Link to this definition">#</a></dt>
+<dd><p>Split a variable name into <code class="docutils literal notranslate"><span class="pre">(base_name,</span> <span class="pre">lag)</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">var</span></code> is either <code class="docutils literal notranslate"><span class="pre">&quot;name&quot;</span></code> (lag 0) or <code class="docutils literal notranslate"><span class="pre">&quot;name~n&quot;</span></code> (lag <code class="docutils literal notranslate"><span class="pre">n</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>var</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p>

@@ -6,7 +6,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=70423902" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
@@ -298,7 +298,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/index.html">solid_mechanics</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/index.html">crystal_plasticity</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/damage/index.html">damage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/index.html">plasticity</a></li>
@@ -456,424 +455,427 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="48"><span class="kn">import</span><span class="w"> </span><span class="nn">nmhit</span>
 </span><span data-line="49"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 </span><span data-line="50">
-</span><span data-line="51"><span class="kn">from</span><span class="w"> </span><span class="nn">..factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_neml2_object</span>
-</span><span data-line="52"><span class="kn">from</span><span class="w"> </span><span class="nn">..schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">HitField</span><span class="p">,</span> <span class="n">HitSchema</span><span class="p">,</span> <span class="n">dependency</span><span class="p">,</span> <span class="n">option</span>
-</span><span data-line="53"><span class="kn">from</span><span class="w"> </span><span class="nn">..types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MRP</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">SR2</span><span class="p">,</span> <span class="n">SSR4</span><span class="p">,</span> <span class="n">WR2</span><span class="p">,</span> <span class="n">MillerIndex</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">Vec</span>
-</span><span data-line="54"><span class="kn">from</span><span class="w"> </span><span class="nn">.driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">Driver</span>
-</span><span data-line="55">
-</span><span data-line="56"><span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-</span><span data-line="57">    <span class="kn">from</span><span class="w"> </span><span class="nn">..factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">_NativeInputFile</span>
-</span><span data-line="58">    <span class="kn">from</span><span class="w"> </span><span class="nn">..models.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
-</span><span data-line="59">
-</span><span data-line="60"><span class="c1">#: HIT ``prescribed_&lt;Type&gt;_*`` / ``ic_&lt;Type&gt;_*`` tag -&gt; native wrapper class. Mirrors</span>
-</span><span data-line="61"><span class="c1">#: ``testing._TYPE_MAP`` (and the C++ ``FOR_ALL_TENSORBASE`` macro expansion).</span>
-</span><span data-line="62"><span class="n">_TYPE_MAP</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="63">    <span class="s2">&quot;Scalar&quot;</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span>
-</span><span data-line="64">    <span class="s2">&quot;Vec&quot;</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
-</span><span data-line="65">    <span class="s2">&quot;SR2&quot;</span><span class="p">:</span> <span class="n">SR2</span><span class="p">,</span>
-</span><span data-line="66">    <span class="s2">&quot;WR2&quot;</span><span class="p">:</span> <span class="n">WR2</span><span class="p">,</span>
-</span><span data-line="67">    <span class="s2">&quot;R2&quot;</span><span class="p">:</span> <span class="n">R2</span><span class="p">,</span>
-</span><span data-line="68">    <span class="s2">&quot;MRP&quot;</span><span class="p">:</span> <span class="n">MRP</span><span class="p">,</span>
-</span><span data-line="69">    <span class="s2">&quot;SSR4&quot;</span><span class="p">:</span> <span class="n">SSR4</span><span class="p">,</span>
-</span><span data-line="70">    <span class="s2">&quot;MillerIndex&quot;</span><span class="p">:</span> <span class="n">MillerIndex</span><span class="p">,</span>
-</span><span data-line="71"><span class="p">}</span>
-</span><span data-line="72">
+</span><span data-line="51"><span class="kn">from</span><span class="w"> </span><span class="nn">..es._helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">lag_order</span>
+</span><span data-line="52"><span class="kn">from</span><span class="w"> </span><span class="nn">..factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_neml2_object</span>
+</span><span data-line="53"><span class="kn">from</span><span class="w"> </span><span class="nn">..schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">HitField</span><span class="p">,</span> <span class="n">HitSchema</span><span class="p">,</span> <span class="n">dependency</span><span class="p">,</span> <span class="n">option</span>
+</span><span data-line="54"><span class="kn">from</span><span class="w"> </span><span class="nn">..types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MRP</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">SR2</span><span class="p">,</span> <span class="n">SSR4</span><span class="p">,</span> <span class="n">WR2</span><span class="p">,</span> <span class="n">MillerIndex</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">Vec</span>
+</span><span data-line="55"><span class="kn">from</span><span class="w"> </span><span class="nn">.driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">Driver</span>
+</span><span data-line="56">
+</span><span data-line="57"><span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+</span><span data-line="58">    <span class="kn">from</span><span class="w"> </span><span class="nn">..factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">_NativeInputFile</span>
+</span><span data-line="59">    <span class="kn">from</span><span class="w"> </span><span class="nn">..models.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
+</span><span data-line="60">
+</span><span data-line="61"><span class="c1">#: HIT ``prescribed_&lt;Type&gt;_*`` / ``ic_&lt;Type&gt;_*`` tag -&gt; native wrapper class. Mirrors</span>
+</span><span data-line="62"><span class="c1">#: ``testing._TYPE_MAP`` (and the C++ ``FOR_ALL_TENSORBASE`` macro expansion).</span>
+</span><span data-line="63"><span class="n">_TYPE_MAP</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="64">    <span class="s2">&quot;Scalar&quot;</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span>
+</span><span data-line="65">    <span class="s2">&quot;Vec&quot;</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
+</span><span data-line="66">    <span class="s2">&quot;SR2&quot;</span><span class="p">:</span> <span class="n">SR2</span><span class="p">,</span>
+</span><span data-line="67">    <span class="s2">&quot;WR2&quot;</span><span class="p">:</span> <span class="n">WR2</span><span class="p">,</span>
+</span><span data-line="68">    <span class="s2">&quot;R2&quot;</span><span class="p">:</span> <span class="n">R2</span><span class="p">,</span>
+</span><span data-line="69">    <span class="s2">&quot;MRP&quot;</span><span class="p">:</span> <span class="n">MRP</span><span class="p">,</span>
+</span><span data-line="70">    <span class="s2">&quot;SSR4&quot;</span><span class="p">:</span> <span class="n">SSR4</span><span class="p">,</span>
+</span><span data-line="71">    <span class="s2">&quot;MillerIndex&quot;</span><span class="p">:</span> <span class="n">MillerIndex</span><span class="p">,</span>
+</span><span data-line="72"><span class="p">}</span>
 </span><span data-line="73">
-</span><span data-line="74"><span class="k">def</span><span class="w"> </span><span class="nf">_resolve_typed_value</span><span class="p">(</span>
-</span><span data-line="75">    <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span>
-</span><span data-line="76"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="77"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve one ``..._values`` token to a typed wrapper.</span>
-</span><span data-line="78">
-</span><span data-line="79"><span class="sd">    Inline ``Scalar`` literals are accepted (the C++ ``TensorName&lt;T&gt;`` convention);</span>
-</span><span data-line="80"><span class="sd">    everything else is a ``[Tensors]`` block name.</span>
-</span><span data-line="81"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="82">    <span class="k">try</span><span class="p">:</span>
-</span><span data-line="83">        <span class="n">literal</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
-</span><span data-line="84">    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-</span><span data-line="85">        <span class="n">literal</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="86">    <span class="k">if</span> <span class="n">literal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="87">        <span class="k">if</span> <span class="n">type_cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Scalar</span><span class="p">:</span>
-</span><span data-line="88">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="89">                <span class="sa">f</span><span class="s2">&quot;inline literal </span><span class="si">{</span><span class="n">token</span><span class="si">!r}</span><span class="s2"> is only supported for Scalar; &quot;</span>
-</span><span data-line="90">                <span class="sa">f</span><span class="s2">&quot;reference a [Tensors] block for </span><span class="si">{</span><span class="n">type_cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> values&quot;</span>
-</span><span data-line="91">            <span class="p">)</span>
-</span><span data-line="92">        <span class="k">return</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">literal</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
-</span><span data-line="93">
-</span><span data-line="94">    <span class="n">value</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
-</span><span data-line="95">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">):</span>
-</span><span data-line="96">        <span class="k">return</span> <span class="n">value</span>
-</span><span data-line="97">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-</span><span data-line="98">        <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-</span><span data-line="99">    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="100">        <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">] produced </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, expected </span><span class="si">{</span><span class="n">type_cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span data-line="101">    <span class="p">)</span>
-</span><span data-line="102">
+</span><span data-line="74">
+</span><span data-line="75"><span class="k">def</span><span class="w"> </span><span class="nf">_resolve_typed_value</span><span class="p">(</span>
+</span><span data-line="76">    <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span>
+</span><span data-line="77"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="78"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve one ``..._values`` token to a typed wrapper.</span>
+</span><span data-line="79">
+</span><span data-line="80"><span class="sd">    Inline ``Scalar`` literals are accepted (the C++ ``TensorName&lt;T&gt;`` convention);</span>
+</span><span data-line="81"><span class="sd">    everything else is a ``[Tensors]`` block name.</span>
+</span><span data-line="82"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="83">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="84">        <span class="n">literal</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+</span><span data-line="85">    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+</span><span data-line="86">        <span class="n">literal</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="87">    <span class="k">if</span> <span class="n">literal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="88">        <span class="k">if</span> <span class="n">type_cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Scalar</span><span class="p">:</span>
+</span><span data-line="89">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="90">                <span class="sa">f</span><span class="s2">&quot;inline literal </span><span class="si">{</span><span class="n">token</span><span class="si">!r}</span><span class="s2"> is only supported for Scalar; &quot;</span>
+</span><span data-line="91">                <span class="sa">f</span><span class="s2">&quot;reference a [Tensors] block for </span><span class="si">{</span><span class="n">type_cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> values&quot;</span>
+</span><span data-line="92">            <span class="p">)</span>
+</span><span data-line="93">        <span class="k">return</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">literal</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+</span><span data-line="94">
+</span><span data-line="95">    <span class="n">value</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+</span><span data-line="96">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">):</span>
+</span><span data-line="97">        <span class="k">return</span> <span class="n">value</span>
+</span><span data-line="98">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+</span><span data-line="99">        <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span data-line="100">    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+</span><span data-line="101">        <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">] produced </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, expected </span><span class="si">{</span><span class="n">type_cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="102">    <span class="p">)</span>
 </span><span data-line="103">
-</span><span data-line="104"><span class="k">def</span><span class="w"> </span><span class="nf">_read_typed_pairs</span><span class="p">(</span>
-</span><span data-line="105">    <span class="n">driver</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span>
-</span><span data-line="106"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]:</span>
-</span><span data-line="107"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read ``{prefix}_&lt;Type&gt;_names`` / ``{prefix}_&lt;Type&gt;_values`` into a dict.&quot;&quot;&quot;</span>
-</span><span data-line="108">    <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="109">    <span class="k">for</span> <span class="n">type_name</span><span class="p">,</span> <span class="n">type_cls</span> <span class="ow">in</span> <span class="n">_TYPE_MAP</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="110">        <span class="n">names_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names&quot;</span>
-</span><span data-line="111">        <span class="k">if</span> <span class="n">driver</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">names_key</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="112">            <span class="k">continue</span>
-</span><span data-line="113">        <span class="n">names</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">param_list_str</span><span class="p">(</span><span class="n">names_key</span><span class="p">)</span>
-</span><span data-line="114">        <span class="k">if</span> <span class="ow">not</span> <span class="n">names</span><span class="p">:</span>
-</span><span data-line="115">            <span class="k">continue</span>
-</span><span data-line="116">        <span class="n">values</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">param_list_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values&quot;</span><span class="p">)</span>
-</span><span data-line="117">        <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span data-line="118">            <span class="n">out</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_resolve_typed_value</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
-</span><span data-line="119">    <span class="k">return</span> <span class="n">out</span>
-</span><span data-line="120">
+</span><span data-line="104">
+</span><span data-line="105"><span class="k">def</span><span class="w"> </span><span class="nf">_read_typed_pairs</span><span class="p">(</span>
+</span><span data-line="106">    <span class="n">driver</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span>
+</span><span data-line="107"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]:</span>
+</span><span data-line="108"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read ``{prefix}_&lt;Type&gt;_names`` / ``{prefix}_&lt;Type&gt;_values`` into a dict.&quot;&quot;&quot;</span>
+</span><span data-line="109">    <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="110">    <span class="k">for</span> <span class="n">type_name</span><span class="p">,</span> <span class="n">type_cls</span> <span class="ow">in</span> <span class="n">_TYPE_MAP</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="111">        <span class="n">names_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names&quot;</span>
+</span><span data-line="112">        <span class="k">if</span> <span class="n">driver</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">names_key</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="113">            <span class="k">continue</span>
+</span><span data-line="114">        <span class="n">names</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">param_list_str</span><span class="p">(</span><span class="n">names_key</span><span class="p">)</span>
+</span><span data-line="115">        <span class="k">if</span> <span class="ow">not</span> <span class="n">names</span><span class="p">:</span>
+</span><span data-line="116">            <span class="k">continue</span>
+</span><span data-line="117">        <span class="n">values</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">param_list_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values&quot;</span><span class="p">)</span>
+</span><span data-line="118">        <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span data-line="119">            <span class="n">out</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_resolve_typed_value</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+</span><span data-line="120">    <span class="k">return</span> <span class="n">out</span>
 </span><span data-line="121">
-</span><span data-line="122"><span class="k">def</span><span class="w"> </span><span class="nf">_typed_io_fields</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">HitField</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-</span><span data-line="123"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Build documentation fields for the ``prescribed_&lt;Type&gt;_*`` / ``ic_&lt;Type&gt;_*``</span>
-</span><span data-line="124"><span class="sd">    name/value pairs that ``_read_typed_pairs`` ingests at parse time.</span>
-</span><span data-line="125">
-</span><span data-line="126"><span class="sd">    Each typed wrapper (Scalar, Vec, SR2, ...) maps to four optional list</span>
-</span><span data-line="127"><span class="sd">    options: ``prescribed_&lt;T&gt;_names`` paired with ``prescribed_&lt;T&gt;_values`` and</span>
-</span><span data-line="128"><span class="sd">    the same pair under ``ic_&lt;T&gt;_*`` for initial conditions. The schema doesn&#39;t drive</span>
-</span><span data-line="129"><span class="sd">    parsing here (the driver overrides ``from_hit``) — it exists so</span>
-</span><span data-line="130"><span class="sd">    ``neml2-syntax`` can render the full HIT surface.</span>
-</span><span data-line="131"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="132">    <span class="n">fields</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HitField</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="133">    <span class="k">for</span> <span class="n">type_name</span> <span class="ow">in</span> <span class="n">_TYPE_MAP</span><span class="p">:</span>
-</span><span data-line="134">        <span class="k">for</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">prefix_doc</span><span class="p">,</span> <span class="n">article</span> <span class="ow">in</span> <span class="p">(</span>
-</span><span data-line="135">            <span class="p">(</span><span class="s2">&quot;prescribed&quot;</span><span class="p">,</span> <span class="s2">&quot;prescribed&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span>
-</span><span data-line="136">            <span class="p">(</span><span class="s2">&quot;ic&quot;</span><span class="p">,</span> <span class="s2">&quot;initial condition&quot;</span><span class="p">,</span> <span class="s2">&quot;an&quot;</span><span class="p">),</span>
-</span><span data-line="137">        <span class="p">):</span>
-</span><span data-line="138">            <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-</span><span data-line="139">                <span class="n">option</span><span class="p">(</span>
-</span><span data-line="140">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names&quot;</span><span class="p">,</span>
-</span><span data-line="141">                    <span class="nb">list</span><span class="p">,</span>
-</span><span data-line="142">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2"> variable names assigned </span><span class="si">{</span><span class="n">article</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">prefix_doc</span><span class="si">}</span><span class="s2"> value.&quot;</span><span class="p">,</span>
-</span><span data-line="143">                    <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
-</span><span data-line="144">                <span class="p">)</span>
-</span><span data-line="145">            <span class="p">)</span>
-</span><span data-line="146">            <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-</span><span data-line="147">                <span class="n">option</span><span class="p">(</span>
-</span><span data-line="148">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values&quot;</span><span class="p">,</span>
-</span><span data-line="149">                    <span class="nb">list</span><span class="p">,</span>
-</span><span data-line="150">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">prefix_doc</span><span class="si">}</span><span class="s2"> tokens. Each is either an inline Scalar literal &quot;</span>
-</span><span data-line="151">                    <span class="sa">f</span><span class="s2">&quot;(Scalar only) or a [Tensors] block name. Length must match &quot;</span>
-</span><span data-line="152">                    <span class="sa">f</span><span class="s2">&quot;``</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names``.&quot;</span><span class="p">,</span>
-</span><span data-line="153">                    <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
-</span><span data-line="154">                <span class="p">)</span>
-</span><span data-line="155">            <span class="p">)</span>
-</span><span data-line="156">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
-</span><span data-line="157">
+</span><span data-line="122">
+</span><span data-line="123"><span class="k">def</span><span class="w"> </span><span class="nf">_typed_io_fields</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">HitField</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+</span><span data-line="124"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Build documentation fields for the ``prescribed_&lt;Type&gt;_*`` / ``ic_&lt;Type&gt;_*``</span>
+</span><span data-line="125"><span class="sd">    name/value pairs that ``_read_typed_pairs`` ingests at parse time.</span>
+</span><span data-line="126">
+</span><span data-line="127"><span class="sd">    Each typed wrapper (Scalar, Vec, SR2, ...) maps to four optional list</span>
+</span><span data-line="128"><span class="sd">    options: ``prescribed_&lt;T&gt;_names`` paired with ``prescribed_&lt;T&gt;_values`` and</span>
+</span><span data-line="129"><span class="sd">    the same pair under ``ic_&lt;T&gt;_*`` for initial conditions. The schema doesn&#39;t drive</span>
+</span><span data-line="130"><span class="sd">    parsing here (the driver overrides ``from_hit``) — it exists so</span>
+</span><span data-line="131"><span class="sd">    ``neml2-syntax`` can render the full HIT surface.</span>
+</span><span data-line="132"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="133">    <span class="n">fields</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HitField</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="134">    <span class="k">for</span> <span class="n">type_name</span> <span class="ow">in</span> <span class="n">_TYPE_MAP</span><span class="p">:</span>
+</span><span data-line="135">        <span class="k">for</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">prefix_doc</span><span class="p">,</span> <span class="n">article</span> <span class="ow">in</span> <span class="p">(</span>
+</span><span data-line="136">            <span class="p">(</span><span class="s2">&quot;prescribed&quot;</span><span class="p">,</span> <span class="s2">&quot;prescribed&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span>
+</span><span data-line="137">            <span class="p">(</span><span class="s2">&quot;ic&quot;</span><span class="p">,</span> <span class="s2">&quot;initial condition&quot;</span><span class="p">,</span> <span class="s2">&quot;an&quot;</span><span class="p">),</span>
+</span><span data-line="138">        <span class="p">):</span>
+</span><span data-line="139">            <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+</span><span data-line="140">                <span class="n">option</span><span class="p">(</span>
+</span><span data-line="141">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names&quot;</span><span class="p">,</span>
+</span><span data-line="142">                    <span class="nb">list</span><span class="p">,</span>
+</span><span data-line="143">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2"> variable names assigned </span><span class="si">{</span><span class="n">article</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">prefix_doc</span><span class="si">}</span><span class="s2"> value.&quot;</span><span class="p">,</span>
+</span><span data-line="144">                    <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+</span><span data-line="145">                <span class="p">)</span>
+</span><span data-line="146">            <span class="p">)</span>
+</span><span data-line="147">            <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+</span><span data-line="148">                <span class="n">option</span><span class="p">(</span>
+</span><span data-line="149">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_values&quot;</span><span class="p">,</span>
+</span><span data-line="150">                    <span class="nb">list</span><span class="p">,</span>
+</span><span data-line="151">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">prefix_doc</span><span class="si">}</span><span class="s2"> tokens. Each is either an inline Scalar literal &quot;</span>
+</span><span data-line="152">                    <span class="sa">f</span><span class="s2">&quot;(Scalar only) or a [Tensors] block name. Length must match &quot;</span>
+</span><span data-line="153">                    <span class="sa">f</span><span class="s2">&quot;``</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">_names``.&quot;</span><span class="p">,</span>
+</span><span data-line="154">                    <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+</span><span data-line="155">                <span class="p">)</span>
+</span><span data-line="156">            <span class="p">)</span>
+</span><span data-line="157">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
 </span><span data-line="158">
+</span><span data-line="159">
 <div class="viewcode-block" id="TransientDriver">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.TransientDriver">[docs]</a>
-</span><span data-line="159"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;TransientDriver&quot;</span><span class="p">)</span>
-</span><span data-line="160"><span class="k">class</span><span class="w"> </span><span class="nc">TransientDriver</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
-</span><span data-line="161"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Drive a model over a prescribed time history.</span>
-</span><span data-line="162">
-</span><span data-line="163"><span class="sd">    Mirrors C++ ``TransientDriver``. See module docstring for differences.</span>
-</span><span data-line="164"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="165">
-</span><span data-line="166">    <span class="c1"># Documentation-only schema; ``from_hit`` below owns the parsing because</span>
-</span><span data-line="167">    <span class="c1"># ``prescribed_&lt;Type&gt;_*`` / ``ic_&lt;Type&gt;_*`` are a wide product of optional list</span>
-</span><span data-line="168">    <span class="c1"># options that the typed Model-style schema can&#39;t express directly.</span>
-</span><span data-line="169">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
-</span><span data-line="170">        <span class="n">dependency</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;get_model&quot;</span><span class="p">,</span> <span class="s2">&quot;The Model to drive over the time history.&quot;</span><span class="p">),</span>
-</span><span data-line="171">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="172">            <span class="s2">&quot;prescribed_time&quot;</span><span class="p">,</span>
-</span><span data-line="173">            <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="174">            <span class="s2">&quot;[Tensors] block name of a Scalar whose leading axis is the per-step time history.&quot;</span><span class="p">,</span>
-</span><span data-line="175">        <span class="p">),</span>
-</span><span data-line="176">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="177">            <span class="s2">&quot;time&quot;</span><span class="p">,</span>
-</span><span data-line="178">            <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="179">            <span class="s2">&quot;Name of the model input that receives the per-step time value.&quot;</span><span class="p">,</span>
-</span><span data-line="180">            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span>
-</span><span data-line="181">        <span class="p">),</span>
-</span><span data-line="182">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="183">            <span class="s2">&quot;save_as&quot;</span><span class="p">,</span>
-</span><span data-line="184">            <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="185">            <span class="s2">&quot;Output file path. When set, ``run()`` writes the result here (the same &quot;</span>
-</span><span data-line="186">            <span class="s2">&quot;flat dict :meth:`result` returns, via :meth:`save_result`); empty (the &quot;</span>
-</span><span data-line="187">            <span class="s2">&quot;default) leaves ``run()`` side-effect-free.&quot;</span><span class="p">,</span>
-</span><span data-line="188">            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-</span><span data-line="189">        <span class="p">),</span>
-</span><span data-line="190">        <span class="o">*</span><span class="n">_typed_io_fields</span><span class="p">(),</span>
-</span><span data-line="191">    <span class="p">)</span>
-</span><span data-line="192">
-</span><span data-line="193">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-</span><span data-line="194">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="195">        <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
-</span><span data-line="196">        <span class="n">prescribed_time</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span>
-</span><span data-line="197">        <span class="n">time_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="198">        <span class="n">prescribed</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">],</span>
-</span><span data-line="199">        <span class="n">ics</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">],</span>
-</span><span data-line="200">        <span class="n">save_as</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-</span><span data-line="201">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="202">        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
-</span><span data-line="203">        <span class="bp">self</span><span class="o">.</span><span class="n">prescribed_time</span> <span class="o">=</span> <span class="n">prescribed_time</span>
-</span><span data-line="204">        <span class="bp">self</span><span class="o">.</span><span class="n">time_name</span> <span class="o">=</span> <span class="n">time_name</span>
-</span><span data-line="205">        <span class="bp">self</span><span class="o">.</span><span class="n">prescribed</span> <span class="o">=</span> <span class="n">prescribed</span>
-</span><span data-line="206">        <span class="bp">self</span><span class="o">.</span><span class="n">ics</span> <span class="o">=</span> <span class="n">ics</span>
-</span><span data-line="207">        <span class="bp">self</span><span class="o">.</span><span class="n">save_as</span> <span class="o">=</span> <span class="n">save_as</span>
-</span><span data-line="208">        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prescribed_time</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</span><span data-line="209">        <span class="c1"># Per-step input/output dicts, populated by run(). Values are typed</span>
-</span><span data-line="210">        <span class="c1"># wrappers (TensorWrapper) so sub_batch_ndim propagates; the public</span>
-</span><span data-line="211">        <span class="c1"># result() unwraps to raw torch.Tensor at the boundary.</span>
-</span><span data-line="212">        <span class="bp">self</span><span class="o">.</span><span class="n">result_in</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="213">        <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="214">        <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span><span class="p">()</span>
-</span><span data-line="215">
-</span><span data-line="216">    <span class="k">def</span><span class="w"> </span><span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="217">        <span class="c1"># Every force should be present in input_spec (or it would never be</span>
-</span><span data-line="218">        <span class="c1"># picked up); same for IC names that match an output_spec key.</span>
-</span><span data-line="219">        <span class="n">spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span>
-</span><span data-line="220">        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prescribed</span><span class="p">:</span>
-</span><span data-line="221">            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
-</span><span data-line="222">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="223">                    <span class="sa">f</span><span class="s2">&quot;TransientDriver prescribed variable </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is not in &quot;</span>
-</span><span data-line="224">                    <span class="sa">f</span><span class="s2">&quot;model.input_spec </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span data-line="225">                <span class="p">)</span>
-</span><span data-line="226">        <span class="c1"># ICs may reference history vars (input_spec) or step-0 outputs (output_spec).</span>
-</span><span data-line="227">        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ics</span><span class="p">:</span>
-</span><span data-line="228">            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spec</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">:</span>
-</span><span data-line="229">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="230">                    <span class="sa">f</span><span class="s2">&quot;TransientDriver IC </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is in neither input_spec nor &quot;</span>
-</span><span data-line="231">                    <span class="sa">f</span><span class="s2">&quot;output_spec of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span data-line="232">                <span class="p">)</span>
-</span><span data-line="233">        <span class="c1"># Driving forces must carry a leading time-step dim of the same size as</span>
-</span><span data-line="234">        <span class="c1"># prescribed_time&#39;s leading dim.</span>
-</span><span data-line="235">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prescribed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="236">            <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
-</span><span data-line="237">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="238">                    <span class="sa">f</span><span class="s2">&quot;TransientDriver prescribed variable </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has leading shape &quot;</span>
-</span><span data-line="239">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">val</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> but prescribed_time has </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span data-line="240">                <span class="p">)</span>
-</span><span data-line="241">
+</span><span data-line="160"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;TransientDriver&quot;</span><span class="p">)</span>
+</span><span data-line="161"><span class="k">class</span><span class="w"> </span><span class="nc">TransientDriver</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
+</span><span data-line="162"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Drive a model over a prescribed time history.</span>
+</span><span data-line="163">
+</span><span data-line="164"><span class="sd">    Mirrors C++ ``TransientDriver``. See module docstring for differences.</span>
+</span><span data-line="165"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="166">
+</span><span data-line="167">    <span class="c1"># Documentation-only schema; ``from_hit`` below owns the parsing because</span>
+</span><span data-line="168">    <span class="c1"># ``prescribed_&lt;Type&gt;_*`` / ``ic_&lt;Type&gt;_*`` are a wide product of optional list</span>
+</span><span data-line="169">    <span class="c1"># options that the typed Model-style schema can&#39;t express directly.</span>
+</span><span data-line="170">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
+</span><span data-line="171">        <span class="n">dependency</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;get_model&quot;</span><span class="p">,</span> <span class="s2">&quot;The Model to drive over the time history.&quot;</span><span class="p">),</span>
+</span><span data-line="172">        <span class="n">option</span><span class="p">(</span>
+</span><span data-line="173">            <span class="s2">&quot;prescribed_time&quot;</span><span class="p">,</span>
+</span><span data-line="174">            <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="175">            <span class="s2">&quot;[Tensors] block name of a Scalar whose leading axis is the per-step time history.&quot;</span><span class="p">,</span>
+</span><span data-line="176">        <span class="p">),</span>
+</span><span data-line="177">        <span class="n">option</span><span class="p">(</span>
+</span><span data-line="178">            <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+</span><span data-line="179">            <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="180">            <span class="s2">&quot;Name of the model input that receives the per-step time value.&quot;</span><span class="p">,</span>
+</span><span data-line="181">            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span>
+</span><span data-line="182">        <span class="p">),</span>
+</span><span data-line="183">        <span class="n">option</span><span class="p">(</span>
+</span><span data-line="184">            <span class="s2">&quot;save_as&quot;</span><span class="p">,</span>
+</span><span data-line="185">            <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="186">            <span class="s2">&quot;Output file path. When set, ``run()`` writes the result here (the same &quot;</span>
+</span><span data-line="187">            <span class="s2">&quot;flat dict :meth:`result` returns, via :meth:`save_result`); empty (the &quot;</span>
+</span><span data-line="188">            <span class="s2">&quot;default) leaves ``run()`` side-effect-free.&quot;</span><span class="p">,</span>
+</span><span data-line="189">            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+</span><span data-line="190">        <span class="p">),</span>
+</span><span data-line="191">        <span class="o">*</span><span class="n">_typed_io_fields</span><span class="p">(),</span>
+</span><span data-line="192">    <span class="p">)</span>
+</span><span data-line="193">
+</span><span data-line="194">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+</span><span data-line="195">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="196">        <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
+</span><span data-line="197">        <span class="n">prescribed_time</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span>
+</span><span data-line="198">        <span class="n">time_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="199">        <span class="n">prescribed</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">],</span>
+</span><span data-line="200">        <span class="n">ics</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">],</span>
+</span><span data-line="201">        <span class="n">save_as</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+</span><span data-line="202">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="203">        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+</span><span data-line="204">        <span class="bp">self</span><span class="o">.</span><span class="n">prescribed_time</span> <span class="o">=</span> <span class="n">prescribed_time</span>
+</span><span data-line="205">        <span class="bp">self</span><span class="o">.</span><span class="n">time_name</span> <span class="o">=</span> <span class="n">time_name</span>
+</span><span data-line="206">        <span class="bp">self</span><span class="o">.</span><span class="n">prescribed</span> <span class="o">=</span> <span class="n">prescribed</span>
+</span><span data-line="207">        <span class="bp">self</span><span class="o">.</span><span class="n">ics</span> <span class="o">=</span> <span class="n">ics</span>
+</span><span data-line="208">        <span class="bp">self</span><span class="o">.</span><span class="n">save_as</span> <span class="o">=</span> <span class="n">save_as</span>
+</span><span data-line="209">        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prescribed_time</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span data-line="210">        <span class="c1"># Per-step input/output dicts, populated by run(). Values are typed</span>
+</span><span data-line="211">        <span class="c1"># wrappers (TensorWrapper) so sub_batch_ndim propagates; the public</span>
+</span><span data-line="212">        <span class="c1"># result() unwraps to raw torch.Tensor at the boundary.</span>
+</span><span data-line="213">        <span class="bp">self</span><span class="o">.</span><span class="n">result_in</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="214">        <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="215">        <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span><span class="p">()</span>
+</span><span data-line="216">
+</span><span data-line="217">    <span class="k">def</span><span class="w"> </span><span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="218">        <span class="c1"># Every force should be present in input_spec (or it would never be</span>
+</span><span data-line="219">        <span class="c1"># picked up); same for IC names that match an output_spec key.</span>
+</span><span data-line="220">        <span class="n">spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span>
+</span><span data-line="221">        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prescribed</span><span class="p">:</span>
+</span><span data-line="222">            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
+</span><span data-line="223">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="224">                    <span class="sa">f</span><span class="s2">&quot;TransientDriver prescribed variable </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is not in &quot;</span>
+</span><span data-line="225">                    <span class="sa">f</span><span class="s2">&quot;model.input_spec </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="226">                <span class="p">)</span>
+</span><span data-line="227">        <span class="c1"># ICs may reference history vars (input_spec) or step-0 outputs (output_spec).</span>
+</span><span data-line="228">        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ics</span><span class="p">:</span>
+</span><span data-line="229">            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spec</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">:</span>
+</span><span data-line="230">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="231">                    <span class="sa">f</span><span class="s2">&quot;TransientDriver IC </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is in neither input_spec nor &quot;</span>
+</span><span data-line="232">                    <span class="sa">f</span><span class="s2">&quot;output_spec of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="233">                <span class="p">)</span>
+</span><span data-line="234">        <span class="c1"># Driving forces must carry a leading time-step dim of the same size as</span>
+</span><span data-line="235">        <span class="c1"># prescribed_time&#39;s leading dim.</span>
+</span><span data-line="236">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prescribed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="237">            <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
+</span><span data-line="238">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="239">                    <span class="sa">f</span><span class="s2">&quot;TransientDriver prescribed variable </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has leading shape &quot;</span>
+</span><span data-line="240">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">val</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> but prescribed_time has </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="241">                <span class="p">)</span>
+</span><span data-line="242">
 <div class="viewcode-block" id="TransientDriver.from_hit">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.TransientDriver.from_hit">[docs]</a>
-</span><span data-line="242">    <span class="nd">@classmethod</span>
-</span><span data-line="243">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransientDriver</span><span class="p">:</span>
-</span><span data-line="244">        <span class="n">model_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
-</span><span data-line="245">        <span class="n">model</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
-</span><span data-line="246">        <span class="n">time_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">)</span>
-</span><span data-line="247">        <span class="n">prescribed_time_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;prescribed_time&quot;</span><span class="p">)</span>
-</span><span data-line="248">        <span class="n">prescribed_time</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">prescribed_time_name</span><span class="p">)</span>
-</span><span data-line="249">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prescribed_time</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">):</span>
-</span><span data-line="250">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prescribed_time</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-</span><span data-line="251">                <span class="n">prescribed_time</span> <span class="o">=</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">prescribed_time</span><span class="p">)</span>
-</span><span data-line="252">            <span class="k">else</span><span class="p">:</span>
-</span><span data-line="253">                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="254">                    <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">prescribed_time_name</span><span class="si">}</span><span class="s2">] produced &quot;</span>
-</span><span data-line="255">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">prescribed_time</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, expected Scalar&quot;</span>
-</span><span data-line="256">                <span class="p">)</span>
-</span><span data-line="257">
-</span><span data-line="258">        <span class="n">prescribed</span> <span class="o">=</span> <span class="n">_read_typed_pairs</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">factory</span><span class="p">,</span> <span class="s2">&quot;prescribed&quot;</span><span class="p">)</span>
-</span><span data-line="259">        <span class="n">ics</span> <span class="o">=</span> <span class="n">_read_typed_pairs</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">factory</span><span class="p">,</span> <span class="s2">&quot;ic&quot;</span><span class="p">)</span>
-</span><span data-line="260">
-</span><span data-line="261">        <span class="c1"># save_as is honored by ``neml2-run`` (which writes result() to this</span>
-</span><span data-line="262">        <span class="c1"># path after the run); ``run()`` stays side-effect-free so the</span>
-</span><span data-line="263">        <span class="c1"># regression tests that call it don&#39;t litter result files.</span>
-</span><span data-line="264">        <span class="n">save_as</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;save_as&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-</span><span data-line="265">
-</span><span data-line="266">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-</span><span data-line="267">            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-</span><span data-line="268">            <span class="n">prescribed_time</span><span class="o">=</span><span class="n">prescribed_time</span><span class="p">,</span>
-</span><span data-line="269">            <span class="n">time_name</span><span class="o">=</span><span class="n">time_name</span><span class="p">,</span>
-</span><span data-line="270">            <span class="n">prescribed</span><span class="o">=</span><span class="n">prescribed</span><span class="p">,</span>
-</span><span data-line="271">            <span class="n">ics</span><span class="o">=</span><span class="n">ics</span><span class="p">,</span>
-</span><span data-line="272">            <span class="n">save_as</span><span class="o">=</span><span class="n">save_as</span><span class="p">,</span>
-</span><span data-line="273">        <span class="p">)</span></div>
+</span><span data-line="243">    <span class="nd">@classmethod</span>
+</span><span data-line="244">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransientDriver</span><span class="p">:</span>
+</span><span data-line="245">        <span class="n">model_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
+</span><span data-line="246">        <span class="n">model</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+</span><span data-line="247">        <span class="n">time_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">)</span>
+</span><span data-line="248">        <span class="n">prescribed_time_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_str</span><span class="p">(</span><span class="s2">&quot;prescribed_time&quot;</span><span class="p">)</span>
+</span><span data-line="249">        <span class="n">prescribed_time</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">prescribed_time_name</span><span class="p">)</span>
+</span><span data-line="250">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prescribed_time</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">):</span>
+</span><span data-line="251">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prescribed_time</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+</span><span data-line="252">                <span class="n">prescribed_time</span> <span class="o">=</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">prescribed_time</span><span class="p">)</span>
+</span><span data-line="253">            <span class="k">else</span><span class="p">:</span>
+</span><span data-line="254">                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+</span><span data-line="255">                    <span class="sa">f</span><span class="s2">&quot;[Tensors/</span><span class="si">{</span><span class="n">prescribed_time_name</span><span class="si">}</span><span class="s2">] produced &quot;</span>
+</span><span data-line="256">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">prescribed_time</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, expected Scalar&quot;</span>
+</span><span data-line="257">                <span class="p">)</span>
+</span><span data-line="258">
+</span><span data-line="259">        <span class="n">prescribed</span> <span class="o">=</span> <span class="n">_read_typed_pairs</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">factory</span><span class="p">,</span> <span class="s2">&quot;prescribed&quot;</span><span class="p">)</span>
+</span><span data-line="260">        <span class="n">ics</span> <span class="o">=</span> <span class="n">_read_typed_pairs</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">factory</span><span class="p">,</span> <span class="s2">&quot;ic&quot;</span><span class="p">)</span>
+</span><span data-line="261">
+</span><span data-line="262">        <span class="c1"># save_as is honored by ``neml2-run`` (which writes result() to this</span>
+</span><span data-line="263">        <span class="c1"># path after the run); ``run()`` stays side-effect-free so the</span>
+</span><span data-line="264">        <span class="c1"># regression tests that call it don&#39;t litter result files.</span>
+</span><span data-line="265">        <span class="n">save_as</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;save_as&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span data-line="266">
+</span><span data-line="267">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+</span><span data-line="268">            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span><span data-line="269">            <span class="n">prescribed_time</span><span class="o">=</span><span class="n">prescribed_time</span><span class="p">,</span>
+</span><span data-line="270">            <span class="n">time_name</span><span class="o">=</span><span class="n">time_name</span><span class="p">,</span>
+</span><span data-line="271">            <span class="n">prescribed</span><span class="o">=</span><span class="n">prescribed</span><span class="p">,</span>
+</span><span data-line="272">            <span class="n">ics</span><span class="o">=</span><span class="n">ics</span><span class="p">,</span>
+</span><span data-line="273">            <span class="n">save_as</span><span class="o">=</span><span class="n">save_as</span><span class="p">,</span>
+</span><span data-line="274">        <span class="p">)</span></div>
 
-</span><span data-line="274">
+</span><span data-line="275">
 <div class="viewcode-block" id="TransientDriver.run">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.TransientDriver.run">[docs]</a>
-</span><span data-line="275">    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span data-line="276">        <span class="n">spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span>
-</span><span data-line="277">        <span class="c1"># Per-step input/output dicts hold typed wrappers so sub_batch_ndim</span>
-</span><span data-line="278">        <span class="c1"># propagates through the time loop (raw .data would lose it). The</span>
-</span><span data-line="279">        <span class="c1"># public result() unwraps to raw torch.Tensor at the boundary.</span>
-</span><span data-line="280">        <span class="bp">self</span><span class="o">.</span><span class="n">result_in</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)]</span>
-</span><span data-line="281">        <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)]</span>
-</span><span data-line="282">
-</span><span data-line="283">        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
-</span><span data-line="284">            <span class="n">cur_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_in</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
-</span><span data-line="285">
-</span><span data-line="286">            <span class="c1"># Time + driving forces always come from the prescribed arrays.</span>
-</span><span data-line="287">            <span class="c1"># Slice the typed wrapper so sub_batch_ndim is preserved per step.</span>
-</span><span data-line="288">            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_name</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
-</span><span data-line="289">                <span class="n">cur_in</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_slice_typed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prescribed_time</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
-</span><span data-line="290">            <span class="k">for</span> <span class="n">fname</span><span class="p">,</span> <span class="n">fval</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prescribed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="291">                <span class="n">cur_in</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="n">_slice_typed</span><span class="p">(</span><span class="n">fval</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
-</span><span data-line="292">
-</span><span data-line="293">            <span class="c1"># ICs apply only at step 0. history-bearing IC keys (``X~k``) land</span>
-</span><span data-line="294">            <span class="c1"># in input; non-history IC keys (``X`` matching an output_spec key)</span>
-</span><span data-line="295">            <span class="c1"># land in step-0 output.</span>
-</span><span data-line="296">            <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="297">                <span class="k">for</span> <span class="n">ic_name</span><span class="p">,</span> <span class="n">ic_val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="298">                    <span class="k">if</span> <span class="n">ic_name</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
-</span><span data-line="299">                        <span class="n">cur_in</span><span class="p">[</span><span class="n">ic_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ic_val</span>
-</span><span data-line="300">                    <span class="k">else</span><span class="p">:</span>  <span class="c1"># in output_spec</span>
-</span><span data-line="301">                        <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">ic_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ic_val</span>
-</span><span data-line="302">
-</span><span data-line="303">            <span class="c1"># advance_step: copy previous step&#39;s outputs into current step&#39;s</span>
-</span><span data-line="304">            <span class="c1"># history inputs (X~k from prev X~(k-1) or prev X for k=1).</span>
-</span><span data-line="305">            <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="306">                <span class="n">prev_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_in</span><span class="p">[</span><span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-</span><span data-line="307">                <span class="n">prev_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">[</span><span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-</span><span data-line="308">                <span class="k">for</span> <span class="n">vname</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
-</span><span data-line="309">                    <span class="n">base</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">_parse_history</span><span class="p">(</span><span class="n">vname</span><span class="p">)</span>
-</span><span data-line="310">                    <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="311">                        <span class="k">continue</span>
-</span><span data-line="312">                    <span class="n">prev_vname</span> <span class="o">=</span> <span class="n">base</span> <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">~</span><span class="si">{</span><span class="n">order</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span data-line="313">                    <span class="k">if</span> <span class="n">prev_vname</span> <span class="ow">in</span> <span class="n">prev_out</span><span class="p">:</span>
-</span><span data-line="314">                        <span class="n">cur_in</span><span class="p">[</span><span class="n">vname</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_out</span><span class="p">[</span><span class="n">prev_vname</span><span class="p">]</span>
-</span><span data-line="315">                    <span class="k">elif</span> <span class="n">prev_vname</span> <span class="ow">in</span> <span class="n">prev_in</span><span class="p">:</span>
-</span><span data-line="316">                        <span class="n">cur_in</span><span class="p">[</span><span class="n">vname</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_in</span><span class="p">[</span><span class="n">prev_vname</span><span class="p">]</span>
-</span><span data-line="317">
-</span><span data-line="318">            <span class="c1"># Step 0: don&#39;t call the model (matches C++ apply_ic-only path).</span>
-</span><span data-line="319">            <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="320">                <span class="k">continue</span>
-</span><span data-line="321">
-</span><span data-line="322">            <span class="c1"># Build the model-call args. Inputs explicitly populated by</span>
-</span><span data-line="323">            <span class="c1"># forces / IC / advance_step come from cur_in (which is also the</span>
-</span><span data-line="324">            <span class="c1"># serialized result_in[step]). Missing inputs default to zeros</span>
-</span><span data-line="325">            <span class="c1"># sized to the per-step batch — needed so the equation system&#39;s</span>
-</span><span data-line="326">            <span class="c1"># initial-unknown shapes match the per-step residual shapes that</span>
-</span><span data-line="327">            <span class="c1"># Newton expects — but these defaults stay OUT of cur_in so the</span>
-</span><span data-line="328">            <span class="c1"># serialized output mirrors C++ (which only records</span>
-</span><span data-line="329">            <span class="c1"># explicitly-provided values, leaving zero-defaults to the</span>
-</span><span data-line="330">            <span class="c1"># model&#39;s forward operator).</span>
-</span><span data-line="331">            <span class="n">time_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prescribed_time</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
-</span><span data-line="332">
-</span><span data-line="333">            <span class="c1"># Missing model inputs default to BASE-SHAPE zeros (no per-step</span>
-</span><span data-line="334">            <span class="c1"># batch). Broadcasting handles per-step batch during forward;</span>
-</span><span data-line="335">            <span class="c1"># this mirrors C++ ``VariableStore::zero_undefined_input``, which</span>
-</span><span data-line="336">            <span class="c1"># uses ``VariableBase::zeros(options)`` (base-shape only). When a</span>
-</span><span data-line="337">            <span class="c1"># Newton solve converges in 0 iterations (initial guess satisfies</span>
-</span><span data-line="338">            <span class="c1"># the residual), the unknown stays at the base-shape initial</span>
-</span><span data-line="339">            <span class="c1"># guess — matching the C++ gold&#39;s ``output.&lt;k&gt;.flow_rate`` shape</span>
-</span><span data-line="340">            <span class="c1"># of ``()`` rather than ``(per_step_batch,)``.</span>
-</span><span data-line="341">            <span class="k">def</span><span class="w"> </span><span class="nf">_default</span><span class="p">(</span>
-</span><span data-line="342">                <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span data-line="343">                <span class="n">_dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">time_slice</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
-</span><span data-line="344">                <span class="n">_device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">time_slice</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-</span><span data-line="345">            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="346">                <span class="n">zero_data</span> <span class="o">=</span> <span class="n">_zero_for_step</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="p">(),</span> <span class="n">_dtype</span><span class="p">,</span> <span class="n">_device</span><span class="p">)</span>
-</span><span data-line="347">                <span class="k">return</span> <span class="n">spec</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">zero_data</span><span class="p">)</span>
-</span><span data-line="348">
-</span><span data-line="349">            <span class="n">ordered</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-</span><span data-line="350">                <span class="n">_as_typed</span><span class="p">(</span><span class="n">cur_in</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">spec</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">cur_in</span> <span class="k">else</span> <span class="n">_default</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-</span><span data-line="351">                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">spec</span>
-</span><span data-line="352">            <span class="p">)</span>
-</span><span data-line="353">            <span class="n">outs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">ordered</span><span class="p">)</span>
-</span><span data-line="354">            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outs</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-</span><span data-line="355">                <span class="n">outs</span> <span class="o">=</span> <span class="p">(</span><span class="n">outs</span><span class="p">,)</span>
-</span><span data-line="356">            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">):</span>
-</span><span data-line="357">                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
-</span><span data-line="358">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> returned </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span><span class="si">}</span><span class="s2"> outputs, &quot;</span>
-</span><span data-line="359">                    <span class="sa">f</span><span class="s2">&quot;expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span data-line="360">                <span class="p">)</span>
-</span><span data-line="361">            <span class="k">for</span> <span class="n">oname</span><span class="p">,</span> <span class="n">ovalue</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">outs</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span data-line="362">                <span class="c1"># Keep typed wrappers in result_out so the next step&#39;s</span>
-</span><span data-line="363">                <span class="c1"># advance_step preserves sub_batch_ndim.</span>
-</span><span data-line="364">                <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">[</span><span class="n">step</span><span class="p">][</span><span class="n">oname</span><span class="p">]</span> <span class="o">=</span> <span class="n">ovalue</span>
-</span><span data-line="365">
-</span><span data-line="366">        <span class="c1"># Persist the full trajectory when the input requests it via ``save_as``</span>
-</span><span data-line="367">        <span class="c1"># (mirrors v2, including the stdout notice). Empty by default, so a</span>
-</span><span data-line="368">        <span class="c1"># driver that is only being diffed in memory (TransientRegression /</span>
-</span><span data-line="369">        <span class="c1"># Verification) writes nothing.</span>
-</span><span data-line="370">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_as</span><span class="p">:</span>
-</span><span data-line="371">            <span class="bp">self</span><span class="o">.</span><span class="n">save_result</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_as</span><span class="p">)</span>
-</span><span data-line="372">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Results saved to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">save_as</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="373">
-</span><span data-line="374">        <span class="k">return</span> <span class="kc">True</span></div>
+</span><span data-line="276">    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span data-line="277">        <span class="n">spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span>
+</span><span data-line="278">        <span class="c1"># Per-step input/output dicts hold typed wrappers so sub_batch_ndim</span>
+</span><span data-line="279">        <span class="c1"># propagates through the time loop (raw .data would lose it). The</span>
+</span><span data-line="280">        <span class="c1"># public result() unwraps to raw torch.Tensor at the boundary.</span>
+</span><span data-line="281">        <span class="bp">self</span><span class="o">.</span><span class="n">result_in</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)]</span>
+</span><span data-line="282">        <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)]</span>
+</span><span data-line="283">
+</span><span data-line="284">        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
+</span><span data-line="285">            <span class="n">cur_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_in</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
+</span><span data-line="286">
+</span><span data-line="287">            <span class="c1"># Time + driving forces always come from the prescribed arrays.</span>
+</span><span data-line="288">            <span class="c1"># Slice the typed wrapper so sub_batch_ndim is preserved per step.</span>
+</span><span data-line="289">            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_name</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
+</span><span data-line="290">                <span class="n">cur_in</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_slice_typed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prescribed_time</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+</span><span data-line="291">            <span class="k">for</span> <span class="n">fname</span><span class="p">,</span> <span class="n">fval</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prescribed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="292">                <span class="n">cur_in</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="n">_slice_typed</span><span class="p">(</span><span class="n">fval</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+</span><span data-line="293">
+</span><span data-line="294">            <span class="c1"># ICs apply only at step 0. history-bearing IC keys (``X~k``) land</span>
+</span><span data-line="295">            <span class="c1"># in input; non-history IC keys (``X`` matching an output_spec key)</span>
+</span><span data-line="296">            <span class="c1"># land in step-0 output.</span>
+</span><span data-line="297">            <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="298">                <span class="k">for</span> <span class="n">ic_name</span><span class="p">,</span> <span class="n">ic_val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="299">                    <span class="k">if</span> <span class="n">ic_name</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
+</span><span data-line="300">                        <span class="n">cur_in</span><span class="p">[</span><span class="n">ic_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ic_val</span>
+</span><span data-line="301">                    <span class="k">else</span><span class="p">:</span>  <span class="c1"># in output_spec</span>
+</span><span data-line="302">                        <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">ic_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ic_val</span>
+</span><span data-line="303">
+</span><span data-line="304">            <span class="c1"># advance_step: copy previous step&#39;s outputs into current step&#39;s</span>
+</span><span data-line="305">            <span class="c1"># history inputs (X~k from prev X~(k-1) or prev X for k=1).</span>
+</span><span data-line="306">            <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="307">                <span class="n">prev_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_in</span><span class="p">[</span><span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+</span><span data-line="308">                <span class="n">prev_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">[</span><span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+</span><span data-line="309">                <span class="k">for</span> <span class="n">vname</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
+</span><span data-line="310">                    <span class="n">base</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">_parse_history</span><span class="p">(</span><span class="n">vname</span><span class="p">)</span>
+</span><span data-line="311">                    <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="312">                        <span class="k">continue</span>
+</span><span data-line="313">                    <span class="n">prev_vname</span> <span class="o">=</span> <span class="n">base</span> <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">~</span><span class="si">{</span><span class="n">order</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="314">                    <span class="k">if</span> <span class="n">prev_vname</span> <span class="ow">in</span> <span class="n">prev_out</span><span class="p">:</span>
+</span><span data-line="315">                        <span class="n">cur_in</span><span class="p">[</span><span class="n">vname</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_out</span><span class="p">[</span><span class="n">prev_vname</span><span class="p">]</span>
+</span><span data-line="316">                    <span class="k">elif</span> <span class="n">prev_vname</span> <span class="ow">in</span> <span class="n">prev_in</span><span class="p">:</span>
+</span><span data-line="317">                        <span class="n">cur_in</span><span class="p">[</span><span class="n">vname</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_in</span><span class="p">[</span><span class="n">prev_vname</span><span class="p">]</span>
+</span><span data-line="318">
+</span><span data-line="319">            <span class="c1"># Step 0: don&#39;t call the model (matches C++ apply_ic-only path).</span>
+</span><span data-line="320">            <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="321">                <span class="k">continue</span>
+</span><span data-line="322">
+</span><span data-line="323">            <span class="c1"># Build the model-call args. Inputs explicitly populated by</span>
+</span><span data-line="324">            <span class="c1"># forces / IC / advance_step come from cur_in (which is also the</span>
+</span><span data-line="325">            <span class="c1"># serialized result_in[step]). Missing inputs default to zeros</span>
+</span><span data-line="326">            <span class="c1"># sized to the per-step batch — needed so the equation system&#39;s</span>
+</span><span data-line="327">            <span class="c1"># initial-unknown shapes match the per-step residual shapes that</span>
+</span><span data-line="328">            <span class="c1"># Newton expects — but these defaults stay OUT of cur_in so the</span>
+</span><span data-line="329">            <span class="c1"># serialized output mirrors C++ (which only records</span>
+</span><span data-line="330">            <span class="c1"># explicitly-provided values, leaving zero-defaults to the</span>
+</span><span data-line="331">            <span class="c1"># model&#39;s forward operator).</span>
+</span><span data-line="332">            <span class="n">time_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prescribed_time</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
+</span><span data-line="333">
+</span><span data-line="334">            <span class="c1"># Missing model inputs default to BASE-SHAPE zeros (no per-step</span>
+</span><span data-line="335">            <span class="c1"># batch). Broadcasting handles per-step batch during forward;</span>
+</span><span data-line="336">            <span class="c1"># this mirrors C++ ``VariableStore::zero_undefined_input``, which</span>
+</span><span data-line="337">            <span class="c1"># uses ``VariableBase::zeros(options)`` (base-shape only). When a</span>
+</span><span data-line="338">            <span class="c1"># Newton solve converges in 0 iterations (initial guess satisfies</span>
+</span><span data-line="339">            <span class="c1"># the residual), the unknown stays at the base-shape initial</span>
+</span><span data-line="340">            <span class="c1"># guess — matching the C++ gold&#39;s ``output.&lt;k&gt;.flow_rate`` shape</span>
+</span><span data-line="341">            <span class="c1"># of ``()`` rather than ``(per_step_batch,)``.</span>
+</span><span data-line="342">            <span class="k">def</span><span class="w"> </span><span class="nf">_default</span><span class="p">(</span>
+</span><span data-line="343">                <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="344">                <span class="n">_dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">time_slice</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+</span><span data-line="345">                <span class="n">_device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">time_slice</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+</span><span data-line="346">            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="347">                <span class="n">zero_data</span> <span class="o">=</span> <span class="n">_zero_for_step</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="p">(),</span> <span class="n">_dtype</span><span class="p">,</span> <span class="n">_device</span><span class="p">)</span>
+</span><span data-line="348">                <span class="k">return</span> <span class="n">spec</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">zero_data</span><span class="p">)</span>
+</span><span data-line="349">
+</span><span data-line="350">            <span class="n">ordered</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+</span><span data-line="351">                <span class="n">_as_typed</span><span class="p">(</span><span class="n">cur_in</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">spec</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">cur_in</span> <span class="k">else</span> <span class="n">_default</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="352">                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">spec</span>
+</span><span data-line="353">            <span class="p">)</span>
+</span><span data-line="354">            <span class="n">outs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">ordered</span><span class="p">)</span>
+</span><span data-line="355">            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outs</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+</span><span data-line="356">                <span class="n">outs</span> <span class="o">=</span> <span class="p">(</span><span class="n">outs</span><span class="p">,)</span>
+</span><span data-line="357">            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">):</span>
+</span><span data-line="358">                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
+</span><span data-line="359">                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> returned </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span><span class="si">}</span><span class="s2"> outputs, &quot;</span>
+</span><span data-line="360">                    <span class="sa">f</span><span class="s2">&quot;expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="361">                <span class="p">)</span>
+</span><span data-line="362">            <span class="k">for</span> <span class="n">oname</span><span class="p">,</span> <span class="n">ovalue</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">outs</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span data-line="363">                <span class="c1"># Keep typed wrappers in result_out so the next step&#39;s</span>
+</span><span data-line="364">                <span class="c1"># advance_step preserves sub_batch_ndim.</span>
+</span><span data-line="365">                <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">[</span><span class="n">step</span><span class="p">][</span><span class="n">oname</span><span class="p">]</span> <span class="o">=</span> <span class="n">ovalue</span>
+</span><span data-line="366">
+</span><span data-line="367">        <span class="c1"># Persist the full trajectory when the input requests it via ``save_as``</span>
+</span><span data-line="368">        <span class="c1"># (mirrors v2, including the stdout notice). Empty by default, so a</span>
+</span><span data-line="369">        <span class="c1"># driver that is only being diffed in memory (TransientRegression /</span>
+</span><span data-line="370">        <span class="c1"># Verification) writes nothing.</span>
+</span><span data-line="371">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_as</span><span class="p">:</span>
+</span><span data-line="372">            <span class="bp">self</span><span class="o">.</span><span class="n">save_result</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_as</span><span class="p">)</span>
+</span><span data-line="373">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Results saved to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">save_as</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="374">
+</span><span data-line="375">        <span class="k">return</span> <span class="kc">True</span></div>
 
-</span><span data-line="375">
+</span><span data-line="376">
 <div class="viewcode-block" id="TransientDriver.result">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.TransientDriver.result">[docs]</a>
-</span><span data-line="376">    <span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-</span><span data-line="377"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Flatten ``result_in`` / ``result_out`` into a ``input.&lt;i&gt;.&lt;name&gt;``</span>
-</span><span data-line="378"><span class="sd">        / ``output.&lt;i&gt;.&lt;name&gt;`` dict, matching the C++ ``ModuleDict`` layout</span>
-</span><span data-line="379"><span class="sd">        that ``torch.jit.load(gold).named_buffers()`` produces. Typed wrappers</span>
-</span><span data-line="380"><span class="sd">        are unwrapped to raw ``torch.Tensor`` at this boundary.</span>
-</span><span data-line="381"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="382">        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="383">        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">step_in</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_in</span><span class="p">):</span>
-</span><span data-line="384">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">step_in</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="385">                <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;input.</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
-</span><span data-line="386">        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">step_out</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">):</span>
-</span><span data-line="387">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">step_out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="388">                <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;output.</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
-</span><span data-line="389">        <span class="k">return</span> <span class="n">out</span></div>
+</span><span data-line="377">    <span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+</span><span data-line="378"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Flatten ``result_in`` / ``result_out`` into a ``input.&lt;i&gt;.&lt;name&gt;``</span>
+</span><span data-line="379"><span class="sd">        / ``output.&lt;i&gt;.&lt;name&gt;`` dict, matching the C++ ``ModuleDict`` layout</span>
+</span><span data-line="380"><span class="sd">        that ``torch.jit.load(gold).named_buffers()`` produces. Typed wrappers</span>
+</span><span data-line="381"><span class="sd">        are unwrapped to raw ``torch.Tensor`` at this boundary.</span>
+</span><span data-line="382"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="383">        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="384">        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">step_in</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_in</span><span class="p">):</span>
+</span><span data-line="385">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">step_in</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="386">                <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;input.</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
+</span><span data-line="387">        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">step_out</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">):</span>
+</span><span data-line="388">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">step_out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="389">                <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;output.</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
+</span><span data-line="390">        <span class="k">return</span> <span class="n">out</span></div>
 
-</span><span data-line="390">
+</span><span data-line="391">
 <div class="viewcode-block" id="TransientDriver.save_result">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.TransientDriver.save_result">[docs]</a>
-</span><span data-line="391">    <span class="k">def</span><span class="w"> </span><span class="nf">save_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="392"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize ``result()`` to a ``.pt`` file as a flat ``torch.save`` dict.</span>
-</span><span data-line="393">
-</span><span data-line="394"><span class="sd">        The dict carries the same keys as :meth:`result`:</span>
-</span><span data-line="395"><span class="sd">        ``input.&lt;step&gt;.&lt;var&gt;`` / ``output.&lt;step&gt;.&lt;var&gt;``, each mapping to a</span>
-</span><span data-line="396"><span class="sd">        detached, cloned ``torch.Tensor``. Read it back with</span>
-</span><span data-line="397"><span class="sd">        ``torch.load(path, weights_only=True)``.</span>
-</span><span data-line="398">
-</span><span data-line="399"><span class="sd">        Replaces the old TorchScript-Module format (a Module-of-Modules with</span>
-</span><span data-line="400"><span class="sd">        ``register_buffer`` per entry, dumped via</span>
-</span><span data-line="401"><span class="sd">        ``torch.jit.script(...).save(...)``). The flat-dict format avoids the</span>
-</span><span data-line="402"><span class="sd">        ``torch.jit.{script,load}`` deprecation warnings and survives</span>
-</span><span data-line="403"><span class="sd">        round-trip with ``weights_only=True`` (which is safe for plain tensor</span>
-</span><span data-line="404"><span class="sd">        dicts and prevents arbitrary code execution on load).</span>
-</span><span data-line="405"><span class="sd">        ``TransientRegression`` reads both formats so existing on-disk goldens</span>
-</span><span data-line="406"><span class="sd">        from the v2 C++ pipeline keep working — see</span>
-</span><span data-line="407"><span class="sd">        :class:`~neml2.drivers.TransientRegression.TransientRegression`.</span>
-</span><span data-line="408"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="409">        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)))</span></div>
+</span><span data-line="392">    <span class="k">def</span><span class="w"> </span><span class="nf">save_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="393"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize ``result()`` to a ``.pt`` file as a flat ``torch.save`` dict.</span>
+</span><span data-line="394">
+</span><span data-line="395"><span class="sd">        The dict carries the same keys as :meth:`result`:</span>
+</span><span data-line="396"><span class="sd">        ``input.&lt;step&gt;.&lt;var&gt;`` / ``output.&lt;step&gt;.&lt;var&gt;``, each mapping to a</span>
+</span><span data-line="397"><span class="sd">        detached, cloned ``torch.Tensor``. Read it back with</span>
+</span><span data-line="398"><span class="sd">        ``torch.load(path, weights_only=True)``.</span>
+</span><span data-line="399">
+</span><span data-line="400"><span class="sd">        Replaces the old TorchScript-Module format (a Module-of-Modules with</span>
+</span><span data-line="401"><span class="sd">        ``register_buffer`` per entry, dumped via</span>
+</span><span data-line="402"><span class="sd">        ``torch.jit.script(...).save(...)``). The flat-dict format avoids the</span>
+</span><span data-line="403"><span class="sd">        ``torch.jit.{script,load}`` deprecation warnings and survives</span>
+</span><span data-line="404"><span class="sd">        round-trip with ``weights_only=True`` (which is safe for plain tensor</span>
+</span><span data-line="405"><span class="sd">        dicts and prevents arbitrary code execution on load).</span>
+</span><span data-line="406"><span class="sd">        ``TransientRegression`` reads both formats so existing on-disk goldens</span>
+</span><span data-line="407"><span class="sd">        from the v2 C++ pipeline keep working — see</span>
+</span><span data-line="408"><span class="sd">        :class:`~neml2.drivers.TransientRegression.TransientRegression`.</span>
+</span><span data-line="409"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="410">        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)))</span></div>
 </div>
 
-</span><span data-line="410">
 </span><span data-line="411">
-</span><span data-line="412"><span class="k">def</span><span class="w"> </span><span class="nf">_slice_typed</span><span class="p">(</span><span class="n">wrapped</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="413"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice the leading time-step dim and re-wrap, preserving sub_batch_ndim.&quot;&quot;&quot;</span>
-</span><span data-line="414">    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">wrapped</span><span class="p">)(</span><span class="n">wrapped</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">step</span><span class="p">],</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">wrapped</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="415">
+</span><span data-line="412">
+</span><span data-line="413"><span class="k">def</span><span class="w"> </span><span class="nf">_slice_typed</span><span class="p">(</span><span class="n">wrapped</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="414"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice the leading time-step dim and re-wrap, preserving sub_batch_ndim.&quot;&quot;&quot;</span>
+</span><span data-line="415">    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">wrapped</span><span class="p">)(</span><span class="n">wrapped</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">step</span><span class="p">],</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">wrapped</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
 </span><span data-line="416">
-</span><span data-line="417"><span class="k">def</span><span class="w"> </span><span class="nf">_as_typed</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="418"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Coerce ``value`` to ``type_cls``, preserving sub_batch_ndim.&quot;&quot;&quot;</span>
-</span><span data-line="419">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">):</span>
-</span><span data-line="420">        <span class="k">return</span> <span class="n">value</span>
-</span><span data-line="421">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
-</span><span data-line="422">        <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="423">    <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-</span><span data-line="424">
+</span><span data-line="417">
+</span><span data-line="418"><span class="k">def</span><span class="w"> </span><span class="nf">_as_typed</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="419"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Coerce ``value`` to ``type_cls``, preserving sub_batch_ndim.&quot;&quot;&quot;</span>
+</span><span data-line="420">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">):</span>
+</span><span data-line="421">        <span class="k">return</span> <span class="n">value</span>
+</span><span data-line="422">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
+</span><span data-line="423">        <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="424">    <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 </span><span data-line="425">
-</span><span data-line="426"><span class="k">def</span><span class="w"> </span><span class="nf">_parse_history</span><span class="p">(</span><span class="n">vname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-</span><span data-line="427"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Split ``base~k`` -&gt; ``(base, k)``; bare ``base`` -&gt; ``(base, 0)``.&quot;&quot;&quot;</span>
-</span><span data-line="428">    <span class="k">if</span> <span class="s2">&quot;~&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vname</span><span class="p">:</span>
-</span><span data-line="429">        <span class="k">return</span> <span class="n">vname</span><span class="p">,</span> <span class="mi">0</span>
-</span><span data-line="430">    <span class="n">base</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">vname</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-</span><span data-line="431">    <span class="k">try</span><span class="p">:</span>
-</span><span data-line="432">        <span class="k">return</span> <span class="n">base</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span>
-</span><span data-line="433">    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-</span><span data-line="434">        <span class="k">return</span> <span class="n">vname</span><span class="p">,</span> <span class="mi">0</span>
-</span><span data-line="435">
-</span><span data-line="436">
-</span><span data-line="437"><span class="k">def</span><span class="w"> </span><span class="nf">_zero_for_step</span><span class="p">(</span>
-</span><span data-line="438">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
-</span><span data-line="439">    <span class="n">per_step_batch_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-</span><span data-line="440">    <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
-</span><span data-line="441">    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-</span><span data-line="442"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="443"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a zero ``torch.Tensor`` shaped ``(*per_step_batch_shape, *base_shape)``.</span>
-</span><span data-line="444">
-</span><span data-line="445"><span class="sd">    ``per_step_batch_shape`` is read from the prescribed_time slice at the</span>
-</span><span data-line="446"><span class="sd">    current step — a Scalar with ``base_shape=()``, so its data shape IS the</span>
-</span><span data-line="447"><span class="sd">    per-step batch shape. Each typed wrapper adds its own base axes.</span>
-</span><span data-line="448"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="449">    <span class="n">base_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;BASE_SHAPE&quot;</span><span class="p">,</span> <span class="p">()))</span>
-</span><span data-line="450">    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">per_step_batch_shape</span> <span class="o">+</span> <span class="n">base_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span data-line="451">
-</span><span data-line="452">
-</span><span data-line="453"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TransientDriver&quot;</span><span class="p">]</span>
+</span><span data-line="426">
+</span><span data-line="427"><span class="k">def</span><span class="w"> </span><span class="nf">_parse_history</span><span class="p">(</span><span class="n">vname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+</span><span data-line="428"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Split ``base~k`` -&gt; ``(base, k)``; bare ``base`` -&gt; ``(base, 0)``.</span>
+</span><span data-line="429">
+</span><span data-line="430"><span class="sd">    Thin wrapper over the shared :func:`neml2.es._helpers.lag_order` that keeps</span>
+</span><span data-line="431"><span class="sd">    the driver&#39;s historical leniency: a malformed suffix falls back to lag 0</span>
+</span><span data-line="432"><span class="sd">    rather than raising.</span>
+</span><span data-line="433"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="434">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="435">        <span class="k">return</span> <span class="n">lag_order</span><span class="p">(</span><span class="n">vname</span><span class="p">)</span>
+</span><span data-line="436">    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+</span><span data-line="437">        <span class="k">return</span> <span class="n">vname</span><span class="p">,</span> <span class="mi">0</span>
+</span><span data-line="438">
+</span><span data-line="439">
+</span><span data-line="440"><span class="k">def</span><span class="w"> </span><span class="nf">_zero_for_step</span><span class="p">(</span>
+</span><span data-line="441">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
+</span><span data-line="442">    <span class="n">per_step_batch_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+</span><span data-line="443">    <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+</span><span data-line="444">    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+</span><span data-line="445"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+</span><span data-line="446"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a zero ``torch.Tensor`` shaped ``(*per_step_batch_shape, *base_shape)``.</span>
+</span><span data-line="447">
+</span><span data-line="448"><span class="sd">    ``per_step_batch_shape`` is read from the prescribed_time slice at the</span>
+</span><span data-line="449"><span class="sd">    current step — a Scalar with ``base_shape=()``, so its data shape IS the</span>
+</span><span data-line="450"><span class="sd">    per-step batch shape. Each typed wrapper adds its own base axes.</span>
+</span><span data-line="451"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="452">    <span class="n">base_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;BASE_SHAPE&quot;</span><span class="p">,</span> <span class="p">()))</span>
+</span><span data-line="453">    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">per_step_batch_shape</span> <span class="o">+</span> <span class="n">base_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="454">
+</span><span data-line="455">
+</span><span data-line="456"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TransientDriver&quot;</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
