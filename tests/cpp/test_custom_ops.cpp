@@ -91,12 +91,12 @@ main(int argc, char ** argv)
   NEML2_CHECK(argc >= 2); // argv[1] = the fixture (collection) dir
   const std::string fixture_dir = argv[1];
   const std::string stub = fixture_dir + "/model_aoti.i";
-  const std::string cpu_meta = fixture_dir + "/model/cpu/model_meta.json";
+  const std::string artifact_root = fixture_dir + "/model";
 
   const int64_t b = 8;
 
   // Direct cpu artifact.
-  Model ref(cpu_meta);
+  Model ref(artifact_root, at::kCPU, at::kDouble);
   NEML2_CHECK(ref.input_names().size() == 1);
   NEML2_CHECK(ref.input_names()[0] == "yield_function");
   const auto inputs = make_inputs(ref, b);
@@ -111,8 +111,8 @@ main(int argc, char ** argv)
 
   // cuda: dispatch the cpu inputs onto the GPU when a cuda artifact exists, so
   // the op resolves on the cuda backend too.
-  const std::string cuda_meta = fixture_dir + "/model/cuda/model_meta.json";
-  if (at::hasCUDA() && std::filesystem::exists(cuda_meta))
+  const std::string cuda_leaf = fixture_dir + "/model/cuda/float64";
+  if (at::hasCUDA() && std::filesystem::exists(cuda_leaf))
   {
     auto sched = std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cuda", 4});
     auto m = load_model(stub, "model", sched);

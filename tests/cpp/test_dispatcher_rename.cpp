@@ -67,13 +67,13 @@ make_inputs(const Model & model, int64_t b)
 int
 main(int argc, char ** argv)
 {
-  NEML2_CHECK(argc >= 2); // argv[1] = the renamed fixture artifact root (holds cpu/)
+  NEML2_CHECK(argc >=
+              2); // argv[1] = the renamed fixture artifact root (holds metadata.json + cpu/)
   const std::string artifact_root = argv[1];
-  const std::string meta_path = artifact_root + "/cpu/model_meta.json";
 
   at::manual_seed(0);
 
-  Model ref(meta_path);
+  Model ref(artifact_root, at::kCPU, at::kDouble);
 
   // The boundary reports the RENAMED names, never the authored ones.
   NEML2_CHECK(ref.input_names() == std::vector<std::string>{"eps"});
@@ -123,7 +123,7 @@ main(int argc, char ** argv)
 
   // set_parameter by the BOUNDARY name flows into the value graph: perturbing
   // "youngs" (the renamed model.E) changes the forward output.
-  Model mutated(meta_path);
+  Model mutated(artifact_root, at::kCPU, at::kDouble);
   const auto base_out = mutated.forward(inputs).at("sig").clone();
   mutated.set_parameter("youngs", mutated.named_parameters().at("youngs") * 1.5);
   const auto new_out = mutated.forward(inputs).at("sig");

@@ -25,7 +25,7 @@
 // ----------------------------------------------------------------------------
 // Model construction: metadata parse + the public-facade forwarders
 // ----------------------------------------------------------------------------
-// Holds `Model::Impl`'s constructor (parses `_meta.json`, loads every `.pt2`
+// Holds `Model::Impl`'s constructor (parses `metadata.json`, loads every `.pt2`
 // segment) and `_gather_params`, plus the thin `Model` facade that forwards
 // every public call onto the opaque Impl. The op/solve/Jacobian method bodies
 // live in ops.cpp / solve.cpp / jacobian.cpp.
@@ -59,17 +59,6 @@ make_loader(const std::filesystem::path & path, int device_index = -1)
                                                                    device_index);
 }
 
-at::Device
-parse_device(const std::string & s)
-{
-  if (s == "cpu")
-    return at::kCPU;
-  if (s == "cuda")
-    return at::kCUDA;
-  _assert(false, "aoti::Model: unsupported device '", s, "' in metadata.");
-  return at::kCPU;
-}
-
 at::ScalarType
 parse_dtype(const std::string & s)
 {
@@ -77,8 +66,45 @@ parse_dtype(const std::string & s)
     return at::kDouble;
   if (s == "float32")
     return at::kFloat;
+  // Non-floating promoted parameters (integer / bool buffers) record their dtype
+  // explicitly; floating parameters omit it and inherit the leaf dtype.
+  if (s == "int64")
+    return at::kLong;
+  if (s == "int32")
+    return at::kInt;
+  if (s == "bool")
+    return at::kBool;
   _assert(false, "aoti::Model: unsupported dtype '", s, "' in metadata.");
   return at::kDouble;
+}
+
+// The folder-name form (inverse of parse_dtype) used for the
+// per-`<device>/<dtype>/` artifact leaf.
+std::string
+device_type_str(at::Device d)
+{
+  return d.is_cuda() ? "cuda" : "cpu";
+}
+
+std::string
+dtype_str(at::ScalarType t)
+{
+  switch (t)
+  {
+    case at::kDouble:
+      return "float64";
+    case at::kFloat:
+      return "float32";
+    case at::kLong:
+      return "int64";
+    case at::kInt:
+      return "int32";
+    case at::kBool:
+      return "bool";
+    default:
+      _assert(false, "aoti::Model: unsupported dtype for the artifact leaf path.");
+      return "float64";
+  }
 }
 
 // Boundary-rename helpers (used only when the artifact carries `boundary_aliases`).
@@ -113,19 +139,27 @@ rekey_nested(const VariablePairJacobian & in,
 }
 } // namespace
 
-Model::Impl::Impl(const std::filesystem::path & meta_path,
-                  std::optional<at::Device> device_override)
+Model::Impl::Impl(const std::filesystem::path & artifact_root,
+                  at::Device device,
+                  at::ScalarType dtype)
 {
   // Register any custom ops a compiled artifact may reference (e.g.
   // neml2::opaque_pow) before a segment loads/evaluates. Lazy + idempotent so it
   // does not collide with the Python package's registration (cpp-eager / py-aoti).
   ensure_neml2_custom_ops_registered();
 
+  // Device + dtype come from the caller (the folder path), NOT the metadata --
+  // one shared metadata.json backs every compiled (device, dtype) leaf.
+  _device = device;
+  _dtype = dtype;
+
+  const auto meta_path = artifact_root / "metadata.json";
   std::ifstream meta_f(meta_path);
   _assert(static_cast<bool>(meta_f),
           "aoti::Model: failed to open metadata file '",
           meta_path.string(),
-          "'. Path must point at the _meta.json written by `neml2-compile`.");
+          "'. Path must point at the artifact root produced by `neml2-compile` "
+          "(the folder containing metadata.json + <device>/<dtype>/ binaries).");
   const auto meta = nlohmann::json::parse(meta_f);
 
   // Wire-format handshake: the loader refuses any metadata whose schema_version
@@ -133,7 +167,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
   // a cryptic missing-field error deep in the parser. The canonical value lives
   // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 8;
+  static constexpr int kSupportedSchemaVersion = 9;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -152,35 +186,45 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
           meta_path.string(),
           "'. Expected 'composed'.");
 
-  // Device + dtype baked into the artifact at export time.
-  _device = parse_device(meta.value("device", std::string("cpu")));
-  _dtype = parse_dtype(meta.value("dtype", std::string("float64")));
-
-  // A device override refines the concrete device index (e.g. cuda:1) but may
-  // not change the device *type* -- the AOTI graphs are compiled for cpu xor
-  // cuda kernels and cannot be reinterpreted across that boundary.
-  if (device_override.has_value())
-  {
-    _assert(device_override->type() == _device.type(),
-            "aoti::Model: device_override type '",
-            c10::DeviceTypeName(device_override->type()),
-            "' does not match the artifact's compiled device type '",
-            c10::DeviceTypeName(_device.type()),
-            "' in '",
-            meta_path.string(),
-            "'. A cpu artifact cannot be loaded onto cuda (or vice versa); "
-            "recompile for the target device.");
-    _device = *device_override;
-  }
-
   // Concrete loader index: -1 lets the loader use the current device (cpu, or
   // the ambient cuda device); a concrete cuda index pins this Model to a GPU.
   const int dev_idx =
       (_device.is_cuda() && _device.has_index()) ? static_cast<int>(_device.index()) : -1;
 
-  // .pt2 basenames are resolved against the directory holding the metadata
-  // file itself.
-  const auto cache_dir = meta_path.parent_path();
+  // .pt2 basenames are resolved against the per-(device, dtype) leaf. The leaf
+  // must exist for the requested run; fail with the available leaves listed rather
+  // than a cryptic missing-file error deep in the segment loader.
+  const auto cache_dir = artifact_root / device_type_str(_device) / dtype_str(_dtype);
+  if (!std::filesystem::is_directory(cache_dir))
+  {
+    std::string available;
+    if (std::filesystem::is_directory(artifact_root))
+      for (const auto & dev : std::filesystem::directory_iterator(artifact_root))
+        if (dev.is_directory())
+          for (const auto & dt : std::filesystem::directory_iterator(dev.path()))
+            if (dt.is_directory())
+            {
+              if (!available.empty())
+                available += ", ";
+              available += dev.path().filename().string() + "/" + dt.path().filename().string();
+            }
+    _assert(false,
+            "aoti::Model: no compiled artifact for device '",
+            device_type_str(_device),
+            "' + dtype '",
+            dtype_str(_dtype),
+            "' under '",
+            artifact_root.string(),
+            "' (looked in '",
+            cache_dir.string(),
+            "'). Available: ",
+            available.empty() ? std::string("(none)") : available,
+            ". Recompile with `neml2-compile --device ",
+            device_type_str(_device),
+            " --dtype ",
+            dtype_str(_dtype),
+            "`.");
+  }
 
   // Boundary renames (shallow, optional). Only the names reported at the public
   // surface change; every internal structure keeps the ORIGINAL authored names.
@@ -260,7 +304,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
     }
   }
 
-  // Master (out, in) derivative pairs the artifact supports (v6+). Absent /
+  // Master (out, in) derivative pairs the artifact supports. Absent /
   // empty => no derivative graphs compiled; jvp() / jacobian() raise. Kept in
   // the metadata's (output-order, input-order) so the public maps iterate
   // rows/cols consistently.
@@ -273,7 +317,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
       _derivatives.emplace_back(std::move(o), std::move(i));
     }
 
-  // Master (out, param) parameter-derivative pairs the artifact supports (v7+).
+  // Master (out, param) parameter-derivative pairs the artifact supports.
   // Absent / empty => no parameter-Jacobian graph; param_jacobian() / param_vjp()
   // raise. Separate from `_derivatives` (which is over structural inputs).
   if (meta.contains("parameter_derivatives"))
@@ -307,30 +351,29 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
     }
   }
 
-  // Promoted parameters (v2; empty in the common fully-baked case).
+  // Promoted parameters (empty in the common fully-baked case).
   if (meta.contains("parameters"))
   {
     for (const auto & p : meta["parameters"])
     {
       const auto name = p["name"].get<std::string>();
-      const auto dtype = parse_dtype(p.value("dtype", std::string("float64")));
+      // A floating parameter records NO dtype and inherits the leaf's (`_dtype`);
+      // a non-floating parameter (int/bool buffer) records its own so it is not
+      // coerced to the float type. Device is always the leaf device (`_device`,
+      // which carries the concrete cuda index) -- no per-param device.
+      const auto dtype = p.contains("dtype") ? parse_dtype(p["dtype"].get<std::string>()) : _dtype;
       const auto shape = p["shape"].get<std::vector<int64_t>>();
-      // Natural base shape (v7). Fallback to the full stored shape (== base for an
+      // Natural base shape. Fallback to the full stored shape (== base for an
       // unbatched parameter) keeps older single-param paths robust.
       _param_base_shapes[name] = p.value("param_base_shape", shape);
-      auto device = p.contains("device") ? parse_device(p["device"].get<std::string>()) : _device;
-      // Promoted params must land on the same concrete GPU as the graphs: when
-      // the model device carries an index (override-aware), inherit it.
-      if (device.is_cuda() && _device.is_cuda() && _device.has_index())
-        device.set_index(_device.index());
-      const auto opts = at::TensorOptions().dtype(dtype).device(device);
+      const auto opts = at::TensorOptions().dtype(dtype).device(_device);
 
       // Inline values vs. spilled state-dict reference.
       at::Tensor t;
       if (p.contains("values"))
       {
         const auto values = p["values"].get<std::vector<double>>();
-        // Build on CPU first, then move to the recorded device. CUDA-side
+        // Build on CPU first, then move to the leaf device/dtype. CUDA-side
         // tensor construction from a std::vector is awkward; CPU + .to() is
         // the standard pattern and keeps the loader-side simple.
         const auto flat = at::from_blob(const_cast<double *>(values.data()),
@@ -392,6 +435,24 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
     _param_total_size += psize;
   }
 
+  // Solver config: the implicit Newton's convergence / line-search settings ride
+  // in the shared metadata so the Python-free runtime is configured straight from
+  // the artifact. Absent (forward-only) => the SolverConfig defaults stand.
+  // `verbose` is deliberately never recorded: it is a diagnostic controlled by
+  // the NEML2_AOTI_TRACE_* env vars. `Model::set_solver_config` still overrides
+  // these at runtime.
+  if (meta.contains("solver_config"))
+  {
+    const auto & sc = meta["solver_config"];
+    _solver_config.atol = sc.value("atol", _solver_config.atol);
+    _solver_config.rtol = sc.value("rtol", _solver_config.rtol);
+    _solver_config.miters = sc.value("miters", _solver_config.miters);
+    _solver_config.ls_type = sc.value("ls_type", _solver_config.ls_type);
+    _solver_config.ls_max_iters = sc.value("ls_max_iters", _solver_config.ls_max_iters);
+    _solver_config.ls_cutback = sc.value("ls_cutback", _solver_config.ls_cutback);
+    _solver_config.ls_c = sc.value("ls_c", _solver_config.ls_c);
+  }
+
   // Segments.
   _segments.reserve(meta["segments"].size());
   for (std::size_t i = 0; i < meta["segments"].size(); ++i)
@@ -414,6 +475,11 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
         info.sub_batch_shape = v["sub_batch_shape"].get<std::vector<int64_t>>();
       if (v.contains("base_shape"))
         info.base_shape = v["base_shape"].get<std::vector<int64_t>>();
+      // Substep role/pair, present on implicit-segment givens.
+      if (v.contains("role") && !v["role"].is_null())
+        info.role = v["role"].get<std::string>();
+      if (v.contains("pair") && !v["pair"].is_null())
+        info.pair = v["pair"].get<std::string>();
       return info;
     };
 
@@ -428,10 +494,10 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
         seg.fwd_inputs.push_back(v["name"].get<std::string>());
       for (const auto & v : seg_meta["outputs"])
         seg.fwd_outputs.push_back(v["name"].get<std::string>());
-      // v7 per-(out_var, in_var) Jacobian-pair metadata. Present iff
-      // the segment also packaged a JVP loader; orders one entry per
-      // trailing pair tensor in the JVP loader's output tuple
-      // (row-major: outputs outer, structural inputs inner).
+      // Per-(out_var, in_var) Jacobian-pair metadata. Present iff the segment
+      // also packaged a JVP loader; orders one entry per trailing pair tensor
+      // in the JVP loader's output tuple (row-major: outputs outer, structural
+      // inputs inner).
       if (seg_meta.contains("jacobian_pairs"))
       {
         for (const auto & p : seg_meta["jacobian_pairs"])
@@ -449,7 +515,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
           seg.jacobian_pairs.push_back(std::move(pi));
         }
       }
-      // v7 parameter-derivative graphs (present iff parameter derivatives were
+      // Parameter-derivative graphs (present iff parameter derivatives were
       // requested). The param-Jacobian loader returns one dense block per
       // (out, param) pair (ONLY blocks, no value outputs); the param-VJP loader
       // returns one gradient per parameter given output cotangents.
@@ -480,6 +546,7 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
     else if (seg_kind == "implicit")
     {
       seg.kind = SegmentKind::Implicit;
+      seg.max_substepping_level = seg_meta.value("max_substepping_level", 0);
       seg.rhs_loader = make_loader(cache_dir / seg_meta["rhs_package"].get<std::string>(), dev_idx);
       seg.step_loader =
           make_loader(cache_dir / seg_meta["step_package"].get<std::string>(), dev_idx);
@@ -494,9 +561,9 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
       for (const auto & v : seg_meta["residuals"])
         seg.residuals.push_back(parse_var_info(v));
 
-      // v7 per-group metadata for the per-group I/O contract. Newton
-      // inner loop runs entirely per-group; per-var ↔ per-group conv
-      // happens twice per solve via _pack_groups / _unpack_groups.
+      // Per-group metadata for the per-group I/O contract. Newton inner loop
+      // runs entirely per-group; per-var ↔ per-group conv happens twice per
+      // solve via _pack_groups / _unpack_groups.
       auto parse_group_info = [&parse_var_info](const nlohmann::json & g) -> Segment::GroupInfo
       {
         Segment::GroupInfo gi;
@@ -517,10 +584,10 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
       for (const auto & g : seg_meta["residual_group_infos"])
         seg.residual_groups.push_back(parse_group_info(g));
 
-      // Per-(unknown, given) IFT Jacobian-pair metadata (v6). The IFT loader
-      // emits one block per pair (via AssembledMatrix.disassemble), in
-      // jacobian_pairs order, so the runtime composes them against dg_dmaster
-      // exactly like a forward segment's per-pair blocks.
+      // Per-(unknown, given) IFT Jacobian-pair metadata. The IFT loader emits
+      // one block per pair (via AssembledMatrix.disassemble), in jacobian_pairs
+      // order, so the runtime composes them against dg_dmaster exactly like a
+      // forward segment's per-pair blocks.
       if (seg_meta.contains("jacobian_pairs"))
       {
         for (const auto & p : seg_meta["jacobian_pairs"])
@@ -538,9 +605,9 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
           seg.jacobian_pairs.push_back(std::move(pi));
         }
       }
-      // v8 implicit parameter-derivative graph (ParamIFT). Present iff a
-      // parameter derivative targeting a promoted parameter inside the residual
-      // was requested. Emits one dense du/dθ block per (unknown, param) pair in
+      // Implicit parameter-derivative graph (ParamIFT). Present iff a parameter
+      // derivative targeting a promoted parameter inside the residual was
+      // requested. Emits one dense du/dθ block per (unknown, param) pair in
       // param_jacobian_pairs order (unknowns outer, params inner).
       if (seg_meta.contains("param_ift_package"))
       {
@@ -558,9 +625,9 @@ Model::Impl::Impl(const std::filesystem::path & meta_path,
           seg.param_jacobian_pairs.push_back(std::move(pi));
         }
       }
-      // Solver convergence / line-search configuration is no longer baked into
-      // the metadata (schema v4). It is supplied at load time via
-      // Model::set_solver_config (driven from the stub's [Solvers] block).
+      // Solver convergence / line-search configuration is read once from the
+      // top-level `solver_config` in metadata.json into `_solver_config` below;
+      // `Model::set_solver_config` still overrides it at runtime.
       _assert(!seg.unknowns.empty(),
               "aoti::Model: implicit segment ",
               i,
@@ -634,8 +701,8 @@ Model::Impl::_gather_params(const std::vector<std::string> & names) const
 // Public facade: forward every call onto the opaque Impl.
 // ----------------------------------------------------------------------------
 
-Model::Model(const std::filesystem::path & meta_path, std::optional<at::Device> device_override)
-  : _impl(std::make_unique<Impl>(meta_path, device_override))
+Model::Model(const std::filesystem::path & artifact_root, at::Device device, at::ScalarType dtype)
+  : _impl(std::make_unique<Impl>(artifact_root, device, dtype))
 {
 }
 

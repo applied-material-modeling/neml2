@@ -445,3 +445,20 @@ def test_register_typed_parameter_rejects_python_keyword_attr_name():
     m = _Bare()
     with pytest.raises(ValueError, match=r"Python reserved keyword"):
         m.register_typed_parameter("class", Scalar(torch.tensor(1.0)))
+
+
+def test_normalize_load_target():
+    """``load_model`` / ``load_input`` normalize the load-time ``device`` /
+    ``dtype`` (torch objects or their string spellings) to the string form the
+    ``AOTIModel`` shim + C++ ctor accept; ``None`` passes through so the ctor
+    falls back to the ambient torch default downstream."""
+    import torch
+
+    from neml2.factory import _normalize_load_target
+
+    assert _normalize_load_target(None, None) == (None, None)
+    assert _normalize_load_target("cpu", "float64") == ("cpu", "float64")
+    assert _normalize_load_target(torch.device("cpu"), torch.float64) == ("cpu", "float64")
+    # A concrete cuda index is preserved (pins a dispatcher Model to that GPU);
+    # the ``torch.`` prefix on a dtype's ``str()`` is stripped.
+    assert _normalize_load_target(torch.device("cuda", 1), torch.float32) == ("cuda:1", "float32")

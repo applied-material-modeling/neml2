@@ -65,3 +65,10 @@ ignore:
   - "scripts/**"
   - "contrib/**"
   - "neml2/aoti/_aoti.pyi"
+  # The AOTI pybind glue is compiled into the Python extension module
+  # (neml2/aoti/_aoti.*.so), NOT into libneml2.so, so the clang source-based
+  # `cpp` coverage (scripts/cpp_coverage.sh instruments libneml2 + the C++ test
+  # exes) never sees it. Without this it counts as 100%-uncovered `cpp` diff and
+  # tanks the cpp patch status. The `cpp` flag measures the C++ runtime, not the
+  # binding; exclude the binding source (mirrors the _aoti.pyi entry above).
+  - "neml2/csrc/aoti/_aoti.cpp"

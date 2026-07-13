@@ -57,45 +57,62 @@ ctest --test-dir "$BUILD_DIR" -L 'dispatcher|eager' --output-on-failure
 # so those runs contribute to the same coverage profile; the per-process .profraw
 # land in $RAW alongside the ctest ones and merge below.
 #
-# We must NOT use LD_PRELOAD: it would also be inherited by the g++ subprocess
-# Inductor spawns to build each .pt2 kernel, which then fails to start
-# ("InductorError: InvalidCxxCompiler"). Instead swap the instrumented library in
-# place of the one the binding resolves through its rpath, so only the in-process
-# binding picks it up and the compiler subprocess is untouched. The build names
-# the library `libneml2_<config>.so` with a matching SONAME (CMakeLists
-# OUTPUT_NAME), so rewrite the staged copy's SONAME to `libneml2.so` (the
-# binding's DT_NEEDED) before swapping, and restore the original afterwards. Opt
-# out with NEML2_CPP_COV_PYTEST=0.
-if [ "${NEML2_CPP_COV_PYTEST:-1}" = "1" ] && command -v patchelf >/dev/null 2>&1 \
-   && python -c "import neml2.aoti._aoti" 2>/dev/null; then
-  NEML2_LIB="$(find "$BUILD_DIR" -maxdepth 1 -name 'libneml2*.so' ! -name '*eager*' | head -1)"
+# The binding (`neml2.aoti._aoti`) links libneml2 by a config-suffixed SONAME
+# (`libneml2_<config>.so`, e.g. `libneml2_Coverage.so` -- CMakeLists OUTPUT_NAME).
+# In an editable Coverage build the binding's rpath resolves to the freshly built
+# *instrumented* neml2/lib/libneml2_<config>.so, so running tests/aoti drives that
+# instrumented lib in-process and its calls land in the same profile -- no library
+# swap needed. (We must NOT use LD_PRELOAD: it would be inherited by the g++
+# subprocess Inductor spawns to build each .pt2 kernel, which then fails to start
+# with "InductorError: InvalidCxxCompiler".) The old plain-`libneml2.so` match
+# found nothing, so tests/aoti was silently skipped -- leaving only the thin ctest
+# slice in the report and every AOTI/substep .cpp reading as 0%. Opt out with
+# NEML2_CPP_COV_PYTEST=0.
+
+# A clang source-based-coverage object carries __llvm_covmap / __llvm_prf_*
+# sections. We test for them to (a) confirm the binding's resolved lib is actually
+# instrumented before running tests/aoti, and (b) drop stale non-Coverage
+# libneml2*.so siblings a local dev may have left in neml2/lib from a prior
+# RelWithDebInfo build (a fresh CI runner has only the Coverage libs). Fall open if
+# objdump is unavailable.
+_instrumented() {
+  command -v objdump >/dev/null 2>&1 || return 0
+  # Capture then glob-match rather than `objdump | grep -q`: under `set -o
+  # pipefail`, grep -q closing the pipe early sends objdump SIGPIPE (exit 141),
+  # which would make the pipeline -- and this predicate -- spuriously fail.
+  local hdrs
+  hdrs="$(objdump -h "$1" 2>/dev/null)" || return 1
+  [[ "$hdrs" == *__llvm* ]]
+}
+
+if [ "${NEML2_CPP_COV_PYTEST:-1}" = "1" ] && python -c "import neml2.aoti._aoti" 2>/dev/null; then
   AOTI_SO="$(python -c 'import neml2.aoti._aoti as m; print(m.__file__)' 2>/dev/null || true)"
-  TARGET_LIB="$(ldd "$AOTI_SO" 2>/dev/null | sed -n 's/.*libneml2\.so => \([^ ]*\).*/\1/p' | head -1)"
-  if [ -n "$NEML2_LIB" ] && [ -n "$TARGET_LIB" ] && [ -w "$TARGET_LIB" ]; then
-    STAGED="$OUT_DIR/instrumented_libneml2.so"
-    cp "$NEML2_LIB" "$STAGED"
-    patchelf --set-soname libneml2.so "$STAGED"
-    cp "$TARGET_LIB" "$TARGET_LIB.covbak"   # back up the binding's library
-    cp "$STAGED" "$TARGET_LIB"              # swap in the instrumented one
-    echo "cpp_coverage: driving tests/aoti through the instrumented runtime (swapped $TARGET_LIB)"
+  # The instrumented lib the binding actually loads (config-suffixed name).
+  TARGET_LIB="$(ldd "$AOTI_SO" 2>/dev/null \
+    | sed -n 's|.*\(libneml2[A-Za-z_]*\.so\) => \([^ ]*\).*|\2|p' | grep -v eager | head -1)"
+  if [ -n "$TARGET_LIB" ] && _instrumented "$TARGET_LIB"; then
+    echo "cpp_coverage: driving tests/aoti through the instrumented binding ($TARGET_LIB)"
     # Keep pyproject's addopts (--import-mode=importlib is load-bearing: it makes
     # `import neml2` resolve to the installed package + its pybind `_aoti.so`).
     # %p in LLVM_PROFILE_FILE gives every xdist worker its own profile.
     LLVM_PROFILE_FILE="$RAW/py-%p.profraw" \
       python -m pytest "$SRC/tests/aoti" -n auto -q -p no:cacheprovider \
       || echo "cpp_coverage: WARNING tests/aoti exited non-zero (coverage still merged)" >&2
-    mv -f "$TARGET_LIB.covbak" "$TARGET_LIB"  # restore the original library
   else
-    echo "cpp_coverage: skipping Python coverage (need patchelf + a writable binding libneml2)" >&2
+    echo "cpp_coverage: skipping Python coverage (binding does not resolve an instrumented libneml2)" >&2
   fi
 fi
 
-# Instrumented objects: the shared library (carries the neml2/csrc mapping) plus
-# every test executable (carries the header-only template instantiations --
+# Instrumented objects: the shared libraries (carry the neml2/csrc .cpp mapping)
+# plus every test executable (carries the header-only template instantiations --
 # batch_chunk.h, the _guarded / _assert helpers, ...). llvm-cov merges per-source
-# coverage across all of them.
+# coverage across all of them. The editable install stages the libneml2*.so into
+# neml2/lib/ (not the build root); without them here llvm-cov would report only
+# the test executables' header instantiations -- every runtime .cpp would silently
+# read as 0%.
 mapfile -t OBJECTS < <(
-  find "$BUILD_DIR" -maxdepth 1 -name 'libneml2*.so'
+  while IFS= read -r lib; do _instrumented "$lib" && echo "$lib"; done \
+    < <(find "$SRC/neml2/lib" "$BUILD_DIR" -maxdepth 1 -name 'libneml2*.so' 2>/dev/null)
   find "$BUILD_DIR/tests/cpp" -maxdepth 1 -type f -perm -u+x -name 'test_*'
 )
 if [ "${#OBJECTS[@]}" -eq 0 ]; then

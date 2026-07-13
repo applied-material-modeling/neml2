@@ -71,7 +71,7 @@ def test_request_ad_aoti_jacobian_matches_eager_and_fd(tmp_path: Path):
     pairs = {(p["out_var"], p["in_var"]) for p in seg["jacobian_pairs"]}
     assert pairs == {(_OUT, "vonmises_stress"), (_OUT, "temperature")}
 
-    aoti = AOTIModel(str(out_dir / "model_meta.json"))
+    aoti = AOTIModel(str(out_dir))
     eager = _EagerModel(str(_SCENARIO / "model.i"), "model")
 
     # Inputs straddling the surrogate's yield (sy = 1000) so the Jacobian is
@@ -149,7 +149,7 @@ def test_request_ad_in_implicit_residual_matches_eager(tmp_path: Path):
     pairs = {(p["out_var"], p["in_var"]) for p in seg["jacobian_pairs"]}
     assert ("equivalent_plastic_strain", "temperature") in pairs
 
-    aoti = AOTIModel(str(out_dir / "model_meta.json"))
+    aoti = AOTIModel(str(out_dir))
     eager = _EagerModel(str(_IMPLICIT_I), "model")
     raw = _implicit_inputs()
 

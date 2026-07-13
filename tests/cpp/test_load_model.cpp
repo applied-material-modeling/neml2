@@ -83,12 +83,14 @@ main(int argc, char ** argv)
   NEML2_CHECK(argc >= 2); // argv[1] = the fixture (collection) dir
   const std::string fixture_dir = argv[1];
   const std::string stub = fixture_dir + "/model_aoti.i";
-  const std::string cpu_meta = fixture_dir + "/model/cpu/model_meta.json";
+  const std::string artifact_root = fixture_dir + "/model";
 
   at::manual_seed(0);
 
-  // Single-shot reference straight off the cpu artifact.
-  Model ref(cpu_meta);
+  // Single-shot reference straight off the cpu artifact root (the Model ctor
+  // takes the artifact folder + device + dtype and resolves
+  // metadata.json + the <device>/<dtype>/ binaries itself).
+  Model ref(artifact_root, at::kCPU, at::kDouble);
   const int64_t b = 10;
   const auto inputs = make_inputs(ref, b);
   const auto ref_out = ref.forward(inputs);
@@ -112,8 +114,9 @@ main(int argc, char ** argv)
   NEML2_CHECK_THROWS(load_model(stub, "does_not_exist"));
 
   // --- factory.cpp branches via hand-written stubs (no extra artifact needed) ---
-  // They point at the existing explicit cpu artifact; the [Solvers] config is
-  // parsed + applied even though an explicit model never runs a Newton solve.
+  // Schema v10: the stub carries only type + artifact_path (pointing at the
+  // artifact root); solver config lives in the artifact's metadata.json, so
+  // factory::load_model no longer parses a [Solvers] block or a `solver` field.
   namespace fs = std::filesystem;
   // Absolute, since the stubs below live in a temp dir: a relative artifact_path
   // would resolve against that temp dir, not the fixture.
@@ -128,25 +131,12 @@ main(int argc, char ** argv)
     return p;
   };
 
-  // [Solvers] with NewtonWithLineSearch -> parse_solver_config, line-search branch.
-  {
-    const auto s = write_stub(
-        "ls.i",
-        "[Models]\n  [model]\n    type = AOTIModel\n    artifact_path = " + artifact +
-            "\n    solver = newton\n  []\n[]\n"
-            "[Solvers]\n  [newton]\n    type = NewtonWithLineSearch\n    abs_tol = 1e-12\n"
-            "    rel_tol = 1e-10\n    max_its = 42\n    max_linesearch_iterations = 7\n"
-            "    linesearch_type = BACKTRACKING\n    linesearch_cutback = 3.0\n"
-            "    linesearch_stopping_criteria = 1e-4\n  []\n[]\n");
-    NEML2_CHECK(matches(load_model(s, "model").forward(inputs), ref_out, 1e-8, 1e-10));
-  }
-  // Plain Newton -> the non-line-search branch.
+  // A minimal stub (type + absolute artifact_path) loads through factory::load_model.
   {
     const auto s =
-        write_stub("newton.i",
+        write_stub("plain.i",
                    "[Models]\n  [model]\n    type = AOTIModel\n    artifact_path = " + artifact +
-                       "\n    solver = newton\n  []\n[]\n"
-                       "[Solvers]\n  [newton]\n    type = Newton\n    max_its = 30\n  []\n[]\n");
+                       "\n  []\n[]\n");
     NEML2_CHECK(matches(load_model(s, "model").forward(inputs), ref_out, 1e-8, 1e-10));
   }
   // Relative artifact_path -> resolved against the stub's own directory, so the
@@ -158,22 +148,17 @@ main(int argc, char ** argv)
     NEML2_CHECK(matches(load_model(s, "model").forward(inputs), ref_out, 1e-8, 1e-10));
     fs::remove(s);
   }
-  // Error branches: parse failure, wrong type, missing artifact_path, dangling solver.
+  // Error branches: parse failure, wrong type, missing artifact_path.
   NEML2_CHECK_THROWS(load_model("/no/such/stub.i", "model"));
   NEML2_CHECK_THROWS(load_model(
       write_stub("wrongtype.i", "[Models]\n  [model]\n    type = NotAOTI\n  []\n[]\n"), "model"));
   NEML2_CHECK_THROWS(load_model(
       write_stub("noart.i", "[Models]\n  [model]\n    type = AOTIModel\n  []\n[]\n"), "model"));
-  NEML2_CHECK_THROWS(load_model(
-      write_stub("badsolver.i",
-                 "[Models]\n  [model]\n    type = AOTIModel\n    artifact_path = " + artifact +
-                     "\n    solver = missing\n  []\n[]\n"),
-      "model"));
   fs::remove_all(tmp);
 
   // Cross-device: dispatch cpu inputs onto the GPU when a cuda artifact exists.
-  const std::string cuda_meta = fixture_dir + "/model/cuda/model_meta.json";
-  if (at::hasCUDA() && std::filesystem::exists(cuda_meta))
+  const std::string cuda_leaf = fixture_dir + "/model/cuda/float64";
+  if (at::hasCUDA() && std::filesystem::exists(cuda_leaf))
   {
     auto sched = std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cuda", 4});
     auto m = load_model(stub, "model", sched);

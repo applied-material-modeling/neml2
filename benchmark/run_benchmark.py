@@ -174,7 +174,9 @@ def run_one(
     t_compile = time.perf_counter() - t0
 
     t0 = time.perf_counter()
-    factory = load_input(stub_path, pre=runtime_pre)
+    # Load the <device>/float64 leaf that was just compiled; the load APIs no
+    # longer infer the leaf from torch's ambient defaults.
+    factory = load_input(stub_path, pre=runtime_pre, device=device, dtype="float64")
     factory.get_driver(driver_name).run()
     t_run = time.perf_counter() - t0
 
@@ -219,7 +221,7 @@ def profile_one(
     )
     print(f"[{scenario}] compile: {time.perf_counter() - t0:.1f}s", flush=True)
 
-    driver = load_input(stub_path, pre=pre).get_driver(driver_name)
+    driver = load_input(stub_path, pre=pre, device=device, dtype="float64").get_driver(driver_name)
 
     for _ in range(warmup):
         driver.run()

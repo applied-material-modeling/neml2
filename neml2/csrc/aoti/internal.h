@@ -68,10 +68,12 @@ void ensure_neml2_custom_ops_registered();
 /// forwarders onto the identically-named members here.
 struct Model::Impl
 {
-  /// See `Model::Model`. Parses `_meta.json`, loads every `.pt2` segment, and
-  /// materialises the promoted-parameter surface. `device_override` refines the
-  /// concrete device index (its type must match the compiled device type).
-  explicit Impl(const std::filesystem::path & meta_path, std::optional<at::Device> device_override);
+  /// See `Model::Model`. Parses `<artifact_root>/metadata.json`, loads every
+  /// `.pt2` segment from the `<device>/<dtype>/` leaf, and materialises the
+  /// promoted-parameter surface on `device` (floating params at `dtype`).
+  explicit Impl(const std::filesystem::path & artifact_root,
+                at::Device device,
+                at::ScalarType dtype);
 
   // --- Public ops (forwarded from Model) -----------------------------------
   //
@@ -91,12 +93,12 @@ struct Model::Impl
   std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
   jacobian(const std::map<std::string, at::Tensor> & inputs,
            const std::map<std::string, at::Tensor> & param_overrides = {}) const;
-  /// Evaluate + parameter Jacobian (schema v7). `P[out][param]` is
+  /// Evaluate + parameter Jacobian. `P[out][param]` is
   /// `(*B, *out_base, *param_base)` (reverse-mode AD over promoted parameters).
   std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
   param_jacobian(const std::map<std::string, at::Tensor> & inputs,
                  const std::map<std::string, at::Tensor> & param_overrides = {}) const;
-  /// Parameter VJP / adjoint (schema v7): `dL/d(param)` for
+  /// Parameter VJP / adjoint: `dL/d(param)` for
   /// `L = sum_o <cotangent_o, out_o>`, keyed by parameter qualified name.
   std::map<std::string, at::Tensor>
   param_vjp(const std::map<std::string, at::Tensor> & inputs,
@@ -174,6 +176,12 @@ struct Model::Impl
   {
     SegmentKind kind;
 
+    /// Adaptive substepping depth cap (implicit segments only).
+    /// 0 = off (single shot). >0 = the host-side driver may recursively bisect a
+    /// failing increment down to this depth, interpolating / chaining / scaling
+    /// the givens by their per-variable ``role``.
+    int max_substepping_level = 0;
+
     // Forward-segment-only.
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> fwd_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> jvp_loader;
@@ -184,7 +192,7 @@ struct Model::Impl
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> rhs_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> step_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> ift_loader;
-    /// Implicit-segment parameter sensitivity graph (schema v7): du/dθ for a
+    /// Implicit-segment parameter sensitivity graph: du/dθ for a
     /// promoted parameter inside the residual. Takes the converged per-group
     /// unknowns + givens + the promoted parameters PER-BATCH (the runtime
     /// broadcasts the stored scalar to the batch before the call), returns one
@@ -207,6 +215,15 @@ struct Model::Impl
       int64_t var_size = 0;
       std::vector<int64_t> sub_batch_shape;
       std::vector<int64_t> base_shape;
+      // Substep role: how the host-side substep driver treats this
+      // given across sub-steps -- "old_state" (chain the solved unknown),
+      // "old_force" / "cur_force" (interpolate the paired force), "incremental"
+      // (scale by the span fraction), "static" / "unknown" (hold). ``pair`` is
+      // the counterpart variable name (the paired force, or the base unknown for
+      // old_state); empty when none. Only populated on an implicit segment's
+      // ``givens``; the defaults leave single-shot behavior unchanged.
+      std::string role = "static";
+      std::string pair;
     };
     std::vector<VarInfo> unknowns;
     std::vector<VarInfo> givens;
@@ -250,7 +267,7 @@ struct Model::Impl
     };
     std::vector<PairInfo> jacobian_pairs;
 
-    /// Per-(out_var, param) parameter-Jacobian-pair metadata (schema v7). Empty
+    /// Per-(out_var, param) parameter-Jacobian-pair metadata. Empty
     /// unless parameter derivatives were compiled. The param-Jacobian loader
     /// returns one dense block per pair in this row-major order (outputs outer,
     /// promoted params inner) and ONLY blocks (no value outputs).
@@ -268,7 +285,7 @@ struct Model::Impl
     /// parameters scalar). Null unless parameter derivatives were compiled.
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> param_jacobian_loader;
 
-    /// Parameter VJP / adjoint graph (schema v7): inputs are the model inputs
+    /// Parameter VJP / adjoint graph: inputs are the model inputs
     /// (parameters scalar) followed by one TYPED cotangent per output (in
     /// `param_vjp_outputs` order); outputs are the parameter gradients (in
     /// `param_vjp_params` order). Null unless parameter derivatives were compiled.
@@ -278,7 +295,7 @@ struct Model::Impl
 
     std::vector<std::string> predictor_inputs;
     std::vector<std::string> predictor_outputs;
-    /// Promoted parameters the predictor graph consumes (schema v7). Separate
+    /// Promoted parameters the predictor graph consumes. Separate
     /// from `param_inputs` because the predictor is a distinct nn.Module: the
     /// rhs/step/ift graphs take the residual's promoted tail, but the predictor
     /// is compiled without it, so it currently receives no promoted params
@@ -287,7 +304,7 @@ struct Model::Impl
     std::vector<std::string> predictor_param_inputs;
 
     // Solver convergence / line-search configuration is no longer per-segment
-    // metadata (schema v4); it lives in the owning Impl's `_solver_config`,
+    // metadata; it lives in the owning Impl's `_solver_config`,
     // set at load time from the stub's [Solvers] block.
 
     /// Names of the promoted parameters this segment's graphs consume, in
@@ -315,7 +332,7 @@ struct Model::Impl
   /// trailing `base_ndim` dims). A scalar/unbatched parameter expands up to the
   /// batch; a per-batch-element parameter (`pbatch == batch`) passes through. The
   /// value / jvp / jacobian / param-Jacobian graphs all take promoted parameters
-  /// as per-batch inputs (schema v7).
+  /// as per-batch inputs.
   static at::Tensor broadcast_param_to_batch(const at::Tensor & param,
                                              const std::vector<int64_t> & batch,
                                              int64_t base_ndim);
@@ -339,6 +356,76 @@ struct Model::Impl
                              std::map<std::string, at::Tensor> & state,
                              std::vector<at::Tensor> & u_solved_groups,
                              std::vector<at::Tensor> & g_groups) const;
+
+  /// Adaptive substepping driver: wraps `_run_implicit_segment` in a
+  /// recursive bisection over the increment. Snapshots the segment's endpoint
+  /// givens, then solves the increment in one shot; on a recoverable
+  /// ConvergenceError it halves the span -- interpolating each paired force,
+  /// scaling each listed increment, and chaining each old-state to the previous
+  /// sub-step's solved unknown, per the given's `role` -- recursing up to
+  /// `seg.max_substepping_level` levels before re-raising. On return `state`
+  /// holds the final converged unknowns and the out-params hold the LAST
+  /// sub-step's per-group solved unknowns + givens (the point the IFT path,
+  /// when substepping the Jacobian, evaluates at). Only called when
+  /// `seg.max_substepping_level > 0`.
+  void _run_implicit_segment_substepped(const Segment & seg,
+                                        std::map<std::string, at::Tensor> & state,
+                                        std::vector<at::Tensor> & u_solved_groups,
+                                        std::vector<at::Tensor> & g_groups) const;
+
+  /// Masked single implicit solve: like `_run_implicit_segment` but drives
+  /// `Newton::solve_masked` and returns the per-element convergence mask (bool,
+  /// dynamic-batch shape) WITHOUT throwing. Converged rows' solved unknowns are
+  /// written to `state`; the mask tells the substep driver which rows to freeze
+  /// vs bisect. `_masking_ok` gates whether masking applies (1-D dynamic batch).
+  at::Tensor _run_implicit_segment_masked(const Segment & seg,
+                                          std::map<std::string, at::Tensor> & state) const;
+
+  /// Per-element (masked) substepping: solve only the still-unconverged subset of
+  /// the dynamic batch at each sub-step, freezing converged rows at their
+  /// coarsest converging solution and bisecting only the failing subset. The
+  /// value + Jacobian variants mirror `_run_implicit_segment_substepped[_jacobian]`
+  /// but scatter converged rows into full-batch accumulators. Require a 1-D
+  /// dynamic batch (see `_masking_ok`); `ops.cpp` falls back to the whole-batch
+  /// driver otherwise. Only called when `seg.max_substepping_level > 0`.
+  void _run_implicit_segment_substepped_masked(const Segment & seg,
+                                               std::map<std::string, at::Tensor> & state) const;
+  void _run_implicit_segment_substepped_masked_jacobian(
+      const Segment & seg,
+      std::map<std::string, at::Tensor> & state,
+      std::map<std::string, at::Tensor> & dstate) const;
+
+  /// True iff masking applies to `state` for this segment: the dynamic batch is
+  /// a single axis (dim 0), so per-row `index_select`/`index_copy` cleanly
+  /// selects elements. Multi-axis dynamic batches fall back to whole-batch.
+  bool _masking_ok(const Segment & seg, const std::map<std::string, at::Tensor> & state) const;
+
+  /// Substepping analogue of `_run_implicit_segment_jacobian`: solves the
+  /// increment by the same bisection AND accumulates the chained consistent
+  /// tangent into `dstate`. At each successfully-solved leaf sub-span it runs
+  /// the value solve then the IFT composition, having first written the span's
+  /// givens into `dstate` per their role -- interpolated force sensitivities,
+  /// scaled increments, and each old-state seeded with the previous span's
+  /// solved-unknown sensitivity -- so one IFT call yields
+  /// `J_k = A_k·J_{k-1} + B_k·frac_k·J_endpoint`. On return `state` holds the
+  /// final unknowns and `dstate[unknown]` the total `du_M/d(master inputs)`.
+  /// Requires `seg.ift_loader`. Only called when `seg.max_substepping_level > 0`.
+  void _run_implicit_segment_substepped_jacobian(const Segment & seg,
+                                                 std::map<std::string, at::Tensor> & state,
+                                                 std::map<std::string, at::Tensor> & dstate) const;
+
+  /// Write the substep sub-span [a, b] transform of a name->tensor map into
+  /// `dst`, reading the endpoint snapshot `orig` and the chained old-state
+  /// `chained`. The coefficient math is identical for the primal state and the
+  /// dstate (chain-rule) carrier -- interpolate a paired force, scale a listed
+  /// increment, take the chained value for an old-state, hold anything else --
+  /// so both the value and Jacobian drivers share it.
+  void _apply_substep_span(const Segment & seg,
+                           const std::map<std::string, at::Tensor> & orig,
+                           double a,
+                           double b,
+                           const std::map<std::string, at::Tensor> & chained,
+                           std::map<std::string, at::Tensor> & dst) const;
 
   /// Pack per-variable ``state`` entries into per-group tensors via the
   /// AssembledVector convention: BLOCK groups cat per-var contributions
@@ -482,7 +569,7 @@ struct Model::Impl
   std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
   _forward_param_pair_blocks(const std::map<std::string, at::Tensor> & inputs) const;
 
-  /// Single-implicit-segment parameter-Jacobian path (schema v7): run the Newton
+  /// Single-implicit-segment parameter-Jacobian path: run the Newton
   /// solve to convergence, then run the ParamIFT loader on the converged
   /// per-group unknowns + givens + the promoted parameters broadcast per-batch,
   /// returning (outputs == converged unknowns, per-(unknown, param) du/dθ
@@ -490,7 +577,7 @@ struct Model::Impl
   std::pair<std::map<std::string, at::Tensor>, VariablePairJacobian>
   _implicit_param_pair_blocks(const std::map<std::string, at::Tensor> & inputs) const;
 
-  /// Multi-segment (composed) parameter-Jacobian carrier (schema v7). Mirrors
+  /// Multi-segment (composed) parameter-Jacobian carrier. Mirrors
   /// `_jacobian_dstate` but for promoted parameters: a `(*B, var_folded, P)`
   /// carrier seeded to ZERO (master inputs do not depend on parameters), then
   /// composed segment by segment. Each forward segment adds its INDIRECT
@@ -584,7 +671,7 @@ struct Model::Impl
     ParamOverrideGuard & operator=(const ParamOverrideGuard &) = delete;
   };
 
-  // Natural base shape per promoted parameter (schema v7), from its typed class
+  // Natural base shape per promoted parameter, from its typed class
   // (Scalar => {}, SR2 => {6}). Used to split a (possibly batched) stored
   // parameter `(*pbatch, *base)` into batch vs base -- for broadcasting it to the
   // call batch and for reshaping parameter-derivative blocks. Distinct from the
@@ -615,7 +702,7 @@ struct Model::Impl
   at::ScalarType _dtype = at::kDouble;
 
   // Implicit-segment Newton configuration, supplied at load time via
-  // Model::set_solver_config (schema v4+; defaults if never set).
+  // Model::set_solver_config (defaults if never set).
   SolverConfig _solver_config;
 };
 } // namespace neml2::aoti

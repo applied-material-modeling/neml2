@@ -34,36 +34,6 @@
 
 namespace neml2::aoti
 {
-namespace
-{
-// Map a stub `[Solvers]/<name>` block (carried verbatim from the source input,
-// minus `linear_solver`) onto the runtime SolverConfig. Field names + defaults
-// mirror the Python Newton / NewtonWithLineSearch HIT schema; line-search knobs
-// are honored only for `type = NewtonWithLineSearch` (a plain Newton leaves
-// ls_max_iters at the SolverConfig default of 1, i.e. line search disabled).
-SolverConfig
-parse_solver_config(const nmhit::Node & node)
-{
-  SolverConfig cfg;
-  cfg.atol = node.param_optional<double>("abs_tol", cfg.atol);
-  cfg.rtol = node.param_optional<double>("rel_tol", cfg.rtol);
-  cfg.miters = static_cast<std::size_t>(
-      node.param_optional<std::int64_t>("max_its", static_cast<std::int64_t>(cfg.miters)));
-
-  if (node.param_optional<std::string>("type", std::string{}) == "NewtonWithLineSearch")
-  {
-    cfg.ls_type = node.param_optional<std::string>("linesearch_type", cfg.ls_type);
-    // Python's NewtonWithLineSearch defaults max_linesearch_iterations to 10
-    // (which enables line search); not the SolverConfig default of 1.
-    cfg.ls_max_iters = static_cast<std::size_t>(
-        node.param_optional<std::int64_t>("max_linesearch_iterations", 10));
-    cfg.ls_cutback = node.param_optional<double>("linesearch_cutback", cfg.ls_cutback);
-    cfg.ls_c = node.param_optional<double>("linesearch_stopping_criteria", cfg.ls_c);
-  }
-  return cfg;
-}
-} // namespace
-
 DispatchedModel
 load_model(const std::filesystem::path & stub_path,
            const std::string & model_name,
@@ -95,8 +65,9 @@ load_model(const std::filesystem::path & stub_path,
           type,
           "', expected 'AOTIModel'. Pass the stub produced by `neml2-compile`.");
 
-  // artifact_path: the per-device artifact folder (absolute per neml2-compile;
-  // tolerate a relative path by resolving it against the stub's directory).
+  // artifact_path: the artifact root directory. neml2-compile writes it relative
+  // to the stub (so the stub + folder relocate together as a portable bundle);
+  // resolve a relative value against the stub's directory. Absolute is honored too.
   const auto artifact_path_str = model_node->param_optional<std::string>("artifact_path", "");
   _assert(!artifact_path_str.empty(),
           "aoti::load_model: [Models/",
@@ -106,36 +77,17 @@ load_model(const std::filesystem::path & stub_path,
   if (artifact_path.is_relative())
     artifact_path = stub_path.parent_path() / artifact_path;
 
-  // Solver config from the referenced [Solvers] block (forward-only models carry
-  // none -> C++ defaults apply).
-  SolverConfig cfg;
-  const auto solver_name = model_node->param_optional<std::string>("solver", std::string{});
-  if (!solver_name.empty())
-  {
-    const nmhit::Node * solver_node = root->find("Solvers/" + solver_name);
-    _assert(solver_node != nullptr,
-            "aoti::load_model: [Models/",
-            model_name,
-            "] references solver '",
-            solver_name,
-            "' but no [Solvers/",
-            solver_name,
-            "] block exists in '",
-            stub_path.string(),
-            "'.");
-    cfg = parse_solver_config(*solver_node);
-  }
-
   // No scheduler -> pass-through on the default (cpu) device.
   auto sched = scheduler
                    ? std::move(scheduler)
                    : std::static_pointer_cast<WorkScheduler>(
                          std::make_shared<SimpleScheduler>(SimpleScheduler::Config{"cpu", 0}));
 
-  // The artifact-root ctor resolves <artifact_path>/<device-type>/*_meta.json
-  // for the scheduler's device (and errors if that subfolder is absent).
-  DispatchedModel model(artifact_path, std::move(sched));
-  model.set_solver_config(cfg);
-  return model;
+  // The artifact-root ctor resolves the shared <artifact_path>/metadata.json and
+  // the per-<device>/<dtype>/ binaries for the scheduler's device (erroring if the
+  // leaf is absent). Solver config is read from the shared metadata by each
+  // per-device Model. `set_solver_config` remains available to a host that wants
+  // to override it at runtime.
+  return DispatchedModel(artifact_path, std::move(sched));
 }
 } // namespace neml2::aoti

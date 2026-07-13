@@ -34,9 +34,10 @@ import torch
 from ...es import AssembledMatrix, AxisLayout, ModelNonlinearSystem, SparseVector
 from ...es._helpers import _flatten_base
 from ...factory import register_neml2_object
-from ...schema import HitSchema, dependency
-from ...solvers import Newton, RetCode
+from ...schema import HitSchema, dependency, option
+from ...solvers import ConvergenceError, Newton, RetCode
 from ...types import Tensor, TensorWrapper
+from .._hit import _opt_list_str
 from ..chain_rule import ChainRuleDict
 from ..model import Model, register_submodule
 
@@ -189,6 +190,31 @@ class ImplicitUpdate(Model):
             "An optional predictor to provide an initial guess for the nonlinear solve.",
             default=None,
         ),
+        option(
+            "max_substepping_level",
+            int,
+            "Adaptive sub-incrementation depth cap, applied by the COMPILED AOTI "
+            "routes only (``neml2-compile``). 0 (default) disables substepping. Level "
+            "L lets the compiled solve recursively bisect a failing increment down to "
+            "depth L (up to 2^L sub-steps), per-element, interpolating paired forces "
+            "and chaining state; a sub-step still failing at depth L raises a "
+            "recoverable ConvergenceError so an outer time-stepper can cut the step. "
+            "The eager runtime does NOT sub-increment: evaluating an ImplicitUpdate "
+            "eagerly with this set > 0 raises (substepping is an AOTI-only feature).",
+            default=0,
+        ),
+        option(
+            "incremental_variables",
+            list,
+            "Names of driving-force inputs the COMPILED substep driver treats as pure "
+            "increments (scaled by the sub-step fraction rather than interpolated). "
+            "Forces that already carry a ~1 counterpart are interpolated automatically "
+            "and need not be listed; a lone increment with no ~1 counterpart is held "
+            "constant unless listed here. Like ``max_substepping_level`` this is an "
+            "AOTI-compile directive; setting it rejects eager evaluation.",
+            default=[],
+            optional_reader=_opt_list_str,
+        ),
     )
 
     @classmethod
@@ -207,13 +233,21 @@ class ImplicitUpdate(Model):
                     "using no predictor (initial guess = zero).",
                     stacklevel=2,
                 )
-        return cls(system, solver, predictor=predictor)
+        return cls(
+            system,
+            solver,
+            predictor=predictor,
+            max_substepping_level=int(node.param_optional_int("max_substepping_level", 0)),
+            incremental_variables=_opt_list_str(node, "incremental_variables", []),
+        )
 
     def __init__(
         self,
         system: ModelNonlinearSystem,
         solver: Newton,
         predictor: Model | None = None,
+        max_substepping_level: int = 0,
+        incremental_variables: list[str] | None = None,
     ) -> None:
         super().__init__()
         self.system = system
@@ -254,6 +288,22 @@ class ImplicitUpdate(Model):
         self.input_spec = {name: all_specs[name] for name in input_names}
         self.output_spec = {name: system.model.input_spec[name] for name in system.unknown_names}
 
+        # --- Substepping configuration (AOTI-compile directives) -----------
+        # These are consumed ONLY by the compiled AOTI export (which reads them as
+        # attributes to build the per-element masked substep driver's metadata and
+        # classifies roles via ``classify_substep_roles`` itself). The eager runtime
+        # does not sub-increment; ``forward`` rejects a model that sets them (see the
+        # guard in ``forward``). They are stored (not rejected at construction) so
+        # ``neml2-compile`` can load the model and read them.
+        self.max_substepping_level = int(max_substepping_level)
+        self.incremental_variables = list(incremental_variables or [])
+        unknown_missing = [u for u in self.incremental_variables if u not in self.input_spec]
+        if unknown_missing:
+            raise ValueError(
+                f"ImplicitUpdate: incremental_variables {unknown_missing} are not inputs of "
+                f"this model; valid inputs are {list(self.input_spec)}."
+            )
+
     def _initial_unknowns(
         self,
         state: dict[str, TensorWrapper],
@@ -270,11 +320,20 @@ class ImplicitUpdate(Model):
                 unknowns[name] = state[name]
         return unknowns
 
-    def _solve(
+    def _try_solve(
         self,
         state: dict[str, TensorWrapper],
         sub_batch_ndim: dict[str, int] | None = None,
-    ) -> SparseVector:
+    ) -> tuple[SparseVector | None, RetCode]:
+        """Run the nonlinear solve *without raising*.
+
+        Returns ``(solution, ret)``: the disassembled converged unknowns on
+        success, ``None`` otherwise. This is the probe primitive the
+        substepping driver uses — it inspects ``ret`` to decide whether to
+        subdivide, avoiding an exception unwind per attempt. On success the
+        converged state is left in ``self.system`` (so ``_output_sensitivities``
+        can run against it immediately).
+        """
         givens = {name: state[name] for name in self.system.given_names}
         unknowns = self._initial_unknowns(state)
         # Bridge: caller's ``sub_batch_ndim`` dict is keyed by INPUT names
@@ -302,12 +361,32 @@ class ImplicitUpdate(Model):
                 dyn_shape = tuple(val.shape[:dyn_n])
         u_sv, g_sv = self.system.to_sparse(unknowns, givens, full_sbn)
         self.system.initialize(u=u_sv, g=g_sv, dyn_shape=dyn_shape)
-        result = self.solver.solve(self.system)
+        # The shared C++ Newton raises the recoverable ConvergenceError on
+        # divergence / max-iterations rather than returning a non-SUCCESS code;
+        # translate that into a return code so this probe never unwinds.
+        try:
+            result = self.solver.solve(self.system)
+        except ConvergenceError:
+            self.last_status = RetCode.MAXITER
+            return None, RetCode.MAXITER
         self.last_iterations = result.iterations
         self.last_status = result.ret
         if result.ret is not RetCode.SUCCESS:
-            raise RuntimeError(f"Nonlinear solve failed with status {result.ret.name}")
-        return self.system.u().disassemble()
+            return None, result.ret
+        return self.system.u().disassemble(), result.ret
+
+    def _solve(
+        self,
+        state: dict[str, TensorWrapper],
+        sub_batch_ndim: dict[str, int] | None = None,
+    ) -> SparseVector:
+        """Single-shot solve; raises the recoverable :class:`ConvergenceError`
+        on non-convergence so an outer driver (substepping, or MOOSE's
+        time-stepper) can cut the increment and retry."""
+        solution, ret = self._try_solve(state, sub_batch_ndim)
+        if solution is None:
+            raise ConvergenceError(f"Nonlinear solve failed with status {ret.name}")
+        return solution
 
     def _output_sensitivities(self, v: ChainRuleDict) -> ChainRuleDict:
         A, B = self.system.A_and_B()
@@ -355,6 +434,19 @@ class ImplicitUpdate(Model):
         input_sbn = {
             name: t.sub_batch_ndim for name, t in zip(self.input_spec, typed_inputs, strict=True)
         }
+
+        # Substepping is an AOTI-compile-only feature: the compiled routes read
+        # max_substepping_level / incremental_variables from the metadata and run a
+        # per-element masked substep driver in C++. The eager runtime does NOT
+        # sub-increment, so reject a model that requests it rather than silently
+        # falling back to a whole-batch solve that diverges from the compiled routes.
+        if self.max_substepping_level > 0 or self.incremental_variables:
+            raise NotImplementedError(
+                "ImplicitUpdate: adaptive substepping (max_substepping_level / "
+                "incremental_variables) is only supported by the compiled AOTI routes "
+                "(compile with `neml2-compile`). The eager runtime does not "
+                "sub-increment; remove these options to evaluate this model eagerly."
+            )
 
         if v is not None:
             # Chain-rule pushforward path -- used by the AOTI export wrappers

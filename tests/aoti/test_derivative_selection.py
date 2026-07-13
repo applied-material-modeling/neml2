@@ -75,7 +75,8 @@ def _compile(tmp_path: Path, hit: Path, name: str, derivatives):
     out = tmp_path / "art"
     export_model_for_aoti(hit, name, out, derivatives=derivatives)
     # Drive the public AOTIModel shim; its jvp/jacobian delegate to the binding.
-    return AOTIModel(str(out / f"{name}_meta.json"))
+    # Schema v10: pass the artifact ROOT (metadata.json + <device>/<dtype>/).
+    return AOTIModel(str(out))
 
 
 def _rand_inputs(eager, B=5):
@@ -140,13 +141,13 @@ def test_constant_jacobian_block_returned_unbatched(tmp_path):
 
     out = tmp_path / "art"
     meta = export_model_for_aoti(_ELASTICITY_I, "model", out, derivatives=["stress:strain"])
-    on_disk = json.loads((out / "model_meta.json").read_text())
+    on_disk = json.loads((out / "metadata.json").read_text())
     assert meta["derivatives"] == [["stress", "strain"]]
     pair = on_disk["segments"][0]["jacobian_pairs"][0]
     assert (pair["out_var"], pair["in_var"]) == ("stress", "strain")
     assert pair["batch_independent"] is True
 
-    m = AOTIModel(str(out / "model_meta.json"))
+    m = AOTIModel(str(out))
     for B in (1, 7):
         _, J = m.jacobian({"strain": torch.randn(B, 6, dtype=torch.float64) * 1e-2})
         # Unbatched: natural (6, 6), no leading batch axis, independent of B.
@@ -211,7 +212,7 @@ def test_subbatch_implicit_global_global_compiles_and_matches_fd(tmp_path):
     meta = export_model_for_aoti(_SUBBATCH_IMPLICIT_I, "model", out, derivatives=["u_glob:g_glob"])
     assert meta["derivatives"] == [["u_glob", "g_glob"]]
     info = {v["name"]: v for v in meta["inputs"]}
-    m = Model(str(out / "model_meta.json"))
+    m = Model(str(out))
 
     B = 4
     g = torch.Generator().manual_seed(0)

@@ -76,7 +76,7 @@ _REQUIRES_PARAM_DERIV_TORCH = pytest.mark.skipif(
 # randn-driven value/stub tests here cannot supply. ``request_ad_forward`` is a
 # physically-sensitive ML surrogate (Arrhenius exp(-Q/RT) overflows for the
 # negative temperatures randn produces); it is covered by test_request_ad_aoti.py.
-_DEDICATED = {"request_ad_forward"}
+_DEDICATED = {"request_ad_forward", "implicit_substep", "implicit_substep_nl"}
 _SCENARIOS = sorted(
     d
     for d in _SCENARIO_DIR.iterdir()
@@ -146,8 +146,9 @@ def test_aoti_export_reload_matches_eager(scenario: Path, tmp_path: Path):
     assert meta["schema_version"] == AOTI_META_SCHEMA_VERSION
     assert meta["parameters"] == []
 
-    # Reload through the pybind binding.
-    aoti = AOTIModel(str(out_dir / "model_meta.json"))
+    # Reload through the pybind binding: pass the artifact ROOT (holding the
+    # shared metadata.json + <device>/<dtype>/ binaries).
+    aoti = AOTIModel(str(out_dir))
 
     # Build a reproducible structural-input batch shared by eager and AOTI.
     eager_model = load_input(hit_path).get_model("model")
@@ -206,13 +207,14 @@ def test_aoti_stub_loads_through_native_factory(scenario: Path, tmp_path: Path):
 
     hit_path = scenario / "model.i"
 
-    # New layout: <out>/model/<device>/ artifacts + a standalone <out>/model_aoti.i
-    # stub that points at the artifact folder. The shim picks the subfolder for
-    # the current default device, so compile for exactly that device.
+    # Schema v10 layout: <out>/model/ is the artifact root (shared metadata.json +
+    # <device>/<dtype>/ binaries, created by the exporter) + a standalone
+    # <out>/model_aoti.i stub pointing at that folder. The shim picks the
+    # <device>/<dtype>/ leaf for the current defaults, so compile for that device.
     out_dir = tmp_path / scenario.name
     dev = torch.get_default_device().type
     artifact_dir = out_dir / "model"
-    export_model_for_aoti(hit_path, "model", artifact_dir / dev, device=dev)
+    export_model_for_aoti(hit_path, "model", artifact_dir, device=dev)
     # `export_model_for_aoti` only writes the .pt2 segments + metadata; the
     # `.i` stub is `neml2-compile`'s additional step. Drive it directly so
     # this test stays a single in-process call.
@@ -220,8 +222,10 @@ def test_aoti_stub_loads_through_native_factory(scenario: Path, tmp_path: Path):
     emit_aoti_stub(hit_path, "model", artifact_dir, stub_path)
     assert stub_path.exists()
 
-    # Load the stub through the same path neml2-run / TransientDriver use.
-    shim = load_input(stub_path).get_model("model")
+    # Load the stub through the same path neml2-run / TransientDriver use, for the
+    # device it was compiled for (the load APIs default to cpu/float64, not torch's
+    # ambient defaults).
+    shim = load_input(stub_path, device=dev).get_model("model")
     assert type(shim).__name__ == "AOTIModel"
     assert hasattr(shim, "input_spec") and hasattr(shim, "output_spec")
 
@@ -283,7 +287,7 @@ def test_aoti_export_persists_sub_batch_labels(tmp_path: Path):
 
     # Read the persisted master meta and assert the grain label is on the
     # per-site input AND the corresponding unknown output.
-    meta_path = out_dir / "model_meta.json"
+    meta_path = out_dir / "metadata.json"
     meta = json.loads(meta_path.read_text())
     inputs_by_name = {info["name"]: info for info in meta["inputs"]}
     outputs_by_name = {info["name"]: info for info in meta["outputs"]}
@@ -300,7 +304,8 @@ def test_aoti_export_persists_sub_batch_labels(tmp_path: Path):
     )
 
     # The Python shim re-attaches labels to typed outputs at the load boundary.
-    shim = AOTIModel(meta_path)
+    # Schema v10: pass the artifact ROOT, not the metadata.json path.
+    shim = AOTIModel(out_dir)
     assert shim.output_labels.get("u_per") == ("grain",)
 
     # Driving the shim should produce typed wrappers that carry the
@@ -354,7 +359,7 @@ def test_parameter_base_shapes_map_matches_eager(tmp_path: Path):
     # (promoted-subset) surface covers the same parameters.
     out_dir = tmp_path / "pbs"
     export_model_for_aoti(hit_path, "model", out_dir, promoted=set(em.parameter_base_shapes))
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
 
     # aoti: the map keys are exactly the runtime-settable promoted parameters.
     assert set(m.parameter_base_shapes) == set(m.named_parameters())
@@ -367,7 +372,7 @@ def test_parameter_base_shapes_map_matches_eager(tmp_path: Path):
 @_REQUIRES_PARAM_DERIV_TORCH
 @_skip_win_reextract
 def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
-    """The compiled cpp-aoti parameter-derivative path (schema v7) through the
+    """The compiled cpp-aoti parameter-derivative path through the
     pybind Model: ``param_jacobian`` (dense d(out)/d(param)) and ``param_vjp``
     (adjoint dL/d(param)) both agree with finite differences taken by mutating
     the runtime (promoted) parameter. Exercises the full
@@ -382,7 +387,7 @@ def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     export_model_for_aoti(
         hit_path, "model", out_dir, promoted={"model.E"}, derivatives=["stress:model.E"]
     )
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
     assert "model.E" in m.named_parameters()
 
     torch.manual_seed(0)
@@ -431,7 +436,7 @@ def test_aoti_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     from neml2.aoti import AOTIModel
 
     set_e(e0)
-    shim = AOTIModel(str(out_dir / "model_meta.json"))  # fresh load: E at the e0 snapshot
+    shim = AOTIModel(str(out_dir))  # fresh load: E at the e0 snapshot
     assert "model.E" in shim.named_parameters()
     _, s_pjac = shim.param_jacobian(raw)
     assert torch.allclose(s_pjac["stress"]["model.E"], block)
@@ -461,7 +466,7 @@ def test_aoti_batched_param_matches_fd_and_eager(tmp_path: Path):
     export_model_for_aoti(
         hit_path, "model", out_dir, promoted={"model.E"}, derivatives=["stress:model.E"]
     )
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
 
     torch.manual_seed(0)
     b = 5
@@ -536,7 +541,7 @@ def test_aoti_provider_param_jacobian_and_vjp_match_fd(tmp_path: Path):
     export_model_for_aoti(
         hit_path, "model", out_dir, promoted={"k.value"}, derivatives=["y:k.value"]
     )
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
 
     x = torch.tensor([2.0, 5.0, -1.0, 3.5], dtype=torch.float64)
     k0 = float(m.named_parameters()["k.value"])
@@ -572,7 +577,7 @@ def test_aoti_provider_param_jacobian_and_vjp_match_fd(tmp_path: Path):
 @_REQUIRES_PARAM_DERIV_TORCH
 def test_aoti_implicit_param_jacobian_matches_fd(tmp_path: Path):
     """The compiled cpp-aoti parameter-derivative path through a single
-    ``ImplicitUpdate`` (schema v7): ``param_jacobian`` returns ``du/dθ`` for a
+    ``ImplicitUpdate``: ``param_jacobian`` returns ``du/dθ`` for a
     parameter promoted INSIDE the residual, computed by the ParamIFT graph
     (``-A⁻¹ ∂r/∂θ`` -- analytic-equivalent reverse-mode A + reverse-mode ∂r/∂θ +
     dense solve). Validated against finite differences taken by mutating the
@@ -587,7 +592,7 @@ def test_aoti_implicit_param_jacobian_matches_fd(tmp_path: Path):
     qname = "residual.rate.weight_0"
     out_dir = tmp_path / "implicit_param_deriv"
     export_model_for_aoti(hit_path, "model", out_dir, promoted={qname}, derivatives=[f"x:{qname}"])
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
     assert qname in m.named_parameters()
 
     # Uniaxial-style implicit step: x~1 ramps, dt = t - t~1 = 0.5, x IC = 0.
@@ -651,7 +656,7 @@ def test_aoti_implicit_param_jacobian_matches_fd(tmp_path: Path):
 
 @_REQUIRES_PARAM_DERIV_TORCH
 def test_aoti_composed_param_jacobian_matches_fd(tmp_path: Path):
-    """The compiled cpp-aoti MULTI-SEGMENT parameter-Jacobian carrier (schema v7):
+    """The compiled cpp-aoti MULTI-SEGMENT parameter-Jacobian carrier:
     d(out)/d(param) for parameters promoted in EACH segment of a composed
     forward -> implicit -> forward model. The carrier composes the direct
     contribution at the parameter's own segment (forward param-Jacobian /
@@ -679,7 +684,7 @@ def test_aoti_composed_param_jacobian_matches_fd(tmp_path: Path):
     export_model_for_aoti(
         hit_path, "model", out_dir, promoted=set(params), derivatives=[f"y:{p}" for p in params]
     )
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
     for p in params:
         assert p in m.named_parameters()
 
@@ -813,7 +818,7 @@ def test_aoti_saved_output_param_derivative_matches_fd_and_eager(
     export_model_for_aoti(
         hit_path, "model", out_dir, promoted={param}, derivatives=[f"{out_var}:{param}"]
     )
-    m = PybindModel(str(out_dir / "model_meta.json"))
+    m = PybindModel(str(out_dir))
     ins = make_inputs()
 
     # cpp-aoti param_jacobian vs finite differences on the runtime parameter.
@@ -846,3 +851,84 @@ def test_aoti_saved_output_param_derivative_matches_fd_and_eager(
     assert abs(g - contracted) < 1e-8 * max(abs(contracted), 1.0), (
         f"{scenario} param_vjp != <w, d(out)/dparam> (vjp={g}, contracted={contracted})"
     )
+
+
+def test_load_model_dtype_threads_to_leaf(tmp_path: Path):
+    """``load_model(stub, name, device=, dtype=)`` threads the load-time
+    device/dtype to the ``<device>/<dtype>/`` artifact-leaf selection.
+
+    Device/dtype on the load API is the compiled-model load-time decision (an
+    AOTI artifact is device/dtype-pinned, unlike a native model you can
+    ``.to()`` afterward). A dtype with no compiled leaf raises a clear error --
+    there is deliberately NO silent fallback to the sole available dtype.
+    """
+    import neml2
+    from neml2.cli.aoti_compile import emit_aoti_stub
+    from neml2.cli.aoti_export import export_model_for_aoti
+    from neml2.types import SR2
+
+    src = tmp_path / "model.i"
+    src.write_text(
+        "[Models]\n"
+        "  [model]\n"
+        "    type = LinearIsotropicElasticity\n"
+        "    coefficients = '200e3 0.3'\n"
+        "    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'\n"
+        "  []\n"
+        "[]\n"
+    )
+    artifact_dir = tmp_path / "aoti" / "model"
+    export_model_for_aoti(src, "model", artifact_dir, device="cpu")
+    stub = tmp_path / "aoti" / "model_aoti.i"
+    emit_aoti_stub(src, "model", artifact_dir, stub)
+
+    # Explicit float64 leaf: loads and drives; the dtype is honored end-to-end.
+    m = neml2.load_model(str(stub), "model", device="cpu", dtype="float64")
+    assert m._inner.dtype == torch.float64
+    (stress,) = m(SR2(torch.zeros(2, 6)))
+    assert stress.data.dtype == torch.float64
+
+    # A dtype with no compiled leaf errors clearly -- no silent fallback to the
+    # sole float64 leaf (the point of deciding device/dtype explicitly at load).
+    with pytest.raises(RuntimeError, match="no compiled artifact|Available"):
+        neml2.load_model(str(stub), "model", device="cpu", dtype="float32")
+
+
+def test_stub_artifact_bundle_is_relocatable(tmp_path: Path):
+    """The stub records a **stub-relative** ``artifact_path``, so moving the stub
+    and its artifact folder together to a new location still loads -- a portable
+    bundle with no absolute (machine-specific) path baked in. Regression for the
+    relative-path design (compile once, ship the folder, load anywhere)."""
+    import shutil
+
+    import neml2
+    from neml2.cli.aoti_compile import emit_aoti_stub
+    from neml2.cli.aoti_export import export_model_for_aoti
+    from neml2.types import SR2
+
+    orig = tmp_path / "orig"
+    orig.mkdir()
+    src = orig / "model.i"
+    src.write_text(
+        "[Models]\n"
+        "  [model]\n"
+        "    type = LinearIsotropicElasticity\n"
+        "    coefficients = '200e3 0.3'\n"
+        "    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'\n"
+        "  []\n"
+        "[]\n"
+    )
+    artifact = orig / "model"
+    export_model_for_aoti(src, "model", artifact, device="cpu")
+    stub = orig / "model_aoti.i"
+    emit_aoti_stub(src, "model", artifact, stub)
+    assert not Path(stub.read_text().split("artifact_path")[1].split("'")[1]).is_absolute()
+
+    # Move the whole bundle (stub + artifact folder) to a fresh location; the
+    # relative artifact_path resolves against the stub's new directory.
+    moved = tmp_path / "relocated"
+    shutil.move(str(orig), str(moved))
+
+    m = neml2.load_model(str(moved / "model_aoti.i"), "model", device="cpu", dtype="float64")
+    (stress,) = m(SR2(torch.zeros(2, 6)))
+    assert torch.isfinite(stress.data).all()

@@ -85,7 +85,7 @@ if TYPE_CHECKING:
 #: ``scripts/dep_manager.py`` (which keeps this literal, the C++ loader, and the
 #: docs in sync).
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 8
+AOTI_META_SCHEMA_VERSION = 9
 
 
 def _var_size(type_cls) -> int:
@@ -739,10 +739,10 @@ def _validate_promoted(model: nn.Module, promoted: set[str]) -> tuple[list[str],
     *model*.
 
     Promotion is supported everywhere a typed parameter lives -- forward leaves,
-    a single :class:`ImplicitUpdate`'s residual (schema v7), and (schema v7+)
-    inside an implicit child of a composed model, where the multi-segment
-    parameter Jacobian carrier composes ``du/dθ`` through the downstream forward
-    segments. The actual promoted-parameter plumbing is validated downstream in
+    a single :class:`ImplicitUpdate`'s residual, and inside an implicit child of
+    a composed model, where the multi-segment parameter Jacobian carrier composes
+    ``du/dθ`` through the downstream forward segments. The actual
+    promoted-parameter plumbing is validated downstream in
     :func:`_promote_parameters` (the holder must be a native Model with
     ``register_typed_parameter`` storage).
 
@@ -991,39 +991,38 @@ def _parameter_infos(
     snapshots: dict[str, torch.Tensor],
     origin: dict[str, str],
     base_shapes: dict[str, tuple[int, ...]],
-    device: str,
 ) -> list[dict]:
     """Build the metadata ``parameters`` array entries (sorted by name).
 
     ``shape`` is the stored snapshot shape (carries any batch dim); ``param_base_shape``
-    (schema v7) is the parameter's NATURAL base shape from its typed class. The C++
-    runtime uses ``param_base_shape`` to split a batched parameter ``(*pbatch, *base)``
-    into batch vs base when broadcasting it to the call batch and when reshaping
+    is the parameter's NATURAL base shape from its typed class. The C++ runtime uses
+    ``param_base_shape`` to split a batched parameter ``(*pbatch, *base)`` into batch
+    vs base when broadcasting it to the call batch and when reshaping
     parameter-derivative blocks. For an unbatched parameter the two coincide.
 
-    ``device`` is the artifact's compile-target device (e.g. ``"cuda"``), NOT the
-    snapshot's own device: the compiled graphs run on the artifact device and, since
-    a promoted parameter now enters the value graph as a per-batch ``(B, *base)``
-    buffer, the kernel dereferences it as a device pointer. The snapshot is taken from
-    the (cpu) source model, so recording its device would land the parameter on cpu and
-    feed a host pointer to a cuda kernel -- an illegal memory access. The runtime
-    materializes the inlined ``values`` directly on this device.
+    Each entry is device- AND dtype-independent so a single shared ``metadata.json``
+    backs every ``<device>/<dtype>/`` artifact. ``values`` is
+    stored dtype-neutral (float64) and the runtime materializes it on the leaf's
+    device + dtype at load. A floating parameter therefore carries NO ``dtype`` --
+    it inherits the leaf dtype (this is also why a float32 leaf gets float32
+    parameters, not the float64 snapshot's dtype). A non-floating parameter (an
+    integer / bool buffer) DOES record its ``dtype`` so it is not coerced to the
+    leaf's float type. No ``device`` is recorded -- the runtime materializes on
+    the leaf device derived from the folder path.
     """
     infos = []
     for name in sorted(snapshots):
         t = snapshots[name]
-        dtype = str(t.dtype).removeprefix("torch.")
-        infos.append(
-            {
-                "name": name,
-                "dtype": dtype,
-                "shape": list(t.shape),
-                "param_base_shape": [int(s) for s in base_shapes.get(name, tuple(t.shape))],
-                "device": device,
-                "values": t.detach().to(torch.float64).flatten().tolist(),
-                "origin": origin[name],
-            }
-        )
+        info = {
+            "name": name,
+            "shape": list(t.shape),
+            "param_base_shape": [int(s) for s in base_shapes.get(name, tuple(t.shape))],
+            "values": t.detach().to(torch.float64).flatten().tolist(),
+            "origin": origin[name],
+        }
+        if not t.is_floating_point():
+            info["dtype"] = str(t.dtype).removeprefix("torch.")
+        infos.append(info)
     return infos
 
 
@@ -1554,7 +1553,7 @@ def _build_example_inputs(
 def _report(progress_cb: Callable[[str], None] | None, name: str) -> None:
     """Fire the per-file progress callback for a just-generated artifact, if set.
 
-    *name* is the bare filename (``<basename>.pt2`` / ``<model>_meta.json`` /
+    *name* is the bare filename (``<basename>.pt2`` / ``metadata.json`` /
     ``<model>_aoti.i``) the caller just wrote. The single-argument callback is
     threaded from :func:`export_model_for_aoti` (and the CLI) so every generated
     file -- ``.pt2``, ``.json``, and ``.i`` -- is reported through one channel.
@@ -2048,8 +2047,8 @@ def _compile_implicit_segment(
     heterogeneous-ndim end-to-end; no cross-group cat or fold-to-flat
     inside the graph (except IFT's once-per-solve flat ``du/dg`` slab).
 
-    Promoted parameters living inside the implicit residual (schema v7) are
-    threaded as a positional tail through every graph. ``rhs`` / ``step`` / ``ift``
+    Promoted parameters living inside the implicit residual are threaded as a
+    positional tail through every graph. ``rhs`` / ``step`` / ``ift``
     take the stored SCALAR (constant across the solve / input-Jacobian); the C++
     runtime passes ``_gather_params(seg.param_inputs)`` for them. ``pift`` takes
     the parameter PER-BATCH (the reverse pass must be per batch element); the C++
@@ -2246,13 +2245,31 @@ def _compile_implicit_segment(
     given_infos = [_var_info(system.glayout, n) for n in system.given_names]
     residual_infos = [_var_info(system.blayout, n) for n in system.residual_names]
 
+    # Substep role classification: the single source of truth for how the
+    # host-side substep driver treats each given -- interpolate a paired force,
+    # chain an old-state, scale a listed increment, or hold. Computed here
+    # (Python) and serialized into the artifact metadata; consumed by the C++
+    # runtime. Uses the live residual input set for pair detection so it is
+    # robust to parameter promotion.
+    from ..es._helpers import classify_substep_roles  # noqa: PLC0415
+
+    substep_roles = classify_substep_roles(
+        list(system.model.input_spec),
+        system.unknown_names,
+        inner.incremental_variables,
+    )
+    for gi in given_infos:
+        role_info = substep_roles.get(gi["name"])
+        gi["role"] = role_info.role.value if role_info is not None else "static"
+        gi["pair"] = role_info.pair if role_info is not None else None
+
     group_meta = _enumerate_group_infos(system)
 
     # NB: solver convergence / line-search configuration (atol / rtol / miters /
-    # linesearch) is NOT baked here (schema v4). The generated stub `.i` carries
-    # a [Solvers] block and the AOTIModel shim forwards it to the C++ runtime at
-    # load time. Only the linear solver is baked -- it lives inside the compiled
-    # step/ift graphs above.
+    # linesearch) is NOT baked per-segment. It rides in the shared metadata.json
+    # (written by _build_meta) and is applied by the C++ runtime at load time.
+    # Only the linear solver is baked -- it lives inside the compiled step/ift
+    # graphs above.
     seg: dict = {
         "rhs_package": rhs_name,
         "step_package": step_name,
@@ -2266,10 +2283,16 @@ def _compile_implicit_segment(
         "residual_group_infos": group_meta["residual_group_infos"],
         # Promoted parameters threaded into this segment's graphs as the trailing
         # positional tail (graph-call order). Empty in the common fully-baked
-        # case; non-empty (schema v7) when a parameter inside the residual was
-        # promoted. The C++ runtime passes the stored scalars to rhs/step/ift and
-        # broadcasts them per-batch for the param-IFT graph.
+        # case; non-empty when a parameter inside the residual was promoted. The
+        # C++ runtime passes the stored scalars to rhs/step/ift and broadcasts
+        # them per-batch for the param-IFT graph.
         "param_inputs": list(seg_param_inputs),
+        # Substepping: 0 = off (single shot). >0 = adaptive bisection depth
+        # cap; the host-side driver interpolates/chains/scales the givens per
+        # their `role` (attached above) across sub-steps. Carried per segment
+        # so the C++ runtime needs no separate config.
+        "max_substepping_level": int(inner.max_substepping_level),
+        "incremental_variables": list(inner.incremental_variables),
     }
     if emit_ift:
         seg["ift_package"] = ift_name
@@ -2973,10 +2996,9 @@ class _ExportPlan:
     generate, without compiling.
 
     ``artifacts`` is the flat, ordered list of every generated filename for the
-    device -- the ``.pt2`` graphs of each segment followed by the
-    ``<model>_meta.json``. ``.total`` is the count the CLI uses for the ``[k/N]``
-    progress denominator (the standalone ``<model>_aoti.i`` stub is a CLI-level
-    concern added on top).
+    device -- the ``.pt2`` graphs of each segment followed by ``metadata.json``.
+    ``.total`` is the count the CLI uses for the ``[k/N]`` progress denominator
+    (the standalone ``<model>_aoti.i`` stub is a CLI-level concern added on top).
     """
 
     artifacts: list[str]
@@ -3004,7 +3026,7 @@ def plan_export_artifacts(
 
     Runs the same prelude + segment planning :func:`export_model_for_aoti` uses,
     then returns the ordered list of every generated filename for *device* (each
-    segment's ``.pt2`` graphs, then ``<model_name>_meta.json``). No
+    segment's ``.pt2`` graphs, then ``metadata.json``). No
     ``compile_model`` is called, so this is cheap (one model load + structural
     analysis). Primarily drives the ``[k/N]`` progress denominator; also useful
     for programmatic inspection of a model's segment structure. The artifact set
@@ -3027,7 +3049,7 @@ def plan_export_artifacts(
     artifacts: list[str] = []
     for plan in plans:
         artifacts.extend(plan.predicted_artifacts)
-    artifacts.append(f"{model_name}_meta.json")
+    artifacts.append("metadata.json")
     return _ExportPlan(artifacts=artifacts, segments=plans)
 
 
@@ -3081,7 +3103,7 @@ def _compile_segments_parallel(
     Each segment is compiled by a worker that re-derives it from *hit_path* +
     *export_opts* (workers can't receive live modules). Segment metadata is
     reassembled in SEGMENT ORDER regardless of completion order, so the resulting
-    ``_meta.json`` is identical to a serial (``jobs=1``) run. Per-``.pt2``
+    ``metadata.json`` is identical to a serial (``jobs=1``) run. Per-``.pt2``
     progress from workers is forwarded to *progress_cb* by a drainer thread.
 
     The worker pool is sized at ``min(jobs, len(plans))`` -- there is one task per
@@ -3156,22 +3178,39 @@ def _compile_segments_parallel(
     return [results[i] for i in range(n)]
 
 
-def _finalize_device_meta(
-    prepared: _PreparedExport,
-    model_name: str,
-    device: str,
-    dtype: str,
-    seg_metas: list[dict],
-    output_dir: Path,
-    progress_cb: Callable[[str], None] | None = None,
-) -> dict:
-    """Assemble one device's top-level metadata envelope, write it, and report it.
+def _extract_solver_config(model) -> dict | None:
+    """The runtime solver config to record in the shared metadata.
 
-    The envelope is device-independent except for the recorded ``device`` (the
-    top-level field and each promoted parameter's ``device``), so a single
-    cpu-side *prepared* can finalize every device -- which is what lets the
-    multi-device grid path (:func:`export_model_multidevice`) prepare once on cpu
-    and still emit per-device metadata identical to a per-device compile.
+    Returns the primary ``ImplicitUpdate``'s ``solver._solver_config()`` (the same
+    atol/rtol/miters/line-search dict the eager path forwards to the C++ Newton) so
+    the Python-free C++ runtime is configured straight from the artifact -- no stub
+    ``[Solvers]`` parse. ``verbose`` is deliberately absent: it is a diagnostic
+    controlled by ``NEML2_AOTI_TRACE_*`` env vars, not config. ``None`` for a
+    forward-only model. If several implicit segments carry different configs the
+    first (module order) wins -- the runtime applies a single config, mirroring the
+    historical one-``[Solvers]`` stub behavior.
+    """
+    from ..models.common import ImplicitUpdate  # noqa: PLC0415
+
+    for m in model.modules():
+        if isinstance(m, ImplicitUpdate):
+            return m.solver._solver_config()
+    return None
+
+
+def _build_meta(
+    prepared: _PreparedExport,
+    seg_metas: list[dict],
+) -> dict:
+    """Assemble the shared, device/dtype-independent ``metadata.json`` envelope.
+
+    One metadata file backs every ``<device>/<dtype>/`` artifact, so no
+    device/dtype (nor per-parameter device) is recorded -- the loader derives them
+    from the folder path. Promoted-parameter ``values`` are stored dtype-neutral
+    (float64) and materialized on the leaf at load. Solver config (implicit models)
+    rides along so the C++ runtime is configured without a stub ``[Solvers]`` block.
+    The envelope is fully device-independent, so the multi-device path can build it
+    once from a single cpu-side *prepared*.
     """
     model = prepared.model
     structural_in = _structural_inputs(model.input_spec, prepared.promoted_qnames)
@@ -3183,12 +3222,8 @@ def _finalize_device_meta(
         "outputs": _var_infos(model.output_spec),
         "segments": seg_metas,
     }
-    # v2 top-level additions: device + dtype are baked into the artifact;
-    # parameters records the promoted set with initial values.
-    meta["device"] = device
-    meta["dtype"] = dtype
     meta["parameters"] = _parameter_infos(
-        prepared.promoted_snapshots, prepared.origin, prepared.promoted_base_shapes, device
+        prepared.promoted_snapshots, prepared.origin, prepared.promoted_base_shapes
     )
     # Master (out, in) derivative pairs, in deterministic (output, input) order.
     out_order = {n: k for k, n in enumerate(model.output_spec)}
@@ -3208,10 +3243,11 @@ def _finalize_device_meta(
     active_aliases = {ns: m for ns, m in prepared.boundary_aliases.items() if m}
     if active_aliases:
         meta["boundary_aliases"] = active_aliases
-
-    meta_name = f"{model_name}_meta.json"
-    _write_meta(output_dir / meta_name, meta)
-    _report(progress_cb, meta_name)
+    # Solver config (implicit models only) -- single source of truth for the
+    # Python-free C++ runtime. See _extract_solver_config.
+    solver_config = _extract_solver_config(model)
+    if solver_config is not None:
+        meta["solver_config"] = solver_config
     return meta
 
 
@@ -3238,6 +3274,7 @@ def _run_grid_pool(
     model_name: str,
     artifact_dir: Path,
     devices: list[str],
+    dtype: str,
     n_segments: int,
     export_opts: dict,
     jobs: int,
@@ -3288,7 +3325,7 @@ def _run_grid_pool(
         ) as ex:
             futs = {}
             for device, i in tasks:
-                out_s = str(Path(artifact_dir) / device)
+                out_s = str(Path(artifact_dir) / device / dtype)
                 futs[
                     ex.submit(
                         _compile_grid_worker,
@@ -3415,11 +3452,11 @@ def export_model_for_aoti(
         ``> 1`` compiles independent segments concurrently in a spawn process
         pool -- effective only for a multi-segment model (a ``ComposedModel``
         containing an ``ImplicitUpdate``); single-segment models ignore it. The
-        resulting ``_meta.json`` is identical to a serial run (segment metadata
+        resulting ``metadata.json`` is identical to a serial run (segment metadata
         is reassembled in segment order regardless of completion order).
     progress_cb:
         Optional callback invoked with the bare filename of each generated file
-        as it is written -- every ``.pt2`` graph and the ``<model>_meta.json``.
+        as it is written -- every ``.pt2`` graph and ``metadata.json``.
         The CLI passes a printer that renders ``[k/N] <name>`` progress. ``None``
         (default) is silent. Under ``jobs > 1`` the callback still fires per
         ``.pt2`` (forwarded from workers), then once for the metadata.
@@ -3430,7 +3467,11 @@ def export_model_for_aoti(
         The metadata dictionary (same content as the written JSON).
     """
     output_dir = Path(output_dir).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Schema v10 layout: binaries in the per-<device>/<dtype>/ leaf, one shared
+    # metadata.json at the artifact root (output_dir). leaf.mkdir(parents=True)
+    # also creates the root, so the meta write below has a directory.
+    leaf = output_dir / device / dtype
+    leaf.mkdir(parents=True, exist_ok=True)
 
     # Run the full pre-compile prelude (load, wrap, promote, resolve derivatives /
     # renames, freeze, seed) once. Deterministic in (input, options, device) so a
@@ -3468,17 +3509,18 @@ def export_model_for_aoti(
             "additional_args": tuple(additional_args),
         }
         seg_metas = _compile_segments_parallel(
-            hit_path, model_name, output_dir, device, export_opts, plans, jobs, progress_cb
+            hit_path, model_name, leaf, device, export_opts, plans, jobs, progress_cb
         )
     else:
         seg_metas = [
-            _execute_segment_plan(plan, prepared, output_dir, device, progress_cb=progress_cb)
+            _execute_segment_plan(plan, prepared, leaf, device, progress_cb=progress_cb)
             for plan in plans
         ]
 
-    return _finalize_device_meta(
-        prepared, model_name, device, dtype, seg_metas, output_dir, progress_cb=progress_cb
-    )
+    meta = _build_meta(prepared, seg_metas)
+    _write_meta(output_dir / "metadata.json", meta)
+    _report(progress_cb, "metadata.json")
+    return meta
 
 
 def export_model_multidevice(
@@ -3497,23 +3539,23 @@ def export_model_multidevice(
     additional_args: tuple[str, ...] = (),
     jobs: int = 1,
     progress_cb: Callable[[str], None] | None = None,
-) -> dict[str, dict]:
+) -> dict:
     """Compile *model_name* for every device in *devices*, parallelizing across
     the full ``(device × segment)`` grid.
 
-    Each device's artifacts land in ``artifact_dir/<device>/`` with its own
-    ``<model_name>_meta.json``; returns ``{device: meta}``. This is the CLI's
-    multi-device entry point: unlike calling :func:`export_model_for_aoti` once
-    per device (which parallelizes only that device's segments and runs devices
-    sequentially), *jobs* here bounds the workers across ALL ``(device, segment)``
-    pairs at once -- so e.g. two devices with two segments each saturate ``-j 4``,
-    and the devices compile concurrently.
+    Each device's binaries land in ``artifact_dir/<device>/<dtype>/``; a single
+    shared, device/dtype-independent ``artifact_dir/metadata.json`` backs them all.
+    Returns that one ``meta`` dict. This is the CLI's multi-device
+    entry point: unlike calling :func:`export_model_for_aoti` once per device
+    (which parallelizes only that device's segments and runs devices sequentially),
+    *jobs* here bounds the workers across ALL ``(device, segment)`` pairs at once --
+    so e.g. two devices with two segments each saturate ``-j 4``, and the devices
+    compile concurrently.
 
     *progress_cb* is invoked with a device-tagged ``"<device>/<filename>"`` for
-    every generated ``.pt2`` and ``_meta.json`` (so the same segment on different
-    devices is distinguishable). ``jobs`` is capped at the number of grid cells.
-    Single-device / ``jobs=1`` runs are behavior-identical to a per-device
-    :func:`export_model_for_aoti`.
+    every generated ``.pt2``, then once (untagged) for ``metadata.json``. ``jobs``
+    is capped at the number of grid cells. Single-device / ``jobs=1`` runs are
+    behavior-identical to a per-device :func:`export_model_for_aoti`.
     """
     artifact_dir = Path(artifact_dir).resolve()
     devices = list(dict.fromkeys(devices))  # de-dupe, preserve order
@@ -3544,9 +3586,9 @@ def export_model_multidevice(
     plans = _plan_segments(prepared_cpu, model_name)
     n = len(plans)
     for device in devices:
-        (artifact_dir / device).mkdir(parents=True, exist_ok=True)
+        (artifact_dir / device / dtype).mkdir(parents=True, exist_ok=True)
 
-    metas: dict[str, dict] = {}
+    seg_by_dev: dict[str, list[dict]] = {}
     if jobs > 1 and len(devices) * n > 1:
         # Grid pool: workers re-derive each (device, segment) from picklable opts.
         export_opts = {
@@ -3559,41 +3601,27 @@ def export_model_multidevice(
             "additional_args": tuple(additional_args),
         }
         seg_by_dev = _run_grid_pool(
-            hit_path, model_name, artifact_dir, devices, n, export_opts, jobs, progress_cb
+            hit_path, model_name, artifact_dir, devices, dtype, n, export_opts, jobs, progress_cb
         )
-        # The cpu-side prepared finalizes every device (envelope is device-
-        # independent apart from the recorded device fields).
-        for device in devices:
-            metas[device] = _finalize_device_meta(
-                prepared_cpu,
-                model_name,
-                device,
-                dtype,
-                seg_by_dev[device],
-                artifact_dir / device,
-                progress_cb=_dev_cb(device),
-            )
     else:
         # Serial: prepare per device (device-correct) and compile in order --
         # behavior-identical to a per-device export_model_for_aoti.
         for device in devices:
-            dev_dir = artifact_dir / device
+            leaf = artifact_dir / device / dtype
             prepared_d = _prepare_on(device)
             plans_d = _plan_segments(prepared_d, model_name)
-            seg_metas = [
-                _execute_segment_plan(p, prepared_d, dev_dir, device, progress_cb=_dev_cb(device))
+            seg_by_dev[device] = [
+                _execute_segment_plan(p, prepared_d, leaf, device, progress_cb=_dev_cb(device))
                 for p in plans_d
             ]
-            metas[device] = _finalize_device_meta(
-                prepared_d,
-                model_name,
-                device,
-                dtype,
-                seg_metas,
-                dev_dir,
-                progress_cb=_dev_cb(device),
-            )
-    return metas
+
+    # One shared, device/dtype-independent metadata.json at the artifact root. The
+    # segment metadata (bare .pt2 basenames) is identical across devices, so any
+    # device's list backs the shared envelope; build it from the cpu-side prepared.
+    meta = _build_meta(prepared_cpu, seg_by_dev[devices[0]])
+    _write_meta(artifact_dir / "metadata.json", meta)
+    _report(progress_cb, "metadata.json")
+    return meta
 
 
 __all__ = [

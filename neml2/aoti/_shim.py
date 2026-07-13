@@ -55,7 +55,7 @@ from torch import nn
 
 from .. import types as _types
 from ..factory import register_neml2_object
-from ..schema import HitSchema, dependency, option
+from ..schema import HitSchema, option
 from ..types import TensorWrapper
 from ..types._boundary import broadcast_to_common_batch, check_tensor
 from ._aoti import Model as _BoundModel
@@ -71,11 +71,14 @@ class AOTIModel(nn.Module):
     """HIT-loadable wrapper around :class:`neml2.aoti.Model`.
 
     Constructed from a HIT ``[Models]`` block with an ``artifact_path`` option
-    pointing at the per-device artifact folder produced by ``neml2-compile``
-    (the folder holding one ``<device>/`` subfolder per compiled device). The
-    subfolder for the current ``torch.get_default_device()`` is loaded -- so
-    ``neml2-run --device cuda`` (which sets the default device) picks ``cuda/``.
-    Eager and single-device: no dispatch happens here.
+    pointing at the artifact root folder produced by ``neml2-compile`` (the
+    folder holding one shared ``metadata.json`` and per-``<device>/<dtype>/``
+    ``.pt2`` binaries). The ``<device>/<dtype>/`` leaf is a load-time choice:
+    ``load_model(..., device=, dtype=)`` (or ``neml2-run --device/--dtype``)
+    selects it, defaulting to NEML2's canonical ``cpu`` / ``float64`` (matching
+    ``neml2-compile``) rather than torch's ambient defaults -- so a stock artifact
+    loads without the caller having to match torch's float32 default. Eager and
+    single-device: no dispatch happens here.
 
     Plays the native-Model role: ``input_spec`` and ``output_spec`` are
     populated from the metadata's ``var_type`` fields; ``__call__`` takes
@@ -99,67 +102,72 @@ class AOTIModel(nn.Module):
         option(
             "artifact_path",
             str,
-            "Absolute path to the per-device artifact folder produced by "
-            "``neml2-compile`` (contains one ``<device>/`` subfolder per compiled "
-            "device). The subfolder matching ``torch.get_default_device()`` is loaded.",
-        ),
-        dependency(
-            "solver",
-            "get_solver",
-            "Solver whose convergence / line-search settings configure the implicit "
-            "Newton solve. Schema v4+ no longer bakes these into the artifact; the "
-            "stub ``.i`` carries the ``[Solvers]`` block and it is forwarded to the "
-            "C++ runtime at load. Defaults apply for forward-only models.",
-            default=None,
+            "Path to the artifact folder produced by ``neml2-compile`` -- one "
+            "shared ``metadata.json`` plus ``<device>/<dtype>/`` ``.pt2`` "
+            "binaries. Written by ``neml2-compile`` relative to the stub (so the "
+            "stub + folder relocate together); resolved against the stub's "
+            "directory, and an absolute path is also accepted. The stub is "
+            "device/dtype-agnostic (only ``artifact_path``); "
+            "the ``<device>/<dtype>/`` leaf is chosen at load time via "
+            "``load_model(..., device=, dtype=)``, defaulting to ``cpu`` / "
+            "``float64`` (matching ``neml2-compile``). Solver config is read from "
+            "the shared metadata, so no ``[Solvers]`` block is needed.",
         ),
     )
 
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> AOTIModel:
         artifact_str = node.param_str("artifact_path")
-        # Absolute per `neml2-compile`; tolerate a relative path by resolving it
-        # against the input file's directory.
+        # `neml2-compile` writes a path relative to the stub, so resolve a relative
+        # value against the stub's own directory (which keeps the stub + artifact
+        # folder a portable bundle). An absolute path is also honored as-is.
         artifact_path = Path(artifact_str)
         if not artifact_path.is_absolute():
             artifact_path = factory._path.parent / artifact_path
         artifact_path = artifact_path.resolve()
+        # The folder is self-describing (shared metadata.json + solver config), so
+        # no [Solvers] handling is needed here -- the C++ ctor reads the config
+        # from the metadata. device + dtype select the <device>/<dtype>/ binary
+        # leaf; a missing leaf raises a clear error (listing what IS present) from
+        # the C++ ctor. They are a LOAD-TIME decision (an AOTI artifact is
+        # device/dtype-pinned, unlike a native model you can .to() afterward),
+        # threaded from load_model / load_input's device=/dtype= args; None => the
+        # NEML2-canonical cpu/float64 leaf (matching `neml2-compile`'s defaults).
+        # The stub stays device/dtype-agnostic (only artifact_path) -- which is why
+        # it lives in the common area while the binaries live in <device>/<dtype>/
+        # subfolders.
+        return cls(
+            artifact_path,
+            device=getattr(factory, "_device", None),
+            dtype=getattr(factory, "_dtype", None),
+        )
 
-        # Load the subfolder for the current default device (cpu / cuda).
-        device = torch.get_default_device()
-        device_dir = artifact_path / device.type
-        metas = sorted(device_dir.glob("*_meta.json")) if device_dir.is_dir() else []
-        if not metas:
-            raise FileNotFoundError(
-                f"AOTIModel({node.path()!r}): no artifact compiled for device "
-                f"{device.type!r} under {artifact_path} (looked in {device_dir}). "
-                f"Recompile with `neml2-compile --device {device.type}` or change the "
-                f"default device."
-            )
-        if len(metas) > 1:
-            raise RuntimeError(
-                f"AOTIModel({node.path()!r}): multiple '*_meta.json' files in "
-                f"{device_dir}; expected exactly one compiled model."
-            )
-
-        model = cls(metas[0])
-        solver_name = node.param_optional_str("solver", "")
-        if solver_name:
-            model._apply_solver_config(factory.get_solver(solver_name))
-        return model
-
-    def _apply_solver_config(self, solver) -> None:
-        """Forward a Python solver's config to the C++ runtime.
-
-        Reuses the solver wrapper's own ``_solver_config()`` -- the exact dict
-        the eager path passes to ``newton_solve_eager`` -- so the compiled and
-        eager solves are configured from a single source of truth.
-        """
-        self._inner.set_solver_config(**solver._solver_config())
-
-    def __init__(self, meta_path: str | Path) -> None:
+    def __init__(
+        self,
+        artifact_root: str | Path,
+        device: str | None = None,
+        dtype: str | None = None,
+    ) -> None:
         super().__init__()
-        meta_path = Path(meta_path)
-        self._inner = _BoundModel(str(meta_path))
+        artifact_root = Path(artifact_root)
+        # device / dtype select the <device>/<dtype>/ binary leaf. They default to
+        # NEML2's canonical target -- cpu, float64 -- NOT the ambient torch default:
+        # an AOTI artifact is device/dtype-pinned (float64-first; `neml2-compile`
+        # likewise defaults to cpu/float64), and torch's ambient dtype is float32,
+        # which would never match a stock artifact. Callers pin a different leaf
+        # explicitly (e.g. `dtype="float32"`, or a concrete `device="cuda:1"`).
+        if device is None:
+            device = "cpu"
+        if dtype is None:
+            dtype = "float64"
+        meta_path = artifact_root / "metadata.json"
+        if not meta_path.is_file():
+            raise FileNotFoundError(
+                f"AOTIModel: no metadata.json in {artifact_root}. Is this a "
+                f"`neml2-compile` output folder (metadata.json + <device>/<dtype>/ "
+                f"binaries)?"
+            )
+        self._inner = _BoundModel(str(artifact_root), device, dtype)
         # Pull typed-wrapper class info from the metadata. The binding's
         # `input_names`/`input_sizes` give names + flat sizes; for the
         # native-driver surface we additionally need the TensorWrapper class

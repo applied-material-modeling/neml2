@@ -54,6 +54,12 @@ struct NewtonResult
 {
   std::vector<at::Tensor> u;
   bool converged = false;
+  /// Per-dynamic-batch-element convergence mask (bool, dynamic-batch shape).
+  /// Populated by ``solve_masked`` (the masking path); left undefined by the
+  /// throwing ``solve`` (where a returned result is converged for every element
+  /// by construction). ``true`` where ``||b|| < atol`` or ``||b||/||b0|| < rtol``
+  /// -- a non-finite element is ``false`` (never converged).
+  at::Tensor converged_mask;
   std::size_t iterations = 0;
   /// Per-iteration convergence log lines (populated only when
   /// ``SolverConfig::collect_log`` is set). Each entry is a preformatted
@@ -81,6 +87,16 @@ public:
   /// ``NEML2_AOTI_TRACE_NEWTON=1`` (or ``2`` for per-iteration detail) to trace
   /// to stderr.
   NewtonResult solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) const;
+
+  /// Masking variant: run to ``miters`` (or until every element is converged or
+  /// non-finite) and return the **per-element** convergence mask in
+  /// ``NewtonResult::converged_mask`` WITHOUT throwing. Converged rows carry
+  /// their solution; unconverged / non-finite rows carry a best-effort iterate
+  /// the caller discards. This is the primitive the substepping driver uses to
+  /// freeze converged elements and bisect only the failing subset. Elements are
+  /// decoupled along the dynamic batch, so a non-finite row never pollutes the
+  /// others.
+  NewtonResult solve_masked(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) const;
 
 private:
   SolverConfig _cfg;

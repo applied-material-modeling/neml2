@@ -66,11 +66,11 @@ namespace neml2::aoti
  * methods are non-virtual by design): substitute it for `Model` at the source
  * level. The scheduler is held by composition so the policy stays swappable.
  *
- * Artifact layout. `artifact_root` is the directory `neml2-compile --device
- * <...>` writes, holding one subfolder per device type (`cpu/`, `cuda/`), each
- * with a complete `*_meta.json` + `.pt2` segments. One `Model` is loaded per
- * `scheduler->devices()` entry from the matching subfolder, pinned to that
- * device's concrete index.
+ * Artifact layout. `artifact_root` is the directory `neml2-compile` writes: one
+ * shared `metadata.json` at the root plus per-`<device>/<dtype>/` `.pt2` binaries
+ * One `Model` is loaded per `scheduler->devices()` entry from the
+ * `<device-type>/<dtype>/` leaf, pinned to that device's concrete index; the
+ * shared metadata (structural + solver config) backs them all.
  *
  * Multi-device semantics. `input_names()` / `output_names()` / `*_sizes()` /
  * `dtype()` are identical across the per-device copies and forward to the
@@ -83,10 +83,12 @@ class AOTI_EXPORT DispatchedModel
 {
 public:
   /// Load one per-device artifact under `artifact_root` for each
-  /// `scheduler->devices()` entry, and dispatch through `scheduler`. Throws if a
-  /// device's subfolder or its metadata is missing.
+  /// `scheduler->devices()` entry (from the `<device>/<dtype>/` leaf), and
+  /// dispatch through `scheduler`. Throws if a device's `<device>/<dtype>/` leaf
+  /// or the shared `metadata.json` is missing.
   DispatchedModel(const std::filesystem::path & artifact_root,
-                  std::shared_ptr<WorkScheduler> scheduler);
+                  std::shared_ptr<WorkScheduler> scheduler,
+                  at::ScalarType dtype = at::kDouble);
 
   /// Wrap an already-loaded `Model`. The scheduler's device *type* must match
   /// the model's compiled device type. Convenience for callers that hold a

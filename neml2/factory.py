@@ -118,13 +118,29 @@ class _NativeInputFile:
     routing through the C++ Python bindings.
     """
 
-    def __init__(self, root: nmhit.Root, path: Path) -> None:
+    def __init__(
+        self,
+        root: nmhit.Root,
+        path: Path,
+        *,
+        device: str | None = None,
+        dtype: str | None = None,
+    ) -> None:
         self._root = root
         self._path = path
         # (section_plural, name) → built object
         self._cache: dict[tuple[str, str], Any] = {}
         # names currently being evaluated — used to detect circular cross-references
         self._evaluating: set[str] = set()
+        # Load-time device/dtype for compiled (AOTI) models: these select the
+        # ``<device>/<dtype>/`` artifact leaf, a decision that must be made at
+        # load time because an AOTI artifact is device/dtype-pinned (unlike a
+        # native model, which materializes at the ambient default and can be
+        # moved later with ``.to(...)``). ``None`` => ``AOTIModel`` falls back to
+        # NEML2's canonical cpu/float64 (matching ``neml2-compile``), NOT torch's
+        # ambient defaults. Non-compiled models ignore these entirely.
+        self._device = device
+        self._dtype = dtype
 
     # ── section lookup ────────────────────────────────────────────────────────
 
@@ -414,12 +430,29 @@ def _eval_tensor_code(code: str, name: str, ns: dict) -> Any:
 # ── public entry points ────────────────────────────────────────────────────────
 
 
+def _normalize_load_target(device: Any, dtype: Any) -> tuple[str | None, str | None]:
+    """Normalize load-time ``device`` / ``dtype`` to the string form the
+    ``AOTIModel`` shim and the C++ ctor accept.
+
+    Accepts a ``torch.device`` / ``torch.dtype``, their string spellings
+    (``"cuda:1"`` / ``"float64"``), or ``None`` (=> the AOTIModel shim's canonical
+    cpu/float64 default, resolved downstream). ``str()`` handles both torch objects
+    and plain strings, so no torch import is needed here; the ``torch.`` prefix on
+    a dtype's ``str()`` (``"torch.float64"``) is stripped.
+    """
+    dev = None if device is None else str(device)
+    dt = None if dtype is None else str(dtype).removeprefix("torch.")
+    return dev, dt
+
+
 def load_input(
     path: str | Path,
     *,
     pre: Sequence[str] = (),
     post: Sequence[str] = (),
     additional_args: Sequence[str] = (),
+    device: Any = None,
+    dtype: Any = None,
 ) -> _NativeInputFile:
     """Parse a HIT input file and return a lazy native factory.
 
@@ -436,11 +469,21 @@ def load_input(
         appended after ``post`` so any ``:=`` override takes effect after
         the file's own assignments. Mirrors the C++ side's
         ``neml2::load_input(path, additional_cliargs)``.
+    device, dtype:
+        Load-time device/dtype for any **compiled** (``AOTIModel``) block in
+        the file -- they select the ``<device>/<dtype>/`` artifact leaf. Accept
+        a ``torch.device`` / ``torch.dtype`` or their string spellings;
+        ``None`` (default) selects NEML2's canonical ``cpu`` / ``float64``
+        (matching ``neml2-compile``), NOT torch's ambient defaults. This is a
+        load-time decision because an AOTI artifact is device/dtype-pinned; a
+        non-compiled model ignores these and is placed with ``.to(...)`` after
+        loading. The compiled stub itself stays device/dtype-agnostic.
     """
     p = Path(path)
     full_post = (*post, *additional_args)
+    dev, dt = _normalize_load_target(device, dtype)
     root = nmhit.parse_file(p, list(pre), list(full_post))
-    return _NativeInputFile(root, p)
+    return _NativeInputFile(root, p, device=dev, dtype=dt)
 
 
 def load_string(
@@ -449,20 +492,30 @@ def load_string(
     pre: Sequence[str] = (),
     post: Sequence[str] = (),
     additional_args: Sequence[str] = (),
+    device: Any = None,
+    dtype: Any = None,
 ) -> _NativeInputFile:
     """Parse an in-memory HIT snippet and return a lazy native factory.
 
-    Same semantics as :func:`load_input` but reads from a string (via
-    ``nmhit.parse_text``) instead of a file. Used by
+    Same semantics as :func:`load_input` (including the ``device`` / ``dtype``
+    load-time selection for compiled ``AOTIModel`` blocks) but reads from a
+    string (via ``nmhit.parse_text``) instead of a file. Used by
     :meth:`neml2.drivers.ModelUnitTest.from_string` so a unit test can
     embed its ``[Models]`` / ``[Tensors]`` / ``[Drivers]`` blocks inline.
     """
     full_post = (*post, *additional_args)
+    dev, dt = _normalize_load_target(device, dtype)
     root = nmhit.parse_text(text, list(pre), list(full_post))
-    return _NativeInputFile(root, Path("<string>"))
+    return _NativeInputFile(root, Path("<string>"), device=dev, dtype=dt)
 
 
-def load_model(path: str | Path, model_name: str) -> Any:
+def load_model(
+    path: str | Path,
+    model_name: str,
+    *,
+    device: Any = None,
+    dtype: Any = None,
+) -> Any:
     """Load a named model from a HIT input file as a Python-native model.
 
     Raises ``KeyError`` if the model's type (or any of its sub-object types)
@@ -474,8 +527,14 @@ def load_model(path: str | Path, model_name: str) -> Any:
         Path to the HIT ``.i`` file.
     model_name:
         Name of the model in the ``[Models]`` section.
+    device, dtype:
+        Load-time device/dtype for a **compiled** model (an ``AOTIModel`` stub):
+        they select the ``<device>/<dtype>/`` artifact leaf and default to NEML2's
+        canonical ``cpu`` / ``float64`` (matching ``neml2-compile``). Ignored for a
+        non-compiled model (place it with ``.to(...)`` afterward). See
+        :func:`load_input`.
     """
-    return load_input(path).get_model(model_name)
+    return load_input(path, device=device, dtype=dtype).get_model(model_name)
 
 
 def load_nonlinear_system(path: str | Path, name: str) -> Any:

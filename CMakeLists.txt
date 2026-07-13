@@ -309,6 +309,7 @@ add_library(aoti SHARED
       neml2/csrc/aoti/Model.cpp
       neml2/csrc/aoti/ops.cpp
       neml2/csrc/aoti/solve.cpp
+      neml2/csrc/aoti/substep.cpp
       neml2/csrc/aoti/jacobian.cpp
       neml2/csrc/aoti/newton.cpp
       neml2/csrc/aoti/nonlinear_system_aoti.cpp

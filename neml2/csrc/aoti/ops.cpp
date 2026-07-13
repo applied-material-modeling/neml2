@@ -159,7 +159,7 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
 
   // Call batch from the first structural input (its base stripped). Forward
   // segments broadcast each promoted parameter to this batch before the call,
-  // since the value graphs take parameters as per-batch inputs (schema v7).
+  // since the value graphs take parameters as per-batch inputs.
   const std::vector<int64_t> batch =
       _input_names.empty() ? std::vector<int64_t>{} : _batch_shape_of(0, state.at(_input_names[0]));
 
@@ -173,7 +173,15 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
     {
       std::vector<at::Tensor> u_solved_groups;
       std::vector<at::Tensor> g_groups;
-      _run_implicit_segment(seg, state, u_solved_groups, g_groups);
+      if (seg.max_substepping_level > 0)
+      {
+        if (_masking_ok(seg, state))
+          _run_implicit_segment_substepped_masked(seg, state);
+        else
+          _run_implicit_segment_substepped(seg, state, u_solved_groups, g_groups);
+      }
+      else
+        _run_implicit_segment(seg, state, u_solved_groups, g_groups);
     }
   }
 
@@ -236,11 +244,24 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
         }
       }
     }
+    else if (seg.max_substepping_level > 0 && seg.ift_loader)
+    {
+      // Substepped solve + chained consistent-tangent accumulation in one
+      // bisection recursion (state + dstate advanced together). Masked when the
+      // dynamic batch is 1-D so only the still-unconverged rows are re-solved.
+      if (_masking_ok(seg, state))
+        _run_implicit_segment_substepped_masked_jacobian(seg, state, dstate);
+      else
+        _run_implicit_segment_substepped_jacobian(seg, state, dstate);
+    }
     else
     {
       std::vector<at::Tensor> u_solved_groups;
       std::vector<at::Tensor> g_groups;
-      _run_implicit_segment(seg, state, u_solved_groups, g_groups);
+      if (seg.max_substepping_level > 0)
+        _run_implicit_segment_substepped(seg, state, u_solved_groups, g_groups);
+      else
+        _run_implicit_segment(seg, state, u_solved_groups, g_groups);
       if (seg.ift_loader)
         _run_implicit_segment_jacobian(seg, u_solved_groups, g_groups, dstate);
       else

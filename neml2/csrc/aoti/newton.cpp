@@ -156,6 +156,113 @@ alpha_for_group(const at::Tensor & alpha, const GroupLayout & g)
     out = out.unsqueeze(-1);
   return out;
 }
+
+// One Newton iteration: from the current iterate `u` and its residual `b_outs`,
+// compute the step, run the optional line search, commit `u` / `b_outs`, and
+// return the new per-element residual norm (dynamic-batch shape). Shared by
+// solve() and solve_masked() so the two differ only in stop/return handling.
+// `log` non-null collects the convergence lines; `verbose` also echoes them.
+at::Tensor
+newton_iterate(const SolverConfig & cfg,
+               const NonlinearSystem & sys,
+               const std::vector<GroupLayout> & unknown_layout,
+               const std::vector<GroupLayout> & residual_layout,
+               std::vector<at::Tensor> & u,
+               std::vector<at::Tensor> & b_outs,
+               const at::Tensor & b0_norm,
+               std::size_t i,
+               bool verbose,
+               std::vector<std::string> * log,
+               const at::Tensor & frozen = {})
+{
+  auto step_result = sys.step(u);
+  std::vector<at::Tensor> & du = step_result.first;
+  _assert(du.size() == unknown_layout.size(),
+          "Newton: step() returned ",
+          du.size(),
+          " du tensors, expected one per unknown group (",
+          unknown_layout.size(),
+          ")");
+
+  // Masking freeze: zero the step for rows already converged in a prior
+  // iteration so an unrelated still-iterating row cannot perturb them. This
+  // keeps a converged element bit-identical to solving it alone (elements are
+  // decoupled along the dynamic batch). `frozen` is (*B,) bool; undefined = none.
+  if (frozen.defined())
+    for (std::size_t k = 0; k < du.size(); ++k)
+      du[k] = at::where(alpha_for_group(frozen, unknown_layout[k]), at::zeros_like(du[k]), du[k]);
+
+  auto alpha = at::ones_like(b0_norm);
+  const auto b_dot_du = pergroup_dot(b_outs, du, unknown_layout);
+  const auto nb_curr_sq = pergroup_norm_sq(b_outs, residual_layout);
+
+  std::vector<at::Tensor> u_trial(unknown_layout.size());
+  std::vector<at::Tensor> b_trial;
+  if (cfg.ls_max_iters <= 1)
+  {
+    for (std::size_t k = 0; k < unknown_layout.size(); ++k)
+      u_trial[k] = (u[k] + du[k]).contiguous();
+    b_trial = sys.residual(u_trial);
+    _assert(b_trial.size() == residual_layout.size(),
+            "Newton: residual() returned the wrong number of groups");
+  }
+  else
+  {
+    for (std::size_t k_ls = 1; k_ls < cfg.ls_max_iters; ++k_ls)
+    {
+      for (std::size_t k = 0; k < unknown_layout.size(); ++k)
+      {
+        const auto alpha_b = alpha_for_group(alpha, unknown_layout[k]);
+        u_trial[k] = (u[k] + alpha_b * du[k]).contiguous();
+      }
+      b_trial = sys.residual(u_trial);
+      _assert(b_trial.size() == residual_layout.size(),
+              "Newton: residual() returned the wrong number of groups");
+
+      const auto nb_trial_sq = pergroup_norm_sq(b_trial, residual_layout);
+      at::Tensor crit;
+      if (cfg.ls_type == "STRONG_WOLFE")
+        crit = (1.0 - cfg.ls_c * alpha) * nb_curr_sq;
+      else // BACKTRACKING
+        crit = nb_curr_sq - 2.0 * cfg.ls_c * alpha * b_dot_du;
+
+      if (verbose || log)
+      {
+        std::ostringstream oss;
+        oss << "     LS ITERATION " << std::setw(3) << k_ls << ", min(alpha) = " << std::scientific
+            << alpha.min().item<double>() << ", max(||R||) = " << std::scientific
+            << nb_trial_sq.sqrt().max().item<double>() << ", min(||Rc||) = " << std::scientific
+            << crit.sqrt().min().item<double>();
+        if (verbose)
+          std::cerr << oss.str() << std::endl;
+        if (log)
+          log->push_back(oss.str());
+      }
+
+      const auto stop = at::logical_or(nb_trial_sq <= crit, nb_trial_sq <= cfg.atol * cfg.atol);
+      if (stop.all().item<bool>())
+        break;
+      alpha = at::where(stop, alpha, alpha / cfg.ls_cutback);
+    }
+  }
+
+  u = std::move(u_trial);
+  b_outs = std::move(b_trial);
+
+  const auto b_norm = pergroup_norm_sq(b_outs, residual_layout).sqrt();
+  if (verbose || log)
+  {
+    std::ostringstream oss;
+    oss << "ITERATION " << std::setw(3) << i << ", |R| = " << std::scientific
+        << b_norm.max().item<double>() << ", |R0| = " << std::scientific
+        << b0_norm.max().item<double>();
+    if (verbose)
+      std::cerr << oss.str() << std::endl;
+    if (log)
+      log->push_back(oss.str());
+  }
+  return b_norm;
+}
 } // namespace
 
 Newton::Newton(SolverConfig cfg)
@@ -176,15 +283,13 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
           unknown_layout.size());
 
   // Per-group u, kept at natural per-group shape (BLOCK: (*B, *group_sub,
-  // group_base_total); DENSE: (*B, group_total)). The Newton loop updates each
-  // group independently via `u[i] = u[i] + alpha * du[i]`, where alpha is
-  // broadcast-reshaped per group's trailing axes by `alpha_for_group`.
+  // group_base_total); DENSE: (*B, group_total)). The iteration body
+  // (`newton_iterate`) updates each group via `u[i] = u[i] + alpha * du[i]`.
   std::vector<at::Tensor> u;
   u.reserve(u0.size());
   for (const auto & t : u0)
     u.push_back(t.contiguous());
 
-  // Initial per-residual-group b vector.
   auto b_outs = sys.residual(u);
   _assert(b_outs.size() == residual_layout.size(),
           "Newton::solve: residual() returned ",
@@ -192,30 +297,15 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
           " tensors, expected one per residual group (",
           residual_layout.size(),
           ")");
-  // Per-batch norm of the residual: sqrt of sum across residual groups of sum
-  // over (group_sub + group_base) of group^2. Leading axes are the
-  // dynamic-batch shape.
-  auto b0_norm_sq = pergroup_norm_sq(b_outs, residual_layout);
-  auto b0_norm = b0_norm_sq.sqrt();
+  auto b0_norm = pergroup_norm_sq(b_outs, residual_layout).sqrt();
 
   const char * trace_env = std::getenv("NEML2_AOTI_TRACE_NEWTON");
   const int trace_level = trace_env ? std::atoi(trace_env) : 0;
   const bool trace = trace_level >= 1;
   const bool verbose = trace_level >= 2;
   const bool collect = _cfg.collect_log;
-
-  // Per-iteration convergence log. Each line is built once and sent to stderr
-  // (the env-var trace) and/or recorded into the result (collect_log), so the
-  // two sinks can never diverge. Building a line forces a scalar d2h sync, so
-  // it is skipped entirely unless one of the sinks is active.
   std::vector<std::string> log;
-  const auto emit_log = [&](const std::string & line)
-  {
-    if (verbose)
-      std::cerr << line << std::endl;
-    if (collect)
-      log.push_back(line);
-  };
+  std::vector<std::string> * logp = collect ? &log : nullptr;
 
   if (verbose || collect)
   {
@@ -223,7 +313,10 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
     oss << "ITERATION " << std::setw(3) << 0 << ", |R| = " << std::scientific
         << b0_norm.max().item<double>() << ", |R0| = " << std::scientific
         << b0_norm.max().item<double>();
-    emit_log(oss.str());
+    if (verbose)
+      std::cerr << oss.str() << std::endl;
+    if (collect)
+      log.push_back(oss.str());
   }
 
   if (check_converged(b0_norm, b0_norm, _cfg.atol, _cfg.rtol))
@@ -231,95 +324,14 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
     if (trace)
       std::cerr << "[aoti newton]iters=0 (converged at predictor) "
                 << "b0_norm=" << b0_norm.max().item<double>() << std::endl;
-    return {std::move(u), /*converged=*/true, /*iterations=*/0, std::move(log)};
+    return {
+        std::move(u), /*converged=*/true, /*converged_mask=*/{}, /*iterations=*/0, std::move(log)};
   }
-  std::size_t reached = _cfg.miters;
+
   for (std::size_t i = 1; i < _cfg.miters; ++i)
   {
-    // step() returns (du_groups, b_curr_groups). We already have b_outs from
-    // the prior iteration, so b_curr is discarded (kept by the interface for
-    // symmetry / future use).
-    auto step_result = sys.step(u);
-    std::vector<at::Tensor> & du = step_result.first;
-    _assert(du.size() == unknown_layout.size(),
-            "Newton::solve: step() returned ",
-            du.size(),
-            " du tensors, expected one per unknown group (",
-            unknown_layout.size(),
-            ")");
-
-    auto alpha = at::ones_like(b0_norm);
-    // Armijo `b · du`: dot product across all residual+unknown groups. For a
-    // square system, residual groups align with unknown groups by position
-    // (residual_layout[k] is the residual block for unknown_layout[k]), with
-    // matching per-group structure so trailing axes match per pair.
-    const auto b_dot_du = pergroup_dot(b_outs, du, unknown_layout);
-    const auto nb_curr_sq = pergroup_norm_sq(b_outs, residual_layout);
-
-    std::vector<at::Tensor> u_trial(unknown_layout.size());
-    std::vector<at::Tensor> b_trial;
-    if (_cfg.ls_max_iters <= 1)
-    {
-      for (std::size_t k = 0; k < unknown_layout.size(); ++k)
-        u_trial[k] = (u[k] + du[k]).contiguous();
-      b_trial = sys.residual(u_trial);
-      _assert(b_trial.size() == residual_layout.size(),
-              "Newton::solve: residual() returned ",
-              b_trial.size(),
-              " tensors, expected one per residual group");
-    }
-    else
-    {
-      for (std::size_t k_ls = 1; k_ls < _cfg.ls_max_iters; ++k_ls)
-      {
-        for (std::size_t k = 0; k < unknown_layout.size(); ++k)
-        {
-          const auto alpha_b = alpha_for_group(alpha, unknown_layout[k]);
-          u_trial[k] = (u[k] + alpha_b * du[k]).contiguous();
-        }
-        b_trial = sys.residual(u_trial);
-        _assert(b_trial.size() == residual_layout.size(),
-                "Newton::solve: residual() returned ",
-                b_trial.size(),
-                " tensors, expected one per residual group");
-
-        const auto nb_trial_sq = pergroup_norm_sq(b_trial, residual_layout);
-        at::Tensor crit;
-        if (_cfg.ls_type == "STRONG_WOLFE")
-          crit = (1.0 - _cfg.ls_c * alpha) * nb_curr_sq;
-        else // BACKTRACKING
-          crit = nb_curr_sq - 2.0 * _cfg.ls_c * alpha * b_dot_du;
-
-        if (verbose || collect)
-        {
-          std::ostringstream oss;
-          oss << "     LS ITERATION " << std::setw(3) << k_ls
-              << ", min(alpha) = " << std::scientific << alpha.min().item<double>()
-              << ", max(||R||) = " << std::scientific << nb_trial_sq.sqrt().max().item<double>()
-              << ", min(||Rc||) = " << std::scientific << crit.sqrt().min().item<double>();
-          emit_log(oss.str());
-        }
-
-        const auto stop = at::logical_or(nb_trial_sq <= crit, nb_trial_sq <= _cfg.atol * _cfg.atol);
-        if (stop.all().item<bool>())
-          break;
-        alpha = at::where(stop, alpha, alpha / _cfg.ls_cutback);
-      }
-    }
-
-    u = std::move(u_trial);
-    b_outs = std::move(b_trial);
-
-    const auto b_norm_sq = pergroup_norm_sq(b_outs, residual_layout);
-    const auto b_norm = b_norm_sq.sqrt();
-    if (verbose || collect)
-    {
-      std::ostringstream oss;
-      oss << "ITERATION " << std::setw(3) << i << ", |R| = " << std::scientific
-          << b_norm.max().item<double>() << ", |R0| = " << std::scientific
-          << b0_norm.max().item<double>();
-      emit_log(oss.str());
-    }
+    const auto b_norm = newton_iterate(
+        _cfg, sys, unknown_layout, residual_layout, u, b_outs, b0_norm, i, verbose, logp);
     const auto status = check_stop(b_norm, b0_norm, _cfg.atol, _cfg.rtol);
     if (status == StopStatus::Diverged)
       throw ConvergenceError("AOTI Newton diverged at iter " + std::to_string(i) +
@@ -327,18 +339,21 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
                              "increasing max_linesearch_iterations, or reducing the time step.");
     if (status == StopStatus::Converged)
     {
-      reached = i;
       if (trace)
         std::cerr << "[aoti newton]iters=" << i << " (converged) "
                   << "b0_norm=" << b0_norm.max().item<double>()
                   << " b_norm=" << b_norm.max().item<double>() << std::endl;
-      return {std::move(u), /*converged=*/true, /*iterations=*/i, std::move(log)};
+      return {std::move(u),
+              /*converged=*/true,
+              /*converged_mask=*/{},
+              /*iterations=*/i,
+              std::move(log)};
     }
   }
 
   const auto final_norm = pergroup_norm_sq(b_outs, residual_layout).sqrt();
   if (trace)
-    std::cerr << "[aoti newton]iters=" << reached
+    std::cerr << "[aoti newton]iters=" << _cfg.miters
               << " (MAXITERS HIT) b0_norm=" << b0_norm.max().item<double>()
               << " b_norm=" << final_norm.max().item<double>() << std::endl;
 
@@ -353,5 +368,69 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
       ", |R0| = " + std::to_string(b0_norm.max().item<double>()) +
       ", atol = " + std::to_string(_cfg.atol) + ", rtol = " + std::to_string(_cfg.rtol) +
       "). Consider reducing the time step or raising max_iterations.");
+}
+
+NewtonResult
+Newton::solve_masked(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) const
+{
+  const auto & unknown_layout = sys.unknown_layout();
+  const auto & residual_layout = sys.residual_layout();
+
+  _assert(u0.size() == unknown_layout.size(),
+          "Newton::solve_masked: u0 group count ",
+          u0.size(),
+          " != unknown group count ",
+          unknown_layout.size());
+
+  std::vector<at::Tensor> u;
+  u.reserve(u0.size());
+  for (const auto & t : u0)
+    u.push_back(t.contiguous());
+
+  auto b_outs = sys.residual(u);
+  _assert(b_outs.size() == residual_layout.size(),
+          "Newton::solve_masked: residual() returned ",
+          b_outs.size(),
+          " tensors, expected one per residual group (",
+          residual_layout.size(),
+          ")");
+  auto b0_norm = pergroup_norm_sq(b_outs, residual_layout).sqrt();
+
+  const char * trace_env = std::getenv("NEML2_AOTI_TRACE_NEWTON");
+  const int trace_level = trace_env ? std::atoi(trace_env) : 0;
+  const bool verbose = trace_level >= 2;
+  const bool collect = _cfg.collect_log;
+  std::vector<std::string> log;
+  std::vector<std::string> * logp = collect ? &log : nullptr;
+
+  // Per-element convergence: ||b|| < atol OR ||b||/||b0|| < rtol. A non-finite
+  // norm makes both false, so a diverged row is never "converged".
+  const auto per_elem_converged = [&](const at::Tensor & bn)
+  { return at::logical_or(bn < _cfg.atol, bn / b0_norm < _cfg.rtol); };
+
+  auto converged = per_elem_converged(b0_norm);
+  if (at::all(converged).item<bool>())
+    return {std::move(u), /*converged=*/true, converged, /*iterations=*/0, std::move(log)};
+
+  std::size_t reached = 0;
+  // Rows converged in a prior iteration are frozen (their Newton step is zeroed)
+  // so they stay bit-identical to a solo solve while the rest keep iterating.
+  at::Tensor frozen;
+  for (std::size_t i = 1; i < _cfg.miters; ++i)
+  {
+    const auto b_norm = newton_iterate(
+        _cfg, sys, unknown_layout, residual_layout, u, b_outs, b0_norm, i, verbose, logp, frozen);
+    reached = i;
+    converged = per_elem_converged(b_norm);
+    frozen = frozen.defined() ? at::logical_or(frozen, converged) : converged;
+    // Stop once every row is converged or non-finite: a non-finite row cannot
+    // recover, so iterating further only wastes work on the (sliced) batch.
+    const auto done = at::logical_or(converged, at::logical_not(at::isfinite(b_norm)));
+    if (at::all(done).item<bool>())
+      break;
+  }
+
+  const bool all = at::all(converged).item<bool>();
+  return {std::move(u), all, converged, reached, std::move(log)};
 }
 } // namespace neml2::aoti

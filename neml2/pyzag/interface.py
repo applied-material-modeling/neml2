@@ -53,32 +53,13 @@ from neml2.es import (
     AxisLayout,
     ModelNonlinearSystem,
 )
+
+# The lagged-variable naming split/re-tag helpers now live at the
+# equation-system layer (their primary consumers are ImplicitUpdate + the
+# substep classifier); re-imported here so ``neml2.pyzag.lag_order`` /
+# ``change_lag_order`` stay a stable public alias.
+from neml2.es._helpers import change_lag_order, lag_order
 from neml2.types import Tensor, TensorWrapper
-
-
-def lag_order(var: str) -> tuple[str, int]:
-    """Split a variable name into its base name and lag order.
-
-    ``var`` is either ``"name"`` (lag 0) or ``"name~n"`` (lag ``n``). Used by
-    the interface to identify *old-state* / *old-force* variables — pyzag
-    wants a contiguous-in-time state and forces tensor, while the NEML2
-    nonlinear system keeps current values on the unknown axis and old values
-    on the given axis with a ``~1`` suffix.
-    """
-    tokens = var.split("~")
-    if len(tokens) == 1:
-        return tokens[0], 0
-    if len(tokens) == 2:
-        return tokens[0], int(tokens[1])
-    raise ValueError(
-        f"Variable {var!r} has invalid format; expected 'name' or 'name~n' where n is an integer"
-    )
-
-
-def change_lag_order(var: str, new_order: int) -> str:
-    """Re-tag a variable name to a different lag order. Inverse of :func:`lag_order`."""
-    base, _ = lag_order(var)
-    return f"{base}~{new_order}" if new_order != 0 else base
 
 
 def _filter_layout_by_lag(

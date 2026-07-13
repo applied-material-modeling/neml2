@@ -25,20 +25,24 @@
 """``neml2-compile`` -- the canonical (and only) path that produces an AOTI
 artifact from a NEML2 input file.
 
-Wraps :func:`neml2.cli.aoti_export.export_model_for_aoti` and emits a
-runnable ``.i`` stub alongside the ``.pt2`` segments and ``_meta.json``. The
-stub is the original input with the named ``[Models]/<name>`` block surgically
-replaced by an AOTIModel shim pointing at the metadata file.
+Wraps :func:`neml2.cli.aoti_export.export_model_for_aoti` and optionally emits
+a runnable ``.i`` stub (``--no-stub`` skips it) alongside the ``.pt2`` segments
+and the shared ``metadata.json``. The stub is the original input with the named
+``[Models]/<name>`` block surgically replaced by an AOTIModel shim pointing at
+the artifact root folder.
 
 Usage:
 
     neml2-compile <input.i> --model <name>
                             [--output-dir <dir>]
                             [--device cpu|cuda [cpu|cuda ...]] [--dtype float64|float32]
+                            [--no-stub]
                             [-p|--parameter NAME ...]
 
-When more than one ``--device`` is given, a complete artifact is emitted per
-device into a device-named subfolder (``<output-dir>/cpu/``, ``.../cuda/``).
+A model compiles into ``<output-dir>/<name>/``: one shared, self-describing
+``metadata.json`` (structural metadata + promoted-parameter values + solver
+config) plus per-``<device>/<dtype>/`` ``.pt2`` binaries. Multiple ``--device``
+values add sibling ``<device>/`` subfolders under the same shared metadata.
 
 By default every parameter and buffer in the source model is folded into the
 exported graph as a constant. Each ``--parameter NAME`` flag promotes one
@@ -49,6 +53,7 @@ attribute to be a graph input -- mutable at runtime through
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -107,8 +112,9 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         metavar="DIR",
         help=(
             "Collection dir for the compiled artifacts (default: ./aoti/). Each "
-            "model lands in <DIR>/<NAME>/<device>/ with a standalone "
-            "<DIR>/<NAME>_aoti.i stub next to it."
+            "model lands in <DIR>/<NAME>/ (one shared metadata.json + "
+            "<device>/<dtype>/ .pt2 binaries), with a standalone <DIR>/<NAME>_aoti.i "
+            "stub next to it unless --no-stub."
         ),
     )
     parser.add_argument(
@@ -144,6 +150,21 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "single-segment models ignore N, and N is capped at the number of "
             "segments (one task per segment). With --device cuda each worker "
             "spawns its own CUDA context and invokes nvcc -- watch memory."
+        ),
+    )
+    # Emitting the stub is the default, so only the opt-out flag is exposed
+    # (`--no-stub`); it must be a registered action or `parse_known_args` below
+    # would route it into the HIT override tokens.
+    parser.add_argument(
+        "--no-stub",
+        dest="emit_stub",
+        action="store_false",
+        default=True,
+        help=(
+            "Skip the standalone <model>_aoti.i stub (compile the artifact folder "
+            "only). The stub is a neml2-run / py-aoti convenience; the artifact "
+            "folder (metadata.json + <device>/<dtype>/ binaries) is self-describing, "
+            "so cpp-aoti / cpp-dispatch never need it. Default: the stub is emitted."
         ),
     )
     parser.add_argument(
@@ -260,6 +281,7 @@ def compile_and_emit_stub(
     pre: tuple[str, ...] = (),
     additional_args: tuple[str, ...] = (),
     jobs: int = 1,
+    emit_stub: bool = True,
     progress_cb=None,
 ) -> Path:
     """Compile + emit stub in one call; return the stub path.
@@ -270,13 +292,16 @@ def compile_and_emit_stub(
     ``neml2-compile`` CLI surface for callers who don't want to shell out
     to a subprocess.
 
-    The intermediate ``model_name`` and the layout (``<output_dir>/<model>/<device>/``
-    artifacts + a standalone ``<output_dir>/<model>_aoti.i`` stub) live entirely
-    inside this function -- callers just run the returned stub path.
+    The intermediate ``model_name`` and the layout (``.pt2`` binaries under
+    ``<output_dir>/<model>/<device>/<dtype>/``, one shared
+    ``<output_dir>/<model>/metadata.json``, and -- when *emit_stub* is true (the
+    default) -- a standalone ``<output_dir>/<model>_aoti.i`` stub) live entirely
+    inside this function. The returned path is where the stub would be; it exists
+    only when *emit_stub* is true.
 
     *jobs* (> 1) compiles independent segments concurrently; *progress_cb*, if
     given, is invoked with the bare filename of every generated file (each
-    ``.pt2``, the ``_meta.json``, and finally the ``_aoti.i`` stub).
+    ``.pt2``, then ``metadata.json``, and finally the ``_aoti.i`` stub when emitted).
     """
     # Local import keeps the module import-light when only the helpers
     # below are needed.
@@ -293,13 +318,13 @@ def compile_and_emit_stub(
     model_name = driver_target_model(input_path, driver) if driver else model
     assert model_name is not None  # for type narrowing
 
+    # Export writes binaries to artifact_dir/<device>/<dtype>/ and one shared
+    # artifact_dir/metadata.json (it creates the dirs). The stub is optional.
     artifact_dir = output_dir / model_name
-    device_dir = artifact_dir / device
-    device_dir.mkdir(parents=True, exist_ok=True)
     export_model_for_aoti(
         input_path,
         model_name,
-        device_dir,
+        artifact_dir,
         device=device,
         dtype=dtype,
         promoted=promoted or set(),
@@ -313,15 +338,16 @@ def compile_and_emit_stub(
         progress_cb=progress_cb,
     )
     stub_path = output_dir / f"{model_name}_aoti.i"
-    emit_aoti_stub(
-        input_path,
-        model_name,
-        artifact_dir,
-        stub_path,
-        keep_drivers=(driver is not None),
-    )
-    if progress_cb is not None:
-        progress_cb(stub_path.name)
+    if emit_stub:
+        emit_aoti_stub(
+            input_path,
+            model_name,
+            artifact_dir,
+            stub_path,
+            keep_drivers=(driver is not None),
+        )
+        if progress_cb is not None:
+            progress_cb(stub_path.name)
     return stub_path
 
 
@@ -398,10 +424,13 @@ def emit_aoti_stub(
     """Write a minimal AOTI stub at *stub_path*.
 
     The stub is a standalone file that sits next to (not inside) the
-    *artifact_dir* -- the per-device artifact folder holding one ``<device>/``
-    subfolder per compiled device. The shim points at it via an absolute
-    ``artifact_path``; the loader (Python shim or C++ ``load_model``) resolves
-    ``<artifact_path>/<device>/<model>_meta.json`` for the device it runs on.
+    *artifact_dir* -- the artifact folder holding one shared ``metadata.json`` at
+    its root and per-``<device>/<dtype>/`` ``.pt2`` binaries. The shim points at
+    the folder via an ``artifact_path`` relative to the stub; the loader (Python
+    shim or C++ ``load_model``) reads ``<artifact_path>/metadata.json`` and the
+    ``<device>/<dtype>/`` binaries for the device + dtype it runs on. The folder is
+    self-describing (structural metadata + solver config), so cpp-aoti /
+    cpp-dispatch never need this stub -- it is a ``neml2-run`` / py-aoti convenience.
 
     The stub contains exactly what's needed to load the compiled artifact:
 
@@ -424,18 +453,19 @@ def emit_aoti_stub(
       mirror the ``[Tensors]`` policy and keep them all. Dropped entirely
       when ``keep_drivers=False`` (``--model`` mode).
 
-    ``[Data]`` and ``[EquationSystems]`` are dropped in both modes -- their
-    state was baked into the ``.pt2`` at compile time (the implicit Newton
-    system, any ``[Data]``-typed constants). For an implicit model a MINIMAL
-    ``[Solvers]`` block is carried (schema v4+): just the implicit model's
-    solver, and only its honored convergence / line-search knobs. The shim
-    references it via a ``solver = <name>`` field and forwards those settings to
-    the C++ runtime at load. The ``linear_solver`` field is dropped on purpose
-    -- it is baked into the compiled step/IFT graphs, so editing it in the stub
-    would have no effect; omitting it keeps the stub free of inert knobs.
+    ``[Data]``, ``[EquationSystems]`` and ``[Solvers]`` are dropped in both modes.
+    ``[Data]`` / ``[EquationSystems]`` state was baked into the ``.pt2`` at compile
+    time. ``[Solvers]`` is dropped because the implicit Newton's convergence /
+    line-search config lives in ``metadata.json`` and is applied by the C++ runtime
+    at load -- a stub ``[Solvers]`` block would be a silent no-op for the
+    Python-free routes, so it is removed rather than left as a misleading knob.
+    (Verbosity is separate: it is a diagnostic controlled by ``NEML2_AOTI_TRACE_*``
+    env vars, not recorded anywhere in the artifact.)
 
-    The artifact folder is recorded as an absolute ``artifact_path`` -- the
-    stub is standalone, so the artifacts are not relocatable without a recompile.
+    The artifact folder is recorded as an ``artifact_path`` **relative** to the
+    stub, so the stub + its artifact folder move together as a portable bundle
+    (see the emission site below). Relocating the stub away from its artifact is
+    intentionally unsupported.
 
     Implementation note: we build a fresh ``nmhit.Root`` and clone the
     sections we want into it, rather than mutating the parsed input. nmhit
@@ -446,47 +476,29 @@ def emit_aoti_stub(
     """
     import nmhit  # noqa: PLC0415
 
-    DROPPED = {"Data", "EquationSystems"}
+    # [Solvers] is dropped from the stub: the implicit Newton's convergence /
+    # line-search config is recorded in metadata.json and applied by the C++
+    # runtime at load, so a stub [Solvers] block would be a silent no-op for the
+    # Python-free routes (cpp-aoti / cpp-dispatch). [Data]/[EquationSystems] are
+    # runtime-irrelevant to the compiled model.
+    DROPPED = {"Data", "EquationSystems", "Solvers"}
 
     src_root = nmhit.parse_file(original_hit, [], [])
 
-    # Discover which (single) [Models] block holds our target, and which solver
-    # the implicit Newton solve should be configured with (schema v4+: solver
-    # config is carried in the stub, not baked). We mutate nothing in src_root
-    # -- discovery is read-only -- and we don't hold any node references past
-    # this scan.
+    # Discover which (single) [Models] block holds our target. Solver config is no
+    # longer carried here, so the stub only needs to know where to place the cleaned
+    # [Models] block. Discovery is read-only; hold no node references past this scan.
     target_models_idx: int | None = None
     available_in_block: list[list[str]] = []
-    target_solver = ""
-    implicit_solvers: list[str] = []
     models_seen = 0
     for top in src_root.children(nmhit.NodeType.Section):
         if top.path() != "Models":
             continue
-        names: list[str] = []
-        for c in top.children(nmhit.NodeType.Section):
-            names.append(c.path())
-            csolver = c.param_optional_str("solver", "")
-            if c.param_optional_str("type", "") == "ImplicitUpdate" and csolver:
-                if csolver not in implicit_solvers:
-                    implicit_solvers.append(csolver)
-            if c.path() == model_name and csolver:
-                target_solver = csolver
+        names = [c.path() for c in top.children(nmhit.NodeType.Section)]
         available_in_block.append(names)
         if model_name in names and target_models_idx is None:
             target_models_idx = models_seen
         models_seen += 1
-    # Prefer the compiled model's own solver (direct ImplicitUpdate); fall back
-    # to the first implicit solver in the graph (composed model). Forward-only
-    # models leave this empty -> the shim applies the C++ defaults.
-    solver_name = target_solver or (implicit_solvers[0] if implicit_solvers else "")
-    if len({*implicit_solvers}) > 1 and not target_solver:
-        print(
-            f"neml2-compile: multiple implicit solvers {implicit_solvers} found; "
-            f"the AOTI stub configures the runtime with {solver_name!r} for all "
-            "implicit segments.",
-            file=sys.stderr,
-        )
     if target_models_idx is None:
         all_names = [n for block in available_in_block for n in block]
         raise ValueError(
@@ -494,9 +506,16 @@ def emit_aoti_stub(
             f"Available: {sorted(set(all_names))}"
         )
 
-    # Absolute pointer at the per-device artifact folder. Absolute (not
-    # relative) by design: the stub is standalone and lives outside the folder,
-    # so moving the artifacts requires recompiling or editing this path.
+    # Pointer at the artifact folder (root), written RELATIVE to the stub's own
+    # directory -- the loader (Python shim `from_hit` and C++ `factory::load_model`)
+    # resolves a relative `artifact_path` against the directory of the stub itself.
+    # Relative, not absolute, so the whole bundle (stub + its artifact folder) is
+    # portable: copy or move the two together anywhere -- another directory,
+    # machine, or user -- and it still loads, with no machine-specific path baked
+    # in and no recompile. Moving the stub *away* from its artifact folder is
+    # intentionally unsupported (keep them together). Absolute fallback only when a
+    # relative path can't be expressed (a Windows artifact on a different drive
+    # than the stub).
     #
     # Single-quote the value so the path round-trips through the HIT lexer
     # verbatim -- an unquoted scalar rejects characters that are legal in a
@@ -504,17 +523,18 @@ def emit_aoti_stub(
     # value is raw. This matches the format the reader documents and expects
     # (see the ``artifact_path = '...'`` examples in ``neml2/aoti/_shim.py`` and
     # ``doc/content/references/aoti_packages.md``).
-    artifact_abs = str(Path(artifact_dir).resolve())
+    artifact_abs = Path(artifact_dir).resolve()
+    stub_dir = Path(stub_path).resolve().parent
+    try:
+        artifact_ref = os.path.relpath(artifact_abs, stub_dir)
+    except ValueError:  # different drives on Windows -- no relative path exists
+        artifact_ref = str(artifact_abs)
 
     # Build the cleaned [Models] block once: one shim, no siblings.
     cleaned_models = nmhit.Section("Models")
     shim = nmhit.Section(model_name)
     shim.add_child(nmhit.Field("type", "AOTIModel"))
-    shim.add_child(nmhit.Field("artifact_path", f"'{artifact_abs}'"))
-    if solver_name:
-        # The carried (minimal) [Solvers] block configures the implicit Newton
-        # solve at load -- convergence / line-search knobs only.
-        shim.add_child(nmhit.Field("solver", solver_name))
+    shim.add_child(nmhit.Field("artifact_path", f"'{artifact_ref}'"))
     cleaned_models.add_child(shim)
 
     # Walk the source top-level children IN ORDER and clone each into the
@@ -536,24 +556,6 @@ def emit_aoti_stub(
         if name in DROPPED:
             continue
         if name == "Drivers" and not keep_drivers:
-            continue
-        if name == "Solvers":
-            # Carry a MINIMAL block: only the implicit model's solver, and only
-            # its honored knobs. The linear solver is baked into the compiled
-            # step/IFT graphs, so editing it here would be a silent no-op --
-            # drop the `linear_solver` field (and the sub-solver blocks it would
-            # reference) so the stub exposes only settings that take effect.
-            if not solver_name:
-                continue  # forward-only model: no solver to carry
-            min_solvers = nmhit.Section("Solvers")
-            for c in top.children(nmhit.NodeType.Section):
-                if c.path() != solver_name:
-                    continue
-                cloned = c.clone()
-                if cloned.find("linear_solver") is not None:
-                    cloned.remove_child("linear_solver")
-                min_solvers.add_child(cloned)
-            new_root.add_child(min_solvers)
             continue
         if name == "Models":
             if models_seen == target_models_idx and not models_emitted:
@@ -690,8 +692,8 @@ def main(argv: list[str] | None = None) -> int:
         keep_driver = None
 
     # `--output-dir` is the collection dir (default ./aoti). Each model lands in
-    # <output-dir>/<model>/<device>/ with one standalone stub next to it at
-    # <output-dir>/<model>_aoti.i.
+    # <output-dir>/<model>/ (shared metadata.json + <device>/<dtype>/ binaries) with
+    # an optional standalone stub next to it at <output-dir>/<model>_aoti.i.
     output_dir: Path = (args.output_dir or Path.cwd() / "aoti").resolve()
     artifact_dir = output_dir / model_name
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -731,7 +733,10 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"Error planning '{model_name}': {exc}", file=sys.stderr)
         return 1
-    total_files = plan.total * len(devices) + 1  # per-device artifacts + the stub
+    # plan.total = per-device .pt2 count + 1 (the shared metadata.json). The meta is
+    # written ONCE for all devices, and the stub is optional.
+    n_pt2 = plan.total - 1
+    total_files = n_pt2 * len(devices) + 1 + (1 if args.emit_stub else 0)
 
     _progress = {"k": 0}
 
@@ -751,7 +756,7 @@ def main(argv: list[str] | None = None) -> int:
     # (jobs bounds the workers across ALL cells, so multiple devices compile
     # concurrently). progress_cb receives device-tagged names from the orchestrator.
     try:
-        metas = export_model_multidevice(
+        meta = export_model_multidevice(
             input_path,
             model_name,
             artifact_dir,
@@ -769,23 +774,24 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"Error compiling '{model_name}': {exc}", file=sys.stderr)
         return 1
-    compiled = [(device, artifact_dir / device / f"{model_name}_meta.json") for device in devices]
-    meta = next(iter(metas.values()))  # envelope is identical across devices
 
-    # One standalone stub next to the artifact folder, pointing at it.
+    # One optional standalone stub next to the artifact folder, pointing at it. The
+    # artifact folder is self-describing (metadata.json + solver config), so the stub
+    # is a neml2-run / py-aoti convenience only -- skipped under --no-stub.
     stub_path = output_dir / f"{model_name}_aoti.i"
-    try:
-        emit_aoti_stub(
-            input_path,
-            model_name,
-            artifact_dir,
-            stub_path,
-            keep_drivers=(keep_driver is not None),
-        )
-    except Exception as exc:  # noqa: BLE001
-        print(f"Error emitting stub: {exc}", file=sys.stderr)
-        return 1
-    progress_cb(stub_path.name)
+    if args.emit_stub:
+        try:
+            emit_aoti_stub(
+                input_path,
+                model_name,
+                artifact_dir,
+                stub_path,
+                keep_drivers=(keep_driver is not None),
+            )
+        except Exception as exc:  # noqa: BLE001
+            print(f"Error emitting stub: {exc}", file=sys.stderr)
+            return 1
+        progress_cb(stub_path.name)
 
     n_promoted = len(args.parameter)
     bake_note = "fully baked" if n_promoted == 0 else f"{n_promoted} promoted parameter(s)"
@@ -805,14 +811,16 @@ def main(argv: list[str] | None = None) -> int:
     def _rel(p: Path) -> Path:
         return p.relative_to(Path.cwd()) if p.is_relative_to(Path.cwd()) else p
 
-    dev_list = ", ".join(device for device, _ in compiled)
+    dev_list = ", ".join(devices)
     print(
         f"Compiled '{model_name}' ({meta['type']}, {bake_note}{driver_note}{deriv_note}) "
         f"for [{dev_list}] -> {_rel(artifact_dir)}"
     )
-    print(f"  stub: {_rel(stub_path)}")
-    for device, meta_path in compiled:
-        print(f"  {device}: {_rel(meta_path)}")
+    print(f"  metadata: {_rel(artifact_dir / 'metadata.json')}")
+    if args.emit_stub:
+        print(f"  stub: {_rel(stub_path)}")
+    for device in devices:
+        print(f"  {device}: {_rel(artifact_dir / device / args.dtype)}/")
     return 0
 
 

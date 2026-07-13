@@ -25,8 +25,8 @@
 """Python interface to the thin C++ ``neml2::aoti::Model`` runtime.
 
 This module exposes :class:`Model` -- a wrapper around the bare C++ class
-that loads AOTI-exported NEML2 model artifacts (``.pt2`` + ``_meta.json``)
-produced by ``neml2-compile``.
+that loads AOTI-exported NEML2 model artifacts (a shared ``metadata.json`` plus
+per-``<device>/<dtype>/`` ``.pt2`` binaries) produced by ``neml2-compile``.
 
 The runtime exposes ``forward``, ``jvp``, ``jacobian`` plus the
 parameter-derivative pair ``param_jacobian`` / ``param_vjp`` (``d(output)/
@@ -43,7 +43,9 @@ Example usage::
 
     from neml2.aoti import Model
 
-    m = Model("aoti/my_model/my_model_meta.json")
+    # Pass the artifact ROOT folder; device/dtype default to the ambient
+    # torch.get_default_device() / torch.get_default_dtype().
+    m = Model("aoti/my_model")
     outputs = m.forward({"strain": strain_tensor})
     outputs, J = m.jacobian({"strain": strain_tensor})
 

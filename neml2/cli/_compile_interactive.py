@@ -75,7 +75,8 @@ class PlanSummary:
 
     ``segments`` is one ``(index, kind, basename, artifacts)`` tuple per compiled
     segment; ``files`` is every file the compile will generate (each segment's
-    ``.pt2`` graphs, the ``_meta.json``, and the ``_aoti.i`` stub). Computed by
+    ``.pt2`` graphs, the shared ``metadata.json``, and the ``_aoti.i`` stub).
+    Computed by
     :func:`plan_summary` from the same planner the real compile uses, so the
     preview matches what is produced.
     """

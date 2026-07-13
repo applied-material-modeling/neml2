@@ -22,23 +22,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Solver-discovery + minimal ``[Solvers]`` carry-over in ``emit_aoti_stub``.
+"""Structural stub emission in ``emit_aoti_stub``.
 
 ``emit_aoti_stub`` (``neml2.cli.aoti_compile``) is purely structural -- it
-parses the source HIT with ``nmhit`` and clones sections; it never instantiates
-a model or solver. That lets these tests drive every solver-discovery branch
-with tiny crafted inputs (the ``type`` strings need not be real registered
-types):
+parses the source HIT with ``nmhit`` and clones the sections it keeps; it never
+instantiates a model or solver. That lets these tests drive its section-carry /
+section-drop policy with tiny crafted inputs (the ``type`` strings need not be
+real registered types).
 
-* a direct ``ImplicitUpdate`` target -> its own solver is carried, the
-  ``linear_solver`` field stripped (schema v4: solver config lives in the stub,
-  the linear solver is baked into the compiled graph);
-* a forward-only target with a stray ``[Solvers]`` block -> nothing carried,
-  no ``solver`` field on the shim;
-* a composed target over two differently-configured implicit segments -> the
-  first solver is chosen and a disambiguation warning is emitted;
-* a composed target over a single implicit segment whose solver has no
-  ``linear_solver`` -> fallback selection, no warning, nothing to strip.
+Schema v10 collapsed the stub's solver plumbing: the artifact folder is
+self-describing (one shared ``metadata.json`` at its root -- carrying structural
+metadata *and* the implicit Newton's ``solver_config`` -- plus per-
+``<device>/<dtype>/`` ``.pt2`` binaries), so the stub no longer carries a
+``[Solvers]`` block or a ``solver`` field on the shim. The C++ ctor reads the
+solver config straight from ``metadata.json`` at load (that round-trip is
+covered by ``tests/unit/test_aoti_export.py``). The stub is reduced to:
+
+* a single ``[Models]`` block holding only the ``AOTIModel`` shim -- ``type`` +
+  a stub-relative ``artifact_path`` pointing at the artifact ROOT folder;
+* ``[Settings]`` from the original (``aoti_*`` keys stripped);
+* ``[Tensors]`` verbatim;
+* ``[Drivers]`` verbatim, only when ``keep_drivers=True`` (``--driver`` mode).
+
+``[Data]``, ``[EquationSystems]`` and ``[Solvers]`` are dropped in both modes.
 """
 
 from __future__ import annotations
@@ -51,25 +57,19 @@ import pytest
 from neml2.cli.aoti_compile import emit_aoti_stub
 
 
-def _emit(tmp_path: Path, hit: str, model: str):
+def _emit(tmp_path: Path, hit: str, model: str, *, keep_drivers: bool = False):
     """Write *hit*, run ``emit_aoti_stub``, return the re-parsed stub sections."""
     src = tmp_path / "in.i"
     src.write_text(hit)
     artifact_dir = tmp_path / model
     stub = tmp_path / "stub.i"
-    emit_aoti_stub(src, model, artifact_dir, stub)
+    emit_aoti_stub(src, model, artifact_dir, stub, keep_drivers=keep_drivers)
     root = nmhit.parse_file(stub, [], [])
     return {s.path(): s for s in root.children(nmhit.NodeType.Section)}
 
 
 def _shim(sections, model):
     return {s.path(): s for s in sections["Models"].children(nmhit.NodeType.Section)}[model]
-
-
-def _solver_block_names(sections):
-    if "Solvers" not in sections:
-        return None
-    return [s.path() for s in sections["Solvers"].children(nmhit.NodeType.Section)]
 
 
 _DIRECT_IMPLICIT = """
@@ -103,129 +103,125 @@ _FORWARD_ONLY = """
 []
 """
 
-_COMPOSED_TWO_SOLVERS = """
+_WITH_RUNTIME_SECTIONS = """
 [Models]
-  [top]
-    type = ComposedModel
-  []
-  [eq1]
+  [model]
     type = ImplicitUpdate
-    solver = n1
-  []
-  [eq2]
-    type = ImplicitUpdate
-    solver = n2
+    solver = newton
   []
 []
 [Solvers]
-  [n1]
-    type = Newton
-  []
-  [n2]
-    type = NewtonWithLineSearch
-  []
-[]
-"""
-
-_COMPOSED_ONE_SOLVER = """
-[Models]
-  [top]
-    type = ComposedModel
-  []
-  [eq1]
-    type = ImplicitUpdate
-    solver = n1
-  []
-[]
-[Solvers]
-  [n1]
+  [newton]
     type = Newton
   []
 []
-"""
-
-_COMPOSED_SHARED_SOLVER = """
-[Models]
-  [top]
-    type = ComposedModel
-  []
-  [eq1]
-    type = ImplicitUpdate
-    solver = n1
-  []
-  [eq2]
-    type = ImplicitUpdate
-    solver = n1
+[Data]
+  [d]
+    type = SomeData
   []
 []
-[Solvers]
-  [n1]
-    type = Newton
+[EquationSystems]
+  [es]
+    type = SomeSystem
+  []
+[]
+[Settings]
+  aoti_mode = true
+  aoti_device = cpu
+  machine_precision = 1e-15
+[]
+[Tensors]
+  [t]
+    type = Scalar
+    values = 1.0
+  []
+[]
+[Drivers]
+  [drv]
+    type = TransientDriver
+    model = 'model'
   []
 []
 """
 
 
-def test_direct_implicit_carries_solver_and_strips_linear_solver(tmp_path):
+def test_shim_has_only_type_and_artifact_path(tmp_path):
+    """The shim carries exactly ``type = AOTIModel`` + a ``artifact_path``
+    **relative** to the stub, pointing at the artifact ROOT folder -- no ``solver``
+    field (v10: solver config lives in metadata.json) and no legacy ``meta`` field.
+    Relative (not absolute) so the stub + artifact folder relocate together as a
+    portable bundle; the loader resolves it against the stub's directory."""
     sections = _emit(tmp_path, _DIRECT_IMPLICIT, "model")
-    # Shim references the solver by name.
-    assert _shim(sections, "model").param_optional_str("solver", "") == "newton"
-    # Only the target solver is carried; the [lu] sub-solver is dropped.
-    assert _solver_block_names(sections) == ["newton"]
-    # The baked-in linear_solver field is stripped (editing it would be inert).
-    newton = next(s for s in sections["Solvers"].children(nmhit.NodeType.Section))
-    assert newton.find("linear_solver") is None
+    shim = _shim(sections, "model")
+    assert shim.param_str("type") == "AOTIModel"
+    ap = shim.param_optional_str("artifact_path", "")
+    # Stub at ``<tmp>/model_aoti.i``, artifact at ``<tmp>/model/`` -> relative "model".
+    assert ap and not Path(ap).is_absolute()
+    assert Path(ap).name == "model"  # the per-model artifact root folder
+    # Superseded fields are gone.
+    assert shim.find("solver") is None
+    assert shim.find("meta") is None
 
 
-def test_forward_only_drops_solvers_block_and_omits_shim_field(tmp_path):
+def test_solvers_block_always_dropped(tmp_path):
+    """No ``[Solvers]`` block is ever carried -- for an implicit target (whose
+    solver config now rides in metadata.json) or a forward-only one."""
+    for hit in (_DIRECT_IMPLICIT, _FORWARD_ONLY):
+        sections = _emit(tmp_path, hit, "model")
+        assert "Solvers" not in sections
+        assert _shim(sections, "model").find("solver") is None
+
+
+def test_forward_only_reduces_to_models_block(tmp_path):
+    """A forward-only target with a stray ``[Solvers]`` block reduces to a lone
+    ``[Models]`` block: no solver field, no ``[Solvers]``, nothing else."""
     sections = _emit(tmp_path, _FORWARD_ONLY, "model")
-    # No implicit solver to carry -> no solver field, no [Solvers] block.
-    assert _shim(sections, "model").param_optional_str("solver", "") == ""
-    assert _solver_block_names(sections) is None
+    assert list(sections) == ["Models"]
+    assert _shim(sections, "model").find("solver") is None
 
 
-def test_multiple_implicit_solvers_warn_and_pick_first(tmp_path, capsys):
-    sections = _emit(tmp_path, _COMPOSED_TWO_SOLVERS, "top")
-    # Falls back to the first implicit solver in the graph.
-    assert _shim(sections, "top").param_optional_str("solver", "") == "n1"
-    assert _solver_block_names(sections) == ["n1"]
-    # A disambiguation warning names both solvers and the chosen one.
-    err = capsys.readouterr().err
-    assert "multiple implicit solvers" in err
-    assert "n1" in err and "n2" in err
+def test_data_and_equationsystems_dropped(tmp_path):
+    """Runtime-irrelevant ``[Data]`` / ``[EquationSystems]`` are dropped (their
+    state was baked into the ``.pt2`` at compile time)."""
+    sections = _emit(tmp_path, _WITH_RUNTIME_SECTIONS, "model")
+    assert "Data" not in sections
+    assert "EquationSystems" not in sections
+    assert "Solvers" not in sections
 
 
-def test_composed_single_solver_fallback_without_warning(tmp_path, capsys):
-    sections = _emit(tmp_path, _COMPOSED_ONE_SOLVER, "top")
-    # Single implicit solver -> chosen by fallback, no warning.
-    assert _shim(sections, "top").param_optional_str("solver", "") == "n1"
-    assert _solver_block_names(sections) == ["n1"]
-    # No linear_solver to strip on this one; emission still succeeds.
-    n1 = next(s for s in sections["Solvers"].children(nmhit.NodeType.Section))
-    assert n1.find("linear_solver") is None
-    assert "multiple implicit solvers" not in capsys.readouterr().err
+def test_settings_carried_with_aoti_keys_stripped(tmp_path):
+    """``[Settings]`` is carried, but the ``aoti_*`` keys (invalid for the v3
+    factory) are stripped; other settings survive."""
+    sections = _emit(tmp_path, _WITH_RUNTIME_SECTIONS, "model")
+    assert "Settings" in sections
+    settings = sections["Settings"]
+    assert settings.find("aoti_mode") is None
+    assert settings.find("aoti_device") is None
+    assert settings.find("machine_precision") is not None
 
 
-def test_shared_solver_across_segments_deduplicated(tmp_path, capsys):
-    """Two implicit segments naming the *same* solver collapse to one entry --
-    no duplicate in the discovered list, single carried block, no warning."""
-    sections = _emit(tmp_path, _COMPOSED_SHARED_SOLVER, "top")
-    assert _shim(sections, "top").param_optional_str("solver", "") == "n1"
-    assert _solver_block_names(sections) == ["n1"]
-    assert "multiple implicit solvers" not in capsys.readouterr().err
+def test_tensors_carried_verbatim(tmp_path):
+    """``[Tensors]`` is carried verbatim (a kept driver may reference any entry)."""
+    sections = _emit(tmp_path, _WITH_RUNTIME_SECTIONS, "model")
+    assert "Tensors" in sections
+    names = [s.path() for s in sections["Tensors"].children(nmhit.NodeType.Section)]
+    assert names == ["t"]
+
+
+def test_drivers_dropped_in_model_mode(tmp_path):
+    """``--model`` mode (``keep_drivers=False``) drops ``[Drivers]``."""
+    sections = _emit(tmp_path, _WITH_RUNTIME_SECTIONS, "model", keep_drivers=False)
+    assert "Drivers" not in sections
+
+
+def test_drivers_kept_in_driver_mode(tmp_path):
+    """``--driver`` mode (``keep_drivers=True``) carries ``[Drivers]`` verbatim."""
+    sections = _emit(tmp_path, _WITH_RUNTIME_SECTIONS, "model", keep_drivers=True)
+    assert "Drivers" in sections
+    names = [s.path() for s in sections["Drivers"].children(nmhit.NodeType.Section)]
+    assert names == ["drv"]
 
 
 def test_unknown_model_name_raises(tmp_path):
     with pytest.raises(ValueError, match="no \\[Models/nope\\] block"):
         _emit(tmp_path, _DIRECT_IMPLICIT, "nope")
-
-
-def test_shim_records_absolute_artifact_path(tmp_path):
-    """The shim points at the artifact folder via an absolute ``artifact_path``;
-    the old per-device ``meta`` field is gone."""
-    sections = _emit(tmp_path, _FORWARD_ONLY, "model")
-    shim = _shim(sections, "model")
-    ap = shim.param_optional_str("artifact_path", "")
-    assert ap and Path(ap).is_absolute()
-    assert Path(ap).name == "model"  # the per-model artifact folder
-    assert shim.find("meta") is None  # superseded by artifact_path

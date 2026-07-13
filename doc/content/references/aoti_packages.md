@@ -71,46 +71,51 @@ See [](cli-utilities) for the broader CLI surface.
 
 ## On-disk layout
 
-`neml2-compile` writes a **per-device artifact folder** plus a single
-standalone HIT stub that sits next to it:
+`neml2-compile` writes an **artifact folder** plus an optional standalone
+HIT stub that sits next to it:
 
 ```text
 <output-dir>/                  # default ./aoti/
-  <name>_aoti.i                # standalone HIT stub (points at the folder below)
-  <name>/                      # per-device artifact folder
-    cpu/   <name>_meta.json + *.pt2
-    cuda/  <name>_meta.json + *.pt2
+  <name>_aoti.i                # standalone HIT stub (optional; see --no-stub)
+  <name>/                      # artifact folder
+    metadata.json              # shared: structural info, promoted-param values, solver config
+    cpu/float64/  *.pt2
+    cuda/float64/ *.pt2
 ```
 
 A compile targeting a single device (the default `--device cpu`) emits
-just one `<device>/` subfolder; `neml2-compile --device cpu cuda` emits
-both `cpu/` and `cuda/`, each a complete, self-contained artifact for
-that device. The stub points at the `<name>/` folder via an absolute
-`artifact_path` field, and the loader resolves
-`<artifact_path>/<device>/<name>_meta.json` for the device it runs on
-(see [The HIT stub](#the-hit-stub)).
+just one `<device>/<dtype>/` subfolder; `neml2-compile --device cpu cuda`
+emits both, each with its own `.pt2` binaries. The shared `metadata.json`
+at the artifact root is device/dtype-independent: the loader derives the
+device and dtype from the `<device>/<dtype>/` folder path, not from the
+metadata. The stub points at the `<name>/` folder via an absolute
+`artifact_path` field (see [The HIT stub](#the-hit-stub)).
 
-The full set of files a compile will write — every `.pt2`, each
-per-device `<name>_meta.json`, and the `<name>_aoti.i` stub — can be
+The stub is **optional**: pass `--no-stub` to suppress it. The artifact
+folder is self-describing — `cpp-aoti` and `cpp-dispatch` load directly
+from it without the stub; the stub is a convenience for `neml2-run` and
+`py-aoti` workflows.
+
+The full set of files a compile will write — every `.pt2`, the shared
+`metadata.json`, and the `<name>_aoti.i` stub — can be
 enumerated ahead of time, without compiling, via
 `neml2.cli.aoti_export.plan_export_artifacts`. `neml2-compile` prints
 `[k/N]` progress against that count as each file lands, tagging every
-per-device file with its device (e.g. `cpu/<name>_seg0.pt2`). The
+file with its device (e.g. `cpu/float64/<name>_seg0.pt2`). The
 independent compile units — each `(device, segment)` pair — are flattened
 into one spawn process pool by `neml2-compile -j N`, so both axes
 parallelize together: a `--device cpu cuda` build of a two-segment model
-fully uses `-j 4`, and the emitted artifacts and metadata are identical to
-a serial compile. `N` is capped at the number of `(device, segment)` cells,
-so a single-segment single-device build ignores `-j`.
+fully uses `-j 4`, and the emitted artifacts are identical to a serial
+compile. `N` is capped at the number of `(device, segment)` cells, so a
+single-segment single-device build ignores `-j`.
 
-Inside each `<device>/` subfolder, a forward single-segment model emits
-the metadata plus a value graph and an optional JVP graph:
+Inside each `<device>/<dtype>/` subfolder, a forward single-segment model
+emits the value graph and an optional JVP graph:
 
 | File                  | Contents                                                                    |
 | :-------------------- | :-------------------------------------------------------------------------- |
 | `<name>.pt2`          | AOT-Inductor-compiled forward / value graph.                                |
 | `<name>_jvp.pt2`      | Per-pair Jacobian graph (only when `-d` requested a forward-segment pair): returns the outputs plus one block per requested `(out, in)`. A block that does not depend on the dynamic batch (e.g. a constant stiffness tensor) is emitted unbatched (`batch_independent` in the metadata). |
-| `<name>_meta.json`    | Variable layout, dtype, device, promoted-parameter initial values, and the top-level `derivatives` array (master `[out, in]` pairs the artifact supports; empty = none). |
 
 Implicit single-segment models emit the per-segment set covered in the
 segment table below in place of the forward graphs.
@@ -135,30 +140,36 @@ the second table without the `_seg0_` prefix.
 
 ### What's in the metadata JSON
 
-The metadata is the source of truth: the `.pt2` files are opaque to
-NEML2, and re-loading an artifact in a new process never re-introspects
-the Python source. It records, at a high level:
+The `metadata.json` at the artifact root is the source of truth: the
+`.pt2` files are opaque to NEML2, and re-loading an artifact in a new
+process never re-introspects the Python source. It is
+**device/dtype-independent** — those are derived from the `<device>/<dtype>/`
+folder path. It records, at a high level:
 
-- **Device + dtype**, baked into the `.pt2` graphs at export. There
-  is no runtime override.
 - **Inputs and outputs** — master input/output order with per-variable
   storage size, base shape, and sub-batch shape.
-- **Promoted parameters** — the `-p` set, with initial values, the
-  artifact's device, and each parameter's natural base shape
-  (`param_base_shape`; e.g. `[]` for a `Scalar`, `[6]` for an `SR2`).
-  Empty in the fully-baked case (the artifact is then a frozen inference
-  graph and `named_parameters()` is empty at load time). The value /
-  jvp / jacobian / param-Jacobian / param-VJP graphs take each promoted
-  parameter as a **per-batch** `(B, *param_base)` input, so the runtime
-  can broadcast a stored scalar up to the call batch — or pass a
-  genuinely batched parameter through (see
-  [Batched parameters](#batched-parameters)). The recorded device is the
-  artifact's compile-target device (not the source snapshot's), since
-  those graphs dereference the parameter on-device.
+- **Promoted parameters** — the `-p` set, with initial values and each
+  parameter's natural base shape (`param_base_shape`; e.g. `[]` for a
+  `Scalar`, `[6]` for an `SR2`). Floating parameters inherit the leaf
+  dtype at load time; non-floating parameters carry an explicit `dtype`
+  field. Empty in the fully-baked case (the artifact is then a frozen
+  inference graph and `named_parameters()` is empty at load time). The
+  value / jvp / jacobian / param-Jacobian / param-VJP graphs take each
+  promoted parameter as a **per-batch** `(B, *param_base)` input, so
+  the runtime can broadcast a stored scalar up to the call batch — or
+  pass a genuinely batched parameter through (see
+  [Batched parameters](#batched-parameters)).
 - **Segments** — one entry per `ImplicitUpdate` boundary the exporter
   split on; executed in order at runtime, with each segment's outputs
   feeding the next segment's inputs via a shared `name → tensor` state
   map.
+- **Solver config** (`solver_config`) — present for implicit (Newton-solve)
+  models, absent for forward-only. Records convergence tolerances
+  (`atol`, `rtol`, `miters`) and line-search settings (`ls_type`,
+  `ls_max_iters`, `ls_cutback`, `ls_c`). The C++ runtime reads this
+  directly from the metadata; it can be overridden at runtime via
+  `set_solver_config`. Only the linear solver is baked into the compiled
+  `_step.pt2` / `_ift.pt2` graphs and cannot be changed without recompiling.
 - **Boundary aliases** (optional `boundary_aliases`) — shallow renames
   applied at the interface only. Present only when the artifact was
   compiled with `--rename-input` / `--rename-output` / `--rename-parameter`;
@@ -176,7 +187,7 @@ refuses any non-matching version with a clear "regenerate via
 `neml2-compile`" message; the only remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `8`.
+The current schema version is `9`.
 
 ### Segment kinds
 
@@ -198,10 +209,10 @@ Two segment kinds appear inside `segments`:
   `jacobian()` and `jvp()`.
 
   The Newton solve's convergence tolerances, iteration cap, and line-search
-  settings are **not** baked into the metadata (schema v4+). They are carried
-  by the HIT stub's `[Solvers]` block and forwarded to the C++ runtime at load
-  time (see [The HIT stub](#the-hit-stub) below). Only the linear solver is
-  baked — it lives inside the compiled `_step.pt2` / `_ift.pt2` graphs.
+  settings are recorded in `metadata.json` under `solver_config` and read
+  directly by the C++ runtime (see [What's in the metadata JSON](#whats-in-the-metadata-json)
+  above). Only the linear solver is baked — it lives inside the compiled
+  `_step.pt2` / `_ift.pt2` graphs.
 
 Each segment declares its inputs / outputs / promoted-parameter inputs
 in the same per-variable structure as the top-level layout.
@@ -220,7 +231,14 @@ The `<name>_aoti.i` file is the original input with the
 `[Models]/<name>` block surgically replaced by an `AOTIModel` shim.
 Every other section (`[Tensors]`, `[Drivers]`, `[Settings]`, …) is
 copied through verbatim, so the stub is a drop-in replacement
-wherever a `Driver` consumes the model by name. A typical stub:
+wherever a `Driver` consumes the model by name.
+
+The stub is **optional**: `neml2-compile` emits it by default; pass
+`--no-stub` to suppress it. The artifact folder is self-describing —
+`cpp-aoti` and `cpp-dispatch` load directly from the folder and do not
+require the stub.
+
+A typical stub:
 
 ```ini
 # Auto-generated by neml2-compile from input.i.
@@ -230,17 +248,22 @@ wherever a `Driver` consumes the model by name. A typical stub:
 [Models]
   [elasticity]
     type = AOTIModel
-    artifact_path = '/abs/path/to/aoti/elasticity'
+    artifact_path = 'elasticity'
   []
 []
 ```
 
-The `artifact_path` is an **absolute** path to the per-device artifact
-folder (`<output-dir>/<name>/`). The loader appends `<device>/` for the
-running device and loads `<artifact_path>/<device>/<name>_meta.json`.
-Because the path is absolute and the stub lives outside that folder, the
-artifacts are **not relocatable** — moving the folder requires editing
-`artifact_path` or recompiling.
+The `artifact_path` is a path to the artifact folder (`<output-dir>/<name>/`),
+written **relative to the stub** — usually just the folder name, since the stub
+(`<output-dir>/<name>_aoti.i`) sits right next to it. The loader (Python shim and
+C++ `load_model`) resolves a relative `artifact_path` against the stub's own
+directory, reads `metadata.json` from that root, and resolves
+`<artifact_path>/<device>/<dtype>/` for the device and dtype it runs on. Because
+the path is relative, the stub and its artifact folder form a **portable bundle**:
+copy or move the two together — to another directory, machine, or user — and it
+still loads, with no machine-specific path baked in and no recompile. Moving the
+stub *away* from its artifact folder is intentionally unsupported; keep them
+together. (An absolute `artifact_path` is also accepted if you hand-edit one.)
 
 The shim has the same surface as a native model — same `input_spec`,
 same `output_spec`, same call convention — but inside it dispatches
@@ -249,36 +272,12 @@ Because the surface is identical, anything that consumes a model
 through the normal HIT machinery (e.g. a `TransientDriver`) works
 without modification.
 
-For a model with an implicit (`ImplicitUpdate`) segment, a **minimal**
-`[Solvers]` block is carried and the shim gains a `solver` field pointing
-at it (schema v4+). At load the `AOTIModel` shim reads that solver's
-convergence / line-search settings and forwards them to the C++ runtime,
-so they can be tuned by editing the stub without recompiling:
-
-```ini
-[Solvers]
-  [newton]
-    type = Newton
-    abs_tol = 1e-12
-    rel_tol = 1e-10
-    max_its = 25
-  []
-[]
-
-[Models]
-  [model]
-    type = AOTIModel
-    artifact_path = '/abs/path/to/aoti/model'
-    solver = 'newton'
-  []
-[]
-```
-
-Only the knobs that take effect are carried. The `linear_solver` field is
-**deliberately omitted**: the linear solver is baked into the compiled
-`_step.pt2` / `_ift.pt2` at compile time, so editing it in the stub would
-have no effect — leaving it out keeps the stub free of inert controls.
-`[EquationSystems]` and `[Data]` are dropped — their state was baked in.
+For a model with an implicit (`ImplicitUpdate`) segment the solver
+configuration is read directly from `metadata.json` (`solver_config`).
+The stub carries no `[Solvers]` block — solver settings travel with the
+artifact, not the stub. To override them at runtime use
+`set_solver_config` on the loaded `Model`. `[EquationSystems]` and
+`[Data]` are dropped — their state was baked in.
 
 ## Parameter promotion (`-p`)
 
