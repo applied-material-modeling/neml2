@@ -244,7 +244,7 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
         }
       }
     }
-    else if (seg.max_substepping_level > 0 && seg.ift_loader)
+    else if (seg.max_substepping_level > 0 && seg.solve_ift_loader)
     {
       // Substepped solve + chained consistent-tangent accumulation in one
       // bisection recursion (state + dstate advanced together). Masked when the
@@ -262,7 +262,7 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
         _run_implicit_segment_substepped(seg, state, u_solved_groups, g_groups);
       else
         _run_implicit_segment(seg, state, u_solved_groups, g_groups);
-      if (seg.ift_loader)
+      if (seg.solve_ift_loader)
         _run_implicit_segment_jacobian(seg, u_solved_groups, g_groups, dstate);
       else
         // Off-path implicit segment: forward solve already advanced `state`;
@@ -346,7 +346,7 @@ Model::Impl::param_jacobian(const std::map<std::string, at::Tensor> & inputs,
       static_cast<bool>(_segments.front().param_jacobian_loader))
     return _forward_param_pair_blocks(inputs);
   if (_segments.size() == 1 && _segments.front().kind == SegmentKind::Implicit &&
-      static_cast<bool>(_segments.front().param_ift_loader))
+      static_cast<bool>(_segments.front().solve_param_loader))
     return _implicit_param_pair_blocks(inputs);
 
   // Multi-segment (composed) artifacts: compose the parameter sensitivity across

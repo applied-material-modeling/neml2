@@ -242,7 +242,8 @@ Model::Impl::_implicit_param_pair_blocks(const std::map<std::string, at::Tensor>
 
   // One dense du/dθ block per (unknown, param) pair, in param_jacobian_pairs
   // order (unknowns outer, params inner).
-  const auto blocks = seg.param_ift_loader->run(pift_in);
+  const auto op_out = seg.dr_dparam_loader->run(pift_in);  // (A_dense, Bp)
+  const auto blocks = seg.solve_param_loader->run(op_out); // per-(unknown, param) blocks
   const std::size_t n_pairs = seg.param_jacobian_pairs.size();
   _assert(blocks.size() == n_pairs,
           "aoti::Model::param_jacobian: ParamIFT loader returned ",
@@ -339,7 +340,8 @@ Model::Impl::_add_implicit_param_direct(const Segment & seg,
                                  common_dyn,
                                  static_cast<int64_t>(_param_base_shapes.at(pname).size())));
 
-  const auto blocks = seg.param_ift_loader->run(pift_in);
+  const auto op_out = seg.dr_dparam_loader->run(pift_in);  // (A_dense, Bp)
+  const auto blocks = seg.solve_param_loader->run(op_out); // per-(unknown, param) blocks
   _assert(blocks.size() == seg.param_jacobian_pairs.size(),
           "aoti::Model::param_jacobian: ParamIFT loader returned ",
           blocks.size(),
@@ -428,7 +430,7 @@ Model::Impl::_param_jacobian_dstate(const std::map<std::string, at::Tensor> & in
       std::vector<at::Tensor> u_solved_groups;
       std::vector<at::Tensor> g_groups;
       _run_implicit_segment(seg, state, u_solved_groups, g_groups);
-      if (seg.ift_loader)
+      if (seg.solve_ift_loader)
         _run_implicit_segment_jacobian(seg, u_solved_groups, g_groups, dpstate); // indirect
       else
         for (const auto & u : seg.unknowns)
@@ -438,7 +440,7 @@ Model::Impl::_param_jacobian_dstate(const std::map<std::string, at::Tensor> & in
           shp.push_back(P);
           dpstate[u.name] = at::zeros(shp, ref.options());
         }
-      if (seg.param_ift_loader)
+      if (seg.solve_param_loader)
         _add_implicit_param_direct(seg, u_solved_groups, g_groups, common_dyn, dpstate); // direct
     }
   }
@@ -643,20 +645,33 @@ Model::Impl::_run_implicit_segment_jacobian(const Segment & seg,
                                             const std::vector<at::Tensor> & g_groups,
                                             std::map<std::string, at::Tensor> & dstate) const
 {
-  // IFT loader signature: (*u_groups, *g_groups, [params...]) -> *blocks, one
-  // per (unknown, given) pair in seg.jacobian_pairs order (the disassemble of
-  // -du/dg). Compose each block against dstate[given] into dstate[unknown] --
-  // the same per-pair Jacobian path a forward segment uses.
-  std::vector<at::Tensor> ift_in;
-  ift_in.reserve(u_solved_groups.size() + g_groups.size() + seg.param_inputs.size());
+  // Operator + solve chain (schema v10): the IFT solve is un-baked. Run the
+  // `jacobian` operator (A = ∂r/∂u + b) and the `jacobian_given` operator
+  // (B = ∂r/∂g) at the converged point, then feed A blocks (the leading
+  // n_residual*n_unknown outputs of `jacobian`, dropping the trailing b groups)
+  // + B blocks to `solve_ift`, which emits one -du/dg block per (unknown, given)
+  // pair in seg.jacobian_pairs order (the disassemble of -du/dg). Compose each
+  // block against dstate[given] into dstate[unknown] -- the same per-pair
+  // Jacobian path a forward segment uses.
+  std::vector<at::Tensor> op_in;
+  op_in.reserve(u_solved_groups.size() + g_groups.size() + seg.param_inputs.size());
   for (const auto & t : u_solved_groups)
-    ift_in.push_back(t.contiguous());
+    op_in.push_back(t.contiguous());
   for (const auto & t : g_groups)
-    ift_in.push_back(t.contiguous());
+    op_in.push_back(t.contiguous());
   for (auto & p : _gather_params(seg.param_inputs))
-    ift_in.push_back(std::move(p));
+    op_in.push_back(std::move(p));
 
-  const auto blocks = seg.ift_loader->run(ift_in);
+  const auto jac_out = seg.jacobian_loader->run(op_in);         // n_r*n_u A blocks + n_r b
+  const auto given_out = seg.jacobian_given_loader->run(op_in); // n_r*n_g B blocks
+  const std::size_t n_a = seg.residual_groups.size() * seg.unknown_groups.size();
+  std::vector<at::Tensor> solve_in;
+  solve_in.reserve(n_a + given_out.size());
+  solve_in.insert(
+      solve_in.end(), jac_out.begin(), jac_out.begin() + static_cast<std::ptrdiff_t>(n_a));
+  solve_in.insert(solve_in.end(), given_out.begin(), given_out.end());
+
+  const auto blocks = seg.solve_ift_loader->run(solve_in);
   const std::size_t n_pairs = seg.jacobian_pairs.size();
   _assert(blocks.size() == n_pairs,
           "aoti::Model: IFT loader returned ",

@@ -188,17 +188,31 @@ struct Model::Impl
     std::vector<std::string> fwd_inputs;
     std::vector<std::string> fwd_outputs;
 
-    // Implicit-segment-only.
-    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> rhs_loader;
-    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> step_loader;
-    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> ift_loader;
-    /// Implicit-segment parameter sensitivity graph: du/dθ for a
-    /// promoted parameter inside the residual. Takes the converged per-group
-    /// unknowns + givens + the promoted parameters PER-BATCH (the runtime
-    /// broadcasts the stored scalar to the batch before the call), returns one
-    /// dense du/dθ block per (unknown, param) pair in `param_jacobian_pairs`
-    /// order. Null unless an implicit parameter derivative was compiled.
-    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> param_ift_loader;
+    // Implicit-segment-only. The residual Jacobian is emitted as an OPERATOR
+    // (`jacobian_loader`: (*u,*g,*p) -> (*A_blocks, *b_groups)); the linear solve
+    // is a separate graph (`solve_loader`: (*A_blocks, *b_groups) -> (*du_groups))
+    // that bakes the configured linear solver. `AOTINonlinearSystem::step()`
+    // chains jacobian -> solve. `residual_loader` is the cheap residual eval for
+    // line-search trials.
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> residual_loader;
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> jacobian_loader;
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> solve_loader;
+    /// IFT (input-derivative) operator + solve graphs. `jacobian_given_loader`
+    /// emits B = ∂r/∂g; A = ∂r/∂u is reused from `jacobian_loader`. `solve_ift_loader`
+    /// takes `(*A_blocks, *B_blocks)` and emits one `-du/dg` block per (unknown,
+    /// given) pair in `jacobian_pairs` order. Both null unless an input derivative
+    /// was compiled.
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> jacobian_given_loader;
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> solve_ift_loader;
+    /// Implicit-segment parameter sensitivity graphs: du/dθ for a promoted
+    /// parameter inside the residual. `dr_dparam_loader` emits the dense A = ∂r/∂u
+    /// and ∂r/∂θ (reverse-mode AD; parameters enter PER-BATCH -- the runtime
+    /// broadcasts the stored scalar to the batch before the call); `solve_param_loader`
+    /// takes `(A_dense, dr_dparam)` and emits one dense du/dθ block per (unknown,
+    /// param) pair in `param_jacobian_pairs` order. Both null unless an implicit
+    /// parameter derivative was compiled.
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> dr_dparam_loader;
+    std::unique_ptr<torch::inductor::AOTIModelPackageLoader> solve_param_loader;
     std::unique_ptr<torch::inductor::AOTIModelPackageLoader> predictor_loader;
 
     /// Per-variable metadata. The natural ``(*B, *sub_batch, *base)``
@@ -297,7 +311,7 @@ struct Model::Impl
     std::vector<std::string> predictor_outputs;
     /// Promoted parameters the predictor graph consumes. Separate
     /// from `param_inputs` because the predictor is a distinct nn.Module: the
-    /// rhs/step/ift graphs take the residual's promoted tail, but the predictor
+    /// the operator graphs take the residual's promoted tail, but the predictor
     /// is compiled without it, so it currently receives no promoted params
     /// (empty). Kept as its own field so threading promoted params into a
     /// predictor later does not perturb the residual tail.
@@ -409,7 +423,7 @@ struct Model::Impl
   /// solved-unknown sensitivity -- so one IFT call yields
   /// `J_k = A_k·J_{k-1} + B_k·frac_k·J_endpoint`. On return `state` holds the
   /// final unknowns and `dstate[unknown]` the total `du_M/d(master inputs)`.
-  /// Requires `seg.ift_loader`. Only called when `seg.max_substepping_level > 0`.
+  /// Requires `seg.solve_ift_loader`. Only called when `seg.max_substepping_level > 0`.
   void _run_implicit_segment_substepped_jacobian(const Segment & seg,
                                                  std::map<std::string, at::Tensor> & state,
                                                  std::map<std::string, at::Tensor> & dstate) const;
@@ -584,8 +598,8 @@ struct Model::Impl
   /// contribution (`jvp_loader` per-pair blocks composed against `dpstate[in]`
   /// via `_run_forward_segment_jacobian`) plus its DIRECT contribution
   /// (`param_jacobian_loader` blocks injected at the parameter's column band);
-  /// each implicit segment adds its indirect (`ift_loader` via
-  /// `_run_implicit_segment_jacobian`) plus its direct (`param_ift_loader`
+  /// each implicit segment adds its indirect (the IFT operator+solve graphs via
+  /// `_run_implicit_segment_jacobian`) plus its direct (`solve_param_loader`
   /// blocks). Returns the master outputs + the per-variable `dpstate` map; the
   /// caller slices each requested `(out, param)` block.
   std::pair<std::map<std::string, at::Tensor>, std::map<std::string, at::Tensor>>
@@ -601,7 +615,7 @@ struct Model::Impl
                                  std::map<std::string, at::Tensor> & dpstate) const;
 
   /// Add an implicit segment's DIRECT parameter sensitivity into `dpstate`: run
-  /// the segment's `param_ift_loader` on the converged per-group unknowns +
+  /// the segment's dr_dparam + solve_param graphs on the converged per-group unknowns +
   /// givens + promoted params (broadcast per-batch) and accumulate each
   /// `du/d(param)` block at the parameter's column band of `dpstate[unknown]`.
   void _add_implicit_param_direct(const Segment & seg,

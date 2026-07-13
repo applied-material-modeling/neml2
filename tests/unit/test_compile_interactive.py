@@ -274,7 +274,7 @@ def test_plan_summary_composed_multi_segment():
     ]
     # Every predicted artifact plus the meta + stub is enumerated, stub last.
     assert summary.files[-1] == "model_aoti.i"
-    assert "model_seg1_ift.pt2" in summary.files
+    assert "model_seg1_solve_ift.pt2" in summary.files
 
 
 def test_validate_ok_for_real_file():

@@ -167,7 +167,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // a cryptic missing-field error deep in the parser. The canonical value lives
   // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 9;
+  static constexpr int kSupportedSchemaVersion = 10;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -547,12 +547,21 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
     {
       seg.kind = SegmentKind::Implicit;
       seg.max_substepping_level = seg_meta.value("max_substepping_level", 0);
-      seg.rhs_loader = make_loader(cache_dir / seg_meta["rhs_package"].get<std::string>(), dev_idx);
-      seg.step_loader =
-          make_loader(cache_dir / seg_meta["step_package"].get<std::string>(), dev_idx);
-      if (seg_meta.contains("ift_package"))
-        seg.ift_loader =
-            make_loader(cache_dir / seg_meta["ift_package"].get<std::string>(), dev_idx);
+      // Operator + solve graphs (schema v10): the Jacobian is emitted as an
+      // operator and the linear solve is a separate graph the C++ driver chains.
+      seg.residual_loader =
+          make_loader(cache_dir / seg_meta["residual_package"].get<std::string>(), dev_idx);
+      seg.jacobian_loader =
+          make_loader(cache_dir / seg_meta["jacobian_package"].get<std::string>(), dev_idx);
+      seg.solve_loader =
+          make_loader(cache_dir / seg_meta["solve_package"].get<std::string>(), dev_idx);
+      if (seg_meta.contains("solve_ift_package"))
+      {
+        seg.jacobian_given_loader =
+            make_loader(cache_dir / seg_meta["jacobian_given_package"].get<std::string>(), dev_idx);
+        seg.solve_ift_loader =
+            make_loader(cache_dir / seg_meta["solve_ift_package"].get<std::string>(), dev_idx);
+      }
 
       for (const auto & v : seg_meta["unknowns"])
         seg.unknowns.push_back(parse_var_info(v));
@@ -609,10 +618,12 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
       // derivative targeting a promoted parameter inside the residual was
       // requested. Emits one dense du/dθ block per (unknown, param) pair in
       // param_jacobian_pairs order (unknowns outer, params inner).
-      if (seg_meta.contains("param_ift_package"))
+      if (seg_meta.contains("solve_param_package"))
       {
-        seg.param_ift_loader =
-            make_loader(cache_dir / seg_meta["param_ift_package"].get<std::string>(), dev_idx);
+        seg.dr_dparam_loader =
+            make_loader(cache_dir / seg_meta["dr_dparam_package"].get<std::string>(), dev_idx);
+        seg.solve_param_loader =
+            make_loader(cache_dir / seg_meta["solve_param_package"].get<std::string>(), dev_idx);
         for (const auto & p : seg_meta["param_jacobian_pairs"])
         {
           Segment::ParamPairInfo pi;

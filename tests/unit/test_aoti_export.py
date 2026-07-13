@@ -178,17 +178,21 @@ def test_predict_forward_artifacts_emit_order():
 
 def test_predict_implicit_artifacts_emit_order():
     """The implicit predictor mirrors the compile_model calls in
-    _compile_implicit_segment: rhs, step, then optional ift/pift/predictor."""
+    _compile_implicit_segment: residual, jacobian, solve, then optional
+    ift/pift/predictor."""
     from neml2.cli.aoti_export import _predict_implicit_artifacts
 
     assert _predict_implicit_artifacts(
         "m", emit_ift=False, emit_pift=False, has_predictor=False
-    ) == ["m_rhs.pt2", "m_step.pt2"]
+    ) == ["m_residual.pt2", "m_jacobian.pt2", "m_solve.pt2"]
     assert _predict_implicit_artifacts("m", emit_ift=True, emit_pift=True, has_predictor=True) == [
-        "m_rhs.pt2",
-        "m_step.pt2",
-        "m_ift.pt2",
-        "m_pift.pt2",
+        "m_residual.pt2",
+        "m_jacobian.pt2",
+        "m_solve.pt2",
+        "m_jacobian_given.pt2",
+        "m_solve_ift.pt2",
+        "m_dr_dparam.pt2",
+        "m_solve_param.pt2",
         "m_predictor.pt2",
     ]
 
@@ -217,9 +221,11 @@ def test_plan_export_artifacts_single_implicit():
     plan = plan_export_artifacts(_J2_NATIVE_I, "return_map", derivatives=[":"])
     assert [s.kind for s in plan.segments] == ["implicit"]
     assert plan.artifacts == [
-        "return_map_rhs.pt2",
-        "return_map_step.pt2",
-        "return_map_ift.pt2",
+        "return_map_residual.pt2",
+        "return_map_jacobian.pt2",
+        "return_map_solve.pt2",
+        "return_map_jacobian_given.pt2",
+        "return_map_solve_ift.pt2",
         "return_map_predictor.pt2",
         "metadata.json",
     ]
@@ -235,9 +241,11 @@ def test_plan_export_artifacts_composed_multi_segment():
     assert plan.artifacts == [
         "model_seg0.pt2",
         "model_seg0_jvp.pt2",
-        "model_seg1_rhs.pt2",
-        "model_seg1_step.pt2",
-        "model_seg1_ift.pt2",
+        "model_seg1_residual.pt2",
+        "model_seg1_jacobian.pt2",
+        "model_seg1_solve.pt2",
+        "model_seg1_jacobian_given.pt2",
+        "model_seg1_solve_ift.pt2",
         "model_seg2.pt2",
         "model_seg2_jvp.pt2",
         "metadata.json",
@@ -538,16 +546,20 @@ def test_export_implicit_model_produces_artifacts(implicit_export):
 
     # Phase-7 unified schema: a single ImplicitUpdate is a one-segment
     # composition with kind=implicit. Artifact filenames keep their original
-    # rhs/step/predictor suffixes (no `_seg0_` prefix for single-segment).
+    # residual/jacobian/solve/predictor suffixes (no `_seg0_` prefix for
+    # single-segment).
     assert meta["type"] == "composed"
     assert len(meta["segments"]) == 1
     assert meta["segments"][0]["kind"] == "implicit"
-    # Schema v10: binaries under <device>/<dtype>/, shared metadata.json at root.
-    assert (leaf / "return_map_rhs.pt2").exists()
-    assert (leaf / "return_map_step.pt2").exists()
-    assert (leaf / "return_map_ift.pt2").exists()
+    # Schema v10: operator + solve graphs, binaries under <device>/<dtype>/,
+    # shared metadata.json at root.
+    assert (leaf / "return_map_residual.pt2").exists()
+    assert (leaf / "return_map_jacobian.pt2").exists()
+    assert (leaf / "return_map_solve.pt2").exists()
+    assert (leaf / "return_map_jacobian_given.pt2").exists()
+    assert (leaf / "return_map_solve_ift.pt2").exists()
     assert (out_dir / "metadata.json").exists()
-    assert meta["segments"][0]["ift_package"] == "return_map_ift.pt2"
+    assert meta["segments"][0]["solve_ift_package"] == "return_map_solve_ift.pt2"
     # An implicit model records the runtime solver config in the shared meta so
     # the Python-free C++ runtime is configured straight from the artifact.
     assert "solver_config" in meta
@@ -575,7 +587,12 @@ def test_export_implicit_ift_satisfies_IFT_identity(implicit_export):
     f = load_input(_J2_NATIVE_I)
     return_map = f.get_model("return_map")
     _, out_dir, leaf = implicit_export
-    ift_pkg = load_package(leaf / "return_map_ift.pt2")
+    # Schema v10: the IFT is un-baked into operator + solve graphs. Chain
+    # `jacobian` (A = ∂r/∂u + b) + `jacobian_given` (B = ∂r/∂g) -> `solve_ift`
+    # (A^{-1}B -> per-pair -du/dg blocks), exactly as the C++ runtime does.
+    jacobian_pkg = load_package(leaf / "return_map_jacobian.pt2")
+    jacobian_given_pkg = load_package(leaf / "return_map_jacobian_given.pt2")
+    solve_ift_pkg = load_package(leaf / "return_map_solve_ift.pt2")
 
     system: ModelNonlinearSystem = return_map.system  # type: ignore[attr-defined]
 
@@ -630,10 +647,18 @@ def test_export_implicit_ift_satisfies_IFT_identity(implicit_export):
     A = A_assembled.tensors[0][0].data
     B = B_assembled.tensors[0][0].data
 
-    # The IFT graph now emits one block per (unknown, given) pair (the
+    # The solve_ift graph emits one block per (unknown, given) pair (the
     # disassemble of -du/dg), in unknown x given order. Reassemble them into the
     # full -du/dg matrix and check the IFT identity A J + B = 0.
-    blocks = ift_pkg(u, g)
+    jac_out = jacobian_pkg(u, g)
+    if not isinstance(jac_out, tuple):
+        jac_out = (jac_out,)
+    n_a = system.blayout.ngroup * system.ulayout.ngroup
+    a_blocks = jac_out[:n_a]  # drop the trailing b groups
+    b_blocks = jacobian_given_pkg(u, g)
+    if not isinstance(b_blocks, tuple):
+        b_blocks = (b_blocks,)
+    blocks = solve_ift_pkg(*a_blocks, *b_blocks)
     if not isinstance(blocks, tuple):
         blocks = (blocks,)
     u_off = {
@@ -703,7 +728,7 @@ def test_export_implicit_rhs_output_matches_eager(implicit_export):
 
     _, out_dir, leaf = implicit_export
 
-    rhs_pkg = load_package(leaf / "return_map_rhs.pt2")
+    rhs_pkg = load_package(leaf / "return_map_residual.pt2")
 
     system: ModelNonlinearSystem = return_map.system  # type: ignore[attr-defined]
 

@@ -35,14 +35,16 @@ namespace neml2::aoti
 // Out-of-line dtor anchors the NonlinearSystem vtable in this TU.
 NonlinearSystem::~NonlinearSystem() = default;
 
-AOTINonlinearSystem::AOTINonlinearSystem(torch::inductor::AOTIModelPackageLoader & rhs_loader,
-                                         torch::inductor::AOTIModelPackageLoader & step_loader,
+AOTINonlinearSystem::AOTINonlinearSystem(torch::inductor::AOTIModelPackageLoader & residual_loader,
+                                         torch::inductor::AOTIModelPackageLoader & jacobian_loader,
+                                         torch::inductor::AOTIModelPackageLoader & solve_loader,
                                          std::vector<GroupLayout> unknown_layout,
                                          std::vector<GroupLayout> residual_layout,
                                          std::vector<at::Tensor> g_groups,
                                          std::vector<at::Tensor> params)
-  : _rhs_loader(rhs_loader),
-    _step_loader(step_loader),
+  : _residual_loader(residual_loader),
+    _jacobian_loader(jacobian_loader),
+    _solve_loader(solve_loader),
     _unknown_layout(std::move(unknown_layout)),
     _residual_layout(std::move(residual_layout)),
     _g(std::move(g_groups)),
@@ -67,24 +69,38 @@ AOTINonlinearSystem::build_inputs(const std::vector<at::Tensor> & u) const
 std::vector<at::Tensor>
 AOTINonlinearSystem::residual(const std::vector<at::Tensor> & u) const
 {
-  return _rhs_loader.run(build_inputs(u));
+  return _residual_loader.run(build_inputs(u));
 }
 
 std::pair<std::vector<at::Tensor>, std::vector<at::Tensor>>
 AOTINonlinearSystem::step(const std::vector<at::Tensor> & u) const
 {
-  // step graph returns (*du_groups, *b_curr_groups) of length n_u + n_r.
-  const auto step_outs = _step_loader.run(build_inputs(u));
+  // Chain the operator + solve graphs (no solver algebra here):
+  //   jacobian: (*u, *g, *p) -> (*A_blocks, *b_groups)  [n_r*n_u A blocks + n_r b]
+  //   solve:    (*A_blocks, *b_groups) -> (*du_groups)   [n_u du]
+  // The Jacobian's outputs feed the solve verbatim; the trailing b_groups are
+  // returned for the line search (mirrors the old fused `step` graph's du+b).
   const std::size_t n_u = _unknown_layout.size();
   const std::size_t n_r = _residual_layout.size();
-  _assert(step_outs.size() == n_u + n_r,
-          "AOTINonlinearSystem::step: step loader returned ",
-          step_outs.size(),
-          " tensors, expected n_unknown_groups + n_residual_groups (",
-          n_u + n_r,
+
+  const auto jac_outs = _jacobian_loader.run(build_inputs(u));
+  _assert(jac_outs.size() == n_r * n_u + n_r,
+          "AOTINonlinearSystem::step: jacobian loader returned ",
+          jac_outs.size(),
+          " tensors, expected n_residual*n_unknown + n_residual groups (",
+          n_r * n_u + n_r,
           ")");
-  std::vector<at::Tensor> du(step_outs.begin(), step_outs.begin() + n_u);
-  std::vector<at::Tensor> b(step_outs.begin() + n_u, step_outs.end());
+
+  auto du = _solve_loader.run(jac_outs);
+  _assert(du.size() == n_u,
+          "AOTINonlinearSystem::step: solve loader returned ",
+          du.size(),
+          " tensors, expected one per unknown group (",
+          n_u,
+          ")");
+
+  // b_groups are the last n_r outputs of the jacobian graph.
+  std::vector<at::Tensor> b(jac_outs.end() - static_cast<std::ptrdiff_t>(n_r), jac_outs.end());
   return {std::move(du), std::move(b)};
 }
 } // namespace neml2::aoti

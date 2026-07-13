@@ -137,9 +137,10 @@ class Newton:
 
         The iteration control (convergence test, line search) lives in C++ and
         is shared with the AOTI runtime; this wrapper supplies the residual /
-        Newton-step callbacks (the ``RHS`` / ``NewtonStep`` export modules, run
-        eagerly) plus the per-group layouts, then commits the converged iterate
-        back into the system.
+        Newton-step callbacks (the ``RHS`` residual + the ``Jacobian`` operator
+        chained into ``LinearSolve``, the same modules the AOTI runtime compiles,
+        run eagerly here) plus the per-group layouts, then commits the converged
+        iterate back into the system.
         """
         # Local imports: the compiled extension + the residual/step export
         # modules, kept off the package import path so a partial build can still
@@ -147,17 +148,22 @@ class Newton:
         from neml2.aoti._aoti import newton_solve_eager  # noqa: PLC0415
         from neml2.es.implicit import (  # noqa: PLC0415
             RHS,
-            NewtonStep,
+            Jacobian,
+            LinearSolve,
             _vector_to_per_group_raws,
         )
 
-        # The eager path runs the *same* residual/step modules the AOTI runtime
-        # compiles (RHS / NewtonStep), so the two cannot diverge -- only the
-        # iteration control differs (here C++, there C++ too). The givens are
-        # bound once; the C++ loop drives the unknowns.
+        # The eager path runs the *same* operator + solve modules the AOTI runtime
+        # compiles (RHS / Jacobian / LinearSolve), so the two cannot diverge --
+        # only the iteration control differs (here C++, there C++ too). The linear
+        # solve is un-baked from the Jacobian operator: ``Jacobian`` assembles
+        # ``(A_blocks, b)``; ``LinearSolve`` reconstructs the typed operators and
+        # applies the configured Python solver. The givens are bound once; the C++
+        # loop drives the unknowns.
         rhs = RHS(system)
-        step = NewtonStep(system, self.linear_solver)
-        n_u = system.ulayout.ngroup
+        jacobian = Jacobian(system)
+        linear_solve = LinearSolve(system, self.linear_solver)
+        n_a = system.blayout.ngroup * system.ulayout.ngroup  # A blocks (residual × unknown)
 
         # The Newton iterates are a fixed-point solve: gradients flow through
         # the converged state via the IFT (see ImplicitUpdate), never through
@@ -172,8 +178,14 @@ class Newton:
             def step_fn(
                 u_raws: list[torch.Tensor],
             ) -> tuple[list[torch.Tensor], list[torch.Tensor]]:
-                out = step(*u_raws, *g_raws)
-                return list(out[:n_u]), list(out[n_u:])
+                # Chain the operator + solve graphs: Jacobian -> (A_blocks, b),
+                # LinearSolve(A_blocks, b) -> du. The b groups (the last
+                # blayout.ngroup outputs of Jacobian) are reused for the
+                # line-search residual, matching the compiled C++ step() path.
+                jac_out = jacobian(*u_raws, *g_raws)
+                du = linear_solve(*jac_out)
+                b = jac_out[n_a:]
+                return list(du), list(b)
 
             u_star, converged, iterations, log = newton_solve_eager(
                 residual_fn=residual_fn,
