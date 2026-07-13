@@ -1,0 +1,34 @@
+(models-DislocationObstacleStrengthMap)=
+# DislocationObstacleStrengthMap
+
+**Source:** `models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.py`
+
+Dislocation density to strength as in Taylor
+$\tau_i = \tau_{const} + \alpha \mu b \sqrt{\rho_i}$.
+
+## Inputs
+
+`dislocation_density` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Per-slip dislocation density
+
+
+## Outputs
+
+`slip_strengths` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Name of the slip system strengths
+
+
+## Parameters
+
+`constant_strength` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Constant strength offset
+
+`alpha` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Interaction coefficient
+
+`mu` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Shear modulus
+
+`b` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Burgers vector
+
