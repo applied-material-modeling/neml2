@@ -29,7 +29,12 @@ endfunction()
 # them build-tree-local so `ctest --parallel` runs stay isolated per fixture.
 function(neml2_inductor_cache_dir out_var fixture_name default_dir)
       if(WIN32)
-            file(TO_CMAKE_PATH "$ENV{TEMP}" _tmp)
+            # cmake_path(SET), not file(TO_CMAKE_PATH): the latter treats its
+            # input as a search-path list and rewrites the "C:" drive colon to a
+            # ";", which then splits the ENVIRONMENT test property in two -- the
+            # cache would silently fall back to a relative "C" dir under the deep
+            # build tree, defeating this whole shortening.
+            cmake_path(SET _tmp "$ENV{TEMP}")
             set(${out_var} "${_tmp}/neml2-ic/${fixture_name}" PARENT_SCOPE)
       else()
             set(${out_var} "${default_dir}/aoti-cache" PARENT_SCOPE)
