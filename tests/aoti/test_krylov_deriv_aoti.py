@@ -38,7 +38,21 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import torch
+
+from neml2.cli.aoti_export import _reverse_ad_aoti_unsupported_reason
+
+# Parameter-derivative AOTI graphs (ParamIFT `dr_dparam`) lower reverse-mode
+# autograd.grad, which needs torch >= 2.11 (`trace_autograd_ops`); skip the
+# param-sensitivity cases on the exact predicate the exporter guards on so the
+# test gate and the runtime guard cannot drift. The INPUT-sensitivity cases use
+# the forward chain rule and run on every torch.
+_PARAM_DERIV_UNSUPPORTED = _reverse_ad_aoti_unsupported_reason()
+_REQUIRES_PARAM_DERIV_TORCH = pytest.mark.skipif(
+    _PARAM_DERIV_UNSUPPORTED is not None,
+    reason=f"reverse-mode AD AOTI compilation {_PARAM_DERIV_UNSUPPORTED}",
+)
 
 _HERE = Path(__file__).parent
 # Same Perzyna physics; the *_deriv variant selects an iterative input-sensitivity
@@ -152,6 +166,7 @@ def test_input_sensitivity_krylov_matches_direct(tmp_path: Path):
             )
 
 
+@_REQUIRES_PARAM_DERIV_TORCH
 def test_param_sensitivity_krylov_metadata(tmp_path: Path):
     """An iterative param_sensitivity_solver emits `_dr_dparam` but NOT
     `_solve_param`; the segment records param_sensitivity.kind == krylov."""
@@ -168,6 +183,7 @@ def test_param_sensitivity_krylov_metadata(tmp_path: Path):
         assert "row_offset" in pair and "col_offset" in pair
 
 
+@_REQUIRES_PARAM_DERIV_TORCH
 def test_param_sensitivity_krylov_matches_direct(tmp_path: Path):
     """The compiled iterative-ParamIFT parameter Jacobian equals the direct
     (DenseLU) one and finite differences on the promoted parameter."""
