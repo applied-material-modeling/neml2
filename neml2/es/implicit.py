@@ -348,6 +348,58 @@ class Jacobian(_SystemModule):
         return (*_matrix_to_per_block_raws(A), *_vector_to_per_group_raws(b))
 
 
+class Matvec(_SystemModule):
+    """Exportable matrix-free residual jvp: ``(*u, *g, *params, *v) -> (*Jv)``.
+
+    ``J.v = ∂r/∂u . v`` at fixed ``(u, g, params)``, where ``v`` is a tangent in
+    the unknown space (same per-group layout as ``u``) and ``Jv`` is in the
+    residual space (``blayout``). Never assembles ``A`` -- it threads the single
+    direction ``v`` through the ``forward(v=)`` chain rule (one forward pass + one
+    pushforward), the matvec an iterative/Krylov linear solver calls each inner
+    iteration. This is the matrix-free counterpart of :class:`Jacobian` (which
+    assembles the full ``A``): ``Matvec(u,g,v)`` equals ``Jacobian(u,g).A @ v``,
+    but at O(N^2) with no O(N^3) factorization downstream. The C++ Krylov runtime
+    drives it (compiled loader on the AOTI route, callback on the eager route);
+    both feed the shared ``krylov_solve``.
+    """
+
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        from ..types._boundary import assemble_jvp_outputs, leading_k1_seed  # noqa: PLC0415
+
+        n_u = len(self.unknown_groups)
+        n_g = len(self.given_groups)
+        n_p = len(self.param_names)
+        u_raws = args[:n_u]
+        g_raws = args[n_u : n_u + n_g]
+        p_raws = args[n_u + n_g : n_u + n_g + n_p]
+        v_raws = args[n_u + n_g + n_p :]
+        state = self._state_from_per_group_args((*u_raws, *g_raws, *p_raws))
+        # v arrives per-unknown-group (ulayout); disassemble to per-variable typed
+        # tangents and seed each unknown with a single K=1 direction.
+        v_tensors = [
+            wrap_group_raw(raw, gnames, structure, self.ulayout)
+            for raw, gnames, structure in zip(
+                v_raws, self.unknown_groups, self.ulayout.structure, strict=True
+            )
+        ]
+        v_typed = AssembledVector(self.ulayout, v_tensors).disassemble().values
+        seed = {name: {name: leading_k1_seed(v_typed[name])} for name in self.unknown_names}
+        args_typed = tuple(state[name] for name in self.input_names)
+        result = self.model(*args_typed, v=seed)
+        result_tuple = result if isinstance(result, tuple) else (result,)
+        typed_outs, v_out = result_tuple[:-1], result_tuple[-1]
+        raw_jvp = assemble_jvp_outputs(v_out, tuple(typed_outs), list(self.output_names))
+        output_state = dict(zip(self.output_names, typed_outs, strict=True))
+        Jv = AssembledVector.from_dict(
+            self.blayout,
+            {
+                r: type(output_state[r])(raw_jvp[r], sub_batch_ndim=output_state[r].sub_batch_ndim)
+                for r in self.residual_names
+            },
+        )
+        return _vector_to_per_group_raws(Jv)
+
+
 class LinearSolve(_SystemModule):
     """Exportable linear-solve graph: ``(*A_blocks, *b_groups) -> (*du_groups)``.
 

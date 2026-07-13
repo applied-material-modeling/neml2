@@ -26,7 +26,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import torch
 
@@ -43,6 +43,11 @@ if TYPE_CHECKING:
     from neml2.es import AxisLayout, ModelNonlinearSystem
     from neml2.factory import _NativeInputFile
 
+    from .bicgstab import BiCGStab
+    from .gmres import GMRES
+
+    _LinearSolver = DenseLU | SchurComplement | GMRES | BiCGStab
+
 
 def _group_layout_descriptor(layout: AxisLayout) -> list[tuple[str, list[int]]]:
     """Per-group ``(structure, sub_batch_shape)`` descriptors for the C++ solver.
@@ -54,6 +59,19 @@ def _group_layout_descriptor(layout: AxisLayout) -> list[tuple[str, list[int]]]:
     return [
         (layout.structure[gi], [int(s) for s in layout.group_sub_batch_shape(gi)])
         for gi in range(layout.ngroup)
+    ]
+
+
+def _unknown_block_sizes(layout: AxisLayout) -> list[int]:
+    """Per-variable storage widths of the unknown group(s) -- the BlockJacobi
+    preconditioner's diagonal block sizes (summing to the flat unknown count).
+    """
+    from neml2.es.assembled import AssembledMatrix  # noqa: PLC0415
+
+    return [
+        AssembledMatrix._var_storage(layout, gi, name, layout.structure[gi])
+        for gi in range(layout.ngroup)
+        for name in layout.groups[gi]
     ]
 
 
@@ -103,7 +121,7 @@ class Newton:
     def __init__(
         self,
         *,
-        linear_solver: DenseLU | SchurComplement | None = None,
+        linear_solver: _LinearSolver | None = None,
         atol: float = 1.0e-10,
         rtol: float = 1.0e-8,
         miters: int = 25,
@@ -141,7 +159,15 @@ class Newton:
         chained into ``LinearSolve``, the same modules the AOTI runtime compiles,
         run eagerly here) plus the per-group layouts, then commits the converged
         iterate back into the system.
+
+        A matrix-free iterative ``linear_solver`` (``GMRES`` / ``BiCGStab``) takes
+        the sibling :meth:`_solve_iterative` path -- the same shared C++ Newton
+        loop, but each step's linear solve is a Krylov iteration over the
+        ``Matvec`` callback rather than a baked direct solve.
         """
+        if getattr(self.linear_solver, "is_iterative", False):
+            return self._solve_iterative(system)
+
         # Local imports: the compiled extension + the residual/step export
         # modules, kept off the package import path so a partial build can still
         # import solvers.
@@ -206,6 +232,78 @@ class Newton:
         # (``collect_log`` above). Printing from Python keeps it in the
         # notebook-captured stream, unlike the C++ ``NEML2_AOTI_TRACE_NEWTON``
         # stderr trace.
+        if self.verbose and log:
+            print("\n".join(log))
+
+        ret = RetCode.SUCCESS if converged else RetCode.MAXITER
+        return NonlinearResult(ret, iterations, log=tuple(log))
+
+    def _solve_iterative(self, system: ModelNonlinearSystem) -> NonlinearResult:
+        """Solve via the shared C++ Newton loop with a matrix-free Krylov step.
+
+        The outer Newton iteration control is identical to :meth:`solve` (same
+        C++ loop, convergence test, line search); only the inner linear solve
+        differs. Instead of the ``Jacobian`` -> ``LinearSolve`` chain, each step
+        runs a Krylov iteration (``krylov_solve_eager``) over the ``Matvec``
+        (``J.v``) callback -- never assembling ``A`` unless a preconditioner needs
+        it (then via the ``Jacobian`` callback). This runs the *same* C++
+        ``krylov_solve`` the AOTI runtime uses, so eager and compiled cannot
+        diverge.
+        """
+        from neml2.aoti._aoti import krylov_solve_eager  # noqa: PLC0415
+        from neml2.es.implicit import (  # noqa: PLC0415
+            RHS,
+            Jacobian,
+            Matvec,
+            _vector_to_per_group_raws,
+        )
+
+        # Reached only when the linear solver is iterative (GMRES / BiCGStab);
+        # narrow the DenseLU|SchurComplement|... union so the config access types.
+        ls = cast("GMRES | BiCGStab", self.linear_solver)
+        kcfg = ls.krylov_config()
+        needs_precond = kcfg["preconditioner"] != "none"
+
+        rhs = RHS(system)
+        matvec = Matvec(system)
+        jac = Jacobian(system) if needs_precond else None
+        block_sizes = (
+            _unknown_block_sizes(system.ulayout) if kcfg["preconditioner"] == "block_jacobi" else []
+        )
+
+        # Fixed-point solve: gradients flow through the converged state via the
+        # IFT (see ImplicitUpdate), never the iterations, so this runs detached.
+        with torch.no_grad():
+            g_raws = list(_vector_to_per_group_raws(system.g()))
+            u0_raws = list(_vector_to_per_group_raws(system.u()))
+
+            def residual_fn(u_raws: list[torch.Tensor]) -> list[torch.Tensor]:
+                return list(rhs(*u_raws, *g_raws))
+
+            def matvec_fn(
+                u_raws: list[torch.Tensor], v_raws: list[torch.Tensor]
+            ) -> list[torch.Tensor]:
+                return list(matvec(*u_raws, *g_raws, *v_raws))
+
+            def jacobian_fn(u_raws: list[torch.Tensor]) -> torch.Tensor:
+                # The single dense A block (*B, N, N) = Jacobian's first output.
+                assert jac is not None
+                return jac(*u_raws, *g_raws)[0]
+
+            u_star, converged, iterations, log = krylov_solve_eager(
+                residual_fn=residual_fn,
+                matvec_fn=matvec_fn,
+                jacobian_fn=jacobian_fn if needs_precond else None,
+                unknown_layout=_group_layout_descriptor(system.ulayout),
+                residual_layout=_group_layout_descriptor(system.blayout),
+                block_sizes=block_sizes,
+                u0=u0_raws,
+                collect_log=self.verbose,
+                **self._solver_config(),
+                **kcfg,
+            )
+            system.set_u_from_group_raws(u_star)
+
         if self.verbose and log:
             print("\n".join(log))
 

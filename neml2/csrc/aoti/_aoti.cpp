@@ -41,6 +41,7 @@
 
 #include "neml2/csrc/aoti/Exception.h"
 #include "neml2/csrc/aoti/Model.h"
+#include "neml2/csrc/aoti/assertions.h"
 #include "neml2/csrc/aoti/newton.h"
 #include "neml2/csrc/aoti/nonlinear_system_eager.h"
 

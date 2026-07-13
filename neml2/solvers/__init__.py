@@ -28,6 +28,8 @@
 - :mod:`._exceptions` -- :class:`ConvergenceError` (recoverable solve failure).
 - :mod:`.dense_lu` -- :class:`DenseLU`.
 - :mod:`.schur_complement` -- :class:`SchurComplement`.
+- :mod:`.gmres` -- :class:`GMRES` (matrix-free iterative).
+- :mod:`.bicgstab` -- :class:`BiCGStab` (matrix-free iterative).
 - :mod:`.newton` -- :class:`Newton`.
 - :mod:`.newton_linesearch` -- :class:`NewtonWithLineSearch`.
 - :mod:`._helpers` -- private reduction / scaling helpers.
@@ -35,7 +37,9 @@
 
 from ._exceptions import ConvergenceError
 from ._result import NonlinearResult, RetCode
+from .bicgstab import BiCGStab
 from .dense_lu import DenseLU
+from .gmres import GMRES
 from .newton import Newton
 from .newton_linesearch import NewtonWithLineSearch
 from .schur_complement import SchurComplement
@@ -46,6 +50,8 @@ __all__ = [
     "ConvergenceError",
     "DenseLU",
     "SchurComplement",
+    "GMRES",
+    "BiCGStab",
     "Newton",
     "NewtonWithLineSearch",
 ]
