@@ -3072,6 +3072,26 @@ def _worker_init(queue) -> None:
     _worker_progress_queue = queue
 
 
+def _prepare_opts_in_worker(export_opts: dict) -> dict:
+    """Consume the worker-only ``load`` key from *export_opts* and return the
+    remaining ``_prepare_export`` kwargs.
+
+    ``--load`` user extensions are imported only in the *parent* process, but a
+    spawn worker starts a fresh interpreter and would fail to resolve any custom
+    ``@register_neml2_object`` type when it re-derives the model. Re-import them
+    here, before the model is loaded, so the factory can see them. The ``load``
+    entry is popped so it never reaches :func:`_prepare_export`, which takes no
+    such kwarg -- the returned dict is exactly ``_prepare_export``'s kwargs.
+    """
+    opts = dict(export_opts)
+    load = opts.pop("load", ())
+    if load:
+        from ._extensions import load_user_extensions  # noqa: PLC0415
+
+        load_user_extensions(list(load))
+    return opts
+
+
 def _compile_segment_worker(args) -> tuple[int, dict]:
     """Worker entry: re-derive the model from the input file and compile ONE
     segment. Everything in *args* is picklable (paths, strings, an options dict,
@@ -3079,6 +3099,7 @@ def _compile_segment_worker(args) -> tuple[int, dict]:
     Per-``.pt2`` progress is streamed back to the parent through the shared queue.
     """
     hit_path, model_name, output_dir, device, export_opts, seg_index = args
+    export_opts = _prepare_opts_in_worker(export_opts)
     prepared = _prepare_export(hit_path, model_name, device=device, **export_opts)
     plans = _plan_segments(prepared, model_name)
     plan = plans[seg_index]
@@ -3260,6 +3281,7 @@ def _compile_grid_worker(args) -> tuple[str, int, dict]:
     *args* is picklable; the worker re-derives its segment from the input file.
     """
     hit_path, model_name, output_dir, device, export_opts, seg_index = args
+    export_opts = _prepare_opts_in_worker(export_opts)
     prepared = _prepare_export(hit_path, model_name, device=device, **export_opts)
     plans = _plan_segments(prepared, model_name)
     plan = plans[seg_index]
@@ -3372,6 +3394,7 @@ def export_model_for_aoti(
     renames: dict[str, dict[str, str]] | None = None,
     pre: Sequence[str] = (),
     additional_args: tuple[str, ...] = (),
+    load: Sequence[str] = (),
     jobs: int = 1,
     progress_cb: Callable[[str], None] | None = None,
 ) -> dict:
@@ -3446,6 +3469,13 @@ def export_model_for_aoti(
         Trailing HIT override tokens appended to the parser's *post* list
         (e.g. ``"Models/elasticity/E:=210000"``). Path-style overrides only;
         for variable substitution use *pre*.
+    load:
+        User-extension paths (the ``--load`` CLI surface) to import before the
+        model is built, so their ``@register_neml2_object`` types resolve. The
+        caller is responsible for importing them in the current process; under
+        ``jobs > 1`` they are additionally forwarded to each spawn worker, which
+        re-imports them before re-deriving its segment (a fresh interpreter would
+        otherwise not see the custom types). Empty (default) = no extensions.
     jobs:
         Number of worker processes for parallel segment compilation. ``1``
         (default) compiles serially (behavior-identical to before this option).
@@ -3507,6 +3537,7 @@ def export_model_for_aoti(
             "renames": renames,
             "pre": tuple(pre),
             "additional_args": tuple(additional_args),
+            "load": tuple(load),
         }
         seg_metas = _compile_segments_parallel(
             hit_path, model_name, leaf, device, export_opts, plans, jobs, progress_cb
@@ -3537,6 +3568,7 @@ def export_model_multidevice(
     renames: dict[str, dict[str, str]] | None = None,
     pre: Sequence[str] = (),
     additional_args: tuple[str, ...] = (),
+    load: Sequence[str] = (),
     jobs: int = 1,
     progress_cb: Callable[[str], None] | None = None,
 ) -> dict:
@@ -3599,6 +3631,7 @@ def export_model_multidevice(
             "renames": renames,
             "pre": tuple(pre),
             "additional_args": tuple(additional_args),
+            "load": tuple(load),
         }
         seg_by_dev = _run_grid_pool(
             hit_path, model_name, artifact_dir, devices, dtype, n, export_opts, jobs, progress_cb

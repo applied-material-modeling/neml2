@@ -280,6 +280,7 @@ def compile_and_emit_stub(
     renames: dict[str, dict[str, str]] | None = None,
     pre: tuple[str, ...] = (),
     additional_args: tuple[str, ...] = (),
+    load: tuple[str, ...] = (),
     jobs: int = 1,
     emit_stub: bool = True,
     progress_cb=None,
@@ -306,6 +307,11 @@ def compile_and_emit_stub(
     # Local import keeps the module import-light when only the helpers
     # below are needed.
     from neml2.cli.aoti_export import export_model_for_aoti  # noqa: PLC0415
+
+    # Register any user extensions in THIS process (needed for the serial path +
+    # driver_target_model lookup below); they are also forwarded to spawn workers
+    # via export_model_for_aoti(load=...) so jobs>1 resolves custom types too.
+    load_user_extensions(list(load))
 
     if (driver is None) == (model is None):
         raise ValueError("compile_and_emit_stub: pass exactly one of `driver` or `model`")
@@ -334,6 +340,7 @@ def compile_and_emit_stub(
         renames=renames,
         pre=pre,
         additional_args=additional_args,
+        load=load,
         jobs=jobs,
         progress_cb=progress_cb,
     )
@@ -768,6 +775,7 @@ def main(argv: list[str] | None = None) -> int:
             derivatives=tuple(args.derivative),
             renames=renames,
             additional_args=tuple(additional_args),
+            load=tuple(args.load),
             jobs=args.jobs,
             progress_cb=progress_cb,
         )
