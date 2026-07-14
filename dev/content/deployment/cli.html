@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CLI utilities - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Building from source" href="../development/building.html" /><link rel="prev" title="C++ integration" href="cpp.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CLI utilities - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Controlling verbosity" href="verbosity.html" /><link rel="prev" title="C++ integration" href="cpp.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp.html">C++ integration</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -558,7 +559,6 @@ sweep — without writing any Python.</p>
 success and returns a zero exit code, so a clean run looks empty in
 CI. (Drivers can still print their own progress.)</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">$ neml2-run input.i driver
-</span><span data-line="2">Results saved to result.pt
 </span></pre></div>
 </div>
 <p>The trailing-token convention lets you tweak scalar options without
@@ -566,7 +566,6 @@ editing the file — anything after the two declared positionals is
 forwarded to the HIT parser as an override. The same convention works
 for <code class="docutils literal notranslate"><span class="pre">neml2-inspect</span></code> and <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">$ neml2-run input.i driver Drivers/driver/save_as:=other.pt
-</span><span data-line="2">Results saved to other.pt
 </span></pre></div>
 </div>
 <p>List-valued overrides (e.g. swapping <code class="docutils literal notranslate"><span class="pre">coefficients</span> <span class="pre">=</span> <span class="pre">'200e3</span> <span class="pre">0.3'</span></code> for
@@ -717,7 +716,7 @@ into a frozen graph for performance.</p>
 </span><span data-line="4">                     [-d OUT:IN] [--example-batch-shape SPEC]
 </span><span data-line="5">                     [--dynamic-batch] [--no-dynamic-batch]
 </span><span data-line="6">                     [--rename-input ORIG:NEW] [--rename-output ORIG:NEW]
-</span><span data-line="7">                     [--rename-parameter ORIG:NEW] [--load PATH]
+</span><span data-line="7">                     [--rename-parameter ORIG:NEW] [-q] [--load PATH]
 </span><span data-line="8">                     INPUT.i
 </span><span data-line="9">
 </span><span data-line="10">Compile a NEML2 Python-native model to AOTI artifacts (.pt2 + metadata JSON)
@@ -814,12 +813,15 @@ into a frozen graph for performance.</p>
 </span><span data-line="101">                        consumer sees NEW; the internals keep the qualified
 </span><span data-line="102">                        ORIG). ORIG must be a promoted parameter (see -p).
 </span><span data-line="103">                        Repeatable. Only valid with --model.
-</span><span data-line="104">  --load PATH           Import a user extension before processing. PATH is
-</span><span data-line="105">                        either a filesystem path to a .py file / package
-</span><span data-line="106">                        directory, or a dotted module name already importable
-</span><span data-line="107">                        from sys.path. Repeatable; modules are imported in the
-</span><span data-line="108">                        order given so later modules may depend on names
-</span><span data-line="109">                        registered by earlier ones.
+</span><span data-line="104">  -q, --quiet           Suppress the per-file compilation progress chrome. The
+</span><span data-line="105">                        final artifact-path summary and any errors are still
+</span><span data-line="106">                        printed.
+</span><span data-line="107">  --load PATH           Import a user extension before processing. PATH is
+</span><span data-line="108">                        either a filesystem path to a .py file / package
+</span><span data-line="109">                        directory, or a dotted module name already importable
+</span><span data-line="110">                        from sys.path. Repeatable; modules are imported in the
+</span><span data-line="111">                        order given so later modules may depend on names
+</span><span data-line="112">                        registered by earlier ones.
 </span></pre></div>
 </div>
 <p>Derivative graphs are opt-in: with no <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag only <code class="docutils literal notranslate"><span class="pre">forward</span></code> is
@@ -962,10 +964,10 @@ C++ deployment story.</p></li>
         <span>Previous</span><div class="title">C++ integration</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="../development/building.html">
+    <a href="verbosity.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">Building from source</div>
+        <div class="title">Controlling verbosity</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>

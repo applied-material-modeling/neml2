@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -786,103 +787,105 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="365">                <span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">[</span><span class="n">step</span><span class="p">][</span><span class="n">oname</span><span class="p">]</span> <span class="o">=</span> <span class="n">ovalue</span>
 </span><span data-line="366">
 </span><span data-line="367">        <span class="c1"># Persist the full trajectory when the input requests it via ``save_as``</span>
-</span><span data-line="368">        <span class="c1"># (mirrors v2, including the stdout notice). Empty by default, so a</span>
-</span><span data-line="369">        <span class="c1"># driver that is only being diffed in memory (TransientRegression /</span>
-</span><span data-line="370">        <span class="c1"># Verification) writes nothing.</span>
+</span><span data-line="368">        <span class="c1"># (empty by default, so a driver that is only being diffed in memory --</span>
+</span><span data-line="369">        <span class="c1"># TransientRegression / Verification -- writes nothing). The notice goes</span>
+</span><span data-line="370">        <span class="c1"># on the ``driver`` log channel (info); see :mod:`neml2.log`.</span>
 </span><span data-line="371">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_as</span><span class="p">:</span>
 </span><span data-line="372">            <span class="bp">self</span><span class="o">.</span><span class="n">save_result</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_as</span><span class="p">)</span>
-</span><span data-line="373">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Results saved to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">save_as</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="373">            <span class="kn">from</span><span class="w"> </span><span class="nn">neml2</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>  <span class="c1"># noqa: PLC0415</span>
 </span><span data-line="374">
-</span><span data-line="375">        <span class="k">return</span> <span class="kc">True</span></div>
-
+</span><span data-line="375">            <span class="n">log</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s2">&quot;driver&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Results saved to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">save_as</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span><span data-line="376">
+</span><span data-line="377">        <span class="k">return</span> <span class="kc">True</span></div>
+
+</span><span data-line="378">
 <div class="viewcode-block" id="TransientDriver.result">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.TransientDriver.result">[docs]</a>
-</span><span data-line="377">    <span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-</span><span data-line="378"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Flatten ``result_in`` / ``result_out`` into a ``input.&lt;i&gt;.&lt;name&gt;``</span>
-</span><span data-line="379"><span class="sd">        / ``output.&lt;i&gt;.&lt;name&gt;`` dict, matching the C++ ``ModuleDict`` layout</span>
-</span><span data-line="380"><span class="sd">        that ``torch.jit.load(gold).named_buffers()`` produces. Typed wrappers</span>
-</span><span data-line="381"><span class="sd">        are unwrapped to raw ``torch.Tensor`` at this boundary.</span>
-</span><span data-line="382"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="383">        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="384">        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">step_in</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_in</span><span class="p">):</span>
-</span><span data-line="385">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">step_in</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="386">                <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;input.</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
-</span><span data-line="387">        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">step_out</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">):</span>
-</span><span data-line="388">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">step_out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="389">                <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;output.</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
-</span><span data-line="390">        <span class="k">return</span> <span class="n">out</span></div>
+</span><span data-line="379">    <span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+</span><span data-line="380"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Flatten ``result_in`` / ``result_out`` into a ``input.&lt;i&gt;.&lt;name&gt;``</span>
+</span><span data-line="381"><span class="sd">        / ``output.&lt;i&gt;.&lt;name&gt;`` dict, matching the C++ ``ModuleDict`` layout</span>
+</span><span data-line="382"><span class="sd">        that ``torch.jit.load(gold).named_buffers()`` produces. Typed wrappers</span>
+</span><span data-line="383"><span class="sd">        are unwrapped to raw ``torch.Tensor`` at this boundary.</span>
+</span><span data-line="384"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="385">        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="386">        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">step_in</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_in</span><span class="p">):</span>
+</span><span data-line="387">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">step_in</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="388">                <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;input.</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
+</span><span data-line="389">        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">step_out</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_out</span><span class="p">):</span>
+</span><span data-line="390">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">step_out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="391">                <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;output.</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
+</span><span data-line="392">        <span class="k">return</span> <span class="n">out</span></div>
 
-</span><span data-line="391">
+</span><span data-line="393">
 <div class="viewcode-block" id="TransientDriver.save_result">
 <a class="viewcode-back" href="../../../content/python_api/neml2.drivers.html#neml2.drivers.TransientDriver.save_result">[docs]</a>
-</span><span data-line="392">    <span class="k">def</span><span class="w"> </span><span class="nf">save_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="393"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize ``result()`` to a ``.pt`` file as a flat ``torch.save`` dict.</span>
-</span><span data-line="394">
-</span><span data-line="395"><span class="sd">        The dict carries the same keys as :meth:`result`:</span>
-</span><span data-line="396"><span class="sd">        ``input.&lt;step&gt;.&lt;var&gt;`` / ``output.&lt;step&gt;.&lt;var&gt;``, each mapping to a</span>
-</span><span data-line="397"><span class="sd">        detached, cloned ``torch.Tensor``. Read it back with</span>
-</span><span data-line="398"><span class="sd">        ``torch.load(path, weights_only=True)``.</span>
-</span><span data-line="399">
-</span><span data-line="400"><span class="sd">        Replaces the old TorchScript-Module format (a Module-of-Modules with</span>
-</span><span data-line="401"><span class="sd">        ``register_buffer`` per entry, dumped via</span>
-</span><span data-line="402"><span class="sd">        ``torch.jit.script(...).save(...)``). The flat-dict format avoids the</span>
-</span><span data-line="403"><span class="sd">        ``torch.jit.{script,load}`` deprecation warnings and survives</span>
-</span><span data-line="404"><span class="sd">        round-trip with ``weights_only=True`` (which is safe for plain tensor</span>
-</span><span data-line="405"><span class="sd">        dicts and prevents arbitrary code execution on load).</span>
-</span><span data-line="406"><span class="sd">        ``TransientRegression`` reads both formats so existing on-disk goldens</span>
-</span><span data-line="407"><span class="sd">        from the v2 C++ pipeline keep working — see</span>
-</span><span data-line="408"><span class="sd">        :class:`~neml2.drivers.TransientRegression.TransientRegression`.</span>
-</span><span data-line="409"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="410">        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)))</span></div>
+</span><span data-line="394">    <span class="k">def</span><span class="w"> </span><span class="nf">save_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="395"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize ``result()`` to a ``.pt`` file as a flat ``torch.save`` dict.</span>
+</span><span data-line="396">
+</span><span data-line="397"><span class="sd">        The dict carries the same keys as :meth:`result`:</span>
+</span><span data-line="398"><span class="sd">        ``input.&lt;step&gt;.&lt;var&gt;`` / ``output.&lt;step&gt;.&lt;var&gt;``, each mapping to a</span>
+</span><span data-line="399"><span class="sd">        detached, cloned ``torch.Tensor``. Read it back with</span>
+</span><span data-line="400"><span class="sd">        ``torch.load(path, weights_only=True)``.</span>
+</span><span data-line="401">
+</span><span data-line="402"><span class="sd">        Replaces the old TorchScript-Module format (a Module-of-Modules with</span>
+</span><span data-line="403"><span class="sd">        ``register_buffer`` per entry, dumped via</span>
+</span><span data-line="404"><span class="sd">        ``torch.jit.script(...).save(...)``). The flat-dict format avoids the</span>
+</span><span data-line="405"><span class="sd">        ``torch.jit.{script,load}`` deprecation warnings and survives</span>
+</span><span data-line="406"><span class="sd">        round-trip with ``weights_only=True`` (which is safe for plain tensor</span>
+</span><span data-line="407"><span class="sd">        dicts and prevents arbitrary code execution on load).</span>
+</span><span data-line="408"><span class="sd">        ``TransientRegression`` reads both formats so existing on-disk goldens</span>
+</span><span data-line="409"><span class="sd">        from the v2 C++ pipeline keep working — see</span>
+</span><span data-line="410"><span class="sd">        :class:`~neml2.drivers.TransientRegression.TransientRegression`.</span>
+</span><span data-line="411"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="412">        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)))</span></div>
 </div>
 
-</span><span data-line="411">
-</span><span data-line="412">
-</span><span data-line="413"><span class="k">def</span><span class="w"> </span><span class="nf">_slice_typed</span><span class="p">(</span><span class="n">wrapped</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="414"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice the leading time-step dim and re-wrap, preserving sub_batch_ndim.&quot;&quot;&quot;</span>
-</span><span data-line="415">    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">wrapped</span><span class="p">)(</span><span class="n">wrapped</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">step</span><span class="p">],</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">wrapped</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="416">
-</span><span data-line="417">
-</span><span data-line="418"><span class="k">def</span><span class="w"> </span><span class="nf">_as_typed</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="419"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Coerce ``value`` to ``type_cls``, preserving sub_batch_ndim.&quot;&quot;&quot;</span>
-</span><span data-line="420">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">):</span>
-</span><span data-line="421">        <span class="k">return</span> <span class="n">value</span>
-</span><span data-line="422">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
-</span><span data-line="423">        <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="424">    <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-</span><span data-line="425">
-</span><span data-line="426">
-</span><span data-line="427"><span class="k">def</span><span class="w"> </span><span class="nf">_parse_history</span><span class="p">(</span><span class="n">vname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-</span><span data-line="428"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Split ``base~k`` -&gt; ``(base, k)``; bare ``base`` -&gt; ``(base, 0)``.</span>
-</span><span data-line="429">
-</span><span data-line="430"><span class="sd">    Thin wrapper over the shared :func:`neml2.es._helpers.lag_order` that keeps</span>
-</span><span data-line="431"><span class="sd">    the driver&#39;s historical leniency: a malformed suffix falls back to lag 0</span>
-</span><span data-line="432"><span class="sd">    rather than raising.</span>
-</span><span data-line="433"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="434">    <span class="k">try</span><span class="p">:</span>
-</span><span data-line="435">        <span class="k">return</span> <span class="n">lag_order</span><span class="p">(</span><span class="n">vname</span><span class="p">)</span>
-</span><span data-line="436">    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-</span><span data-line="437">        <span class="k">return</span> <span class="n">vname</span><span class="p">,</span> <span class="mi">0</span>
-</span><span data-line="438">
-</span><span data-line="439">
-</span><span data-line="440"><span class="k">def</span><span class="w"> </span><span class="nf">_zero_for_step</span><span class="p">(</span>
-</span><span data-line="441">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
-</span><span data-line="442">    <span class="n">per_step_batch_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-</span><span data-line="443">    <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
-</span><span data-line="444">    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-</span><span data-line="445"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="446"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a zero ``torch.Tensor`` shaped ``(*per_step_batch_shape, *base_shape)``.</span>
-</span><span data-line="447">
-</span><span data-line="448"><span class="sd">    ``per_step_batch_shape`` is read from the prescribed_time slice at the</span>
-</span><span data-line="449"><span class="sd">    current step — a Scalar with ``base_shape=()``, so its data shape IS the</span>
-</span><span data-line="450"><span class="sd">    per-step batch shape. Each typed wrapper adds its own base axes.</span>
-</span><span data-line="451"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="452">    <span class="n">base_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;BASE_SHAPE&quot;</span><span class="p">,</span> <span class="p">()))</span>
-</span><span data-line="453">    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">per_step_batch_shape</span> <span class="o">+</span> <span class="n">base_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span data-line="454">
-</span><span data-line="455">
-</span><span data-line="456"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TransientDriver&quot;</span><span class="p">]</span>
+</span><span data-line="413">
+</span><span data-line="414">
+</span><span data-line="415"><span class="k">def</span><span class="w"> </span><span class="nf">_slice_typed</span><span class="p">(</span><span class="n">wrapped</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="416"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice the leading time-step dim and re-wrap, preserving sub_batch_ndim.&quot;&quot;&quot;</span>
+</span><span data-line="417">    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">wrapped</span><span class="p">)(</span><span class="n">wrapped</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">step</span><span class="p">],</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">wrapped</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="418">
+</span><span data-line="419">
+</span><span data-line="420"><span class="k">def</span><span class="w"> </span><span class="nf">_as_typed</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="421"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Coerce ``value`` to ``type_cls``, preserving sub_batch_ndim.&quot;&quot;&quot;</span>
+</span><span data-line="422">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">type_cls</span><span class="p">):</span>
+</span><span data-line="423">        <span class="k">return</span> <span class="n">value</span>
+</span><span data-line="424">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
+</span><span data-line="425">        <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="426">    <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span data-line="427">
+</span><span data-line="428">
+</span><span data-line="429"><span class="k">def</span><span class="w"> </span><span class="nf">_parse_history</span><span class="p">(</span><span class="n">vname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+</span><span data-line="430"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Split ``base~k`` -&gt; ``(base, k)``; bare ``base`` -&gt; ``(base, 0)``.</span>
+</span><span data-line="431">
+</span><span data-line="432"><span class="sd">    Thin wrapper over the shared :func:`neml2.es._helpers.lag_order` that keeps</span>
+</span><span data-line="433"><span class="sd">    the driver&#39;s historical leniency: a malformed suffix falls back to lag 0</span>
+</span><span data-line="434"><span class="sd">    rather than raising.</span>
+</span><span data-line="435"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="436">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="437">        <span class="k">return</span> <span class="n">lag_order</span><span class="p">(</span><span class="n">vname</span><span class="p">)</span>
+</span><span data-line="438">    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+</span><span data-line="439">        <span class="k">return</span> <span class="n">vname</span><span class="p">,</span> <span class="mi">0</span>
+</span><span data-line="440">
+</span><span data-line="441">
+</span><span data-line="442"><span class="k">def</span><span class="w"> </span><span class="nf">_zero_for_step</span><span class="p">(</span>
+</span><span data-line="443">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
+</span><span data-line="444">    <span class="n">per_step_batch_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+</span><span data-line="445">    <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+</span><span data-line="446">    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+</span><span data-line="447"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+</span><span data-line="448"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a zero ``torch.Tensor`` shaped ``(*per_step_batch_shape, *base_shape)``.</span>
+</span><span data-line="449">
+</span><span data-line="450"><span class="sd">    ``per_step_batch_shape`` is read from the prescribed_time slice at the</span>
+</span><span data-line="451"><span class="sd">    current step — a Scalar with ``base_shape=()``, so its data shape IS the</span>
+</span><span data-line="452"><span class="sd">    per-step batch shape. Each typed wrapper adds its own base axes.</span>
+</span><span data-line="453"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="454">    <span class="n">base_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;BASE_SHAPE&quot;</span><span class="p">,</span> <span class="p">()))</span>
+</span><span data-line="455">    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">per_step_batch_shape</span> <span class="o">+</span> <span class="n">base_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="456">
+</span><span data-line="457">
+</span><span data-line="458"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TransientDriver&quot;</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

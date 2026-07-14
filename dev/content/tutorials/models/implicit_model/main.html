@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -434,9 +435,9 @@ assembled from leaves already in NEML2’s catalog.</p>
 <section id="the-physics">
 <h2>The physics<a class="headerlink" href="#the-physics" title="Link to this heading">#</a></h2>
 <p>The Perzyna viscoplastic update we will solve is, in continuous form,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-de4949bf-d269-4886-b303-7df8913cd367">
-<div class="amsmath math notranslate nohighlight" id="equation-de4949bf-d269-4886-b303-7df8913cd367">
-<span class="eqno">(2)<a class="headerlink" href="#equation-de4949bf-d269-4886-b303-7df8913cd367" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-858ecac1-00c0-4900-96dc-e0bed493aaf3">
+<div class="amsmath math notranslate nohighlight" id="equation-858ecac1-00c0-4900-96dc-e0bed493aaf3">
+<span class="eqno">(2)<a class="headerlink" href="#equation-858ecac1-00c0-4900-96dc-e0bed493aaf3" title="Permalink to this equation">#</a></span>\[\begin{align}
   \boldsymbol{\varepsilon}^e &amp;= \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^p, \\
   \boldsymbol{\sigma} &amp;= 3K\,\operatorname{vol}\boldsymbol{\varepsilon}^e
                        + 2G\,\operatorname{dev}\boldsymbol{\varepsilon}^e, \\
@@ -546,13 +547,12 @@ full input file:</p>
 </span><span data-line="71">    <span class="n">rel_tol</span> <span class="o">=</span> <span class="mf">1e-08</span>
 </span><span data-line="72">    <span class="n">abs_tol</span> <span class="o">=</span> <span class="mf">1e-10</span>
 </span><span data-line="73">    <span class="n">max_its</span> <span class="o">=</span> <span class="mi">50</span>
-</span><span data-line="74">    <span class="n">verbose</span> <span class="o">=</span> <span class="n">true</span>                 <span class="c1"># print the Newton convergence history</span>
-</span><span data-line="75">    <span class="n">linear_solver</span> <span class="o">=</span> <span class="s1">&#39;lu&#39;</span>
-</span><span data-line="76">  <span class="p">[]</span>
-</span><span data-line="77">  <span class="p">[</span><span class="n">lu</span><span class="p">]</span>
-</span><span data-line="78">    <span class="nb">type</span> <span class="o">=</span> <span class="n">DenseLU</span>
-</span><span data-line="79">  <span class="p">[]</span>
-</span><span data-line="80"><span class="p">[]</span>
+</span><span data-line="74">    <span class="n">linear_solver</span> <span class="o">=</span> <span class="s1">&#39;lu&#39;</span>
+</span><span data-line="75">  <span class="p">[]</span>
+</span><span data-line="76">  <span class="p">[</span><span class="n">lu</span><span class="p">]</span>
+</span><span data-line="77">    <span class="nb">type</span> <span class="o">=</span> <span class="n">DenseLU</span>
+</span><span data-line="78">  <span class="p">[]</span>
+</span><span data-line="79"><span class="p">[]</span>
 </span></pre></div>
 </div>
 </div>
@@ -699,27 +699,59 @@ guess to start from.</p>
 </div>
 </div>
 <p>Calling <code class="docutils literal notranslate"><span class="pre">model</span></code> runs the Newton solve and returns the converged
-plastic strain. Because the <code class="docutils literal notranslate"><span class="pre">[newton]</span></code> block sets <code class="docutils literal notranslate"><span class="pre">verbose</span> <span class="pre">=</span> <span class="pre">true</span></code>, the
-solve also prints its convergence history — the residual norm <code class="docutils literal notranslate"><span class="pre">|R|</span></code>
-driving toward zero one Newton iteration at a time:</p>
+plastic strain. NEML2’s diagnostics are controlled by the <code class="docutils literal notranslate"><span class="pre">NEML2_LOGS</span></code>
+environment variable, or programmatically through <code class="docutils literal notranslate"><span class="pre">neml2.log</span></code>; enabling
+the <code class="docutils literal notranslate"><span class="pre">newton</span></code> channel at <code class="docutils literal notranslate"><span class="pre">debug</span></code> prints the solve’s convergence history —
+the residual norm <code class="docutils literal notranslate"><span class="pre">|R|</span></code> driving toward zero one Newton iteration at a
+time. (Here we also route the output to <code class="docutils literal notranslate"><span class="pre">stdout</span></code> for a clean render.)
+See <a class="reference internal" href="../../../deployment/verbosity.html#verbosity-control"><span class="std std-ref">Controlling verbosity</span></a> for the full reference.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="p">(</span><span class="n">plastic_strain</span><span class="p">,)</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">plastic_strain_n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">t_n</span><span class="p">)</span>
-</span><span data-line="2"><span class="n">plastic_strain</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">neml2</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">set_stream</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>  <span class="c1"># route solver logs to stdout for a clean render</span>
+</span><span data-line="2"><span class="n">neml2</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">set_default_level</span><span class="p">(</span><span class="s2">&quot;newton&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">)</span>  <span class="c1"># print the convergence history</span>
+</span><span data-line="3"><span class="p">(</span><span class="n">plastic_strain</span><span class="p">,)</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">strain</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">plastic_strain_n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">t_n</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">plastic_strain</span>
 </span></pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">ITERATION   0, |R| = 3.540990e+01, |R0| = 3.540990e+01
-</span><span data-line="2">ITERATION   1, |R| = 8.850542e+00, |R0| = 3.540990e+01
-</span><span data-line="3">ITERATION   2, |R| = 2.210703e+00, |R0| = 3.540990e+01
-</span><span data-line="4">ITERATION   3, |R| = 5.507485e-01, |R0| = 3.540990e+01
-</span><span data-line="5">ITERATION   4, |R| = 1.357799e-01, |R0| = 3.540990e+01
-</span><span data-line="6">ITERATION   5, |R| = 3.211516e-02, |R0| = 3.540990e+01
-</span><span data-line="7">ITERATION   6, |R| = 6.470185e-03, |R0| = 3.540990e+01
-</span><span data-line="8">ITERATION   7, |R| = 7.366970e-04, |R0| = 3.540990e+01
-</span><span data-line="9">ITERATION   8, |R| = 1.601343e-05, |R0| = 3.540990e+01
-</span><span data-line="10">ITERATION   9, |R| = 8.269535e-09, |R0| = 3.540990e+01
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][info] ---- begin newton solve ----
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   0, |R| = 3.540990e+01, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   1, |R| = 8.850542e+00, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   2, |R| = 2.210703e+00, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   3, |R| = 5.507485e-01, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   4, |R| = 1.357799e-01, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   5, |R| = 3.211516e-02, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   6, |R| = 6.470185e-03, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   7, |R| = 7.366970e-04, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   8, |R| = 1.601343e-05, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   9, |R| = 8.269535e-09, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][info] converged (iters=9, reason=rel_tol)
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][info] ---- end newton solve ----
 </span></pre></div>
 </div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">SR2(data=tensor([ 0.0052,  0.0003, -0.0055,  0.0000,  0.0000,  0.0000],
@@ -766,7 +798,7 @@ tolerance.</p>
 </span><span data-line="7"><span class="n">t_b</span> <span class="o">=</span> <span class="n">Scalar</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
 </span><span data-line="8"><span class="n">tn_b</span> <span class="o">=</span> <span class="n">Scalar</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="n">model</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># one convergence log was enough; quiet the rest</span>
+</span><span data-line="10"><span class="n">neml2</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">set_default_level</span><span class="p">(</span><span class="s2">&quot;newton&quot;</span><span class="p">,</span> <span class="s2">&quot;silent&quot;</span><span class="p">)</span>  <span class="c1"># one convergence log was enough; quiet the rest</span>
 </span><span data-line="11"><span class="p">(</span><span class="n">plastic_strain_b</span><span class="p">,)</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">strain_b</span><span class="p">,</span> <span class="n">guess_b</span><span class="p">,</span> <span class="n">psn_b</span><span class="p">,</span> <span class="n">t_b</span><span class="p">,</span> <span class="n">tn_b</span><span class="p">)</span>
 </span><span data-line="12"><span class="n">plastic_strain_b</span><span class="o">.</span><span class="n">data</span>
 </span></pre></div>

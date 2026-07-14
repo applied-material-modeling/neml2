@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -515,9 +516,9 @@ effective scalar separation</p>
 a mixed-mode failure separation <span class="math notranslate nohighlight">\(\delta_f(\beta, \delta_c)\)</span>. Damage is
 then defined piecewise from the historical maximum effective
 separation <span class="math notranslate nohighlight">\(\bar{\delta}_m = \max_{t' \le t} \delta_m(t')\)</span>,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-1347bb00-8527-48ed-97c4-986054df7fe6">
-<div class="amsmath math notranslate nohighlight" id="equation-1347bb00-8527-48ed-97c4-986054df7fe6">
-<span class="eqno">(19)<a class="headerlink" href="#equation-1347bb00-8527-48ed-97c4-986054df7fe6" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-f56fe644-f0c3-4dd1-ba60-48f4a641151d">
+<div class="amsmath math notranslate nohighlight" id="equation-f56fe644-f0c3-4dd1-ba60-48f4a641151d">
+<span class="eqno">(19)<a class="headerlink" href="#equation-f56fe644-f0c3-4dd1-ba60-48f4a641151d" title="Permalink to this equation">#</a></span>\[\begin{align}
 d(\bar{\delta}_m) &amp;= 0,
   &amp; \bar{\delta}_m &amp;\le \delta_c, \\
 d(\bar{\delta}_m) &amp;=
@@ -529,9 +530,9 @@ d(\bar{\delta}_m) &amp;= 1,
 \end{align}\]</div>
 </div>
 <p>so that the traction is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-c32cc0f5-b27b-46da-a707-f53566f540fa">
-<div class="amsmath math notranslate nohighlight" id="equation-c32cc0f5-b27b-46da-a707-f53566f540fa">
-<span class="eqno">(20)<a class="headerlink" href="#equation-c32cc0f5-b27b-46da-a707-f53566f540fa" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-9252b200-51a9-4f31-bf65-cf15696470e7">
+<div class="amsmath math notranslate nohighlight" id="equation-9252b200-51a9-4f31-bf65-cf15696470e7">
+<span class="eqno">(20)<a class="headerlink" href="#equation-9252b200-51a9-4f31-bf65-cf15696470e7" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n   &amp;= K\,(1-d)\,\langle \delta_n \rangle_+ \;+\; K\,\langle \delta_n \rangle_-, \notag \\
 T_{si} &amp;= K\,(1-d)\,\delta_{si}, \quad i \in \{1, 2\},
 \end{align}\]</div>

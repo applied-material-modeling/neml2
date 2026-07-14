@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -509,80 +510,76 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="91">        <span class="n">atol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;abs_tol&quot;</span><span class="p">,</span> <span class="mf">1.0e-10</span><span class="p">)</span>
 </span><span data-line="92">        <span class="n">rtol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;rel_tol&quot;</span><span class="p">,</span> <span class="mf">1.0e-8</span><span class="p">)</span>
 </span><span data-line="93">        <span class="n">miters</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;max_its&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">))</span>
-</span><span data-line="94">        <span class="n">verbose</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_bool</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-</span><span data-line="95">        <span class="n">ls_type</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;linesearch_type&quot;</span><span class="p">,</span> <span class="s2">&quot;BACKTRACKING&quot;</span><span class="p">)</span>
-</span><span data-line="96">        <span class="n">ls_miter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;max_linesearch_iterations&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-</span><span data-line="97">        <span class="n">ls_sigma</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;linesearch_cutback&quot;</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
-</span><span data-line="98">        <span class="n">ls_c</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;linesearch_stopping_criteria&quot;</span><span class="p">,</span> <span class="mf">1.0e-3</span><span class="p">)</span>
-</span><span data-line="99">        <span class="n">check_crit</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;check_negative_criterion&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-</span><span data-line="100">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-</span><span data-line="101">            <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span>
-</span><span data-line="102">            <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">,</span>
-</span><span data-line="103">            <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span>
-</span><span data-line="104">            <span class="n">miters</span><span class="o">=</span><span class="n">miters</span><span class="p">,</span>
-</span><span data-line="105">            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-</span><span data-line="106">            <span class="n">linesearch_type</span><span class="o">=</span><span class="n">ls_type</span><span class="p">,</span>
-</span><span data-line="107">            <span class="n">max_linesearch_iterations</span><span class="o">=</span><span class="n">ls_miter</span><span class="p">,</span>
-</span><span data-line="108">            <span class="n">linesearch_cutback</span><span class="o">=</span><span class="n">ls_sigma</span><span class="p">,</span>
-</span><span data-line="109">            <span class="n">linesearch_stopping_criteria</span><span class="o">=</span><span class="n">ls_c</span><span class="p">,</span>
-</span><span data-line="110">            <span class="n">check_negative_criterion</span><span class="o">=</span><span class="n">check_crit</span><span class="p">,</span>
-</span><span data-line="111">        <span class="p">)</span></div>
+</span><span data-line="94">        <span class="n">ls_type</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;linesearch_type&quot;</span><span class="p">,</span> <span class="s2">&quot;BACKTRACKING&quot;</span><span class="p">)</span>
+</span><span data-line="95">        <span class="n">ls_miter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;max_linesearch_iterations&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+</span><span data-line="96">        <span class="n">ls_sigma</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;linesearch_cutback&quot;</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+</span><span data-line="97">        <span class="n">ls_c</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;linesearch_stopping_criteria&quot;</span><span class="p">,</span> <span class="mf">1.0e-3</span><span class="p">)</span>
+</span><span data-line="98">        <span class="n">check_crit</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;check_negative_criterion&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</span><span data-line="99">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+</span><span data-line="100">            <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span>
+</span><span data-line="101">            <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">,</span>
+</span><span data-line="102">            <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span>
+</span><span data-line="103">            <span class="n">miters</span><span class="o">=</span><span class="n">miters</span><span class="p">,</span>
+</span><span data-line="104">            <span class="n">linesearch_type</span><span class="o">=</span><span class="n">ls_type</span><span class="p">,</span>
+</span><span data-line="105">            <span class="n">max_linesearch_iterations</span><span class="o">=</span><span class="n">ls_miter</span><span class="p">,</span>
+</span><span data-line="106">            <span class="n">linesearch_cutback</span><span class="o">=</span><span class="n">ls_sigma</span><span class="p">,</span>
+</span><span data-line="107">            <span class="n">linesearch_stopping_criteria</span><span class="o">=</span><span class="n">ls_c</span><span class="p">,</span>
+</span><span data-line="108">            <span class="n">check_negative_criterion</span><span class="o">=</span><span class="n">check_crit</span><span class="p">,</span>
+</span><span data-line="109">        <span class="p">)</span></div>
 
-</span><span data-line="112">
-</span><span data-line="113">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-</span><span data-line="114">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="115">        <span class="o">*</span><span class="p">,</span>
-</span><span data-line="116">        <span class="n">linear_solver</span><span class="p">:</span> <span class="n">DenseLU</span> <span class="o">|</span> <span class="n">SchurComplement</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="117">        <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-10</span><span class="p">,</span>
-</span><span data-line="118">        <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-8</span><span class="p">,</span>
-</span><span data-line="119">        <span class="n">miters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span>
-</span><span data-line="120">        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-</span><span data-line="121">        <span class="n">linesearch_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;BACKTRACKING&quot;</span><span class="p">,</span>
-</span><span data-line="122">        <span class="n">max_linesearch_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-</span><span data-line="123">        <span class="n">linesearch_cutback</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
-</span><span data-line="124">        <span class="n">linesearch_stopping_criteria</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-3</span><span class="p">,</span>
-</span><span data-line="125">        <span class="n">check_negative_criterion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-</span><span data-line="126">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="127">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-</span><span data-line="128">            <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span>
-</span><span data-line="129">            <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">,</span>
-</span><span data-line="130">            <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span>
-</span><span data-line="131">            <span class="n">miters</span><span class="o">=</span><span class="n">miters</span><span class="p">,</span>
-</span><span data-line="132">            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-</span><span data-line="133">        <span class="p">)</span>
-</span><span data-line="134">        <span class="k">if</span> <span class="n">linesearch_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;BACKTRACKING&quot;</span><span class="p">,</span> <span class="s2">&quot;STRONG_WOLFE&quot;</span><span class="p">):</span>
-</span><span data-line="135">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="136">                <span class="sa">f</span><span class="s2">&quot;NewtonWithLineSearch: linesearch_type=</span><span class="si">{</span><span class="n">linesearch_type</span><span class="si">!r}</span><span class="s2"> must be &quot;</span>
-</span><span data-line="137">                <span class="s2">&quot;&#39;BACKTRACKING&#39; or &#39;STRONG_WOLFE&#39;.&quot;</span>
-</span><span data-line="138">            <span class="p">)</span>
-</span><span data-line="139">        <span class="bp">self</span><span class="o">.</span><span class="n">_ls_type</span> <span class="o">=</span> <span class="n">linesearch_type</span>
-</span><span data-line="140">        <span class="bp">self</span><span class="o">.</span><span class="n">_ls_miter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_linesearch_iterations</span><span class="p">)</span>
-</span><span data-line="141">        <span class="bp">self</span><span class="o">.</span><span class="n">_ls_sigma</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">linesearch_cutback</span><span class="p">)</span>
-</span><span data-line="142">        <span class="bp">self</span><span class="o">.</span><span class="n">_ls_c</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">linesearch_stopping_criteria</span><span class="p">)</span>
-</span><span data-line="143">        <span class="bp">self</span><span class="o">.</span><span class="n">_check_crit</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">check_negative_criterion</span><span class="p">)</span>
-</span><span data-line="144">
-</span><span data-line="145">    <span class="k">def</span><span class="w"> </span><span class="nf">_solver_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span data-line="146"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward the line-search options to the shared C++ Newton solver.</span>
-</span><span data-line="147">
-</span><span data-line="148"><span class="sd">        The iteration + backtracking loop itself lives in C++ (shared with the</span>
-</span><span data-line="149"><span class="sd">        AOTI runtime); this only differs from the base ``Newton`` by the</span>
-</span><span data-line="150"><span class="sd">        line-search config it sends. Note: ``check_negative_criterion`` is a</span>
-</span><span data-line="151"><span class="sd">        diagnostic-only option and is currently not honored by the C++ loop.</span>
-</span><span data-line="152"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="153">        <span class="n">cfg</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_solver_config</span><span class="p">()</span>
-</span><span data-line="154">        <span class="n">cfg</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-</span><span data-line="155">            <span class="p">{</span>
-</span><span data-line="156">                <span class="s2">&quot;ls_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ls_type</span><span class="p">,</span>
-</span><span data-line="157">                <span class="s2">&quot;ls_max_iters&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ls_miter</span><span class="p">,</span>
-</span><span data-line="158">                <span class="s2">&quot;ls_cutback&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ls_sigma</span><span class="p">,</span>
-</span><span data-line="159">                <span class="s2">&quot;ls_c&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ls_c</span><span class="p">,</span>
-</span><span data-line="160">            <span class="p">}</span>
-</span><span data-line="161">        <span class="p">)</span>
-</span><span data-line="162">        <span class="k">return</span> <span class="n">cfg</span></div>
+</span><span data-line="110">
+</span><span data-line="111">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+</span><span data-line="112">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="113">        <span class="o">*</span><span class="p">,</span>
+</span><span data-line="114">        <span class="n">linear_solver</span><span class="p">:</span> <span class="n">DenseLU</span> <span class="o">|</span> <span class="n">SchurComplement</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="115">        <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-10</span><span class="p">,</span>
+</span><span data-line="116">        <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-8</span><span class="p">,</span>
+</span><span data-line="117">        <span class="n">miters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span>
+</span><span data-line="118">        <span class="n">linesearch_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;BACKTRACKING&quot;</span><span class="p">,</span>
+</span><span data-line="119">        <span class="n">max_linesearch_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+</span><span data-line="120">        <span class="n">linesearch_cutback</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+</span><span data-line="121">        <span class="n">linesearch_stopping_criteria</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-3</span><span class="p">,</span>
+</span><span data-line="122">        <span class="n">check_negative_criterion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span data-line="123">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="124">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+</span><span data-line="125">            <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span>
+</span><span data-line="126">            <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">,</span>
+</span><span data-line="127">            <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span>
+</span><span data-line="128">            <span class="n">miters</span><span class="o">=</span><span class="n">miters</span><span class="p">,</span>
+</span><span data-line="129">        <span class="p">)</span>
+</span><span data-line="130">        <span class="k">if</span> <span class="n">linesearch_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;BACKTRACKING&quot;</span><span class="p">,</span> <span class="s2">&quot;STRONG_WOLFE&quot;</span><span class="p">):</span>
+</span><span data-line="131">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="132">                <span class="sa">f</span><span class="s2">&quot;NewtonWithLineSearch: linesearch_type=</span><span class="si">{</span><span class="n">linesearch_type</span><span class="si">!r}</span><span class="s2"> must be &quot;</span>
+</span><span data-line="133">                <span class="s2">&quot;&#39;BACKTRACKING&#39; or &#39;STRONG_WOLFE&#39;.&quot;</span>
+</span><span data-line="134">            <span class="p">)</span>
+</span><span data-line="135">        <span class="bp">self</span><span class="o">.</span><span class="n">_ls_type</span> <span class="o">=</span> <span class="n">linesearch_type</span>
+</span><span data-line="136">        <span class="bp">self</span><span class="o">.</span><span class="n">_ls_miter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_linesearch_iterations</span><span class="p">)</span>
+</span><span data-line="137">        <span class="bp">self</span><span class="o">.</span><span class="n">_ls_sigma</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">linesearch_cutback</span><span class="p">)</span>
+</span><span data-line="138">        <span class="bp">self</span><span class="o">.</span><span class="n">_ls_c</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">linesearch_stopping_criteria</span><span class="p">)</span>
+</span><span data-line="139">        <span class="bp">self</span><span class="o">.</span><span class="n">_check_crit</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">check_negative_criterion</span><span class="p">)</span>
+</span><span data-line="140">
+</span><span data-line="141">    <span class="k">def</span><span class="w"> </span><span class="nf">_solver_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span data-line="142"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward the line-search options to the shared C++ Newton solver.</span>
+</span><span data-line="143">
+</span><span data-line="144"><span class="sd">        The iteration + backtracking loop itself lives in C++ (shared with the</span>
+</span><span data-line="145"><span class="sd">        AOTI runtime); this only differs from the base ``Newton`` by the</span>
+</span><span data-line="146"><span class="sd">        line-search config it sends. Note: ``check_negative_criterion`` is a</span>
+</span><span data-line="147"><span class="sd">        diagnostic-only option and is currently not honored by the C++ loop.</span>
+</span><span data-line="148"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="149">        <span class="n">cfg</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_solver_config</span><span class="p">()</span>
+</span><span data-line="150">        <span class="n">cfg</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+</span><span data-line="151">            <span class="p">{</span>
+</span><span data-line="152">                <span class="s2">&quot;ls_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ls_type</span><span class="p">,</span>
+</span><span data-line="153">                <span class="s2">&quot;ls_max_iters&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ls_miter</span><span class="p">,</span>
+</span><span data-line="154">                <span class="s2">&quot;ls_cutback&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ls_sigma</span><span class="p">,</span>
+</span><span data-line="155">                <span class="s2">&quot;ls_c&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ls_c</span><span class="p">,</span>
+</span><span data-line="156">            <span class="p">}</span>
+</span><span data-line="157">        <span class="p">)</span>
+</span><span data-line="158">        <span class="k">return</span> <span class="n">cfg</span></div>
 
-</span><span data-line="163">
-</span><span data-line="164">
-</span><span data-line="165"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;NewtonWithLineSearch&quot;</span><span class="p">]</span>
+</span><span data-line="159">
+</span><span data-line="160">
+</span><span data-line="161"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;NewtonWithLineSearch&quot;</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

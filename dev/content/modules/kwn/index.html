@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -524,9 +525,9 @@ growth rate vanishes as <span class="math notranslate nohighlight">\(x^\infty_\s
 <p>The more general <strong>SFFK</strong> form (Svoboda–Fischer–Fratzl–Kozeschnik)
 handles multi-component diffusion in the dilute, diffusion-limited
 regime,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-954227ae-b611-4a4e-b4da-0a5aa0418a1e">
-<div class="amsmath math notranslate nohighlight" id="equation-954227ae-b611-4a4e-b4da-0a5aa0418a1e">
-<span class="eqno">(6)<a class="headerlink" href="#equation-954227ae-b611-4a4e-b4da-0a5aa0418a1e" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-754e0ab0-cc78-4b92-a2a6-c62b9afac640">
+<div class="amsmath math notranslate nohighlight" id="equation-754e0ab0-cc78-4b92-a2a6-c62b9afac640">
+<span class="eqno">(6)<a class="headerlink" href="#equation-754e0ab0-cc78-4b92-a2a6-c62b9afac640" title="Permalink to this equation">#</a></span>\[\begin{align}
 \dot{R}^{(j)} &amp;= \frac{1}{R^{(j)}} \,
   \frac{\Delta G^{(j)}_{\text{chem}}
       + \Delta G^{(j)}_{\text{surf}}
@@ -539,9 +540,9 @@ S^{(j)} &amp;= \sum_{k \in \mathcal{S}_j}
 <p>with <span class="math notranslate nohighlight">\(\Delta x^{(j)}_k = x^{(j)}_k - x^{*,(j)}_k\)</span> and <span class="math notranslate nohighlight">\(D_k\)</span> the matrix
 diffusivity of species <span class="math notranslate nohighlight">\(k\)</span>. The driving force is split into chemical,
 surface, and elastic contributions:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-be1ff5f1-0539-4bb8-9c7f-614452d9dc35">
-<div class="amsmath math notranslate nohighlight" id="equation-be1ff5f1-0539-4bb8-9c7f-614452d9dc35">
-<span class="eqno">(7)<a class="headerlink" href="#equation-be1ff5f1-0539-4bb8-9c7f-614452d9dc35" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-ac71d644-39a2-49bf-bed8-3af61a81d896">
+<div class="amsmath math notranslate nohighlight" id="equation-ac71d644-39a2-49bf-bed8-3af61a81d896">
+<span class="eqno">(7)<a class="headerlink" href="#equation-ac71d644-39a2-49bf-bed8-3af61a81d896" title="Permalink to this equation">#</a></span>\[\begin{align}
 \Delta G^{(j)}_{\text{chem}} &amp;=
   \sum_{k \in \mathcal{S}_j} \Delta x^{(j)}_k
   \bigl[\mu^{\text{matrix}}_k(x^\infty) - \mu^{\text{equil},(j)}_k\bigr],
@@ -573,9 +574,9 @@ J^{(j)}_{\text{nuc}} =
 \]</div>
 </div>
 <p>with the classical-nucleation-theory expressions</p>
-<div class="math-wrapper amsmath docutils container" id="equation-0ead9f39-19c6-467f-8310-95bc3db1417e">
-<div class="amsmath math notranslate nohighlight" id="equation-0ead9f39-19c6-467f-8310-95bc3db1417e">
-<span class="eqno">(8)<a class="headerlink" href="#equation-0ead9f39-19c6-467f-8310-95bc3db1417e" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-9f1116d2-c9a4-46e4-875e-5a9b794a35be">
+<div class="amsmath math notranslate nohighlight" id="equation-9f1116d2-c9a4-46e4-875e-5a9b794a35be">
+<span class="eqno">(8)<a class="headerlink" href="#equation-9f1116d2-c9a4-46e4-875e-5a9b794a35be" title="Permalink to this equation">#</a></span>\[\begin{align}
 R^{(j)}_{\text{crit}} &amp;=
   \frac{2 \gamma^{(j)} V_m^{(j)}}{\Delta g^{(j)}_v}, \\
 \Delta G^{*,(j)} &amp;=

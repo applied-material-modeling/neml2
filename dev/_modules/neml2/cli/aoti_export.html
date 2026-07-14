@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -3985,8 +3986,8 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="3571"><span class="sd">    Returns the primary ``ImplicitUpdate``&#39;s ``solver._solver_config()`` (the same</span>
 </span><span data-line="3572"><span class="sd">    atol/rtol/miters/line-search dict the eager path forwards to the C++ Newton) so</span>
 </span><span data-line="3573"><span class="sd">    the Python-free C++ runtime is configured straight from the artifact -- no stub</span>
-</span><span data-line="3574"><span class="sd">    ``[Solvers]`` parse. ``verbose`` is deliberately absent: it is a diagnostic</span>
-</span><span data-line="3575"><span class="sd">    controlled by ``NEML2_AOTI_TRACE_*`` env vars, not config. ``None`` for a</span>
+</span><span data-line="3574"><span class="sd">    ``[Solvers]`` parse. Verbosity is deliberately absent: it is a diagnostic</span>
+</span><span data-line="3575"><span class="sd">    controlled by the ``NEML2_LOGS`` env var (see :mod:`neml2.log`), not config. ``None`` for a</span>
 </span><span data-line="3576"><span class="sd">    forward-only model. If several implicit segments carry different configs the</span>
 </span><span data-line="3577"><span class="sd">    first (module order) wins -- the runtime applies a single config, mirroring the</span>
 </span><span data-line="3578"><span class="sd">    historical one-``[Solvers]`` stub behavior.</span>
