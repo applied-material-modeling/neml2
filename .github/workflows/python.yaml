@@ -105,7 +105,16 @@ jobs:
         # ``--strict`` exits non-zero on any vulnerability *or* dependency
         # resolution skip; ``--ignore-vuln`` slots in here as needed when a
         # flagged CVE has no realistic exploit path for this codebase.
-        run: pip-audit --vulnerability-service osv --strict
+        #
+        # PYSEC-2026-3447 (CVE-2026-59890): a macOS-only source-distribution
+        # packaging quirk in setuptools < 83.0.0 -- MANIFEST.in glob exclusions
+        # skip Unicode normalization, so an NFD filename on APFS/HFS+ can slip
+        # past an NFC exclude rule. setuptools here is a transitive, build-time
+        # dependency pinned < 82 by torch, so the 83.0.0 fix is unreachable until
+        # torch lifts that cap; neml2 builds via scikit-build-core (not
+        # setuptools' FileList) and ships nothing from a setuptools sdist, so
+        # there is no exploit path. Remove once torch permits setuptools >= 83.
+        run: pip-audit --vulnerability-service osv --strict --ignore-vuln PYSEC-2026-3447
 
   coverage:
     # Python branch + line coverage. Runs the fast lane only -- the
