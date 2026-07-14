@@ -117,9 +117,12 @@ main()
   NEML2_CHECK(events[0].second == "[neml2:newton ][info] hi");
   NEML2_CHECK(events[1].second == "[neml2:model  ][warn] warn");
 
-  // Format prefix: channel + level tag columns, both space-padded.
+  // Format prefix: channel + level tag columns, both space-padded (covers every
+  // level-tag arm: info, dbg, warn, slnt).
   NEML2_CHECK(L::format(L::Channel::Substep, L::Level::Info, "x") == "[neml2:substep][info] x");
   NEML2_CHECK(L::format(L::Channel::Model, L::Level::Debug, "x") == "[neml2:model  ][dbg ] x");
+  NEML2_CHECK(L::format(L::Channel::Newton, L::Level::Warning, "x") == "[neml2:newton ][warn] x");
+  NEML2_CHECK(L::format(L::Channel::Newton, L::Level::Silent, "x") == "[neml2:newton ][slnt] x");
 
   // Parse helpers: `all` is NOT a channel here (handled by the env parser).
   L::Channel c;
