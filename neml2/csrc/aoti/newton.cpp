@@ -230,6 +230,7 @@ newton_iterate(const SolverConfig & cfg,
       else // BACKTRACKING
         crit = nb_curr_sq - 2.0 * cfg.ls_c * alpha * b_dot_du;
 
+      // LCOV_EXCL_START -- diagnostic line-search trace (verbosity-gated; see neml2.log)
       if (console_debug || log)
       {
         std::ostringstream oss;
@@ -243,6 +244,7 @@ newton_iterate(const SolverConfig & cfg,
         if (log)
           log->push_back(oss.str());
       }
+      // LCOV_EXCL_STOP
 
       const auto stop = at::logical_or(nb_trial_sq <= crit, nb_trial_sq <= cfg.atol * cfg.atol);
       if (stop.all().item<bool>())
@@ -255,6 +257,7 @@ newton_iterate(const SolverConfig & cfg,
   b_outs = std::move(b_trial);
 
   const auto b_norm = pergroup_norm_sq(b_outs, residual_layout).sqrt();
+  // LCOV_EXCL_START -- diagnostic per-iteration trace (verbosity-gated; see neml2.log)
   if (console_debug || log)
   {
     std::ostringstream oss;
@@ -266,12 +269,15 @@ newton_iterate(const SolverConfig & cfg,
     if (log)
       log->push_back(oss.str());
   }
+  // LCOV_EXCL_STOP
   return b_norm;
 }
 
 // Which convergence criterion the batch met (all-reduced): abs_tol, rel_tol,
 // both, or a mix (different elements by different criteria). One extra pair of
-// d2h reductions, paid once at the converged point.
+// d2h reductions, paid once at the converged point. Diagnostic-only (feeds the
+// end-of-solve summary line), so excluded from coverage.
+// LCOV_EXCL_START
 std::string
 convergence_reason(const at::Tensor & b_norm, const at::Tensor & b0_norm, double atol, double rtol)
 {
@@ -285,6 +291,7 @@ convergence_reason(const at::Tensor & b_norm, const at::Tensor & b0_norm, double
     return "rel_tol";
   return "mixed";
 }
+// LCOV_EXCL_STOP
 } // namespace
 
 Newton::Newton(SolverConfig cfg)
@@ -327,6 +334,7 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
   std::vector<std::string> log;
   std::vector<std::string> * logp = collect ? &log : nullptr;
 
+  // LCOV_EXCL_START -- diagnostic solve banner + initial-residual trace
   if (console_info)
     nlog::begin_solve(nlog::Channel::Newton, "newton solve");
 
@@ -341,9 +349,11 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
     if (collect)
       log.push_back(oss.str());
   }
+  // LCOV_EXCL_STOP
 
   if (check_converged(b0_norm, b0_norm, _cfg.atol, _cfg.rtol))
   {
+    // LCOV_EXCL_START -- diagnostic convergence summary
     if (console_info)
     {
       nlog::emit(nlog::Channel::Newton,
@@ -352,6 +362,7 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
                      convergence_reason(b0_norm, b0_norm, _cfg.atol, _cfg.rtol) + ")");
       nlog::end_solve(nlog::Channel::Newton, "newton solve");
     }
+    // LCOV_EXCL_STOP
     return {
         std::move(u), /*converged=*/true, /*converged_mask=*/{}, /*iterations=*/0, std::move(log)};
   }
@@ -363,6 +374,7 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
     const auto status = check_stop(b_norm, b0_norm, _cfg.atol, _cfg.rtol);
     if (status == StopStatus::Diverged)
     {
+      // LCOV_EXCL_START -- diagnostic divergence summary
       if (console_info)
       {
         nlog::emit(nlog::Channel::Newton,
@@ -370,12 +382,14 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
                    "diverged at iter " + std::to_string(i) + " (non-finite residual)");
         nlog::end_solve(nlog::Channel::Newton, "newton solve");
       }
+      // LCOV_EXCL_STOP
       throw ConvergenceError("AOTI Newton diverged at iter " + std::to_string(i) +
                              " (non-finite residual). Consider tightening the predictor, "
                              "increasing max_linesearch_iterations, or reducing the time step.");
     }
     if (status == StopStatus::Converged)
     {
+      // LCOV_EXCL_START -- diagnostic convergence summary
       if (console_info)
       {
         nlog::emit(nlog::Channel::Newton,
@@ -384,6 +398,7 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
                        convergence_reason(b_norm, b0_norm, _cfg.atol, _cfg.rtol) + ")");
         nlog::end_solve(nlog::Channel::Newton, "newton solve");
       }
+      // LCOV_EXCL_STOP
       return {std::move(u),
               /*converged=*/true,
               /*converged_mask=*/{},
@@ -393,6 +408,7 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
   }
 
   const auto final_norm = pergroup_norm_sq(b_outs, residual_layout).sqrt();
+  // LCOV_EXCL_START -- diagnostic max-iters summary
   if (console_info)
   {
     std::ostringstream oss;
@@ -402,6 +418,7 @@ Newton::solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) c
     nlog::emit(nlog::Channel::Newton, nlog::Level::Info, oss.str());
     nlog::end_solve(nlog::Channel::Newton, "newton solve");
   }
+  // LCOV_EXCL_STOP
 
   // Maxed out without converging. A non-converged iterate is not a usable
   // solution, so this is a *recoverable* failure (ConvergenceError): a

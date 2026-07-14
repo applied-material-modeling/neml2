@@ -320,6 +320,7 @@ Model::Impl::_run_implicit_segment_substepped_masked(
     max_depth = std::max(max_depth, static_cast<int64_t>(level));
     if (level == 0)
       n_substepped = fail.numel(); // rows that failed the full step need substepping
+    // LCOV_EXCL_START -- diagnostic per-sub-span trace (verbosity-gated; see neml2.log)
     if (console_debug)
     {
       std::ostringstream oss;
@@ -329,6 +330,7 @@ Model::Impl::_run_implicit_segment_substepped_masked(
           << " -> converged=" << conv.numel() << " failed=" << fail.numel();
       nlog::emit(nlog::Channel::Substep, nlog::Level::Debug, oss.str());
     }
+    // LCOV_EXCL_STOP
     if (conv.numel() > 0)
     {
       auto conv_g = active.index_select(0, conv);
@@ -362,6 +364,7 @@ Model::Impl::_run_implicit_segment_substepped_masked(
   };
 
   solve_to(0.0, 1.0, at::arange(B, idx_opts), 0);
+  // LCOV_EXCL_START -- diagnostic per-solve substep summary
   if (console_info)
   {
     std::ostringstream oss;
@@ -369,6 +372,7 @@ Model::Impl::_run_implicit_segment_substepped_masked(
         << " substepped, max depth=" << max_depth << ", " << n_solves << " segment-solves";
     nlog::emit(nlog::Channel::Substep, nlog::Level::Info, oss.str());
   }
+  // LCOV_EXCL_STOP
   for (const auto & u : seg.unknowns)
     state[u.name] = result[u.name];
 }
@@ -440,6 +444,7 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
     max_depth = std::max(max_depth, static_cast<int64_t>(level));
     if (level == 0)
       n_substepped = fail.numel();
+    // LCOV_EXCL_START -- diagnostic per-sub-span trace (verbosity-gated; see neml2.log)
     if (console_debug)
     {
       std::ostringstream oss;
@@ -449,6 +454,7 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
           << " -> converged=" << conv.numel() << " failed=" << fail.numel();
       nlog::emit(nlog::Channel::Substep, nlog::Level::Debug, oss.str());
     }
+    // LCOV_EXCL_STOP
     if (conv.numel() > 0)
     {
       auto conv_g = active.index_select(0, conv);
@@ -497,6 +503,7 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
   };
 
   solve_to(0.0, 1.0, at::arange(B, idx_opts), 0);
+  // LCOV_EXCL_START -- diagnostic per-solve substep summary
   if (console_info)
   {
     std::ostringstream oss;
@@ -504,6 +511,7 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
         << " substepped, max depth=" << max_depth << ", " << n_solves << " segment-solves";
     nlog::emit(nlog::Channel::Substep, nlog::Level::Info, oss.str());
   }
+  // LCOV_EXCL_STOP
   for (const auto & u : seg.unknowns)
   {
     state[u.name] = result[u.name];

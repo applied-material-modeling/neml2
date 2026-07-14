@@ -124,6 +124,7 @@ public:
 
     // Inner linear-solve residual trace on the `linear` channel (debug). Built
     // only when the channel is on, so a silent solve incurs no per-iteration sync.
+    // LCOV_EXCL_START -- diagnostic linear-residual trace (verbosity-gated; see neml2.log)
     LinearLogFn on_iter;
     if (log::enabled(log::Channel::Linear, log::Level::Debug))
       on_iter = [](int64_t it, const at::Tensor & resid, const at::Tensor & bnorm)
@@ -133,6 +134,7 @@ public:
             << " max|r|/|b|=" << std::scientific << (resid / bnorm).max().item<double>();
         log::emit(log::Channel::Linear, log::Level::Debug, oss.str());
       };
+    // LCOV_EXCL_STOP
 
     auto res = krylov_solve(matvec, minv, b_flat, _cfg, on_iter);
     _last_iters = res.max_iters;
@@ -142,6 +144,7 @@ public:
     // reaching tol, which degrades the Newton step -- surfaces at `warning` (shown
     // by default); the healthy summary rides `info`. Gated on `warning` so a
     // silent channel never pays the convergence-mask d2h sync.
+    // LCOV_EXCL_START -- diagnostic linear-solve summary
     if (log::enabled(log::Channel::Linear, log::Level::Warning))
     {
       const bool all_converged = res.converged.defined() ? res.converged.all().item<bool>() : true;
@@ -160,6 +163,7 @@ public:
         log::emit(log::Channel::Linear, log::Level::Info, oss.str());
       }
     }
+    // LCOV_EXCL_STOP
 
     return {unflatten_dense(res.du, uspec), std::move(b_groups)};
   }
