@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -319,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -608,15 +616,28 @@ requested with <code class="docutils literal notranslate"><span class="pre">-d/-
 always lower a value graph and, when a requested pair runs through them, a
 per-variable-pair <code class="docutils literal notranslate"><span class="pre">jvp</span></code> graph emitting just the on-path blocks — a block
 that does not depend on the dynamic batch is traced, and returned,
-unbatched. <strong>Implicit segments</strong> always lower a Newton residual and a
-fused assemble + solve + update step (plus an optional predictor), and
+unbatched. <strong>Implicit segments</strong> lower a Newton residual plus the
+operators the linear solve needs (the solve is <strong>un-baked</strong> from the
+operator — the C++ runtime chains them per Newton iteration), and
 additionally an implicit-function-theorem sensitivity graph only when a
-requested pair’s derivative path runs through them. The implicit-segment
-graphs forward to whichever linear solver the source model is configured
-with (<code class="docutils literal notranslate"><span class="pre">DenseLU</span></code> for the common single-group case; <code class="docutils literal notranslate"><span class="pre">SchurComplement</span></code> for
-the <code class="docutils literal notranslate"><span class="pre">BLOCK</span> <span class="pre">+</span> <span class="pre">DENSE</span></code> 2-group factorisation).</p>
+requested pair’s derivative path runs through them. Which forward-solve
+graphs are lowered depends on the source model’s linear solver:</p>
+<ul class="simple">
+<li><p>a <strong>direct</strong> solver (<code class="docutils literal notranslate"><span class="pre">DenseLU</span></code> for the common single-group case;
+<code class="docutils literal notranslate"><span class="pre">SchurComplement</span></code> for the <code class="docutils literal notranslate"><span class="pre">BLOCK</span> <span class="pre">+</span> <span class="pre">DENSE</span></code> 2-group factorisation) lowers
+a residual-Jacobian operator (<code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">=</span> <span class="pre">∂r/∂u</span></code>) + a <code class="docutils literal notranslate"><span class="pre">solve</span></code> graph
+(<code class="docutils literal notranslate"><span class="pre">du</span> <span class="pre">=</span> <span class="pre">A^{-1}</span> <span class="pre">b</span></code>);</p></li>
+<li><p>a <strong>matrix-free Krylov</strong> solver (<code class="docutils literal notranslate"><span class="pre">GMRES</span></code> / <code class="docutils literal notranslate"><span class="pre">BiCGStab</span></code>) lowers a <code class="docutils literal notranslate"><span class="pre">matvec</span></code>
+graph (<code class="docutils literal notranslate"><span class="pre">J·v</span> <span class="pre">=</span> <span class="pre">∂r/∂u·v</span></code>) that the C++ runtime drives a batched Krylov
+iteration over, never assembling <code class="docutils literal notranslate"><span class="pre">A</span></code>. A preconditioner (an authored
+<code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> <code class="docutils literal notranslate"><span class="pre">JacobiPreconditioner</span></code> / <code class="docutils literal notranslate"><span class="pre">BlockJacobiPreconditioner</span></code> /
+<code class="docutils literal notranslate"><span class="pre">FullPreconditioner</span></code> referenced by the solver) additionally lowers a
+<code class="docutils literal notranslate"><span class="pre">precond_setup</span></code> + <code class="docutils literal notranslate"><span class="pre">precond_apply</span></code> graph pair; the standalone Jacobian
+operator is lowered only when an input derivative needs it.</p></li>
+</ul>
 <p>The C++ orchestrator sees the same flat <code class="docutils literal notranslate"><span class="pre">(u_flat,</span> <span class="pre">g_flat)</span> <span class="pre">→</span> <span class="pre">(u_new,</span> <span class="pre">b_new)</span></code> contract either way — the multi-group / sub-batch
-structure is internal to the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>.</p>
+structure, and the direct-vs-iterative linear solve, are internal to the
+segment’s graphs + <code class="docutils literal notranslate"><span class="pre">solver_config</span></code>.</p>
 </section>
 <section id="after-export-emit-the-hit-stub">
 <h2>After export: emit the HIT stub<a class="headerlink" href="#after-export-emit-the-hit-stub" title="Link to this heading">#</a></h2>

@@ -13,6 +13,12 @@ Update an implicit model by solving the underlying nonlinear system of equations
 `solver` &mdash; `str` &middot; **required**
 : Solver used to solve the nonlinear system of equations
 
+`input_sensitivity_solver` &mdash; `str`
+: Linear solver for the input-sensitivity (implicit-function-theorem) solve du/dg = -A^{-1} B when differentiating outputs w.r.t. inputs. Defaults to the Newton's linear_solver; set a direct solver (e.g. DenseLU) here to keep input derivatives exact under an iterative forward solve.
+
+`param_sensitivity_solver` &mdash; `str`
+: Linear solver for the parameter-sensitivity solve du/dtheta = -A^{-1} dr/dtheta when differentiating outputs w.r.t. (promoted) parameters. Defaults to the Newton's linear_solver; set a direct solver (e.g. DenseLU) here for exact parameter derivatives under an iterative forward solve.
+
 `predictor` &mdash; `str`
 : An optional predictor to provide an initial guess for the nonlinear solve.
 

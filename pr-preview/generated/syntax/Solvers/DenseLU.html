@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>DenseLU - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Newton" href="Newton.html" /><link rel="prev" title="Solvers" href="index.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>DenseLU - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="FullPreconditioner" href="FullPreconditioner.html" /><link rel="prev" title="BlockJacobiPreconditioner" href="BlockJacobiPreconditioner.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Syntax catalog</a><ul class="current">
@@ -319,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Solvers</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -427,16 +435,16 @@ sub-batch axes (if any) batch naturally as independent LUs per site
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="index.html">
+    <a href="BlockJacobiPreconditioner.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">Solvers</div></div>
+        <span>Previous</span><div class="title">BlockJacobiPreconditioner</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="Newton.html">
+    <a href="FullPreconditioner.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">Newton</div>
+        <div class="title">FullPreconditioner</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>

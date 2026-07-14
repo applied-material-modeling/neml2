@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -319,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -465,9 +473,9 @@ unknown:</p>
 </div>
 <p>For <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/ZenerElement.html#models-zenerelement"><span class="std std-ref">ZenerElement</span></a> — equilibrium spring in parallel with a Maxwell
 branch (Standard Linear Solid):</p>
-<div class="math-wrapper amsmath docutils container" id="equation-70e99070-5d51-4456-8362-b90e93a5f38f">
-<div class="amsmath math notranslate nohighlight" id="equation-70e99070-5d51-4456-8362-b90e93a5f38f">
-<span class="eqno">(13)<a class="headerlink" href="#equation-70e99070-5d51-4456-8362-b90e93a5f38f" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-7e1ab10f-6165-44c4-9847-4a8ccd50ce15">
+<div class="amsmath math notranslate nohighlight" id="equation-7e1ab10f-6165-44c4-9847-4a8ccd50ce15">
+<span class="eqno">(13)<a class="headerlink" href="#equation-7e1ab10f-6165-44c4-9847-4a8ccd50ce15" title="Permalink to this equation">#</a></span>\[\begin{align}
 \boldsymbol{\sigma} &amp;= (E_\infty + E_M) \boldsymbol{\varepsilon} - E_M \boldsymbol{\varepsilon}_v, \\
 \dot{\boldsymbol{\varepsilon}}_v &amp;= \frac{E_M}{\eta_M} (\boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_v).
 \end{align}\]</div>
@@ -475,9 +483,9 @@ branch (Standard Linear Solid):</p>
 <p>For <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/WiechertElement.html#models-wiechertelement"><span class="std std-ref">WiechertElement</span></a> — an equilibrium spring in parallel with two
 Maxwell branches (generalized Maxwell), one viscous strain
 <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}_{v,i}\)</span> per branch:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-4ddd0cb0-d648-441e-928b-6dc46094f7a3">
-<div class="amsmath math notranslate nohighlight" id="equation-4ddd0cb0-d648-441e-928b-6dc46094f7a3">
-<span class="eqno">(14)<a class="headerlink" href="#equation-4ddd0cb0-d648-441e-928b-6dc46094f7a3" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-eaeef975-58e6-4662-8e7f-aba93c427c74">
+<div class="amsmath math notranslate nohighlight" id="equation-eaeef975-58e6-4662-8e7f-aba93c427c74">
+<span class="eqno">(14)<a class="headerlink" href="#equation-eaeef975-58e6-4662-8e7f-aba93c427c74" title="Permalink to this equation">#</a></span>\[\begin{align}
 \boldsymbol{\sigma} &amp;= E_\infty \boldsymbol{\varepsilon} + \sum_{i=1}^{2} E_i \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_{v,i} \right), \\
 \dot{\boldsymbol{\varepsilon}}_{v,i} &amp;= \frac{E_i}{\eta_i} \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_{v,i} \right), \quad i = 1, 2.
 \end{align}\]</div>
@@ -485,9 +493,9 @@ Maxwell branches (generalized Maxwell), one viscous strain
 <p>For <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/BurgersElement.html#models-burgerselement"><span class="std std-ref">BurgersElement</span></a> — a Maxwell branch in series with a Kelvin-Voigt
 block, with <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}_v^M\)</span> the Maxwell dashpot strain and
 <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}^K\)</span> the Kelvin-Voigt block strain:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-37a95af7-4917-46c7-8708-92fc8c16360d">
-<div class="amsmath math notranslate nohighlight" id="equation-37a95af7-4917-46c7-8708-92fc8c16360d">
-<span class="eqno">(15)<a class="headerlink" href="#equation-37a95af7-4917-46c7-8708-92fc8c16360d" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-5a12a53e-ec5e-4d62-9bcc-3c0cdfa4f0a5">
+<div class="amsmath math notranslate nohighlight" id="equation-5a12a53e-ec5e-4d62-9bcc-3c0cdfa4f0a5">
+<span class="eqno">(15)<a class="headerlink" href="#equation-5a12a53e-ec5e-4d62-9bcc-3c0cdfa4f0a5" title="Permalink to this equation">#</a></span>\[\begin{align}
 \boldsymbol{\sigma} &amp;= E_M \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_v^M - \boldsymbol{\varepsilon}^K \right), \\
 \dot{\boldsymbol{\varepsilon}}_v^M &amp;= \boldsymbol{\sigma} / \eta_M, \\
 \dot{\boldsymbol{\varepsilon}}^K &amp;= \left( \boldsymbol{\sigma} - E_K \boldsymbol{\varepsilon}^K \right) / \eta_K.

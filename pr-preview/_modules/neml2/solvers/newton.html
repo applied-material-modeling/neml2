@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -319,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -433,7 +441,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="26">
 </span><span data-line="27"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span data-line="28">
-</span><span data-line="29"><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+</span><span data-line="29"><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">cast</span>
 </span><span data-line="30">
 </span><span data-line="31"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 </span><span data-line="32">
@@ -450,174 +458,251 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="43">    <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.es</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisLayout</span><span class="p">,</span> <span class="n">ModelNonlinearSystem</span>
 </span><span data-line="44">    <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">_NativeInputFile</span>
 </span><span data-line="45">
-</span><span data-line="46">
-</span><span data-line="47"><span class="k">def</span><span class="w"> </span><span class="nf">_group_layout_descriptor</span><span class="p">(</span><span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]:</span>
-</span><span data-line="48"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-group ``(structure, sub_batch_shape)`` descriptors for the C++ solver.</span>
-</span><span data-line="49">
-</span><span data-line="50"><span class="sd">    The shared C++ Newton loop needs only each group&#39;s ``SubBatchStructure``</span>
-</span><span data-line="51"><span class="sd">    and ``sub_batch_shape`` to compute its per-group reductions -- it is</span>
-</span><span data-line="52"><span class="sd">    deliberately independent of the Python ``AxisLayout``.</span>
-</span><span data-line="53"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="54">    <span class="k">return</span> <span class="p">[</span>
-</span><span data-line="55">        <span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">gi</span><span class="p">],</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">gi</span><span class="p">)])</span>
-</span><span data-line="56">        <span class="k">for</span> <span class="n">gi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">)</span>
-</span><span data-line="57">    <span class="p">]</span>
-</span><span data-line="58">
-</span><span data-line="59">
+</span><span data-line="46">    <span class="kn">from</span><span class="w"> </span><span class="nn">.bicgstab</span><span class="w"> </span><span class="kn">import</span> <span class="n">BiCGStab</span>
+</span><span data-line="47">    <span class="kn">from</span><span class="w"> </span><span class="nn">.gmres</span><span class="w"> </span><span class="kn">import</span> <span class="n">GMRES</span>
+</span><span data-line="48">
+</span><span data-line="49">    <span class="n">_LinearSolver</span> <span class="o">=</span> <span class="n">DenseLU</span> <span class="o">|</span> <span class="n">SchurComplement</span> <span class="o">|</span> <span class="n">GMRES</span> <span class="o">|</span> <span class="n">BiCGStab</span>
+</span><span data-line="50">
+</span><span data-line="51">
+</span><span data-line="52"><span class="k">def</span><span class="w"> </span><span class="nf">_group_layout_descriptor</span><span class="p">(</span><span class="n">layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]:</span>
+</span><span data-line="53"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-group ``(structure, sub_batch_shape)`` descriptors for the C++ solver.</span>
+</span><span data-line="54">
+</span><span data-line="55"><span class="sd">    The shared C++ Newton loop needs only each group&#39;s ``SubBatchStructure``</span>
+</span><span data-line="56"><span class="sd">    and ``sub_batch_shape`` to compute its per-group reductions -- it is</span>
+</span><span data-line="57"><span class="sd">    deliberately independent of the Python ``AxisLayout``.</span>
+</span><span data-line="58"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="59">    <span class="k">return</span> <span class="p">[</span>
+</span><span data-line="60">        <span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">structure</span><span class="p">[</span><span class="n">gi</span><span class="p">],</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">group_sub_batch_shape</span><span class="p">(</span><span class="n">gi</span><span class="p">)])</span>
+</span><span data-line="61">        <span class="k">for</span> <span class="n">gi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span><span class="p">)</span>
+</span><span data-line="62">    <span class="p">]</span>
+</span><span data-line="63">
+</span><span data-line="64">
 <div class="viewcode-block" id="Newton">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.Newton">[docs]</a>
-</span><span data-line="60"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;Newton&quot;</span><span class="p">)</span>
-</span><span data-line="61"><span class="k">class</span><span class="w"> </span><span class="nc">Newton</span><span class="p">:</span>
-</span><span data-line="62"><span class="w">    </span><span class="sd">&quot;&quot;&quot;The standard Newton-Raphson solver which always takes the &#39;full&#39; Newton step.&quot;&quot;&quot;</span>
-</span><span data-line="63">
-</span><span data-line="64">    <span class="c1">#: Inherited by ``NewtonWithLineSearch``.</span>
-</span><span data-line="65">    <span class="n">SECTION</span> <span class="o">=</span> <span class="s2">&quot;Solvers&quot;</span>
-</span><span data-line="66">
-</span><span data-line="67">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
-</span><span data-line="68">        <span class="n">dependency</span><span class="p">(</span>
-</span><span data-line="69">            <span class="s2">&quot;linear_solver&quot;</span><span class="p">,</span>
-</span><span data-line="70">            <span class="s2">&quot;get_solver&quot;</span><span class="p">,</span>
-</span><span data-line="71">            <span class="s2">&quot;The linear solver to use within the nonlinear solver&quot;</span><span class="p">,</span>
-</span><span data-line="72">            <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-</span><span data-line="73">        <span class="p">),</span>
-</span><span data-line="74">        <span class="n">option</span><span class="p">(</span><span class="s2">&quot;abs_tol&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Absolute tolerance in the convergence criteria&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0e-10</span><span class="p">),</span>
-</span><span data-line="75">        <span class="n">option</span><span class="p">(</span><span class="s2">&quot;rel_tol&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Relative tolerance in the convergence criteria&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0e-8</span><span class="p">),</span>
-</span><span data-line="76">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="77">            <span class="s2">&quot;max_its&quot;</span><span class="p">,</span>
-</span><span data-line="78">            <span class="nb">int</span><span class="p">,</span>
-</span><span data-line="79">            <span class="s2">&quot;Maximum number of iterations allowed before issuing an error/exception&quot;</span><span class="p">,</span>
-</span><span data-line="80">            <span class="n">default</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
-</span><span data-line="81">        <span class="p">),</span>
-</span><span data-line="82">        <span class="n">option</span><span class="p">(</span>
-</span><span data-line="83">            <span class="s2">&quot;verbose&quot;</span><span class="p">,</span>
-</span><span data-line="84">            <span class="nb">bool</span><span class="p">,</span>
-</span><span data-line="85">            <span class="s2">&quot;Print the Newton convergence history (per-iteration residual norms, &quot;</span>
-</span><span data-line="86">            <span class="s2">&quot;including any line-search sub-iterations) after each solve&quot;</span><span class="p">,</span>
-</span><span data-line="87">            <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-</span><span data-line="88">        <span class="p">),</span>
-</span><span data-line="89">    <span class="p">)</span>
-</span><span data-line="90">
+</span><span data-line="65"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;Newton&quot;</span><span class="p">)</span>
+</span><span data-line="66"><span class="k">class</span><span class="w"> </span><span class="nc">Newton</span><span class="p">:</span>
+</span><span data-line="67"><span class="w">    </span><span class="sd">&quot;&quot;&quot;The standard Newton-Raphson solver which always takes the &#39;full&#39; Newton step.&quot;&quot;&quot;</span>
+</span><span data-line="68">
+</span><span data-line="69">    <span class="c1">#: Inherited by ``NewtonWithLineSearch``.</span>
+</span><span data-line="70">    <span class="n">SECTION</span> <span class="o">=</span> <span class="s2">&quot;Solvers&quot;</span>
+</span><span data-line="71">
+</span><span data-line="72">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">(</span>
+</span><span data-line="73">        <span class="n">dependency</span><span class="p">(</span>
+</span><span data-line="74">            <span class="s2">&quot;linear_solver&quot;</span><span class="p">,</span>
+</span><span data-line="75">            <span class="s2">&quot;get_solver&quot;</span><span class="p">,</span>
+</span><span data-line="76">            <span class="s2">&quot;The linear solver to use within the nonlinear solver&quot;</span><span class="p">,</span>
+</span><span data-line="77">            <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span data-line="78">        <span class="p">),</span>
+</span><span data-line="79">        <span class="n">option</span><span class="p">(</span><span class="s2">&quot;abs_tol&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Absolute tolerance in the convergence criteria&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0e-10</span><span class="p">),</span>
+</span><span data-line="80">        <span class="n">option</span><span class="p">(</span><span class="s2">&quot;rel_tol&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Relative tolerance in the convergence criteria&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0e-8</span><span class="p">),</span>
+</span><span data-line="81">        <span class="n">option</span><span class="p">(</span>
+</span><span data-line="82">            <span class="s2">&quot;max_its&quot;</span><span class="p">,</span>
+</span><span data-line="83">            <span class="nb">int</span><span class="p">,</span>
+</span><span data-line="84">            <span class="s2">&quot;Maximum number of iterations allowed before issuing an error/exception&quot;</span><span class="p">,</span>
+</span><span data-line="85">            <span class="n">default</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
+</span><span data-line="86">        <span class="p">),</span>
+</span><span data-line="87">    <span class="p">)</span>
+</span><span data-line="88">
 <div class="viewcode-block" id="Newton.from_hit">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.Newton.from_hit">[docs]</a>
-</span><span data-line="91">    <span class="nd">@classmethod</span>
-</span><span data-line="92">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Newton</span><span class="p">:</span>
-</span><span data-line="93">        <span class="n">ls_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;linear_solver&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-</span><span data-line="94">        <span class="n">linear_solver</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_solver</span><span class="p">(</span><span class="n">ls_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">ls_name</span> <span class="k">else</span> <span class="kc">None</span>
-</span><span data-line="95">        <span class="n">atol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;abs_tol&quot;</span><span class="p">,</span> <span class="mf">1.0e-10</span><span class="p">)</span>
-</span><span data-line="96">        <span class="n">rtol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;rel_tol&quot;</span><span class="p">,</span> <span class="mf">1.0e-8</span><span class="p">)</span>
-</span><span data-line="97">        <span class="n">miters</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;max_its&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">))</span>
-</span><span data-line="98">        <span class="n">verbose</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_bool</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-</span><span data-line="99">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-</span><span data-line="100">            <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">miters</span><span class="o">=</span><span class="n">miters</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
-</span><span data-line="101">        <span class="p">)</span></div>
+</span><span data-line="89">    <span class="nd">@classmethod</span>
+</span><span data-line="90">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Newton</span><span class="p">:</span>
+</span><span data-line="91">        <span class="n">ls_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_str</span><span class="p">(</span><span class="s2">&quot;linear_solver&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span data-line="92">        <span class="n">linear_solver</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get_solver</span><span class="p">(</span><span class="n">ls_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">ls_name</span> <span class="k">else</span> <span class="kc">None</span>
+</span><span data-line="93">        <span class="n">atol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;abs_tol&quot;</span><span class="p">,</span> <span class="mf">1.0e-10</span><span class="p">)</span>
+</span><span data-line="94">        <span class="n">rtol</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">param_optional_float</span><span class="p">(</span><span class="s2">&quot;rel_tol&quot;</span><span class="p">,</span> <span class="mf">1.0e-8</span><span class="p">)</span>
+</span><span data-line="95">        <span class="n">miters</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">param_optional_int</span><span class="p">(</span><span class="s2">&quot;max_its&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">))</span>
+</span><span data-line="96">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">miters</span><span class="o">=</span><span class="n">miters</span><span class="p">)</span></div>
 
-</span><span data-line="102">
-</span><span data-line="103">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-</span><span data-line="104">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="105">        <span class="o">*</span><span class="p">,</span>
-</span><span data-line="106">        <span class="n">linear_solver</span><span class="p">:</span> <span class="n">DenseLU</span> <span class="o">|</span> <span class="n">SchurComplement</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span data-line="107">        <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-10</span><span class="p">,</span>
-</span><span data-line="108">        <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-8</span><span class="p">,</span>
-</span><span data-line="109">        <span class="n">miters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span>
-</span><span data-line="110">        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-</span><span data-line="111">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="112">        <span class="bp">self</span><span class="o">.</span><span class="n">linear_solver</span> <span class="o">=</span> <span class="n">linear_solver</span> <span class="k">if</span> <span class="n">linear_solver</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">DenseLU</span><span class="p">()</span>
-</span><span data-line="113">        <span class="bp">self</span><span class="o">.</span><span class="n">atol</span> <span class="o">=</span> <span class="n">atol</span>
-</span><span data-line="114">        <span class="bp">self</span><span class="o">.</span><span class="n">rtol</span> <span class="o">=</span> <span class="n">rtol</span>
-</span><span data-line="115">        <span class="bp">self</span><span class="o">.</span><span class="n">miters</span> <span class="o">=</span> <span class="n">miters</span>
-</span><span data-line="116">        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
-</span><span data-line="117">
-</span><span data-line="118">    <span class="k">def</span><span class="w"> </span><span class="nf">_solver_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span data-line="119"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Per-group Newton config forwarded to the C++ solver.</span>
-</span><span data-line="120">
-</span><span data-line="121"><span class="sd">        Base ``Newton`` takes the full step (``ls_max_iters=1`` disables line</span>
-</span><span data-line="122"><span class="sd">        search). :class:`NewtonWithLineSearch` overrides this with its</span>
-</span><span data-line="123"><span class="sd">        line-search options.</span>
-</span><span data-line="124"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="125">        <span class="k">return</span> <span class="p">{</span>
-</span><span data-line="126">            <span class="s2">&quot;atol&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">atol</span><span class="p">,</span>
-</span><span data-line="127">            <span class="s2">&quot;rtol&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rtol</span><span class="p">,</span>
-</span><span data-line="128">            <span class="s2">&quot;miters&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">miters</span><span class="p">,</span>
-</span><span data-line="129">            <span class="s2">&quot;ls_type&quot;</span><span class="p">:</span> <span class="s2">&quot;BACKTRACKING&quot;</span><span class="p">,</span>
-</span><span data-line="130">            <span class="s2">&quot;ls_max_iters&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span data-line="131">            <span class="s2">&quot;ls_cutback&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
-</span><span data-line="132">            <span class="s2">&quot;ls_c&quot;</span><span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">,</span>
-</span><span data-line="133">        <span class="p">}</span>
-</span><span data-line="134">
+</span><span data-line="97">
+</span><span data-line="98">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+</span><span data-line="99">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="100">        <span class="o">*</span><span class="p">,</span>
+</span><span data-line="101">        <span class="n">linear_solver</span><span class="p">:</span> <span class="n">_LinearSolver</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="102">        <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-10</span><span class="p">,</span>
+</span><span data-line="103">        <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-8</span><span class="p">,</span>
+</span><span data-line="104">        <span class="n">miters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span>
+</span><span data-line="105">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="106">        <span class="bp">self</span><span class="o">.</span><span class="n">linear_solver</span> <span class="o">=</span> <span class="n">linear_solver</span> <span class="k">if</span> <span class="n">linear_solver</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">DenseLU</span><span class="p">()</span>
+</span><span data-line="107">        <span class="bp">self</span><span class="o">.</span><span class="n">atol</span> <span class="o">=</span> <span class="n">atol</span>
+</span><span data-line="108">        <span class="bp">self</span><span class="o">.</span><span class="n">rtol</span> <span class="o">=</span> <span class="n">rtol</span>
+</span><span data-line="109">        <span class="bp">self</span><span class="o">.</span><span class="n">miters</span> <span class="o">=</span> <span class="n">miters</span>
+</span><span data-line="110">
+</span><span data-line="111">    <span class="k">def</span><span class="w"> </span><span class="nf">_solver_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span data-line="112"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Per-group Newton config forwarded to the C++ solver.</span>
+</span><span data-line="113">
+</span><span data-line="114"><span class="sd">        Base ``Newton`` takes the full step (``ls_max_iters=1`` disables line</span>
+</span><span data-line="115"><span class="sd">        search). :class:`NewtonWithLineSearch` overrides this with its</span>
+</span><span data-line="116"><span class="sd">        line-search options.</span>
+</span><span data-line="117"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="118">        <span class="k">return</span> <span class="p">{</span>
+</span><span data-line="119">            <span class="s2">&quot;atol&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">atol</span><span class="p">,</span>
+</span><span data-line="120">            <span class="s2">&quot;rtol&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rtol</span><span class="p">,</span>
+</span><span data-line="121">            <span class="s2">&quot;miters&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">miters</span><span class="p">,</span>
+</span><span data-line="122">            <span class="s2">&quot;ls_type&quot;</span><span class="p">:</span> <span class="s2">&quot;BACKTRACKING&quot;</span><span class="p">,</span>
+</span><span data-line="123">            <span class="s2">&quot;ls_max_iters&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span data-line="124">            <span class="s2">&quot;ls_cutback&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+</span><span data-line="125">            <span class="s2">&quot;ls_c&quot;</span><span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">,</span>
+</span><span data-line="126">        <span class="p">}</span>
+</span><span data-line="127">
 <div class="viewcode-block" id="Newton.solve">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.Newton.solve">[docs]</a>
-</span><span data-line="135">    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="n">ModelNonlinearSystem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NonlinearResult</span><span class="p">:</span>
-</span><span data-line="136"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve the nonlinear system via the shared C++ Newton solver.</span>
+</span><span data-line="128">    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="n">ModelNonlinearSystem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NonlinearResult</span><span class="p">:</span>
+</span><span data-line="129"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve the nonlinear system via the shared C++ Newton solver.</span>
+</span><span data-line="130">
+</span><span data-line="131"><span class="sd">        The iteration control (convergence test, line search) lives in C++ and</span>
+</span><span data-line="132"><span class="sd">        is shared with the AOTI runtime; this wrapper supplies the residual /</span>
+</span><span data-line="133"><span class="sd">        Newton-step callbacks (the ``RHS`` residual + the ``Jacobian`` operator</span>
+</span><span data-line="134"><span class="sd">        chained into ``LinearSolve``, the same modules the AOTI runtime compiles,</span>
+</span><span data-line="135"><span class="sd">        run eagerly here) plus the per-group layouts, then commits the converged</span>
+</span><span data-line="136"><span class="sd">        iterate back into the system.</span>
 </span><span data-line="137">
-</span><span data-line="138"><span class="sd">        The iteration control (convergence test, line search) lives in C++ and</span>
-</span><span data-line="139"><span class="sd">        is shared with the AOTI runtime; this wrapper supplies the residual /</span>
-</span><span data-line="140"><span class="sd">        Newton-step callbacks (the ``RHS`` / ``NewtonStep`` export modules, run</span>
-</span><span data-line="141"><span class="sd">        eagerly) plus the per-group layouts, then commits the converged iterate</span>
-</span><span data-line="142"><span class="sd">        back into the system.</span>
-</span><span data-line="143"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="144">        <span class="c1"># Local imports: the compiled extension + the residual/step export</span>
-</span><span data-line="145">        <span class="c1"># modules, kept off the package import path so a partial build can still</span>
-</span><span data-line="146">        <span class="c1"># import solvers.</span>
-</span><span data-line="147">        <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.aoti._aoti</span><span class="w"> </span><span class="kn">import</span> <span class="n">newton_solve_eager</span>  <span class="c1"># noqa: PLC0415</span>
-</span><span data-line="148">        <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.es.implicit</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># noqa: PLC0415</span>
-</span><span data-line="149">            <span class="n">RHS</span><span class="p">,</span>
-</span><span data-line="150">            <span class="n">NewtonStep</span><span class="p">,</span>
-</span><span data-line="151">            <span class="n">_vector_to_per_group_raws</span><span class="p">,</span>
-</span><span data-line="152">        <span class="p">)</span>
-</span><span data-line="153">
-</span><span data-line="154">        <span class="c1"># The eager path runs the *same* residual/step modules the AOTI runtime</span>
-</span><span data-line="155">        <span class="c1"># compiles (RHS / NewtonStep), so the two cannot diverge -- only the</span>
-</span><span data-line="156">        <span class="c1"># iteration control differs (here C++, there C++ too). The givens are</span>
-</span><span data-line="157">        <span class="c1"># bound once; the C++ loop drives the unknowns.</span>
-</span><span data-line="158">        <span class="n">rhs</span> <span class="o">=</span> <span class="n">RHS</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
-</span><span data-line="159">        <span class="n">step</span> <span class="o">=</span> <span class="n">NewtonStep</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_solver</span><span class="p">)</span>
-</span><span data-line="160">        <span class="n">n_u</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">ulayout</span><span class="o">.</span><span class="n">ngroup</span>
-</span><span data-line="161">
-</span><span data-line="162">        <span class="c1"># The Newton iterates are a fixed-point solve: gradients flow through</span>
-</span><span data-line="163">        <span class="c1"># the converged state via the IFT (see ImplicitUpdate), never through</span>
-</span><span data-line="164">        <span class="c1"># the iterations, so the solve runs detached.</span>
-</span><span data-line="165">        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-</span><span data-line="166">            <span class="n">g_raws</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_vector_to_per_group_raws</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">g</span><span class="p">()))</span>
-</span><span data-line="167">            <span class="n">u0_raws</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_vector_to_per_group_raws</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">u</span><span class="p">()))</span>
+</span><span data-line="138"><span class="sd">        A matrix-free iterative ``linear_solver`` (``GMRES`` / ``BiCGStab``) takes</span>
+</span><span data-line="139"><span class="sd">        the sibling :meth:`_solve_iterative` path -- the same shared C++ Newton</span>
+</span><span data-line="140"><span class="sd">        loop, but each step&#39;s linear solve is a Krylov iteration over the</span>
+</span><span data-line="141"><span class="sd">        ``Matvec`` callback rather than a baked direct solve.</span>
+</span><span data-line="142"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="143">        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_solver</span><span class="p">,</span> <span class="s2">&quot;is_iterative&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+</span><span data-line="144">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_iterative</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+</span><span data-line="145">
+</span><span data-line="146">        <span class="c1"># Local imports: the compiled extension + the residual/step export</span>
+</span><span data-line="147">        <span class="c1"># modules, kept off the package import path so a partial build can still</span>
+</span><span data-line="148">        <span class="c1"># import solvers.</span>
+</span><span data-line="149">        <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.aoti._aoti</span><span class="w"> </span><span class="kn">import</span> <span class="n">newton_solve_eager</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="150">        <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.es.implicit</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="151">            <span class="n">RHS</span><span class="p">,</span>
+</span><span data-line="152">            <span class="n">Jacobian</span><span class="p">,</span>
+</span><span data-line="153">            <span class="n">LinearSolve</span><span class="p">,</span>
+</span><span data-line="154">            <span class="n">_vector_to_per_group_raws</span><span class="p">,</span>
+</span><span data-line="155">        <span class="p">)</span>
+</span><span data-line="156">
+</span><span data-line="157">        <span class="c1"># The eager path runs the *same* operator + solve modules the AOTI runtime</span>
+</span><span data-line="158">        <span class="c1"># compiles (RHS / Jacobian / LinearSolve), so the two cannot diverge --</span>
+</span><span data-line="159">        <span class="c1"># only the iteration control differs (here C++, there C++ too). The linear</span>
+</span><span data-line="160">        <span class="c1"># solve is un-baked from the Jacobian operator: ``Jacobian`` assembles</span>
+</span><span data-line="161">        <span class="c1"># ``(A_blocks, b)``; ``LinearSolve`` reconstructs the typed operators and</span>
+</span><span data-line="162">        <span class="c1"># applies the configured Python solver. The givens are bound once; the C++</span>
+</span><span data-line="163">        <span class="c1"># loop drives the unknowns.</span>
+</span><span data-line="164">        <span class="n">rhs</span> <span class="o">=</span> <span class="n">RHS</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+</span><span data-line="165">        <span class="n">jacobian</span> <span class="o">=</span> <span class="n">Jacobian</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+</span><span data-line="166">        <span class="n">linear_solve</span> <span class="o">=</span> <span class="n">LinearSolve</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_solver</span><span class="p">)</span>
+</span><span data-line="167">        <span class="n">n_a</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">blayout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">*</span> <span class="n">system</span><span class="o">.</span><span class="n">ulayout</span><span class="o">.</span><span class="n">ngroup</span>  <span class="c1"># A blocks (residual × unknown)</span>
 </span><span data-line="168">
-</span><span data-line="169">            <span class="k">def</span><span class="w"> </span><span class="nf">residual_fn</span><span class="p">(</span><span class="n">u_raws</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-</span><span data-line="170">                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">rhs</span><span class="p">(</span><span class="o">*</span><span class="n">u_raws</span><span class="p">,</span> <span class="o">*</span><span class="n">g_raws</span><span class="p">))</span>
-</span><span data-line="171">
-</span><span data-line="172">            <span class="k">def</span><span class="w"> </span><span class="nf">step_fn</span><span class="p">(</span>
-</span><span data-line="173">                <span class="n">u_raws</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="174">            <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
-</span><span data-line="175">                <span class="n">out</span> <span class="o">=</span> <span class="n">step</span><span class="p">(</span><span class="o">*</span><span class="n">u_raws</span><span class="p">,</span> <span class="o">*</span><span class="n">g_raws</span><span class="p">)</span>
-</span><span data-line="176">                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">out</span><span class="p">[:</span><span class="n">n_u</span><span class="p">]),</span> <span class="nb">list</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">n_u</span><span class="p">:])</span>
-</span><span data-line="177">
-</span><span data-line="178">            <span class="n">u_star</span><span class="p">,</span> <span class="n">converged</span><span class="p">,</span> <span class="n">iterations</span><span class="p">,</span> <span class="n">log</span> <span class="o">=</span> <span class="n">newton_solve_eager</span><span class="p">(</span>
-</span><span data-line="179">                <span class="n">residual_fn</span><span class="o">=</span><span class="n">residual_fn</span><span class="p">,</span>
-</span><span data-line="180">                <span class="n">step_fn</span><span class="o">=</span><span class="n">step_fn</span><span class="p">,</span>
-</span><span data-line="181">                <span class="n">unknown_layout</span><span class="o">=</span><span class="n">_group_layout_descriptor</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">ulayout</span><span class="p">),</span>
-</span><span data-line="182">                <span class="n">residual_layout</span><span class="o">=</span><span class="n">_group_layout_descriptor</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">blayout</span><span class="p">),</span>
-</span><span data-line="183">                <span class="n">u0</span><span class="o">=</span><span class="n">u0_raws</span><span class="p">,</span>
-</span><span data-line="184">                <span class="c1"># collect_log is eager-only (it controls returning the</span>
-</span><span data-line="185">                <span class="c1"># convergence history to Python); the shared ``_solver_config``</span>
-</span><span data-line="186">                <span class="c1"># also feeds the compiled path&#39;s ``set_solver_config``, which</span>
-</span><span data-line="187">                <span class="c1"># has no such option.</span>
-</span><span data-line="188">                <span class="n">collect_log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
-</span><span data-line="189">                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_solver_config</span><span class="p">(),</span>
-</span><span data-line="190">            <span class="p">)</span>
-</span><span data-line="191">            <span class="n">system</span><span class="o">.</span><span class="n">set_u_from_group_raws</span><span class="p">(</span><span class="n">u_star</span><span class="p">)</span>
-</span><span data-line="192">
-</span><span data-line="193">        <span class="c1"># ``verbose`` surfaces the convergence history the C++ loop collected</span>
-</span><span data-line="194">        <span class="c1"># (``collect_log`` above). Printing from Python keeps it in the</span>
-</span><span data-line="195">        <span class="c1"># notebook-captured stream, unlike the C++ ``NEML2_AOTI_TRACE_NEWTON``</span>
-</span><span data-line="196">        <span class="c1"># stderr trace.</span>
-</span><span data-line="197">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="ow">and</span> <span class="n">log</span><span class="p">:</span>
-</span><span data-line="198">            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log</span><span class="p">))</span>
-</span><span data-line="199">
-</span><span data-line="200">        <span class="n">ret</span> <span class="o">=</span> <span class="n">RetCode</span><span class="o">.</span><span class="n">SUCCESS</span> <span class="k">if</span> <span class="n">converged</span> <span class="k">else</span> <span class="n">RetCode</span><span class="o">.</span><span class="n">MAXITER</span>
-</span><span data-line="201">        <span class="k">return</span> <span class="n">NonlinearResult</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">iterations</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">log</span><span class="p">))</span></div>
-</div>
+</span><span data-line="169">        <span class="c1"># The Newton iterates are a fixed-point solve: gradients flow through</span>
+</span><span data-line="170">        <span class="c1"># the converged state via the IFT (see ImplicitUpdate), never through</span>
+</span><span data-line="171">        <span class="c1"># the iterations, so the solve runs detached.</span>
+</span><span data-line="172">        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+</span><span data-line="173">            <span class="n">g_raws</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_vector_to_per_group_raws</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">g</span><span class="p">()))</span>
+</span><span data-line="174">            <span class="n">u0_raws</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_vector_to_per_group_raws</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">u</span><span class="p">()))</span>
+</span><span data-line="175">
+</span><span data-line="176">            <span class="k">def</span><span class="w"> </span><span class="nf">residual_fn</span><span class="p">(</span><span class="n">u_raws</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+</span><span data-line="177">                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">rhs</span><span class="p">(</span><span class="o">*</span><span class="n">u_raws</span><span class="p">,</span> <span class="o">*</span><span class="n">g_raws</span><span class="p">))</span>
+</span><span data-line="178">
+</span><span data-line="179">            <span class="k">def</span><span class="w"> </span><span class="nf">step_fn</span><span class="p">(</span>
+</span><span data-line="180">                <span class="n">u_raws</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="181">            <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+</span><span data-line="182">                <span class="c1"># Chain the operator + solve graphs: Jacobian -&gt; (A_blocks, b),</span>
+</span><span data-line="183">                <span class="c1"># LinearSolve(A_blocks, b) -&gt; du. The b groups (the last</span>
+</span><span data-line="184">                <span class="c1"># blayout.ngroup outputs of Jacobian) are reused for the</span>
+</span><span data-line="185">                <span class="c1"># line-search residual, matching the compiled C++ step() path.</span>
+</span><span data-line="186">                <span class="n">jac_out</span> <span class="o">=</span> <span class="n">jacobian</span><span class="p">(</span><span class="o">*</span><span class="n">u_raws</span><span class="p">,</span> <span class="o">*</span><span class="n">g_raws</span><span class="p">)</span>
+</span><span data-line="187">                <span class="n">du</span> <span class="o">=</span> <span class="n">linear_solve</span><span class="p">(</span><span class="o">*</span><span class="n">jac_out</span><span class="p">)</span>
+</span><span data-line="188">                <span class="n">b</span> <span class="o">=</span> <span class="n">jac_out</span><span class="p">[</span><span class="n">n_a</span><span class="p">:]</span>
+</span><span data-line="189">                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">du</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</span><span data-line="190">
+</span><span data-line="191">            <span class="n">u_star</span><span class="p">,</span> <span class="n">converged</span><span class="p">,</span> <span class="n">iterations</span><span class="p">,</span> <span class="n">log</span> <span class="o">=</span> <span class="n">newton_solve_eager</span><span class="p">(</span>
+</span><span data-line="192">                <span class="n">residual_fn</span><span class="o">=</span><span class="n">residual_fn</span><span class="p">,</span>
+</span><span data-line="193">                <span class="n">step_fn</span><span class="o">=</span><span class="n">step_fn</span><span class="p">,</span>
+</span><span data-line="194">                <span class="n">unknown_layout</span><span class="o">=</span><span class="n">_group_layout_descriptor</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">ulayout</span><span class="p">),</span>
+</span><span data-line="195">                <span class="n">residual_layout</span><span class="o">=</span><span class="n">_group_layout_descriptor</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">blayout</span><span class="p">),</span>
+</span><span data-line="196">                <span class="n">u0</span><span class="o">=</span><span class="n">u0_raws</span><span class="p">,</span>
+</span><span data-line="197">                <span class="c1"># Console verbosity is emitted by the shared C++ Newton loop</span>
+</span><span data-line="198">                <span class="c1"># itself (the ``newton`` / ``linear`` log channels, controlled by</span>
+</span><span data-line="199">                <span class="c1"># ``NEML2_LOGS`` -- see :mod:`neml2.log`), uniformly across every</span>
+</span><span data-line="200">                <span class="c1"># route. ``collect_log`` is a separate opt-in *data* path that</span>
+</span><span data-line="201">                <span class="c1"># returns the convergence history to Python; no caller needs it here.</span>
+</span><span data-line="202">                <span class="n">collect_log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span data-line="203">                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_solver_config</span><span class="p">(),</span>
+</span><span data-line="204">            <span class="p">)</span>
+</span><span data-line="205">            <span class="n">system</span><span class="o">.</span><span class="n">set_u_from_group_raws</span><span class="p">(</span><span class="n">u_star</span><span class="p">)</span>
+</span><span data-line="206">
+</span><span data-line="207">        <span class="n">ret</span> <span class="o">=</span> <span class="n">RetCode</span><span class="o">.</span><span class="n">SUCCESS</span> <span class="k">if</span> <span class="n">converged</span> <span class="k">else</span> <span class="n">RetCode</span><span class="o">.</span><span class="n">MAXITER</span>
+</span><span data-line="208">        <span class="k">return</span> <span class="n">NonlinearResult</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">iterations</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">log</span><span class="p">))</span></div>
 
-</span><span data-line="202">
-</span><span data-line="203">
-</span><span data-line="204"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Newton&quot;</span><span class="p">]</span>
+</span><span data-line="209">
+</span><span data-line="210">    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_iterative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="n">ModelNonlinearSystem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NonlinearResult</span><span class="p">:</span>
+</span><span data-line="211"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve via the shared C++ Newton loop with a matrix-free Krylov step.</span>
+</span><span data-line="212">
+</span><span data-line="213"><span class="sd">        The outer Newton iteration control is identical to :meth:`solve` (same</span>
+</span><span data-line="214"><span class="sd">        C++ loop, convergence test, line search); only the inner linear solve</span>
+</span><span data-line="215"><span class="sd">        differs. Instead of the ``Jacobian`` -&gt; ``LinearSolve`` chain, each step</span>
+</span><span data-line="216"><span class="sd">        runs a Krylov iteration (``krylov_solve_eager``) over the ``Matvec``</span>
+</span><span data-line="217"><span class="sd">        (``J.v``) callback -- never assembling ``A`` unless the preconditioner&#39;s</span>
+</span><span data-line="218"><span class="sd">        authored setup needs it. This runs the *same* C++ ``krylov_solve`` the</span>
+</span><span data-line="219"><span class="sd">        AOTI runtime uses, so eager and compiled cannot diverge.</span>
+</span><span data-line="220"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="221">        <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.aoti._aoti</span><span class="w"> </span><span class="kn">import</span> <span class="n">krylov_solve_eager</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="222">        <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.es.implicit</span><span class="w"> </span><span class="kn">import</span> <span class="n">RHS</span><span class="p">,</span> <span class="n">Matvec</span><span class="p">,</span> <span class="n">_vector_to_per_group_raws</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="223">
+</span><span data-line="224">        <span class="c1"># Reached only when the linear solver is iterative (GMRES / BiCGStab);</span>
+</span><span data-line="225">        <span class="c1"># narrow the DenseLU|SchurComplement|... union so the config access types.</span>
+</span><span data-line="226">        <span class="n">ls</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;GMRES | BiCGStab&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_solver</span><span class="p">)</span>
+</span><span data-line="227">        <span class="n">kcfg</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">krylov_config</span><span class="p">()</span>
+</span><span data-line="228">
+</span><span data-line="229">        <span class="n">rhs</span> <span class="o">=</span> <span class="n">RHS</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+</span><span data-line="230">        <span class="n">matvec</span> <span class="o">=</span> <span class="n">Matvec</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+</span><span data-line="231">        <span class="c1"># The preconditioner authors a setup + apply module (both None for the</span>
+</span><span data-line="232">        <span class="c1"># no-preconditioner case); run them live as eager callbacks.</span>
+</span><span data-line="233">        <span class="n">pc_setup</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">preconditioner</span><span class="o">.</span><span class="n">setup_module</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+</span><span data-line="234">        <span class="n">pc_apply</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">preconditioner</span><span class="o">.</span><span class="n">apply_module</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+</span><span data-line="235">
+</span><span data-line="236">        <span class="c1"># Fixed-point solve: gradients flow through the converged state via the</span>
+</span><span data-line="237">        <span class="c1"># IFT (see ImplicitUpdate), never the iterations, so this runs detached.</span>
+</span><span data-line="238">        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+</span><span data-line="239">            <span class="n">g_raws</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_vector_to_per_group_raws</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">g</span><span class="p">()))</span>
+</span><span data-line="240">            <span class="n">u0_raws</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_vector_to_per_group_raws</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">u</span><span class="p">()))</span>
+</span><span data-line="241">
+</span><span data-line="242">            <span class="k">def</span><span class="w"> </span><span class="nf">residual_fn</span><span class="p">(</span><span class="n">u_raws</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+</span><span data-line="243">                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">rhs</span><span class="p">(</span><span class="o">*</span><span class="n">u_raws</span><span class="p">,</span> <span class="o">*</span><span class="n">g_raws</span><span class="p">))</span>
+</span><span data-line="244">
+</span><span data-line="245">            <span class="k">def</span><span class="w"> </span><span class="nf">matvec_fn</span><span class="p">(</span>
+</span><span data-line="246">                <span class="n">u_raws</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">v_raws</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
+</span><span data-line="247">            <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+</span><span data-line="248">                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">matvec</span><span class="p">(</span><span class="o">*</span><span class="n">u_raws</span><span class="p">,</span> <span class="o">*</span><span class="n">g_raws</span><span class="p">,</span> <span class="o">*</span><span class="n">v_raws</span><span class="p">))</span>
+</span><span data-line="249">
+</span><span data-line="250">            <span class="c1"># Defined unconditionally (closing over the possibly-None modules) but</span>
+</span><span data-line="251">            <span class="c1"># passed only when a preconditioner is present -- else None reaches the</span>
+</span><span data-line="252">            <span class="c1"># binding and the C++ applies identity. The asserts hold whenever these</span>
+</span><span data-line="253">            <span class="c1"># are actually invoked (has_precond =&gt; both modules are non-None).</span>
+</span><span data-line="254">            <span class="k">def</span><span class="w"> </span><span class="nf">precond_setup_fn</span><span class="p">(</span><span class="n">u_raws</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+</span><span data-line="255">                <span class="k">assert</span> <span class="n">pc_setup</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+</span><span data-line="256">                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">pc_setup</span><span class="p">(</span><span class="o">*</span><span class="n">u_raws</span><span class="p">,</span> <span class="o">*</span><span class="n">g_raws</span><span class="p">))</span>
+</span><span data-line="257">
+</span><span data-line="258">            <span class="k">def</span><span class="w"> </span><span class="nf">precond_apply_fn</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">r_flat</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+</span><span data-line="259">                <span class="k">assert</span> <span class="n">pc_apply</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+</span><span data-line="260">                <span class="k">return</span> <span class="n">pc_apply</span><span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">,</span> <span class="n">r_flat</span><span class="p">)</span>
+</span><span data-line="261">
+</span><span data-line="262">            <span class="n">has_precond</span> <span class="o">=</span> <span class="n">pc_setup</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+</span><span data-line="263">            <span class="n">u_star</span><span class="p">,</span> <span class="n">converged</span><span class="p">,</span> <span class="n">iterations</span><span class="p">,</span> <span class="n">log</span> <span class="o">=</span> <span class="n">krylov_solve_eager</span><span class="p">(</span>
+</span><span data-line="264">                <span class="n">residual_fn</span><span class="o">=</span><span class="n">residual_fn</span><span class="p">,</span>
+</span><span data-line="265">                <span class="n">matvec_fn</span><span class="o">=</span><span class="n">matvec_fn</span><span class="p">,</span>
+</span><span data-line="266">                <span class="n">precond_setup_fn</span><span class="o">=</span><span class="n">precond_setup_fn</span> <span class="k">if</span> <span class="n">has_precond</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="267">                <span class="n">precond_apply_fn</span><span class="o">=</span><span class="n">precond_apply_fn</span> <span class="k">if</span> <span class="n">has_precond</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="268">                <span class="n">unknown_layout</span><span class="o">=</span><span class="n">_group_layout_descriptor</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">ulayout</span><span class="p">),</span>
+</span><span data-line="269">                <span class="n">residual_layout</span><span class="o">=</span><span class="n">_group_layout_descriptor</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">blayout</span><span class="p">),</span>
+</span><span data-line="270">                <span class="n">u0</span><span class="o">=</span><span class="n">u0_raws</span><span class="p">,</span>
+</span><span data-line="271">                <span class="n">collect_log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span data-line="272">                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_solver_config</span><span class="p">(),</span>
+</span><span data-line="273">                <span class="o">**</span><span class="n">kcfg</span><span class="p">,</span>
+</span><span data-line="274">            <span class="p">)</span>
+</span><span data-line="275">            <span class="n">system</span><span class="o">.</span><span class="n">set_u_from_group_raws</span><span class="p">(</span><span class="n">u_star</span><span class="p">)</span>
+</span><span data-line="276">
+</span><span data-line="277">        <span class="n">ret</span> <span class="o">=</span> <span class="n">RetCode</span><span class="o">.</span><span class="n">SUCCESS</span> <span class="k">if</span> <span class="n">converged</span> <span class="k">else</span> <span class="n">RetCode</span><span class="o">.</span><span class="n">MAXITER</span>
+</span><span data-line="278">        <span class="k">return</span> <span class="n">NonlinearResult</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">iterations</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">log</span><span class="p">))</span></div>
+
+</span><span data-line="279">
+</span><span data-line="280">
+</span><span data-line="281"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Newton&quot;</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

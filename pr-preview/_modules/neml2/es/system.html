@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -319,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -998,172 +1006,176 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="508">            <span class="p">)</span>
 </span><span data-line="509">            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span>
 </span><span data-line="510">        <span class="p">)</span>
-</span><span data-line="511">        <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>  <span class="c1"># noqa: PLC0415</span>
-</span><span data-line="512">
-</span><span data-line="513">        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NEML2_DEBUG_KSTATE&quot;</span><span class="p">):</span>
-</span><span data-line="514">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span data-line="515">                <span class="nb">print</span><span class="p">(</span>
-</span><span data-line="516">                    <span class="sa">f</span><span class="s2">&quot;DEBUG _call_model arg[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">]: &quot;</span>
-</span><span data-line="517">                    <span class="sa">f</span><span class="s2">&quot;data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> sub_ndim=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="518">                    <span class="sa">f</span><span class="s2">&quot;sub_state=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span data-line="519">                    <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span data-line="520">                <span class="p">)</span>
-</span><span data-line="521">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">seeds</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="522">                <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seeds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="523">                    <span class="nb">print</span><span class="p">(</span>
-</span><span data-line="524">                        <span class="sa">f</span><span class="s2">&quot;DEBUG _call_model v[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">][</span><span class="si">{</span><span class="n">leaf</span><span class="si">!r}</span><span class="s2">]: &quot;</span>
-</span><span data-line="525">                        <span class="sa">f</span><span class="s2">&quot;data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> sub_ndim=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="526">                        <span class="sa">f</span><span class="s2">&quot;sub_state=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="527">                        <span class="sa">f</span><span class="s2">&quot;k_state=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_state</span><span class="si">}</span><span class="s2"> k_pairing=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_pairing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span data-line="528">                        <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span data-line="529">                    <span class="p">)</span>
-</span><span data-line="530">        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-</span><span data-line="531">        <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">result</span><span class="p">,)</span>
-</span><span data-line="532">
-</span><span data-line="533">    <span class="k">def</span><span class="w"> </span><span class="nf">_identity_seed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ChainRuleDict</span><span class="p">:</span>
-</span><span data-line="534"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Per-(residual_group, unknown) expanded identity seeds.</span>
+</span><span data-line="511">        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="512">            <span class="kn">from</span><span class="w"> </span><span class="nn">neml2</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="513">
+</span><span data-line="514">            <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">):</span>
+</span><span data-line="515">                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span data-line="516">                    <span class="n">log</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span>
+</span><span data-line="517">                        <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+</span><span data-line="518">                        <span class="s2">&quot;debug&quot;</span><span class="p">,</span>
+</span><span data-line="519">                        <span class="sa">f</span><span class="s2">&quot;_call_model arg[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">]: &quot;</span>
+</span><span data-line="520">                        <span class="sa">f</span><span class="s2">&quot;data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> sub_ndim=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
+</span><span data-line="521">                        <span class="sa">f</span><span class="s2">&quot;sub_state=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+</span><span data-line="522">                    <span class="p">)</span>
+</span><span data-line="523">                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">seeds</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="524">                    <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seeds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="525">                        <span class="n">log</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span>
+</span><span data-line="526">                            <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+</span><span data-line="527">                            <span class="s2">&quot;debug&quot;</span><span class="p">,</span>
+</span><span data-line="528">                            <span class="sa">f</span><span class="s2">&quot;_call_model v[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">][</span><span class="si">{</span><span class="n">leaf</span><span class="si">!r}</span><span class="s2">]: &quot;</span>
+</span><span data-line="529">                            <span class="sa">f</span><span class="s2">&quot;data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> sub_ndim=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
+</span><span data-line="530">                            <span class="sa">f</span><span class="s2">&quot;sub_state=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
+</span><span data-line="531">                            <span class="sa">f</span><span class="s2">&quot;k_state=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_state</span><span class="si">}</span><span class="s2"> k_pairing=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">k_pairing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+</span><span data-line="532">                        <span class="p">)</span>
+</span><span data-line="533">        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span><span data-line="534">        <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">result</span><span class="p">,)</span>
 </span><span data-line="535">
-</span><span data-line="536"><span class="sd">        For each (input, residual_group) pair we emit ONE seed leaf</span>
-</span><span data-line="537"><span class="sd">        whose compactness is the intersection of per-pair compactness</span>
-</span><span data-line="538"><span class="sd">        across the group&#39;s residuals -- the chain-rule analog of</span>
-</span><span data-line="539"><span class="sd">        :meth:`_preserved_labels_per_group`&#39;s ``candidate − touched``</span>
-</span><span data-line="540"><span class="sd">        rule applied at the seed boundary. This guarantees the chain</span>
-</span><span data-line="541"><span class="sd">        rule is never finer-grained than the storage layer that</span>
-</span><span data-line="542"><span class="sd">        consumes it (``AxisLayout.preserved_labels[gi]`` is the per-</span>
-</span><span data-line="543"><span class="sd">        group set, so per-pair compactness only differs from per-</span>
-</span><span data-line="544"><span class="sd">        group when some pair preserves an axis the rest of the group</span>
-</span><span data-line="545"><span class="sd">        touches -- and that finer-grained gain is wiped out at</span>
-</span><span data-line="546"><span class="sd">        ``_normalize_block_to_cell_canonical`` because the cell&#39;s</span>
-</span><span data-line="547"><span class="sd">        canonical preserved set is empty).</span>
-</span><span data-line="548">
-</span><span data-line="549"><span class="sd">        Per-group seeds collapse the redundant per-pair-within-a-group</span>
-</span><span data-line="550"><span class="sd">        multiplier:</span>
+</span><span data-line="536">    <span class="k">def</span><span class="w"> </span><span class="nf">_identity_seed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ChainRuleDict</span><span class="p">:</span>
+</span><span data-line="537"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Per-(residual_group, unknown) expanded identity seeds.</span>
+</span><span data-line="538">
+</span><span data-line="539"><span class="sd">        For each (input, residual_group) pair we emit ONE seed leaf</span>
+</span><span data-line="540"><span class="sd">        whose compactness is the intersection of per-pair compactness</span>
+</span><span data-line="541"><span class="sd">        across the group&#39;s residuals -- the chain-rule analog of</span>
+</span><span data-line="542"><span class="sd">        :meth:`_preserved_labels_per_group`&#39;s ``candidate − touched``</span>
+</span><span data-line="543"><span class="sd">        rule applied at the seed boundary. This guarantees the chain</span>
+</span><span data-line="544"><span class="sd">        rule is never finer-grained than the storage layer that</span>
+</span><span data-line="545"><span class="sd">        consumes it (``AxisLayout.preserved_labels[gi]`` is the per-</span>
+</span><span data-line="546"><span class="sd">        group set, so per-pair compactness only differs from per-</span>
+</span><span data-line="547"><span class="sd">        group when some pair preserves an axis the rest of the group</span>
+</span><span data-line="548"><span class="sd">        touches -- and that finer-grained gain is wiped out at</span>
+</span><span data-line="549"><span class="sd">        ``_normalize_block_to_cell_canonical`` because the cell&#39;s</span>
+</span><span data-line="550"><span class="sd">        canonical preserved set is empty).</span>
 </span><span data-line="551">
-</span><span data-line="552"><span class="sd">        * **Single-residual groups** (isoharden, taylor / mxpc):</span>
-</span><span data-line="553"><span class="sd">          equivalent to the historical per-pair seeds (one residual per</span>
-</span><span data-line="554"><span class="sd">          group → group == pair).</span>
-</span><span data-line="555"><span class="sd">        * **Multi-residual groups, no preservation surviving the</span>
-</span><span data-line="556"><span class="sd">          intersection** (chaboche2, scpcoup as configured): single</span>
-</span><span data-line="557"><span class="sd">          seed per input at the group&#39;s full ``K`` -- equivalent to the</span>
-</span><span data-line="558"><span class="sd">          v3-OLD per-input column seed and ~N_residuals× less chain-</span>
-</span><span data-line="559"><span class="sd">          rule work than per-pair.</span>
-</span><span data-line="560"><span class="sd">        * **Multi-residual groups with surviving preservation**: single</span>
-</span><span data-line="561"><span class="sd">          compact seed per (input, group). Same storage end as per-pair</span>
-</span><span data-line="562"><span class="sd">          on the diagonal pair, with no redundant full-K cross-pair</span>
-</span><span data-line="563"><span class="sd">          seeds.</span>
-</span><span data-line="564">
-</span><span data-line="565"><span class="sd">        Compactness rule (per-axis): an axis is group-compact iff NO</span>
-</span><span data-line="566"><span class="sd">        residual in the group touches its label (``reduces ∪</span>
-</span><span data-line="567"><span class="sd">        introduces``). Symmetric with how the storage layer derives</span>
-</span><span data-line="568"><span class="sd">        ``preserved_labels[gi]``.</span>
-</span><span data-line="569">
-</span><span data-line="570"><span class="sd">        Leaf keys use the ``&quot;{col}:rgroup{gi}&quot;`` format where ``gi`` is</span>
-</span><span data-line="571"><span class="sd">        the residual group index. ``_build_group_block`` reads the</span>
-</span><span data-line="572"><span class="sd">        tangent at ``v_out[row_name][f&quot;{col_name}:rgroup{i_of_row_group}&quot;]``.</span>
-</span><span data-line="573">
-</span><span data-line="574"><span class="sd">        Bundling per-group leaves into a single ``model.forward(*args,</span>
-</span><span data-line="575"><span class="sd">        v=seed)`` call works because ``apply_chain_rule`` propagates</span>
-</span><span data-line="576"><span class="sd">        each leaf independently and K-equalizes per leaf, never across</span>
-</span><span data-line="577"><span class="sd">        leaves -- the chain rule treats seed keys opaquely.</span>
-</span><span data-line="578">
-</span><span data-line="579"><span class="sd">        Seeds for variables whose state value has fewer dynamic-batch</span>
-</span><span data-line="580"><span class="sd">        axes than the system&#39;s max are LEFT-padded with size-1</span>
-</span><span data-line="581"><span class="sd">        placeholders so the leading-K tangent contract ``(K, *dyn, *sub,</span>
-</span><span data-line="582"><span class="sd">        *base)`` lines up position-wise across all variables. Without</span>
-</span><span data-line="583"><span class="sd">        these placeholders, a tangent for a base-shape-only unknown</span>
-</span><span data-line="584"><span class="sd">        would have shape ``(K, base)`` and collide positionally with a</span>
-</span><span data-line="585"><span class="sd">        force primal&#39;s ``(dyn, base)`` during the typed-wrapper algebra</span>
-</span><span data-line="586"><span class="sd">        -- torch&#39;s right-aligned broadcast would then misalign K with</span>
-</span><span data-line="587"><span class="sd">        dyn.</span>
-</span><span data-line="588"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="589">        <span class="c1"># V2P-5 canonical seed, delegated to the shared builder so the native</span>
-</span><span data-line="590">        <span class="c1"># eager path and the AOTI export wrappers cannot drift (the padding +</span>
-</span><span data-line="591">        <span class="c1"># per-(input, residual_group) expansion live in one place now).</span>
-</span><span data-line="592">        <span class="k">return</span> <span class="n">build_identity_seed</span><span class="p">(</span>
-</span><span data-line="593">            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span>
-</span><span data-line="594">            <span class="n">names</span><span class="p">,</span>
-</span><span data-line="595">            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residual_groups</span><span class="p">),</span>
-</span><span data-line="596">            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span>
-</span><span data-line="597">            <span class="bp">self</span><span class="o">.</span><span class="n">_sub_batch_shapes</span><span class="p">,</span>
-</span><span data-line="598">        <span class="p">)</span>
-</span><span data-line="599">
-</span><span data-line="600">    <span class="k">def</span><span class="w"> </span><span class="nf">_assemble_matrix</span><span class="p">(</span>
-</span><span data-line="601">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="602">        <span class="n">row_layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span>
-</span><span data-line="603">        <span class="n">col_layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span>
-</span><span data-line="604">        <span class="n">v_out</span><span class="p">:</span> <span class="n">ChainRuleDict</span><span class="p">,</span>
-</span><span data-line="605">        <span class="n">like_by_row</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
-</span><span data-line="606">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
-</span><span data-line="607">        <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>  <span class="c1"># noqa: PLC0415</span>
-</span><span data-line="608">
-</span><span data-line="609">        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NEML2_DEBUG_KSTATE&quot;</span><span class="p">):</span>
-</span><span data-line="610">            <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">leaves</span> <span class="ow">in</span> <span class="n">v_out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="611">                <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">leaves</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="612">                    <span class="nb">print</span><span class="p">(</span>
-</span><span data-line="613">                        <span class="sa">f</span><span class="s2">&quot;DEBUG _assemble_matrix v_out[</span><span class="si">{</span><span class="n">r</span><span class="si">!r}</span><span class="s2">][</span><span class="si">{</span><span class="n">leaf</span><span class="si">!r}</span><span class="s2">]: &quot;</span>
-</span><span data-line="614">                        <span class="sa">f</span><span class="s2">&quot;data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="615">                        <span class="sa">f</span><span class="s2">&quot;k_state=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_state</span><span class="si">}</span><span class="s2"> k_pairing=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_pairing</span><span class="si">}</span><span class="s2"> &quot;</span>
-</span><span data-line="616">                        <span class="sa">f</span><span class="s2">&quot;sub=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span data-line="617">                        <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span data-line="618">                    <span class="p">)</span>
-</span><span data-line="619">        <span class="n">M</span> <span class="o">=</span> <span class="n">_build_block_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">row_layout</span><span class="p">,</span> <span class="n">col_layout</span><span class="p">,</span> <span class="n">v_out</span><span class="p">,</span> <span class="n">like_by_row</span><span class="p">)</span>
-</span><span data-line="620">        <span class="k">return</span> <span class="n">M</span>
-</span><span data-line="621">
+</span><span data-line="552"><span class="sd">        Per-group seeds collapse the redundant per-pair-within-a-group</span>
+</span><span data-line="553"><span class="sd">        multiplier:</span>
+</span><span data-line="554">
+</span><span data-line="555"><span class="sd">        * **Single-residual groups** (isoharden, taylor / mxpc):</span>
+</span><span data-line="556"><span class="sd">          equivalent to the historical per-pair seeds (one residual per</span>
+</span><span data-line="557"><span class="sd">          group → group == pair).</span>
+</span><span data-line="558"><span class="sd">        * **Multi-residual groups, no preservation surviving the</span>
+</span><span data-line="559"><span class="sd">          intersection** (chaboche2, scpcoup as configured): single</span>
+</span><span data-line="560"><span class="sd">          seed per input at the group&#39;s full ``K`` -- equivalent to the</span>
+</span><span data-line="561"><span class="sd">          v3-OLD per-input column seed and ~N_residuals× less chain-</span>
+</span><span data-line="562"><span class="sd">          rule work than per-pair.</span>
+</span><span data-line="563"><span class="sd">        * **Multi-residual groups with surviving preservation**: single</span>
+</span><span data-line="564"><span class="sd">          compact seed per (input, group). Same storage end as per-pair</span>
+</span><span data-line="565"><span class="sd">          on the diagonal pair, with no redundant full-K cross-pair</span>
+</span><span data-line="566"><span class="sd">          seeds.</span>
+</span><span data-line="567">
+</span><span data-line="568"><span class="sd">        Compactness rule (per-axis): an axis is group-compact iff NO</span>
+</span><span data-line="569"><span class="sd">        residual in the group touches its label (``reduces ∪</span>
+</span><span data-line="570"><span class="sd">        introduces``). Symmetric with how the storage layer derives</span>
+</span><span data-line="571"><span class="sd">        ``preserved_labels[gi]``.</span>
+</span><span data-line="572">
+</span><span data-line="573"><span class="sd">        Leaf keys use the ``&quot;{col}:rgroup{gi}&quot;`` format where ``gi`` is</span>
+</span><span data-line="574"><span class="sd">        the residual group index. ``_build_group_block`` reads the</span>
+</span><span data-line="575"><span class="sd">        tangent at ``v_out[row_name][f&quot;{col_name}:rgroup{i_of_row_group}&quot;]``.</span>
+</span><span data-line="576">
+</span><span data-line="577"><span class="sd">        Bundling per-group leaves into a single ``model.forward(*args,</span>
+</span><span data-line="578"><span class="sd">        v=seed)`` call works because ``apply_chain_rule`` propagates</span>
+</span><span data-line="579"><span class="sd">        each leaf independently and K-equalizes per leaf, never across</span>
+</span><span data-line="580"><span class="sd">        leaves -- the chain rule treats seed keys opaquely.</span>
+</span><span data-line="581">
+</span><span data-line="582"><span class="sd">        Seeds for variables whose state value has fewer dynamic-batch</span>
+</span><span data-line="583"><span class="sd">        axes than the system&#39;s max are LEFT-padded with size-1</span>
+</span><span data-line="584"><span class="sd">        placeholders so the leading-K tangent contract ``(K, *dyn, *sub,</span>
+</span><span data-line="585"><span class="sd">        *base)`` lines up position-wise across all variables. Without</span>
+</span><span data-line="586"><span class="sd">        these placeholders, a tangent for a base-shape-only unknown</span>
+</span><span data-line="587"><span class="sd">        would have shape ``(K, base)`` and collide positionally with a</span>
+</span><span data-line="588"><span class="sd">        force primal&#39;s ``(dyn, base)`` during the typed-wrapper algebra</span>
+</span><span data-line="589"><span class="sd">        -- torch&#39;s right-aligned broadcast would then misalign K with</span>
+</span><span data-line="590"><span class="sd">        dyn.</span>
+</span><span data-line="591"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="592">        <span class="c1"># V2P-5 canonical seed, delegated to the shared builder so the native</span>
+</span><span data-line="593">        <span class="c1"># eager path and the AOTI export wrappers cannot drift (the padding +</span>
+</span><span data-line="594">        <span class="c1"># per-(input, residual_group) expansion live in one place now).</span>
+</span><span data-line="595">        <span class="k">return</span> <span class="n">build_identity_seed</span><span class="p">(</span>
+</span><span data-line="596">            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span>
+</span><span data-line="597">            <span class="n">names</span><span class="p">,</span>
+</span><span data-line="598">            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residual_groups</span><span class="p">),</span>
+</span><span data-line="599">            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_spec</span><span class="p">,</span>
+</span><span data-line="600">            <span class="bp">self</span><span class="o">.</span><span class="n">_sub_batch_shapes</span><span class="p">,</span>
+</span><span data-line="601">        <span class="p">)</span>
+</span><span data-line="602">
+</span><span data-line="603">    <span class="k">def</span><span class="w"> </span><span class="nf">_assemble_matrix</span><span class="p">(</span>
+</span><span data-line="604">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="605">        <span class="n">row_layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span>
+</span><span data-line="606">        <span class="n">col_layout</span><span class="p">:</span> <span class="n">AxisLayout</span><span class="p">,</span>
+</span><span data-line="607">        <span class="n">v_out</span><span class="p">:</span> <span class="n">ChainRuleDict</span><span class="p">,</span>
+</span><span data-line="608">        <span class="n">like_by_row</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
+</span><span data-line="609">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span>
+</span><span data-line="610">        <span class="kn">from</span><span class="w"> </span><span class="nn">neml2</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="611">
+</span><span data-line="612">        <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">):</span>
+</span><span data-line="613">            <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">leaves</span> <span class="ow">in</span> <span class="n">v_out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="614">                <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">leaves</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="615">                    <span class="n">log</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span>
+</span><span data-line="616">                        <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+</span><span data-line="617">                        <span class="s2">&quot;debug&quot;</span><span class="p">,</span>
+</span><span data-line="618">                        <span class="sa">f</span><span class="s2">&quot;_assemble_matrix v_out[</span><span class="si">{</span><span class="n">r</span><span class="si">!r}</span><span class="s2">][</span><span class="si">{</span><span class="n">leaf</span><span class="si">!r}</span><span class="s2">]: &quot;</span>
+</span><span data-line="619">                        <span class="sa">f</span><span class="s2">&quot;data.shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> k_ndim=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2"> &quot;</span>
+</span><span data-line="620">                        <span class="sa">f</span><span class="s2">&quot;k_state=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_state</span><span class="si">}</span><span class="s2"> k_pairing=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_pairing</span><span class="si">}</span><span class="s2"> &quot;</span>
+</span><span data-line="621">                        <span class="sa">f</span><span class="s2">&quot;sub=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+</span><span data-line="622">                    <span class="p">)</span>
+</span><span data-line="623">        <span class="n">M</span> <span class="o">=</span> <span class="n">_build_block_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">row_layout</span><span class="p">,</span> <span class="n">col_layout</span><span class="p">,</span> <span class="n">v_out</span><span class="p">,</span> <span class="n">like_by_row</span><span class="p">)</span>
+</span><span data-line="624">        <span class="k">return</span> <span class="n">M</span>
+</span><span data-line="625">
 <div class="viewcode-block" id="ModelNonlinearSystem.assemble">
 <a class="viewcode-back" href="../../../content/python_api/neml2.es.html#neml2.es.ModelNonlinearSystem.assemble">[docs]</a>
-</span><span data-line="622">    <span class="k">def</span><span class="w"> </span><span class="nf">assemble</span><span class="p">(</span>
-</span><span data-line="623">        <span class="bp">self</span><span class="p">,</span>
-</span><span data-line="624">        <span class="n">need_A</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-</span><span data-line="625">        <span class="n">need_B</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-</span><span data-line="626">        <span class="n">need_b</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-</span><span data-line="627">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">AssembledMatrix</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">AssembledMatrix</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">AssembledVector</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-</span><span data-line="628">        <span class="n">seed_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="629">        <span class="k">if</span> <span class="n">need_A</span><span class="p">:</span>
-</span><span data-line="630">            <span class="n">seed_names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unknown_names</span><span class="p">)</span>
-</span><span data-line="631">        <span class="k">if</span> <span class="n">need_B</span><span class="p">:</span>
-</span><span data-line="632">            <span class="n">seed_names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">given_names</span><span class="p">)</span>
-</span><span data-line="633">        <span class="n">seed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_identity_seed</span><span class="p">(</span><span class="n">seed_names</span><span class="p">)</span> <span class="k">if</span> <span class="n">seed_names</span> <span class="k">else</span> <span class="kc">None</span>
-</span><span data-line="634">        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_model</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
-</span><span data-line="635">
-</span><span data-line="636">        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="637">            <span class="n">output_values</span> <span class="o">=</span> <span class="n">result</span>
-</span><span data-line="638">            <span class="n">v_out</span><span class="p">:</span> <span class="n">ChainRuleDict</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="639">        <span class="k">else</span><span class="p">:</span>
-</span><span data-line="640">            <span class="n">output_values</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</span><span data-line="641">            <span class="n">v_out</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</span><span data-line="642">
-</span><span data-line="643">        <span class="c1"># Keep model outputs as typed wrappers per rule 1; if a leaf</span>
-</span><span data-line="644">        <span class="c1"># returned raw (shouldn&#39;t happen post-cleanup but tolerate),</span>
-</span><span data-line="645">        <span class="c1"># rewrap with the declared output type.</span>
-</span><span data-line="646">        <span class="n">output_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="647">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">output_values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span data-line="648">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
-</span><span data-line="649">                <span class="n">output_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-</span><span data-line="650">            <span class="k">else</span><span class="p">:</span>
-</span><span data-line="651">                <span class="n">output_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">value</span><span class="p">)</span>
-</span><span data-line="652">        <span class="n">residual_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">output_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_names</span><span class="p">}</span>
-</span><span data-line="653">        <span class="n">like_by_row</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="654">            <span class="n">name</span><span class="p">:</span> <span class="n">_flatten_base</span><span class="p">(</span><span class="n">residual_values</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
-</span><span data-line="655">            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_names</span>
-</span><span data-line="656">        <span class="p">}</span>
-</span><span data-line="657">
-</span><span data-line="658">        <span class="n">A</span> <span class="o">=</span> <span class="p">(</span>
-</span><span data-line="659">            <span class="bp">self</span><span class="o">.</span><span class="n">_assemble_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blayout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ulayout</span><span class="p">,</span> <span class="n">v_out</span><span class="p">,</span> <span class="n">like_by_row</span><span class="p">)</span>
-</span><span data-line="660">            <span class="k">if</span> <span class="n">need_A</span>
-</span><span data-line="661">            <span class="k">else</span> <span class="kc">None</span>
-</span><span data-line="662">        <span class="p">)</span>
-</span><span data-line="663">        <span class="n">B</span> <span class="o">=</span> <span class="p">(</span>
-</span><span data-line="664">            <span class="bp">self</span><span class="o">.</span><span class="n">_assemble_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blayout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">glayout</span><span class="p">,</span> <span class="n">v_out</span><span class="p">,</span> <span class="n">like_by_row</span><span class="p">)</span>
-</span><span data-line="665">            <span class="k">if</span> <span class="n">need_B</span>
-</span><span data-line="666">            <span class="k">else</span> <span class="kc">None</span>
-</span><span data-line="667">        <span class="p">)</span>
-</span><span data-line="668">        <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="n">AssembledVector</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blayout</span><span class="p">,</span> <span class="n">residual_values</span><span class="p">)</span> <span class="k">if</span> <span class="n">need_b</span> <span class="k">else</span> <span class="kc">None</span>
-</span><span data-line="669">        <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">b</span></div>
+</span><span data-line="626">    <span class="k">def</span><span class="w"> </span><span class="nf">assemble</span><span class="p">(</span>
+</span><span data-line="627">        <span class="bp">self</span><span class="p">,</span>
+</span><span data-line="628">        <span class="n">need_A</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+</span><span data-line="629">        <span class="n">need_B</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+</span><span data-line="630">        <span class="n">need_b</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+</span><span data-line="631">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">AssembledMatrix</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">AssembledMatrix</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">AssembledVector</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+</span><span data-line="632">        <span class="n">seed_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="633">        <span class="k">if</span> <span class="n">need_A</span><span class="p">:</span>
+</span><span data-line="634">            <span class="n">seed_names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unknown_names</span><span class="p">)</span>
+</span><span data-line="635">        <span class="k">if</span> <span class="n">need_B</span><span class="p">:</span>
+</span><span data-line="636">            <span class="n">seed_names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">given_names</span><span class="p">)</span>
+</span><span data-line="637">        <span class="n">seed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_identity_seed</span><span class="p">(</span><span class="n">seed_names</span><span class="p">)</span> <span class="k">if</span> <span class="n">seed_names</span> <span class="k">else</span> <span class="kc">None</span>
+</span><span data-line="638">        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_model</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+</span><span data-line="639">
+</span><span data-line="640">        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="641">            <span class="n">output_values</span> <span class="o">=</span> <span class="n">result</span>
+</span><span data-line="642">            <span class="n">v_out</span><span class="p">:</span> <span class="n">ChainRuleDict</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="643">        <span class="k">else</span><span class="p">:</span>
+</span><span data-line="644">            <span class="n">output_values</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span data-line="645">            <span class="n">v_out</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span data-line="646">
+</span><span data-line="647">        <span class="c1"># Keep model outputs as typed wrappers per rule 1; if a leaf</span>
+</span><span data-line="648">        <span class="c1"># returned raw (shouldn&#39;t happen post-cleanup but tolerate),</span>
+</span><span data-line="649">        <span class="c1"># rewrap with the declared output type.</span>
+</span><span data-line="650">        <span class="n">output_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="651">        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">,</span> <span class="n">output_values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span data-line="652">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
+</span><span data-line="653">                <span class="n">output_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+</span><span data-line="654">            <span class="k">else</span><span class="p">:</span>
+</span><span data-line="655">                <span class="n">output_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">value</span><span class="p">)</span>
+</span><span data-line="656">        <span class="n">residual_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">output_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_names</span><span class="p">}</span>
+</span><span data-line="657">        <span class="n">like_by_row</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="658">            <span class="n">name</span><span class="p">:</span> <span class="n">_flatten_base</span><span class="p">(</span><span class="n">residual_values</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">output_spec</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+</span><span data-line="659">            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_names</span>
+</span><span data-line="660">        <span class="p">}</span>
+</span><span data-line="661">
+</span><span data-line="662">        <span class="n">A</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="663">            <span class="bp">self</span><span class="o">.</span><span class="n">_assemble_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blayout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ulayout</span><span class="p">,</span> <span class="n">v_out</span><span class="p">,</span> <span class="n">like_by_row</span><span class="p">)</span>
+</span><span data-line="664">            <span class="k">if</span> <span class="n">need_A</span>
+</span><span data-line="665">            <span class="k">else</span> <span class="kc">None</span>
+</span><span data-line="666">        <span class="p">)</span>
+</span><span data-line="667">        <span class="n">B</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="668">            <span class="bp">self</span><span class="o">.</span><span class="n">_assemble_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blayout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">glayout</span><span class="p">,</span> <span class="n">v_out</span><span class="p">,</span> <span class="n">like_by_row</span><span class="p">)</span>
+</span><span data-line="669">            <span class="k">if</span> <span class="n">need_B</span>
+</span><span data-line="670">            <span class="k">else</span> <span class="kc">None</span>
+</span><span data-line="671">        <span class="p">)</span>
+</span><span data-line="672">        <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="n">AssembledVector</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blayout</span><span class="p">,</span> <span class="n">residual_values</span><span class="p">)</span> <span class="k">if</span> <span class="n">need_b</span> <span class="k">else</span> <span class="kc">None</span>
+</span><span data-line="673">        <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">b</span></div>
 </div>
 
-</span><span data-line="670">
-</span><span data-line="671">
-</span><span data-line="672"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LinearSystem&quot;</span><span class="p">,</span> <span class="s2">&quot;NonlinearSystem&quot;</span><span class="p">,</span> <span class="s2">&quot;ModelNonlinearSystem&quot;</span><span class="p">]</span>
+</span><span data-line="674">
+</span><span data-line="675">
+</span><span data-line="676"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LinearSystem&quot;</span><span class="p">,</span> <span class="s2">&quot;NonlinearSystem&quot;</span><span class="p">,</span> <span class="s2">&quot;ModelNonlinearSystem&quot;</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
