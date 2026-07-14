@@ -42,7 +42,7 @@ file(GLOB BENCH_INPUTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 # run multiple minutes under `ctest --parallel 4` (4 concurrent Inductor
 # compiles contend for the runner), so the timeouts below carry generous
 # headroom rather than tracking the no-contention wall time.
-set(BENCH_HEAVY chaboche6 scpcoup scpcoupmult scpdecoup scpdecoupexp tcprandom tcpsingle)
+set(BENCH_HEAVY chaboche6 chaboche12 chaboche12gmres scpcoup scpcoupmult scpdecoup scpdecoupexp tcprandom tcpsingle)
 
 # Scenarios where ${nbatch} drives a static sub-batch axis (not the
 # dynamic batch dim). Sub-batch shapes are baked at trace time so the

@@ -35,7 +35,7 @@ from ...es import AssembledMatrix, AxisLayout, ModelNonlinearSystem, SparseVecto
 from ...es._helpers import _flatten_base
 from ...factory import register_neml2_object
 from ...schema import HitSchema, dependency, option
-from ...solvers import ConvergenceError, Newton, RetCode
+from ...solvers import ConvergenceError, DenseLU, Newton, RetCode
 from ...types import Tensor, TensorWrapper
 from .._hit import _opt_list_str
 from ..chain_rule import ChainRuleDict
@@ -45,6 +45,8 @@ if TYPE_CHECKING:
     import nmhit
 
     from ...factory import _NativeInputFile
+    from ...solvers import GMRES, BiCGStab
+    from ...solvers.newton import _LinearSolver
 
 
 def _var_offset(layout: AxisLayout, group_index: int, name: str) -> tuple[int, int]:
@@ -185,6 +187,24 @@ class ImplicitUpdate(Model):
             "Solver used to solve the nonlinear system of equations",
         ),
         dependency(
+            "input_sensitivity_solver",
+            "get_solver",
+            "Linear solver for the input-sensitivity (implicit-function-theorem) solve "
+            "du/dg = -A^{-1} B when differentiating outputs w.r.t. inputs. Defaults to the "
+            "Newton's linear_solver; set a direct solver (e.g. DenseLU) here to keep input "
+            "derivatives exact under an iterative forward solve.",
+            default=None,
+        ),
+        dependency(
+            "param_sensitivity_solver",
+            "get_solver",
+            "Linear solver for the parameter-sensitivity solve du/dtheta = -A^{-1} dr/dtheta "
+            "when differentiating outputs w.r.t. (promoted) parameters. Defaults to the "
+            "Newton's linear_solver; set a direct solver (e.g. DenseLU) here for exact "
+            "parameter derivatives under an iterative forward solve.",
+            default=None,
+        ),
+        dependency(
             "predictor",
             "get_model",
             "An optional predictor to provide an initial guess for the nonlinear solve.",
@@ -221,6 +241,10 @@ class ImplicitUpdate(Model):
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> ImplicitUpdate:
         system = factory.get_equation_system(node.param_str("equation_system"))
         solver = factory.get_solver(node.param_str("solver"))
+        in_sens_name = node.param_optional_str("input_sensitivity_solver", "")
+        param_sens_name = node.param_optional_str("param_sensitivity_solver", "")
+        input_sensitivity_solver = factory.get_solver(in_sens_name) if in_sens_name else None
+        param_sensitivity_solver = factory.get_solver(param_sens_name) if param_sens_name else None
         predictor: Model | None = None
         pred_node = node.find("predictor")
         if pred_node is not None:
@@ -237,6 +261,8 @@ class ImplicitUpdate(Model):
             system,
             solver,
             predictor=predictor,
+            input_sensitivity_solver=input_sensitivity_solver,
+            param_sensitivity_solver=param_sensitivity_solver,
             max_substepping_level=int(node.param_optional_int("max_substepping_level", 0)),
             incremental_variables=_opt_list_str(node, "incremental_variables", []),
         )
@@ -246,6 +272,8 @@ class ImplicitUpdate(Model):
         system: ModelNonlinearSystem,
         solver: Newton,
         predictor: Model | None = None,
+        input_sensitivity_solver: _LinearSolver | None = None,
+        param_sensitivity_solver: _LinearSolver | None = None,
         max_substepping_level: int = 0,
         incremental_variables: list[str] | None = None,
     ) -> None:
@@ -260,6 +288,31 @@ class ImplicitUpdate(Model):
         # was built directly in Python or the name would collide.
         register_submodule(self, system.model, fallback="_residual_model")
         self.solver = solver
+        # Derivative (sensitivity) linear solvers. Each governs one solve site:
+        # `input_sensitivity_solver` the input IFT (du/dg, in
+        # `_output_sensitivities`), `param_sensitivity_solver` the parameter adjoint
+        # (du/dtheta, in `_ImplicitUpdateFn.backward`). Both default to a DIRECT
+        # solve, so derivatives stay exact unless a matrix-free solver is opted in
+        # here explicitly -- independent of the forward Newton's linear_solver.
+        # Backward-compatible: the default reuses the forward linear_solver when it
+        # is itself direct (so a SchurComplement forward keeps a Schur sensitivity
+        # solve for its 2-group A), and falls back to DenseLU only when the forward
+        # is matrix-free (which has no direct `.solve`).
+        default_sensitivity = (
+            DenseLU()
+            if getattr(solver.linear_solver, "is_iterative", False)
+            else solver.linear_solver
+        )
+        self.input_sensitivity_solver = (
+            input_sensitivity_solver
+            if input_sensitivity_solver is not None
+            else default_sensitivity
+        )
+        self.param_sensitivity_solver = (
+            param_sensitivity_solver
+            if param_sensitivity_solver is not None
+            else default_sensitivity
+        )
         self.predictor = predictor
         self.last_iterations = 0
         self.last_status = RetCode.FAILURE
@@ -390,7 +443,7 @@ class ImplicitUpdate(Model):
 
     def _output_sensitivities(self, v: ChainRuleDict) -> ChainRuleDict:
         A, B = self.system.A_and_B()
-        du_dg = -self.solver.linear_solver.solve(A, B)
+        du_dg = -self.input_sensitivity_solver.solve(A, B)
         assert isinstance(du_dg, AssembledMatrix)
 
         out: ChainRuleDict = {}
@@ -686,11 +739,25 @@ class _ImplicitUpdateFn(torch.autograd.Function):
 
         grad_u_t = _cat([p.base for p in grad_u_parts])
 
-        # Adjoint solve: A^T @ lam = grad_u  =>  lam = A^T \ grad_u.
-        # Use `Tensor.solve` so the transpose stays in typed-tensor land
-        # via the .base.transpose view.
-        lam_t = A_block.base.transpose(-1, -2).solve(grad_u_t)
-        lam = lam_t.data
+        # Adjoint solve: A^T @ lam = grad_u  =>  lam = A^T \ grad_u, with the
+        # configured param-sensitivity solver. A direct solver keeps the exact
+        # typed base solve (Tensor.solve, transpose staying in typed-tensor land);
+        # an iterative solver runs the shared C++ Krylov loop over A^T (matvec =
+        # A^T . v). Raw access here is the autograd.Function boundary (data-ok).
+        psolver = owner.param_sensitivity_solver
+        if getattr(psolver, "is_iterative", False):
+            from typing import cast  # noqa: PLC0415
+
+            from neml2.es.implicit import krylov_solve_raw  # noqa: PLC0415
+
+            a_t_raw = A_block.data.transpose(-1, -2)  # data-ok autograd boundary
+            lam = krylov_solve_raw(
+                a_t_raw,
+                grad_u_t.data,  # data-ok autograd boundary
+                **cast("GMRES | BiCGStab", psolver).linear_solve_config(),
+            )
+        else:
+            lam = A_block.base.transpose(-1, -2).solve(grad_u_t).data
 
         # IFT adjoint: grad_θ = -(dr/dθ)^T · λ for θ ∈ {given_inputs, params}.
         differentiable: list[torch.Tensor] = [

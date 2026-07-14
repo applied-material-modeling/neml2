@@ -239,8 +239,8 @@ jobs:
           ./consumer_pc
 
   # C++ source-based coverage (clang). Builds the runtime + tests under
-  # -DCMAKE_BUILD_TYPE=Coverage, runs the dispatcher + eager ctests under
-  # instrumentation, and uploads to Codecov under the `cpp` flag. Runs on both
+  # -DCMAKE_BUILD_TYPE=Coverage, runs every ctest except the `benchmark` label
+  # under instrumentation, and uploads to Codecov under the `cpp` flag. Runs on both
   # ubuntu (cpu paths) and the gpu_runner (the at::hasCUDA() cross-device / hybrid
   # / write-through branches; CUDA runs fine under coverage, unlike TSan). Codecov
   # merges the two uploads by flag. Named cpp-coverage (not coverage) to avoid

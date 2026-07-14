@@ -51,6 +51,7 @@ from .implicit import (
     LinearSolve,
     LinearSolveIFT,
     LinearSolveParam,
+    Matvec,
 )
 from .sparse import SparseMatrix, SparseVector
 from .system import LinearSystem, ModelNonlinearSystem, NonlinearSystem
@@ -66,6 +67,7 @@ __all__ = [
     "ModelNonlinearSystem",
     "RHS",
     "Jacobian",
+    "Matvec",
     "LinearSolve",
     "JacobianGiven",
     "LinearSolveIFT",

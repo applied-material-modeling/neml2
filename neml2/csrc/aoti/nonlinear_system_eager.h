@@ -38,6 +38,7 @@
 #include <ATen/core/Tensor.h>
 #include <pybind11/pybind11.h>
 
+#include "neml2/csrc/aoti/krylov.h"
 #include "neml2/csrc/aoti/newton.h"
 
 namespace neml2::aoti
@@ -56,6 +57,28 @@ std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
 run_eager_newton(const SolverConfig & cfg,
                  pybind11::object residual_fn,
                  pybind11::object step_fn,
+                 std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
+                 std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
+                 std::vector<at::Tensor> u0);
+
+/// Drive the shared C++ Newton solver over an eager system whose inner linear
+/// solve is a matrix-free Krylov iteration (krylov.h) rather than a direct solve.
+///
+/// ``residual_fn(list[Tensor] u) -> list[Tensor] b`` and
+/// ``matvec_fn(list[Tensor] u, list[Tensor] v) -> list[Tensor] Jv`` supply the
+/// residual and the matrix-free `J.v` (the eager RHS / Matvec modules).
+/// ``precond_setup_fn(list[Tensor] u) -> list[Tensor] state`` and
+/// ``precond_apply_fn(list[Tensor] state, Tensor r_flat) -> Tensor z_flat`` are
+/// the authored preconditioner's setup/apply modules (both ``None`` when
+/// unpreconditioned). Same return tuple as ``run_eager_newton``. Must be called
+/// with the GIL held.
+std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
+run_eager_krylov(const SolverConfig & newton_cfg,
+                 const KrylovConfig & krylov_cfg,
+                 pybind11::object residual_fn,
+                 pybind11::object matvec_fn,
+                 pybind11::object precond_setup_fn,
+                 pybind11::object precond_apply_fn,
                  std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
                  std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
                  std::vector<at::Tensor> u0);

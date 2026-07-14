@@ -313,6 +313,7 @@ add_library(aoti SHARED
       neml2/csrc/aoti/jacobian.cpp
       neml2/csrc/aoti/newton.cpp
       neml2/csrc/aoti/nonlinear_system_aoti.cpp
+      neml2/csrc/aoti/nonlinear_system_krylov_aoti.cpp
       neml2/csrc/aoti/custom_ops.cpp
       neml2/csrc/dispatchers/WorkScheduler.cpp
       neml2/csrc/dispatchers/SimpleScheduler.cpp

@@ -24,6 +24,7 @@
 
 #include "neml2/csrc/aoti/nonlinear_system_eager.h"
 #include "neml2/csrc/aoti/nonlinear_system.h"
+#include "neml2/csrc/aoti/nonlinear_system_krylov.h"
 
 #include <utility>
 
@@ -84,6 +85,62 @@ to_layouts(const std::vector<std::pair<std::string, std::vector<int64_t>>> & spe
     out.push_back(GroupLayout{structure, sub_batch_shape});
   return out;
 }
+
+// KrylovNonlinearSystem backed by Python callables: the residual (RHS) and the
+// matrix-free J.v (Matvec) modules, plus an optional preconditioner setup/apply
+// pair (the authored Preconditioner's modules, run live). The shared base owns
+// the Krylov numerics + preconditioner cache; this only marshals the raw ops
+// across the embedded-Python boundary (GIL held by the caller for the whole
+// solve). `precond_setup_fn` / `precond_apply_fn` are None when unpreconditioned.
+class KrylovEagerNonlinearSystem : public KrylovNonlinearSystem
+{
+public:
+  KrylovEagerNonlinearSystem(py::object residual_fn,
+                             py::object matvec_fn,
+                             py::object precond_setup_fn,
+                             py::object precond_apply_fn,
+                             std::vector<GroupLayout> unknown_layout,
+                             std::vector<GroupLayout> residual_layout,
+                             KrylovConfig cfg)
+    : KrylovNonlinearSystem(std::move(unknown_layout), std::move(residual_layout), cfg),
+      _residual_fn(std::move(residual_fn)),
+      _matvec_fn(std::move(matvec_fn)),
+      _precond_setup_fn(std::move(precond_setup_fn)),
+      _precond_apply_fn(std::move(precond_apply_fn))
+  {
+  }
+
+protected:
+  std::vector<at::Tensor> residual_raw(const std::vector<at::Tensor> & u) const override
+  {
+    return _residual_fn(u).cast<std::vector<at::Tensor>>();
+  }
+
+  std::vector<at::Tensor> matvec_raw(const std::vector<at::Tensor> & u,
+                                     const std::vector<at::Tensor> & v) const override
+  {
+    return _matvec_fn(u, v).cast<std::vector<at::Tensor>>();
+  }
+
+  bool has_preconditioner() const override { return !_precond_setup_fn.is_none(); }
+
+  std::vector<at::Tensor> precond_setup_raw(const std::vector<at::Tensor> & u) const override
+  {
+    return _precond_setup_fn(u).cast<std::vector<at::Tensor>>();
+  }
+
+  at::Tensor precond_apply_raw(const std::vector<at::Tensor> & state,
+                               const at::Tensor & r_flat) const override
+  {
+    return _precond_apply_fn(state, r_flat).cast<at::Tensor>();
+  }
+
+private:
+  py::object _residual_fn;
+  py::object _matvec_fn;
+  py::object _precond_setup_fn;
+  py::object _precond_apply_fn;
+};
 } // namespace
 
 std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
@@ -99,6 +156,28 @@ run_eager_newton(const SolverConfig & cfg,
                            to_layouts(unknown_layout),
                            to_layouts(residual_layout));
   NewtonResult result = Newton(cfg).solve(sys, u0);
+  return {std::move(result.u), result.converged, result.iterations, std::move(result.log)};
+}
+
+std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
+run_eager_krylov(const SolverConfig & newton_cfg,
+                 const KrylovConfig & krylov_cfg,
+                 py::object residual_fn,
+                 py::object matvec_fn,
+                 py::object precond_setup_fn,
+                 py::object precond_apply_fn,
+                 std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
+                 std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
+                 std::vector<at::Tensor> u0)
+{
+  KrylovEagerNonlinearSystem sys(std::move(residual_fn),
+                                 std::move(matvec_fn),
+                                 std::move(precond_setup_fn),
+                                 std::move(precond_apply_fn),
+                                 to_layouts(unknown_layout),
+                                 to_layouts(residual_layout),
+                                 krylov_cfg);
+  NewtonResult result = Newton(newton_cfg).solve(sys, u0);
   return {std::move(result.u), result.converged, result.iterations, std::move(result.log)};
 }
 } // namespace neml2::aoti

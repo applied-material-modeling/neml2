@@ -244,11 +244,13 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
         }
       }
     }
-    else if (seg.max_substepping_level > 0 && seg.solve_ift_loader)
+    else if (seg.max_substepping_level > 0 && seg.jacobian_given_loader)
     {
       // Substepped solve + chained consistent-tangent accumulation in one
       // bisection recursion (state + dstate advanced together). Masked when the
       // dynamic batch is 1-D so only the still-unconverged rows are re-solved.
+      // Gated on the IFT OPERATOR (jacobian_given), present for both a direct and
+      // an iterative input-sensitivity solver.
       if (_masking_ok(seg, state))
         _run_implicit_segment_substepped_masked_jacobian(seg, state, dstate);
       else
@@ -262,7 +264,7 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
         _run_implicit_segment_substepped(seg, state, u_solved_groups, g_groups);
       else
         _run_implicit_segment(seg, state, u_solved_groups, g_groups);
-      if (seg.solve_ift_loader)
+      if (seg.jacobian_given_loader)
         _run_implicit_segment_jacobian(seg, u_solved_groups, g_groups, dstate);
       else
         // Off-path implicit segment: forward solve already advanced `state`;

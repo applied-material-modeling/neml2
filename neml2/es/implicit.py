@@ -89,7 +89,7 @@ import torch
 from torch import nn
 
 from neml2.models.chain_rule import ChainRuleDict
-from neml2.types import TensorWrapper
+from neml2.types import Tensor, TensorWrapper
 
 from ._helpers import _flatten_base, build_identity_seed
 from .assembled import (
@@ -309,6 +309,108 @@ def _matrix_to_per_block_raws(mat: AssembledMatrix) -> tuple[torch.Tensor, ...]:
     )
 
 
+def krylov_solve_raw(
+    A_raw: torch.Tensor,
+    b_raw: torch.Tensor,
+    *,
+    method: str,
+    restart: int,
+    max_its: int,
+    abs_tol: float,
+    rel_tol: float,
+) -> torch.Tensor:
+    """Solve ``A x = b`` over an ALREADY-ASSEMBLED dense operator ``A`` via the
+    shared C++ matrix-free Krylov loop (``matvec(v) = A @ v``, identity
+    preconditioner) -- the Python mirror of ``krylov.h::krylov_solve_dense`` used
+    by the eager derivative solves. ``A_raw`` is ``(*batch, N, N)``; ``b_raw`` is
+    ``(*batch, N)`` (vector) or ``(*batch, N, M)`` (matrix); the return matches
+    ``b_raw``. Leading batch dims are flattened for the loop; a matrix RHS is
+    solved column by column. Raw-tensor in/out: this IS the krylov-binding
+    framework boundary (callers pass tensors already unwrapped at an AOTI /
+    autograd.Function boundary).
+    """
+    from neml2.aoti._aoti import krylov_solve_linear  # noqa: PLC0415
+
+    n = A_raw.shape[-1]
+    a_flat = A_raw.reshape(-1, n, n)
+
+    def matvec(v: torch.Tensor) -> torch.Tensor:  # (Bflat, N) -> (Bflat, N)
+        return torch.matmul(a_flat, v.unsqueeze(-1)).squeeze(-1)
+
+    def _one(rhs_flat: torch.Tensor) -> torch.Tensor:  # (Bflat, N) -> (Bflat, N)
+        return krylov_solve_linear(
+            matvec,
+            rhs_flat,
+            method=method,
+            restart=restart,
+            max_its=max_its,
+            abs_tol=abs_tol,
+            rel_tol=rel_tol,
+        )
+
+    if b_raw.dim() == A_raw.dim() - 1:  # vector RHS (*batch, N)
+        return _one(b_raw.reshape(-1, n)).reshape(b_raw.shape)
+    # Matrix RHS (*batch, N, M): solve each column, reassemble.
+    m = b_raw.shape[-1]
+    b_flat = b_raw.reshape(-1, n, m)
+    cols = [_one(b_flat[..., j].contiguous()) for j in range(m)]
+    return torch.stack(cols, dim=-1).reshape(b_raw.shape)
+
+
+def krylov_solve_assembled(
+    A: AssembledMatrix,
+    b: AssembledVector | AssembledMatrix,
+    *,
+    method: str,
+    restart: int,
+    max_its: int,
+    abs_tol: float,
+    rel_tol: float,
+) -> AssembledVector | AssembledMatrix:
+    """Typed ``A x = b`` over the assembled single-dense-group operator via
+    :func:`krylov_solve_raw`, returning a typed ``AssembledVector`` /
+    ``AssembledMatrix`` matching ``b`` (the same surface as ``DenseLU.solve``).
+    Used by the eager iterative linear solvers' ``.solve`` for the input-IFT.
+    The ``.data`` extract / rewrap is the krylov-binding framework boundary.
+    """
+    if A.row_layout.ngroup != 1 or A.col_layout.ngroup != 1:
+        raise ValueError(
+            "iterative linear solve requires a single dense group "
+            f"(A has {A.row_layout.ngroup}x{A.col_layout.ngroup} groups)"
+        )
+    a_raw = A.tensors[0][0].data  # data-ok krylov boundary
+
+    def _solve(rhs_raw: torch.Tensor) -> torch.Tensor:
+        return krylov_solve_raw(
+            a_raw,
+            rhs_raw,
+            method=method,
+            restart=restart,
+            max_its=max_its,
+            abs_tol=abs_tol,
+            rel_tol=rel_tol,
+        )
+
+    if isinstance(b, AssembledVector):
+        if b.layout.ngroup != 1:
+            raise ValueError("iterative linear solve requires a single-group vector RHS")
+        b_t = b.tensors[0]
+        x = _solve(b_t.data)  # data-ok krylov boundary
+        return AssembledVector(
+            A.col_layout,
+            [Tensor(x, batch_ndim=b_t.batch_ndim, sub_batch_ndim=b_t.sub_batch_ndim)],
+        )
+    if b.row_layout.ngroup != 1 or b.col_layout.ngroup != 1:
+        raise ValueError("iterative linear solve requires a single-group matrix RHS")
+    b_t = b.tensors[0][0]
+    x = _solve(b_t.data)  # data-ok krylov boundary
+    return AssembledMatrix(
+        A.col_layout,
+        b.col_layout,
+        [[Tensor(x, batch_ndim=b_t.batch_ndim, sub_batch_ndim=b_t.sub_batch_ndim)]],
+    )
+
+
 class RHS(_SystemModule):
     """Exportable residual graph.
 
@@ -346,6 +448,167 @@ class Jacobian(_SystemModule):
         A = self._assembled_matrix(self.ulayout, v_out, output_state)
         b = self._assembled_b(output_state)
         return (*_matrix_to_per_block_raws(A), *_vector_to_per_group_raws(b))
+
+
+class Matvec(_SystemModule):
+    """Exportable matrix-free residual jvp: ``(*u, *g, *params, *v) -> (*Jv)``.
+
+    ``J.v = ∂r/∂u . v`` at fixed ``(u, g, params)``, where ``v`` is a tangent in
+    the unknown space (same per-group layout as ``u``) and ``Jv`` is in the
+    residual space (``blayout``). Never assembles ``A`` -- it threads the single
+    direction ``v`` through the ``forward(v=)`` chain rule (one forward pass + one
+    pushforward), the matvec an iterative/Krylov linear solver calls each inner
+    iteration. This is the matrix-free counterpart of :class:`Jacobian` (which
+    assembles the full ``A``): ``Matvec(u,g,v)`` equals ``Jacobian(u,g).A @ v``,
+    but at O(N^2) with no O(N^3) factorization downstream. The C++ Krylov runtime
+    drives it (compiled loader on the AOTI route, callback on the eager route);
+    both feed the shared ``krylov_solve``.
+    """
+
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        from ..types._boundary import assemble_jvp_outputs, leading_k1_seed  # noqa: PLC0415
+
+        n_u = len(self.unknown_groups)
+        n_g = len(self.given_groups)
+        n_p = len(self.param_names)
+        u_raws = args[:n_u]
+        g_raws = args[n_u : n_u + n_g]
+        p_raws = args[n_u + n_g : n_u + n_g + n_p]
+        v_raws = args[n_u + n_g + n_p :]
+        state = self._state_from_per_group_args((*u_raws, *g_raws, *p_raws))
+        # v arrives per-unknown-group (ulayout); disassemble to per-variable typed
+        # tangents and seed each unknown with a single K=1 direction.
+        v_tensors = [
+            wrap_group_raw(raw, gnames, structure, self.ulayout)
+            for raw, gnames, structure in zip(
+                v_raws, self.unknown_groups, self.ulayout.structure, strict=True
+            )
+        ]
+        v_typed = AssembledVector(self.ulayout, v_tensors).disassemble().values
+        seed = {name: {name: leading_k1_seed(v_typed[name])} for name in self.unknown_names}
+        args_typed = tuple(state[name] for name in self.input_names)
+        result = self.model(*args_typed, v=seed)
+        result_tuple = result if isinstance(result, tuple) else (result,)
+        typed_outs, v_out = result_tuple[:-1], result_tuple[-1]
+        raw_jvp = assemble_jvp_outputs(v_out, tuple(typed_outs), list(self.output_names))
+        output_state = dict(zip(self.output_names, typed_outs, strict=True))
+        Jv = AssembledVector.from_dict(
+            self.blayout,
+            {
+                r: type(output_state[r])(raw_jvp[r], sub_batch_ndim=output_state[r].sub_batch_ndim)
+                for r in self.residual_names
+            },
+        )
+        return _vector_to_per_group_raws(Jv)
+
+
+class _PrecondSetup(_SystemModule):
+    """Base for a preconditioner's compiled *setup* graph: assemble the single
+    dense unknown group's Jacobian ``A = ∂r/∂u`` as one ``(Bflat, N, N)`` block.
+
+    v1 targets a single dense unknown group. Concrete setups (Full / Jacobi /
+    BlockJacobi) factor / select from ``A`` and return the preconditioner *state*
+    (raw graph outputs) that the matching apply consumes. (A future targeted
+    seed-side assembly -- computing only the blocks a preconditioner needs so
+    dead-code elimination prunes the rest -- keeps this same setup->state
+    interface.)
+    """
+
+    def _dense_a(self, args: tuple[torch.Tensor, ...]) -> torch.Tensor:
+        if len(self.unknown_groups) != 1:
+            raise ValueError(
+                "preconditioned Krylov currently requires a single dense unknown "
+                "group (v1); use preconditioner=none for multi-group systems."
+            )
+        state = self._state_from_per_group_args(args)
+        output_state, v_out = self._call_model_from_state(state, self.unknown_names)
+        A = self._assembled_matrix(self.ulayout, v_out, output_state)
+        a = _matrix_to_per_block_raws(A)[0]  # single group -> (*B, N, N)
+        n = a.shape[-1]
+        return a.reshape(-1, n, n)  # (Bflat, N, N)
+
+
+class FullPrecondSetup(_PrecondSetup):
+    """Full preconditioner setup: ``(*u,*g,*params) -> (LU, pivots)`` = the LU
+    factorization of the assembled Jacobian (M = A, so M^-1 is the exact solve)."""
+
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        A = self._dense_a(args)
+        LU, piv = torch.linalg.lu_factor(A)
+        return LU, piv
+
+
+class JacobiPrecondSetup(_PrecondSetup):
+    """Jacobi preconditioner setup: ``(*u,*g,*params) -> (1/diag(A),)`` with a
+    sign-preserving floor so a ~0 pivot cannot produce an inf apply."""
+
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        A = self._dense_a(args)
+        diag = torch.diagonal(A, dim1=-2, dim2=-1)  # (Bflat, N)
+        eps = torch.finfo(diag.dtype).eps
+        sign = torch.where(diag.sign() == 0, torch.ones_like(diag), diag.sign())
+        safe = torch.where(diag.abs() < eps, sign * eps, diag)
+        return (1.0 / safe,)
+
+
+class BlockJacobiPrecondSetup(_PrecondSetup):
+    """Block-Jacobi preconditioner setup: ``(*u,*g,*params) -> (*inv_blocks)`` =
+    the inverse of each per-variable on-diagonal block of ``A`` (one tensor per
+    unknown variable, in ``unknown_names`` order)."""
+
+    def __init__(
+        self,
+        system: ModelNonlinearSystem,
+        block_sizes: tuple[int, ...],
+        param_names: tuple[str, ...] = (),
+    ) -> None:
+        super().__init__(system, param_names)
+        self._block_sizes = tuple(int(s) for s in block_sizes)
+
+    def forward(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        A = self._dense_a(args)  # (Bflat, N, N)
+        invs: list[torch.Tensor] = []
+        o = 0
+        for s in self._block_sizes:
+            invs.append(torch.linalg.inv(A[:, o : o + s, o : o + s]))
+            o += s
+        return tuple(invs)
+
+
+class FullPrecondApply(nn.Module):
+    """``(LU, pivots, r_flat) -> z_flat`` = ``A^-1 r`` via the cached LU."""
+
+    def forward(self, LU: torch.Tensor, piv: torch.Tensor, r_flat: torch.Tensor) -> torch.Tensor:
+        return torch.linalg.lu_solve(LU, piv, r_flat.unsqueeze(-1)).squeeze(-1)
+
+
+class JacobiPrecondApply(nn.Module):
+    """``(diag_recip, r_flat) -> z_flat`` = elementwise ``r / diag(A)``."""
+
+    def forward(self, diag_recip: torch.Tensor, r_flat: torch.Tensor) -> torch.Tensor:
+        return r_flat * diag_recip
+
+
+class BlockJacobiPrecondApply(nn.Module):
+    """``(*inv_blocks, r_flat) -> z_flat`` = block-diagonal apply of the per-variable
+    inverses to the matching slices of the flat residual."""
+
+    def __init__(self, block_sizes: tuple[int, ...]) -> None:
+        super().__init__()
+        self._block_sizes = tuple(int(s) for s in block_sizes)
+
+    def forward(self, *args: torch.Tensor) -> torch.Tensor:
+        *invs, r_flat = args
+        pieces: list[torch.Tensor] = []
+        o = 0
+        for inv, s in zip(invs, self._block_sizes, strict=True):
+            # Batched block matvec inv @ r_block; explicit matmul (einsum is
+            # guard-blocked inside an active Model.forward -- the preconditioner
+            # apply runs during the ImplicitUpdate Newton solve).
+            piece = torch.matmul(inv, r_flat[:, o : o + s].unsqueeze(-1)).squeeze(-1)
+            pieces.append(piece)
+            o += s
+        return torch.cat(pieces, dim=-1)
 
 
 class LinearSolve(_SystemModule):

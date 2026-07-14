@@ -44,9 +44,14 @@ RAW="$OUT_DIR/raw"
 # dir. The fixture-compile step is a separate Python process and writes nothing.
 export LLVM_PROFILE_FILE="$RAW/%p.profraw"
 
-# `dispatcher` (AOTI runtime + schedulers) and `eager` (embedded-Python runtime)
-# -- both label groups instrument neml2/csrc sources, so cover them together.
-ctest --test-dir "$BUILD_DIR" -L 'dispatcher|eager' --output-on-failure
+# Run EVERY C++ ctest under instrumentation EXCEPT the `benchmark` label (heavy
+# per-scenario neml2-compile smoke tests -- minutes each, and their runtime paths
+# are already covered by the tests/aoti sweep below). A denylist (`-LE benchmark`),
+# not an allowlist, so a NEW test suite is instrumented automatically: an allowlist
+# silently drops a new label's coverage (that is exactly how krylov.h coverage was
+# lost when `test_krylov` was added under a `krylov` label the filter didn't name).
+# Every non-benchmark ctest links + exercises neml2/csrc, so this is pure gain.
+ctest --test-dir "$BUILD_DIR" -LE 'benchmark' --output-on-failure
 
 # --- Python-driven coverage of the AOTI runtime -----------------------------
 # The C++ ctests only drive a forward leaf (the dispatch fixture); they never

@@ -183,9 +183,11 @@ def test_predict_implicit_artifacts_emit_order():
     from neml2.cli.aoti_export import _predict_implicit_artifacts
 
     assert _predict_implicit_artifacts(
-        "m", emit_ift=False, emit_pift=False, has_predictor=False
+        "m", iterative=False, precond_on=False, emit_ift=False, emit_pift=False, has_predictor=False
     ) == ["m_residual.pt2", "m_jacobian.pt2", "m_solve.pt2"]
-    assert _predict_implicit_artifacts("m", emit_ift=True, emit_pift=True, has_predictor=True) == [
+    assert _predict_implicit_artifacts(
+        "m", iterative=False, precond_on=False, emit_ift=True, emit_pift=True, has_predictor=True
+    ) == [
         "m_residual.pt2",
         "m_jacobian.pt2",
         "m_solve.pt2",
@@ -194,6 +196,52 @@ def test_predict_implicit_artifacts_emit_order():
         "m_dr_dparam.pt2",
         "m_solve_param.pt2",
         "m_predictor.pt2",
+    ]
+
+
+def test_predict_implicit_artifacts_krylov():
+    """A matrix-free Krylov solve emits matvec instead of solve; a preconditioner
+    adds its authored precond_setup/precond_apply graphs (not the standalone
+    jacobian A -- the setup assembles what it needs itself); an input derivative
+    still needs the assembled A (jacobian) for the direct IFT solve."""
+    from neml2.cli.aoti_export import _predict_implicit_artifacts
+
+    # Pure matrix-free (no preconditioner, no derivatives): residual + matvec only.
+    assert _predict_implicit_artifacts(
+        "m", iterative=True, precond_on=False, emit_ift=False, emit_pift=False, has_predictor=False
+    ) == ["m_residual.pt2", "m_matvec.pt2"]
+    # A preconditioner authors its own setup/apply graphs (no standalone jacobian).
+    assert _predict_implicit_artifacts(
+        "m", iterative=True, precond_on=True, emit_ift=False, emit_pift=False, has_predictor=False
+    ) == ["m_residual.pt2", "m_matvec.pt2", "m_precond_setup.pt2", "m_precond_apply.pt2"]
+    # An input derivative reuses A (jacobian); a DIRECT input-sensitivity solver
+    # keeps the baked IFT solve.
+    assert _predict_implicit_artifacts(
+        "m", iterative=True, precond_on=False, emit_ift=True, emit_pift=False, has_predictor=False
+    ) == [
+        "m_residual.pt2",
+        "m_jacobian.pt2",
+        "m_matvec.pt2",
+        "m_jacobian_given.pt2",
+        "m_solve_ift.pt2",
+    ]
+    # An ITERATIVE input/param sensitivity solver omits its solve_ift / solve_param
+    # graph (the C++ Krylov-solves over the assembled A); the operators stay.
+    assert _predict_implicit_artifacts(
+        "m",
+        iterative=False,
+        precond_on=False,
+        emit_ift=True,
+        emit_pift=True,
+        has_predictor=False,
+        input_sensitivity_iterative=True,
+        param_sensitivity_iterative=True,
+    ) == [
+        "m_residual.pt2",
+        "m_jacobian.pt2",
+        "m_solve.pt2",
+        "m_jacobian_given.pt2",
+        "m_dr_dparam.pt2",
     ]
 
 
@@ -571,7 +619,12 @@ def test_export_implicit_model_produces_artifacts(implicit_export):
         "ls_max_iters",
         "ls_cutback",
         "ls_c",
+        # schema v11: the linear-solver kind (this fixture uses the default direct
+        # DenseLU, so no nested `krylov` block).
+        "solver_kind",
     }
+    assert meta["solver_config"]["solver_kind"] == "direct"
+    assert "krylov" not in meta["solver_config"]
     assert "verbose" not in meta["solver_config"]
 
 

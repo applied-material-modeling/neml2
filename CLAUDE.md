@@ -95,7 +95,7 @@ The instrumented build types go through the same entry point via `--config-setti
 # Coverage (clang source-based) -> coverage.lcov
 CC=clang CXX=clang++ pip install -e ".[dev]" --no-build-isolation \
   --config-settings=cmake.build-type=Coverage
-scripts/cpp_coverage.sh build/editable                       # runs the `dispatcher|eager` labels
+scripts/cpp_coverage.sh build/editable                       # runs all ctests except the `benchmark` label
 
 # ThreadSanitizer (guards the async dispatch pool)
 CC=clang CXX=clang++ pip install -e ".[dev]" --no-build-isolation \
