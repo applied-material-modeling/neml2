@@ -17,6 +17,12 @@ Subscripts $n$ denote quantities from the previous time step.
 : Time
 
 
+## Outputs
+
+`variable_residual` &mdash; `output` &middot; `R2` &middot; default `variable_residual`
+: Optional name for the derived output (defaults to 'variable_residual', i.e. the 'variable' variable name with the '_residual' suffix).
+
+
 ## Other options
 
 `rate` &mdash; `str`

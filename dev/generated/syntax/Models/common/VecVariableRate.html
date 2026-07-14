@@ -381,6 +381,7 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#inputs">Inputs</a></li>
+<li><a class="reference internal" href="#outputs">Outputs</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -435,6 +436,13 @@ previous time step, and <span class="math notranslate nohighlight">\(t\)</span> 
 <dt><code class="docutils literal notranslate"><span class="pre">variable</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Vec</span></code> · <strong>required</strong></dt><dd><p>The variable being differentiated</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">time</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">t</span></code></dt><dd><p>Time</p>
+</dd>
+</dl>
+</section>
+<section id="outputs">
+<h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
+<dl class="simple myst">
+<dt><code class="docutils literal notranslate"><span class="pre">variable_rate</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Vec</span></code> · default <code class="docutils literal notranslate"><span class="pre">variable_rate</span></code></dt><dd><p>Optional name for the derived output (defaults to ‘variable_rate’, i.e. the ‘variable’ variable name with the ‘_rate’ suffix).</p>
 </dd>
 </dl>
 </section>

@@ -23,6 +23,9 @@ $\dot{\boldsymbol{\varepsilon}}_v = E_M (\boldsymbol{\varepsilon} - \boldsymbol{
 `stress` &mdash; `output` &middot; `SR2` &middot; **required**
 : Total stress
 
+`viscous_strain_rate` &mdash; `output` &middot; `SR2` &middot; default `viscous_strain_rate`
+: Optional name for the derived output (defaults to 'viscous_strain_rate', i.e. the 'viscous_strain' variable name with the '_rate' suffix).
+
 
 ## Parameters
 
