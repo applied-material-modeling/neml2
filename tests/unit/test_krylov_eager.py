@@ -207,3 +207,34 @@ def test_iterative_handles_unbatched_initial_guess(solver):
     got = _solve(_coupled_system_unbatched_u0, solver)
     assert _allclose(got["x"], gold["x"], atol=1e-8)
     assert _allclose(got["y"], gold["y"], atol=1e-8)
+
+
+def test_linear_channel_logs_iterative_solve(capsys):
+    """The ``linear`` log channel surfaces the inner Krylov solve: per-iteration
+    residuals at ``debug`` and a per-solve convergence summary. Exercises the C++
+    ``krylov`` ``on_iter`` hook and the linear summary in
+    ``nonlinear_system_krylov`` -- both silent for a direct (``DenseLU``) solve."""
+    from neml2 import log
+
+    log.set_default_level("linear", "debug")
+    try:
+        _solve(_coupled_system, GMRES())
+    finally:
+        log.reset_defaults()
+    text = "".join(capsys.readouterr())
+    assert "[neml2:linear" in text
+    assert "krylov iter=" in text  # per-inner-iteration residual (debug)
+    assert "linear solve:" in text  # per-solve convergence summary (info)
+
+
+def test_linear_channel_silent_for_direct_solver(capsys):
+    """A direct (``DenseLU``) solve has no inner iteration, so the ``linear``
+    channel stays quiet even at ``debug``."""
+    from neml2 import log
+
+    log.set_default_level("linear", "debug")
+    try:
+        _solve(_coupled_system, DenseLU())
+    finally:
+        log.reset_defaults()
+    assert "[neml2:linear" not in "".join(capsys.readouterr())

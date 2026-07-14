@@ -206,3 +206,21 @@ def test_newton_debug_emits_convergence_log(capsys):
         norms.append(float(m.group(1)))
     assert all(a >= b for a, b in zip(norms, norms[1:], strict=False))  # non-increasing
     assert norms[-1] < norms[0]  # actually made progress
+
+
+def test_model_channel_logs_kstate_debug(capsys):
+    """``model=debug`` dumps the K-state / shape metadata during Jacobian
+    assembly (``es/system``: ``_call_model`` + ``_assemble_matrix``) -- a niche
+    developer diagnostic, silent at every other level."""
+    from neml2 import log
+
+    system = _scalar_system()
+    log.set_default_level("model", "debug")
+    try:
+        system.assemble(need_A=True, need_B=True, need_b=True)
+    finally:
+        log.reset_defaults()
+    text = "".join(capsys.readouterr())
+    assert "[neml2:model" in text
+    assert "_call_model" in text
+    assert "_assemble_matrix" in text

@@ -168,3 +168,65 @@ def test_set_sink_custom():
     level, line = events[0]
     assert level == "warning"
     assert line.startswith("[neml2:model") and line.endswith("] hey")
+
+
+def test_set_sink_none_resets_to_default():
+    log.set_sink(lambda level, line: None)
+    log.set_sink(None)  # None restores the default stdout/stderr split
+    assert log._user_sink is None
+
+
+def test_pystore_fallback(monkeypatch):
+    """The pure-Python fallback store (used when the ``_aoti`` backend is absent)
+    mirrors the C++ store: same precedence, levels, and gating. Exercised directly
+    since the backend is present in this build."""
+    from neml2.log import _PyStore
+
+    st = _PyStore()
+    # Built-in default is warning.
+    assert st.effective_level("newton") == "warning"
+    assert st.enabled("model", "warning") and not st.enabled("model", "info")
+
+    # Programmatic: per-channel, all baseline, explicit beats all, reset.
+    st.set_default_level("newton", "debug")
+    assert st.effective_level("newton") == "debug"
+    st.set_default_level("all", "info")
+    assert st.effective_level("substep") == "info"
+    assert st.effective_level("newton") == "debug"
+    st.reset_defaults()
+    assert st.effective_level("newton") == "warning"
+
+    # Env layer: all + channel override, and env beats programmatic.
+    monkeypatch.setenv("NEML2_LOGS", "all=info,newton=silent")
+    st.apply_env()
+    assert st.effective_level("newton") == "silent"
+    assert st.effective_level("linear") == "info"
+    st.set_default_level("newton", "debug")
+    assert st.effective_level("newton") == "silent"  # env still wins
+
+    # Integer + alias synonyms.
+    monkeypatch.setenv("NEML2_LOGS", "newton=2,model=off")
+    st.apply_env()
+    assert st.effective_level("newton") == "info"
+    assert st.effective_level("model") == "silent"
+
+    # Malformed spec raises.
+    monkeypatch.setenv("NEML2_LOGS", "newton=bogus")
+    with pytest.raises(ValueError):
+        st.apply_env()
+
+    # emit() routes through the shared forwarding sink (padded prefix), gated by level.
+    events: list[tuple[str, str]] = []
+    monkeypatch.delenv("NEML2_LOGS", raising=False)
+    st.apply_env()
+    st.set_default_level("all", "debug")
+    st.set_default_level("linear", "silent")
+    log.set_sink(lambda level, line: events.append((level, line)))
+    try:
+        st.emit("model", "debug", "shown")
+        st.emit("linear", "debug", "hidden")  # linear is silent -> suppressed
+    finally:
+        log.reset_sink()
+    lines = [ln for _, ln in events]
+    assert any(ln.endswith("] shown") and ln.startswith("[neml2:model") for ln in lines)
+    assert not any("hidden" in ln for ln in lines)

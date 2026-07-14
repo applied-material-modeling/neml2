@@ -133,6 +133,51 @@ main()
   NEML2_CHECK(std::string(L::channel_name(L::Channel::Driver)) == "driver");
   NEML2_CHECK(std::string(L::level_name(L::Level::Info)) == "info");
 
+  // Default sink (stdout for info, stderr for warning/debug) + the solve banners:
+  // exercise every branch so the writer + banner helpers are covered. Output goes
+  // to the test process's own streams (harmless).
+  L::reset_sink();
+  L::set_default_level(L::Level::Debug);
+  L::begin_solve(L::Channel::Newton, "unit solve");
+  L::emit(L::Channel::Newton, L::Level::Info, "info-line");    // -> stdout
+  L::emit(L::Channel::Newton, L::Level::Warning, "warn-line"); // -> stderr
+  L::emit(L::Channel::Newton, L::Level::Debug, "debug-line");  // -> stderr
+  L::end_solve(L::Channel::Newton, "unit solve");
+  L::reset_defaults();
+
+  // Name + parse round-trip for every channel and every level (covers all switch
+  // arms of channel_name/level_name and parse_channel/parse_level).
+  const L::Channel all_chans[] = {L::Channel::Newton,
+                                  L::Channel::Linear,
+                                  L::Channel::Substep,
+                                  L::Channel::Model,
+                                  L::Channel::Tensor,
+                                  L::Channel::Driver};
+  for (const auto ch : all_chans)
+  {
+    L::Channel back;
+    NEML2_CHECK(L::parse_channel(L::channel_name(ch), back) && back == ch);
+    NEML2_CHECK(!L::format(ch, "m").empty());
+  }
+  const L::Level all_levels[] = {
+      L::Level::Silent, L::Level::Warning, L::Level::Info, L::Level::Debug};
+  for (const auto lv : all_levels)
+  {
+    L::Level back;
+    NEML2_CHECK(L::parse_level(L::level_name(lv), back) && back == lv);
+  }
+  // Integer + alias level spellings.
+  L::Level lv2;
+  NEML2_CHECK(L::parse_level("0", lv2) && lv2 == L::Level::Silent);
+  NEML2_CHECK(L::parse_level("off", lv2) && lv2 == L::Level::Silent);
+  NEML2_CHECK(L::parse_level("warn", lv2) && lv2 == L::Level::Warning);
+  NEML2_CHECK(L::parse_level("3", lv2) && lv2 == L::Level::Debug);
+
+  // Empty / whitespace entries in the env spec are skipped, not errors.
+  setenv("NEML2_LOGS", ",newton=info, ,", 1);
+  L::apply_env();
+  NEML2_CHECK(L::effective_level(L::Channel::Newton) == L::Level::Info);
+
   L::reset_defaults();
   set_env(nullptr);
   std::printf("test_log: all checks passed\n");
