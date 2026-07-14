@@ -26,7 +26,6 @@
 
 from __future__ import annotations
 
-import warnings
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -252,10 +251,13 @@ class ImplicitUpdate(Model):
             try:
                 predictor = factory.get_model(pred_name)
             except KeyError:
-                warnings.warn(
+                from neml2 import log  # noqa: PLC0415
+
+                log.emit(
+                    "model",
+                    "warning",
                     f"Predictor {pred_name!r} is not natively registered; "
                     "using no predictor (initial guess = zero).",
-                    stacklevel=2,
                 )
         return cls(
             system,

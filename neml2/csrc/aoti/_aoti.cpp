@@ -43,6 +43,7 @@
 #include "neml2/csrc/aoti/Model.h"
 #include "neml2/csrc/aoti/assertions.h"
 #include "neml2/csrc/aoti/krylov.h"
+#include "neml2/csrc/aoti/log.h"
 #include "neml2/csrc/aoti/newton.h"
 #include "neml2/csrc/aoti/nonlinear_system_eager.h"
 
@@ -498,4 +499,90 @@ solve, no outer Newton. ``b`` is a flat ``(Bflat, N)`` batch (solve the columns 
 matrix RHS separately). Used by the eager iterative ``.solve(A, b)`` for the
 derivative (IFT / ParamIFT) solves, where the assembled Jacobian is on hand.
 )");
+
+  // ---- Verbosity / logging store (backs neml2.log) --------------------------
+  // The one config store shared by every route. neml2.log is a thin Python
+  // wrapper over these; a downstream Python app configures defaults + sink here
+  // and its C++ solvers (which emit through this same store) obey.
+  namespace log = neml2::aoti::log;
+  auto logm = m.def_submodule("log", "Central verbosity/logging store (see neml2.log).");
+
+  const auto to_channel = [](const std::string & name) -> log::Channel
+  {
+    log::Channel c;
+    neml2::aoti::_assert(log::parse_channel(name, c),
+                         "neml2.log: unknown channel '",
+                         name,
+                         "' (expected newton|linear|substep|model|tensor|driver)");
+    return c;
+  };
+  const auto to_level = [](const std::string & name) -> log::Level
+  {
+    log::Level l;
+    neml2::aoti::_assert(log::parse_level(name, l),
+                         "neml2.log: unknown level '",
+                         name,
+                         "' (expected silent|warning|info|debug)");
+    return l;
+  };
+
+  logm.def(
+      "set_default_level",
+      [to_channel, to_level](const std::string & channel, const std::string & level)
+      {
+        if (channel == "all")
+          log::set_default_level(to_level(level));
+        else
+          log::set_default_level(to_channel(channel), to_level(level));
+      },
+      py::arg("channel"),
+      py::arg("level"));
+
+  logm.def(
+      "effective_level",
+      [to_channel](const std::string & channel)
+      { return std::string(log::level_name(log::effective_level(to_channel(channel)))); },
+      py::arg("channel"));
+
+  logm.def(
+      "enabled",
+      [to_channel, to_level](const std::string & channel, const std::string & level)
+      { return log::enabled(to_channel(channel), to_level(level)); },
+      py::arg("channel"),
+      py::arg("level"));
+
+  logm.def(
+      "emit",
+      [to_channel, to_level](
+          const std::string & channel, const std::string & level, const std::string & message)
+      { log::emit(to_channel(channel), to_level(level), message); },
+      py::arg("channel"),
+      py::arg("level"),
+      py::arg("message"));
+
+  logm.def("reset_defaults", &log::reset_defaults);
+  logm.def("reset_sink", &log::reset_sink);
+  logm.def("apply_env", &log::apply_env);
+
+  logm.def(
+      "set_sink",
+      [](py::object cb)
+      {
+        if (cb.is_none())
+        {
+          log::reset_sink();
+          return;
+        }
+        // Own the callable so it outlives this call; invoke it under the GIL
+        // (the sink may fire from a dispatcher worker thread that does not hold
+        // it). Hand the Python side (level_name, formatted_line).
+        auto held = std::make_shared<py::object>(std::move(cb));
+        log::set_sink(
+            [held](log::Level lvl, const std::string & line)
+            {
+              py::gil_scoped_acquire gil;
+              (*held)(std::string(log::level_name(lvl)), line);
+            });
+      },
+      py::arg("sink"));
 }

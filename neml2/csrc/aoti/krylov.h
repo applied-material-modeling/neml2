@@ -120,6 +120,13 @@ parse_cache_strategy(const std::string & s, CacheStrategy & out)
 using MatvecFn = std::function<at::Tensor(const at::Tensor &)>;
 using PrecondFn = std::function<at::Tensor(const at::Tensor &)>;
 
+/// Optional per-inner-iteration hook for logging: called with
+/// (iter_1based, resid_per_elem `(B,)`, bnorm `(B,)`) once per matvec when set.
+/// Left null (the common case -- the `linear` log channel is off) it is never
+/// invoked, so a silent solve pays nothing. Threaded from the `NonlinearSystem`
+/// layer, which owns the logging dependency (this header stays log-free).
+using LinearLogFn = std::function<void(int64_t, const at::Tensor &, const at::Tensor &)>;
+
 /// Result of an inner Krylov solve.
 struct KrylovResult
 {
@@ -166,7 +173,8 @@ inline KrylovResult
 gmres(const MatvecFn & matvec,
       const PrecondFn & minv,
       const at::Tensor & b,
-      const KrylovConfig & cfg)
+      const KrylovConfig & cfg,
+      const LinearLogFn & on_iter = {})
 {
   const auto B = b.size(0);
   const auto n = b.size(1);
@@ -179,6 +187,7 @@ gmres(const MatvecFn & matvec,
   const auto bnorm = detail::row_norm(b).clamp_min(eps); // (B,)
   auto iters = at::zeros({B}, opts.dtype(at::kLong));
   auto done = at::zeros({B}, opts.dtype(at::kBool));
+  int64_t inner_it = 0; // monotonic inner-iteration counter for the log hook
 
   for (int64_t restart = 0; restart < max_restarts; ++restart)
   {
@@ -261,6 +270,9 @@ gmres(const MatvecFn & matvec,
       gj.copy_(new_gj);
 
       auto resid = g.select(1, j + 1).abs(); // (B,) current absolute residual
+      ++inner_it;
+      if (on_iter)
+        on_iter(inner_it, resid, bnorm);
       iters += at::logical_and(active, at::logical_not(done)).to(at::kLong);
       auto newly =
           at::logical_and(at::logical_and(active, at::logical_not(done)),
@@ -305,7 +317,8 @@ inline KrylovResult
 bicgstab(const MatvecFn & matvec,
          const PrecondFn & minv,
          const at::Tensor & b,
-         const KrylovConfig & cfg)
+         const KrylovConfig & cfg,
+         const LinearLogFn & on_iter = {})
 {
   const auto B = b.size(0);
   const auto n = b.size(1);
@@ -362,7 +375,10 @@ bicgstab(const MatvecFn & matvec,
     omega = at::where(done, omega, omega_new);
 
     iters += at::logical_not(done).to(at::kLong);
-    done = at::logical_or(done, stop(detail::row_norm(r)));
+    const auto rn = detail::row_norm(r);
+    if (on_iter)
+      on_iter(it + 1, rn, bnorm);
+    done = at::logical_or(done, stop(rn));
   }
 
   return {x, iters.max().item<int64_t>(), done};
@@ -373,10 +389,11 @@ inline KrylovResult
 krylov_solve(const MatvecFn & matvec,
              const PrecondFn & minv,
              const at::Tensor & b,
-             const KrylovConfig & cfg)
+             const KrylovConfig & cfg,
+             const LinearLogFn & on_iter = {})
 {
-  return cfg.method == KrylovMethod::BiCGStab ? bicgstab(matvec, minv, b, cfg)
-                                              : gmres(matvec, minv, b, cfg);
+  return cfg.method == KrylovMethod::BiCGStab ? bicgstab(matvec, minv, b, cfg, on_iter)
+                                              : gmres(matvec, minv, b, cfg, on_iter);
 }
 
 /// Solve `A X = B` with the shared Krylov loop over an ALREADY-ASSEMBLED dense

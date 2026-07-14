@@ -162,26 +162,46 @@ def _scalar_system():
     return sys
 
 
-def test_newton_quiet_by_default():
-    """Without ``verbose`` the solver records no convergence log."""
+def test_newton_quiet_by_default(capsys):
+    """By default (``NEML2_LOGS`` unset, the ``newton`` channel at the built-in
+    ``warning`` level) the solver emits nothing and returns no log data."""
+    from neml2 import log
+
+    log.reset_defaults()
     result = Newton(atol=1e-12, rtol=1e-12, miters=20).solve(_scalar_system())
     assert result.ret is RetCode.SUCCESS
     assert result.log == ()
+    captured = capsys.readouterr()
+    assert "[neml2:newton]" not in captured.out
+    assert "[neml2:newton]" not in captured.err
 
 
-def test_newton_verbose_collects_convergence_log():
-    """``verbose=True`` records one ``ITERATION`` line per step with a
-    monotonically non-increasing residual norm."""
+def test_newton_debug_emits_convergence_log(capsys):
+    """``NEML2_LOGS=newton=debug`` emits one ``[neml2:newton] ITERATION`` line per
+    step -- from the shared C++ Newton loop, through the log store -- with a
+    monotonically non-increasing residual norm, bracketed by begin/end banners."""
     import re
 
-    result = Newton(atol=1e-12, rtol=1e-12, miters=20, verbose=True).solve(_scalar_system())
+    from neml2 import log
+
+    log.set_default_level("newton", "debug")
+    try:
+        result = Newton(atol=1e-12, rtol=1e-12, miters=20).solve(_scalar_system())
+    finally:
+        log.reset_defaults()
 
     assert result.ret is RetCode.SUCCESS
-    assert len(result.log) >= 2
-    assert all(line.startswith("ITERATION") for line in result.log)
+    captured = capsys.readouterr()
+    text = captured.out + captured.err
+    assert "---- begin newton solve ----" in text
+    assert "---- end newton solve ----" in text  # clean separator, no reason mangled in
+    assert "reason=" in text  # the reason rides its own summary line
+    iter_lines = [ln for ln in text.splitlines() if "ITERATION" in ln]
+    assert len(iter_lines) >= 2
+    assert all(ln.startswith("[neml2:newton") for ln in iter_lines)
     norms = []
-    for line in result.log:
-        m = re.search(r"\|R\| = ([\d.eE+-]+)", line)
+    for ln in iter_lines:
+        m = re.search(r"\|R\| = ([\d.eE+-]+)", ln)
         assert m is not None
         norms.append(float(m.group(1)))
     assert all(a >= b for a, b in zip(norms, norms[1:], strict=False))  # non-increasing

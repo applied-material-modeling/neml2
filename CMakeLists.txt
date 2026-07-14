@@ -306,6 +306,7 @@ find_package(nmhit MODULE REQUIRED)
 # behind a PImpl `Model::Impl` declared in the non-shipped internal.h.
 add_library(aoti SHARED
       neml2/csrc/aoti/Exception.cpp
+      neml2/csrc/aoti/log.cpp
       neml2/csrc/aoti/Model.cpp
       neml2/csrc/aoti/ops.cpp
       neml2/csrc/aoti/solve.cpp
@@ -357,6 +358,7 @@ target_sources(aoti
       BASE_DIRS ${NEML2_SOURCE_DIR}
       FILES
       ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/Exception.h
+      ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/log.h
       ${NEML2_SOURCE_DIR}/neml2/csrc/aoti/Model.h
       ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/WorkScheduler.h
       ${NEML2_SOURCE_DIR}/neml2/csrc/dispatchers/SimpleScheduler.h

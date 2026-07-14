@@ -63,9 +63,9 @@ struct NewtonResult
   std::size_t iterations = 0;
   /// Per-iteration convergence log lines (populated only when
   /// ``SolverConfig::collect_log`` is set). Each entry is a preformatted
-  /// ``ITERATION ...`` or ``LS ITERATION ...`` line, identical to the
-  /// ``NEML2_AOTI_TRACE_NEWTON`` stderr trace, so a Python caller can print
-  /// the same convergence history without parsing stderr.
+  /// ``ITERATION ...`` or ``LS ITERATION ...`` line, identical to the console
+  /// trace the ``newton`` log channel emits at debug (see log.h), so a Python
+  /// caller can capture the same convergence history as data.
   std::vector<std::string> log;
 };
 
@@ -84,8 +84,8 @@ public:
   explicit Newton(SolverConfig cfg);
 
   /// Solve ``r(u) = 0`` starting from ``u0`` (per unknown group). Set
-  /// ``NEML2_AOTI_TRACE_NEWTON=1`` (or ``2`` for per-iteration detail) to trace
-  /// to stderr.
+  /// ``NEML2_LOGS=newton=info`` for a per-solve summary (banners + convergence
+  /// reason) or ``=debug`` for per-iteration detail; see log.h.
   NewtonResult solve(const NonlinearSystem & sys, const std::vector<at::Tensor> & u0) const;
 
   /// Masking variant: run to ``miters`` (or until every element is converged or

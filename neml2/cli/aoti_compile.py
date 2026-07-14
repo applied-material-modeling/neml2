@@ -261,6 +261,15 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "parameter (see -p). Repeatable. Only valid with --model."
         ),
     )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help=(
+            "Suppress the per-file compilation progress chrome. The final "
+            "artifact-path summary and any errors are still printed."
+        ),
+    )
     add_load_argument(parser)
     return parser
 
@@ -466,8 +475,8 @@ def emit_aoti_stub(
     line-search config lives in ``metadata.json`` and is applied by the C++ runtime
     at load -- a stub ``[Solvers]`` block would be a silent no-op for the
     Python-free routes, so it is removed rather than left as a misleading knob.
-    (Verbosity is separate: it is a diagnostic controlled by ``NEML2_AOTI_TRACE_*``
-    env vars, not recorded anywhere in the artifact.)
+    (Verbosity is separate: it is a diagnostic controlled by the ``NEML2_LOGS``
+    env var (see :mod:`neml2.log`), not recorded anywhere in the artifact.)
 
     The artifact folder is recorded as an ``artifact_path`` **relative** to the
     stub, so the stub + its artifact folder move together as a portable bundle
@@ -749,7 +758,8 @@ def main(argv: list[str] | None = None) -> int:
 
     def progress_cb(name: str) -> None:
         _progress["k"] += 1
-        print(f"[{_progress['k']}/{total_files}] {name}", file=sys.stderr)
+        if not args.quiet:
+            print(f"[{_progress['k']}/{total_files}] {name}", file=sys.stderr)
 
     if args.jobs > 1 and "cuda" in devices:
         print(

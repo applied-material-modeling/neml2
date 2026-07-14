@@ -3571,8 +3571,8 @@ def _extract_solver_config(model) -> dict | None:
     Returns the primary ``ImplicitUpdate``'s ``solver._solver_config()`` (the same
     atol/rtol/miters/line-search dict the eager path forwards to the C++ Newton) so
     the Python-free C++ runtime is configured straight from the artifact -- no stub
-    ``[Solvers]`` parse. ``verbose`` is deliberately absent: it is a diagnostic
-    controlled by ``NEML2_AOTI_TRACE_*`` env vars, not config. ``None`` for a
+    ``[Solvers]`` parse. Verbosity is deliberately absent: it is a diagnostic
+    controlled by the ``NEML2_LOGS`` env var (see :mod:`neml2.log`), not config. ``None`` for a
     forward-only model. If several implicit segments carry different configs the
     first (module order) wins -- the runtime applies a single config, mirroring the
     historical one-``[Solvers]`` stub behavior.

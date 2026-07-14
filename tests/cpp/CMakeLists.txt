@@ -15,8 +15,8 @@
 # CMakeLists), leaving the CPython symbols to be supplied by whatever embeds it.
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Embed)
 
-# --- Pure-logic tests: schedulers + batch slice/cat helpers + exceptions -----
-foreach(t test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions)
+# --- Pure-logic tests: schedulers + batch slice/cat helpers + exceptions + log -
+foreach(t test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions test_log)
       add_executable(${t} ${t}.cpp)
       target_link_libraries(${t} PRIVATE aoti)
       target_compile_options(${t} PRIVATE -Wall -Wextra)

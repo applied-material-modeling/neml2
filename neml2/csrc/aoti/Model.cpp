@@ -557,9 +557,9 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // Solver config: the implicit Newton's convergence / line-search settings ride
   // in the shared metadata so the Python-free runtime is configured straight from
   // the artifact. Absent (forward-only) => the SolverConfig defaults stand.
-  // `verbose` is deliberately never recorded: it is a diagnostic controlled by
-  // the NEML2_AOTI_TRACE_* env vars. `Model::set_solver_config` still overrides
-  // these at runtime.
+  // Verbosity is deliberately never recorded here: it is a diagnostic controlled
+  // by the `NEML2_LOGS` env var / the log store (see log.h), independent of the
+  // solver config. `Model::set_solver_config` still overrides these at runtime.
   if (meta.contains("solver_config"))
   {
     const auto & sc = meta["solver_config"];

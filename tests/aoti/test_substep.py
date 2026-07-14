@@ -346,9 +346,11 @@ def test_masking_maxed_out_raises_recoverable(tmp_path: Path):
         aoti.forward(ins)
 
 
-def test_substep_trace_env_var(tmp_path: Path, capfd, monkeypatch):
-    """NEML2_AOTI_TRACE_SUBSTEP=1 prints a per-solve substep summary to stderr
-    (how many elements substepped, max depth, segment-solve count)."""
+def test_substep_trace_logs(tmp_path: Path, capfd):
+    """The ``substep`` log channel at ``info`` prints a per-solve substep summary
+    (how many elements substepped, max depth, segment-solve count) through the
+    shared log store, on the compiled AOTI path."""
+    from neml2 import log
     from neml2.aoti import Model as AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
 
@@ -356,11 +358,15 @@ def test_substep_trace_env_var(tmp_path: Path, capfd, monkeypatch):
     export_model_for_aoti(_SUBSTEP_NL, "model", out)
     aoti = AOTIModel(str(out))
 
-    monkeypatch.setenv("NEML2_AOTI_TRACE_SUBSTEP", "1")
-    aoti.forward(_mixed_inputs())
-    err = capfd.readouterr().err
-    assert "[aoti substep] value:" in err
-    assert "1 substepped" in err  # exactly the one hard row
+    log.set_default_level("substep", "info")
+    try:
+        aoti.forward(_mixed_inputs())
+    finally:
+        log.reset_defaults()
+    captured = capfd.readouterr()
+    text = captured.out + captured.err
+    assert "[neml2:substep] value:" in text
+    assert "1 substepped" in text  # exactly the one hard row
 
 
 def test_multiaxis_batch_substepping_forward(tmp_path: Path):
@@ -533,12 +539,11 @@ def test_newton_linesearch_solver_path(tmp_path: Path, ls_type: str):
     assert torch.allclose(a, e, rtol=1e-9, atol=1e-9)
 
 
-def test_newton_trace_verbose_logs(tmp_path: Path, monkeypatch):
-    """``NEML2_AOTI_TRACE_NEWTON`` drives the compiled Newton's verbose
-    convergence logging -- the per-iteration and per-line-search-iteration stderr
-    trace MOOSE users rely on to inspect a solve. Level 2 with a line-search
-    solver exercises both log blocks."""
-    monkeypatch.setenv("NEML2_AOTI_TRACE_NEWTON", "2")
+def test_newton_trace_logs(tmp_path: Path, capfd):
+    """The ``newton`` log channel at ``debug`` drives the compiled Newton's
+    convergence trace -- the per-iteration detail MOOSE users inspect -- through
+    the shared log store, on the compiled AOTI path."""
+    from neml2 import log
     from neml2.aoti import Model as AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
 
@@ -548,8 +553,15 @@ def test_newton_trace_verbose_logs(tmp_path: Path, monkeypatch):
     )
     out = tmp_path / "trace"
     export_model_for_aoti(src, "model", out)
-    x = AOTIModel(str(out)).forward(_scalar_implicit_inputs())["x"]
+    log.set_default_level("newton", "debug")
+    try:
+        x = AOTIModel(str(out)).forward(_scalar_implicit_inputs())["x"]
+    finally:
+        log.reset_defaults()
     assert torch.isfinite(x).all()
+    captured = capfd.readouterr()
+    text = captured.out + captured.err
+    assert "---- begin newton solve ----" in text
 
 
 def test_masked_substepping_mixed_batch(tmp_path: Path):

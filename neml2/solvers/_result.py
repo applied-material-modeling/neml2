@@ -45,8 +45,9 @@ class NonlinearResult:
     ret: RetCode
     iterations: int
     #: Per-iteration convergence history (``ITERATION ...`` / ``LS ITERATION
-    #: ...`` lines, max-norm over the batch), populated only when the solver's
-    #: ``verbose`` flag is set; empty otherwise.
+    #: ...`` lines, max-norm over the batch). Opt-in *data* path: populated only
+    #: when the C++ solver's ``collect_log`` is set; empty otherwise. Console
+    #: verbosity is separate -- see the ``newton`` channel in :mod:`neml2.log`.
     log: tuple[str, ...] = ()
 
 

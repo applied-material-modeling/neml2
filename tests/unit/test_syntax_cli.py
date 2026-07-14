@@ -95,7 +95,6 @@ def test_schema_backed_solver_emits_option_metadata():
         "abs_tol",
         "rel_tol",
         "max_its",
-        "verbose",
     }
 
 
