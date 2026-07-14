@@ -160,6 +160,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../../content/references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../content/references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../content/references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../content/references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../content/references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../content/references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Syntax catalog</a><ul class="current">
@@ -319,9 +320,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -425,6 +432,10 @@ data-aria-dark="Switch to auto color mode">
 <dt><code class="docutils literal notranslate"><span class="pre">equation_system</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · <strong>required</strong></dt><dd><p>The nonlinear system of equations to solve</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">solver</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code> · <strong>required</strong></dt><dd><p>Solver used to solve the nonlinear system of equations</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">input_sensitivity_solver</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>Linear solver for the input-sensitivity (implicit-function-theorem) solve du/dg = -A^{-1} B when differentiating outputs w.r.t. inputs. Defaults to the Newton’s linear_solver; set a direct solver (e.g. DenseLU) here to keep input derivatives exact under an iterative forward solve.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">param_sensitivity_solver</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>Linear solver for the parameter-sensitivity solve du/dtheta = -A^{-1} dr/dtheta when differentiating outputs w.r.t. (promoted) parameters. Defaults to the Newton’s linear_solver; set a direct solver (e.g. DenseLU) here for exact parameter derivatives under an iterative forward solve.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">predictor</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>An optional predictor to provide an initial guess for the nonlinear solve.</p>
 </dd>

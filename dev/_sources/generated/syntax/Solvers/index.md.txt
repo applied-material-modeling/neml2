@@ -6,8 +6,14 @@ All registered `[Solvers]` types, grouped by their location in the source tree a
 ```{toctree}
 :maxdepth: 1
 
+BiCGStab
+BlockJacobiPreconditioner
 DenseLU
+FullPreconditioner
+GMRES
+JacobiPreconditioner
 Newton
 NewtonWithLineSearch
+NoPreconditioner
 SchurComplement
 ```

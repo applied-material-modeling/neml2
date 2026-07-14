@@ -160,6 +160,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -319,9 +320,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -451,6 +458,10 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.es.LinearSystem.setup_ulayout"><code class="docutils literal notranslate"><span class="pre">LinearSystem.setup_ulayout()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.LinearSystem.u"><code class="docutils literal notranslate"><span class="pre">LinearSystem.u()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.LinearSystem.ulayout"><code class="docutils literal notranslate"><span class="pre">LinearSystem.ulayout</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#neml2.es.Matvec"><code class="docutils literal notranslate"><span class="pre">Matvec</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.es.Matvec.forward"><code class="docutils literal notranslate"><span class="pre">Matvec.forward()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem</span></code></a><ul>
@@ -1397,6 +1408,53 @@ registered subclass (<code class="docutils literal notranslate"><span class="pre
 <dt class="sig sig-object py" id="neml2.es.LinearSystem.ulayout">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ulayout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><span class="pre">AxisLayout</span></a></em><a class="headerlink" href="#neml2.es.LinearSystem.ulayout" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="neml2.es.Matvec">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">Matvec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/implicit.html#Matvec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.Matvec" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_SystemModule</span></code></p>
+<p>Exportable matrix-free residual jvp: <code class="docutils literal notranslate"><span class="pre">(*u,</span> <span class="pre">*g,</span> <span class="pre">*params,</span> <span class="pre">*v)</span> <span class="pre">-&gt;</span> <span class="pre">(*Jv)</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">J.v</span> <span class="pre">=</span> <span class="pre">∂r/∂u</span> <span class="pre">.</span> <span class="pre">v</span></code> at fixed <code class="docutils literal notranslate"><span class="pre">(u,</span> <span class="pre">g,</span> <span class="pre">params)</span></code>, where <code class="docutils literal notranslate"><span class="pre">v</span></code> is a tangent in
+the unknown space (same per-group layout as <code class="docutils literal notranslate"><span class="pre">u</span></code>) and <code class="docutils literal notranslate"><span class="pre">Jv</span></code> is in the
+residual space (<code class="docutils literal notranslate"><span class="pre">blayout</span></code>). Never assembles <code class="docutils literal notranslate"><span class="pre">A</span></code> – it threads the single
+direction <code class="docutils literal notranslate"><span class="pre">v</span></code> through the <code class="docutils literal notranslate"><span class="pre">forward(v=)</span></code> chain rule (one forward pass + one
+pushforward), the matvec an iterative/Krylov linear solver calls each inner
+iteration. This is the matrix-free counterpart of <a class="reference internal" href="#neml2.es.Jacobian" title="neml2.es.Jacobian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Jacobian</span></code></a> (which
+assembles the full <code class="docutils literal notranslate"><span class="pre">A</span></code>): <code class="docutils literal notranslate"><span class="pre">Matvec(u,g,v)</span></code> equals <code class="docutils literal notranslate"><span class="pre">Jacobian(u,g).A</span> <span class="pre">&#64;</span> <span class="pre">v</span></code>,
+but at O(N^2) with no O(N^3) factorization downstream. The C++ Krylov runtime
+drives it (compiled loader on the AOTI route, callback on the eager route);
+both feed the shared <code class="docutils literal notranslate"><span class="pre">krylov_solve</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<a class="reference internal" href="#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p></li>
+<li><p><strong>param_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>...</em><em>]</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.Matvec.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/implicit.html#Matvec.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.Matvec.forward" title="Link to this definition">#</a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, …]</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
