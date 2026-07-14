@@ -84,13 +84,6 @@ class Newton:
             "Maximum number of iterations allowed before issuing an error/exception",
             default=25,
         ),
-        option(
-            "verbose",
-            bool,
-            "Print the Newton convergence history (per-iteration residual norms, "
-            "including any line-search sub-iterations) after each solve",
-            default=False,
-        ),
     )
 
     @classmethod
@@ -100,10 +93,7 @@ class Newton:
         atol = node.param_optional_float("abs_tol", 1.0e-10)
         rtol = node.param_optional_float("rel_tol", 1.0e-8)
         miters = int(node.param_optional_int("max_its", 25))
-        verbose = node.param_optional_bool("verbose", False)
-        return cls(
-            linear_solver=linear_solver, atol=atol, rtol=rtol, miters=miters, verbose=verbose
-        )
+        return cls(linear_solver=linear_solver, atol=atol, rtol=rtol, miters=miters)
 
     def __init__(
         self,
@@ -112,13 +102,11 @@ class Newton:
         atol: float = 1.0e-10,
         rtol: float = 1.0e-8,
         miters: int = 25,
-        verbose: bool = False,
     ) -> None:
         self.linear_solver = linear_solver if linear_solver is not None else DenseLU()
         self.atol = atol
         self.rtol = rtol
         self.miters = miters
-        self.verbose = verbose
 
     def _solver_config(self) -> dict:
         """Per-group Newton config forwarded to the C++ solver.
@@ -206,21 +194,15 @@ class Newton:
                 unknown_layout=_group_layout_descriptor(system.ulayout),
                 residual_layout=_group_layout_descriptor(system.blayout),
                 u0=u0_raws,
-                # collect_log is eager-only (it controls returning the
-                # convergence history to Python); the shared ``_solver_config``
-                # also feeds the compiled path's ``set_solver_config``, which
-                # has no such option.
-                collect_log=self.verbose,
+                # Console verbosity is emitted by the shared C++ Newton loop
+                # itself (the ``newton`` / ``linear`` log channels, controlled by
+                # ``NEML2_LOGS`` -- see :mod:`neml2.log`), uniformly across every
+                # route. ``collect_log`` is a separate opt-in *data* path that
+                # returns the convergence history to Python; no caller needs it here.
+                collect_log=False,
                 **self._solver_config(),
             )
             system.set_u_from_group_raws(u_star)
-
-        # ``verbose`` surfaces the convergence history the C++ loop collected
-        # (``collect_log`` above). Printing from Python keeps it in the
-        # notebook-captured stream, unlike the C++ ``NEML2_AOTI_TRACE_NEWTON``
-        # stderr trace.
-        if self.verbose and log:
-            print("\n".join(log))
 
         ret = RetCode.SUCCESS if converged else RetCode.MAXITER
         return NonlinearResult(ret, iterations, log=tuple(log))
@@ -286,14 +268,11 @@ class Newton:
                 unknown_layout=_group_layout_descriptor(system.ulayout),
                 residual_layout=_group_layout_descriptor(system.blayout),
                 u0=u0_raws,
-                collect_log=self.verbose,
+                collect_log=False,
                 **self._solver_config(),
                 **kcfg,
             )
             system.set_u_from_group_raws(u_star)
-
-        if self.verbose and log:
-            print("\n".join(log))
 
         ret = RetCode.SUCCESS if converged else RetCode.MAXITER
         return NonlinearResult(ret, iterations, log=tuple(log))

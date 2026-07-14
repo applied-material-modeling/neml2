@@ -508,25 +508,28 @@ class ModelNonlinearSystem(NonlinearSystem):
             )
             for name in self.model.input_spec
         )
-        import os  # noqa: PLC0415
+        if v is not None:
+            from neml2 import log  # noqa: PLC0415
 
-        if v is not None and os.environ.get("NEML2_DEBUG_KSTATE"):
-            for name, arg in zip(self.model.input_spec, args, strict=True):
-                print(
-                    f"DEBUG _call_model arg[{name!r}]: "
-                    f"data.shape={tuple(arg.data.shape)} sub_ndim={arg.sub_batch_ndim} "
-                    f"sub_state={arg.sub_batch_state} k_ndim={arg.k_ndim}",
-                    flush=True,
-                )
-            for name, seeds in v.items():
-                for leaf, s in seeds.items():
-                    print(
-                        f"DEBUG _call_model v[{name!r}][{leaf!r}]: "
-                        f"data.shape={tuple(s.data.shape)} sub_ndim={s.sub_batch_ndim} "
-                        f"sub_state={s.sub_batch_state} k_ndim={s.k_ndim} "
-                        f"k_state={s.k_state} k_pairing={s.k_pairing}",
-                        flush=True,
+            if log.enabled("model", "debug"):
+                for name, arg in zip(self.model.input_spec, args, strict=True):
+                    log.emit(
+                        "model",
+                        "debug",
+                        f"_call_model arg[{name!r}]: "
+                        f"data.shape={tuple(arg.data.shape)} sub_ndim={arg.sub_batch_ndim} "
+                        f"sub_state={arg.sub_batch_state} k_ndim={arg.k_ndim}",
                     )
+                for name, seeds in v.items():
+                    for leaf, s in seeds.items():
+                        log.emit(
+                            "model",
+                            "debug",
+                            f"_call_model v[{name!r}][{leaf!r}]: "
+                            f"data.shape={tuple(s.data.shape)} sub_ndim={s.sub_batch_ndim} "
+                            f"sub_state={s.sub_batch_state} k_ndim={s.k_ndim} "
+                            f"k_state={s.k_state} k_pairing={s.k_pairing}",
+                        )
         result = self.model(*args, v=v) if v is not None else self.model(*args)
         return result if isinstance(result, tuple) else (result,)
 
@@ -604,17 +607,18 @@ class ModelNonlinearSystem(NonlinearSystem):
         v_out: ChainRuleDict,
         like_by_row: Mapping[str, Tensor],
     ) -> AssembledMatrix:
-        import os  # noqa: PLC0415
+        from neml2 import log  # noqa: PLC0415
 
-        if os.environ.get("NEML2_DEBUG_KSTATE"):
+        if log.enabled("model", "debug"):
             for r, leaves in v_out.items():
                 for leaf, w in leaves.items():
-                    print(
-                        f"DEBUG _assemble_matrix v_out[{r!r}][{leaf!r}]: "
+                    log.emit(
+                        "model",
+                        "debug",
+                        f"_assemble_matrix v_out[{r!r}][{leaf!r}]: "
                         f"data.shape={tuple(w.data.shape)} k_ndim={w.k_ndim} "
                         f"k_state={w.k_state} k_pairing={w.k_pairing} "
                         f"sub={w.sub_batch_ndim}/{w.sub_batch_state}",
-                        flush=True,
                     )
         M = _build_block_matrix(self.model, row_layout, col_layout, v_out, like_by_row)
         return M

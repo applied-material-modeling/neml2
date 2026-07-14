@@ -41,6 +41,7 @@
 // (libneml2.so vs the pyaoti module), and each instantiates the base within its
 // own TU, so there is no cross-boundary polymorphism.
 
+#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -49,6 +50,7 @@
 #include "neml2/csrc/aoti/assertions.h"
 #include "neml2/csrc/aoti/krylov.h"
 #include "neml2/csrc/aoti/krylov_flatten.h"
+#include "neml2/csrc/aoti/log.h"
 #include "neml2/csrc/aoti/nonlinear_system.h"
 
 namespace neml2::aoti
@@ -120,8 +122,48 @@ public:
       { return precond_apply_raw(_precond_state, r); };
     }
 
-    auto res = krylov_solve(matvec, minv, b_flat, _cfg);
+    // Inner linear-solve residual trace on the `linear` channel (debug). Built
+    // only when the channel is on, so a silent solve incurs no per-iteration sync.
+    // LCOV_EXCL_START -- diagnostic linear-residual trace (verbosity-gated; see neml2.log)
+    LinearLogFn on_iter;
+    if (log::enabled(log::Channel::Linear, log::Level::Debug))
+      on_iter = [](int64_t it, const at::Tensor & resid, const at::Tensor & bnorm)
+      {
+        std::ostringstream oss;
+        oss << "  krylov iter=" << it << " max|r|=" << std::scientific << resid.max().item<double>()
+            << " max|r|/|b|=" << std::scientific << (resid / bnorm).max().item<double>();
+        log::emit(log::Channel::Linear, log::Level::Debug, oss.str());
+      };
+    // LCOV_EXCL_STOP
+
+    auto res = krylov_solve(matvec, minv, b_flat, _cfg, on_iter);
     _last_iters = res.max_iters;
+
+    // Linear-solve convergence summary on the `linear` channel (mirrors the
+    // Newton summary). A non-convergence -- some element hit max_its without
+    // reaching tol, which degrades the Newton step -- surfaces at `warning` (shown
+    // by default); the healthy summary rides `info`. Gated on `warning` so a
+    // silent channel never pays the convergence-mask d2h sync.
+    // LCOV_EXCL_START -- diagnostic linear-solve summary
+    if (log::enabled(log::Channel::Linear, log::Level::Warning))
+    {
+      const bool all_converged = res.converged.defined() ? res.converged.all().item<bool>() : true;
+      if (!all_converged)
+      {
+        const int64_t nfail = at::logical_not(res.converged).sum().item<int64_t>();
+        std::ostringstream oss;
+        oss << "linear solve NOT converged (iters=" << res.max_iters << ", " << nfail
+            << " element(s) at max_its)";
+        log::emit(log::Channel::Linear, log::Level::Warning, oss.str());
+      }
+      else if (log::enabled(log::Channel::Linear, log::Level::Info))
+      {
+        std::ostringstream oss;
+        oss << "linear solve: iters=" << res.max_iters << ", converged";
+        log::emit(log::Channel::Linear, log::Level::Info, oss.str());
+      }
+    }
+    // LCOV_EXCL_STOP
 
     return {unflatten_dense(res.du, uspec), std::move(b_groups)};
   }

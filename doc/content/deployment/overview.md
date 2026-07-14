@@ -14,7 +14,8 @@ and can stop reading here. This page is for developers integrating NEML2 into
 their own Python, C++, or command-line workflow. The deployment guides
 ([](python-integration), [](external-project-integration), [](cli-utilities))
 cover getting set up; the reference pages linked below cover each route's
-evaluation API.
+evaluation API. All routes share one verbosity control — see
+[](verbosity-control).
 :::
 
 All runtimes operate on the same starting point: a

@@ -21,8 +21,8 @@ Two kinds compose:
 - [](solvers-Newton) — Newton–Raphson. Each iteration assembles the residual
   and its Jacobian and takes one linear solve; it stops when the relative or
   absolute residual norm falls below `rel_tol` / `abs_tol`, or errors at
-  `max_its`. `verbose` prints the per-iteration convergence history. This is the
-  default choice.
+  `max_its`. Set `NEML2_LOGS=newton=info` (or `=debug` for the per-iteration
+  convergence history); see [](verbosity-control). This is the default choice.
 - [](solvers-NewtonWithLineSearch) — Newton with a globalized step. When the
   full Newton step overshoots (stiff or far-from-solution problems), a line
   search (`BACKTRACKING` or `STRONG_WOLFE`) scales it back to guarantee residual

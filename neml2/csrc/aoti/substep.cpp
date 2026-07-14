@@ -34,11 +34,14 @@
 
 #include "neml2/csrc/aoti/Exception.h"
 #include "neml2/csrc/aoti/internal.h"
+#include "neml2/csrc/aoti/log.h"
 #include "neml2/csrc/dispatchers/batch_chunk.h"
 
-#include <cstdlib>
 #include <functional>
-#include <iostream>
+#include <sstream>
+
+// Alias so the logging namespace is reachable as ``nlog``.
+namespace nlog = neml2::aoti::log;
 
 namespace neml2::aoti
 {
@@ -248,17 +251,6 @@ mask_to_idx(const at::Tensor & m)
   return at::nonzero(m).squeeze(-1);
 }
 
-// Substep trace verbosity from NEML2_AOTI_TRACE_SUBSTEP: 0 = off, 1 = one
-// summary line per solve (how many elements substepped, max bisection depth,
-// segment-solve count), 2 = one line per sub-span (active/converged/failed).
-// Mirrors NEML2_AOTI_TRACE_NEWTON so MOOSE users can inspect substepping the
-// same way they inspect the Newton convergence.
-inline int
-substep_trace_level()
-{
-  const char * e = std::getenv("NEML2_AOTI_TRACE_SUBSTEP");
-  return e ? std::atoi(e) : 0;
-}
 } // namespace
 
 bool
@@ -311,7 +303,8 @@ Model::Impl::_run_implicit_segment_substepped_masked(
 
   const auto idx_opts = at::TensorOptions().dtype(at::kLong).device(g0.device());
 
-  const int trace = substep_trace_level();
+  const bool console_info = nlog::enabled(nlog::Channel::Substep, nlog::Level::Info);
+  const bool console_debug = nlog::enabled(nlog::Channel::Substep, nlog::Level::Debug);
   int64_t n_solves = 0, max_depth = 0, n_substepped = 0;
   std::function<void(double, double, const at::Tensor &, int)> solve_to =
       [&](double a, double b, const at::Tensor & active, int level)
@@ -327,10 +320,17 @@ Model::Impl::_run_implicit_segment_substepped_masked(
     max_depth = std::max(max_depth, static_cast<int64_t>(level));
     if (level == 0)
       n_substepped = fail.numel(); // rows that failed the full step need substepping
-    if (trace >= 2)
-      std::cerr << "[aoti substep]   span [" << a << ", " << b << "] L" << level
-                << ": active=" << active.numel() << " -> converged=" << conv.numel()
-                << " failed=" << fail.numel() << std::endl;
+    // LCOV_EXCL_START -- diagnostic per-sub-span trace (verbosity-gated; see neml2.log)
+    if (console_debug)
+    {
+      std::ostringstream oss;
+      // Indent by bisection depth so the sub-span tree is visible at a glance.
+      oss << std::string(static_cast<std::size_t>(2 * (level + 1)), ' ') << "span [" << a << ", "
+          << b << "] L" << level << ": active=" << active.numel()
+          << " -> converged=" << conv.numel() << " failed=" << fail.numel();
+      nlog::emit(nlog::Channel::Substep, nlog::Level::Debug, oss.str());
+    }
+    // LCOV_EXCL_STOP
     if (conv.numel() > 0)
     {
       auto conv_g = active.index_select(0, conv);
@@ -364,10 +364,15 @@ Model::Impl::_run_implicit_segment_substepped_masked(
   };
 
   solve_to(0.0, 1.0, at::arange(B, idx_opts), 0);
-  if (trace >= 1)
-    std::cerr << "[aoti substep] value: B=" << B << " elements, " << n_substepped
-              << " substepped, max depth=" << max_depth << ", " << n_solves << " segment-solves"
-              << std::endl;
+  // LCOV_EXCL_START -- diagnostic per-solve substep summary
+  if (console_info)
+  {
+    std::ostringstream oss;
+    oss << "value: B=" << B << " elements, " << n_substepped
+        << " substepped, max depth=" << max_depth << ", " << n_solves << " segment-solves";
+    nlog::emit(nlog::Channel::Substep, nlog::Level::Info, oss.str());
+  }
+  // LCOV_EXCL_STOP
   for (const auto & u : seg.unknowns)
     state[u.name] = result[u.name];
 }
@@ -419,7 +424,8 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
 
   const auto idx_opts = at::TensorOptions().dtype(at::kLong).device(g0.device());
 
-  const int trace = substep_trace_level();
+  const bool console_info = nlog::enabled(nlog::Channel::Substep, nlog::Level::Info);
+  const bool console_debug = nlog::enabled(nlog::Channel::Substep, nlog::Level::Debug);
   int64_t n_solves = 0, max_depth = 0, n_substepped = 0;
   std::function<void(double, double, const at::Tensor &, int)> solve_to =
       [&](double a, double b, const at::Tensor & active, int level)
@@ -438,10 +444,17 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
     max_depth = std::max(max_depth, static_cast<int64_t>(level));
     if (level == 0)
       n_substepped = fail.numel();
-    if (trace >= 2)
-      std::cerr << "[aoti substep]   span [" << a << ", " << b << "] L" << level
-                << ": active=" << active.numel() << " -> converged=" << conv.numel()
-                << " failed=" << fail.numel() << std::endl;
+    // LCOV_EXCL_START -- diagnostic per-sub-span trace (verbosity-gated; see neml2.log)
+    if (console_debug)
+    {
+      std::ostringstream oss;
+      // Indent by bisection depth so the sub-span tree is visible at a glance.
+      oss << std::string(static_cast<std::size_t>(2 * (level + 1)), ' ') << "span [" << a << ", "
+          << b << "] L" << level << ": active=" << active.numel()
+          << " -> converged=" << conv.numel() << " failed=" << fail.numel();
+      nlog::emit(nlog::Channel::Substep, nlog::Level::Debug, oss.str());
+    }
+    // LCOV_EXCL_STOP
     if (conv.numel() > 0)
     {
       auto conv_g = active.index_select(0, conv);
@@ -490,10 +503,15 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
   };
 
   solve_to(0.0, 1.0, at::arange(B, idx_opts), 0);
-  if (trace >= 1)
-    std::cerr << "[aoti substep] jacobian: B=" << B << " elements, " << n_substepped
-              << " substepped, max depth=" << max_depth << ", " << n_solves << " segment-solves"
-              << std::endl;
+  // LCOV_EXCL_START -- diagnostic per-solve substep summary
+  if (console_info)
+  {
+    std::ostringstream oss;
+    oss << "jacobian: B=" << B << " elements, " << n_substepped
+        << " substepped, max depth=" << max_depth << ", " << n_solves << " segment-solves";
+    nlog::emit(nlog::Channel::Substep, nlog::Level::Info, oss.str());
+  }
+  // LCOV_EXCL_STOP
   for (const auto & u : seg.unknowns)
   {
     state[u.name] = result[u.name];

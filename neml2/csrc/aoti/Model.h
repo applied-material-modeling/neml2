@@ -57,10 +57,10 @@ struct SolverConfig
   double ls_cutback = 2.0;
   double ls_c = 1.0e-3;
   /// When true, the Newton solve records its per-iteration convergence log
-  /// (the same `ITERATION ...` / `LS ITERATION ...` lines as the
-  /// `NEML2_AOTI_TRACE_NEWTON` stderr trace) into `NewtonResult::log` so a
-  /// caller can surface it as data. Off by default -- it forces a scalar
-  /// device->host sync per iteration, so it is opt-in.
+  /// (the same `ITERATION ...` / `LS ITERATION ...` lines the `newton` log
+  /// channel emits at debug; see log.h) into `NewtonResult::log` so a caller can
+  /// surface it as data. Off by default -- it forces a scalar device->host sync
+  /// per iteration, so it is opt-in. Console verbosity is a separate concern.
   bool collect_log = false;
 };
 

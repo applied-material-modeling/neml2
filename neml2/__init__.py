@@ -100,6 +100,12 @@ except ImportError as _aoti_err:
             "underlying cause.",
             stacklevel=2,
         )
+
+# Verbosity / logging control. Import here (after the AOTI block, so the C++
+# store binding is resolved when present) to install the forwarding sink and
+# prime the ``NEML2_LOGS`` env layer for every route. See :mod:`neml2.log`.
+from . import log as log  # noqa: F401
+
 # Eagerly expose ``neml2.pyzag`` as an attribute so notebooks / tests
 # can write ``neml2.pyzag.NEML2PyzagModel(...)`` without an explicit
 # import. Safe to place anywhere in this file -- ``pyzag.interface``
@@ -258,4 +264,5 @@ __all__ = [
     "ModelUnitTest",
     "ModelUnitTestReport",
     "HitSchema",
+    "log",
 ]

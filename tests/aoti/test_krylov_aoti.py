@@ -132,3 +132,30 @@ def test_krylov_aoti_matches_direct_solve(tmp_path: Path):
             f"krylov-AOTI vs direct mismatch for {name!r} "
             f"(max abs diff {(got - gold).abs().max().item():.3e})"
         )
+
+
+def test_krylov_aoti_linear_newton_channels_log(tmp_path: Path, capfd):
+    """The compiled matrix-free GMRES solve drives the ``linear`` + ``newton`` log
+    channels (this feeds the C++ coverage flag): the inner Krylov residual history
+    and per-solve convergence summary (nonlinear_system_krylov + krylov on_iter)
+    plus the outer Newton iterations."""
+    from neml2 import load_input, log
+    from neml2.aoti import AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out = tmp_path / "gmres"
+    export_model_for_aoti(_GMRES, "model", out)
+    aoti = AOTIModel(str(out))
+    raw = _inputs(dict(load_input(_GMRES).get_model("model").input_spec))
+
+    log.set_default_level("newton", "debug")
+    log.set_default_level("linear", "debug")
+    try:
+        aoti._inner.forward(raw)
+    finally:
+        log.reset_defaults()
+    text = "".join(capfd.readouterr())
+    assert "[neml2:linear" in text
+    assert "krylov iter=" in text  # inner Krylov residual (krylov on_iter hook)
+    assert "linear solve:" in text  # linear convergence summary
+    assert "[neml2:newton" in text  # outer Newton iterations

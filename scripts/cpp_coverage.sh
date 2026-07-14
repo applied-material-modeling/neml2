@@ -140,4 +140,12 @@ for o in "${OBJECTS[@]:1}"; do OBJ_ARGS+=(-object "$o"); done
   -instr-profile="$OUT_DIR/merged.profdata" -format=lcov "$SRC/neml2/csrc" \
   | sed "s|SF:${SRC}/|SF:|" >"$OUT_DIR/coverage.lcov"
 
+# Honor the standard lcov exclusion markers in the source (LCOV_EXCL_LINE and
+# LCOV_EXCL_START/STOP blocks). llvm-cov does NOT parse these -- unlike geninfo --
+# so we apply them here: drop the DA:/BRDA: records for any excluded source line
+# before upload. This lets us exclude verbosity-gated diagnostic logging (whose
+# many level/collect branch combinations are impractical to fully exercise) from
+# the `cpp` coverage flag without weakening coverage of the surrounding logic.
+python "$SRC/scripts/lcov_apply_exclusions.py" "$SRC" "$OUT_DIR/coverage.lcov"
+
 echo "cpp_coverage: lcov written to $OUT_DIR/coverage.lcov"

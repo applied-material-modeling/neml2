@@ -22,6 +22,7 @@ content/deployment/overview
 content/deployment/python
 content/deployment/cpp
 content/deployment/cli
+content/deployment/verbosity
 ```
 
 ```{toctree}

@@ -276,6 +276,39 @@ check_nonconvergence()
   NEML2_CHECK(!res.converged.all().item<bool>()); // budget too small for full convergence
   return 0;
 }
+
+// The optional per-inner-iteration logging hook (LinearLogFn) must fire for both
+// methods -- the NonlinearSystem layer uses it to trace the `linear` channel.
+int
+check_on_iter_hook()
+{
+  at::manual_seed(11);
+  const auto opts = at::TensorOptions().dtype(at::kDouble);
+  auto A = make_operator(4, 12, opts);
+  auto b = at::randn({4, 12}, opts);
+  const MatvecFn matvec = [&A](const at::Tensor & v) { return apply_dense(A, v); };
+  const PrecondFn identity = [](const at::Tensor & v) { return v; };
+  for (const auto method : {KrylovMethod::GMRES, KrylovMethod::BiCGStab})
+  {
+    KrylovConfig cfg;
+    cfg.method = method;
+    cfg.rel_tol = 1e-10;
+    cfg.max_its = 200;
+    int64_t calls = 0;
+    const LinearLogFn on_iter =
+        [&calls](int64_t it, const at::Tensor & resid, const at::Tensor & bnorm)
+    {
+      (void)it;
+      (void)resid;
+      (void)bnorm;
+      ++calls;
+    };
+    auto res = krylov_solve(matvec, identity, b, cfg, on_iter);
+    (void)res;
+    NEML2_CHECK(calls > 0); // the hook fired at least once per method
+  }
+  return 0;
+}
 } // namespace
 
 int
@@ -313,6 +346,9 @@ main()
   NEML2_CHECK(check_dense_solve_n1() == 0);
   NEML2_CHECK(check_parse() == 0);
   NEML2_CHECK(check_nonconvergence() == 0);
+
+  // The per-inner-iteration logging hook fires for both methods.
+  NEML2_CHECK(check_on_iter_hook() == 0);
 
   std::printf("test_krylov: all checks passed\n");
   return 0;

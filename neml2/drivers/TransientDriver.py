@@ -365,12 +365,14 @@ class TransientDriver(Driver):
                 self.result_out[step][oname] = ovalue
 
         # Persist the full trajectory when the input requests it via ``save_as``
-        # (mirrors v2, including the stdout notice). Empty by default, so a
-        # driver that is only being diffed in memory (TransientRegression /
-        # Verification) writes nothing.
+        # (empty by default, so a driver that is only being diffed in memory --
+        # TransientRegression / Verification -- writes nothing). The notice goes
+        # on the ``driver`` log channel (info); see :mod:`neml2.log`.
         if self.save_as:
             self.save_result(self.save_as)
-            print(f"Results saved to {self.save_as}")
+            from neml2 import log  # noqa: PLC0415
+
+            log.emit("driver", "info", f"Results saved to {self.save_as}")
 
         return True
 
