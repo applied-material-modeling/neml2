@@ -573,10 +573,17 @@ derivative (IFT / ParamIFT) solves, where the assembled Jacobian is on hand.
           log::reset_sink();
           return;
         }
-        // Own the callable so it outlives this call; invoke it under the GIL
-        // (the sink may fire from a dispatcher worker thread that does not hold
-        // it). Hand the Python side (level_name, formatted_line).
-        auto held = std::make_shared<py::object>(std::move(cb));
+        // Intentionally LEAK the callable (raw owning pointer, never deleted).
+        // The C++ log store is a process-lifetime static; its sink must never be
+        // dec_ref'd from C++, because the store's static destructor runs at
+        // process exit -- after the interpreter/GIL is gone (notably in the
+        // embedded-eager runtime, which never calls Py_Finalize). Capturing a
+        // py::object (or a shared_ptr to one) would dec_ref it there without the
+        // GIL and abort. A single leaked callback is harmless. The sink is
+        // installed exactly once per process (by neml2.log at import), and it
+        // acquires the GIL before calling in (it may fire from a dispatcher
+        // worker thread that does not hold it).
+        auto * held = new py::object(std::move(cb));
         log::set_sink(
             [held](log::Level lvl, const std::string & line)
             {
