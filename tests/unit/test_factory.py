@@ -459,3 +459,92 @@ def test_normalize_load_target():
     # A concrete cuda index is preserved (pins a dispatcher Model to that GPU);
     # the ``torch.`` prefix on a dtype's ``str()`` is stripped.
     assert _normalize_load_target(torch.device("cuda", 1), torch.float32) == ("cuda:1", "float32")
+
+
+# ---------------------------------------------------------------------------
+# derived_output names are user-overridable by default: the default derived
+# name (referenced option + suffix, e.g. back_stress + _rate = back_stress_rate)
+# doubles as a HIT rename knob, with no per-model opt-in. See
+# neml2.schema._read_derived_var_name / HitSchema.reject_unknown_fields.
+# ---------------------------------------------------------------------------
+
+
+def _build_model(hit_text: str, name: str = "m"):
+    import nmhit
+
+    root = nmhit.parse_text(hit_text)
+    return _NativeInputFile(root, Path("synthetic.i")).get_model(name)
+
+
+def test_derived_output_name_override_at_construction():
+    """Setting the derived output's default name (``back_stress_rate``) renames
+    FredrickArmstrong's rate output. The computed value is unchanged; only the
+    name (output_spec key + the leaf's chain-rule output attr) moves."""
+    from neml2.types import SR2, Scalar
+
+    def build(extra: str):
+        return _build_model(
+            "[Models]\n  [m]\n    type = FredrickArmstrongPlasticHardening\n"
+            f"    C = 1000\n    g = 10\n{extra}  []\n[]\n"
+        )
+
+    default = build("")
+    renamed = build("    back_stress_rate = 'X_rate'\n")
+
+    assert "back_stress_rate" in default.output_spec
+    assert "X_rate" in renamed.output_spec
+    assert "back_stress_rate" not in renamed.output_spec
+    assert renamed._X_rate == "X_rate"
+    # An output rename leaves the inputs untouched.
+    assert set(renamed.input_spec) == set(default.input_spec)
+
+    gen = torch.Generator().manual_seed(7)
+    fr = Scalar(torch.rand((), generator=gen, dtype=torch.float64))
+    nm = SR2(torch.rand(6, generator=gen, dtype=torch.float64))
+    x = SR2(torch.rand(6, generator=gen, dtype=torch.float64))
+    assert torch.allclose(renamed(fr, nm, x).data, default(fr, nm, x).data, rtol=1e-12, atol=1e-12)
+
+
+def test_derived_output_override_independent_of_base_rename():
+    """The knob name is the static schema default (``back_stress_rate``) even
+    when the base input is renamed, and the explicit knob wins over the
+    ``base + suffix`` cascade (which would otherwise yield ``X_rate``)."""
+    m = _build_model(
+        "[Models]\n  [m]\n    type = FredrickArmstrongPlasticHardening\n"
+        "    C = 1000\n    g = 10\n"
+        "    back_stress = 'X'\n"
+        "    back_stress_rate = 'X_dot'\n  []\n[]\n"
+    )
+    assert "X" in m.input_spec
+    assert "back_stress" not in m.input_spec
+    assert "X_dot" in m.output_spec
+    assert "X_rate" not in m.output_spec
+    assert m._X_rate == "X_dot"
+
+
+def test_derived_output_residual_name_override():
+    """The ``_residual`` derived outputs on the implicit time integrators are
+    covered by the same framework knob (``variable_residual``) with zero
+    per-model changes."""
+    m = _build_model(
+        "[Models]\n  [m]\n    type = SR2BackwardEulerTimeIntegration\n"
+        "    variable = 'foo'\n"
+        "    variable_residual = 'my_resid'\n  []\n[]\n"
+    )
+    assert "my_resid" in m.output_spec
+    assert "foo_residual" not in m.output_spec
+    assert m._residual == "my_resid"
+
+
+def test_derived_output_knob_accepted_but_typo_rejected():
+    """The implicit rename knob is a recognized option, but a typo of it is
+    still a hard unknown-option error -- typos must not silently pass."""
+    _build_model(  # exact knob: no raise
+        "[Models]\n  [m]\n    type = FredrickArmstrongPlasticHardening\n"
+        "    C = 1000\n    g = 10\n    back_stress_rate = 'X_rate'\n  []\n[]\n"
+    )
+    with pytest.raises(ValueError, match=r"unknown option"):
+        _build_model(
+            "[Models]\n  [m]\n    type = FredrickArmstrongPlasticHardening\n"
+            "    C = 1000\n    g = 10\n    back_stress_rat = 'X_rate'\n  []\n[]\n"
+        )
