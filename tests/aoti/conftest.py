@@ -69,6 +69,14 @@ def _isolate_aoti_extract_temp(monkeypatch):
       file -- surfacing as torch's own nlohmann ``parse error ... empty input`` on
       the ``.pt2``'s metadata.
 
+    The Windows *within-a-single-test* variant of the collision (one test loads
+    two byte-identical model variants -- e.g. a direct vs. iterative sensitivity
+    solve of the same physics -- so the two ``.pyd`` extract to the same path and
+    the second sharing-violates) is handled at the C++ loader instead: ``make_loader``
+    (``neml2/csrc/aoti/Model.cpp``) gives every ``.pt2`` load its own unique temp
+    dir on Windows, which a per-*test* fixture cannot. This fixture stays for the
+    cross-test + parallel (POSIX metadata-race) isolation above and for cleanup.
+
     Point the system temp at a per-test scratch dir so each test (and each worker)
     extracts in isolation; torch reads the temp dir fresh per extraction, so the
     override takes effect. Use a SHORT ``mkdtemp`` under the real system temp, NOT

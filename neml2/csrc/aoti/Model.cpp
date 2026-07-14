@@ -35,7 +35,14 @@
 // include chain is what brings the glibc __assert_fail declaration into scope.
 #include "neml2/csrc/aoti/internal.h"
 
+#include <atomic>
+#include <cstdint>
+#include <cstdlib>
+#include <filesystem>
 #include <fstream>
+#include <mutex>
+#include <string>
+#include <system_error>
 
 #include <nlohmann/json.hpp>
 #include <torch/csrc/inductor/aoti_package/model_package_loader.h>
@@ -45,13 +52,109 @@ namespace neml2::aoti
 namespace
 {
 // TU-local helpers used only by the metadata-parsing constructor below.
+
+#ifdef _WIN32
+// Windows-only AOTI extraction-temp isolation.
+//
+// torch's `AOTIModelPackageLoader` extracts a `.pt2` archive straight into
+// `std::filesystem::temp_directory_path()` on Windows -- with NO unique
+// per-load subdirectory (unlike its POSIX path, which `mkdtemp()`s a fresh
+// `/tmp` dir per load) -- and `recursive_rmdir`s that same directory in its
+// destructor. Two loads of a byte-identical compiled segment (e.g. two model
+// variants that differ only in runtime solver config, whose `model_residual`
+// `.pt2` is identical) therefore resolve to the SAME
+// `%TEMP%\<pkg>\data\aotinductor\model\<hash>.wrapper.pyd`; the first load
+// keeps that `.pyd` (a loaded DLL) locked for the process lifetime, so the
+// second extraction fails with a Windows sharing violation ("error code: 32
+// ... file open failed").
+//
+// Give every loader its own unique temp dir for the duration of construction
+// (torch reads `%TMP%`/`%TEMP%` via `GetTempPath`), then restore the prior
+// environment. torch captures the now-unique dir as its `temp_dir_` and cleans
+// up only that subdir on destruction. Serialized by a mutex because the
+// override mutates process-global environment state: neml2 itself constructs
+// loaders serially, but a host embedding the runtime may not.
+//
+// POSIX needs none of this -- torch `mkdtemp()`s a unique `/tmp` dir per load
+// there (and ignores `TMPDIR`), so there is no shared extraction root to
+// collide on.
+class ScopedExtractTempDir
+{
+public:
+  ScopedExtractTempDir()
+  {
+    static std::atomic<std::uint64_t> counter{0};
+    _save("TMP", _old_tmp, _had_tmp);
+    _save("TEMP", _old_temp, _had_temp);
+    // Root the unique dir at the CURRENT temp so any outer override (e.g. a
+    // test harness's per-test scratch dir) is still honored.
+    const std::filesystem::path base = std::filesystem::temp_directory_path();
+    std::filesystem::path unique;
+    for (;;)
+    {
+      unique = base / ("neml2_aoti_" + std::to_string(counter.fetch_add(1)));
+      std::error_code ec;
+      if (std::filesystem::create_directory(unique, ec))
+        break; // fresh, ours
+      // Name already taken (stale dir, or a concurrent host process on the same
+      // base): try the next counter value.
+    }
+    const std::string s = unique.string();
+    _putenv_s("TMP", s.c_str());
+    _putenv_s("TEMP", s.c_str());
+  }
+
+  ~ScopedExtractTempDir()
+  {
+    _restore("TMP", _old_tmp, _had_tmp);
+    _restore("TEMP", _old_temp, _had_temp);
+  }
+
+  ScopedExtractTempDir(const ScopedExtractTempDir &) = delete;
+  ScopedExtractTempDir & operator=(const ScopedExtractTempDir &) = delete;
+
+private:
+  static void _save(const char * name, std::string & out, bool & had)
+  {
+    const char * v = std::getenv(name); // copy immediately: _putenv may invalidate it
+    had = (v != nullptr);
+    if (had)
+      out = v;
+  }
+  static void _restore(const char * name, const std::string & old, bool had)
+  {
+    // On Windows `_putenv_s(name, "")` deletes the variable; restore the prior
+    // value, or delete it if it was unset when we started.
+    _putenv_s(name, had ? old.c_str() : "");
+  }
+
+  std::string _old_tmp;
+  std::string _old_temp;
+  bool _had_tmp = false;
+  bool _had_temp = false;
+};
+
+std::mutex &
+extract_temp_mutex()
+{
+  static std::mutex m;
+  return m;
+}
+#endif // _WIN32
+
 // Build a loader with the consistent constructor args used across all AOTI
 // artifacts produced by neml2-compile. `device_index` is -1 for cpu artifacts
 // and cuda artifacts that target the current device; a concrete index pins a
-// cuda artifact onto a specific GPU (used by the multi-device dispatcher).
+// cuda artifact onto a specific GPU (used by the multi-device dispatcher). On
+// Windows each load is given its own extraction temp dir (see
+// ScopedExtractTempDir); on POSIX the construction is unchanged.
 std::unique_ptr<torch::inductor::AOTIModelPackageLoader>
 make_loader(const std::filesystem::path & path, int device_index = -1)
 {
+#ifdef _WIN32
+  const std::lock_guard<std::mutex> lock(extract_temp_mutex());
+  const ScopedExtractTempDir isolate_extract;
+#endif
   return std::make_unique<torch::inductor::AOTIModelPackageLoader>(path.string(),
                                                                    /*model_name=*/"model",
                                                                    /*run_single_threaded=*/false,
