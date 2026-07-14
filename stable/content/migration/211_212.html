@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Migrating from v2.1.1 to v2.1.2 - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Migrating from v2.0.0 to v2.1.0" href="200_210.html" /><link rel="prev" title="Migrating from v2.x to v3.0" href="212_300.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Migrating from v2.1.1 to v2.1.2 - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Migrating from v2.0.0 to v2.1.0" href="200_210.html" /><link rel="prev" title="Migrating from v2.x to v3.0" href="212_300.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -417,11 +426,11 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="migrating-from-v2-1-1-to-v2-1-2">
-<span id="migration-211-212"></span><h1>Migrating from v2.1.1 to v2.1.2<a class="headerlink" href="#migrating-from-v2-1-1-to-v2-1-2" title="Link to this heading">¶</a></h1>
+<span id="migration-211-212"></span><h1>Migrating from v2.1.1 to v2.1.2<a class="headerlink" href="#migrating-from-v2-1-1-to-v2-1-2" title="Link to this heading">#</a></h1>
 <section id="input-file-changes">
-<h2>Input file changes<a class="headerlink" href="#input-file-changes" title="Link to this heading">¶</a></h2>
+<h2>Input file changes<a class="headerlink" href="#input-file-changes" title="Link to this heading">#</a></h2>
 <section id="variable-naming-subspace-prefixes-removed">
-<span id="variable-naming"></span><h3>Variable naming: subspace prefixes removed<a class="headerlink" href="#variable-naming-subspace-prefixes-removed" title="Link to this heading">¶</a></h3>
+<span id="variable-naming"></span><h3>Variable naming: subspace prefixes removed<a class="headerlink" href="#variable-naming-subspace-prefixes-removed" title="Link to this heading">#</a></h3>
 <p>The most pervasive change in v2.1.2 is the removal of <code class="docutils literal notranslate"><span class="pre">LabeledAxis</span></code>.
 Variables no longer carry <code class="docutils literal notranslate"><span class="pre">state/</span></code>, <code class="docutils literal notranslate"><span class="pre">forces/</span></code>, <code class="docutils literal notranslate"><span class="pre">residual/</span></code>, or
 <code class="docutils literal notranslate"><span class="pre">state/internal/</span></code> prefixes anywhere in input files.</p>
@@ -431,7 +440,7 @@ Variables no longer carry <code class="docutils literal notranslate"><span class
 without any prefix.</p>
 </section>
 <section id="history-variables-renamed-n-suffix">
-<span id="history-naming"></span><h3>History variables renamed (<code class="docutils literal notranslate"><span class="pre">~N</span></code> suffix)<a class="headerlink" href="#history-variables-renamed-n-suffix" title="Link to this heading">¶</a></h3>
+<span id="history-naming"></span><h3>History variables renamed (<code class="docutils literal notranslate"><span class="pre">~N</span></code> suffix)<a class="headerlink" href="#history-variables-renamed-n-suffix" title="Link to this heading">#</a></h3>
 <p>“Old state” (history) variables, previously named under <code class="docutils literal notranslate"><span class="pre">old_state/</span></code>
 or <code class="docutils literal notranslate"><span class="pre">old_forces/</span></code> sub-axes, now use a <code class="docutils literal notranslate"><span class="pre">~N</span></code> suffix where <code class="docutils literal notranslate"><span class="pre">N</span></code> is the lag
 order:</p>
@@ -457,7 +466,7 @@ order:</p>
 update those names accordingly.</p>
 </section>
 <section id="nonlinearsystem-unknowns-is-now-required">
-<span id="nonlinearsystem-unknowns"></span><h3><code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code>: <code class="docutils literal notranslate"><span class="pre">unknowns</span></code> is now required<a class="headerlink" href="#nonlinearsystem-unknowns-is-now-required" title="Link to this heading">¶</a></h3>
+<span id="nonlinearsystem-unknowns"></span><h3><code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code>: <code class="docutils literal notranslate"><span class="pre">unknowns</span></code> is now required<a class="headerlink" href="#nonlinearsystem-unknowns-is-now-required" title="Link to this heading">#</a></h3>
 <p>In v2.1.1, <code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code> inferred its unknowns from the model’s
 <code class="docutils literal notranslate"><span class="pre">state</span></code> input sub-axis. In v2.1.2, you must list the unknown
 variables explicitly:</p>
@@ -494,7 +503,7 @@ unknown. Override with the <code class="docutils literal notranslate"><span clas
 </div>
 </section>
 <section id="sdtsolidmechanicsdriver-ldisolidmechanicsdriver-removed">
-<span id="sdt-ldi-removed"></span><h3><code class="docutils literal notranslate"><span class="pre">SDTSolidMechanicsDriver</span></code> / <code class="docutils literal notranslate"><span class="pre">LDISolidMechanicsDriver</span></code> removed<a class="headerlink" href="#sdtsolidmechanicsdriver-ldisolidmechanicsdriver-removed" title="Link to this heading">¶</a></h3>
+<span id="sdt-ldi-removed"></span><h3><code class="docutils literal notranslate"><span class="pre">SDTSolidMechanicsDriver</span></code> / <code class="docutils literal notranslate"><span class="pre">LDISolidMechanicsDriver</span></code> removed<a class="headerlink" href="#sdtsolidmechanicsdriver-ldisolidmechanicsdriver-removed" title="Link to this heading">#</a></h3>
 <p>These convenience driver types were removed. Use <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>
 directly and supply the strain/stress controls through the generic
 <code class="docutils literal notranslate"><span class="pre">force_SR2_*</span></code> options.</p>
@@ -529,7 +538,7 @@ pattern with the appropriate <code class="docutils literal notranslate"><span cl
 values for your control mode.</p>
 </section>
 <section id="predictor-moved-from-transientdriver-into-implicitupdate">
-<span id="predictor-migration"></span><h3>Predictor moved from <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code> into <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code><a class="headerlink" href="#predictor-moved-from-transientdriver-into-implicitupdate" title="Link to this heading">¶</a></h3>
+<span id="predictor-migration"></span><h3>Predictor moved from <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code> into <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code><a class="headerlink" href="#predictor-moved-from-transientdriver-into-implicitupdate" title="Link to this heading">#</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">predictor</span></code>, <code class="docutils literal notranslate"><span class="pre">custom_predictor</span></code>, and <code class="docutils literal notranslate"><span class="pre">custom_predictor_apply</span></code>
 options have been removed from <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>. Predictors are now
 ordinary model blocks in <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> and are referenced from
@@ -580,7 +589,7 @@ ordinary model blocks in <code class="docutils literal notranslate"><span class=
 </span></pre></div>
 </div>
 <section id="choosing-a-predictor-type">
-<h4>Choosing a predictor type<a class="headerlink" href="#choosing-a-predictor-type" title="Link to this heading">¶</a></h4>
+<h4>Choosing a predictor type<a class="headerlink" href="#choosing-a-predictor-type" title="Link to this heading">#</a></h4>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -646,13 +655,13 @@ ordinary model blocks in <code class="docutils literal notranslate"><span class=
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

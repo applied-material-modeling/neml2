@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>py-aoti — compiled model from Python - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="cpp-aoti — compiled model from C++" href="cpp_aoti.html" /><link rel="prev" title="py-jit — in-process torch.compile" href="py_jit.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>py-aoti — compiled model from Python - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="cpp-aoti — compiled model from C++" href="cpp_aoti.html" /><link rel="prev" title="py-jit — in-process torch.compile" href="py_jit.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -405,7 +414,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="py-aoti-compiled-model-from-python">
-<span id="py-aoti"></span><h1><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python<a class="headerlink" href="#py-aoti-compiled-model-from-python" title="Link to this heading">¶</a></h1>
+<span id="py-aoti"></span><h1><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> — compiled model from Python<a class="headerlink" href="#py-aoti-compiled-model-from-python" title="Link to this heading">#</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> runs a model that has already been lowered to an AOT-Inductor
 package (<code class="docutils literal notranslate"><span class="pre">.pt2</span></code> + metadata) by <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>, from Python — no NEML2
 source model, no Newton-in-Python, no recompile per call. Use it to deploy a
@@ -417,26 +426,38 @@ schema, parameter promotion, device/dtype pinning — is documented once in
 <a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a>; how to produce it and set up your environment is in
 <a class="reference internal" href="../deployment/python.html#python-integration"><span class="std std-ref">Python integration</span></a>. This page is the Python loading-and-calling API.</p>
 <section id="two-entry-points">
-<h2>Two entry points<a class="headerlink" href="#two-entry-points" title="Link to this heading">¶</a></h2>
+<h2>Two entry points<a class="headerlink" href="#two-entry-points" title="Link to this heading">#</a></h2>
 <p>To drive the artifact through the normal HIT machinery (e.g. a
-<code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>), load the stub with <code class="docutils literal notranslate"><span class="pre">neml2.load_model</span></code> — the <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code>
-shim resolves the per-device subfolder for the current default device:</p>
+<code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>), load the stub with <code class="docutils literal notranslate"><span class="pre">neml2.load_model</span></code>. The stub is
+device/dtype-agnostic (it only records the artifact-root <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code>),
+so which <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> leaf to load is a <strong>load-time</strong> decision — an
+AOTI artifact is device/dtype-pinned, unlike a native model you can <code class="docutils literal notranslate"><span class="pre">.to()</span></code>
+afterward. Pass <code class="docutils literal notranslate"><span class="pre">device</span></code> / <code class="docutils literal notranslate"><span class="pre">dtype</span></code> (a <code class="docutils literal notranslate"><span class="pre">torch.device</span></code> / <code class="docutils literal notranslate"><span class="pre">torch.dtype</span></code> or their
+string spellings); both default to NEML2’s canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code> — matching
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>, and deliberately <em>not</em> torch’s ambient defaults (whose float32
+would never match a stock float64 artifact):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;elasticity_aoti.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span>
+</span><span data-line="4">    <span class="s2">&quot;elasticity_aoti.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span>
+</span><span data-line="5"><span class="p">)</span>
 </span></pre></div>
 </div>
+<p>There is no silent fallback: if the requested <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> leaf was not
+compiled, the load raises and lists what <em>is</em> present (recompile with the
+matching <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">--device/--dtype</span></code>).</p>
 <p>To work against the bare runtime directly — raw-tensor calls, JVP,
 Jacobian, promoted-parameter mutation — construct <code class="docutils literal notranslate"><span class="pre">neml2.aoti.Model</span></code>
-from a per-device metadata path:</p>
+from the artifact root folder. The device and dtype are the same load-time
+choice, defaulting to <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.aoti</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">binding</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s2">&quot;aoti/elasticity/cpu/elasticity_meta.json&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">binding</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s2">&quot;aoti/elasticity&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
 <section id="call-surface">
-<h2>Call surface<a class="headerlink" href="#call-surface" title="Link to this heading">¶</a></h2>
+<h2>Call surface<a class="headerlink" href="#call-surface" title="Link to this heading">#</a></h2>
 <p>The bare runtime centers on three call paths plus introspection properties
 (<code class="docutils literal notranslate"><span class="pre">input_names</span></code>, <code class="docutils literal notranslate"><span class="pre">output_names</span></code>, <code class="docutils literal notranslate"><span class="pre">input_base_shapes</span></code>, <code class="docutils literal notranslate"><span class="pre">output_base_shapes</span></code>,
 <code class="docutils literal notranslate"><span class="pre">parameter_base_shapes</span></code> — the promoted parameters’ base shapes keyed by
@@ -503,7 +524,7 @@ available via <code class="docutils literal notranslate"><span class="pre">neml2
 other model (see <a class="reference internal" href="../deployment/cli.html#cli-neml2-inspect"><span class="std std-ref">neml2-inspect</span></a>).</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a> — the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> package format this route loads.</p></li>
 <li><p><a class="reference internal" href="../deployment/python.html#python-integration"><span class="std std-ref">Python integration</span></a> — installing neml2 and obtaining a compiled package.</p></li>
@@ -551,13 +572,13 @@ other model (see <a class="reference internal" href="../deployment/cli.html#cli-
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

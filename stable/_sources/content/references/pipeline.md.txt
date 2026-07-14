@@ -152,6 +152,28 @@ inputs from that map. The shared map plus topological order is
 what lets a multi-segment artifact present a single forward
 contract to the loader.
 
+The segments are coupled **only** at runtime, through that state map;
+their compiles are independent. `neml2-compile -j N` therefore flattens
+the whole `(device × segment)` grid into a single spawn process pool of up
+to `N` workers — each worker re-derives its assigned segment from the input
+file (live models can't cross the process boundary), and the per-segment
+metadata is reassembled in segment order so the emitted artifacts are
+identical to a serial run. Because the grid spans devices, a
+`--device cpu cuda` build of a two-segment model saturates `-j 4` (and the
+devices compile concurrently); `N` is capped at the number of grid cells.
+Only work that actually partitions benefits — a single-segment model on one
+device has one cell, so `-j` is a no-op there. With `--device cuda` each
+worker initializes its own CUDA context and invokes the CUDA compiler, so a
+`cpu`-target and a `cuda`-target compile running at once share CPU cores;
+watch memory when raising `N`.
+
+The set of segments — and every file the compile will produce — can be
+enumerated ahead of time, without compiling, via
+`neml2.cli.aoti_export.plan_export_artifacts`. `neml2-compile` uses it to
+size the `[k/N]` per-file progress it prints as each `.pt2`
+(each tagged with its device, e.g. `cpu/float64/model_seg0.pt2`),
+the shared `metadata.json`, and the optional `_aoti.i` stub is written.
+
 ## Stage 7 — Trace, lower, package
 
 Each segment routes through the project's `torch.export` adapter — a
@@ -186,23 +208,35 @@ requested with `-d/--derivative` (none by default). **Forward segments**
 always lower a value graph and, when a requested pair runs through them, a
 per-variable-pair `jvp` graph emitting just the on-path blocks — a block
 that does not depend on the dynamic batch is traced, and returned,
-unbatched. **Implicit segments** always lower a Newton residual and a
-fused assemble + solve + update step (plus an optional predictor), and
+unbatched. **Implicit segments** lower a Newton residual plus the
+operators the linear solve needs (the solve is **un-baked** from the
+operator — the C++ runtime chains them per Newton iteration), and
 additionally an implicit-function-theorem sensitivity graph only when a
-requested pair's derivative path runs through them. The implicit-segment
-graphs forward to whichever linear solver the source model is configured
-with (`DenseLU` for the common single-group case; `SchurComplement` for
-the `BLOCK + DENSE` 2-group factorisation).
+requested pair's derivative path runs through them. Which forward-solve
+graphs are lowered depends on the source model's linear solver:
+
+- a **direct** solver (`DenseLU` for the common single-group case;
+  `SchurComplement` for the `BLOCK + DENSE` 2-group factorisation) lowers
+  a residual-Jacobian operator (`A = ∂r/∂u`) + a `solve` graph
+  (`du = A^{-1} b`);
+- a **matrix-free Krylov** solver (`GMRES` / `BiCGStab`) lowers a `matvec`
+  graph (`J·v = ∂r/∂u·v`) that the C++ runtime drives a batched Krylov
+  iteration over, never assembling `A`. A preconditioner (an authored
+  `[Solvers]` `JacobiPreconditioner` / `BlockJacobiPreconditioner` /
+  `FullPreconditioner` referenced by the solver) additionally lowers a
+  `precond_setup` + `precond_apply` graph pair; the standalone Jacobian
+  operator is lowered only when an input derivative needs it.
 
 The C++ orchestrator sees the same flat `(u_flat, g_flat) →
 (u_new, b_new)` contract either way — the multi-group / sub-batch
-structure is internal to the `.pt2`.
+structure, and the direct-vs-iterative linear solve, are internal to the
+segment's graphs + `solver_config`.
 
 ## After export: emit the HIT stub
 
-Once each device's metadata JSON and `.pt2` graphs have been
-written, the exporter rewrites the source HIT file into a standalone
-stub:
+Once the metadata JSON and `.pt2` graphs have been written, the
+exporter optionally rewrites the source HIT file into a standalone
+stub (suppressed by `--no-stub`):
 
 - find the top-level `[Models]` block containing the target model
   (HIT allows multiple `[Models]` blocks — all of them are walked);
@@ -211,28 +245,23 @@ stub:
   unrelated `[Models]` entries are dropped — they're unreachable
   from the shim at runtime;
 - point the shim at the compiled artifact via an absolute
-  `artifact_path` field (the `<model>/` folder holding one
-  `<device>/` subfolder per compiled device);
+  `artifact_path` field (the `<model>/` artifact root folder);
 - carry `[Settings]` (with the legacy `aoti_*` keys stripped, since
   they would fail the v3 factory's strict-key check) and `[Tensors]`
   from the original; keep `[Drivers]` only in `--driver` mode; drop
-  `[Data]` and `[EquationSystems]` (their state is baked into the
-  `.pt2`);
-- for an implicit model, carry a *minimal* `[Solvers]` block — only
-  the implicit model's solver, and only its honored convergence /
-  line-search knobs — and reference it from the shim via a
-  `solver = <name>` field. The `linear_solver` field is dropped on
-  purpose: it is baked into the compiled step / IFT graphs, so
-  editing it in the stub would have no effect.
+  `[Data]`, `[EquationSystems]`, and `[Solvers]` — their state is
+  baked into the `.pt2` or the `metadata.json` `solver_config`.
 
 The stub is written to `<output-dir>/<model>_aoti.i`, *next to* (not
-inside) the `<output-dir>/<model>/` artifact folder. Because the
-`artifact_path` is recorded as an absolute path, the stub is
-standalone but **not relocatable**: moving the artifacts requires
-recompiling (or hand-editing the path). The loader (the Python shim
-or the C++ `load_model`) resolves
-`<artifact_path>/<device>/<model>_meta.json` for the device it runs
-on.
+inside) the `<output-dir>/<model>/` artifact folder. The `artifact_path`
+is recorded **relative to the stub** (usually just the folder name), so
+the stub and its artifact folder form a **portable bundle**: move the two
+together — to another directory, machine, or user — and it still loads,
+no recompile or path edit needed. (Moving the stub away from its folder
+is intentionally unsupported.) The loader (the Python shim or the C++
+`load_model`) resolves the relative `artifact_path` against the stub's
+directory, reads `<artifact_path>/metadata.json`, and resolves
+`<artifact_path>/<device>/<dtype>/` for the device and dtype it runs on.
 
 ## See also
 

@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.models.resolver - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="neml2.types" href="neml2.types.html" /><link rel="prev" title="neml2.models.chain_rule" href="neml2.models.chain_rule.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.models.resolver - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="neml2.types" href="neml2.types.html" /><link rel="prev" title="neml2.models.chain_rule" href="neml2.models.chain_rule.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -372,10 +381,10 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#neml2.models.resolver.DependencyResolver"><code class="docutils literal notranslate"><span class="pre">DependencyResolver</span></code></a><ul>
-<li><a class="reference internal" href="#neml2.models.resolver.DependencyResolver.add_node"><code class="docutils literal notranslate">add_node()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.resolver.DependencyResolver.inbound_items"><code class="docutils literal notranslate">inbound_items()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.resolver.DependencyResolver.outbound_items"><code class="docutils literal notranslate">outbound_items()</span></code></a></li>
-<li><a class="reference internal" href="#neml2.models.resolver.DependencyResolver.resolve"><code class="docutils literal notranslate">resolve()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.resolver.DependencyResolver.add_node"><code class="docutils literal notranslate"><span class="pre">DependencyResolver.add_node()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.resolver.DependencyResolver.inbound_items"><code class="docutils literal notranslate"><span class="pre">DependencyResolver.inbound_items()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.resolver.DependencyResolver.outbound_items"><code class="docutils literal notranslate"><span class="pre">DependencyResolver.outbound_items()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.models.resolver.DependencyResolver.resolve"><code class="docutils literal notranslate"><span class="pre">DependencyResolver.resolve()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -413,7 +422,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="module-neml2.models.resolver">
-<span id="neml2-models-resolver"></span><h1>neml2.models.resolver<a class="headerlink" href="#module-neml2.models.resolver" title="Link to this heading">¶</a></h1>
+<span id="neml2-models-resolver"></span><h1>neml2.models.resolver<a class="headerlink" href="#module-neml2.models.resolver" title="Link to this heading">#</a></h1>
 <p>DependencyResolver — topological sort of <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> nodes.</p>
 <p>Python equivalent of the C++ <code class="docutils literal notranslate"><span class="pre">DependencyResolver&lt;Model*,</span> <span class="pre">VariableName&gt;</span></code>
 template in <code class="docutils literal notranslate"><span class="pre">include/neml2/models/DependencyResolver.h</span></code>. Variable matching
@@ -421,7 +430,7 @@ is exact string equality, mirroring the C++ behaviour. Cycle detection and
 duplicate-provider validation are both enforced.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.models.resolver.DependencyResolver">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.models.resolver.</span></span><span class="sig-name descname"><span class="pre">DependencyResolver</span></span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.models.resolver.</span></span><span class="sig-name descname"><span class="pre">DependencyResolver</span></span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Resolve execution order for a collection of <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> nodes.</p>
 <p>A model A is a dependency of model B if A’s <code class="docutils literal notranslate"><span class="pre">provided_items</span></code> intersects
@@ -433,7 +442,7 @@ Kahn’s BFS algorithm.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.models.resolver.DependencyResolver.add_node">
-<span class="sig-name descname"><span class="pre">add_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver.add_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver.add_node" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver.add_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver.add_node" title="Link to this definition">#</a></dt>
 <dd><p>Register a model as a node in the dependency graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -447,7 +456,7 @@ Kahn’s BFS algorithm.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.models.resolver.DependencyResolver.inbound_items">
-<span class="sig-name descname"><span class="pre">inbound_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver.inbound_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver.inbound_items" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">inbound_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver.inbound_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver.inbound_items" title="Link to this definition">#</a></dt>
 <dd><p>Variables that need to flow in from outside the composed model.</p>
 <p>A name X is inbound iff at least one consumer of X has no
 earlier-in-execution-order model that provides X. This is the
@@ -475,7 +484,7 @@ inbound from the chain’s perspective.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.models.resolver.DependencyResolver.outbound_items">
-<span class="sig-name descname"><span class="pre">outbound_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver.outbound_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver.outbound_items" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">outbound_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver.outbound_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver.outbound_items" title="Link to this definition">#</a></dt>
 <dd><p>Variables to expose as the composed model’s outputs.</p>
 <p>Default: variables whose final producer in <em>order</em> (the priority
 winner when multiple models provide the same name) isn’t consumed
@@ -502,7 +511,7 @@ external consumption of the winner’s output.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.models.resolver.DependencyResolver.resolve">
-<span class="sig-name descname"><span class="pre">resolve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver.resolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver.resolve" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">resolve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/models/resolver.html#DependencyResolver.resolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.models.resolver.DependencyResolver.resolve" title="Link to this definition">#</a></dt>
 <dd><p>Return models sorted so every dependency runs before its consumer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
@@ -557,13 +566,13 @@ external consumption of the winner’s output.</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

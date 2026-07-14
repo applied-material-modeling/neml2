@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KWN (precipitation kinetics) - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="316H two-phase precipitation (carbide + Laves)" href="precipitation_316h.html" /><link rel="prev" title="Finite volume" href="../finite_volume.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KWN (precipitation kinetics) - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="316H two-phase precipitation (carbide + Laves)" href="precipitation_316h.html" /><link rel="prev" title="Finite volume" href="../finite_volume.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -422,9 +431,9 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="kwn-precipitation-kinetics">
-<span id="modules-kwn"></span><h1>KWN (precipitation kinetics)<a class="headerlink" href="#kwn-precipitation-kinetics" title="Link to this heading">¶</a></h1>
+<span id="modules-kwn"></span><h1>KWN (precipitation kinetics)<a class="headerlink" href="#kwn-precipitation-kinetics" title="Link to this heading">#</a></h1>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
 <p>The KWN module is a collection of <code class="docutils literal notranslate"><span class="pre">Model</span></code> primitives for composing
 Kampmann–Wagner Numerical (KWN) models of precipitation, growth, and
 coarsening in a multi-component matrix. KWN models track a discretized
@@ -444,7 +453,7 @@ velocity and source term off to the generic finite-volume advection
 machinery.</p>
 </section>
 <section id="math">
-<h2>Math<a class="headerlink" href="#math" title="Link to this heading">¶</a></h2>
+<h2>Math<a class="headerlink" href="#math" title="Link to this heading">#</a></h2>
 <p>The size distribution of precipitate <span class="math notranslate nohighlight">\((j)\)</span> is discretized into
 finite-volume bins on the radius axis. Subscripts <span class="math notranslate nohighlight">\(i\)</span> index the radius
 bin (with center <span class="math notranslate nohighlight">\(R^{(j)}_i\)</span> and width
@@ -454,7 +463,7 @@ concentrations are stored as mole fractions <span class="math notranslate nohigh
 <span class="math notranslate nohighlight">\(\mathcal{S} = \bigcup_j \mathcal{S}_j\)</span> of species that participate in
 any precipitate reaction.</p>
 <section id="mass-conservation">
-<h3>Mass conservation<a class="headerlink" href="#mass-conservation" title="Link to this heading">¶</a></h3>
+<h3>Mass conservation<a class="headerlink" href="#mass-conservation" title="Link to this heading">#</a></h3>
 <p>The volume fraction of precipitate <span class="math notranslate nohighlight">\((j)\)</span> is the third moment of its
 number-density distribution,</p>
 <div class="math-wrapper docutils container">
@@ -480,7 +489,7 @@ x^\infty_k =
 precipitate volume fraction is assumed to be zero.</p>
 </section>
 <section id="population-balance">
-<h3>Population balance<a class="headerlink" href="#population-balance" title="Link to this heading">¶</a></h3>
+<h3>Population balance<a class="headerlink" href="#population-balance" title="Link to this heading">#</a></h3>
 <p>Each precipitate population evolves according to a 1D advection
 equation in radius space with a nucleation source on the right,</p>
 <div class="math-wrapper docutils container">
@@ -498,7 +507,7 @@ advective flux, applies boundary conditions, and takes the divergence
 to recover <span class="math notranslate nohighlight">\(\partial n^{(j)}/\partial t\)</span>.</p>
 </section>
 <section id="growth-rate">
-<h3>Growth rate<a class="headerlink" href="#growth-rate" title="Link to this heading">¶</a></h3>
+<h3>Growth rate<a class="headerlink" href="#growth-rate" title="Link to this heading">#</a></h3>
 <p>Two growth-rate forms are provided.</p>
 <p>The simpler <strong>rate-limited</strong> form solves for a single rate-limiting
 species <span class="math notranslate nohighlight">\(\star \in \mathcal{S}_j\)</span>,</p>
@@ -516,9 +525,9 @@ growth rate vanishes as <span class="math notranslate nohighlight">\(x^\infty_\s
 <p>The more general <strong>SFFK</strong> form (Svoboda–Fischer–Fratzl–Kozeschnik)
 handles multi-component diffusion in the dilute, diffusion-limited
 regime,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-146a7525-12fc-4d23-8a7d-b9ce6159efc3">
-<div class="amsmath math notranslate nohighlight" id="equation-146a7525-12fc-4d23-8a7d-b9ce6159efc3">
-<span class="eqno">(6)<a class="headerlink" href="#equation-146a7525-12fc-4d23-8a7d-b9ce6159efc3" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-8f5d7066-e271-4798-b75e-0692194bc446">
+<div class="amsmath math notranslate nohighlight" id="equation-8f5d7066-e271-4798-b75e-0692194bc446">
+<span class="eqno">(6)<a class="headerlink" href="#equation-8f5d7066-e271-4798-b75e-0692194bc446" title="Permalink to this equation">#</a></span>\[\begin{align}
 \dot{R}^{(j)} &amp;= \frac{1}{R^{(j)}} \,
   \frac{\Delta G^{(j)}_{\text{chem}}
       + \Delta G^{(j)}_{\text{surf}}
@@ -531,9 +540,9 @@ S^{(j)} &amp;= \sum_{k \in \mathcal{S}_j}
 <p>with <span class="math notranslate nohighlight">\(\Delta x^{(j)}_k = x^{(j)}_k - x^{*,(j)}_k\)</span> and <span class="math notranslate nohighlight">\(D_k\)</span> the matrix
 diffusivity of species <span class="math notranslate nohighlight">\(k\)</span>. The driving force is split into chemical,
 surface, and elastic contributions:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-ff5cd191-5640-4c21-8d26-d765da5aca36">
-<div class="amsmath math notranslate nohighlight" id="equation-ff5cd191-5640-4c21-8d26-d765da5aca36">
-<span class="eqno">(7)<a class="headerlink" href="#equation-ff5cd191-5640-4c21-8d26-d765da5aca36" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-3dbdb878-0c58-4713-8374-78f67f4b3adc">
+<div class="amsmath math notranslate nohighlight" id="equation-3dbdb878-0c58-4713-8374-78f67f4b3adc">
+<span class="eqno">(7)<a class="headerlink" href="#equation-3dbdb878-0c58-4713-8374-78f67f4b3adc" title="Permalink to this equation">#</a></span>\[\begin{align}
 \Delta G^{(j)}_{\text{chem}} &amp;=
   \sum_{k \in \mathcal{S}_j} \Delta x^{(j)}_k
   \bigl[\mu^{\text{matrix}}_k(x^\infty) - \mu^{\text{equil},(j)}_k\bigr],
@@ -553,7 +562,7 @@ with shear modulus <span class="math notranslate nohighlight">\(\mu\)</span> and
 matrix hydrostatic stress.</p>
 </section>
 <section id="nucleation-flux">
-<h3>Nucleation flux<a class="headerlink" href="#nucleation-flux" title="Link to this heading">¶</a></h3>
+<h3>Nucleation flux<a class="headerlink" href="#nucleation-flux" title="Link to this heading">#</a></h3>
 <p>Nucleation deposits new precipitates at the critical radius,</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -565,9 +574,9 @@ J^{(j)}_{\text{nuc}} =
 \]</div>
 </div>
 <p>with the classical-nucleation-theory expressions</p>
-<div class="math-wrapper amsmath docutils container" id="equation-e0eed136-d472-4f08-af17-ba077adaec7f">
-<div class="amsmath math notranslate nohighlight" id="equation-e0eed136-d472-4f08-af17-ba077adaec7f">
-<span class="eqno">(8)<a class="headerlink" href="#equation-e0eed136-d472-4f08-af17-ba077adaec7f" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-ea098a5e-a902-490e-95b6-9bd02b362161">
+<div class="amsmath math notranslate nohighlight" id="equation-ea098a5e-a902-490e-95b6-9bd02b362161">
+<span class="eqno">(8)<a class="headerlink" href="#equation-ea098a5e-a902-490e-95b6-9bd02b362161" title="Permalink to this equation">#</a></span>\[\begin{align}
 R^{(j)}_{\text{crit}} &amp;=
   \frac{2 \gamma^{(j)} V_m^{(j)}}{\Delta g^{(j)}_v}, \\
 \Delta G^{*,(j)} &amp;=
@@ -608,7 +617,7 @@ which deposits the entire flux magnitude into the smallest bin.</p>
 </section>
 </section>
 <section id="catalog">
-<h2>Catalog<a class="headerlink" href="#catalog" title="Link to this heading">¶</a></h2>
+<h2>Catalog<a class="headerlink" href="#catalog" title="Link to this heading">#</a></h2>
 <p>The KWN module exposes the following primitives, each implementing
 one of the equations above. They are designed to be composed inside a
 <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code> (typically driven by an <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>) rather than
@@ -659,7 +668,7 @@ used in isolation.</p>
 </div>
 </section>
 <section id="example-growth-only-alcu">
-<h2>Example: growth-only Al–Cu<a class="headerlink" href="#example-growth-only-alcu" title="Link to this heading">¶</a></h2>
+<h2>Example: growth-only Al–Cu<a class="headerlink" href="#example-growth-only-alcu" title="Link to this heading">#</a></h2>
 <p>The input below is the growth-only Al–Cu regression case
 <code class="docutils literal notranslate"><span class="pre">tests/regression/kwn/growth-only-scaled/model.i</span></code>. A uniform grid in a
 scaled radius coordinate <span class="math notranslate nohighlight">\(\xi \in [0, 1]\)</span> is mapped to a semi-infinite
@@ -901,7 +910,7 @@ advanced in time by an <code class="docutils literal notranslate"><span class="p
 </span></pre></div>
 </div>
 <section id="walkthrough">
-<h3>Walkthrough<a class="headerlink" href="#walkthrough" title="Link to this heading">¶</a></h3>
+<h3>Walkthrough<a class="headerlink" href="#walkthrough" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="../../../generated/syntax/Models/kwn/PrecipitateVolumeFraction.html#models-precipitatevolumefraction"><span class="std std-ref">PrecipitateVolumeFraction</span></a> (<code class="docutils literal notranslate"><span class="pre">volume_fraction</span></code>) integrates
 the <em>physical</em> number density <code class="docutils literal notranslate"><span class="pre">true_number_density</span></code> over the
@@ -953,7 +962,7 @@ into the smallest bin and added to the flux divergence via a
 </section>
 </section>
 <section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h2>
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
 <p>End-to-end examples live in <code class="docutils literal notranslate"><span class="pre">tests/regression/kwn/</span></code>:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">growth-only-scaled/</span></code> — single-species growth with a tabulated
@@ -966,7 +975,7 @@ scaling).</p></li>
 </ul>
 </section>
 <section id="worked-examples">
-<h2>Worked examples<a class="headerlink" href="#worked-examples" title="Link to this heading">¶</a></h2>
+<h2>Worked examples<a class="headerlink" href="#worked-examples" title="Link to this heading">#</a></h2>
 <p>End-to-end notebooks that compose this catalog into full precipitation
 models and run them:</p>
 <div class="toctree-wrapper compound">
@@ -977,7 +986,7 @@ models and run them:</p>
 </div>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../finite_volume.html#modules-finite-volume"><span class="std std-ref">Finite volume</span></a> — radius-space advection, boundary
 conditions, and <code class="docutils literal notranslate"><span class="pre">DumpInSmallestBin</span></code> that the KWN catalog plugs into.</p></li>
@@ -1031,13 +1040,13 @@ listed in the catalog table above.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>

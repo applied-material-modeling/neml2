@@ -211,15 +211,7 @@
    "id": "listpkg",
    "metadata": {},
    "outputs": [],
-   "source": [
-    "import zipfile\n",
-    "\n",
-    "pt2 = \"aoti/eq/cpu/eq.pt2\"\n",
-    "with zipfile.ZipFile(pt2) as z:\n",
-    "    for name in z.namelist():\n",
-    "        if name.endswith((\".cpp\", \".so\")):\n",
-    "            print(name.split(\"/\")[-1])"
-   ]
+   "source": "import zipfile\n\npt2 = \"aoti/eq/cpu/float64/eq.pt2\"\nwith zipfile.ZipFile(pt2) as z:\n    for name in z.namelist():\n        if name.endswith((\".cpp\", \".so\")):\n            print(name.split(\"/\")[-1])"
   },
   {
    "cell_type": "markdown",
@@ -303,37 +295,7 @@
    "cell_type": "markdown",
    "id": "cuda",
    "metadata": {},
-   "source": [
-    "## What changes when we compile for the GPU\n",
-    "\n",
-    "This notebook compiled for the CPU, so the kernel above is C++. Targeting CUDA\n",
-    "(`neml2-compile --device cuda`, which additionally needs `nvcc`) reuses the\n",
-    "*same* captured FX graph but lowers it differently. A few things worth knowing:\n",
-    "\n",
-    "- **Same capture, different codegen.** Stage 1 (the FX graph) is identical —\n",
-    "  capture is device-agnostic. Only Stage 2 changes: Inductor emits **Triton** GPU\n",
-    "  kernels instead of C++, then the same optimization passes (CSE, fusion,\n",
-    "  vectorization) run against the GPU cost model.\n",
-    "- **Fusion matters more — kernel launch cost.** Every GPU kernel launch carries a\n",
-    "  fixed overhead (microseconds). Fusing the three rates into one kernel means one\n",
-    "  launch instead of several; at small-to-moderate batch sizes, where there isn't\n",
-    "  enough arithmetic to hide it, launch overhead can dominate — so fewer, larger\n",
-    "  kernels pay off more than on CPU.\n",
-    "- **Fewer temporaries, less memory traffic.** GPUs are usually\n",
-    "  memory-bandwidth-bound. Fusion keeps intermediates like $t - t_n$ in registers\n",
-    "  instead of writing them out to global memory and reading them back; that means\n",
-    "  fewer temporary buffers and less round-tripping to HBM, which is frequently the\n",
-    "  real bottleneck rather than the arithmetic itself.\n",
-    "- **Autotuning.** At compile time Inductor *autotunes* each Triton kernel —\n",
-    "  block sizes, tiling, the number of warps — by benchmarking candidate\n",
-    "  configurations for the target shape and keeping the fastest. It's a one-time\n",
-    "  compile cost baked into the artifact. CUDA-graph capture (replaying a whole\n",
-    "  launch sequence as one unit) is also available for launch-bound graphs.\n",
-    "- **Same artifact contract.** The result is still a `.pt2`, just holding a CUDA\n",
-    "  `.so`; `--device cpu cuda` builds both and the loader picks the folder matching\n",
-    "  the runtime device (see [](tutorials-models-compiled)). Device and dtype are\n",
-    "  pinned at compile time."
-   ]
+   "source": "## What changes when we compile for the GPU\n\nThis notebook compiled for the CPU, so the kernel above is C++. Targeting CUDA\n(`neml2-compile --device cuda`, which additionally needs `nvcc`) reuses the\n*same* captured FX graph but lowers it differently. A few things worth knowing:\n\n- **Same capture, different codegen.** Stage 1 (the FX graph) is identical —\n  capture is device-agnostic. Only Stage 2 changes: Inductor emits **Triton** GPU\n  kernels instead of C++, then the same optimization passes (CSE, fusion,\n  vectorization) run against the GPU cost model.\n- **Fusion matters more — kernel launch cost.** Every GPU kernel launch carries a\n  fixed overhead (microseconds). Fusing the three rates into one kernel means one\n  launch instead of several; at small-to-moderate batch sizes, where there isn't\n  enough arithmetic to hide it, launch overhead can dominate — so fewer, larger\n  kernels pay off more than on CPU.\n- **Fewer temporaries, less memory traffic.** GPUs are usually\n  memory-bandwidth-bound. Fusion keeps intermediates like $t - t_n$ in registers\n  instead of writing them out to global memory and reading them back; that means\n  fewer temporary buffers and less round-tripping to HBM, which is frequently the\n  real bottleneck rather than the arithmetic itself.\n- **Autotuning.** At compile time Inductor *autotunes* each Triton kernel —\n  block sizes, tiling, the number of warps — by benchmarking candidate\n  configurations for the target shape and keeping the fastest. It's a one-time\n  compile cost baked into the artifact. CUDA-graph capture (replaying a whole\n  launch sequence as one unit) is also available for launch-bound graphs.\n- **Same artifact contract.** The result is still a `.pt2`, just holding a CUDA\n  `.so`; `--device cpu cuda` builds both under sibling `<device>/<dtype>/` leaves,\n  and the load-time `device`/`dtype` pick which one (see\n  [](tutorials-models-compiled)). Device and dtype are pinned at compile time."
   },
   {
    "cell_type": "markdown",

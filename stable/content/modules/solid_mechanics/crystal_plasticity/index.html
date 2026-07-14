@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Crystal plasticity - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Crystal plasticity formulations" href="formulations.html" /><link rel="prev" title="Plasticity" href="../plasticity.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Crystal plasticity - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Crystal plasticity formulations" href="formulations.html" /><link rel="prev" title="Plasticity" href="../plasticity.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -416,13 +425,13 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="crystal-plasticity">
-<span id="modules-solid-mechanics-crystal-plasticity"></span><h1>Crystal plasticity<a class="headerlink" href="#crystal-plasticity" title="Link to this heading">¶</a></h1>
+<span id="modules-solid-mechanics-crystal-plasticity"></span><h1>Crystal plasticity<a class="headerlink" href="#crystal-plasticity" title="Link to this heading">#</a></h1>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
 <p>Crystal plasticity in NEML2 is built around an incremental, rate-form view of single-crystal kinematics: a forward operator that, given the current spatial velocity gradient, integrates the elastic stretch, the lattice orientation, and any internal hardening variables forward in time. The crystal-plasticity catalog carves this physics into reusable primitives — kinematic operators (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/ElasticStrainRate.html#models-elasticstrainrate"><span class="std std-ref">ElasticStrainRate</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/OrientationRate.html#models-orientationrate"><span class="std std-ref">OrientationRate</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticDeformationRate.html#models-plasticdeformationrate"><span class="std std-ref">PlasticDeformationRate</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticVorticity.html#models-plasticvorticity"><span class="std std-ref">PlasticVorticity</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PlasticSpatialVelocityGradient.html#models-plasticspatialvelocitygradient"><span class="std std-ref">PlasticSpatialVelocityGradient</span></a>), constitutive maps from stress to resolved shear (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/ResolvedShear.html#models-resolvedshear"><span class="std std-ref">ResolvedShear</span></a>) and from internal state to slip strength (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/SingleSlipStrengthMap.html#models-singleslipstrengthmap"><span class="std std-ref">SingleSlipStrengthMap</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.html#models-dislocationobstaclestrengthmap"><span class="std std-ref">DislocationObstacleStrengthMap</span></a>), slip kinetics (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PowerLawSlipRule.html#models-powerlawsliprule"><span class="std std-ref">PowerLawSlipRule</span></a>), and hardening laws (<a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.html#models-linearsinglesliphardeningrule"><span class="std std-ref">LinearSingleSlipHardeningRule</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.html#models-vocesinglesliphardeningrule"><span class="std std-ref">VoceSingleSlipHardeningRule</span></a>, <a class="reference internal" href="../../../../generated/syntax/Models/solid_mechanics/crystal_plasticity/PerSlipForestDislocationEvolution.html#models-perslipforestdislocationevolution"><span class="std std-ref">PerSlipForestDislocationEvolution</span></a>). The crystal geometry itself (slip systems, twin systems) is generated by an ancillary <a class="reference internal" href="../../../../generated/syntax/Data/CubicCrystal.html#data-cubiccrystal"><span class="std std-ref">CubicCrystal</span></a> data object, so users specify Miller indices, not enumerated slip systems.</p>
 </section>
 <section id="math">
-<h2>Math<a class="headerlink" href="#math" title="Link to this heading">¶</a></h2>
+<h2>Math<a class="headerlink" href="#math" title="Link to this heading">#</a></h2>
 <p>The fundamental kinematics derive from the multiplicative split of the deformation gradient:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -451,9 +460,9 @@ l = \dot{\varepsilon} + \Omega^e - \Omega^e \varepsilon + \varepsilon \Omega^e +
 </ol>
 <p>The first holds well for metal plasticity; the second can break down at very high strain rates.</p>
 <p>Defining the current orientation as the composition of the initial lattice rotation <span class="math notranslate nohighlight">\(Q_0\)</span> with the elastic rotation, <span class="math notranslate nohighlight">\(Q = R^e Q_0\)</span>, the elastic spin reduces to <span class="math notranslate nohighlight">\(\Omega^e = \dot{Q} Q^T\)</span>. Splitting the spatial velocity gradient into symmetric and skew parts (<span class="math notranslate nohighlight">\(l = d + w\)</span>, <span class="math notranslate nohighlight">\(l^p = d^p + w^p\)</span>) and rearranging yields the two governing rate equations integrated by this module:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-71bbda9c-7e85-458e-9465-de97fa18e5cc">
-<div class="amsmath math notranslate nohighlight" id="equation-71bbda9c-7e85-458e-9465-de97fa18e5cc">
-<span class="eqno">(18)<a class="headerlink" href="#equation-71bbda9c-7e85-458e-9465-de97fa18e5cc" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-69edee58-0033-4c89-a9b2-c0bd38dbff83">
+<div class="amsmath math notranslate nohighlight" id="equation-69edee58-0033-4c89-a9b2-c0bd38dbff83">
+<span class="eqno">(18)<a class="headerlink" href="#equation-69edee58-0033-4c89-a9b2-c0bd38dbff83" title="Permalink to this equation">#</a></span>\[\begin{align}
   \dot{\varepsilon} &amp;= d - d^p - \varepsilon w + w \varepsilon \\
   \dot{Q} &amp;= \left(w - w^p - \varepsilon d^p + d^p \varepsilon\right) Q.
 \end{align}\]</div>
@@ -486,10 +495,10 @@ l^p = \sum_{i=1}^{n_\mathrm{slip}} \dot{\gamma}_i \, Q \left(d_i \otimes n_i\rig
 </div>
 </section>
 <section id="example-model-composition">
-<h2>Example model composition<a class="headerlink" href="#example-model-composition" title="Link to this heading">¶</a></h2>
+<h2>Example model composition<a class="headerlink" href="#example-model-composition" title="Link to this heading">#</a></h2>
 <p>The input file below assembles a single-crystal model with isotropic elasticity, a power-law slip rule, Voce hardening on a single (shared) slip strength, and fully coupled implicit integration of elastic strain, hardening, and orientation. The driver sweeps 20 batched initial orientations under a constant deformation-rate / vorticity history.</p>
 <div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-number">Listing 3 </span><span class="caption-text">tests/regression/solid_mechanics/crystal_plasticity/single_crystal_coupled/model.i</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-number">Listing 3 </span><span class="caption-text">tests/regression/solid_mechanics/crystal_plasticity/single_crystal_coupled/model.i</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># neml2</span>
 </span><span data-line="2"><span class="c1"># Single-crystal coupled crystal plasticity, native port of</span>
 </span><span data-line="3"><span class="c1"># tests/regression/solid_mechanics/crystal_plasticity/single_crystal_coupled/model.i.</span>
@@ -695,7 +704,7 @@ l^p = \sum_{i=1}^{n_\mathrm{slip}} \dot{\gamma}_i \, Q \left(d_i \otimes n_i\rig
 </div>
 </section>
 <section id="explanation">
-<h2>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">¶</a></h2>
+<h2>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">#</a></h2>
 <p>The input is organized into the standard NEML2 blocks: <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> builds the load history and crystal-geometry inputs, <code class="docutils literal notranslate"><span class="pre">[Data]</span></code> materializes the slip systems, <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> declares the constitutive pieces, and <code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> / <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> wrap them in an implicit update.</p>
 <p><strong>Crystal geometry.</strong> <a class="reference internal" href="../../../../generated/syntax/Data/CubicCrystal.html#data-cubiccrystal"><span class="std std-ref">CubicCrystal</span></a> enumerates the cubic slip systems given a lattice parameter, a Miller-index slip direction (<code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">1</span> <span class="pre">0</span></code>), and a Miller-index slip plane (<code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">1</span> <span class="pre">1</span></code>). Downstream models pick this up by referencing the standard name (<code class="docutils literal notranslate"><span class="pre">crystal_geometry</span></code>) without the user listing individual systems.</p>
 <p><strong>Kinematic chain.</strong> Working from the lattice frame to stress:</p>
@@ -728,7 +737,7 @@ l^p = \sum_{i=1}^{n_\mathrm{slip}} \dot{\gamma}_i \, Q \left(d_i \otimes n_i\rig
 </div>
 </section>
 <section id="worked-examples">
-<h2>Worked examples<a class="headerlink" href="#worked-examples" title="Link to this heading">¶</a></h2>
+<h2>Worked examples<a class="headerlink" href="#worked-examples" title="Link to this heading">#</a></h2>
 <p>End-to-end notebooks that drive a single-crystal model through a rolling
 history with <a class="reference external" href="https://github.com/Argonne-National-Laboratory/pyzag">pyzag</a> and
 reconstruct the deformed texture:</p>
@@ -740,7 +749,7 @@ reconstruct the deformed texture:</p>
 </div>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../elasticity.html#modules-solid-mechanics-elasticity"><span class="std std-ref">Elasticity</span></a> — anisotropic elasticity tensors to pair with the crystal kinematics here.</p></li>
 <li><p><a class="reference internal" href="../plasticity.html#modules-solid-mechanics-plasticity"><span class="std std-ref">Plasticity</span></a> — the macroscopic (J2 / phenomenological) counterpart to per-slip hardening.</p></li>
@@ -789,13 +798,13 @@ reconstruct the deformed texture:</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>

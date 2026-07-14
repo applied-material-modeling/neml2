@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>316H two-phase precipitation (carbide + Laves) - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Al–Cu TTP diagram" href="al_cu_ttp.html" /><link rel="prev" title="KWN (precipitation kinetics)" href="index.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>316H two-phase precipitation (carbide + Laves) - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Al–Cu TTP diagram" href="al_cu_ttp.html" /><link rel="prev" title="KWN (precipitation kinetics)" href="index.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -418,7 +427,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="h-two-phase-precipitation-carbide-laves">
-<span id="modules-kwn-precipitation-316h"></span><h1>316H two-phase precipitation (carbide + Laves)<a class="headerlink" href="#h-two-phase-precipitation-carbide-laves" title="Link to this heading">¶</a></h1>
+<span id="modules-kwn-precipitation-316h"></span><h1>316H two-phase precipitation (carbide + Laves)<a class="headerlink" href="#h-two-phase-precipitation-carbide-laves" title="Link to this heading">#</a></h1>
 <p>This worked example assembles a two-phase precipitation model for 316H
 austenitic stainless steel from the <a class="reference internal" href="index.html#modules-kwn"><span class="std std-ref">KWN (precipitation kinetics)</span></a> catalog and runs it across a
 range of service temperatures. Two precipitate populations compete for the same
@@ -441,7 +450,7 @@ stainless steel</em>, Materials Science &amp; Engineering A 772 (2020) 138787,
 <p>See <a class="reference internal" href="index.html#modules-kwn"><span class="std std-ref">KWN (precipitation kinetics)</span></a> for the governing equations and the catalog of primitives
 wired together below.</p>
 <section id="material-data">
-<h2>Material data<a class="headerlink" href="#material-data" title="Link to this heading">¶</a></h2>
+<h2>Material data<a class="headerlink" href="#material-data" title="Link to this heading">#</a></h2>
 <p>All values live in <code class="docutils literal notranslate"><span class="pre">precipitation_316h.i</span></code> (next to this notebook); they are
 reproduced here so the example is self-documenting. Units throughout:
 length = μm, time = hr, concentration = mass fraction.</p>
@@ -501,7 +510,7 @@ come from the ThermoCalc values reported in the paper and are interpolated with
 <code class="docutils literal notranslate"><span class="pre">ScalarLinearInterpolation</span></code>.</p>
 </section>
 <section id="set-up">
-<h2>Set up<a class="headerlink" href="#set-up" title="Link to this heading">¶</a></h2>
+<h2>Set up<a class="headerlink" href="#set-up" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">precipitation_316h.i</span></code> composes the KWN primitives (volume fraction, mass-balance
 concentration, projected diffusivity, ideal-solution driving force, the
 classical-nucleation chain, and the rate-limited growth rate) with the
@@ -532,7 +541,7 @@ the GPU when one is available; we work in double precision throughout.</p>
 </div>
 </section>
 <section id="load-the-model-and-build-the-radius-grid">
-<h2>Load the model and build the radius grid<a class="headerlink" href="#load-the-model-and-build-the-radius-grid" title="Link to this heading">¶</a></h2>
+<h2>Load the model and build the radius grid<a class="headerlink" href="#load-the-model-and-build-the-radius-grid" title="Link to this heading">#</a></h2>
 <p>Both phases share one logarithmic radius grid spanning 0.1 nm to 1 μm (200
 cells). The grid is built inside the input file; we mirror the cell centers here
 for plotting.</p>
@@ -616,7 +625,7 @@ for plotting.</p>
 </div>
 </section>
 <section id="time-history">
-<h2>Time history<a class="headerlink" href="#time-history" title="Link to this heading">¶</a></h2>
+<h2>Time history<a class="headerlink" href="#time-history" title="Link to this heading">#</a></h2>
 <p>We sweep four service temperatures (500–650 °C) over roughly four decades of
 time, stepping the implicit update from one log-spaced time point to the next.
 The temperatures form a plain batch axis, so all four histories advance in a
@@ -666,7 +675,7 @@ converge we stop the sweep gracefully and keep the history collected so far
 </div>
 </section>
 <section id="volume-fractions">
-<h2>Volume fractions<a class="headerlink" href="#volume-fractions" title="Link to this heading">¶</a></h2>
+<h2>Volume fractions<a class="headerlink" href="#volume-fractions" title="Link to this heading">#</a></h2>
 <p>The carbide reaches its (small) saturation level far faster than Laves, and both
 accelerate with temperature.</p>
 <div class="cell docutils container">
@@ -691,7 +700,7 @@ accelerate with temperature.</p>
 </div>
 </section>
 <section id="matrix-solute-concentrations">
-<h2>Matrix solute concentrations<a class="headerlink" href="#matrix-solute-concentrations" title="Link to this heading">¶</a></h2>
+<h2>Matrix solute concentrations<a class="headerlink" href="#matrix-solute-concentrations" title="Link to this heading">#</a></h2>
 <p>Carbon is the limiting reagent for the carbide, so it depletes sharply; chromium
 is in large excess and barely moves; molybdenum is nearly flat because Laves
 nucleation is still in its lag phase over this window.</p>
@@ -718,7 +727,7 @@ nucleation is still in its lag phase over this window.</p>
 </div>
 </section>
 <section id="mean-radius-and-number-density">
-<h2>Mean radius and number density<a class="headerlink" href="#mean-radius-and-number-density" title="Link to this heading">¶</a></h2>
+<h2>Mean radius and number density<a class="headerlink" href="#mean-radius-and-number-density" title="Link to this heading">#</a></h2>
 <p>The mean radius is the first moment of the size distribution,
 <span class="math notranslate nohighlight">\(\bar R = \sum_i R_i n_i / \sum_i n_i\)</span>. Carbide coarsening shows up as a rising
 mean radius once nucleation has tailed off.</p>
@@ -756,7 +765,7 @@ mean radius once nucleation has tailed off.</p>
 </div>
 </section>
 <section id="final-size-distributions">
-<h2>Final size distributions<a class="headerlink" href="#final-size-distributions" title="Link to this heading">¶</a></h2>
+<h2>Final size distributions<a class="headerlink" href="#final-size-distributions" title="Link to this heading">#</a></h2>
 <p>A snapshot of <span class="math notranslate nohighlight">\(n(R)\)</span> at the last converged step. The carbide distribution at the
 higher temperatures has spread toward larger radii by coarsening, while Laves is
 still close to its tiny seed.</p>
@@ -820,13 +829,13 @@ still close to its tiny seed.</p>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>

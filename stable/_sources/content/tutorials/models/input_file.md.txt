@@ -141,6 +141,8 @@ side can sit anywhere in the file or in an included file.
 - The [syntax catalog](syntax-catalog) for the option list of every
   registered type — the canonical answer to "what fields go in this
   section?"
+- [](solvers-reference) for the `[Solvers]` section: which nonlinear and
+  linear solvers an implicit model can use, and when to reach for each.
 - The next tutorial, [](tutorials-models-running-your-first-model),
   walks through loading and evaluating the model defined in an input
   file.

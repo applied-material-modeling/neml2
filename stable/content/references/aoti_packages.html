@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AOTI packages - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Compilation pipeline" href="pipeline.html" /><link rel="prev" title="cpp-eager — eager evaluation from C++" href="cpp_eager.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AOTI packages - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Compilation pipeline" href="pipeline.html" /><link rel="prev" title="Solvers" href="solvers.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -417,7 +426,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="aoti-packages">
-<span id="id1"></span><h1>AOTI packages<a class="headerlink" href="#aoti-packages" title="Link to this heading">¶</a></h1>
+<span id="id1"></span><h1>AOTI packages<a class="headerlink" href="#aoti-packages" title="Link to this heading">#</a></h1>
 <p>This is the on-disk reference for the artifacts that <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>
 produces — the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs, the metadata, and the HIT stub. It is the
 shared substrate both compiled-model routes load: from Python via
@@ -480,25 +489,42 @@ never lowers a graph.</p>
 </div>
 <p>See <a class="reference internal" href="../deployment/cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a> for the broader CLI surface.</p>
 <section id="on-disk-layout">
-<h2>On-disk layout<a class="headerlink" href="#on-disk-layout" title="Link to this heading">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> writes a <strong>per-device artifact folder</strong> plus a single
-standalone HIT stub that sits next to it:</p>
+<h2>On-disk layout<a class="headerlink" href="#on-disk-layout" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> writes an <strong>artifact folder</strong> plus an optional standalone
+HIT stub that sits next to it:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;output-dir&gt;/                  # default ./aoti/
-</span><span data-line="2">  &lt;name&gt;_aoti.i                # standalone HIT stub (points at the folder below)
-</span><span data-line="3">  &lt;name&gt;/                      # per-device artifact folder
-</span><span data-line="4">    cpu/   &lt;name&gt;_meta.json + *.pt2
-</span><span data-line="5">    cuda/  &lt;name&gt;_meta.json + *.pt2
+</span><span data-line="2">  &lt;name&gt;_aoti.i                # standalone HIT stub (optional; see --no-stub)
+</span><span data-line="3">  &lt;name&gt;/                      # artifact folder
+</span><span data-line="4">    metadata.json              # shared: structural info, promoted-param values, solver config
+</span><span data-line="5">    cpu/float64/  *.pt2
+</span><span data-line="6">    cuda/float64/ *.pt2
 </span></pre></div>
 </div>
 <p>A compile targeting a single device (the default <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span></code>) emits
-just one <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolder; <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code> emits
-both <code class="docutils literal notranslate"><span class="pre">cpu/</span></code> and <code class="docutils literal notranslate"><span class="pre">cuda/</span></code>, each a complete, self-contained artifact for
-that device. The stub points at the <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;/</span></code> folder via an absolute
-<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> field, and the loader resolves
-<code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;name&gt;_meta.json</span></code> for the device it runs on
-(see <a class="reference internal" href="#the-hit-stub">The HIT stub</a>).</p>
-<p>Inside each <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolder, a forward single-segment model emits
-the metadata plus a value graph and an optional JVP graph:</p>
+just one <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> subfolder; <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code>
+emits both, each with its own <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> binaries. The shared <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>
+at the artifact root is device/dtype-independent: the loader derives the
+device and dtype from the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> folder path, not from the
+metadata. The stub points at the <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;/</span></code> folder via an absolute
+<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> field (see <a class="reference internal" href="#the-hit-stub">The HIT stub</a>).</p>
+<p>The stub is <strong>optional</strong>: pass <code class="docutils literal notranslate"><span class="pre">--no-stub</span></code> to suppress it. The artifact
+folder is self-describing — <code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> and <code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> load directly
+from it without the stub; the stub is a convenience for <code class="docutils literal notranslate"><span class="pre">neml2-run</span></code> and
+<code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> workflows.</p>
+<p>The full set of files a compile will write — every <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>, the shared
+<code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>, and the <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_aoti.i</span></code> stub — can be
+enumerated ahead of time, without compiling, via
+<code class="docutils literal notranslate"><span class="pre">neml2.cli.aoti_export.plan_export_artifacts</span></code>. <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> prints
+<code class="docutils literal notranslate"><span class="pre">[k/N]</span></code> progress against that count as each file lands, tagging every
+file with its device (e.g. <code class="docutils literal notranslate"><span class="pre">cpu/float64/&lt;name&gt;_seg0.pt2</span></code>). The
+independent compile units — each <code class="docutils literal notranslate"><span class="pre">(device,</span> <span class="pre">segment)</span></code> pair — are flattened
+into one spawn process pool by <code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">-j</span> <span class="pre">N</span></code>, so both axes
+parallelize together: a <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code> build of a two-segment model
+fully uses <code class="docutils literal notranslate"><span class="pre">-j</span> <span class="pre">4</span></code>, and the emitted artifacts are identical to a serial
+compile. <code class="docutils literal notranslate"><span class="pre">N</span></code> is capped at the number of <code class="docutils literal notranslate"><span class="pre">(device,</span> <span class="pre">segment)</span></code> cells, so a
+single-segment single-device build ignores <code class="docutils literal notranslate"><span class="pre">-j</span></code>.</p>
+<p>Inside each <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> subfolder, a forward single-segment model
+emits the value graph and an optional JVP graph:</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -512,9 +538,6 @@ the metadata plus a value graph and an optional JVP graph:</p>
 </tr>
 <tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_jvp.pt2</span></code></p></td>
 <td class="text-left"><p>Per-pair Jacobian graph (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a forward-segment pair): returns the outputs plus one block per requested <code class="docutils literal notranslate"><span class="pre">(out,</span> <span class="pre">in)</span></code>. A block that does not depend on the dynamic batch (e.g. a constant stiffness tensor) is emitted unbatched (<code class="docutils literal notranslate"><span class="pre">batch_independent</span></code> in the metadata).</p></td>
-</tr>
-<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_meta.json</span></code></p></td>
-<td class="text-left"><p>Variable layout, dtype, device, promoted-parameter initial values, and the top-level <code class="docutils literal notranslate"><span class="pre">derivatives</span></code> array (master <code class="docutils literal notranslate"><span class="pre">[out,</span> <span class="pre">in]</span></code> pairs the artifact supports; empty = none).</p></td>
 </tr>
 </tbody>
 </table>
@@ -538,16 +561,37 @@ boundary into separate <strong>segments</strong>, each numbered <code class="doc
 <tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_jvp.pt2</span></code></p></td>
 <td class="text-left"><p>Forward-segment per-pair Jacobian graph (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a pair this segment contributes to).</p></td>
 </tr>
-<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_rhs.pt2</span></code></p></td>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_residual.pt2</span></code></p></td>
 <td class="text-left"><p>Implicit-segment Newton residual <code class="docutils literal notranslate"><span class="pre">-r(u,</span> <span class="pre">g)</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_step.pt2</span></code></p></td>
-<td class="text-left"><p>Implicit-segment fused assemble + solve + update.</p></td>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_jacobian.pt2</span></code></p></td>
+<td class="text-left"><p>Implicit-segment residual Jacobian operator <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">=</span> <span class="pre">∂r/∂u</span></code> (+ <code class="docutils literal notranslate"><span class="pre">b</span></code>); no baked solve. Direct solve always; a Krylov solve only when an input derivative needs the assembled <code class="docutils literal notranslate"><span class="pre">A</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_ift.pt2</span></code></p></td>
-<td class="text-left"><p>Implicit-function-theorem sensitivity <code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">B</span></code> (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a pair routed through this segment).</p></td>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_solve.pt2</span></code></p></td>
+<td class="text-left"><p>Implicit-segment linear solve <code class="docutils literal notranslate"><span class="pre">du</span> <span class="pre">=</span> <span class="pre">A^{-1}</span> <span class="pre">b</span></code> (the configured direct linear solver, un-baked from the operator). Direct solve only.</p></td>
 </tr>
-<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_predictor.pt2</span></code></p></td>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_matvec.pt2</span></code></p></td>
+<td class="text-left"><p>Implicit-segment matrix-free operator <code class="docutils literal notranslate"><span class="pre">J·v</span> <span class="pre">=</span> <span class="pre">∂r/∂u·v</span></code> (a Krylov solve only, in place of <code class="docutils literal notranslate"><span class="pre">_solve</span></code>); the C++ runtime drives GMRES/BiCGStab over it.</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_precond_setup.pt2</span></code></p></td>
+<td class="text-left"><p>Preconditioner setup <code class="docutils literal notranslate"><span class="pre">(*u,</span> <span class="pre">*g,</span> <span class="pre">*params)</span> <span class="pre">→</span> <span class="pre">state</span></code> (Krylov solve with a preconditioner only): the authored <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> preconditioner factors/inverts what it needs from the model; the C++ holds the returned state and rebuilds it per the cache strategy.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_precond_apply.pt2</span></code></p></td>
+<td class="text-left"><p>Preconditioner apply <code class="docutils literal notranslate"><span class="pre">(*state,</span> <span class="pre">r_flat)</span> <span class="pre">→</span> <span class="pre">z_flat</span> <span class="pre">=</span> <span class="pre">M^{-1}</span> <span class="pre">r</span></code> (paired with <code class="docutils literal notranslate"><span class="pre">_precond_setup</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_jacobian_given.pt2</span></code></p></td>
+<td class="text-left"><p>IFT given-side operator <code class="docutils literal notranslate"><span class="pre">B</span> <span class="pre">=</span> <span class="pre">∂r/∂g</span></code> (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested an input-derivative pair routed through this segment).</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_solve_ift.pt2</span></code></p></td>
+<td class="text-left"><p>IFT solve <code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">B</span></code> disassembled to per-<code class="docutils literal notranslate"><span class="pre">(unknown,</span> <span class="pre">given)</span></code> blocks (paired with <code class="docutils literal notranslate"><span class="pre">_jacobian_given</span></code>). Emitted only when <code class="docutils literal notranslate"><span class="pre">input_sensitivity_solver</span></code> is direct; a matrix-free one Krylov-solves over the assembled <code class="docutils literal notranslate"><span class="pre">A</span></code> at runtime.</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_dr_dparam.pt2</span></code></p></td>
+<td class="text-left"><p>Parameter-derivative operators: dense <code class="docutils literal notranslate"><span class="pre">A</span></code> + <code class="docutils literal notranslate"><span class="pre">∂r/∂θ</span></code> (only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a promoted-parameter pair).</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_solve_param.pt2</span></code></p></td>
+<td class="text-left"><p>Parameter-sensitivity solve <code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">∂r/∂θ</span></code> per <code class="docutils literal notranslate"><span class="pre">(unknown,</span> <span class="pre">param)</span></code> block. Emitted only when <code class="docutils literal notranslate"><span class="pre">param_sensitivity_solver</span></code> is direct (else Krylov-solved over the dense <code class="docutils literal notranslate"><span class="pre">A</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_seg{i}_predictor.pt2</span></code></p></td>
 <td class="text-left"><p>Newton initial guess (only if the source had one).</p></td>
 </tr>
 </tbody>
@@ -558,31 +602,58 @@ single-segment forward artifacts use the names in the first table
 and single-segment implicit artifacts use the per-segment names from
 the second table without the <code class="docutils literal notranslate"><span class="pre">_seg0_</span></code> prefix.</p>
 <section id="whats-in-the-metadata-json">
-<h3>What’s in the metadata JSON<a class="headerlink" href="#whats-in-the-metadata-json" title="Link to this heading">¶</a></h3>
-<p>The metadata is the source of truth: the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> files are opaque to
-NEML2, and re-loading an artifact in a new process never re-introspects
-the Python source. It records, at a high level:</p>
+<h3>What’s in the metadata JSON<a class="headerlink" href="#whats-in-the-metadata-json" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> at the artifact root is the source of truth: the
+<code class="docutils literal notranslate"><span class="pre">.pt2</span></code> files are opaque to NEML2, and re-loading an artifact in a new
+process never re-introspects the Python source. It is
+<strong>device/dtype-independent</strong> — those are derived from the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code>
+folder path. It records, at a high level:</p>
 <ul class="simple">
-<li><p><strong>Device + dtype</strong>, baked into the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs at export. There
-is no runtime override.</p></li>
 <li><p><strong>Inputs and outputs</strong> — master input/output order with per-variable
 storage size, base shape, and sub-batch shape.</p></li>
-<li><p><strong>Promoted parameters</strong> — the <code class="docutils literal notranslate"><span class="pre">-p</span></code> set, with initial values, the
-artifact’s device, and each parameter’s natural base shape
-(<code class="docutils literal notranslate"><span class="pre">param_base_shape</span></code>; e.g. <code class="docutils literal notranslate"><span class="pre">[]</span></code> for a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code>, <code class="docutils literal notranslate"><span class="pre">[6]</span></code> for an <code class="docutils literal notranslate"><span class="pre">SR2</span></code>).
-Empty in the fully-baked case (the artifact is then a frozen inference
-graph and <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> is empty at load time). The value /
-jvp / jacobian / param-Jacobian / param-VJP graphs take each promoted
-parameter as a <strong>per-batch</strong> <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">*param_base)</span></code> input, so the runtime
-can broadcast a stored scalar up to the call batch — or pass a
-genuinely batched parameter through (see
-<a class="reference internal" href="#batched-parameters">Batched parameters</a>). The recorded device is the
-artifact’s compile-target device (not the source snapshot’s), since
-those graphs dereference the parameter on-device.</p></li>
+<li><p><strong>Promoted parameters</strong> — the <code class="docutils literal notranslate"><span class="pre">-p</span></code> set, with initial values and each
+parameter’s natural base shape (<code class="docutils literal notranslate"><span class="pre">param_base_shape</span></code>; e.g. <code class="docutils literal notranslate"><span class="pre">[]</span></code> for a
+<code class="docutils literal notranslate"><span class="pre">Scalar</span></code>, <code class="docutils literal notranslate"><span class="pre">[6]</span></code> for an <code class="docutils literal notranslate"><span class="pre">SR2</span></code>). Floating parameters inherit the leaf
+dtype at load time; non-floating parameters carry an explicit <code class="docutils literal notranslate"><span class="pre">dtype</span></code>
+field. Empty in the fully-baked case (the artifact is then a frozen
+inference graph and <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> is empty at load time). The
+value / jvp / jacobian / param-Jacobian / param-VJP graphs take each
+promoted parameter as a <strong>per-batch</strong> <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">*param_base)</span></code> input, so
+the runtime can broadcast a stored scalar up to the call batch — or
+pass a genuinely batched parameter through (see
+<a class="reference internal" href="#batched-parameters">Batched parameters</a>).</p></li>
 <li><p><strong>Segments</strong> — one entry per <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> boundary the exporter
 split on; executed in order at runtime, with each segment’s outputs
 feeding the next segment’s inputs via a shared <code class="docutils literal notranslate"><span class="pre">name</span> <span class="pre">→</span> <span class="pre">tensor</span></code> state
 map.</p></li>
+<li><p><strong>Solver config</strong> (<code class="docutils literal notranslate"><span class="pre">solver_config</span></code>) — present for implicit (Newton-solve)
+models, absent for forward-only. Records convergence tolerances
+(<code class="docutils literal notranslate"><span class="pre">atol</span></code>, <code class="docutils literal notranslate"><span class="pre">rtol</span></code>, <code class="docutils literal notranslate"><span class="pre">miters</span></code>) and line-search settings (<code class="docutils literal notranslate"><span class="pre">ls_type</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ls_max_iters</span></code>, <code class="docutils literal notranslate"><span class="pre">ls_cutback</span></code>, <code class="docutils literal notranslate"><span class="pre">ls_c</span></code>). The C++ runtime reads this
+directly from the metadata; it can be overridden at runtime via
+<code class="docutils literal notranslate"><span class="pre">set_solver_config</span></code>. The linear solve is un-baked from the residual Jacobian
+operator: the choice of linear solver lives in the <code class="docutils literal notranslate"><span class="pre">_solve.pt2</span></code> / <code class="docutils literal notranslate"><span class="pre">_solve_ift.pt2</span></code>
+/ <code class="docutils literal notranslate"><span class="pre">_solve_param.pt2</span></code> graphs (recompile to change it), while the C++ runtime
+drives the operator → solve chain generically.
+<code class="docutils literal notranslate"><span class="pre">solver_kind</span></code> selects the implicit linear solve: <code class="docutils literal notranslate"><span class="pre">&quot;direct&quot;</span></code> (the default —
+<code class="docutils literal notranslate"><span class="pre">_jacobian</span></code> → <code class="docutils literal notranslate"><span class="pre">_solve</span></code>) or <code class="docutils literal notranslate"><span class="pre">&quot;krylov&quot;</span></code> (matrix-free GMRES/BiCGStab over
+<code class="docutils literal notranslate"><span class="pre">_matvec</span></code>). When <code class="docutils literal notranslate"><span class="pre">&quot;krylov&quot;</span></code>, a nested <code class="docutils literal notranslate"><span class="pre">krylov</span></code> block records the iterative
+settings — <code class="docutils literal notranslate"><span class="pre">method</span></code>, <code class="docutils literal notranslate"><span class="pre">restart</span></code>, <code class="docutils literal notranslate"><span class="pre">max_its</span></code> (inner-iteration budget), <code class="docutils literal notranslate"><span class="pre">abs_tol</span></code>,
+<code class="docutils literal notranslate"><span class="pre">rel_tol</span></code>, <code class="docutils literal notranslate"><span class="pre">cache_strategy</span></code> (<code class="docutils literal notranslate"><span class="pre">none</span></code> / <code class="docutils literal notranslate"><span class="pre">chord</span></code> / <code class="docutils literal notranslate"><span class="pre">max_its</span></code>), and <code class="docutils literal notranslate"><span class="pre">cache_max_its</span></code>
+(the rebuild bar for the <code class="docutils literal notranslate"><span class="pre">max_its</span></code> cache strategy). The preconditioner is <strong>not</strong>
+a <code class="docutils literal notranslate"><span class="pre">krylov</span></code> field: it is an authored <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> object whose behavior is carried
+by the per-segment <code class="docutils literal notranslate"><span class="pre">_precond_setup</span></code> / <code class="docutils literal notranslate"><span class="pre">_precond_apply</span></code> graphs (present iff
+preconditioned). The forward Newton solve honors it; the IFT / parameter
+derivative solves stay direct.</p></li>
+<li><p><strong>Boundary aliases</strong> (optional <code class="docutils literal notranslate"><span class="pre">boundary_aliases</span></code>) — shallow renames
+applied at the interface only. Present only when the artifact was
+compiled with <code class="docutils literal notranslate"><span class="pre">--rename-input</span></code> / <code class="docutils literal notranslate"><span class="pre">--rename-output</span></code> / <code class="docutils literal notranslate"><span class="pre">--rename-parameter</span></code>;
+a map with <code class="docutils literal notranslate"><span class="pre">inputs</span></code> / <code class="docutils literal notranslate"><span class="pre">outputs</span></code> / <code class="docutils literal notranslate"><span class="pre">parameters</span></code> sub-maps of
+<code class="docutils literal notranslate"><span class="pre">{original_name:</span> <span class="pre">boundary_name}</span></code>. Every other field above keeps the
+<strong>original</strong> authored names; a loader reads them as the internal identity
+and applies the alias only when reporting names and keying the public
+<code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> / <code class="docutils literal notranslate"><span class="pre">named_parameters</span></code> surface. Absent means
+the interface uses the authored names.</p></li>
 </ul>
 <p>The exact field layout evolves alongside the export pipeline, so it is
 not mirrored field-by-field here. The metadata carries an integer
@@ -590,10 +661,10 @@ not mirrored field-by-field here. The metadata carries an integer
 refuses any non-matching version with a clear “regenerate via
 <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>” message; the only remediation is a re-compile.</p>
 <!-- dependencies: aoti.schema_version -->
-<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">7</span></code>.</p>
+<p>The current schema version is <code class="docutils literal notranslate"><span class="pre">12</span></code>.</p>
 </section>
 <section id="segment-kinds">
-<h3>Segment kinds<a class="headerlink" href="#segment-kinds" title="Link to this heading">¶</a></h3>
+<h3>Segment kinds<a class="headerlink" href="#segment-kinds" title="Link to this heading">#</a></h3>
 <p>Two segment kinds appear inside <code class="docutils literal notranslate"><span class="pre">segments</span></code>:</p>
 <ul>
 <li><p><strong>Forward</strong> segments lower to a value graph (<code class="docutils literal notranslate"><span class="pre">_seg{i}.pt2</span></code>), plus a
@@ -601,27 +672,51 @@ per-variable-pair Jacobian graph (<code class="docutils literal notranslate"><sp
 requested a derivative pair this segment contributes to (a block that
 does not depend on the dynamic batch is emitted unbatched). Call shape
 is <code class="docutils literal notranslate"><span class="pre">(*user_inputs,</span> <span class="pre">*promoted_params)</span> <span class="pre">-&gt;</span> <span class="pre">outputs</span></code>.</p></li>
-<li><p><strong>Implicit</strong> segments always lower <code class="docutils literal notranslate"><span class="pre">_rhs.pt2</span></code> (Newton residual) and
-<code class="docutils literal notranslate"><span class="pre">_step.pt2</span></code> (fused assemble + LU solve + update + post-update
-residual), plus an optional <code class="docutils literal notranslate"><span class="pre">_predictor.pt2</span></code> graph when the source had
-a <code class="docutils literal notranslate"><span class="pre">Predictor</span></code>. They additionally lower <code class="docutils literal notranslate"><span class="pre">_ift.pt2</span></code> (<code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">B</span></code>
-implicit-function-theorem sensitivity at the converged state) <strong>only
-when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested a pair whose derivative path runs through this
-segment</strong>. The Newton loop body is one loader call per iteration plus a
-convergence sync; the IFT graph, when present, is consumed by
-<code class="docutils literal notranslate"><span class="pre">jacobian()</span></code> and <code class="docutils literal notranslate"><span class="pre">jvp()</span></code>.</p>
+<li><p><strong>Implicit</strong> segments always lower <code class="docutils literal notranslate"><span class="pre">_residual.pt2</span></code> (Newton residual), plus an
+optional <code class="docutils literal notranslate"><span class="pre">_predictor.pt2</span></code> graph when the source had a <code class="docutils literal notranslate"><span class="pre">Predictor</span></code>. The
+remaining forward-solve graphs depend on <code class="docutils literal notranslate"><span class="pre">solver_config.solver_kind</span></code>:</p>
+<ul class="simple">
+<li><p>a <strong>direct</strong> solve (<code class="docutils literal notranslate"><span class="pre">DenseLU</span></code> / <code class="docutils literal notranslate"><span class="pre">SchurComplement</span></code>) lowers <code class="docutils literal notranslate"><span class="pre">_jacobian.pt2</span></code>
+(the residual Jacobian operator <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">=</span> <span class="pre">∂r/∂u</span></code> + <code class="docutils literal notranslate"><span class="pre">b</span></code>) and <code class="docutils literal notranslate"><span class="pre">_solve.pt2</span></code> (the
+linear solve <code class="docutils literal notranslate"><span class="pre">du</span> <span class="pre">=</span> <span class="pre">A^{-1}</span> <span class="pre">b</span></code>). The linear solve is <strong>un-baked</strong> from the
+operator: the C++ runtime chains <code class="docutils literal notranslate"><span class="pre">_jacobian</span> <span class="pre">→</span> <span class="pre">_solve</span></code> per Newton iteration.</p></li>
+<li><p>a <strong>matrix-free Krylov</strong> solve (<code class="docutils literal notranslate"><span class="pre">GMRES</span></code> / <code class="docutils literal notranslate"><span class="pre">BiCGStab</span></code>) lowers <code class="docutils literal notranslate"><span class="pre">_matvec.pt2</span></code>
+(<code class="docutils literal notranslate"><span class="pre">J·v</span> <span class="pre">=</span> <span class="pre">∂r/∂u·v</span></code>) instead of <code class="docutils literal notranslate"><span class="pre">_solve</span></code>; the C++ runtime runs a batched Krylov
+iteration over it (never assembling <code class="docutils literal notranslate"><span class="pre">A</span></code>). A preconditioner (an authored
+<code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> <code class="docutils literal notranslate"><span class="pre">JacobiPreconditioner</span></code> / <code class="docutils literal notranslate"><span class="pre">BlockJacobiPreconditioner</span></code> /
+<code class="docutils literal notranslate"><span class="pre">FullPreconditioner</span></code>) additionally lowers <code class="docutils literal notranslate"><span class="pre">_precond_setup.pt2</span></code> +
+<code class="docutils literal notranslate"><span class="pre">_precond_apply.pt2</span></code> (self-contained — it assembles what it needs internally,
+so no standalone <code class="docutils literal notranslate"><span class="pre">_jacobian.pt2</span></code>). <code class="docutils literal notranslate"><span class="pre">_jacobian.pt2</span></code> is lowered under a Krylov
+solve only when an input derivative needs the assembled <code class="docutils literal notranslate"><span class="pre">A</span></code>.</p></li>
+</ul>
+<p>Either kind additionally lowers <code class="docutils literal notranslate"><span class="pre">_jacobian_given.pt2</span></code> (<code class="docutils literal notranslate"><span class="pre">B</span> <span class="pre">=</span> <span class="pre">∂r/∂g</span></code>) +
+<code class="docutils literal notranslate"><span class="pre">_solve_ift.pt2</span></code> (<code class="docutils literal notranslate"><span class="pre">-A^{-1}</span> <span class="pre">B</span></code> implicit-function-theorem sensitivity at the
+converged state, reusing <code class="docutils literal notranslate"><span class="pre">_jacobian</span></code>’s <code class="docutils literal notranslate"><span class="pre">A</span></code>) <strong>only when <code class="docutils literal notranslate"><span class="pre">-d</span></code> requested an
+input-derivative pair routed through this segment</strong>, and <code class="docutils literal notranslate"><span class="pre">_dr_dparam.pt2</span></code> +
+<code class="docutils literal notranslate"><span class="pre">_solve_param.pt2</span></code> for a promoted-parameter derivative. The IFT / param graphs,
+when present, are consumed by <code class="docutils literal notranslate"><span class="pre">jacobian()</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp()</span></code> / <code class="docutils literal notranslate"><span class="pre">param_jacobian()</span></code>.</p>
+<p>The derivative (sensitivity) linear solves are separately configurable on the
+<code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> (<code class="docutils literal notranslate"><span class="pre">input_sensitivity_solver</span></code> for <code class="docutils literal notranslate"><span class="pre">du/dg</span></code>,
+<code class="docutils literal notranslate"><span class="pre">param_sensitivity_solver</span></code> for <code class="docutils literal notranslate"><span class="pre">du/dθ</span></code>), each defaulting to a direct solve
+(schema v12). A direct sensitivity solver bakes its <code class="docutils literal notranslate"><span class="pre">_solve_ift</span></code> /
+<code class="docutils literal notranslate"><span class="pre">_solve_param</span></code> graph as above; a <strong>matrix-free</strong> one (<code class="docutils literal notranslate"><span class="pre">GMRES</span></code> / <code class="docutils literal notranslate"><span class="pre">BiCGStab</span></code>)
+omits that graph and the C++ runtime instead runs a Krylov solve over the
+assembled <code class="docutils literal notranslate"><span class="pre">A</span></code> (from <code class="docutils literal notranslate"><span class="pre">_jacobian</span></code> / <code class="docutils literal notranslate"><span class="pre">_dr_dparam</span></code>). The per-segment
+<code class="docutils literal notranslate"><span class="pre">input_sensitivity</span></code> / <code class="docutils literal notranslate"><span class="pre">param_sensitivity</span></code> metadata records <code class="docutils literal notranslate"><span class="pre">{kind:</span> <span class="pre">direct</span> <span class="pre">|</span> <span class="pre">krylov[,</span> <span class="pre">krylov:</span> <span class="pre">{...}]}</span></code>; the pair metadata (<code class="docutils literal notranslate"><span class="pre">jacobian_pairs</span></code> /
+<code class="docutils literal notranslate"><span class="pre">param_jacobian_pairs</span></code>) additionally carries the flat <code class="docutils literal notranslate"><span class="pre">row_offset</span></code> / <code class="docutils literal notranslate"><span class="pre">col_offset</span></code>
+the Krylov path uses to slice the solution into per-pair blocks.</p>
 <p>The Newton solve’s convergence tolerances, iteration cap, and line-search
-settings are <strong>not</strong> baked into the metadata (schema v4+). They are carried
-by the HIT stub’s <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> block and forwarded to the C++ runtime at load
-time (see <a class="reference internal" href="#the-hit-stub">The HIT stub</a> below). Only the linear solver is
-baked — it lives inside the compiled <code class="docutils literal notranslate"><span class="pre">_step.pt2</span></code> / <code class="docutils literal notranslate"><span class="pre">_ift.pt2</span></code> graphs.</p>
+settings are recorded in <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> under <code class="docutils literal notranslate"><span class="pre">solver_config</span></code> and read
+directly by the C++ runtime (see <a class="reference internal" href="#whats-in-the-metadata-json">What’s in the metadata JSON</a>
+above). The linear-solver choice (direct vs Krylov, preconditioner, cache
+strategy) is baked into the graph set + <code class="docutils literal notranslate"><span class="pre">solver_config</span></code>.</p>
 </li>
 </ul>
 <p>Each segment declares its inputs / outputs / promoted-parameter inputs
 in the same per-variable structure as the top-level layout.</p>
 </section>
 <section id="cross-segment-state">
-<h3>Cross-segment state<a class="headerlink" href="#cross-segment-state" title="Link to this heading">¶</a></h3>
+<h3>Cross-segment state<a class="headerlink" href="#cross-segment-state" title="Link to this heading">#</a></h3>
 <p>At runtime each segment writes its outputs into a shared
 <code class="docutils literal notranslate"><span class="pre">name</span> <span class="pre">→</span> <span class="pre">tensor</span></code> state map, and the next segment reads its declared
 inputs from that map. The partitioning rule that decides where
@@ -630,12 +725,17 @@ segment boundaries land at export time is documented in
 </section>
 </section>
 <section id="the-hit-stub">
-<h2>The HIT stub<a class="headerlink" href="#the-hit-stub" title="Link to this heading">¶</a></h2>
+<h2>The HIT stub<a class="headerlink" href="#the-hit-stub" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_aoti.i</span></code> file is the original input with the
 <code class="docutils literal notranslate"><span class="pre">[Models]/&lt;name&gt;</span></code> block surgically replaced by an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> shim.
 Every other section (<code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Drivers]</span></code>, <code class="docutils literal notranslate"><span class="pre">[Settings]</span></code>, …) is
 copied through verbatim, so the stub is a drop-in replacement
-wherever a <code class="docutils literal notranslate"><span class="pre">Driver</span></code> consumes the model by name. A typical stub:</p>
+wherever a <code class="docutils literal notranslate"><span class="pre">Driver</span></code> consumes the model by name.</p>
+<p>The stub is <strong>optional</strong>: <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> emits it by default; pass
+<code class="docutils literal notranslate"><span class="pre">--no-stub</span></code> to suppress it. The artifact folder is self-describing —
+<code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> and <code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> load directly from the folder and do not
+require the stub.</p>
+<p>A typical stub:</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Auto-generated by neml2-compile from input.i.</span>
 </span><span data-line="2"><span class="c1"># Drop-in replacement for the original [elasticity] model.</span>
 </span><span data-line="3"><span class="c1"># Do not edit; regenerate via `neml2-compile`.</span>
@@ -643,54 +743,37 @@ wherever a <code class="docutils literal notranslate"><span class="pre">Driver</
 </span><span data-line="5"><span class="k">[Models]</span>
 </span><span data-line="6"><span class="w">  </span><span class="k">[elasticity]</span>
 </span><span data-line="7"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">AOTIModel</span>
-</span><span data-line="8"><span class="w">    </span><span class="na">artifact_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;/abs/path/to/aoti/elasticity&#39;</span>
+</span><span data-line="8"><span class="w">    </span><span class="na">artifact_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;elasticity&#39;</span>
 </span><span data-line="9"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="10"><span class="k">[]</span>
 </span></pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> is an <strong>absolute</strong> path to the per-device artifact
-folder (<code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;name&gt;/</span></code>). The loader appends <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> for the
-running device and loads <code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;name&gt;_meta.json</span></code>.
-Because the path is absolute and the stub lives outside that folder, the
-artifacts are <strong>not relocatable</strong> — moving the folder requires editing
-<code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> or recompiling.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> is a path to the artifact folder (<code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;name&gt;/</span></code>),
+written <strong>relative to the stub</strong> — usually just the folder name, since the stub
+(<code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/&lt;name&gt;_aoti.i</span></code>) sits right next to it. The loader (Python shim and
+C++ <code class="docutils literal notranslate"><span class="pre">load_model</span></code>) resolves a relative <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> against the stub’s own
+directory, reads <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> from that root, and resolves
+<code class="docutils literal notranslate"><span class="pre">&lt;artifact_path&gt;/&lt;device&gt;/&lt;dtype&gt;/</span></code> for the device and dtype it runs on. Because
+the path is relative, the stub and its artifact folder form a <strong>portable bundle</strong>:
+copy or move the two together — to another directory, machine, or user — and it
+still loads, with no machine-specific path baked in and no recompile. Moving the
+stub <em>away</em> from its artifact folder is intentionally unsupported; keep them
+together. (An absolute <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code> is also accepted if you hand-edit one.)</p>
 <p>The shim has the same surface as a native model — same <code class="docutils literal notranslate"><span class="pre">input_spec</span></code>,
 same <code class="docutils literal notranslate"><span class="pre">output_spec</span></code>, same call convention — but inside it dispatches
 to the compiled <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> instead of executing the Python <code class="docutils literal notranslate"><span class="pre">forward</span></code>.
 Because the surface is identical, anything that consumes a model
 through the normal HIT machinery (e.g. a <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>) works
 without modification.</p>
-<p>For a model with an implicit (<code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>) segment, a <strong>minimal</strong>
-<code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> block is carried and the shim gains a <code class="docutils literal notranslate"><span class="pre">solver</span></code> field pointing
-at it (schema v4+). At load the <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> shim reads that solver’s
-convergence / line-search settings and forwards them to the C++ runtime,
-so they can be tuned by editing the stub without recompiling:</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[Solvers]</span>
-</span><span data-line="2"><span class="w">  </span><span class="k">[newton]</span>
-</span><span data-line="3"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Newton</span>
-</span><span data-line="4"><span class="w">    </span><span class="na">abs_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-12</span>
-</span><span data-line="5"><span class="w">    </span><span class="na">rel_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-10</span>
-</span><span data-line="6"><span class="w">    </span><span class="na">max_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">25</span>
-</span><span data-line="7"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="8"><span class="k">[]</span>
-</span><span data-line="9">
-</span><span data-line="10"><span class="k">[Models]</span>
-</span><span data-line="11"><span class="w">  </span><span class="k">[model]</span>
-</span><span data-line="12"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">AOTIModel</span>
-</span><span data-line="13"><span class="w">    </span><span class="na">artifact_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;/abs/path/to/aoti/model&#39;</span>
-</span><span data-line="14"><span class="w">    </span><span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;newton&#39;</span>
-</span><span data-line="15"><span class="w">  </span><span class="k">[]</span>
-</span><span data-line="16"><span class="k">[]</span>
-</span></pre></div>
-</div>
-<p>Only the knobs that take effect are carried. The <code class="docutils literal notranslate"><span class="pre">linear_solver</span></code> field is
-<strong>deliberately omitted</strong>: the linear solver is baked into the compiled
-<code class="docutils literal notranslate"><span class="pre">_step.pt2</span></code> / <code class="docutils literal notranslate"><span class="pre">_ift.pt2</span></code> at compile time, so editing it in the stub would
-have no effect — leaving it out keeps the stub free of inert controls.
-<code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> and <code class="docutils literal notranslate"><span class="pre">[Data]</span></code> are dropped — their state was baked in.</p>
+<p>For a model with an implicit (<code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>) segment the solver
+configuration is read directly from <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> (<code class="docutils literal notranslate"><span class="pre">solver_config</span></code>).
+The stub carries no <code class="docutils literal notranslate"><span class="pre">[Solvers]</span></code> block — solver settings travel with the
+artifact, not the stub. To override them at runtime use
+<code class="docutils literal notranslate"><span class="pre">set_solver_config</span></code> on the loaded <code class="docutils literal notranslate"><span class="pre">Model</span></code>. <code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> and
+<code class="docutils literal notranslate"><span class="pre">[Data]</span></code> are dropped — their state was baked in.</p>
 </section>
 <section id="parameter-promotion-p">
-<h2>Parameter promotion (<code class="docutils literal notranslate"><span class="pre">-p</span></code>)<a class="headerlink" href="#parameter-promotion-p" title="Link to this heading">¶</a></h2>
+<h2>Parameter promotion (<code class="docutils literal notranslate"><span class="pre">-p</span></code>)<a class="headerlink" href="#parameter-promotion-p" title="Link to this heading">#</a></h2>
 <p>Every parameter and buffer is <strong>baked</strong> into the lowered graph as a
 constant by default. Baked entries are immutable post-compile but
 cost nothing per call — they’re folded directly into the kernel.
@@ -742,7 +825,7 @@ what-if knobs, and calibration sweeps. If the model was compiled
 with no <code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code> is empty and the artifact is
 effectively a frozen inference graph.</p>
 <section id="constraint-no-parameters-inside-implicitupdate">
-<h3>Constraint: no parameters inside <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code><a class="headerlink" href="#constraint-no-parameters-inside-implicitupdate" title="Link to this heading">¶</a></h3>
+<h3>Constraint: no parameters inside <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code><a class="headerlink" href="#constraint-no-parameters-inside-implicitupdate" title="Link to this heading">#</a></h3>
 <p>Trying to promote a parameter that lives inside an <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>’s
 <code class="docutils literal notranslate"><span class="pre">system.model</span></code> tree raises a <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> at compile time,
 with a message pointing at the offending name. Parameters in forward
@@ -751,7 +834,7 @@ segments of a composed model promote normally; see
 equation-system wrappers.</p>
 </section>
 <section id="batched-parameters">
-<span id="id2"></span><h3>Batched parameters<a class="headerlink" href="#batched-parameters" title="Link to this heading">¶</a></h3>
+<span id="id2"></span><h3>Batched parameters<a class="headerlink" href="#batched-parameters" title="Link to this heading">#</a></h3>
 <p>A promoted parameter can be set to a <strong>per-batch-element</strong> value at runtime —
 e.g. a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> parameter given shape <code class="docutils literal notranslate"><span class="pre">(B,)</span></code> via <code class="docutils literal notranslate"><span class="pre">set_parameter</span></code>, a spatially
 varying material property (the common MOOSE inverse-optimization case). The
@@ -781,7 +864,7 @@ Sub-batched (per-grain) parameters are not yet supported.</p>
 </section>
 </section>
 <section id="dynamic-batch-dimension">
-<h2>Dynamic batch dimension<a class="headerlink" href="#dynamic-batch-dimension" title="Link to this heading">¶</a></h2>
+<h2>Dynamic batch dimension<a class="headerlink" href="#dynamic-batch-dimension" title="Link to this heading">#</a></h2>
 <p>The leading batch dimension is compiled as a dynamic axis. The same
 artifact handles any batch size from 1 to roughly a million without
 recompilation. The cost is modest extra symbolic-shape machinery
@@ -794,7 +877,7 @@ carry — are baked into the artifact at export time. To change them,
 re-compile.</p>
 </section>
 <section id="device-and-dtype-pinning">
-<h2>Device and dtype pinning<a class="headerlink" href="#device-and-dtype-pinning" title="Link to this heading">¶</a></h2>
+<h2>Device and dtype pinning<a class="headerlink" href="#device-and-dtype-pinning" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> graphs are pinned to the device and dtype they were
 exported with, so the artifact does not expose a runtime <code class="docutils literal notranslate"><span class="pre">to()</span></code>:
 any move would silently desync the graph from its parameters. To
@@ -803,7 +886,7 @@ new <code class="docutils literal notranslate"><span class="pre">--device</span>
 on the same device as the graph at load time.</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="py_aoti.html#py-aoti"><span class="std std-ref">py-aoti — compiled model from Python</span></a> — load and call a compiled package from Python.</p></li>
 <li><p><a class="reference internal" href="cpp_aoti.html#cpp-aoti"><span class="std std-ref">cpp-aoti — compiled model from C++</span></a> — load and call a compiled package from C++.</p></li>
@@ -830,10 +913,10 @@ wheel.</p></li>
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="cpp_eager.html">
+    <a href="solvers.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</div></div>
+        <span>Previous</span><div class="title">Solvers</div></div>
     </a>
   </div><div class="navigation-next">
     <a href="pipeline.html">
@@ -861,13 +944,13 @@ wheel.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

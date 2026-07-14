@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>py-eager — eager Python - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="py-jit — in-process torch.compile" href="py_jit.html" /><link rel="prev" title="Benchmarking" href="../development/benchmarking.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>py-eager — eager Python - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="py-jit — in-process torch.compile" href="py_jit.html" /><link rel="prev" title="Benchmarking" href="../development/benchmarking.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -406,7 +415,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="py-eager-eager-python">
-<span id="py-eager"></span><h1><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python<a class="headerlink" href="#py-eager-eager-python" title="Link to this heading">¶</a></h1>
+<span id="py-eager"></span><h1><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> — eager Python<a class="headerlink" href="#py-eager-eager-python" title="Link to this heading">#</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">py-eager</span></code> is the default runtime: load a model from its input file and call it
 like any <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>, executing eager PyTorch with no compile step. It is
 the path you reach for during development, in tests, and when training with
@@ -414,7 +423,7 @@ PyTorch autograd. It supports the full <code class="docutils literal notranslate
 any device, and sub-batch models (e.g. crystal plasticity).</p>
 <p>Set-up — installing neml2, device placement — is in <a class="reference internal" href="../deployment/python.html#python-integration"><span class="std std-ref">Python integration</span></a>.</p>
 <section id="load-and-call">
-<h2>Load and call<a class="headerlink" href="#load-and-call" title="Link to this heading">¶</a></h2>
+<h2>Load and call<a class="headerlink" href="#load-and-call" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SR2</span>
 </span><span data-line="3">
@@ -428,19 +437,41 @@ live <code class="docutils literal notranslate"><span class="pre">nn.Module</spa
 all behave the way they do for any torch module.</p>
 </section>
 <section id="sensitivities">
-<h2>Sensitivities<a class="headerlink" href="#sensitivities" title="Link to this heading">¶</a></h2>
-<p>Two complementary ways to get derivatives:</p>
+<h2>Sensitivities<a class="headerlink" href="#sensitivities" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">model.jvp</span></code> and <code class="docutils literal notranslate"><span class="pre">model.jacobian</span></code> are the typed forward-mode derivative surface —
+the same <code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> API the compiled and embedded routes
+expose, so derivative code reads identically on every route:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1"># Jacobian-vector product: one cheap directional derivative.</span>
+</span><span data-line="4"><span class="n">outputs</span><span class="p">,</span> <span class="n">jvp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jvp</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">eps</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">deps</span><span class="p">})</span>
+</span><span data-line="5"><span class="c1">#   jvp[&quot;stress&quot;] is an SR2 — the directional derivative of stress along deps.</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Full Jacobian: every (output, input) block.</span>
+</span><span data-line="8"><span class="n">outputs</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">jacobian</span><span class="p">({</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">eps</span><span class="p">})</span>
+</span><span data-line="9"><span class="c1">#   J[&quot;stress&quot;][&quot;strain&quot;] is a typed block d(stress)/d(strain).</span>
+</span></pre></div>
+</div>
+<p>Inputs and tangents are keyed by variable name and accept typed wrappers or raw
+tensors. <code class="docutils literal notranslate"><span class="pre">jvp</span></code> returns each directional derivative as a wrapper of the output’s
+type; <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> returns the nested <code class="docutils literal notranslate"><span class="pre">{output:</span> <span class="pre">{input:</span> <span class="pre">block}}</span></code> map, each block a
+dynamic-base <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(*batch,</span> <span class="pre">*sub_batch,</span> <span class="pre">*out_base,</span> <span class="pre">*in_base)</span></code>.
+Sub-batch models (e.g. crystal plasticity) are supported — the per-site axis
+stays in the block’s sub-batch region. The reverse-mode parameter derivatives
+<span class="math notranslate nohighlight">\(\partial(\text{output})/\partial(\text{parameter})\)</span> are a separate surface:
+<code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> / <code class="docutils literal notranslate"><span class="pre">param_vjp</span></code>.</p>
+<p>Two lower-level paths remain for when you need them:</p>
 <ul class="simple">
 <li><p><strong>Chain rule</strong> — the first/second-order sensitivity dicts threaded through
 <code class="docutils literal notranslate"><span class="pre">forward(...,</span> <span class="pre">v=,</span> <span class="pre">v2=,</span> <span class="pre">vh=)</span></code> propagate tangents analytically through the
-composed model.</p></li>
+composed model; <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> are thin typed wrappers over exactly this.</p></li>
 <li><p><strong>Autograd</strong> — because evaluation is eager, ordinary <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code> works
 end to end; this is what the calibration tutorials use. See
 <a class="reference internal" href="../tutorials/optimization/automatic_differentiation/main.html#tutorials-optimization-autograd"><span class="std std-ref">Automatic differentiation</span></a>.</p></li>
 </ul>
 </section>
 <section id="consumers">
-<h2>Consumers<a class="headerlink" href="#consumers" title="Link to this heading">¶</a></h2>
+<h2>Consumers<a class="headerlink" href="#consumers" title="Link to this heading">#</a></h2>
 <p>Most shell and Python entry points run <em>on</em> this route rather than being
 separate runtimes: <code class="docutils literal notranslate"><span class="pre">neml2-run</span></code> and the <code class="docutils literal notranslate"><span class="pre">Driver</span></code> classes (<code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code>,
 <code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code>, <code class="docutils literal notranslate"><span class="pre">Verification</span></code>) step a model through a load history on
@@ -448,7 +479,7 @@ separate runtimes: <code class="docutils literal notranslate"><span class="pre">
 <a class="reference internal" href="py_jit.html#py-jit"><span class="std std-ref">py-jit — in-process torch.compile</span></a>).</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../tutorials/models/running_your_first_model/main.html#tutorials-models-running-your-first-model"><span class="std std-ref">Running your first model</span></a> — line-by-line first run.</p></li>
 <li><p><a class="reference internal" href="../tutorials/models/transient_driver/main.html#tutorials-models-transient-driver"><span class="std std-ref">Transient driver</span></a> — driving a model over a load history.</p></li>
@@ -495,18 +526,20 @@ separate runtimes: <code class="docutils literal notranslate"><span class="pre">
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../_static/copybutton.js?v=7abfc884"></script>
       <script src="../../_static/shibuya.js?v=50760d75"></script>
+      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
       <script src="../../_static/components/version-banner.js?v=62c7e18e"></script></body>
 </html>

@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Python integration - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="C++ integration" href="cpp.html" /><link rel="prev" title="Ways to evaluate a model" href="overview.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Python integration - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="C++ integration" href="cpp.html" /><link rel="prev" title="Ways to evaluate a model" href="overview.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -408,14 +417,14 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="python-integration">
-<span id="id1"></span><h1>Python integration<a class="headerlink" href="#python-integration" title="Link to this heading">¶</a></h1>
+<span id="id1"></span><h1>Python integration<a class="headerlink" href="#python-integration" title="Link to this heading">#</a></h1>
 <p>The most direct way to use neml2 is from Python: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>, load a model
 from its input file, and evaluate it like any <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>. This page is
 the <em>setup</em> side — installing neml2 in your application, the dependency
 footprint, and where model artifacts come from. The actual evaluation API for
 each route lives in the per-route references linked at the bottom.</p>
 <section id="install">
-<h2>Install<a class="headerlink" href="#install" title="Link to this heading">¶</a></h2>
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading">#</a></h2>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>neml2
 </span></pre></div>
 </div>
@@ -424,7 +433,7 @@ each route lives in the per-route references linked at the bottom.</p>
 editable install from source — see <a class="reference internal" href="../installation/index.html#installation"><span class="std std-ref">Installation</span></a>.</p>
 </section>
 <section id="dependency-footprint">
-<h2>Dependency footprint<a class="headerlink" href="#dependency-footprint" title="Link to this heading">¶</a></h2>
+<h2>Dependency footprint<a class="headerlink" href="#dependency-footprint" title="Link to this heading">#</a></h2>
 <p>A Python app that embeds neml2 depends on <strong>neml2 + torch</strong> (torch is the
 tensor backend and the bulk of the install size). There is no separate
 libtorch download and no system NEML2 install: everything resolves through the
@@ -432,7 +441,7 @@ two wheels in your environment. Pin both for reproducible deployments —
 neml2’s pinned torch is recorded in its wheel metadata.</p>
 </section>
 <section id="obtaining-a-model-artifact">
-<h2>Obtaining a model artifact<a class="headerlink" href="#obtaining-a-model-artifact" title="Link to this heading">¶</a></h2>
+<h2>Obtaining a model artifact<a class="headerlink" href="#obtaining-a-model-artifact" title="Link to this heading">#</a></h2>
 <p>Which artifact you ship depends on the route:</p>
 <ul class="simple">
 <li><p><strong>A HIT input file (<code class="docutils literal notranslate"><span class="pre">.i</span></code>)</strong> — the model definition, consumed by the eager
@@ -444,7 +453,7 @@ for the format and <a class="reference internal" href="cli.html#cli-utilities"><
 </ul>
 </section>
 <section id="import-and-device">
-<h2>Import and device<a class="headerlink" href="#import-and-device" title="Link to this heading">¶</a></h2>
+<h2>Import and device<a class="headerlink" href="#import-and-device" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;my_model&quot;</span><span class="p">)</span>
@@ -457,7 +466,7 @@ call across several devices you compile and use the C++ dispatcher
 (<a class="reference internal" href="../references/cpp_dispatch.html#model-dispatch"><span class="std std-ref">cpp-dispatch — dispatching across devices</span></a>).</p>
 </section>
 <section id="now-evaluate">
-<h2>Now evaluate<a class="headerlink" href="#now-evaluate" title="Link to this heading">¶</a></h2>
+<h2>Now evaluate<a class="headerlink" href="#now-evaluate" title="Link to this heading">#</a></h2>
 <p>With neml2 installed and an artifact in hand, pick the route that fits:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../references/py_eager.html#py-eager"><span class="std std-ref">py-eager — eager Python</span></a> — load and call the model directly; the default for development,
@@ -470,7 +479,7 @@ for pyzag training loops.</p></li>
 <a class="reference internal" href="../tutorials/models/running_your_first_model/main.html#tutorials-models-running-your-first-model"><span class="std std-ref">Running your first model</span></a>.</p>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../installation/index.html#installation"><span class="std std-ref">Installation</span></a> — torch variants, CUDA/ROCm, building from source.</p></li>
 <li><p><a class="reference internal" href="overview.html#deployment-overview"><span class="std std-ref">Ways to evaluate a model</span></a> — all six routes and how to choose.</p></li>
@@ -516,13 +525,13 @@ for pyzag training loops.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

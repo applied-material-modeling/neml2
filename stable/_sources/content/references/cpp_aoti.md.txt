@@ -16,8 +16,8 @@ This page is the C++ loading-and-calling API.
 
 The entry point that mirrors Python's `load_model(path, name)` is
 `neml2::aoti::load_model`: hand it the stub `.i` and the model name, and
-it parses the stub, resolves the per-device artifact folder from
-`artifact_path`, and forwards any `[Solvers]` settings to the runtime:
+it parses the stub, resolves the artifact folder from `artifact_path`,
+and reads solver configuration directly from `metadata.json`:
 
 ```cpp
 #include "neml2/csrc/dispatchers/factory.h"
@@ -40,15 +40,16 @@ model.named_parameters().at("elasticity.E").fill_(210000.0);
 scheduler turns on multi-device dispatch (chunking a batch across
 CPU + GPU(s)); see [](model-dispatch) for the scheduler surface.
 
-If you already have a per-device metadata path and want to skip HIT
-parsing entirely, construct the bare `neml2::aoti::Model` directly. It
-takes a single filesystem path to a `<device>/<name>_meta.json`; the
-per-segment `.pt2` files are resolved relative to that path:
+If you want to skip HIT parsing entirely, construct the bare
+`neml2::aoti::Model` directly from the artifact root. Device and dtype
+default to `at::kCPU` and `at::kDouble`:
 
 ```cpp
 #include "neml2/csrc/aoti/Model.h"
 
-neml2::aoti::Model model("aoti/elasticity/cpu/elasticity_meta.json");
+neml2::aoti::Model model("aoti/elasticity");
+// or with explicit device / dtype:
+neml2::aoti::Model model("aoti/elasticity", at::kCPU, at::kDouble);
 ```
 
 The bare `Model` is non-copyable and non-movable; hold it as a

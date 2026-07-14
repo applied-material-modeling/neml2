@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>The forward operator - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Auto-deriving the chain rule with request_AD" href="../request_ad/main.html" /><link rel="prev" title="Connecting to input files" href="../connection_to_input_files/main.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>The forward operator - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Auto-deriving the chain rule with request_AD" href="../request_ad/main.html" /><link rel="prev" title="Connecting to input files" href="../connection_to_input_files/main.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -412,12 +421,12 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="the-forward-operator">
-<span id="tutorials-extension-forward"></span><h1>The forward operator<a class="headerlink" href="#the-forward-operator" title="Link to this heading">¶</a></h1>
-<a class="colab-badge" href="https://colab.research.google.com/github/applied-material-modeling/neml2/blob/v3.0.6/doc/content/tutorials/extension/the_forward_operator/main.ipynb" target="_blank" rel="noopener" title="Run this tutorial in Google Colab"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a><p>The previous tutorial declared the projectile model’s inputs, outputs,
+<span id="tutorials-extension-forward"></span><h1>The forward operator<a class="headerlink" href="#the-forward-operator" title="Link to this heading">#</a></h1>
+<a class="colab-badge" href="https://colab.research.google.com/github/applied-material-modeling/neml2/blob/v3.0.7/doc/content/tutorials/extension/the_forward_operator/main.ipynb" target="_blank" rel="noopener" title="Run this tutorial in Google Colab"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a><p>The previous tutorial declared the projectile model’s inputs, outputs,
 and parameters. This one fills in the math: a <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method that
 turns a velocity into an acceleration.</p>
 <section id="the-forward-method">
-<h2>The <code class="docutils literal notranslate"><span class="pre">forward</span></code> method<a class="headerlink" href="#the-forward-method" title="Link to this heading">¶</a></h2>
+<h2>The <code class="docutils literal notranslate"><span class="pre">forward</span></code> method<a class="headerlink" href="#the-forward-method" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">forward()</span></code> is the function NEML2 calls to evaluate our model. The
 positional arguments are the inputs in the order we declared them in
 the schema — each one is already a typed wrapper (<code class="docutils literal notranslate"><span class="pre">Vec</span></code>, <code class="docutils literal notranslate"><span class="pre">SR2</span></code>, …) the
@@ -428,7 +437,7 @@ Until we need derivatives, we can leave it alone; calls without
 <code class="docutils literal notranslate"><span class="pre">v</span></code> get back just the outputs.</p>
 </section>
 <section id="implementation">
-<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">¶</a></h2>
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
 <p>Recall the equation for the projectile model:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -556,7 +565,7 @@ any tangents the caller seeded on <code class="docutils literal notranslate"><sp
 Jacobian matrix in memory.</p>
 </section>
 <section id="evaluation">
-<h2>Evaluation<a class="headerlink" href="#evaluation" title="Link to this heading">¶</a></h2>
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Link to this heading">#</a></h2>
 <p>That’s the whole model. Load it the same way we’d load any built-in
 type — <code class="docutils literal notranslate"><span class="pre">neml2.load_model</span></code> finds it through the factory as long as the
 module that registers it has been imported.</p>
@@ -625,7 +634,7 @@ module that registers it has been imported.</p>
 preserves the <code class="docutils literal notranslate"><span class="pre">Vec</span></code> shape on the way out.</p>
 </section>
 <section id="first-derivatives">
-<h2>First derivatives<a class="headerlink" href="#first-derivatives" title="Link to this heading">¶</a></h2>
+<h2>First derivatives<a class="headerlink" href="#first-derivatives" title="Link to this heading">#</a></h2>
 <p>Because <code class="docutils literal notranslate"><span class="pre">forward()</span></code> implements the <code class="docutils literal notranslate"><span class="pre">v</span></code> branch, the same model can hand
 back directional derivatives with no extra wiring. Seed a tangent on
 the velocity input and the JVP comes back through <code class="docutils literal notranslate"><span class="pre">v_out</span></code>:</p>
@@ -651,7 +660,7 @@ the velocity input and the JVP comes back through <code class="docutils literal 
 \boldsymbol{v} = -\mu I = -0.001\, I_3\)</span> exactly.</p>
 </section>
 <section id="driving-the-model-from-a-unit-test-input">
-<h2>Driving the model from a unit-test input<a class="headerlink" href="#driving-the-model-from-a-unit-test-input" title="Link to this heading">¶</a></h2>
+<h2>Driving the model from a unit-test input<a class="headerlink" href="#driving-the-model-from-a-unit-test-input" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code> is the usual way to pin a custom model’s behavior in
 CI. It loads the model, runs it on inputs we supply, checks the
 outputs, and cross-checks the derivatives against PyTorch’s autograd:</p>
@@ -717,7 +726,7 @@ value and every JVP matched. A zero on either side means that check
 was skipped, not that it failed silently.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>The next tutorial, <a class="reference internal" href="../request_ad/main.html#tutorials-extension-request-ad"><span class="std std-ref">Auto-deriving the chain rule with request_AD</span></a>, lets NEML2
 derive the chain rule for us by automatic differentiation — the same
@@ -763,13 +772,13 @@ projectile, but with no hand-written <code class="docutils literal notranslate">
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>

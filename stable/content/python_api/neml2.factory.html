@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.factory - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="neml2.schema" href="neml2.schema.html" /><link rel="prev" title="Python API" href="index.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>neml2.factory - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="neml2.schema" href="neml2.schema.html" /><link rel="prev" title="Python API" href="index.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -411,7 +420,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="module-neml2.factory">
-<span id="neml2-factory"></span><h1>neml2.factory<a class="headerlink" href="#module-neml2.factory" title="Link to this heading">¶</a></h1>
+<span id="neml2-factory"></span><h1>neml2.factory<a class="headerlink" href="#module-neml2.factory" title="Link to this heading">#</a></h1>
 <p>Python-native HIT input file factory.</p>
 <p>Mirrors the C++ Factory / Registry pattern for Python-native models:</p>
 <ul class="simple">
@@ -429,7 +438,7 @@ dependencies via the factory’s <code class="docutils literal notranslate"><spa
 <code class="docutils literal notranslate"><span class="pre">get_equation_system</span></code> methods (mirroring <code class="docutils literal notranslate"><span class="pre">NEML2Object::get_model</span></code> etc.).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="neml2.factory.load_input">
-<span class="sig-prename descclassname"><span class="pre">neml2.factory.</span></span><span class="sig-name descname"><span class="pre">load_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/factory.html#load_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.factory.load_input" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">neml2.factory.</span></span><span class="sig-name descname"><span class="pre">load_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/factory.html#load_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.factory.load_input" title="Link to this definition">#</a></dt>
 <dd><p>Parse a HIT input file and return a lazy native factory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -444,6 +453,22 @@ semantics as <code class="docutils literal notranslate"><span class="pre">nmhit.
 appended after <code class="docutils literal notranslate"><span class="pre">post</span></code> so any <code class="docutils literal notranslate"><span class="pre">:=</span></code> override takes effect after
 the file’s own assignments. Mirrors the C++ side’s
 <code class="docutils literal notranslate"><span class="pre">neml2::load_input(path,</span> <span class="pre">additional_cliargs)</span></code>.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em> | </em><em>None</em>) – Load-time device/dtype for any <strong>compiled</strong> (<code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code>) block in
+the file – they select the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> artifact leaf. Accept
+a <code class="docutils literal notranslate"><span class="pre">torch.device</span></code> / <code class="docutils literal notranslate"><span class="pre">torch.dtype</span></code> or their string spellings;
+<code class="docutils literal notranslate"><span class="pre">None</span></code> (default) selects NEML2’s canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code>
+(matching <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>), NOT torch’s ambient defaults. This is a
+load-time decision because an AOTI artifact is device/dtype-pinned; a
+non-compiled model ignores these and is placed with <code class="docutils literal notranslate"><span class="pre">.to(...)</span></code> after
+loading. The compiled stub itself stays device/dtype-agnostic.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em> | </em><em>None</em>) – Load-time device/dtype for any <strong>compiled</strong> (<code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code>) block in
+the file – they select the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> artifact leaf. Accept
+a <code class="docutils literal notranslate"><span class="pre">torch.device</span></code> / <code class="docutils literal notranslate"><span class="pre">torch.dtype</span></code> or their string spellings;
+<code class="docutils literal notranslate"><span class="pre">None</span></code> (default) selects NEML2’s canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code>
+(matching <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>), NOT torch’s ambient defaults. This is a
+load-time decision because an AOTI artifact is device/dtype-pinned; a
+non-compiled model ignores these and is placed with <code class="docutils literal notranslate"><span class="pre">.to(...)</span></code> after
+loading. The compiled stub itself stays device/dtype-agnostic.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -454,7 +479,7 @@ the file’s own assignments. Mirrors the C++ side’s
 
 <dl class="py function">
 <dt class="sig sig-object py" id="neml2.factory.load_model">
-<span class="sig-prename descclassname"><span class="pre">neml2.factory.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/factory.html#load_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.factory.load_model" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">neml2.factory.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/factory.html#load_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.factory.load_model" title="Link to this definition">#</a></dt>
 <dd><p>Load a named model from a HIT input file as a Python-native model.</p>
 <p>Raises <code class="docutils literal notranslate"><span class="pre">KeyError</span></code> if the model’s type (or any of its sub-object types)
 isn’t registered in <code class="docutils literal notranslate"><span class="pre">NativeRegistry</span></code>.</p>
@@ -463,6 +488,16 @@ isn’t registered in <code class="docutils literal notranslate"><span class="pr
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><em>Path</em></a>) – Path to the HIT <code class="docutils literal notranslate"><span class="pre">.i</span></code> file.</p></li>
 <li><p><strong>model_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the model in the <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> section.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em> | </em><em>None</em>) – Load-time device/dtype for a <strong>compiled</strong> model (an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> stub):
+they select the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> artifact leaf and default to NEML2’s
+canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code> (matching <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>). Ignored for a
+non-compiled model (place it with <code class="docutils literal notranslate"><span class="pre">.to(...)</span></code> afterward). See
+<a class="reference internal" href="#neml2.factory.load_input" title="neml2.factory.load_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input()</span></code></a>.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em> | </em><em>None</em>) – Load-time device/dtype for a <strong>compiled</strong> model (an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> stub):
+they select the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> artifact leaf and default to NEML2’s
+canonical <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code> (matching <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>). Ignored for a
+non-compiled model (place it with <code class="docutils literal notranslate"><span class="pre">.to(...)</span></code> afterward). See
+<a class="reference internal" href="#neml2.factory.load_input" title="neml2.factory.load_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -473,7 +508,7 @@ isn’t registered in <code class="docutils literal notranslate"><span class="pr
 
 <dl class="py function">
 <dt class="sig sig-object py" id="neml2.factory.load_nonlinear_system">
-<span class="sig-prename descclassname"><span class="pre">neml2.factory.</span></span><span class="sig-name descname"><span class="pre">load_nonlinear_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/factory.html#load_nonlinear_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.factory.load_nonlinear_system" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">neml2.factory.</span></span><span class="sig-name descname"><span class="pre">load_nonlinear_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/factory.html#load_nonlinear_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.factory.load_nonlinear_system" title="Link to this definition">#</a></dt>
 <dd><p>Load a named system from <code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> as a Python-native object.</p>
 <p>Convenience wrapper around <code class="docutils literal notranslate"><span class="pre">load_input(path).get_equation_system(name)</span></code>
 — mirrors <a class="reference internal" href="#neml2.factory.load_model" title="neml2.factory.load_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_model()</span></code></a>. Returns a
@@ -494,10 +529,11 @@ isn’t registered in <code class="docutils literal notranslate"><span class="pr
 
 <dl class="py function">
 <dt class="sig sig-object py" id="neml2.factory.load_string">
-<span class="sig-prename descclassname"><span class="pre">neml2.factory.</span></span><span class="sig-name descname"><span class="pre">load_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/factory.html#load_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.factory.load_string" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">neml2.factory.</span></span><span class="sig-name descname"><span class="pre">load_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/factory.html#load_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.factory.load_string" title="Link to this definition">#</a></dt>
 <dd><p>Parse an in-memory HIT snippet and return a lazy native factory.</p>
-<p>Same semantics as <a class="reference internal" href="#neml2.factory.load_input" title="neml2.factory.load_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input()</span></code></a> but reads from a string (via
-<code class="docutils literal notranslate"><span class="pre">nmhit.parse_text</span></code>) instead of a file. Used by
+<p>Same semantics as <a class="reference internal" href="#neml2.factory.load_input" title="neml2.factory.load_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input()</span></code></a> (including the <code class="docutils literal notranslate"><span class="pre">device</span></code> / <code class="docutils literal notranslate"><span class="pre">dtype</span></code>
+load-time selection for compiled <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> blocks) but reads from a
+string (via <code class="docutils literal notranslate"><span class="pre">nmhit.parse_text</span></code>) instead of a file. Used by
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">neml2.drivers.ModelUnitTest.from_string()</span></code> so a unit test can
 embed its <code class="docutils literal notranslate"><span class="pre">[Models]</span></code> / <code class="docutils literal notranslate"><span class="pre">[Tensors]</span></code> / <code class="docutils literal notranslate"><span class="pre">[Drivers]</span></code> blocks inline.</p>
 <dl class="field-list simple">
@@ -507,6 +543,8 @@ embed its <code class="docutils literal notranslate"><span class="pre">[Models]<
 <li><p><strong>pre</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>)</p></li>
 <li><p><strong>post</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>)</p></li>
 <li><p><strong>additional_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>)</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em> | </em><em>None</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -517,7 +555,7 @@ embed its <code class="docutils literal notranslate"><span class="pre">[Models]<
 
 <dl class="py function">
 <dt class="sig sig-object py" id="neml2.factory.register_neml2_object">
-<span class="sig-prename descclassname"><span class="pre">neml2.factory.</span></span><span class="sig-name descname"><span class="pre">register_neml2_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/factory.html#register_neml2_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.factory.register_neml2_object" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">neml2.factory.</span></span><span class="sig-name descname"><span class="pre">register_neml2_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/factory.html#register_neml2_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.factory.register_neml2_object" title="Link to this definition">#</a></dt>
 <dd><p>Decorator: register a Model (or solver/system) class under <em>type_name</em>.</p>
 <p>The class must provide a <code class="docutils literal notranslate"><span class="pre">from_hit(cls,</span> <span class="pre">node,</span> <span class="pre">factory)</span></code> classmethod that
 constructs an instance from the given nmhit Section node. <code class="docutils literal notranslate"><span class="pre">Model</span></code>
@@ -575,13 +613,13 @@ registered object types implement it directly. The <em>factory</em> argument is 
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

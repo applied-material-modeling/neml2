@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Plasticity - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Crystal plasticity" href="crystal_plasticity/index.html" /><link rel="prev" title="Viscoelasticity" href="viscoelasticity.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Plasticity - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Crystal plasticity" href="crystal_plasticity/index.html" /><link rel="prev" title="Viscoelasticity" href="viscoelasticity.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -425,9 +434,9 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="plasticity">
-<span id="modules-solid-mechanics-plasticity"></span><h1>Plasticity<a class="headerlink" href="#plasticity" title="Link to this heading">¶</a></h1>
+<span id="modules-solid-mechanics-plasticity"></span><h1>Plasticity<a class="headerlink" href="#plasticity" title="Link to this heading">#</a></h1>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
 <p>Plasticity models describe the (typically irreversible and dissipative)
 history-dependent deformation of solids. NEML2’s macroscale plasticity
 catalog under <code class="docutils literal notranslate"><span class="pre">neml2/models/solid_mechanics/plasticity/</span></code> provides small
@@ -462,16 +471,19 @@ flow, <a class="reference internal" href="../../../generated/syntax/Models/solid
 itself as an explicit function of the yield function.</p></li>
 </ul>
 <p>These pieces are typically glued together by <a class="reference internal" href="../../../generated/syntax/Models/common/ComposedModel.html#models-composedmodel"><span class="std std-ref">ComposedModel</span></a>
-and closed by either <a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html#models-fbcomplementarity"><span class="std std-ref">FBComplementarity</span></a> (consistent
-plasticity) or a Perzyna-style rate equation (viscoplasticity), then
-wrapped in <a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html#models-implicitupdate"><span class="std std-ref">ImplicitUpdate</span></a> for the implicit return map. A
+and closed by a complementarity condition (consistent plasticity) or a
+Perzyna-style rate equation (viscoplasticity), then wrapped in
+<a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html#models-implicitupdate"><span class="std std-ref">ImplicitUpdate</span></a> for the implicit return map. For consistent
+plasticity the recommended closure is the hard-switch
+<a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html#models-minmapcomplementarity"><span class="std std-ref">MinMapComplementarity</span></a>; <a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html#models-fbcomplementarity"><span class="std std-ref">FBComplementarity</span></a> is a
+smooth alternative (see below). A
 closed-form radial-return path is also available for the
 J2-elastic-perfectly-plastic case via
 <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/LinearIsotropicElasticJ2TrialStressUpdate.html#models-linearisotropicelasticj2trialstressupdate"><span class="std std-ref">LinearIsotropicElasticJ2TrialStressUpdate</span></a>; see the
 <code class="docutils literal notranslate"><span class="pre">rate_independent_plasticity/radial_return/</span></code> regression scenario.</p>
 </section>
 <section id="math">
-<h2>Math<a class="headerlink" href="#math" title="Link to this heading">¶</a></h2>
+<h2>Math<a class="headerlink" href="#math" title="Link to this heading">#</a></h2>
 <p>Plastic flow is governed by the Karush-Kuhn-Tucker (KKT) loading/unloading
 conditions</p>
 <div class="math-wrapper docutils container">
@@ -482,17 +494,31 @@ f^p \leq 0, \quad \dot{\gamma} \geq 0, \quad \dot{\gamma}\, f^p = 0,
 </div>
 <p>where <span class="math notranslate nohighlight">\(f^p\)</span> is the yield function and <span class="math notranslate nohighlight">\(\gamma\)</span> is the consistency parameter.</p>
 <section id="consistent-rate-independent-plasticity">
-<h3>Consistent (rate-independent) plasticity<a class="headerlink" href="#consistent-rate-independent-plasticity" title="Link to this heading">¶</a></h3>
-<p>NEML2 enforces the KKT conditions by recasting them as the smooth
-Fischer-Burmeister complementarity residual, which the nonlinear
-solver drives to its convergence tolerance:</p>
+<h3>Consistent (rate-independent) plasticity<a class="headerlink" href="#consistent-rate-independent-plasticity" title="Link to this heading">#</a></h3>
+<p>NEML2 enforces the KKT conditions by recasting them as a single
+complementarity residual that the nonlinear solver drives to its
+convergence tolerance. The recommended form is the <em>minimum map</em>, a hard
+switch that reduces to whichever condition is active:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+r = \min(\dot{\gamma},\, -f^p),
+\]</div>
+</div>
+<p>implemented by <a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html#models-minmapcomplementarity"><span class="std std-ref">MinMapComplementarity</span></a> with <code class="docutils literal notranslate"><span class="pre">a_inequality</span> <span class="pre">=</span> <span class="pre">'LE'</span></code>.
+Being piecewise-linear, it gives semismooth-Newton / active-set behavior
+that converges robustly in return mapping.</p>
+<p>An alternative is the smooth Fischer-Burmeister residual,</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
 r = \dot{\gamma} - f^p - \sqrt{\dot{\gamma}^{\,2} + {f^p}^{\,2}},
 \]</div>
 </div>
-<p>implemented by <a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html#models-fbcomplementarity"><span class="std std-ref">FBComplementarity</span></a> with <code class="docutils literal notranslate"><span class="pre">a_inequality</span> <span class="pre">=</span> <span class="pre">'LE'</span></code>.</p>
+<p>implemented by <a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html#models-fbcomplementarity"><span class="std std-ref">FBComplementarity</span></a> with the same
+<code class="docutils literal notranslate"><span class="pre">a_inequality</span> <span class="pre">=</span> <span class="pre">'LE'</span></code>. It is differentiable everywhere but strongly
+nonlinear near the origin, which can slow Newton convergence; prefer the
+minimum map unless a globally smooth residual is specifically required.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>“Consistent” plasticity is often called rate-<em>independent</em>. Rate
@@ -502,7 +528,7 @@ laws expressed in terms of internal-variable rates, so the
 </div>
 </section>
 <section id="viscoplasticity">
-<h3>Viscoplasticity<a class="headerlink" href="#viscoplasticity" title="Link to this heading">¶</a></h3>
+<h3>Viscoplasticity<a class="headerlink" href="#viscoplasticity" title="Link to this heading">#</a></h3>
 <p>The Perzyna regularization replaces the complementarity with an explicit
 power-law overstress relation,</p>
 <div class="math-wrapper docutils container">
@@ -516,12 +542,12 @@ power-law overstress relation,</p>
 <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/PerzynaPlasticFlowRate.html#models-perzynaplasticflowrate"><span class="std std-ref">PerzynaPlasticFlowRate</span></a>.</p>
 </section>
 <section id="effective-stress-and-yield-function">
-<h3>Effective stress and yield function<a class="headerlink" href="#effective-stress-and-yield-function" title="Link to this heading">¶</a></h3>
+<h3>Effective stress and yield function<a class="headerlink" href="#effective-stress-and-yield-function" title="Link to this heading">#</a></h3>
 <p>For classical <span class="math notranslate nohighlight">\(J_2\)</span> plasticity the effective stress is the von Mises norm of
 the deviatoric (over-)stress,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-67385d71-8cd0-47d4-bf3c-93015853a0f1">
-<div class="amsmath math notranslate nohighlight" id="equation-67385d71-8cd0-47d4-bf3c-93015853a0f1">
-<span class="eqno">(16)<a class="headerlink" href="#equation-67385d71-8cd0-47d4-bf3c-93015853a0f1" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-710d8bcd-57e6-487e-a784-1d7101166917">
+<div class="amsmath math notranslate nohighlight" id="equation-710d8bcd-57e6-487e-a784-1d7101166917">
+<span class="eqno">(16)<a class="headerlink" href="#equation-710d8bcd-57e6-487e-a784-1d7101166917" title="Permalink to this equation">#</a></span>\[\begin{align}
   \bar{\sigma} &amp;= \sqrt{3 J_2},                                                \\
   J_2          &amp;= \tfrac{1}{2}\,\mathrm{dev}\,\boldsymbol{\Xi}\,:\,
                   \mathrm{dev}\,\boldsymbol{\Xi},                              \\
@@ -539,12 +565,12 @@ f^p = \bar{\sigma} - \sigma_y - k(\bar{\varepsilon}^p).
 </div>
 </section>
 <section id="associative-flow">
-<h3>Associative flow<a class="headerlink" href="#associative-flow" title="Link to this heading">¶</a></h3>
+<h3>Associative flow<a class="headerlink" href="#associative-flow" title="Link to this heading">#</a></h3>
 <p>Associative flow rules derive the rates of the plastic strain and internal
 variables from the maximum-dissipation principle,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-7c8a8701-1493-436d-9317-9101397d836a">
-<div class="amsmath math notranslate nohighlight" id="equation-7c8a8701-1493-436d-9317-9101397d836a">
-<span class="eqno">(17)<a class="headerlink" href="#equation-7c8a8701-1493-436d-9317-9101397d836a" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-bd563be8-60a8-4052-931c-9f20852cc5a6">
+<div class="amsmath math notranslate nohighlight" id="equation-bd563be8-60a8-4052-931c-9f20852cc5a6">
+<span class="eqno">(17)<a class="headerlink" href="#equation-bd563be8-60a8-4052-931c-9f20852cc5a6" title="Permalink to this equation">#</a></span>\[\begin{align}
   \dot{\boldsymbol{\varepsilon}}^p &amp;= \dot{\gamma}\,
         \frac{\partial f^p}{\partial \boldsymbol{\sigma}},                     \\
   \dot{\bar{\varepsilon}}^p        &amp;= -\dot{\gamma}\,
@@ -562,14 +588,14 @@ a sub-model (the yield function) with respect to a list of input variables;
 </section>
 </section>
 <section id="example-rate-independent-j-2-plasticity-with-mixed-hardening">
-<h2>Example: rate-independent <span class="math notranslate nohighlight">\(J_2\)</span> plasticity with mixed hardening<a class="headerlink" href="#example-rate-independent-j-2-plasticity-with-mixed-hardening" title="Link to this heading">¶</a></h2>
+<h2>Example: rate-independent <span class="math notranslate nohighlight">\(J_2\)</span> plasticity with mixed hardening<a class="headerlink" href="#example-rate-independent-j-2-plasticity-with-mixed-hardening" title="Link to this heading">#</a></h2>
 <p>The input file below assembles a fully implicit return-map for elastic-plastic
 behaviour with both isotropic and kinematic hardening: linear-elastic
 stress-strain, <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/VoceIsotropicHardening.html#models-voceisotropichardening"><span class="std std-ref">VoceIsotropicHardening</span></a> isotropic hardening,
 <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/LinearKinematicHardening.html#models-linearkinematichardening"><span class="std std-ref">LinearKinematicHardening</span></a> back stress, associative <span class="math notranslate nohighlight">\(J_2\)</span> flow, and
-the Fischer-Burmeister consistency condition.</p>
+the minimum-map consistency condition.</p>
 <div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-number">Listing 2 </span><span class="caption-text">tests/regression/solid_mechanics/rate_independent_plasticity/isokinharden/model.i</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-number">Listing 2 </span><span class="caption-text">tests/regression/solid_mechanics/rate_independent_plasticity/isokinharden/model.i</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># neml2</span>
 </span><span data-line="2"><span class="k">[Tensors]</span>
 </span><span data-line="3"><span class="w">  </span><span class="k">[end_time]</span>
@@ -682,7 +708,7 @@ the Fischer-Burmeister consistency condition.</p>
 </span><span data-line="110"><span class="w">    </span><span class="na">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;plastic_strain&#39;</span>
 </span><span data-line="111"><span class="w">  </span><span class="k">[]</span>
 </span><span data-line="112"><span class="w">  </span><span class="k">[consistency]</span>
-</span><span data-line="113"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FBComplementarity</span>
+</span><span data-line="113"><span class="w">    </span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">MinMapComplementarity</span>
 </span><span data-line="114"><span class="w">    </span><span class="na">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;yield_function&#39;</span>
 </span><span data-line="115"><span class="w">    </span><span class="na">a_inequality</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;LE&#39;</span>
 </span><span data-line="116"><span class="w">    </span><span class="na">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;flow_rate&#39;</span>
@@ -737,7 +763,7 @@ the Fischer-Burmeister consistency condition.</p>
 </div>
 </div>
 <section id="how-the-pieces-wire-together">
-<h3>How the pieces wire together<a class="headerlink" href="#how-the-pieces-wire-together" title="Link to this heading">¶</a></h3>
+<h3>How the pieces wire together<a class="headerlink" href="#how-the-pieces-wire-together" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>Hardening laws</strong> — <code class="docutils literal notranslate"><span class="pre">[isoharden]</span></code> (<a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/plasticity/VoceIsotropicHardening.html#models-voceisotropichardening"><span class="std std-ref">VoceIsotropicHardening</span></a>) maps
 <code class="docutils literal notranslate"><span class="pre">equivalent_plastic_strain</span></code> to <code class="docutils literal notranslate"><span class="pre">isotropic_hardening</span></code>; <code class="docutils literal notranslate"><span class="pre">[kinharden]</span></code>
@@ -764,8 +790,8 @@ parameter <code class="docutils literal notranslate"><span class="pre">flow_rate
 the rates into the residuals <code class="docutils literal notranslate"><span class="pre">plastic_strain_residual</span></code>,
 <code class="docutils literal notranslate"><span class="pre">kinematic_plastic_strain_residual</span></code>,
 <code class="docutils literal notranslate"><span class="pre">equivalent_plastic_strain_residual</span></code>.</p></li>
-<li><p><strong>Consistency</strong> — <code class="docutils literal notranslate"><span class="pre">[consistency]</span></code> (<a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html#models-fbcomplementarity"><span class="std std-ref">FBComplementarity</span></a>) closes
-the system with the Fischer-Burmeister residual between <code class="docutils literal notranslate"><span class="pre">yield_function</span></code>
+<li><p><strong>Consistency</strong> — <code class="docutils literal notranslate"><span class="pre">[consistency]</span></code> (<a class="reference internal" href="../../../generated/syntax/Models/common/MinMapComplementarity.html#models-minmapcomplementarity"><span class="std std-ref">MinMapComplementarity</span></a>) closes
+the system with the minimum-map residual between <code class="docutils literal notranslate"><span class="pre">yield_function</span></code>
 and <code class="docutils literal notranslate"><span class="pre">flow_rate</span></code>.</p></li>
 <li><p><strong>Return map</strong> — <code class="docutils literal notranslate"><span class="pre">[surface]</span></code> composes every residual-producing piece into
 one model. <code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code> solves for
@@ -777,7 +803,7 @@ plastic strain to expose the final stress.</p></li>
 </ul>
 </section>
 <section id="switching-to-viscoplasticity">
-<h3>Switching to viscoplasticity<a class="headerlink" href="#switching-to-viscoplasticity" title="Link to this heading">¶</a></h3>
+<h3>Switching to viscoplasticity<a class="headerlink" href="#switching-to-viscoplasticity" title="Link to this heading">#</a></h3>
 <p>Swapping the FB closure for a direct Perzyna flow-rate evaluation is
 the basic move from rate-independent to viscoplastic; depending on
 the variation you may also integrate stress in rate form rather than
@@ -785,7 +811,7 @@ plastic strain. The reference recipe lives at
 <code class="docutils literal notranslate"><span class="pre">tests/regression/solid_mechanics/viscoplasticity/perfect/model.i</span></code>.</p>
 </section>
 <section id="variations-shipped-in-the-test-tree">
-<h3>Variations shipped in the test tree<a class="headerlink" href="#variations-shipped-in-the-test-tree" title="Link to this heading">¶</a></h3>
+<h3>Variations shipped in the test tree<a class="headerlink" href="#variations-shipped-in-the-test-tree" title="Link to this heading">#</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">tests/regression/solid_mechanics/</span></code> tree carries ready-to-read
 compositions for the most common dialects:</p>
 <ul class="simple">
@@ -806,7 +832,7 @@ radial-return via <a class="reference internal" href="../../../generated/syntax/
 </section>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../../tutorials/models/implicit_model/main.html#tutorials-models-implicit-model"><span class="std std-ref">Implicit models</span></a> — walks through <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code>,
 <code class="docutils literal notranslate"><span class="pre">NonlinearSystem</span></code>, and the predictor with a minimal plasticity example.</p></li>
@@ -861,13 +887,13 @@ above.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>

@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>cpp-eager — eager evaluation from C++ - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="AOTI packages" href="aoti_packages.html" /><link rel="prev" title="cpp-dispatch — dispatching across devices" href="cpp_dispatch.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>cpp-eager — eager evaluation from C++ - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Solvers" href="solvers.html" /><link rel="prev" title="cpp-dispatch — dispatching across devices" href="cpp_dispatch.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -407,7 +416,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="cpp-eager-eager-evaluation-from-c">
-<span id="model-eager-cpp"></span><h1><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++<a class="headerlink" href="#cpp-eager-eager-evaluation-from-c" title="Link to this heading">¶</a></h1>
+<span id="model-eager-cpp"></span><h1><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++<a class="headerlink" href="#cpp-eager-eager-evaluation-from-c" title="Link to this heading">#</a></h1>
 <p>The compiled path (<a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a>) is the right way to run a NEML2 model
 from C++ in production: it is fast and needs no Python at the hot loop. But
 <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> runs an AOT-Inductor compile that takes <strong>minutes</strong> — too slow to
@@ -434,7 +443,7 @@ libpython itself (e.g. CMake <code class="docutils literal notranslate"><span cl
 Python supplies it automatically.</p>
 </div>
 <section id="load-and-run-from-c">
-<h2>Load and run from C++<a class="headerlink" href="#load-and-run-from-c" title="Link to this heading">¶</a></h2>
+<h2>Load and run from C++<a class="headerlink" href="#load-and-run-from-c" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">neml2::eager::load_model(input_file,</span> <span class="pre">model_name)</span></code> mirrors Python’s
 <code class="docutils literal notranslate"><span class="pre">load_model(path,</span> <span class="pre">name)</span></code> and returns a <code class="docutils literal notranslate"><span class="pre">neml2::eager::Model</span></code> whose operations
 (<code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> plus the parameter derivatives <code class="docutils literal notranslate"><span class="pre">param_jacobian</span></code> /
@@ -443,7 +452,7 @@ Python supplies it automatically.</p>
 have the <strong>same signatures</strong> as <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code>. So test code switches between
 the eager and compiled runtimes by changing only the load call and the header.</p>
 <div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-number">Listing 7 </span><span class="caption-text">tests/aoti/forward_single/model.i — loaded directly, no compile</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-number">Listing 7 </span><span class="caption-text">tests/aoti/forward_single/model.i — loaded directly, no compile</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># forward_single: a one-leaf forward-only model. Smoke test for the</span>
 </span><span data-line="2"><span class="c1"># bake-by-default path on the simplest possible shape.</span>
 </span><span data-line="3">
@@ -489,7 +498,7 @@ for <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Mo
 passed as <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">1)</span></code> instead of <code class="docutils literal notranslate"><span class="pre">(*B,</span> <span class="pre">6)</span></code>) is rejected with a <code class="docutils literal notranslate"><span class="pre">FatalError</span></code>.</p>
 </section>
 <section id="loading-external-python-authored-models">
-<h2>Loading external (Python-authored) models<a class="headerlink" href="#loading-external-python-authored-models" title="Link to this heading">¶</a></h2>
+<h2>Loading external (Python-authored) models<a class="headerlink" href="#loading-external-python-authored-models" title="Link to this heading">#</a></h2>
 <p>Because the eager runtime <em>is</em> an embedded interpreter, a C++ host can drive
 models that live outside the installed <code class="docutils literal notranslate"><span class="pre">neml2</span></code> package — the embedded-eager
 counterpart of the <code class="docutils literal notranslate"><span class="pre">--load</span></code> flag on <code class="docutils literal notranslate"><span class="pre">neml2-run</span></code> / <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>. Pass the
@@ -507,7 +516,7 @@ Registration is process-global: once an extension is loaded, its types stay visi
 to later <code class="docutils literal notranslate"><span class="pre">load_model</span></code> calls in the same process.</p>
 </section>
 <section id="sensitivities-jvp-and-jacobian">
-<h2>Sensitivities: <code class="docutils literal notranslate"><span class="pre">jvp</span></code> and <code class="docutils literal notranslate"><span class="pre">jacobian</span></code><a class="headerlink" href="#sensitivities-jvp-and-jacobian" title="Link to this heading">¶</a></h2>
+<h2>Sensitivities: <code class="docutils literal notranslate"><span class="pre">jvp</span></code> and <code class="docutils literal notranslate"><span class="pre">jacobian</span></code><a class="headerlink" href="#sensitivities-jvp-and-jacobian" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">jvp</span></code> and <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> mirror <code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code> and are computed on the native
 model’s chain rule (the same <code class="docutils literal notranslate"><span class="pre">v=</span></code> machinery the AOTI export traces), so they work
 for forward and implicit (Newton) models alike. Both are <strong>variable-native</strong>: the
@@ -533,7 +542,7 @@ mishandled — use the compiled / dispatched path (<a class="reference internal"
 </div>
 </section>
 <section id="errors">
-<h2>Errors<a class="headerlink" href="#errors" title="Link to this heading">¶</a></h2>
+<h2>Errors<a class="headerlink" href="#errors" title="Link to this heading">#</a></h2>
 <p>A Python-side failure — a parse error, an unknown model name, a wrong-dtype
 input, a sub-batch model — is normalized to <code class="docutils literal notranslate"><span class="pre">neml2::aoti::FatalError</span></code> (the same
 taxonomy the AOTI runtime uses; see <a class="reference internal" href="aoti_packages.html#aoti-packages"><span class="std std-ref">AOTI packages</span></a>). The one exception is a
@@ -552,7 +561,7 @@ the time step and retry:</p>
 <code class="docutils literal notranslate"><span class="pre">catch</span> <span class="pre">(const</span> <span class="pre">neml2::aoti::Exception</span> <span class="pre">&amp;)</span></code> works across the two libraries.</p>
 </section>
 <section id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h2>
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">#</a></h2>
 <p>Because the model is loaded <em>in Python</em>, the host process must be able to import
 the <code class="docutils literal notranslate"><span class="pre">neml2</span></code> package and its dependencies:</p>
 <ul class="simple">
@@ -581,10 +590,10 @@ compiled / dispatched runtime (<a class="reference internal" href="cpp_dispatch.
         <span>Previous</span><div class="title"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="aoti_packages.html">
+    <a href="solvers.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">AOTI packages</div>
+        <div class="title">Solvers</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
@@ -606,13 +615,13 @@ compiled / dispatched runtime (<a class="reference internal" href="cpp_dispatch.
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

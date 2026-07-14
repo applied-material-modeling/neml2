@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Building from source - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Testing" href="testing.html" /><link rel="prev" title="CLI utilities" href="../deployment/cli.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Building from source - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Testing" href="testing.html" /><link rel="prev" title="Controlling verbosity" href="../deployment/verbosity.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul class="current">
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -375,6 +384,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#running-the-c-tests">Running the C++ tests</a></li>
 <li><a class="reference internal" href="#build-type-and-other-overrides">Build-type and other overrides</a></li>
 <li><a class="reference internal" href="#iterating-on-the-c-runtime">Iterating on the C++ runtime</a></li>
+<li><a class="reference internal" href="#windows-best-effort">Windows (best-effort)</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -406,7 +416,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="building-from-source">
-<span id="build-customization"></span><h1>Building from source<a class="headerlink" href="#building-from-source" title="Link to this heading">¶</a></h1>
+<span id="build-customization"></span><h1>Building from source<a class="headerlink" href="#building-from-source" title="Link to this heading">#</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>End users should not need this page. The published PyPI wheels are
@@ -416,7 +426,7 @@ build flavor the wheels don’t ship, or experimenting with a custom
 LibTorch.</p>
 </div>
 <section id="quick-start">
-<h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
+<h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h2>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>https://github.com/applied-material-modeling/neml2.git
 </span><span data-line="2"><span class="nb">cd</span><span class="w"> </span>neml2
 </span><span data-line="3">
@@ -444,7 +454,7 @@ clangd / clang-tidy;</p></li>
 </ul>
 </section>
 <section id="running-the-c-tests">
-<h2>Running the C++ tests<a class="headerlink" href="#running-the-c-tests" title="Link to this heading">¶</a></h2>
+<h2>Running the C++ tests<a class="headerlink" href="#running-the-c-tests" title="Link to this heading">#</a></h2>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ctest<span class="w"> </span>--test-dir<span class="w"> </span>build/editable<span class="w"> </span>-L<span class="w"> </span>dispatcher<span class="w">    </span><span class="c1"># dispatcher / scheduler tests</span>
 </span><span data-line="2">ctest<span class="w"> </span>--test-dir<span class="w"> </span>build/editable<span class="w"> </span>-L<span class="w"> </span>eager<span class="w">         </span><span class="c1"># embedded-Python eager test</span>
 </span><span data-line="3">ctest<span class="w"> </span>--test-dir<span class="w"> </span>build/editable<span class="w"> </span>-L<span class="w"> </span>benchmark<span class="w">     </span><span class="c1"># benchmark smoke tests</span>
@@ -453,7 +463,7 @@ clangd / clang-tidy;</p></li>
 <p>The Python suite runs under <code class="docutils literal notranslate"><span class="pre">pytest</span></code> — see <a class="reference internal" href="testing.html#contributing-tests"><span class="std std-ref">Testing</span></a>.</p>
 </section>
 <section id="build-type-and-other-overrides">
-<h2>Build-type and other overrides<a class="headerlink" href="#build-type-and-other-overrides" title="Link to this heading">¶</a></h2>
+<h2>Build-type and other overrides<a class="headerlink" href="#build-type-and-other-overrides" title="Link to this heading">#</a></h2>
 <p>Pass <code class="docutils literal notranslate"><span class="pre">--config-settings</span></code> to override a default for one install. A full
 Debug build:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w"> </span>--no-build-isolation<span class="w"> </span><span class="se">\</span>
@@ -473,12 +483,38 @@ Debug build:</p>
 </div>
 </section>
 <section id="iterating-on-the-c-runtime">
-<h2>Iterating on the C++ runtime<a class="headerlink" href="#iterating-on-the-c-runtime" title="Link to this heading">¶</a></h2>
+<h2>Iterating on the C++ runtime<a class="headerlink" href="#iterating-on-the-c-runtime" title="Link to this heading">#</a></h2>
 <p>While editing the C++ sources, rebuild the editable build tree directly
 for a fast incremental compile (no <code class="docutils literal notranslate"><span class="pre">pip</span></code> round-trip):</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">cmake<span class="w"> </span>--build<span class="w"> </span>build/editable
 </span></pre></div>
 </div>
+</section>
+<section id="windows-best-effort">
+<h2>Windows (best-effort)<a class="headerlink" href="#windows-best-effort" title="Link to this heading">#</a></h2>
+<p>Windows is supported on a <strong>best-effort</strong> basis, from a source build only —
+no wheels are published and it is not a primary platform. CI does exercise it
+(compile, install, the Python test suite including AOTI, and a
+<code class="docutils literal notranslate"><span class="pre">find_package(neml2)</span></code> C++ consumer), but expect rough edges.</p>
+<p>You need Visual Studio 2022 (MSVC) and Python. scikit-build-core drives the
+Visual Studio generator, which locates MSVC on its own, so no developer shell
+is required. From PowerShell:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">git</span> <span class="n">clone</span> <span class="n">-b</span> <span class="n">main</span> <span class="n">https</span><span class="p">://</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">applied-material-modeling</span><span class="p">/</span><span class="n">neml2</span><span class="p">.</span><span class="n">git</span>
+</span><span data-line="2"><span class="nb">cd </span><span class="n">neml2</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">nmhit</span> <span class="n">scikit-build-core</span>
+</span><span data-line="5"><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;.[dev]&quot;</span> <span class="p">-</span><span class="n">-no-build-isolation</span> <span class="n">-v</span>
+</span></pre></div>
+</div>
+<ul class="simple">
+<li><p>Build <code class="docutils literal notranslate"><span class="pre">Release</span></code> or <code class="docutils literal notranslate"><span class="pre">RelWithDebInfo</span></code> only: the pip <code class="docutils literal notranslate"><span class="pre">torch</span></code> wheels ship Release
+binaries on Windows, so a Debug build cannot link against them.</p></li>
+<li><p>The embedded-Python eager runtime (<code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code>) is not built on Windows; the
+AOTI routes and the native Python API are unaffected.</p></li>
+<li><p>Native Windows paths (with backslashes) work in <strong>quoted</strong> HIT (<code class="docutils literal notranslate"><span class="pre">.i</span></code>) values,
+e.g. <code class="docutils literal notranslate"><span class="pre">artifact_path</span> <span class="pre">=</span> <span class="pre">'C:\path\to\model'</span></code> — quote the value; unquoted paths
+must use forward slashes.</p></li>
+</ul>
 </section>
 </section>
 
@@ -488,10 +524,10 @@ for a fast incremental compile (no <code class="docutils literal notranslate"><s
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="../deployment/cli.html">
+    <a href="../deployment/verbosity.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">CLI utilities</div></div>
+        <span>Previous</span><div class="title">Controlling verbosity</div></div>
     </a>
   </div><div class="navigation-next">
     <a href="testing.html">
@@ -519,13 +555,13 @@ for a fast incremental compile (no <code class="docutils literal notranslate"><s
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

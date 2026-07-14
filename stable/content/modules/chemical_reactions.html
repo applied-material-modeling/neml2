@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Chemical reactions - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Finite volume" href="finite_volume.html" /><link rel="prev" title="Physics modules" href="index.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Chemical reactions - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Finite volume" href="finite_volume.html" /><link rel="prev" title="Physics modules" href="index.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -413,9 +422,9 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="chemical-reactions">
-<span id="modules-chemical-reactions"></span><h1>Chemical reactions<a class="headerlink" href="#chemical-reactions" title="Link to this heading">¶</a></h1>
+<span id="modules-chemical-reactions"></span><h1>Chemical reactions<a class="headerlink" href="#chemical-reactions" title="Link to this heading">#</a></h1>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
 <p>The chemical-reactions module is a collection of objects that serve as
 building blocks for composing models of macroscale chemical reactions —
 pyrolysis, reactive infiltration, solidification, and similar
@@ -447,13 +456,13 @@ NEML2’s shared primitives. The example below shows how the
 chemical-reactions types slot into that machinery.</p>
 </section>
 <section id="math">
-<h2>Math<a class="headerlink" href="#math" title="Link to this heading">¶</a></h2>
+<h2>Math<a class="headerlink" href="#math" title="Link to this heading">#</a></h2>
 <p>A reaction mechanism is a constitutive relation between the conversion
 degree <span class="math notranslate nohighlight">\(\alpha \in [0, 1]\)</span> and the reaction rate
 <span class="math notranslate nohighlight">\(\dot{\alpha} = f(\alpha)\)</span>. The three mechanisms in this module are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-965b3f4f-709b-4475-9088-d5150931d3cf">
-<div class="amsmath math notranslate nohighlight" id="equation-965b3f4f-709b-4475-9088-d5150931d3cf">
-<span class="eqno">(4)<a class="headerlink" href="#equation-965b3f4f-709b-4475-9088-d5150931d3cf" title="Permalink to this equation">¶</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-68358ab8-078d-4a9a-8d31-f3dcf283ae1f">
+<div class="amsmath math notranslate nohighlight" id="equation-68358ab8-078d-4a9a-8d31-f3dcf283ae1f">
+<span class="eqno">(4)<a class="headerlink" href="#equation-68358ab8-078d-4a9a-8d31-f3dcf283ae1f" title="Permalink to this equation">#</a></span>\[\begin{align}
 \dot{\alpha} &amp;= k \, (1 - \alpha)^n
   &amp;&amp;\text{(contracting geometry)} \\
 \dot{\alpha} &amp;= k \, (1 - \alpha) \, \bigl(-\ln(1 - \alpha)\bigr)^n
@@ -495,7 +504,7 @@ example, gas escaping a pyrolyzing binder). When the input file omits
 <span class="math notranslate nohighlight">\(\phi_o\)</span>, the prefactor reduces to <span class="math notranslate nohighlight">\(M\)</span>.</p>
 </section>
 <section id="example-pyrolysis-of-a-binderparticle-composite">
-<h2>Example: pyrolysis of a binder–particle composite<a class="headerlink" href="#example-pyrolysis-of-a-binderparticle-composite" title="Link to this heading">¶</a></h2>
+<h2>Example: pyrolysis of a binder–particle composite<a class="headerlink" href="#example-pyrolysis-of-a-binderparticle-composite" title="Link to this heading">#</a></h2>
 <p>The pyrolysis regression test composes a contracting-geometry reaction
 with an Arrhenius reaction coefficient, implicit integration of
 <span class="math notranslate nohighlight">\(\alpha\)</span>, and explicit forward-Euler integration of the four mass /
@@ -668,7 +677,7 @@ binder, char, gas, and open pore.</p>
 </span></pre></div>
 </div>
 <section id="explanation">
-<h3>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">¶</a></h3>
+<h3>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">#</a></h3>
 <p>The reaction kinetics block — <code class="docutils literal notranslate"><span class="pre">reaction_coef</span></code>, <code class="docutils literal notranslate"><span class="pre">reaction_rate</span></code>,
 <code class="docutils literal notranslate"><span class="pre">reaction_ode</span></code> composed as <code class="docutils literal notranslate"><span class="pre">reaction</span></code> — is the entire chemical-reactions
 contribution:</p>
@@ -719,7 +728,7 @@ behaviour, and Newton-solves on the volume fractions
 </section>
 </section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../tutorials/models/model_composition/main.html#tutorials-models-composition"><span class="std std-ref">Model composition</span></a> — the canonical walkthrough of
 gluing primitives into a working forward operator with
@@ -773,13 +782,13 @@ above.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

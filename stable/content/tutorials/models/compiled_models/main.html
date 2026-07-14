@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Compiled models - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="How compilation works" href="../compilation_internals/main.html" /><link rel="prev" title="Transient driver" href="../transient_driver/main.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Compiled models - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="How compilation works" href="../compilation_internals/main.html" /><link rel="prev" title="Transient driver" href="../transient_driver/main.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -415,14 +424,14 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="compiled-models">
-<span id="tutorials-models-compiled"></span><h1>Compiled models<a class="headerlink" href="#compiled-models" title="Link to this heading">¶</a></h1>
-<a class="colab-badge" href="https://colab.research.google.com/github/applied-material-modeling/neml2/blob/v3.0.6/doc/content/tutorials/models/compiled_models/main.ipynb" target="_blank" rel="noopener" title="Run this tutorial in Google Colab"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a><p>In this tutorial, we’ll take a model we can already run in Python, compile it ahead of
+<span id="tutorials-models-compiled"></span><h1>Compiled models<a class="headerlink" href="#compiled-models" title="Link to this heading">#</a></h1>
+<a class="colab-badge" href="https://colab.research.google.com/github/applied-material-modeling/neml2/blob/v3.0.7/doc/content/tutorials/models/compiled_models/main.ipynb" target="_blank" rel="noopener" title="Run this tutorial in Google Colab"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a><p>In this tutorial, we’ll take a model we can already run in Python, compile it ahead of
 time into a self-contained package, and call the compiled version from
 another process. The compiled form runs the kernels in pre-compiled
 C++ instead of the eager PyTorch dispatcher, so it’s the form to use
 once a model is locked in and we want it fast.</p>
 <section id="the-pipeline">
-<h2>The pipeline<a class="headerlink" href="#the-pipeline" title="Link to this heading">¶</a></h2>
+<h2>The pipeline<a class="headerlink" href="#the-pipeline" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span> <span class="pre">input.i</span> <span class="pre">--model</span> <span class="pre">elasticity</span></code> turns the eager model into a
 self-contained package and emits:</p>
 <ul class="simple">
@@ -430,20 +439,26 @@ self-contained package and emits:</p>
 with the <code class="docutils literal notranslate"><span class="pre">[Models]/elasticity</span></code> block swapped for an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code> shim that
 points at the artifact folder via an absolute <code class="docutils literal notranslate"><span class="pre">artifact_path</span></code>. Everything
 else (drivers, settings, tensors) is copied through verbatim, so the stub is
-a drop-in replacement anywhere a <code class="docutils literal notranslate"><span class="pre">Driver</span></code> consumes the model by name.</p></li>
-<li><p><strong><code class="docutils literal notranslate"><span class="pre">elasticity/&lt;device&gt;/</span></code></strong> — one artifact folder per device, holding:</p>
+a drop-in replacement anywhere a <code class="docutils literal notranslate"><span class="pre">Driver</span></code> consumes the model by name. The
+stub is optional — pass <code class="docutils literal notranslate"><span class="pre">--no-stub</span></code> to skip it.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">elasticity/</span></code></strong> — the self-describing artifact folder: a shared
+<code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> at the root plus per-<code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> binaries:</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">elasticity_meta.json</span></code> — variable layout, dtype, device</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">elasticity.pt2</span></code> — the AOTI-compiled <code class="docutils literal notranslate"><span class="pre">forward</span></code> kernels</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">elasticity_jvp.pt2</span></code> — the per-pair <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> graph (only with <code class="docutils literal notranslate"><span class="pre">-d</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> — variable layout, promoted-parameter values, and (for
+implicit models) the solver configuration; shared across every device/dtype</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/elasticity.pt2</span></code> — the AOTI-compiled <code class="docutils literal notranslate"><span class="pre">forward</span></code> kernels</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/elasticity_jvp.pt2</span></code> — the per-pair <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code>
+graph (only with <code class="docutils literal notranslate"><span class="pre">-d</span></code>)</p></li>
 </ul>
 </li>
 </ul>
-<p>Compiling for several devices at once (<code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code>) adds more
-<code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/</span></code> subfolders; the loader picks the one matching the device it runs on.</p>
+<p>Compiling for more devices/dtypes (e.g. <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span> <span class="pre">cuda</span></code>) adds more
+<code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> leaves under the same shared <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code>; at load you
+pick which leaf via <code class="docutils literal notranslate"><span class="pre">device</span></code> / <code class="docutils literal notranslate"><span class="pre">dtype</span></code> (default <code class="docutils literal notranslate"><span class="pre">cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">float64</span></code>, matching
+<code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>).</p>
 </section>
 <section id="the-input-file">
-<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">¶</a></h2>
+<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">%%writefile</span> input.i
@@ -468,7 +483,7 @@ a drop-in replacement anywhere a <code class="docutils literal notranslate"><spa
 </div>
 </section>
 <section id="compiling-from-the-shell">
-<h2>Compiling from the shell<a class="headerlink" href="#compiling-from-the-shell" title="Link to this heading">¶</a></h2>
+<h2>Compiling from the shell<a class="headerlink" href="#compiling-from-the-shell" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> (see <a class="reference internal" href="../../../deployment/cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a>) builds the package in one
 invocation. Derivative graphs are <strong>opt-in</strong>: with no <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag only the
 <code class="docutils literal notranslate"><span class="pre">forward</span></code> graph is compiled (the smallest artifact). Request the
@@ -482,9 +497,16 @@ to select all on it, <code class="docutils literal notranslate"><span class="pre
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">Compiled &#39;elasticity&#39; (composed, fully baked, 1 derivative pair(s)) for [cpu] -&gt; aoti/elasticity
-</span><span data-line="2">  stub: aoti/elasticity_aoti.i
-</span><span data-line="3">  cpu: aoti/elasticity/cpu/elasticity_meta.json
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[1/4] cpu/elasticity.pt2
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[2/4] cpu/elasticity_jvp.pt2
+</span><span data-line="2">[3/4] metadata.json
+</span><span data-line="3">[4/4] elasticity_aoti.i
+</span><span data-line="4">Compiled &#39;elasticity&#39; (composed, fully baked, 1 derivative pair(s)) for [cpu] -&gt; aoti/elasticity
+</span><span data-line="5">  metadata: aoti/elasticity/metadata.json
+</span><span data-line="6">  stub: aoti/elasticity_aoti.i
+</span><span data-line="7">  cpu: aoti/elasticity/cpu/float64/
 </span></pre></div>
 </div>
 </div>
@@ -492,10 +514,11 @@ to select all on it, <code class="docutils literal notranslate"><span class="pre
 <p>Compilation is a one-time cost (Inductor + C++ compile, typically
 seconds); the resulting artifact loads quickly on every subsequent
 run. With no <code class="docutils literal notranslate"><span class="pre">--output-dir</span></code> the output lands in <code class="docutils literal notranslate"><span class="pre">aoti/</span></code> — the standalone
-<code class="docutils literal notranslate"><span class="pre">aoti/&lt;model&gt;_aoti.i</span></code> stub next to the per-device folder <code class="docutils literal notranslate"><span class="pre">aoti/&lt;model&gt;/&lt;device&gt;/</span></code>:</p>
+<code class="docutils literal notranslate"><span class="pre">aoti/&lt;model&gt;_aoti.i</span></code> stub next to the artifact folder <code class="docutils literal notranslate"><span class="pre">aoti/&lt;model&gt;/</span></code>
+(a shared <code class="docutils literal notranslate"><span class="pre">metadata.json</span></code> plus the <code class="docutils literal notranslate"><span class="pre">&lt;device&gt;/&lt;dtype&gt;/</span></code> binaries):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">!</span>ls<span class="w"> </span>aoti<span class="w"> </span>aoti/elasticity<span class="w"> </span>aoti/elasticity/cpu
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">!</span>ls<span class="w"> </span>aoti<span class="w"> </span>aoti/elasticity<span class="w"> </span>aoti/elasticity/cpu/float64
 </span></pre></div>
 </div>
 </div>
@@ -504,25 +527,29 @@ run. With no <code class="docutils literal notranslate"><span class="pre">--outp
 </span><span data-line="2">elasticity  elasticity_aoti.i
 </span><span data-line="3">
 </span><span data-line="4">aoti/elasticity:
-</span><span data-line="5">cpu
+</span><span data-line="5">cpu  metadata.json
 </span><span data-line="6">
-</span><span data-line="7">aoti/elasticity/cpu:
-</span><span data-line="8">elasticity.pt2	elasticity_jvp.pt2  elasticity_meta.json
+</span><span data-line="7">aoti/elasticity/cpu/float64:
+</span><span data-line="8">elasticity.pt2	elasticity_jvp.pt2
 </span></pre></div>
 </div>
 </div>
 </div>
 </section>
 <section id="loading-the-compiled-model">
-<h2>Loading the compiled model<a class="headerlink" href="#loading-the-compiled-model" title="Link to this heading">¶</a></h2>
+<h2>Loading the compiled model<a class="headerlink" href="#loading-the-compiled-model" title="Link to this heading">#</a></h2>
 <p>The stub looks like any other HIT input file, so <code class="docutils literal notranslate"><span class="pre">neml2.load_model</span></code>
 loads it the usual way:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">neml2</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">compiled</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;aoti/elasticity_aoti.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="n">compiled</span>
+</span><span data-line="3"><span class="c1"># An AOTI artifact is pinned to a specific device/dtype at compile time, so which</span>
+</span><span data-line="4"><span class="c1"># `&lt;device&gt;/&lt;dtype&gt;/` leaf to load is a decision made *at load time*. We compiled</span>
+</span><span data-line="5"><span class="c1"># a float64 CPU artifact above; that is also the default (`device=&quot;cpu&quot;`,</span>
+</span><span data-line="6"><span class="c1"># `dtype=&quot;float64&quot;`, matching `neml2-compile`), shown explicitly here.</span>
+</span><span data-line="7"><span class="n">compiled</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;aoti/elasticity_aoti.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+</span><span data-line="8"><span class="n">compiled</span>
 </span></pre></div>
 </div>
 </div>
@@ -551,7 +578,7 @@ same call convention — but underneath it dispatches to the compiled
 </div>
 </section>
 <section id="round-trip-equivalence">
-<h2>Round-trip equivalence<a class="headerlink" href="#round-trip-equivalence" title="Link to this heading">¶</a></h2>
+<h2>Round-trip equivalence<a class="headerlink" href="#round-trip-equivalence" title="Link to this heading">#</a></h2>
 <p>Evaluate the compiled and eager forms on the same strain and check
 they agree. The compiled model always returns a tuple (even with a
 single output), so we unpack it:</p>
@@ -598,7 +625,7 @@ leading batch dimension is dynamic, so the same artifact handles any
 batch size from 1 to roughly a million without recompilation.</p>
 </section>
 <section id="jacobian-and-jacobian-vector-product">
-<h2>Jacobian and Jacobian-vector product<a class="headerlink" href="#jacobian-and-jacobian-vector-product" title="Link to this heading">¶</a></h2>
+<h2>Jacobian and Jacobian-vector product<a class="headerlink" href="#jacobian-and-jacobian-vector-product" title="Link to this heading">#</a></h2>
 <p>Alongside <code class="docutils literal notranslate"><span class="pre">forward</span></code>, the compiled model also exposes <code class="docutils literal notranslate"><span class="pre">jvp</span></code> (outputs plus
 a directional derivative <code class="docutils literal notranslate"><span class="pre">J</span> <span class="pre">&#64;</span> <span class="pre">v</span></code>) and <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> (outputs plus the
 per-variable Jacobian blocks). Both take and return plain
@@ -653,7 +680,7 @@ offers:</p>
 <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> when we need the full per-variable blocks.</p>
 </section>
 <section id="promoting-parameters">
-<h2>Promoting parameters<a class="headerlink" href="#promoting-parameters" title="Link to this heading">¶</a></h2>
+<h2>Promoting parameters<a class="headerlink" href="#promoting-parameters" title="Link to this heading">#</a></h2>
 <p>By default every parameter is baked into the compiled graph as a
 constant. That’s fastest, but it also means we can’t change them at
 runtime. To keep one mutable, promote it at compile time with <code class="docutils literal notranslate"><span class="pre">-p</span></code>.
@@ -667,9 +694,16 @@ runtime), so <code class="docutils literal notranslate"><span class="pre">--mode
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">Compiled &#39;elasticity&#39; (composed, 1 promoted parameter(s), 1 derivative pair(s)) for [cpu] -&gt; aoti_promoted/elasticity
-</span><span data-line="2">  stub: aoti_promoted/elasticity_aoti.i
-</span><span data-line="3">  cpu: aoti_promoted/elasticity/cpu/elasticity_meta.json
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[1/4] cpu/elasticity.pt2
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[2/4] cpu/elasticity_jvp.pt2
+</span><span data-line="2">[3/4] metadata.json
+</span><span data-line="3">[4/4] elasticity_aoti.i
+</span><span data-line="4">Compiled &#39;elasticity&#39; (composed, 1 promoted parameter(s), 1 derivative pair(s)) for [cpu] -&gt; aoti_promoted/elasticity
+</span><span data-line="5">  metadata: aoti_promoted/elasticity/metadata.json
+</span><span data-line="6">  stub: aoti_promoted/elasticity_aoti.i
+</span><span data-line="7">  cpu: aoti_promoted/elasticity/cpu/float64/
 </span></pre></div>
 </div>
 </div>
@@ -679,7 +713,7 @@ named parameter is reachable from Python and editing it in place is
 reflected on the next forward call:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">m</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;aoti_promoted/elasticity_aoti.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">m</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;aoti_promoted/elasticity_aoti.i&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticity&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Initial value comes from the snapshot taken at compile time.</span>
 </span><span data-line="4"><span class="p">(</span><span class="n">stress0</span><span class="p">,)</span> <span class="o">=</span> <span class="n">m</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span>
@@ -710,7 +744,7 @@ parameters inside an <code class="docutils literal notranslate"><span class="pre
 refuse them with a clear error.</p>
 </section>
 <section id="trade-offs-vs-eager">
-<h2>Trade-offs vs eager<a class="headerlink" href="#trade-offs-vs-eager" title="Link to this heading">¶</a></h2>
+<h2>Trade-offs vs eager<a class="headerlink" href="#trade-offs-vs-eager" title="Link to this heading">#</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -752,7 +786,7 @@ model. Compile it once we’re ready to run it at scale — driver
 runs, large batch sweeps, the inner loop of a finite-element kernel.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../implicit_model/main.html#tutorials-models-implicit-model"><span class="std std-ref">Implicit models</span></a> covers <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> models;
 the same compile flow handles them — each implicit segment produces
@@ -805,13 +839,13 @@ carefully.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>

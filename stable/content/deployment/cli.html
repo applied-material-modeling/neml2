@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CLI utilities - NEML2 3.0.6</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Building from source" href="../development/building.html" /><link rel="prev" title="C++ integration" href="cpp.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CLI utilities - NEML2 3.0.7</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Controlling verbosity" href="verbosity.html" /><link rel="prev" title="C++ integration" href="cpp.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp.html">C++ integration</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -375,6 +384,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2-inspect"><code class="docutils literal notranslate"><span class="pre">neml2-inspect</span></code></a></li>
 <li><a class="reference internal" href="#neml2-syntax"><code class="docutils literal notranslate"><span class="pre">neml2-syntax</span></code></a></li>
 <li><a class="reference internal" href="#neml2-compile"><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code></a><ul>
+<li><a class="reference internal" href="#boundary-renaming">Boundary renaming</a></li>
 <li><a class="reference internal" href="#interactive-mode-i-interactive">Interactive mode (<code class="docutils literal notranslate"><span class="pre">-i</span></code> / <code class="docutils literal notranslate"><span class="pre">--interactive</span></code>)</a></li>
 </ul>
 </li>
@@ -411,7 +421,7 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="cli-utilities">
-<span id="id1"></span><h1>CLI utilities<a class="headerlink" href="#cli-utilities" title="Link to this heading">¶</a></h1>
+<span id="id1"></span><h1>CLI utilities<a class="headerlink" href="#cli-utilities" title="Link to this heading">#</a></h1>
 <p>The command line is the third way to use neml2 — alongside the Python
 (<a class="reference internal" href="python.html#python-integration"><span class="std std-ref">Python integration</span></a>) and C++ (<a class="reference internal" href="cpp.html#external-project-integration"><span class="std std-ref">C++ integration</span></a>) runtimes,
 you can drive a model end to end from a shell, with no code. The NEML2 wheel
@@ -470,7 +480,7 @@ contract.</p>
 isotropic elastic model named <code class="docutils literal notranslate"><span class="pre">elasticity</span></code>, wrapped in a five-step
 <code class="docutils literal notranslate"><span class="pre">TransientDriver</span></code> named <code class="docutils literal notranslate"><span class="pre">driver</span></code>:</p>
 <div class="literal-block-wrapper docutils container" id="id2">
-<div class="code-block-caption"><span class="caption-number">Listing 5 </span><span class="caption-text">input.i</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-number">Listing 5 </span><span class="caption-text">input.i</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Small worked example for the CLI utilities tutorial: a linear isotropic</span>
 </span><span data-line="2"><span class="c1"># elastic model driven through a 5-step uniaxial tension history. The same</span>
 </span><span data-line="3"><span class="c1"># input is reused across the neml2-run / neml2-inspect / neml2-compile</span>
@@ -509,7 +519,7 @@ isotropic elastic model named <code class="docutils literal notranslate"><span c
 </div>
 </div>
 <section id="neml2-run">
-<h2><code class="docutils literal notranslate"><span class="pre">neml2-run</span></code><a class="headerlink" href="#neml2-run" title="Link to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">neml2-run</span></code><a class="headerlink" href="#neml2-run" title="Link to this heading">#</a></h2>
 <p>Loads an input file, instantiates the named driver, and calls its
 <code class="docutils literal notranslate"><span class="pre">run()</span></code> method. Use it whenever you want to step a model through a load
 history from the shell — from a shell script, a CI job, a parameter
@@ -549,7 +559,6 @@ sweep — without writing any Python.</p>
 success and returns a zero exit code, so a clean run looks empty in
 CI. (Drivers can still print their own progress.)</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">$ neml2-run input.i driver
-</span><span data-line="2">Results saved to result.pt
 </span></pre></div>
 </div>
 <p>The trailing-token convention lets you tweak scalar options without
@@ -557,7 +566,6 @@ editing the file — anything after the two declared positionals is
 forwarded to the HIT parser as an override. The same convention works
 for <code class="docutils literal notranslate"><span class="pre">neml2-inspect</span></code> and <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">$ neml2-run input.i driver Drivers/driver/save_as:=other.pt
-</span><span data-line="2">Results saved to other.pt
 </span></pre></div>
 </div>
 <p>List-valued overrides (e.g. swapping <code class="docutils literal notranslate"><span class="pre">coefficients</span> <span class="pre">=</span> <span class="pre">'200e3</span> <span class="pre">0.3'</span></code> for
@@ -566,7 +574,7 @@ If that gets fiddly, edit the input file directly or use the Python
 API.</p>
 </section>
 <section id="neml2-inspect">
-<span id="cli-neml2-inspect"></span><h2><code class="docutils literal notranslate"><span class="pre">neml2-inspect</span></code><a class="headerlink" href="#neml2-inspect" title="Link to this heading">¶</a></h2>
+<span id="cli-neml2-inspect"></span><h2><code class="docutils literal notranslate"><span class="pre">neml2-inspect</span></code><a class="headerlink" href="#neml2-inspect" title="Link to this heading">#</a></h2>
 <p>Loads a single model from an input file and prints its structural
 summary: input variables, output variables, parameters, and buffers
 (each with dtype, device, and shape). Use it any time you want to
@@ -619,7 +627,7 @@ consumption via <code class="docutils literal notranslate"><span class="pre">--j
 </div>
 </section>
 <section id="neml2-syntax">
-<h2><code class="docutils literal notranslate"><span class="pre">neml2-syntax</span></code><a class="headerlink" href="#neml2-syntax" title="Link to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">neml2-syntax</span></code><a class="headerlink" href="#neml2-syntax" title="Link to this heading">#</a></h2>
 <p>Browses the registered-object catalog: every concrete class that can
 appear in a HIT input file, along with its section, docstring, and
 full option schema. It is the discovery tool — use it when you don’t
@@ -694,7 +702,7 @@ class — the same data the documentation’s syntax catalog under
 </div>
 </section>
 <section id="neml2-compile">
-<h2><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code><a class="headerlink" href="#neml2-compile" title="Link to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code><a class="headerlink" href="#neml2-compile" title="Link to this heading">#</a></h2>
 <p>Exports a model to an AOT-Inductor package — one or more <code class="docutils literal notranslate"><span class="pre">.pt2</span></code>
 files plus a metadata JSON and a drop-in HIT stub — that can be
 loaded later from either Python or C++ without parsing the original
@@ -704,98 +712,151 @@ dropping the HIT parser from a deployment image, baking parameters
 into a frozen graph for performance.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span><span data-line="1">usage: neml2-compile [-h] [-i] [--model NAME | --driver NAME]
 </span><span data-line="2">                     [--output-dir DIR] [--device DEVICE [DEVICE ...]]
-</span><span data-line="3">                     [--dtype {float64,float32}] [-p NAME] [-d OUT:IN]
-</span><span data-line="4">                     [--example-batch-shape SPEC] [--dynamic-batch]
-</span><span data-line="5">                     [--no-dynamic-batch] [--load PATH]
-</span><span data-line="6">                     INPUT.i
-</span><span data-line="7">
-</span><span data-line="8">Compile a NEML2 Python-native model to AOTI artifacts (.pt2 + metadata JSON)
-</span><span data-line="9">and emit a runnable HIT stub.
-</span><span data-line="10">
-</span><span data-line="11">positional arguments:
-</span><span data-line="12">  INPUT.i               HIT input file path.
-</span><span data-line="13">
-</span><span data-line="14">options:
-</span><span data-line="15">  -h, --help            show this help message and exit
-</span><span data-line="16">  -i, --interactive     Launch an interactive wizard that introspects INPUT.i
-</span><span data-line="17">                        and walks you through the options (model/driver,
-</span><span data-line="18">                        promotable parameters, derivative pairs, devices,
-</span><span data-line="19">                        ...), then runs the resulting compile. Requires the
-</span><span data-line="20">                        &#39;questionary&#39; package.
-</span><span data-line="21">  --model NAME          Compile the named [Models] block. The emitted stub
-</span><span data-line="22">                        contains only the AOTIModel shim for this model -- no
-</span><span data-line="23">                        [Drivers] block. Pair with a custom driver in a
-</span><span data-line="24">                        separate file when you want to run it.
-</span><span data-line="25">  --driver NAME         Compile whatever model the named [Drivers] block
-</span><span data-line="26">                        targets (via its `model = &#39;...&#39;` field). The stub
-</span><span data-line="27">                        keeps the named driver so the result is runnable as-is
-</span><span data-line="28">                        via `neml2-run`. Use this when you want a self-
-</span><span data-line="29">                        contained, drop-in replacement for the original
-</span><span data-line="30">                        driver.
-</span><span data-line="31">  --output-dir DIR      Collection dir for the compiled artifacts (default:
-</span><span data-line="32">                        ./aoti/). Each model lands in &lt;DIR&gt;/&lt;NAME&gt;/&lt;device&gt;/
-</span><span data-line="33">                        with a standalone &lt;DIR&gt;/&lt;NAME&gt;_aoti.i stub next to it.
-</span><span data-line="34">  --device DEVICE [DEVICE ...]
-</span><span data-line="35">                        Target device(s) for the artifact, baked at export
-</span><span data-line="36">                        time. Accepts more than one (e.g. --device cpu cuda):
-</span><span data-line="37">                        one complete artifact is emitted per device into a
-</span><span data-line="38">                        subfolder named by the device (&lt;output-dir&gt;/cpu/,
-</span><span data-line="39">                        &lt;output-dir&gt;/cuda/), ready for a multi-device
-</span><span data-line="40">                        dispatcher to load.
-</span><span data-line="41">  --dtype {float64,float32}
-</span><span data-line="42">                        Floating-point dtype for the artifact (baked at export
-</span><span data-line="43">                        time).
-</span><span data-line="44">  -p NAME, --parameter NAME
-</span><span data-line="45">                        Promote a parameter or buffer (fully-qualified dotted
-</span><span data-line="46">                        name) to runtime-flexible status -- it becomes a graph
-</span><span data-line="47">                        input rather than a baked constant. Repeatable. With
-</span><span data-line="48">                        no -p flags the model is fully baked.
-</span><span data-line="49">  -d OUT:IN, --derivative OUT:IN
-</span><span data-line="50">                        Compile the derivative (Jacobian / JVP) graph for the
-</span><span data-line="51">                        OUT:IN output-input pair. Repeatable. Omit a side to
-</span><span data-line="52">                        select all on that side: &#39;stress:strain&#39; is one pair,
-</span><span data-line="53">                        &#39;stress:&#39; all inputs of stress, &#39;:strain&#39; all outputs
-</span><span data-line="54">                        wrt strain, &#39;:&#39; all pairs. With no -d flags NO
-</span><span data-line="55">                        derivative graphs are compiled (smallest artifact) and
-</span><span data-line="56">                        the runtime jvp()/jacobian() raise until recompiled
-</span><span data-line="57">                        with -d.
-</span><span data-line="58">  --example-batch-shape SPEC
-</span><span data-line="59">                        Example shape used when tracing. Two forms: --example-
-</span><span data-line="60">                        batch-shape &#39;(2,)&#39; (uniform across all inputs)
-</span><span data-line="61">                        --example-batch-shape strain=&#39;(2;100)&#39; --example-
-</span><span data-line="62">                        batch-shape temperature=&#39;(2,)&#39; (per-variable;
-</span><span data-line="63">                        repeatable) The semicolon delimits dynamic-batch from
-</span><span data-line="64">                        sub-batch axes -- &#39;(2;100)&#39; means dyn=(2,),
-</span><span data-line="65">                        sub=(100,). Overrides [Settings]/example_batch_shape.
-</span><span data-line="66">  --dynamic-batch       Compile a dynamic-batch artifact: the leading batch
-</span><span data-line="67">                        dim of the example shape becomes a runtime-variable
-</span><span data-line="68">                        torch.export Dim. Default unless overridden by
-</span><span data-line="69">                        [Settings]/dynamic_batch in the input.
-</span><span data-line="70">  --no-dynamic-batch    Pin the batch dim at the example shape. Required when
-</span><span data-line="71">                        a baked parameter has rank&gt;=1 and would specialize the
-</span><span data-line="72">                        dynamic dim.
-</span><span data-line="73">  --load PATH           Import a user extension before processing. PATH is
-</span><span data-line="74">                        either a filesystem path to a .py file / package
-</span><span data-line="75">                        directory, or a dotted module name already importable
-</span><span data-line="76">                        from sys.path. Repeatable; modules are imported in the
-</span><span data-line="77">                        order given so later modules may depend on names
-</span><span data-line="78">                        registered by earlier ones.
+</span><span data-line="3">                     [--dtype {float64,float32}] [-j N] [--no-stub] [-p NAME]
+</span><span data-line="4">                     [-d OUT:IN] [--example-batch-shape SPEC]
+</span><span data-line="5">                     [--dynamic-batch] [--no-dynamic-batch]
+</span><span data-line="6">                     [--rename-input ORIG:NEW] [--rename-output ORIG:NEW]
+</span><span data-line="7">                     [--rename-parameter ORIG:NEW] [-q] [--load PATH]
+</span><span data-line="8">                     INPUT.i
+</span><span data-line="9">
+</span><span data-line="10">Compile a NEML2 Python-native model to AOTI artifacts (.pt2 + metadata JSON)
+</span><span data-line="11">and emit a runnable HIT stub.
+</span><span data-line="12">
+</span><span data-line="13">positional arguments:
+</span><span data-line="14">  INPUT.i               HIT input file path.
+</span><span data-line="15">
+</span><span data-line="16">options:
+</span><span data-line="17">  -h, --help            show this help message and exit
+</span><span data-line="18">  -i, --interactive     Launch an interactive wizard that introspects INPUT.i
+</span><span data-line="19">                        and walks you through the options (model/driver,
+</span><span data-line="20">                        promotable parameters, derivative pairs, devices,
+</span><span data-line="21">                        ...), then runs the resulting compile. Requires the
+</span><span data-line="22">                        &#39;questionary&#39; package.
+</span><span data-line="23">  --model NAME          Compile the named [Models] block. The emitted stub
+</span><span data-line="24">                        contains only the AOTIModel shim for this model -- no
+</span><span data-line="25">                        [Drivers] block. Pair with a custom driver in a
+</span><span data-line="26">                        separate file when you want to run it.
+</span><span data-line="27">  --driver NAME         Compile whatever model the named [Drivers] block
+</span><span data-line="28">                        targets (via its `model = &#39;...&#39;` field). The stub
+</span><span data-line="29">                        keeps the named driver so the result is runnable as-is
+</span><span data-line="30">                        via `neml2-run`. Use this when you want a self-
+</span><span data-line="31">                        contained, drop-in replacement for the original
+</span><span data-line="32">                        driver.
+</span><span data-line="33">  --output-dir DIR      Collection dir for the compiled artifacts (default:
+</span><span data-line="34">                        ./aoti/). Each model lands in &lt;DIR&gt;/&lt;NAME&gt;/ (one
+</span><span data-line="35">                        shared metadata.json + &lt;device&gt;/&lt;dtype&gt;/ .pt2
+</span><span data-line="36">                        binaries), with a standalone &lt;DIR&gt;/&lt;NAME&gt;_aoti.i stub
+</span><span data-line="37">                        next to it unless --no-stub.
+</span><span data-line="38">  --device DEVICE [DEVICE ...]
+</span><span data-line="39">                        Target device(s) for the artifact, baked at export
+</span><span data-line="40">                        time. Accepts more than one (e.g. --device cpu cuda):
+</span><span data-line="41">                        one complete artifact is emitted per device into a
+</span><span data-line="42">                        subfolder named by the device (&lt;output-dir&gt;/cpu/,
+</span><span data-line="43">                        &lt;output-dir&gt;/cuda/), ready for a multi-device
+</span><span data-line="44">                        dispatcher to load.
+</span><span data-line="45">  --dtype {float64,float32}
+</span><span data-line="46">                        Floating-point dtype for the artifact (baked at export
+</span><span data-line="47">                        time).
+</span><span data-line="48">  -j N, --jobs N        Compile independent segments in parallel using up to N
+</span><span data-line="49">                        worker processes (spawn). Default 1 (serial). Only a
+</span><span data-line="50">                        multi-segment model (a ComposedModel containing an
+</span><span data-line="51">                        ImplicitUpdate) benefits; single-segment models ignore
+</span><span data-line="52">                        N, and N is capped at the number of segments (one task
+</span><span data-line="53">                        per segment). With --device cuda each worker spawns
+</span><span data-line="54">                        its own CUDA context and invokes nvcc -- watch memory.
+</span><span data-line="55">  --no-stub             Skip the standalone &lt;model&gt;_aoti.i stub (compile the
+</span><span data-line="56">                        artifact folder only). The stub is a neml2-run / py-
+</span><span data-line="57">                        aoti convenience; the artifact folder (metadata.json +
+</span><span data-line="58">                        &lt;device&gt;/&lt;dtype&gt;/ binaries) is self-describing, so
+</span><span data-line="59">                        cpp-aoti / cpp-dispatch never need it. Default: the
+</span><span data-line="60">                        stub is emitted.
+</span><span data-line="61">  -p NAME, --parameter NAME
+</span><span data-line="62">                        Promote a parameter or buffer (fully-qualified dotted
+</span><span data-line="63">                        name) to runtime-flexible status -- it becomes a graph
+</span><span data-line="64">                        input rather than a baked constant. Repeatable. With
+</span><span data-line="65">                        no -p flags the model is fully baked.
+</span><span data-line="66">  -d OUT:IN, --derivative OUT:IN
+</span><span data-line="67">                        Compile the derivative (Jacobian / JVP) graph for the
+</span><span data-line="68">                        OUT:IN output-input pair. Repeatable. Omit a side to
+</span><span data-line="69">                        select all on that side: &#39;stress:strain&#39; is one pair,
+</span><span data-line="70">                        &#39;stress:&#39; all inputs of stress, &#39;:strain&#39; all outputs
+</span><span data-line="71">                        wrt strain, &#39;:&#39; all pairs. With no -d flags NO
+</span><span data-line="72">                        derivative graphs are compiled (smallest artifact) and
+</span><span data-line="73">                        the runtime jvp()/jacobian() raise until recompiled
+</span><span data-line="74">                        with -d.
+</span><span data-line="75">  --example-batch-shape SPEC
+</span><span data-line="76">                        Example shape used when tracing. Two forms: --example-
+</span><span data-line="77">                        batch-shape &#39;(2,)&#39; (uniform across all inputs)
+</span><span data-line="78">                        --example-batch-shape strain=&#39;(2;100)&#39; --example-
+</span><span data-line="79">                        batch-shape temperature=&#39;(2,)&#39; (per-variable;
+</span><span data-line="80">                        repeatable) The semicolon delimits dynamic-batch from
+</span><span data-line="81">                        sub-batch axes -- &#39;(2;100)&#39; means dyn=(2,),
+</span><span data-line="82">                        sub=(100,). Overrides [Settings]/example_batch_shape.
+</span><span data-line="83">  --dynamic-batch       Compile a dynamic-batch artifact: the leading batch
+</span><span data-line="84">                        dim of the example shape becomes a runtime-variable
+</span><span data-line="85">                        torch.export Dim. Default unless overridden by
+</span><span data-line="86">                        [Settings]/dynamic_batch in the input.
+</span><span data-line="87">  --no-dynamic-batch    Pin the batch dim at the example shape. Required when
+</span><span data-line="88">                        a baked parameter has rank&gt;=1 and would specialize the
+</span><span data-line="89">                        dynamic dim.
+</span><span data-line="90">  --rename-input ORIG:NEW
+</span><span data-line="91">                        Rename an input variable at the compiled artifact&#39;s
+</span><span data-line="92">                        boundary: a downstream consumer sees NEW while the
+</span><span data-line="93">                        model&#39;s internal wiring keeps ORIG. Repeatable. Only
+</span><span data-line="94">                        valid with --model (not --driver).
+</span><span data-line="95">  --rename-output ORIG:NEW
+</span><span data-line="96">                        Rename an output variable at the boundary (the
+</span><span data-line="97">                        consumer sees NEW; the internals keep ORIG).
+</span><span data-line="98">                        Repeatable. Only valid with --model.
+</span><span data-line="99">  --rename-parameter ORIG:NEW
+</span><span data-line="100">                        Rename a promoted parameter at the boundary (the
+</span><span data-line="101">                        consumer sees NEW; the internals keep the qualified
+</span><span data-line="102">                        ORIG). ORIG must be a promoted parameter (see -p).
+</span><span data-line="103">                        Repeatable. Only valid with --model.
+</span><span data-line="104">  -q, --quiet           Suppress the per-file compilation progress chrome. The
+</span><span data-line="105">                        final artifact-path summary and any errors are still
+</span><span data-line="106">                        printed.
+</span><span data-line="107">  --load PATH           Import a user extension before processing. PATH is
+</span><span data-line="108">                        either a filesystem path to a .py file / package
+</span><span data-line="109">                        directory, or a dotted module name already importable
+</span><span data-line="110">                        from sys.path. Repeatable; modules are imported in the
+</span><span data-line="111">                        order given so later modules may depend on names
+</span><span data-line="112">                        registered by earlier ones.
 </span></pre></div>
 </div>
 <p>Derivative graphs are opt-in: with no <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag only <code class="docutils literal notranslate"><span class="pre">forward</span></code> is
 compiled and <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code> raise at runtime. Request the pairs you
 need with <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">OUT:IN</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">stress:strain</span></code>, or <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">:</span></code> for all).</p>
+<section id="boundary-renaming">
+<h3>Boundary renaming<a class="headerlink" href="#boundary-renaming" title="Link to this heading">#</a></h3>
+<p>A downstream consumer may need the compiled model’s variables to carry its own
+names. Rename them at the artifact’s boundary with <code class="docutils literal notranslate"><span class="pre">--rename-input</span> <span class="pre">ORIG:NEW</span></code>,
+<code class="docutils literal notranslate"><span class="pre">--rename-output</span> <span class="pre">ORIG:NEW</span></code>, and <code class="docutils literal notranslate"><span class="pre">--rename-parameter</span> <span class="pre">ORIG:NEW</span></code> (each repeatable).
+The rename is <strong>shallow</strong>: only the names reported at the interface change — the
+inputs / outputs a caller passes and reads, the promoted-parameter names in
+<code class="docutils literal notranslate"><span class="pre">named_parameters()</span></code>, and the keys of every <code class="docutils literal notranslate"><span class="pre">forward</span></code> / <code class="docutils literal notranslate"><span class="pre">jvp</span></code> / <code class="docutils literal notranslate"><span class="pre">jacobian</span></code>
+result. The compiled graphs and all internal wiring keep the original authored
+names, so a rename is a pure relabel with identical values. <code class="docutils literal notranslate"><span class="pre">ORIG</span></code> must be an
+existing structural input, output, or promoted parameter (<code class="docutils literal notranslate"><span class="pre">--rename-parameter</span></code>
+targets a name from <code class="docutils literal notranslate"><span class="pre">-p</span></code>), and the resulting names must stay unique.</p>
+<p>Renaming applies to the compiled routes only (Python <code class="docutils literal notranslate"><span class="pre">neml2.aoti.Model</span></code>, C++
+<code class="docutils literal notranslate"><span class="pre">neml2::aoti::Model</span></code>, and the dispatcher); the eager routes run the un-exported
+model and keep the authored names. It is available with <code class="docutils literal notranslate"><span class="pre">--model</span></code> only — with
+<code class="docutils literal notranslate"><span class="pre">--driver</span></code> the bundled driver is wired to the original names, so combining them
+is rejected.</p>
 <p>The end-to-end walkthrough — emitted file layout, loading the
 artifact from Python, parameter promotion (<code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">&lt;name&gt;</span></code>), and the
 trade-offs against eager mode — lives in
 <a class="reference internal" href="../tutorials/models/compiled_models/main.html#tutorials-models-compiled"><span class="std std-ref">Compiled models</span></a>.</p>
+</section>
 <section id="interactive-mode-i-interactive">
-<h3>Interactive mode (<code class="docutils literal notranslate"><span class="pre">-i</span></code> / <code class="docutils literal notranslate"><span class="pre">--interactive</span></code>)<a class="headerlink" href="#interactive-mode-i-interactive" title="Link to this heading">¶</a></h3>
+<h3>Interactive mode (<code class="docutils literal notranslate"><span class="pre">-i</span></code> / <code class="docutils literal notranslate"><span class="pre">--interactive</span></code>)<a class="headerlink" href="#interactive-mode-i-interactive" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code>’s flag surface is wide and interdependent: the promotable
-parameter names (<code class="docutils literal notranslate"><span class="pre">-p</span></code>) and the valid <code class="docutils literal notranslate"><span class="pre">OUT:IN</span></code> derivative pairs (<code class="docutils literal notranslate"><span class="pre">-d</span></code>) only exist
-once the model is loaded and introspected. Pass <code class="docutils literal notranslate"><span class="pre">-i</span></code> / <code class="docutils literal notranslate"><span class="pre">--interactive</span></code> to be
-guided through the options with prompts populated from the model, ending on a
-review you can run, edit, or copy as a plain <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> command:</p>
+parameter names (<code class="docutils literal notranslate"><span class="pre">-p</span></code>), the valid <code class="docutils literal notranslate"><span class="pre">OUT:IN</span></code> derivative pairs (<code class="docutils literal notranslate"><span class="pre">-d</span></code>), and the
+variables available to rename (<code class="docutils literal notranslate"><span class="pre">--rename-*</span></code>) only exist once the model is loaded
+and introspected. Pass <code class="docutils literal notranslate"><span class="pre">-i</span></code> / <code class="docutils literal notranslate"><span class="pre">--interactive</span></code> to be guided through the options
+with prompts populated from the model, ending on a review you can run, edit, or
+copy as a plain <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">neml2-compile<span class="w"> </span>-i<span class="w"> </span>input.i
 </span></pre></div>
 </div>
@@ -807,7 +868,7 @@ flag prints a <code class="docutils literal notranslate"><span class="pre">pip</
 </section>
 </section>
 <section id="neml2-stub">
-<h2><code class="docutils literal notranslate"><span class="pre">neml2-stub</span></code><a class="headerlink" href="#neml2-stub" title="Link to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">neml2-stub</span></code><a class="headerlink" href="#neml2-stub" title="Link to this heading">#</a></h2>
 <p>Regenerates <code class="docutils literal notranslate"><span class="pre">.pyi</span></code> type stubs for every pybind11 extension module in the
 installed <code class="docutils literal notranslate"><span class="pre">neml2</span></code> package (currently <code class="docutils literal notranslate"><span class="pre">neml2.aoti._aoti</span></code>). The stubs are
 written next to their <code class="docutils literal notranslate"><span class="pre">.so</span></code> files so that pyright and IDE autocompletion
@@ -874,7 +935,7 @@ wheel-building pipeline. Any extra arguments are forwarded verbatim to
 <code class="docutils literal notranslate"><span class="pre">pybind11_stubgen</span></code>.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>The five scripts are also importable as <code class="docutils literal notranslate"><span class="pre">neml2.cli.run.main</span></code>,
 <code class="docutils literal notranslate"><span class="pre">neml2.cli.inspect.main</span></code>, <code class="docutils literal notranslate"><span class="pre">neml2.cli.syntax.main</span></code>,
@@ -903,10 +964,10 @@ C++ deployment story.</p></li>
         <span>Previous</span><div class="title">C++ integration</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="../development/building.html">
+    <a href="verbosity.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">Building from source</div>
+        <div class="title">Controlling verbosity</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
@@ -928,13 +989,13 @@ C++ deployment story.</p></li>
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

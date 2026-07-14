@@ -2,11 +2,11 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Connecting to input files - NEML2 3.0.6</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="The forward operator" href="../the_forward_operator/main.html" /><link rel="prev" title="Declaring inputs, outputs, and parameters" href="../argument_declaration/main.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Connecting to input files - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="The forward operator" href="../the_forward_operator/main.html" /><link rel="prev" title="Declaring inputs, outputs, and parameters" href="../argument_declaration/main.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/shibuya.css?v=2ceb65ce" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link media="print" rel="stylesheet" type="text/css" href="../../../../_static/print.css?v=20ff2c19" />
@@ -140,6 +140,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/python.html">Python integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/cpp.html">C++ integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment/cli.html">CLI utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../deployment/verbosity.html">Controlling verbosity</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">Contributing &amp; development</span></p>
 <ul>
@@ -160,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -196,6 +198,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexConstantParameter.html">MillerIndexConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexInputParameter.html">MillerIndexInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MillerIndexParameterToVariable.html">MillerIndexParameterToVariable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MinMapComplementarity.html">MinMapComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MixedControlSetup.html">MixedControlSetup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
@@ -318,9 +321,15 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../generated/syntax/Solvers/index.html">Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/BiCGStab.html">BiCGStab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/BlockJacobiPreconditioner.html">BlockJacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/DenseLU.html">DenseLU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/FullPreconditioner.html">FullPreconditioner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/GMRES.html">GMRES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/JacobiPreconditioner.html">JacobiPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/Newton.html">Newton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/NewtonWithLineSearch.html">NewtonWithLineSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/NoPreconditioner.html">NoPreconditioner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Solvers/SchurComplement.html">SchurComplement</a></li>
 </ul>
 </li>
@@ -412,15 +421,15 @@ data-aria-dark="Switch to auto color mode">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="connecting-to-input-files">
-<span id="tutorials-extension-input-files"></span><h1>Connecting to input files<a class="headerlink" href="#connecting-to-input-files" title="Link to this heading">¶</a></h1>
-<a class="colab-badge" href="https://colab.research.google.com/github/applied-material-modeling/neml2/blob/v3.0.6/doc/content/tutorials/extension/connection_to_input_files/main.ipynb" target="_blank" rel="noopener" title="Run this tutorial in Google Colab"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a><p>In this tutorial, we’ll take a <code class="docutils literal notranslate"><span class="pre">Model</span></code> subclass we wrote ourselves and make it
+<span id="tutorials-extension-input-files"></span><h1>Connecting to input files<a class="headerlink" href="#connecting-to-input-files" title="Link to this heading">#</a></h1>
+<a class="colab-badge" href="https://colab.research.google.com/github/applied-material-modeling/neml2/blob/v3.0.7/doc/content/tutorials/extension/connection_to_input_files/main.ipynb" target="_blank" rel="noopener" title="Run this tutorial in Google Colab"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a><p>In this tutorial, we’ll take a <code class="docutils literal notranslate"><span class="pre">Model</span></code> subclass we wrote ourselves and make it
 loadable from an HIT input file, the same way the built-in models in
 <a class="reference internal" href="../../models/running_your_first_model/main.html#tutorials-models-running-your-first-model"><span class="std std-ref">Running your first model</span></a> are. Two ingredients do
 the work: a decorator that registers the class under a type name, and
 the <code class="docutils literal notranslate"><span class="pre">HitSchema</span></code> we already saw in
 <a class="reference internal" href="../argument_declaration/main.html#tutorials-extension-arguments"><span class="std std-ref">Declaring inputs, outputs, and parameters</span></a>.</p>
 <section id="the-example-model">
-<h2>The example model<a class="headerlink" href="#the-example-model" title="Link to this heading">¶</a></h2>
+<h2>The example model<a class="headerlink" href="#the-example-model" title="Link to this heading">#</a></h2>
 <p>We’ll reuse the projectile model from the previous tutorial — a <code class="docutils literal notranslate"><span class="pre">Vec</span></code>
 velocity in, a <code class="docutils literal notranslate"><span class="pre">Vec</span></code> acceleration out, under gravity plus linear drag:</p>
 <div class="math-wrapper docutils container">
@@ -493,7 +502,7 @@ helpers and what they accept.</p></li>
 </ol>
 </section>
 <section id="the-input-file">
-<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">¶</a></h2>
+<h2>The input file<a class="headerlink" href="#the-input-file" title="Link to this heading">#</a></h2>
 <p>Here’s a minimal HIT block that instantiates the class:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -527,7 +536,7 @@ the instance as <code class="docutils literal notranslate"><span class="pre">sel
 </ul>
 </section>
 <section id="loading-and-inspecting">
-<h2>Loading and inspecting<a class="headerlink" href="#loading-and-inspecting" title="Link to this heading">¶</a></h2>
+<h2>Loading and inspecting<a class="headerlink" href="#loading-and-inspecting" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">load_model</span></code> looks up the type name in a registry that’s populated
 as a side effect of importing our module — so we need to import
 it first. In a normal script that’s just an <code class="docutils literal notranslate"><span class="pre">import</span></code> line; here,
@@ -587,7 +596,7 @@ HIT values (<code class="docutils literal notranslate"><span class="pre">v</span
 </div>
 </section>
 <section id="debugging-not-registered-errors">
-<h2>Debugging “not registered” errors<a class="headerlink" href="#debugging-not-registered-errors" title="Link to this heading">¶</a></h2>
+<h2>Debugging “not registered” errors<a class="headerlink" href="#debugging-not-registered-errors" title="Link to this heading">#</a></h2>
 <p>If <code class="docutils literal notranslate"><span class="pre">load_model</span></code> raises a <code class="docutils literal notranslate"><span class="pre">KeyError</span></code> mentioning <em>“not registered in
 NativeRegistry”</em>, the module holding <code class="docutils literal notranslate"><span class="pre">&#64;register_neml2_object</span></code> was
 almost certainly never imported. Fix the import (or reorder imports)
@@ -598,7 +607,7 @@ so the decorator runs first. To confirm a type is registered, ask
 </div>
 </section>
 <section id="loading-the-extension-from-the-cli">
-<h2>Loading the extension from the CLI<a class="headerlink" href="#loading-the-extension-from-the-cli" title="Link to this heading">¶</a></h2>
+<h2>Loading the extension from the CLI<a class="headerlink" href="#loading-the-extension-from-the-cli" title="Link to this heading">#</a></h2>
 <p>To use our custom model from the <code class="docutils literal notranslate"><span class="pre">neml2-*</span></code> shell tools, pass
 <code class="docutils literal notranslate"><span class="pre">--load</span></code> pointing at the file (or a dotted module name on
 <code class="docutils literal notranslate"><span class="pre">sys.path</span></code>). The flag runs the import before the input file is
@@ -613,7 +622,7 @@ order, so later modules can depend on names registered earlier. See
 <a class="reference internal" href="../../../deployment/cli.html#cli-utilities"><span class="std std-ref">CLI utilities</span></a> for the full list of tools.</p>
 </section>
 <section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="../argument_declaration/main.html#tutorials-extension-arguments"><span class="std std-ref">Declaring inputs, outputs, and parameters</span></a> covers the schema fields in
 detail — typed inputs, options, parameters that can be promoted to
@@ -664,13 +673,13 @@ others inside a single <code class="docutils literal notranslate"><span class="p
   </p>
 </div>
       <div class="sy-foot-socials">
-<a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
-  <iconify-icon icon="simple-icons:github"></iconify-icon>
-</a></div>
+  <a href="https://github.com/applied-material-modeling/neml2" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
     </div>
   </div>
 </footer>
-      <script src="../../../../_static/documentation_options.js?v=c3365b21"></script>
+      <script src="../../../../_static/documentation_options.js?v=674edf38"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
