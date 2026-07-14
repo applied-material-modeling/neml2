@@ -48,6 +48,7 @@ content/references/py_aoti
 content/references/cpp_aoti
 content/references/cpp_dispatch
 content/references/cpp_eager
+content/references/solvers
 content/references/aoti_packages
 content/references/pipeline
 generated/syntax/index

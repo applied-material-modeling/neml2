@@ -160,6 +160,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -433,9 +434,9 @@ assembled from leaves already in NEML2’s catalog.</p>
 <section id="the-physics">
 <h2>The physics<a class="headerlink" href="#the-physics" title="Link to this heading">#</a></h2>
 <p>The Perzyna viscoplastic update we will solve is, in continuous form,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-184e8beb-815c-407d-9d07-2f9a61b57c3e">
-<div class="amsmath math notranslate nohighlight" id="equation-184e8beb-815c-407d-9d07-2f9a61b57c3e">
-<span class="eqno">(2)<a class="headerlink" href="#equation-184e8beb-815c-407d-9d07-2f9a61b57c3e" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-f3df459d-06c4-44f0-8a29-863b5be32dd8">
+<div class="amsmath math notranslate nohighlight" id="equation-f3df459d-06c4-44f0-8a29-863b5be32dd8">
+<span class="eqno">(2)<a class="headerlink" href="#equation-f3df459d-06c4-44f0-8a29-863b5be32dd8" title="Permalink to this equation">#</a></span>\[\begin{align}
   \boldsymbol{\varepsilon}^e &amp;= \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^p, \\
   \boldsymbol{\sigma} &amp;= 3K\,\operatorname{vol}\boldsymbol{\varepsilon}^e
                        + 2G\,\operatorname{dev}\boldsymbol{\varepsilon}^e, \\
@@ -644,10 +645,11 @@ Newton solver finds the root for us.</p>
 <h2>Wrapping the residual in an <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code><a class="headerlink" href="#wrapping-the-residual-in-an-implicitupdate" title="Link to this heading">#</a></h2>
 <p>The input file adds three pieces around the residual: an
 <code class="docutils literal notranslate"><span class="pre">[EquationSystems]</span></code> block that names the unknowns, a nonlinear solver
-(here <a class="reference internal" href="../../../../generated/syntax/Solvers/Newton.html#solvers-newton"><span class="std std-ref"><code class="docutils literal notranslate"><span class="pre">Newton</span></code></span></a>; see the solver catalog for the other
-choices), and a <code class="docutils literal notranslate"><span class="pre">[model]</span></code> block with <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">ImplicitUpdate</span></code> that
-points at the two. Re-reading the same input file but asking for
-<code class="docutils literal notranslate"><span class="pre">model</span></code> returns the wrapped object:</p>
+(here <a class="reference internal" href="../../../../generated/syntax/Solvers/Newton.html#solvers-newton"><span class="std std-ref"><code class="docutils literal notranslate"><span class="pre">Newton</span></code></span></a> with a <a class="reference internal" href="../../../../generated/syntax/Solvers/DenseLU.html#solvers-denselu"><span class="std std-ref"><code class="docutils literal notranslate"><span class="pre">DenseLU</span></code></span></a>
+linear solve; see <a class="reference internal" href="../../../references/solvers.html#solvers-reference"><span class="std std-ref">Solvers</span></a> for the other choices, direct
+and matrix-free iterative), and a <code class="docutils literal notranslate"><span class="pre">[model]</span></code> block with
+<code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">ImplicitUpdate</span></code> that points at the two. Re-reading the same
+input file but asking for <code class="docutils literal notranslate"><span class="pre">model</span></code> returns the wrapped object:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">model</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;input.i&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span>
@@ -840,6 +842,10 @@ result.</p>
 <section id="where-to-go-next">
 <h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
+<li><p><a class="reference internal" href="../../../references/solvers.html#solvers-reference"><span class="std std-ref">Solvers</span></a> — this update used <code class="docutils literal notranslate"><span class="pre">Newton</span></code> + <code class="docutils literal notranslate"><span class="pre">DenseLU</span></code>; the
+solvers reference covers the other nonlinear (line search) and linear
+(Schur, matrix-free GMRES/BiCGStab + preconditioners) choices and when
+to use them.</p></li>
 <li><p><a class="reference internal" href="../model_composition/main.html#tutorials-models-composition"><span class="std std-ref">Model composition</span></a> — <code class="docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> is just one
 more model. It can sit inside a bigger <code class="docutils literal notranslate"><span class="pre">ComposedModel</span></code>, feed the
 next stage of a pipeline, or be composed with other implicit

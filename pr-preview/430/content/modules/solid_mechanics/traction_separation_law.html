@@ -160,6 +160,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -514,9 +515,9 @@ effective scalar separation</p>
 a mixed-mode failure separation <span class="math notranslate nohighlight">\(\delta_f(\beta, \delta_c)\)</span>. Damage is
 then defined piecewise from the historical maximum effective
 separation <span class="math notranslate nohighlight">\(\bar{\delta}_m = \max_{t' \le t} \delta_m(t')\)</span>,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-cbb8814c-b393-4291-93e8-4ade906df748">
-<div class="amsmath math notranslate nohighlight" id="equation-cbb8814c-b393-4291-93e8-4ade906df748">
-<span class="eqno">(19)<a class="headerlink" href="#equation-cbb8814c-b393-4291-93e8-4ade906df748" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-47a93262-3284-4fe7-a8bd-75e0b8693441">
+<div class="amsmath math notranslate nohighlight" id="equation-47a93262-3284-4fe7-a8bd-75e0b8693441">
+<span class="eqno">(19)<a class="headerlink" href="#equation-47a93262-3284-4fe7-a8bd-75e0b8693441" title="Permalink to this equation">#</a></span>\[\begin{align}
 d(\bar{\delta}_m) &amp;= 0,
   &amp; \bar{\delta}_m &amp;\le \delta_c, \\
 d(\bar{\delta}_m) &amp;=
@@ -528,9 +529,9 @@ d(\bar{\delta}_m) &amp;= 1,
 \end{align}\]</div>
 </div>
 <p>so that the traction is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-5b4170a4-0867-4972-9129-6a2b495a65ef">
-<div class="amsmath math notranslate nohighlight" id="equation-5b4170a4-0867-4972-9129-6a2b495a65ef">
-<span class="eqno">(20)<a class="headerlink" href="#equation-5b4170a4-0867-4972-9129-6a2b495a65ef" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-8419451a-9d25-4654-aedc-f1032d7c7214">
+<div class="amsmath math notranslate nohighlight" id="equation-8419451a-9d25-4654-aedc-f1032d7c7214">
+<span class="eqno">(20)<a class="headerlink" href="#equation-8419451a-9d25-4654-aedc-f1032d7c7214" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n   &amp;= K\,(1-d)\,\langle \delta_n \rangle_+ \;+\; K\,\langle \delta_n \rangle_-, \notag \\
 T_{si} &amp;= K\,(1-d)\,\delta_{si}, \quad i \in \{1, 2\},
 \end{align}\]</div>

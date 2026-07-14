@@ -160,6 +160,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_aoti.html"><code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> — compiled model from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/solvers.html">Solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -446,9 +447,9 @@ export the composed graph through the compilation pipeline (see
 <h2>A worked example<a class="headerlink" href="#a-worked-example" title="Link to this heading">#</a></h2>
 <p>To keep the wiring visible we’ll use three small models from the
 catalog instead of the full plasticity stack:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-65b5e36e-6179-478e-9dc4-8bd7314fc331">
-<div class="amsmath math notranslate nohighlight" id="equation-65b5e36e-6179-478e-9dc4-8bd7314fc331">
-<span class="eqno">(1)<a class="headerlink" href="#equation-65b5e36e-6179-478e-9dc4-8bd7314fc331" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-15eb72db-3cd8-4beb-8b6c-c7c44bef93a6">
+<div class="amsmath math notranslate nohighlight" id="equation-15eb72db-3cd8-4beb-8b6c-c7c44bef93a6">
+<span class="eqno">(1)<a class="headerlink" href="#equation-15eb72db-3cd8-4beb-8b6c-c7c44bef93a6" title="Permalink to this equation">#</a></span>\[\begin{align}
   \bar{a} &amp;= I_1(\boldsymbol{a}), \\
   \bar{b} &amp;= \sqrt{\tfrac{3}{2}\,\operatorname{dev}(\boldsymbol{b}) : \operatorname{dev}(\boldsymbol{b})}, \\
   \dot{\boldsymbol{b}} &amp;= \bar{b}\,\boldsymbol{a} + \bar{a}\,\boldsymbol{b}.
