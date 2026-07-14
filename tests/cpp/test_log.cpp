@@ -113,13 +113,13 @@ main()
   L::reset_sink();
   NEML2_CHECK(events.size() == 2);
   NEML2_CHECK(events[0].first == L::Level::Info);
-  // Channel padded to the longest name ("substep", 7) for column alignment.
-  NEML2_CHECK(events[0].second == "[neml2:newton ] hi");
-  NEML2_CHECK(events[1].second == "[neml2:model  ] warn");
+  // Channel padded to the longest name ("substep", 7) + level tag padded to 4.
+  NEML2_CHECK(events[0].second == "[neml2:newton ][info] hi");
+  NEML2_CHECK(events[1].second == "[neml2:model  ][warn] warn");
 
-  // Format prefix (padded); "substep" is exactly the field width, so no padding.
-  NEML2_CHECK(L::format(L::Channel::Substep, "x") == "[neml2:substep] x");
-  NEML2_CHECK(L::format(L::Channel::Model, "x") == "[neml2:model  ] x");
+  // Format prefix: channel + level tag columns, both space-padded.
+  NEML2_CHECK(L::format(L::Channel::Substep, L::Level::Info, "x") == "[neml2:substep][info] x");
+  NEML2_CHECK(L::format(L::Channel::Model, L::Level::Debug, "x") == "[neml2:model  ][dbg ] x");
 
   // Parse helpers: `all` is NOT a channel here (handled by the env parser).
   L::Channel c;
@@ -157,7 +157,7 @@ main()
   {
     L::Channel back;
     NEML2_CHECK(L::parse_channel(L::channel_name(ch), back) && back == ch);
-    NEML2_CHECK(!L::format(ch, "m").empty());
+    NEML2_CHECK(!L::format(ch, L::Level::Info, "m").empty());
   }
   const L::Level all_levels[] = {
       L::Level::Silent, L::Level::Warning, L::Level::Info, L::Level::Debug};

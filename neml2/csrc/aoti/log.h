@@ -89,8 +89,9 @@ AOTI_EXPORT Level effective_level(Channel channel);
 /// `[neml2:<channel>] <message>`.
 AOTI_EXPORT void emit(Channel channel, Level level, const std::string & message);
 
-/// The formatted line (`[neml2:<channel>] <message>`) without gating or emitting.
-AOTI_EXPORT std::string format(Channel channel, const std::string & message);
+/// The formatted line (`[neml2:<channel>][<level>] <message>`, with the channel
+/// and level columns space-padded for alignment) without gating or emitting.
+AOTI_EXPORT std::string format(Channel channel, Level level, const std::string & message);
 
 /// Emit a begin/end solve banner (`---- begin <label> ----`) at `Info`, so a
 /// downstream consumer embedding neml2 solves inside its own residual/Jacobian

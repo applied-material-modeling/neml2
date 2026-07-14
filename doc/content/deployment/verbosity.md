@@ -31,38 +31,40 @@ export NEML2_LOGS="all=info,newton=silent"       # baseline + an override
 ```
 
 **Levels**, least to most verbose: `silent` < `warning` < `info` < `debug`
-(the integers `0`–`3` and the aliases `off`/`warn` are also accepted). A message
-emitted at level *L* is shown when its channel's effective level is *L* or
-higher.
+(the integers `0`–`3` and the aliases `off`/`warn` are also accepted). As a rule
+of thumb: `warning` for advisories, `info` for per-solve summaries and progress,
+`debug` for per-iteration / per-item detail. A message emitted at level *L* is
+shown when its channel's effective level is *L* or higher; `silent` mutes the
+channel.
 
-**Channels:**
+**Channels** name the subsystem a diagnostic comes from:
 
-| Channel | `info` | `debug` |
-| --- | --- | --- |
-| `newton` | per-solve summary + begin/end banners, with the convergence reason (`abs_tol` / `rel_tol`) | per-iteration residual + line-search detail |
-| `linear` | per-solve summary (iters, converged) for iterative solvers | inner (Krylov) linear-solve residual history, nested under its Newton iteration |
-| `substep` | one summary line per solve (elements substepped, bisection depth, segment-solve count) | one line per sub-span |
-| `model` | — | model / equation-system metadata dumps; framework advisories are emitted here at `warning` |
-| `tensor` | — | typed-tensor-level diagnostics |
-| `driver` | driver notices (e.g. "results saved") | per-step detail |
+- `newton` — the nonlinear (Newton) solver
+- `linear` — the inner linear (Krylov) solver
+- `substep` — adaptive sub-incrementation
+- `model` — model / equation-system evaluation
+- `tensor` — typed-tensor operations
+- `driver` — the drivers (running a model over a load history)
 
 `all` is a wildcard that sets a baseline for every channel; an explicit channel
-entry overrides it.
+entry overrides it. What a given channel prints at each level is deliberately not
+catalogued here (it grows over time) — raise the channel to `info` or `debug` to
+see what it offers.
 
-Every line is formatted uniformly as `[neml2:<channel>] …` (the channel is
-column-aligned), and each Newton solve is bracketed by begin/end separators, so a
-host that embeds NEML2 solves inside its own residual/Jacobian evaluations can
-tell NEML2's output apart from its own. Nested lines are indented — line-search
-sub-iterations under their Newton step, inner linear-solve residuals under theirs,
-sub-spans by bisection depth:
+Every line is formatted as `[neml2:<channel>][<level>] …`, with the channel and
+level columns space-padded so they align. Each Newton solve is bracketed by
+begin/end separators, so a host that embeds NEML2 solves inside its own
+residual/Jacobian evaluations can tell NEML2's output apart from its own. Nested
+lines are indented — line-search sub-iterations under their Newton step, inner
+linear-solve residuals under theirs, sub-spans by bisection depth:
 
 ```
-[neml2:newton ] ---- begin newton solve ----
-[neml2:newton ] ITERATION   0, |R| = 3.26e-04, |R0| = 3.26e-04
-[neml2:newton ]   LS ITERATION   1, min(alpha) = 5.00e-01, ...
-[neml2:newton ] ITERATION   1, |R| = 1.08e-19, |R0| = 3.26e-04
-[neml2:newton ] converged (iters=1, reason=rel_tol)
-[neml2:newton ] ---- end newton solve ----
+[neml2:newton ][info] ---- begin newton solve ----
+[neml2:newton ][dbg ] ITERATION   0, |R| = 3.26e-04, |R0| = 3.26e-04
+[neml2:newton ][dbg ]   LS ITERATION   1, min(alpha) = 5.00e-01, ...
+[neml2:newton ][dbg ] ITERATION   1, |R| = 1.08e-19, |R0| = 3.26e-04
+[neml2:newton ][info] converged (iters=1, reason=rel_tol)
+[neml2:newton ][info] ---- end newton solve ----
 ```
 
 By default (no `NEML2_LOGS` set) every channel sits at `warning`: advisories are

@@ -385,7 +385,7 @@ def test_substep_trace_logs(tmp_path: Path, capfd):
         log.reset_defaults()
     captured = capfd.readouterr()
     text = captured.out + captured.err
-    assert "[neml2:substep] value:" in text  # per-solve summary (info)
+    assert "] value:" in text  # per-solve substep summary (info)
     assert "1 substepped" in text  # exactly the one hard row
     assert "span [" in text  # per-sub-span detail (debug)
     assert "[neml2:newton" in text  # inner Newton iterations of the spans

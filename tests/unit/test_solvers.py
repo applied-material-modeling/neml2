@@ -172,8 +172,8 @@ def test_newton_quiet_by_default(capsys):
     assert result.ret is RetCode.SUCCESS
     assert result.log == ()
     captured = capsys.readouterr()
-    assert "[neml2:newton]" not in captured.out
-    assert "[neml2:newton]" not in captured.err
+    assert "[neml2:newton" not in captured.out
+    assert "[neml2:newton" not in captured.err
 
 
 def test_newton_debug_emits_convergence_log(capsys):

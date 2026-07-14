@@ -64,6 +64,9 @@ INFO = "info"
 DEBUG = "debug"
 
 _LEVEL_ORD = {name: i for i, name in enumerate(LEVELS)}
+# Short display tags for the level column (mirror the C++ level_tag), padded to 4
+# in the formatted line so the level column stays aligned.
+_LEVEL_TAG = {"silent": "slnt", "warning": "warn", "info": "info", "debug": "dbg"}
 # Accepted aliases -> canonical level (mirrors C++ parse_level).
 _LEVEL_ALIASES = {
     "off": "silent",
@@ -159,10 +162,10 @@ class _PyStore:
         return _LEVEL_ORD[self.effective_level(channel)] >= _LEVEL_ORD[level]
 
     def emit(self, channel: str, level: str, message: str) -> None:
-        # Pad the channel to the longest name ("substep") for column alignment,
-        # matching the C++ store's format().
+        # Pad the channel (longest "substep") and level tag (longest "warn") to
+        # fixed widths for column alignment, matching the C++ store's format().
         if self.enabled(channel, level):
-            _forward(level, f"[neml2:{channel:<7}] {message}")
+            _forward(level, f"[neml2:{channel:<7}][{_LEVEL_TAG[level]:<4}] {message}")
 
     def set_default_level(self, channel: str, level: str) -> None:
         if channel == "all":

@@ -151,6 +151,26 @@ effective_locked(State & s, Channel c)
     return *s.prog_all;
   return Level::Warning;
 }
+
+// Short fixed-width display tag for a level (space-padded to 4 in format()), so
+// the level column stays aligned: "warn", "info", "dbg ", "slnt". Distinct from
+// level_name() (the full name used for parsing + the sink callback).
+const char *
+level_tag(Level level)
+{
+  switch (level)
+  {
+    case Level::Silent:
+      return "slnt";
+    case Level::Warning:
+      return "warn";
+    case Level::Info:
+      return "info";
+    case Level::Debug:
+      return "dbg";
+  }
+  throw FatalError("neml2::aoti::log::level_tag: unrecognized Level enum value");
+}
 } // namespace
 
 bool
@@ -170,15 +190,20 @@ effective_level(Channel channel)
 }
 
 std::string
-format(Channel channel, const std::string & message)
+format(Channel channel, Level level, const std::string & message)
 {
-  // Pad the channel to the width of the longest name ("substep") so the prefix
-  // is column-aligned across channels: "[neml2:newton ] ..." / "[neml2:substep] ...".
-  constexpr std::size_t field = 7;
-  std::string name = channel_name(channel);
-  if (name.size() < field)
-    name.append(field - name.size(), ' ');
-  return "[neml2:" + name + "] " + message;
+  // Pad the channel (longest name "substep", 7) and the level tag (longest
+  // "warn"/"info"/"slnt", 4) to fixed widths so both columns align across lines:
+  // "[neml2:newton ][dbg ] ..." / "[neml2:substep][info] ...".
+  constexpr std::size_t cfield = 7;
+  constexpr std::size_t lfield = 4;
+  std::string cn = channel_name(channel);
+  if (cn.size() < cfield)
+    cn.append(cfield - cn.size(), ' ');
+  std::string lt = level_tag(level);
+  if (lt.size() < lfield)
+    lt.append(lfield - lt.size(), ' ');
+  return "[neml2:" + cn + "][" + lt + "] " + message;
 }
 
 void
@@ -197,7 +222,7 @@ emit(Channel channel, Level level, const std::string & message)
       sink_copy = s.sink;
   }
   if (on && sink_copy)
-    sink_copy(level, format(channel, message));
+    sink_copy(level, format(channel, level, message));
 }
 
 void
