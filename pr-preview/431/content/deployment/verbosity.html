@@ -443,60 +443,36 @@ of PyTorch’s <code class="docutils literal notranslate"><span class="pre">TORC
 </span></pre></div>
 </div>
 <p><strong>Levels</strong>, least to most verbose: <code class="docutils literal notranslate"><span class="pre">silent</span></code> &lt; <code class="docutils literal notranslate"><span class="pre">warning</span></code> &lt; <code class="docutils literal notranslate"><span class="pre">info</span></code> &lt; <code class="docutils literal notranslate"><span class="pre">debug</span></code>
-(the integers <code class="docutils literal notranslate"><span class="pre">0</span></code>–<code class="docutils literal notranslate"><span class="pre">3</span></code> and the aliases <code class="docutils literal notranslate"><span class="pre">off</span></code>/<code class="docutils literal notranslate"><span class="pre">warn</span></code> are also accepted). A message
-emitted at level <em>L</em> is shown when its channel’s effective level is <em>L</em> or
-higher.</p>
-<p><strong>Channels:</strong></p>
-<div class="table-wrapper colwidths-auto docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Channel</p></th>
-<th class="head"><p><code class="docutils literal notranslate"><span class="pre">info</span></code></p></th>
-<th class="head"><p><code class="docutils literal notranslate"><span class="pre">debug</span></code></p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">newton</span></code></p></td>
-<td><p>per-solve summary + begin/end banners, with the convergence reason (<code class="docutils literal notranslate"><span class="pre">abs_tol</span></code> / <code class="docutils literal notranslate"><span class="pre">rel_tol</span></code>)</p></td>
-<td><p>per-iteration residual + line-search detail</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">linear</span></code></p></td>
-<td><p>per-solve summary (iters, converged) for iterative solvers</p></td>
-<td><p>inner (Krylov) linear-solve residual history, nested under its Newton iteration</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">substep</span></code></p></td>
-<td><p>one summary line per solve (elements substepped, bisection depth, segment-solve count)</p></td>
-<td><p>one line per sub-span</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">model</span></code></p></td>
-<td><p>—</p></td>
-<td><p>model / equation-system metadata dumps; framework advisories are emitted here at <code class="docutils literal notranslate"><span class="pre">warning</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tensor</span></code></p></td>
-<td><p>—</p></td>
-<td><p>typed-tensor-level diagnostics</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">driver</span></code></p></td>
-<td><p>driver notices (e.g. “results saved”)</p></td>
-<td><p>per-step detail</p></td>
-</tr>
-</tbody>
-</table>
-</div>
+(the integers <code class="docutils literal notranslate"><span class="pre">0</span></code>–<code class="docutils literal notranslate"><span class="pre">3</span></code> and the aliases <code class="docutils literal notranslate"><span class="pre">off</span></code>/<code class="docutils literal notranslate"><span class="pre">warn</span></code> are also accepted). As a rule
+of thumb: <code class="docutils literal notranslate"><span class="pre">warning</span></code> for advisories, <code class="docutils literal notranslate"><span class="pre">info</span></code> for per-solve summaries and progress,
+<code class="docutils literal notranslate"><span class="pre">debug</span></code> for per-iteration / per-item detail. A message emitted at level <em>L</em> is
+shown when its channel’s effective level is <em>L</em> or higher; <code class="docutils literal notranslate"><span class="pre">silent</span></code> mutes the
+channel.</p>
+<p><strong>Channels</strong> name the subsystem a diagnostic comes from:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">newton</span></code> — the nonlinear (Newton) solver</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">linear</span></code> — the inner linear (Krylov) solver</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">substep</span></code> — adaptive sub-incrementation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> — model / equation-system evaluation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tensor</span></code> — typed-tensor operations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">driver</span></code> — the drivers (running a model over a load history)</p></li>
+</ul>
 <p><code class="docutils literal notranslate"><span class="pre">all</span></code> is a wildcard that sets a baseline for every channel; an explicit channel
-entry overrides it.</p>
-<p>Every line is formatted uniformly as <code class="docutils literal notranslate"><span class="pre">[neml2:&lt;channel&gt;]</span> <span class="pre">…</span></code> (the channel is
-column-aligned), and each Newton solve is bracketed by begin/end separators, so a
-host that embeds NEML2 solves inside its own residual/Jacobian evaluations can
-tell NEML2’s output apart from its own. Nested lines are indented — line-search
-sub-iterations under their Newton step, inner linear-solve residuals under theirs,
-sub-spans by bisection depth:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">]</span> <span class="o">----</span> <span class="n">begin</span> <span class="n">newton</span> <span class="n">solve</span> <span class="o">----</span>
-</span><span data-line="2"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">]</span> <span class="n">ITERATION</span>   <span class="mi">0</span><span class="p">,</span> <span class="o">|</span><span class="n">R</span><span class="o">|</span> <span class="o">=</span> <span class="mf">3.26e-04</span><span class="p">,</span> <span class="o">|</span><span class="n">R0</span><span class="o">|</span> <span class="o">=</span> <span class="mf">3.26e-04</span>
-</span><span data-line="3"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">]</span>   <span class="n">LS</span> <span class="n">ITERATION</span>   <span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">=</span> <span class="mf">5.00e-01</span><span class="p">,</span> <span class="o">...</span>
-</span><span data-line="4"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">]</span> <span class="n">ITERATION</span>   <span class="mi">1</span><span class="p">,</span> <span class="o">|</span><span class="n">R</span><span class="o">|</span> <span class="o">=</span> <span class="mf">1.08e-19</span><span class="p">,</span> <span class="o">|</span><span class="n">R0</span><span class="o">|</span> <span class="o">=</span> <span class="mf">3.26e-04</span>
-</span><span data-line="5"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">]</span> <span class="n">converged</span> <span class="p">(</span><span class="n">iters</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="n">rel_tol</span><span class="p">)</span>
-</span><span data-line="6"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">]</span> <span class="o">----</span> <span class="n">end</span> <span class="n">newton</span> <span class="n">solve</span> <span class="o">----</span>
+entry overrides it. What a given channel prints at each level is deliberately not
+catalogued here (it grows over time) — raise the channel to <code class="docutils literal notranslate"><span class="pre">info</span></code> or <code class="docutils literal notranslate"><span class="pre">debug</span></code> to
+see what it offers.</p>
+<p>Every line is formatted as <code class="docutils literal notranslate"><span class="pre">[neml2:&lt;channel&gt;][&lt;level&gt;]</span> <span class="pre">…</span></code>, with the channel and
+level columns space-padded so they align. Each Newton solve is bracketed by
+begin/end separators, so a host that embeds NEML2 solves inside its own
+residual/Jacobian evaluations can tell NEML2’s output apart from its own. Nested
+lines are indented — line-search sub-iterations under their Newton step, inner
+linear-solve residuals under theirs, sub-spans by bisection depth:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">][</span><span class="n">info</span><span class="p">]</span> <span class="o">----</span> <span class="n">begin</span> <span class="n">newton</span> <span class="n">solve</span> <span class="o">----</span>
+</span><span data-line="2"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">][</span><span class="n">dbg</span> <span class="p">]</span> <span class="n">ITERATION</span>   <span class="mi">0</span><span class="p">,</span> <span class="o">|</span><span class="n">R</span><span class="o">|</span> <span class="o">=</span> <span class="mf">3.26e-04</span><span class="p">,</span> <span class="o">|</span><span class="n">R0</span><span class="o">|</span> <span class="o">=</span> <span class="mf">3.26e-04</span>
+</span><span data-line="3"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">][</span><span class="n">dbg</span> <span class="p">]</span>   <span class="n">LS</span> <span class="n">ITERATION</span>   <span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">=</span> <span class="mf">5.00e-01</span><span class="p">,</span> <span class="o">...</span>
+</span><span data-line="4"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">][</span><span class="n">dbg</span> <span class="p">]</span> <span class="n">ITERATION</span>   <span class="mi">1</span><span class="p">,</span> <span class="o">|</span><span class="n">R</span><span class="o">|</span> <span class="o">=</span> <span class="mf">1.08e-19</span><span class="p">,</span> <span class="o">|</span><span class="n">R0</span><span class="o">|</span> <span class="o">=</span> <span class="mf">3.26e-04</span>
+</span><span data-line="5"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">][</span><span class="n">info</span><span class="p">]</span> <span class="n">converged</span> <span class="p">(</span><span class="n">iters</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="n">rel_tol</span><span class="p">)</span>
+</span><span data-line="6"><span class="p">[</span><span class="n">neml2</span><span class="p">:</span><span class="n">newton</span> <span class="p">][</span><span class="n">info</span><span class="p">]</span> <span class="o">----</span> <span class="n">end</span> <span class="n">newton</span> <span class="n">solve</span> <span class="o">----</span>
 </span></pre></div>
 </div>
 <p>By default (no <code class="docutils literal notranslate"><span class="pre">NEML2_LOGS</span></code> set) every channel sits at <code class="docutils literal notranslate"><span class="pre">warning</span></code>: advisories are
