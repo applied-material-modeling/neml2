@@ -111,6 +111,22 @@ class HitField:
     def is_output(self) -> bool:
         return self.kind in {"output", "var_output"}
 
+    @property
+    def implicit_override_name(self) -> str | None:
+        """HIT option that renames this field's derived variable, or ``None``.
+
+        A ``derived_output``'s default name — the referenced option name plus
+        ``suffix`` (e.g. ``back_stress`` + ``_rate`` = ``back_stress_rate``) —
+        doubles as an optional rename knob (see :func:`_read_derived_var_name`);
+        this returns that knob's name. Only ``derived_output`` fields with a
+        ``suffix`` expose one — ``derived_input`` does not. Single source of
+        truth for the resolver, the unknown-field validator, and the syntax
+        catalog.
+        """
+        if self.kind == "derived_output" and self.suffix:
+            return f"{self.name}{self.suffix}"
+        return None
+
 
 class HitSchema:
     """Ordered declaration of a native object's HIT surface."""
@@ -222,8 +238,9 @@ class HitSchema:
                 # Purely virtual — a derived field introduces no HIT option of
                 # its own, except that a derived_output's default name doubles
                 # as an implicit rename knob (see _read_derived_var_name).
-                if field.kind == "derived_output" and field.suffix:
-                    allowed.add(f"{field.name}{field.suffix}")
+                knob = field.implicit_override_name
+                if knob is not None:
+                    allowed.add(knob)
                 continue
             allowed.add(field.name)
             if field.override:
@@ -660,8 +677,9 @@ def _read_derived_var_name(
         override_val = node.param_optional_str(field.override, "")
         if override_val:
             return override_val
-    if field.kind == "derived_output" and field.suffix:
-        auto_val = node.param_optional_str(f"{field.name}{field.suffix}", "")
+    knob = field.implicit_override_name
+    if knob is not None:
+        auto_val = node.param_optional_str(knob, "")
         if auto_val:
             return auto_val
     base = name_values.get(field.name)

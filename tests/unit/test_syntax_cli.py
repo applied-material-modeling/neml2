@@ -98,6 +98,36 @@ def test_schema_backed_solver_emits_option_metadata():
     }
 
 
+def test_derived_output_rename_knob_is_catalogued():
+    """A ``derived_output``'s default name doubles as a rename knob (see
+    ``schema._read_derived_var_name``); it must be discoverable as an OUTPUT
+    option even though the field declares no explicit HIT option."""
+    record = _record_map()["FredrickArmstrongPlasticHardening"]
+    opts = {opt["name"]: opt for opt in _syntax_cli.record_to_json(record)["options"]}
+
+    assert "back_stress_rate" in opts
+    knob = opts["back_stress_rate"]
+    assert knob["ftype"] == "OUTPUT"
+    assert knob["required"] is False
+    assert knob["type"] == "SR2"
+    assert knob["doc"]  # synthesized, non-empty
+    # The real inputs remain; the derived knob is additive.
+    assert {"flow_rate", "flow_direction", "back_stress"} <= set(opts)
+
+
+def test_derived_input_names_stay_hidden_but_residual_is_catalogued():
+    """``derived_input`` names (previous-step ``~1``, rate) stay hidden, but a
+    residual ``derived_output`` surfaces as a rename knob on the same model."""
+    record = _record_map()["SR2BackwardEulerTimeIntegration"]
+    names = {opt["name"] for opt in _syntax_cli.record_to_json(record)["options"]}
+
+    assert "variable_residual" in names  # derived_output knob, surfaced
+    assert "variable~1" not in names  # derived_input, hidden
+    assert "variable_rate" not in names  # derived_input, hidden
+    # The explicit user-facing options remain.
+    assert {"variable", "time", "rate"} <= names
+
+
 def test_collect_records_rejects_type_without_section(monkeypatch: pytest.MonkeyPatch):
     """A registered class missing ``SECTION`` is a programming bug — the
     catalog would silently drop the type otherwise. Fake a stale registry entry
