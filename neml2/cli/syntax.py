@@ -155,6 +155,29 @@ def _field_to_json(field: HitField) -> dict[str, Any]:
     }
 
 
+def _derived_output_to_json(field: HitField, knob: str) -> dict[str, Any]:
+    """Serialize a ``derived_output``'s implicit rename knob as an OUTPUT option.
+
+    A derived output declares no HIT option of its own, but its default name
+    (``knob`` = referenced option + suffix) doubles as an optional rename knob
+    (see :func:`neml2.schema._read_derived_var_name`), so it belongs in the
+    catalog. ``required=False`` and ``value=knob`` convey "optional; defaults to
+    this name". Derived fields carry no docstring, so synthesize one.
+    """
+    doc = field.doc or (
+        f"Optional name for the derived output (defaults to '{knob}', i.e. the "
+        f"'{field.name}' variable name with the '{field.suffix}' suffix)."
+    )
+    return {
+        "name": knob,
+        "doc": _ascii_doc(doc, f"{knob} option doc"),
+        "ftype": "OUTPUT",
+        "required": False,
+        "type": _type_name(field.value_type),
+        "value": knob,
+    }
+
+
 def record_to_json(record: SyntaxRecord, *, include_options: bool = True) -> dict[str, Any]:
     j: dict[str, Any] = {
         "type": record.type_name,
@@ -164,14 +187,20 @@ def record_to_json(record: SyntaxRecord, *, include_options: bool = True) -> dic
         "class_name": record.class_name,
     }
     if include_options and record.hit is not None:
-        # ``derived_*`` fields reference another option to derive a variable
-        # name; they aren't user-facing HIT options of their own and would
-        # confuse the syntax catalog by duplicating the base option's entry.
-        j["options"] = [
-            _field_to_json(field)
-            for field in record.hit.fields
-            if field.kind not in {"derived_input", "derived_output"}
-        ]
+        # ``derived_input`` fields reference another option to derive a
+        # variable name; they aren't user-facing HIT options of their own and
+        # would confuse the catalog by duplicating the base option's entry. A
+        # ``derived_output``, however, exposes an implicit rename knob (its
+        # default name) — surface that so the renamable output is discoverable.
+        options: list[dict[str, Any]] = []
+        for field in record.hit.fields:
+            if field.kind in {"derived_input", "derived_output"}:
+                knob = field.implicit_override_name
+                if knob is not None:
+                    options.append(_derived_output_to_json(field, knob))
+                continue
+            options.append(_field_to_json(field))
+        j["options"] = options
     return j
 
 

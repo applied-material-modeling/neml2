@@ -111,6 +111,22 @@ class HitField:
     def is_output(self) -> bool:
         return self.kind in {"output", "var_output"}
 
+    @property
+    def implicit_override_name(self) -> str | None:
+        """HIT option that renames this field's derived variable, or ``None``.
+
+        A ``derived_output``'s default name — the referenced option name plus
+        ``suffix`` (e.g. ``back_stress`` + ``_rate`` = ``back_stress_rate``) —
+        doubles as an optional rename knob (see :func:`_read_derived_var_name`);
+        this returns that knob's name. Only ``derived_output`` fields with a
+        ``suffix`` expose one — ``derived_input`` does not. Single source of
+        truth for the resolver, the unknown-field validator, and the syntax
+        catalog.
+        """
+        if self.kind == "derived_output" and self.suffix:
+            return f"{self.name}{self.suffix}"
+        return None
+
 
 class HitSchema:
     """Ordered declaration of a native object's HIT surface."""
@@ -212,12 +228,20 @@ class HitSchema:
         schema-driven kwargs pass to dispatch the registered class.
         Override option names (an :func:`option`'s ``override=`` target) are
         also allowed; they substitute for the primary option's value when
-        non-empty.
+        non-empty. A :func:`derived_output`'s default name (referenced name +
+        suffix) is likewise allowed: it doubles as an implicit rename knob (see
+        :func:`_read_derived_var_name`).
         """
         allowed: set[str] = {"type"}
         for field in self.fields:
             if field.kind in {"derived_input", "derived_output"}:
-                continue  # purely virtual; doesn't introduce a HIT field
+                # Purely virtual — a derived field introduces no HIT option of
+                # its own, except that a derived_output's default name doubles
+                # as an implicit rename knob (see _read_derived_var_name).
+                knob = field.implicit_override_name
+                if knob is not None:
+                    allowed.add(knob)
+                continue
             allowed.add(field.name)
             if field.override:
                 allowed.add(field.override)
@@ -348,6 +372,15 @@ def derived_output(
     See :func:`derived_input`. The canonical use is
     ``derived_output("variable", T, suffix="_residual")`` for an implicit
     residual output named after the base ``variable`` option/input.
+
+    Unlike :func:`derived_input`, a derived output is renamable by default: its
+    *default* name — the referenced field name plus ``suffix`` (e.g.
+    ``back_stress`` + ``_rate`` = ``back_stress_rate``) — doubles as a HIT
+    rename knob, so ``back_stress_rate = 'X_rate'`` renames the output the same
+    way ``stress = 'my_stress'`` renames a regular :func:`output`. The knob name
+    is the *static* default (it does not shift when the referenced base is
+    renamed); the value assigned to it is the new output name, and it takes
+    precedence over the ``base + suffix`` cascade.
     """
     return HitField(
         "derived_output",
@@ -626,15 +659,29 @@ def _read_derived_var_name(
 ) -> str | None:
     """Resolve a ``derived_input`` / ``derived_output`` field's variable name.
 
-    ``override`` (if set): check HIT for the named option; when non-empty,
-    that value short-circuits the derivation and is returned as-is. Else the
-    base value comes from ``name_values[field.name]`` (the already-resolved
-    value of the referenced input/output/option) and ``suffix`` is appended.
+    Resolution precedence:
+
+    1. Explicit ``override`` (if set): check HIT for that named option; when
+       non-empty, it short-circuits the derivation and is returned as-is.
+    2. Implicit override (``derived_output`` only): the field's *default*
+       derived name — the referenced option name plus ``suffix`` (e.g.
+       ``back_stress`` + ``_rate`` = ``back_stress_rate``) — doubles as a HIT
+       rename knob. When the user sets that option non-empty, it wins, exactly
+       as setting a regular :func:`output`'s option renames it. This makes
+       every derived output renamable with no per-model opt-in.
+    3. Otherwise the base value comes from ``name_values[field.name]`` (the
+       already-resolved value of the referenced input/output/option) and
+       ``suffix`` is appended.
     """
     if field.override is not None:
         override_val = node.param_optional_str(field.override, "")
         if override_val:
             return override_val
+    knob = field.implicit_override_name
+    if knob is not None:
+        auto_val = node.param_optional_str(knob, "")
+        if auto_val:
+            return auto_val
     base = name_values.get(field.name)
     if field.suffix and base is not None:
         return f"{base}{field.suffix}"
