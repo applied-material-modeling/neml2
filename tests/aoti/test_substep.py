@@ -202,6 +202,24 @@ def test_nonlinear_convergence_recovery(tmp_path: Path):
     assert fwd(1.0) == pytest.approx(_eager_single_shot(0.2, 1.0, miters=50), rel=1e-8)
 
 
+def test_newton_divergence_logs(capfd):
+    """A diverging Newton solve emits the diverged summary + end banner on the
+    ``newton`` channel before raising the recoverable ``ConvergenceError`` (covers
+    the failure branch of the C++ solve path via the eager route)."""
+    from neml2 import log
+
+    log.set_default_level("newton", "info")
+    try:
+        with pytest.raises(ConvergenceError):
+            _eager_single_shot(0.2, 8.0, miters=25)  # dt=8 single-shot diverges
+    finally:
+        log.reset_defaults()
+    text = "".join(capfd.readouterr())
+    assert "[neml2:newton" in text
+    assert "diverged" in text or "NOT converged" in text
+    assert "---- end newton solve ----" in text
+
+
 def test_nonlinear_substepped_jacobian_matches_fd(tmp_path: Path):
     """The chained consistent tangent (accumulated across bisected sub-steps)
     matches central finite differences of the substepped forward."""
@@ -347,9 +365,10 @@ def test_masking_maxed_out_raises_recoverable(tmp_path: Path):
 
 
 def test_substep_trace_logs(tmp_path: Path, capfd):
-    """The ``substep`` log channel at ``info`` prints a per-solve substep summary
-    (how many elements substepped, max depth, segment-solve count) through the
-    shared log store, on the compiled AOTI path."""
+    """The ``substep`` + ``newton`` log channels trace a substepping solve on the
+    compiled AOTI path: the per-solve substep summary (elements substepped, depth,
+    segment-solve count), the per-sub-span detail at ``debug``, and the inner
+    Newton iterations of each span."""
     from neml2 import log
     from neml2.aoti import Model as AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
@@ -358,15 +377,18 @@ def test_substep_trace_logs(tmp_path: Path, capfd):
     export_model_for_aoti(_SUBSTEP_NL, "model", out)
     aoti = AOTIModel(str(out))
 
-    log.set_default_level("substep", "info")
+    log.set_default_level("substep", "debug")
+    log.set_default_level("newton", "debug")
     try:
         aoti.forward(_mixed_inputs())
     finally:
         log.reset_defaults()
     captured = capfd.readouterr()
     text = captured.out + captured.err
-    assert "[neml2:substep] value:" in text
+    assert "[neml2:substep] value:" in text  # per-solve summary (info)
     assert "1 substepped" in text  # exactly the one hard row
+    assert "span [" in text  # per-sub-span detail (debug)
+    assert "[neml2:newton" in text  # inner Newton iterations of the spans
 
 
 def test_multiaxis_batch_substepping_forward(tmp_path: Path):
@@ -548,8 +570,10 @@ def test_newton_trace_logs(tmp_path: Path, capfd):
     from neml2.cli.aoti_export import export_model_for_aoti
 
     src = tmp_path / "trace.i"
+    # No predictor, so the solve takes real Newton steps (covers the ITERATION /
+    # LS ITERATION detail + the converged summary, not just a predictor exit).
     src.write_text(
-        _scalar_implicit_i(solver="NewtonWithLineSearch", ls_type="BACKTRACKING", predictor=True)
+        _scalar_implicit_i(solver="NewtonWithLineSearch", ls_type="BACKTRACKING", predictor=False)
     )
     out = tmp_path / "trace"
     export_model_for_aoti(src, "model", out)
@@ -561,7 +585,10 @@ def test_newton_trace_logs(tmp_path: Path, capfd):
     assert torch.isfinite(x).all()
     captured = capfd.readouterr()
     text = captured.out + captured.err
-    assert "---- begin newton solve ----" in text
+    assert "---- begin newton solve ----" in text  # begin banner (info)
+    assert "ITERATION" in text  # per-iteration detail (debug)
+    assert "converged (iters=" in text  # convergence summary with reason
+    assert "---- end newton solve ----" in text  # end banner (info)
 
 
 def test_masked_substepping_mixed_batch(tmp_path: Path):
