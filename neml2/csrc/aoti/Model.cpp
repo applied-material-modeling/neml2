@@ -286,7 +286,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // a cryptic missing-field error deep in the parser. The canonical value lives
   // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 12;
+  static constexpr int kSupportedSchemaVersion = 13;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",

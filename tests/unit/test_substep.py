@@ -122,11 +122,8 @@ def test_lag_order_rejects_malformed():
         lag_order("a~1~2")  # too many separators
 
 
-def _roles(inputs, unknowns, incremental=()):
-    return {
-        n: (i.role, i.pair)
-        for n, i in classify_substep_roles(inputs, unknowns, incremental).items()
-    }
+def _roles(inputs, unknowns):
+    return {n: (i.role, i.pair) for n, i in classify_substep_roles(inputs, unknowns).items()}
 
 
 def test_classify_standard_rate_form():
@@ -150,13 +147,15 @@ def test_classify_paired_force():
     assert r["T~1"] == (SubstepRole.OLD_FORCE, "T")
 
 
-def test_classify_incremental_opt_in():
-    """A lone increment is STATIC by default but INCREMENTAL when the user lists it."""
-    inputs = ["u~1", "deformation_increment"]
-    assert _roles(inputs, ["u"])["deformation_increment"] == (SubstepRole.STATIC, None)
-    r = _roles(inputs, ["u"], incremental=["deformation_increment"])
-    assert r["deformation_increment"] == (SubstepRole.INCREMENTAL, None)
-    assert r["u~1"] == (SubstepRole.OLD_STATE, "u")  # unaffected by the opt-in
+def test_classify_total_force_ramps_with_pair():
+    """A total-form force is STATIC on its own, but ramps (CUR_FORCE) once its ``~1``
+    counterpart is present -- the counterpart that ``ImplicitUpdate.incremental_variables``
+    auto-injects so the substep driver interpolates it."""
+    assert _roles(["u~1", "F"], ["u"])["F"] == (SubstepRole.STATIC, None)
+    r = _roles(["u~1", "F", "F~1"], ["u"])
+    assert r["F"] == (SubstepRole.CUR_FORCE, "F~1")  # interpolate F~1 -> F
+    assert r["F~1"] == (SubstepRole.OLD_FORCE, "F")
+    assert r["u~1"] == (SubstepRole.OLD_STATE, "u")  # unaffected
 
 
 def test_implicit_update_stores_and_validates_options():
@@ -167,11 +166,24 @@ def test_implicit_update_stores_and_validates_options():
     assert m.incremental_variables == []
 
 
-def test_incremental_variables_must_be_inputs():
-    """A typo'd incremental variable name is rejected at construction."""
+def test_incremental_variables_must_be_givens():
+    """A name that is not a driving-force (given) input is rejected at construction."""
     m = neml2.load_model(str(_IMPLICIT), "model")
-    with pytest.raises(ValueError, match="not inputs"):
+    with pytest.raises(ValueError, match="not driving-force"):
         neml2.ImplicitUpdate(m.system, m.solver, incremental_variables=["not_a_real_input"])
+
+
+def test_incremental_variables_injects_phantom_old_value():
+    """Marking a given as incremental auto-adds its ``~1`` old-value counterpart as a
+    model input -- so the host gathers the force's previous value and the substep
+    driver can interpolate it -- reusing the force's type."""
+    m = neml2.load_input(
+        str(_IMPLICIT),
+        additional_args=("Models/model/incremental_variables:='x_rate'",),
+    ).get_model("model")
+    assert m.incremental_variables == ["x_rate"]
+    assert "x_rate~1" in m.input_spec  # phantom old value auto-added
+    assert m.input_spec["x_rate~1"] is m.input_spec["x_rate"]  # same type as the force
 
 
 # ---------------------------------------------------------------------------

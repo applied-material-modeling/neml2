@@ -83,8 +83,6 @@ class SubstepRole(str, Enum):
     OLD_FORCE = "old_force"
     #: ``f`` whose lagged ``f~1`` is also an input -> interpolate across the span.
     CUR_FORCE = "cur_force"
-    #: user-listed pure increment (no ``~1`` counterpart) -> scale by span fraction.
-    INCREMENTAL = "incremental"
     #: everything else -> hold constant across spans.
     STATIC = "static"
 
@@ -95,7 +93,7 @@ class SubstepRoleInfo:
 
     ``pair`` is the counterpart name: for ``OLD_STATE`` the base unknown, for
     ``OLD_FORCE`` the current force, for ``CUR_FORCE`` the lagged force;
-    ``None`` for ``UNKNOWN`` / ``INCREMENTAL`` / ``STATIC``.
+    ``None`` for ``UNKNOWN`` / ``STATIC``.
     """
 
     role: SubstepRole
@@ -105,18 +103,20 @@ class SubstepRoleInfo:
 def classify_substep_roles(
     input_names: Iterable[str],
     unknown_names: Iterable[str],
-    incremental_variables: Iterable[str] = (),
 ) -> dict[str, SubstepRoleInfo]:
     """Classify each ImplicitUpdate input by its substep role.
 
     The single source of truth for how substepping treats every input. Called
     by the AOTI exporter to build the substep metadata serialized into the
     artifact. See :class:`SubstepRole` for the meaning of each role.
+
+    A force to sub-increment is ramped (CUR_FORCE) purely by the presence of its
+    ``~1`` counterpart in ``input_names``. ``ImplicitUpdate.incremental_variables``
+    auto-adds that counterpart, so no separate list is threaded here.
     """
     names = list(input_names)
     name_set = set(names)
     unknown_set = set(unknown_names)
-    incremental_set = set(incremental_variables)
 
     def _lagged_counterpart(base: str) -> str | None:
         """First lagged ``base~k`` (k>0) appearing as an input, if any."""
@@ -133,8 +133,6 @@ def classify_substep_roles(
             roles[name] = SubstepRoleInfo(SubstepRole.UNKNOWN)
         elif lag > 0 and base in unknown_set:
             roles[name] = SubstepRoleInfo(SubstepRole.OLD_STATE, pair=base)
-        elif name in incremental_set:
-            roles[name] = SubstepRoleInfo(SubstepRole.INCREMENTAL)
         elif lag > 0 and base in name_set:
             roles[name] = SubstepRoleInfo(SubstepRole.OLD_FORCE, pair=base)
         elif lag == 0 and (cp := _lagged_counterpart(base)) is not None:

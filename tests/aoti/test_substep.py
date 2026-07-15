@@ -202,6 +202,73 @@ def test_nonlinear_convergence_recovery(tmp_path: Path):
     assert fwd(1.0) == pytest.approx(_eager_single_shot(0.2, 1.0, miters=50), rel=1e-8)
 
 
+_SUBSTEP_RAMP = _REPO / "tests" / "aoti" / "implicit_substep_ramp" / "model.i"
+
+
+def test_ramp_recovers_stiff_step(tmp_path: Path):
+    """A step made stiff by a large LONE force fails the single Newton solve but
+    converges once the force is ramped (``incremental_variables``): the compiled
+    substep driver interpolates ``driving_force`` from its old value (0) to the
+    current value across bisected sub-steps. The consistent tangent -- including
+    d x / d driving_force through the ramped (cur_force) phantom -- matches central
+    finite differences of the substepped forward."""
+    import neml2
+    from neml2.aoti import Model as AOTIModel
+    from neml2.cli.aoti_export import export_model_for_aoti
+
+    out = tmp_path / "ramp"
+    export_model_for_aoti(
+        _SUBSTEP_RAMP,
+        "model",
+        out,
+        derivatives=["x:x~1", "x:t", "x:t~1", "x:driving_force"],
+    )
+    aoti = AOTIModel(str(out))
+
+    base = {
+        "x": torch.full((1,), 0.2, dtype=torch.float64),
+        "x~1": torch.full((1,), 0.2, dtype=torch.float64),
+        "t": torch.full((1,), 1.0, dtype=torch.float64),
+        "t~1": torch.zeros(1, dtype=torch.float64),
+        # Stiff but bounded: with dt=1 the single-shot backward-Euler equation
+        # x = x~1 + (2 x)^3 has no positive root (the cubic outruns the linear
+        # term), so one Newton solve fails; the ODE itself stays finite over the
+        # step, so ramped sub-increments chain to a solution. (Mirrors the dt=8
+        # stiffness of implicit_substep_nl.)
+        "driving_force": torch.full((1,), 2.0, dtype=torch.float64),
+        "driving_force~1": torch.zeros(1, dtype=torch.float64),  # ramp from rest
+    }
+
+    # Single shot (level 0, no ramp) genuinely fails: applying the full force
+    # overshoots the cubic rate to a non-finite residual.
+    single = neml2.load_model(str(_SUBSTEP_RAMP), "model").to(torch.float64)
+    single.max_substepping_level = 0
+    single.incremental_variables = []  # eager rejects substepping directives
+    ss_ins = {k: base[k] for k in single.input_spec}
+    args = tuple(single.input_spec[n](ss_ins[n]) for n in single.input_spec)
+    with pytest.raises(ConvergenceError):
+        single(*args)
+
+    # Recovery: the compiled ramped-substep model reaches a finite solution.
+    x = aoti.forward(base)["x"]
+    assert torch.isfinite(x).all() and (x > 0.2).all()
+
+    # Consistent tangent (accumulated across bisected sub-steps, including the
+    # ramped force) matches central finite differences of the substepped forward.
+    _, J = aoti.jacobian(base)
+    h = 1e-6
+    for name in ("x~1", "t", "driving_force"):
+        plus = {k: v.clone() for k, v in base.items()}
+        minus = {k: v.clone() for k, v in base.items()}
+        plus[name] = plus[name] + h
+        minus[name] = minus[name] - h
+        fd = (aoti.forward(plus)["x"] - aoti.forward(minus)["x"]) / (2 * h)
+        ana = J["x"][name].reshape(fd.shape)
+        assert torch.allclose(ana, fd, rtol=1e-5, atol=1e-6), (
+            f"d x / d {name}: analytic {ana.item():.8e} vs FD {fd.item():.8e}"
+        )
+
+
 def test_newton_divergence_logs(capfd):
     """A diverging Newton solve emits the diverged summary + end banner on the
     ``newton`` channel before raising the recoverable ``ConvergenceError`` (covers
@@ -617,17 +684,20 @@ def test_masked_substepping_mixed_batch(tmp_path: Path):
     assert x[1] > x[0]  # the harder step integrates further
 
 
-def test_substep_incremental_role(tmp_path: Path):
-    """A given listed in ``incremental_variables`` takes the INCREMENTAL substep
-    role -- its value is scaled by the span fraction ``(b - a)`` rather than
-    interpolated -- exercising that branch of ``_apply_substep_span``. Compiling
-    records the role in metadata; the substepped forward applies it."""
+def test_substep_ramp_role_and_phantom(tmp_path: Path):
+    """A given listed in ``incremental_variables`` is RAMPED: the exporter
+    auto-pairs a phantom ``<name>~1`` given (role old_force) so the force becomes
+    cur_force (interpolated across sub-steps). The phantom is a declared model
+    input -- the host supplies its old value -- but is kept OUT of the residual's
+    given groups, so the compiled residual (which never consumes it) is unchanged.
+    (``x_rate`` is used here only to exercise the mechanism on the minimal fixture;
+    in practice one ramps a total-form force such as the deformation gradient.)"""
     from neml2.aoti import Model as AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
 
-    # Add the incremental_variables option through a HIT ``:=`` override rather
-    # than editing the input text (same mechanism neml2-run / load_input expose).
-    out = tmp_path / "inc"
+    # Set the option through a HIT ``:=`` override rather than editing the input
+    # text (same mechanism neml2-run / load_input expose).
+    out = tmp_path / "ramp"
     meta = export_model_for_aoti(
         _SUBSTEP,
         "model",
@@ -635,21 +705,38 @@ def test_substep_incremental_role(tmp_path: Path):
         additional_args=("Models/model/incremental_variables:='x_rate'",),
     )
     seg = _implicit_seg(meta)
-    roles = {g["name"]: g["role"] for g in seg["givens"]}
-    assert roles["x_rate"] == "incremental"
+    roles = {g["name"]: (g["role"], g.get("pair")) for g in seg["givens"]}
+    assert roles["x_rate"] == ("cur_force", "x_rate~1")  # ramped
+    assert roles["x_rate~1"] == ("old_force", "x_rate")  # phantom old endpoint
 
+    # Phantom is a declared model input (the host gathers the force's old value) ...
+    input_names = {i["name"] for i in meta["inputs"]}
+    assert "x_rate~1" in input_names
+    # ... but is NOT one of the residual's given groups (never fed to the residual).
+    group_vars = {v for g in seg["given_group_infos"] for v in g["var_names"]}
+    assert "x_rate~1" not in group_vars
+    assert "x_rate" in group_vars  # the real force still is
+
+    # The phantom old value is required and the forward runs. Set x_rate~1 == x_rate
+    # so the ramp is an exact no-op whether or not the driver bisects, letting us
+    # check the analytical value x = x~1 + (t - t~1) * x_rate.
     aoti = AOTIModel(str(out))
     b = 3
-    x = aoti.forward(
-        {
-            "x": torch.zeros(b, dtype=torch.float64),
-            "x~1": torch.full((b,), 0.5, dtype=torch.float64),
-            "t": torch.full((b,), 2.0, dtype=torch.float64),
-            "t~1": torch.zeros(b, dtype=torch.float64),
-            "x_rate": torch.full((b,), 3.0, dtype=torch.float64),
-        }
-    )["x"]
-    assert torch.isfinite(x).all()
+    ins = {
+        "x": torch.zeros(b, dtype=torch.float64),
+        "x~1": torch.full((b,), 0.5, dtype=torch.float64),
+        "t": torch.full((b,), 2.0, dtype=torch.float64),
+        "t~1": torch.zeros(b, dtype=torch.float64),
+        "x_rate": torch.full((b,), 3.0, dtype=torch.float64),
+        "x_rate~1": torch.full((b,), 3.0, dtype=torch.float64),
+    }
+    x = aoti.forward(ins)["x"]
+    assert torch.allclose(x, torch.full((b,), 6.5, dtype=torch.float64), atol=1e-10)
+
+    # Omitting the phantom old value is a hard error (it is a required input).
+    del ins["x_rate~1"]
+    with pytest.raises(RuntimeError):
+        aoti.forward(ins)
 
 
 def test_multiaxis_substep_maxout_raises_recoverable(tmp_path: Path):
