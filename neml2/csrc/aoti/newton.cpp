@@ -464,12 +464,35 @@ Newton::solve_masked(const NonlinearSystem & sys, const std::vector<at::Tensor> 
   std::vector<std::string> log;
   std::vector<std::string> * logp = collect ? &log : nullptr;
 
-  // Per-element convergence: ||b|| < atol OR ||b||/||b0|| < rtol. A non-finite
-  // norm makes both false, so a diverged row is never "converged".
-  const auto per_elem_converged = [&](const at::Tensor & bn)
-  { return at::logical_or(bn < _cfg.atol, bn / b0_norm < _cfg.rtol); };
+  // Per-element convergence with a STEP-NORM gate on the relative branch:
+  //
+  //   converged := ||b|| < atol
+  //             OR ( ||b||/||b0|| < rtol  AND  ||du|| < substep_del_tol*(||u||+atol) )
+  //
+  // The pure relative test ``||b||/||b0|| < rtol`` is unsafe when ``||b0||`` is
+  // pathologically large -- e.g. an exponential-map integrator whose predictor
+  // (cold Fp = I under a full deformation-gradient jump) inflates the initial
+  // residual by many orders of magnitude. Then ``rtol*||b0||`` is a loose
+  // *absolute* threshold, and the (line-searched) Newton trajectory dips under it
+  // at a still-moving, non-physical WAYPOINT on its way to the true root -- which
+  // the pure relative test would certify as "converged", freezing that garbage
+  // (the masking driver then never bisects it). Requiring the Newton step to also
+  // be small distinguishes a settled root (vanishing step -- passes) from that
+  // mid-trajectory waypoint (large step -- rejected, so the sub-step bisects and
+  // the iteration continues to the physical root). The absolute branch
+  // (``||b|| < atol``) is unconditional. A non-finite norm makes every branch
+  // false, so a diverged row is never "converged".
+  const auto per_elem_converged =
+      [&](const at::Tensor & bn, const at::Tensor & du_norm, const at::Tensor & u_norm)
+  {
+    auto rel = at::logical_and(bn / b0_norm < _cfg.rtol,
+                               du_norm < _cfg.substep_del_tol * (u_norm + _cfg.atol));
+    return at::logical_or(bn < _cfg.atol, rel);
+  };
 
-  auto converged = per_elem_converged(b0_norm);
+  // At the predictor there is no step yet; ||b0||/||b0|| == 1 never clears rtol,
+  // so predictor-convergence reduces to the absolute test.
+  auto converged = b0_norm < _cfg.atol;
   if (at::all(converged).item<bool>())
     return {std::move(u), /*converged=*/true, converged, /*iterations=*/0, std::move(log)};
 
@@ -479,6 +502,10 @@ Newton::solve_masked(const NonlinearSystem & sys, const std::vector<at::Tensor> 
   at::Tensor frozen;
   for (std::size_t i = 1; i < _cfg.miters; ++i)
   {
+    // Snapshot the iterate so the committed step ||du|| = ||u_new - u_prev|| can
+    // gate the relative-convergence branch. `newton_iterate` rebuilds `u` from
+    // fresh tensors (u = move(u_trial)), so `u_prev` keeps the old values.
+    std::vector<at::Tensor> u_prev = u;
     const auto b_norm = newton_iterate(_cfg,
                                        sys,
                                        unknown_layout,
@@ -491,7 +518,12 @@ Newton::solve_masked(const NonlinearSystem & sys, const std::vector<at::Tensor> 
                                        logp,
                                        frozen);
     reached = i;
-    converged = per_elem_converged(b_norm);
+    std::vector<at::Tensor> du(u.size());
+    for (std::size_t k = 0; k < u.size(); ++k)
+      du[k] = u[k] - u_prev[k];
+    const auto du_norm = pergroup_norm_sq(du, unknown_layout).sqrt();
+    const auto u_norm = pergroup_norm_sq(u, unknown_layout).sqrt();
+    converged = per_elem_converged(b_norm, du_norm, u_norm);
     frozen = frozen.defined() ? at::logical_or(frozen, converged) : converged;
     // Stop once every row is converged or non-finite: a non-finite row cannot
     // recover, so iterating further only wastes work on the (sliced) batch.

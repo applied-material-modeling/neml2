@@ -91,6 +91,7 @@ class NewtonWithLineSearch(Newton):
         atol = node.param_optional_float("abs_tol", 1.0e-10)
         rtol = node.param_optional_float("rel_tol", 1.0e-8)
         miters = int(node.param_optional_int("max_its", 25))
+        substep_del_tol = node.param_optional_float("substep_del_tol", 1.0e-6)
         ls_type = node.param_optional_str("linesearch_type", "BACKTRACKING")
         ls_miter = int(node.param_optional_int("max_linesearch_iterations", 10))
         ls_sigma = node.param_optional_float("linesearch_cutback", 2.0)
@@ -101,6 +102,7 @@ class NewtonWithLineSearch(Newton):
             atol=atol,
             rtol=rtol,
             miters=miters,
+            substep_del_tol=substep_del_tol,
             linesearch_type=ls_type,
             max_linesearch_iterations=ls_miter,
             linesearch_cutback=ls_sigma,
@@ -115,6 +117,7 @@ class NewtonWithLineSearch(Newton):
         atol: float = 1.0e-10,
         rtol: float = 1.0e-8,
         miters: int = 25,
+        substep_del_tol: float = 1.0e-6,
         linesearch_type: str = "BACKTRACKING",
         max_linesearch_iterations: int = 10,
         linesearch_cutback: float = 2.0,
@@ -126,6 +129,7 @@ class NewtonWithLineSearch(Newton):
             atol=atol,
             rtol=rtol,
             miters=miters,
+            substep_del_tol=substep_del_tol,
         )
         if linesearch_type not in ("BACKTRACKING", "STRONG_WOLFE"):
             raise ValueError(

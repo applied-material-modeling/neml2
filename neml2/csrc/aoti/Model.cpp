@@ -570,6 +570,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
     _solver_config.ls_max_iters = sc.value("ls_max_iters", _solver_config.ls_max_iters);
     _solver_config.ls_cutback = sc.value("ls_cutback", _solver_config.ls_cutback);
     _solver_config.ls_c = sc.value("ls_c", _solver_config.ls_c);
+    _solver_config.substep_del_tol = sc.value("substep_del_tol", _solver_config.substep_del_tol);
 
     // Linear-solver kind (schema v11). "direct" (default) chains jacobian ->
     // solve; "krylov" runs a matrix-free Krylov solve over the matvec graph,

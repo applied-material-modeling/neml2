@@ -30,6 +30,9 @@ One file per C++ header under
 re-imports each so the ``@register_neml2_object`` side effects fire on package import.
 """
 
+from .CrystalPlasticityDeformationGradientPredictor import (
+    CrystalPlasticityDeformationGradientPredictor,
+)
 from .CrystalPlasticityStrainPredictor import CrystalPlasticityStrainPredictor
 from .DislocationObstacleStrengthMap import DislocationObstacleStrengthMap
 from .ElasticStrainRate import ElasticStrainRate
@@ -50,6 +53,7 @@ from .SumSlipRates import SumSlipRates
 from .VoceSingleSlipHardeningRule import VoceSingleSlipHardeningRule
 
 __all__ = [
+    "CrystalPlasticityDeformationGradientPredictor",
     "CrystalPlasticityStrainPredictor",
     "DislocationObstacleStrengthMap",
     "ElasticStrainRate",

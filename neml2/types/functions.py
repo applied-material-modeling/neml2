@@ -2282,17 +2282,36 @@ def drotate(r1: MRP, r2: MRP) -> R2:
     )
 
 
-# ---- WR2 exponential map ----
+# ---- WR2 / R2 exponential map ----
 
 
-def exp_map(w: WR2) -> MRP:
-    """Exponential of a skew axial vector — yields an MRP rotation.
+@overload
+def exp_map(w: WR2) -> MRP: ...
 
-    Mirrors ``WR2::exp_map`` in ``src/neml2/tensors/WR2.cxx``. Uses a Taylor
-    series near $||w||^2 ≈ 0$ to avoid the singularity at the origin; the
-    other singularity at $||w||^2 = 2π$ is unavoidable and shared with the
-    C++ implementation.
+
+@overload
+def exp_map(A: R2) -> R2: ...
+
+
+def exp_map(x):
+    r"""Exponential map, dispatched on the operand type.
+
+    * ``exp_map(w: WR2) -> MRP`` -- exponential of a skew axial vector,
+      yielding an MRP rotation. Mirrors ``WR2::exp_map`` in
+      ``src/neml2/tensors/WR2.cxx``. Uses a Taylor series near
+      $||w||^2 ≈ 0$ to avoid the singularity at the origin; the other
+      singularity at $||w||^2 = 2π$ is unavoidable and shared with the C++
+      implementation.
+    * ``exp_map(A: R2) -> R2`` -- the true matrix exponential $\exp(A)$ of a
+      full second-order tensor, via ``torch.matrix_exp``. Used by the R2
+      exponential-map time integrator ($F_p = \exp(L_p\,dt)\,F_{p,n}$); its
+      pushforward is :func:`jvp_exp_map`. A traceless $A$ maps to a
+      unit-determinant $\exp(A)$, so isochoric plasticity is preserved
+      exactly.
     """
+    if isinstance(x, R2):
+        return wrap_like(R2, torch.matrix_exp(x.data), x)
+    w = x
     eps = torch.finfo(w.dtype).eps
     thresh = eps ** (1.0 / 3.0)
     norm2 = (w.data * w.data).sum(dim=-1)  # (...,)
@@ -2765,15 +2784,46 @@ def jvp_euler_rodrigues(r: MRP, dr: MRP) -> R2:
     return wrap_like(R2, dR, dr)
 
 
-def jvp_exp_map(w: WR2, dw: WR2) -> MRP:
-    """Pushforward of :func:`exp_map` (WR2→MRP) along the tangent ``dw``.
+@overload
+def jvp_exp_map(w: WR2, dw: WR2) -> MRP: ...
 
-    Closed-form rank-1-plus-identity: $dexp_map(w) = a(|w|²) I + b(|w|²) w wᵀ$,
-    so the action is $dr = a·dw + b·(w·dw)·w$ — two vector ops, no 3×3
-    matrix materialised. $a$ and $b$ are the same scalar coefficients
-    :func:`dexp_map` builds the matrix from, with the same Taylor branch
-    near ``||w||² ≈ 0`` to avoid the origin singularity.
+
+@overload
+def jvp_exp_map(A: R2, dA: R2) -> R2: ...
+
+
+def jvp_exp_map(x, dx):
+    r"""Pushforward of :func:`exp_map` along the tangent, dispatched on type.
+
+    * ``jvp_exp_map(w: WR2, dw: WR2) -> MRP`` -- closed-form
+      rank-1-plus-identity: $dexp\_map(w) = a(|w|²) I + b(|w|²) w wᵀ$, so the
+      action is $dr = a·dw + b·(w·dw)·w$ — two vector ops, no 3×3 matrix
+      materialised. $a$ and $b$ are the same scalar coefficients
+      :func:`dexp_map` builds the matrix from, with the same Taylor branch near
+      ``||w||² ≈ 0`` to avoid the origin singularity.
+    * ``jvp_exp_map(A: R2, dA: R2) -> R2`` -- Fréchet derivative of the matrix
+      exponential $d(\exp)(A)[dA]$, computed AD-free via Higham's augmented-
+      matrix identity: the top-right block of
+      $\exp\!\left(\begin{smallmatrix}A & dA\\ 0 & A\end{smallmatrix}\right)$
+      equals $d(\exp)(A)[dA]$ (Higham, *Functions of Matrices*, Thm. 10.13).
+      Leaves are AD-guarded, so this closed form replaces a reverse-mode
+      differentiation of the forward :func:`exp_map`.
     """
+    if isinstance(x, R2):
+        [A, dA], _ = align_sub_batch(x, dx)
+        a, e = A.data, dA.data  # a: (*batch, 3, 3), K-less; e: (K, *batch, 3, 3)
+        lead = torch.broadcast_shapes(a.shape[:-2], e.shape[:-2])
+        a_b = a.expand(lead + (3, 3))
+        e_b = e.expand(lead + (3, 3))
+        z = torch.zeros(lead + (3, 3), dtype=a.dtype, device=a.device)
+        # Augmented block matrix [[A, dA], [0, A]]; its (0,1) block after expm
+        # is the directional derivative d(exp)(A)[dA].
+        top = torch.cat([a_b, e_b], dim=-1)  # (..., 3, 6)
+        bot = torch.cat([z, a_b], dim=-1)  # (..., 3, 6)
+        aug = torch.cat([top, bot], dim=-2)  # (..., 6, 6)
+        frechet = torch.matrix_exp(aug)[..., :3, 3:]
+        return wrap_like(R2, frechet, dA)
+    w, dw = x, dx
     # Align so a global tangent against a per-crystal primal doesn't
     # collide the primal's sub-batch axis with the tangent's dyn axis.
     [w, dw], _ = align_sub_batch(w, dw)

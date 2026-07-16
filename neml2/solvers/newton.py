@@ -84,6 +84,17 @@ class Newton:
             "Maximum number of iterations allowed before issuing an error/exception",
             default=25,
         ),
+        option(
+            "substep_del_tol",
+            float,
+            "Relative Newton-step tolerance gating the relative convergence branch of the "
+            "masked (substepping) solve: a sub-step is accepted via rel_tol only if its step "
+            "also satisfies ||du|| < substep_del_tol*(||u||+abs_tol). This bisects instead of "
+            "freezing a still-moving, non-physical iterate that merely dips under a loose "
+            "rel_tol threshold when the predictor residual is inflated. Set large to recover "
+            "the pure relative test. Ignored by the single-shot (non-substepping) solve.",
+            default=1.0e-6,
+        ),
     )
 
     @classmethod
@@ -93,7 +104,14 @@ class Newton:
         atol = node.param_optional_float("abs_tol", 1.0e-10)
         rtol = node.param_optional_float("rel_tol", 1.0e-8)
         miters = int(node.param_optional_int("max_its", 25))
-        return cls(linear_solver=linear_solver, atol=atol, rtol=rtol, miters=miters)
+        substep_del_tol = node.param_optional_float("substep_del_tol", 1.0e-6)
+        return cls(
+            linear_solver=linear_solver,
+            atol=atol,
+            rtol=rtol,
+            miters=miters,
+            substep_del_tol=substep_del_tol,
+        )
 
     def __init__(
         self,
@@ -102,11 +120,13 @@ class Newton:
         atol: float = 1.0e-10,
         rtol: float = 1.0e-8,
         miters: int = 25,
+        substep_del_tol: float = 1.0e-6,
     ) -> None:
         self.linear_solver = linear_solver if linear_solver is not None else DenseLU()
         self.atol = atol
         self.rtol = rtol
         self.miters = miters
+        self.substep_del_tol = substep_del_tol
 
     def _solver_config(self) -> dict:
         """Per-group Newton config forwarded to the C++ solver.
@@ -119,6 +139,7 @@ class Newton:
             "atol": self.atol,
             "rtol": self.rtol,
             "miters": self.miters,
+            "substep_del_tol": self.substep_del_tol,
             "ls_type": "BACKTRACKING",
             "ls_max_iters": 1,
             "ls_cutback": 2.0,
