@@ -26,16 +26,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from ....factory import register_neml2_object
-from ....schema import HitSchema, parameter
+from ....schema import HitSchema, derived_input, input, output, parameter
 from ....types import R2, SR2, Scalar, inv, lt, norm, sym, where
 from ...chain_rule import ChainRuleDict
 from ...model import Model
-
-if TYPE_CHECKING:
-    from ....factory import _NativeInputFile
 
 
 @register_neml2_object("CrystalPlasticityDeformationGradientPredictor")
@@ -59,6 +54,14 @@ class CrystalPlasticityDeformationGradientPredictor(Model):
     """
 
     hit = HitSchema(
+        input("deformation_gradient", R2, "Deformation gradient", attr="_F"),
+        output(
+            "plastic_deformation_gradient",
+            R2,
+            "Predicted plastic deformation gradient",
+            attr="_Fp",
+        ),
+        derived_input("plastic_deformation_gradient", R2, attr="_Fp_n", suffix="~1"),
         parameter(
             "scale",
             Scalar,
@@ -73,29 +76,11 @@ class CrystalPlasticityDeformationGradientPredictor(Model):
         ),
     )
 
+    _F: str
+    _Fp: str
+    _Fp_n: str
     scale: Scalar
     threshold: Scalar
-
-    def __init__(
-        self,
-        scale=0.1,
-        threshold=1e-3,
-        *,
-        deformation_gradient: str = "deformation_gradient",
-        plastic_deformation_gradient: str = "plastic_deformation_gradient",
-        factory: _NativeInputFile | None = None,
-    ) -> None:
-        super().__init__()
-        self._F = deformation_gradient
-        self._Fp = plastic_deformation_gradient
-        self._Fp_n = f"{plastic_deformation_gradient}~1"
-        self.input_spec = {
-            deformation_gradient: R2,
-            self._Fp_n: R2,
-        }
-        self.output_spec = {plastic_deformation_gradient: R2}
-        self.declare_typed_parameter("scale", scale, Scalar, factory=factory)
-        self.declare_typed_parameter("threshold", threshold, Scalar, factory=factory)
 
     def forward(  # type: ignore[override]
         self,

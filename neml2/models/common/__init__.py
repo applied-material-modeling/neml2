@@ -104,7 +104,6 @@ from .ParameterToVariable import (
     VecParameterToVariable,
     WR2ParameterToVariable,
 )
-from .R2ImplicitExponentialTimeIntegration import R2ImplicitExponentialTimeIntegration
 from .R2Multiplication import R2Multiplication
 from .R2ToSR2 import R2ToSR2
 from .R2ToWR2 import R2ToWR2
@@ -191,7 +190,6 @@ __all__ = [
     "WR2ImplicitExponentialTimeIntegration",
     "MixedControlSetup",
     "R2Determinant",
-    "R2ImplicitExponentialTimeIntegration",
     "R2Multiplication",
     "R2ToSR2",
     "R2ToWR2",

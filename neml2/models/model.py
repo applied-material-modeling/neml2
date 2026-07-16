@@ -321,6 +321,27 @@ class Model(nn.Module, ABC):
         # the parameter or buffer declarator.
         deferred_typed: list[Any] = []
 
+        # Resolve the base variable names (input/output/option fields) up front so
+        # ``derived_*`` fields can be built as ``base + suffix`` on the DIRECT
+        # Python-construction path too. The HIT path already resolves them in
+        # ``kwargs_from_hit`` / ``_read_derived_var_name`` (and passes the resolved
+        # name in ``hit_values``); without this, a directly-constructed model with a
+        # ``derived_input(..., suffix="~1")`` would key the input by the bare
+        # referenced name (no suffix), colliding with the base output.
+        from ..schema import _MISSING  # noqa: PLC0415
+
+        base_names: dict[str, str] = {}
+        for field in getattr(schema, "fields", ()):
+            if field.kind not in {"input", "output", "option"}:
+                continue
+            vk = field.attr if (field.attr is not None and field.attr in hit_values) else field.name
+            if vk in hit_values and isinstance(hit_values[vk], str):
+                base_names[field.name] = hit_values[vk]
+            elif isinstance(field.default, str):
+                base_names[field.name] = field.default
+            else:
+                base_names[field.name] = field.name
+
         for field in getattr(schema, "fields", ()):
             if field.kind not in storable_kinds:
                 continue
@@ -330,20 +351,37 @@ class Model(nn.Module, ABC):
 
             # Look up the value under attr (HIT-driven path uses ctor_name=attr)
             # or under the option name (direct Python ctor uses the user-friendly
-            # schema name). attr wins when both are present.
-            value_key = (
-                field.attr if field.attr is not None and field.attr in hit_values else field.name
-            )
+            # schema name). attr wins when both are present. ``derived_*`` fields
+            # share their ``name`` with the referenced base field, so they must NOT
+            # fall back to that base's value (which would drop the ``suffix``);
+            # they resolve as base+suffix in the ``is_name`` branch below, and only
+            # their own ``attr`` slot (populated by the HIT path) is a direct value.
+            if field.kind in {"derived_input", "derived_output"}:
+                value_key = field.attr
+            else:
+                value_key = (
+                    field.attr
+                    if field.attr is not None and field.attr in hit_values
+                    else field.name
+                )
             if value_key in hit_values:
                 value = hit_values[value_key]
             elif is_name:
-                # Direct Python construction without HIT: fall back to the
-                # schema default; if the field has none (_MISSING), use the
-                # option name itself — the same canonical-name convention
-                # _read_var_name applies on the HIT path.
-                from ..schema import _MISSING  # noqa: PLC0415
-
-                value = field.name if field.default is _MISSING else field.default
+                # Direct Python construction without HIT. ``derived_*`` fields
+                # resolve through their referenced base name plus ``suffix`` (or an
+                # ``override`` option value), mirroring ``_read_derived_var_name`` on
+                # the HIT path. Plain input/output fields fall back to the schema
+                # default, or the option name itself when there is none (_MISSING) —
+                # the canonical-name convention ``_read_var_name`` applies on HIT.
+                if field.kind in {"derived_input", "derived_output"}:
+                    override_val = hit_values.get(field.override) if field.override else None
+                    if isinstance(override_val, str) and override_val:
+                        value = override_val
+                    else:
+                        base = base_names.get(field.name, field.name)
+                        value = f"{base}{field.suffix}" if field.suffix else base
+                else:
+                    value = field.name if field.default is _MISSING else field.default
             elif (is_singular or is_plural) and not field.required:
                 # Direct Python construction without HIT: a parameter/buffer
                 # with a schema default (e.g. literal "1.0") still needs
