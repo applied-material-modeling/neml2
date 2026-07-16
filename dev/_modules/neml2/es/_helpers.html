@@ -504,40 +504,40 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="83">    <span class="n">OLD_FORCE</span> <span class="o">=</span> <span class="s2">&quot;old_force&quot;</span>
 </span><span data-line="84">    <span class="c1">#: ``f`` whose lagged ``f~1`` is also an input -&gt; interpolate across the span.</span>
 </span><span data-line="85">    <span class="n">CUR_FORCE</span> <span class="o">=</span> <span class="s2">&quot;cur_force&quot;</span>
-</span><span data-line="86">    <span class="c1">#: user-listed pure increment (no ``~1`` counterpart) -&gt; scale by span fraction.</span>
-</span><span data-line="87">    <span class="n">INCREMENTAL</span> <span class="o">=</span> <span class="s2">&quot;incremental&quot;</span>
-</span><span data-line="88">    <span class="c1">#: everything else -&gt; hold constant across spans.</span>
-</span><span data-line="89">    <span class="n">STATIC</span> <span class="o">=</span> <span class="s2">&quot;static&quot;</span>
-</span><span data-line="90">
-</span><span data-line="91">
-</span><span data-line="92"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span data-line="93"><span class="k">class</span><span class="w"> </span><span class="nc">SubstepRoleInfo</span><span class="p">:</span>
-</span><span data-line="94"><span class="w">    </span><span class="sd">&quot;&quot;&quot;A variable&#39;s substep :class:`SubstepRole` plus its paired variable.</span>
-</span><span data-line="95">
-</span><span data-line="96"><span class="sd">    ``pair`` is the counterpart name: for ``OLD_STATE`` the base unknown, for</span>
-</span><span data-line="97"><span class="sd">    ``OLD_FORCE`` the current force, for ``CUR_FORCE`` the lagged force;</span>
-</span><span data-line="98"><span class="sd">    ``None`` for ``UNKNOWN`` / ``INCREMENTAL`` / ``STATIC``.</span>
-</span><span data-line="99"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="100">
-</span><span data-line="101">    <span class="n">role</span><span class="p">:</span> <span class="n">SubstepRole</span>
-</span><span data-line="102">    <span class="n">pair</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="103">
-</span><span data-line="104">
-</span><span data-line="105"><span class="k">def</span><span class="w"> </span><span class="nf">classify_substep_roles</span><span class="p">(</span>
-</span><span data-line="106">    <span class="n">input_names</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-</span><span data-line="107">    <span class="n">unknown_names</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-</span><span data-line="108">    <span class="n">incremental_variables</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-</span><span data-line="109"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SubstepRoleInfo</span><span class="p">]:</span>
-</span><span data-line="110"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Classify each ImplicitUpdate input by its substep role.</span>
-</span><span data-line="111">
-</span><span data-line="112"><span class="sd">    The single source of truth for how substepping treats every input. Called</span>
-</span><span data-line="113"><span class="sd">    by the AOTI exporter to build the substep metadata serialized into the</span>
-</span><span data-line="114"><span class="sd">    artifact. See :class:`SubstepRole` for the meaning of each role.</span>
-</span><span data-line="115"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="116">    <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">input_names</span><span class="p">)</span>
-</span><span data-line="117">    <span class="n">name_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
-</span><span data-line="118">    <span class="n">unknown_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">unknown_names</span><span class="p">)</span>
-</span><span data-line="119">    <span class="n">incremental_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">incremental_variables</span><span class="p">)</span>
+</span><span data-line="86">    <span class="c1">#: everything else -&gt; hold constant across spans.</span>
+</span><span data-line="87">    <span class="n">STATIC</span> <span class="o">=</span> <span class="s2">&quot;static&quot;</span>
+</span><span data-line="88">
+</span><span data-line="89">
+</span><span data-line="90"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="91"><span class="k">class</span><span class="w"> </span><span class="nc">SubstepRoleInfo</span><span class="p">:</span>
+</span><span data-line="92"><span class="w">    </span><span class="sd">&quot;&quot;&quot;A variable&#39;s substep :class:`SubstepRole` plus its paired variable.</span>
+</span><span data-line="93">
+</span><span data-line="94"><span class="sd">    ``pair`` is the counterpart name: for ``OLD_STATE`` the base unknown, for</span>
+</span><span data-line="95"><span class="sd">    ``OLD_FORCE`` the current force, for ``CUR_FORCE`` the lagged force;</span>
+</span><span data-line="96"><span class="sd">    ``None`` for ``UNKNOWN`` / ``STATIC``.</span>
+</span><span data-line="97"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="98">
+</span><span data-line="99">    <span class="n">role</span><span class="p">:</span> <span class="n">SubstepRole</span>
+</span><span data-line="100">    <span class="n">pair</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="101">
+</span><span data-line="102">
+</span><span data-line="103"><span class="k">def</span><span class="w"> </span><span class="nf">classify_substep_roles</span><span class="p">(</span>
+</span><span data-line="104">    <span class="n">input_names</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span data-line="105">    <span class="n">unknown_names</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span data-line="106"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SubstepRoleInfo</span><span class="p">]:</span>
+</span><span data-line="107"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Classify each ImplicitUpdate input by its substep role.</span>
+</span><span data-line="108">
+</span><span data-line="109"><span class="sd">    The single source of truth for how substepping treats every input. Called</span>
+</span><span data-line="110"><span class="sd">    by the AOTI exporter to build the substep metadata serialized into the</span>
+</span><span data-line="111"><span class="sd">    artifact. See :class:`SubstepRole` for the meaning of each role.</span>
+</span><span data-line="112">
+</span><span data-line="113"><span class="sd">    A force to sub-increment is ramped (CUR_FORCE) purely by the presence of its</span>
+</span><span data-line="114"><span class="sd">    ``~1`` counterpart in ``input_names``. ``ImplicitUpdate.incremental_variables``</span>
+</span><span data-line="115"><span class="sd">    auto-adds that counterpart, so no separate list is threaded here.</span>
+</span><span data-line="116"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="117">    <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">input_names</span><span class="p">)</span>
+</span><span data-line="118">    <span class="n">name_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+</span><span data-line="119">    <span class="n">unknown_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">unknown_names</span><span class="p">)</span>
 </span><span data-line="120">
 </span><span data-line="121">    <span class="k">def</span><span class="w"> </span><span class="nf">_lagged_counterpart</span><span class="p">(</span><span class="n">base</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 </span><span data-line="122"><span class="w">        </span><span class="sd">&quot;&quot;&quot;First lagged ``base~k`` (k&gt;0) appearing as an input, if any.&quot;&quot;&quot;</span>
@@ -554,313 +554,311 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="133">            <span class="n">roles</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SubstepRoleInfo</span><span class="p">(</span><span class="n">SubstepRole</span><span class="o">.</span><span class="n">UNKNOWN</span><span class="p">)</span>
 </span><span data-line="134">        <span class="k">elif</span> <span class="n">lag</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">unknown_set</span><span class="p">:</span>
 </span><span data-line="135">            <span class="n">roles</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SubstepRoleInfo</span><span class="p">(</span><span class="n">SubstepRole</span><span class="o">.</span><span class="n">OLD_STATE</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
-</span><span data-line="136">        <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">incremental_set</span><span class="p">:</span>
-</span><span data-line="137">            <span class="n">roles</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SubstepRoleInfo</span><span class="p">(</span><span class="n">SubstepRole</span><span class="o">.</span><span class="n">INCREMENTAL</span><span class="p">)</span>
-</span><span data-line="138">        <span class="k">elif</span> <span class="n">lag</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">name_set</span><span class="p">:</span>
-</span><span data-line="139">            <span class="n">roles</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SubstepRoleInfo</span><span class="p">(</span><span class="n">SubstepRole</span><span class="o">.</span><span class="n">OLD_FORCE</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
-</span><span data-line="140">        <span class="k">elif</span> <span class="n">lag</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">cp</span> <span class="o">:=</span> <span class="n">_lagged_counterpart</span><span class="p">(</span><span class="n">base</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="141">            <span class="n">roles</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SubstepRoleInfo</span><span class="p">(</span><span class="n">SubstepRole</span><span class="o">.</span><span class="n">CUR_FORCE</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="n">cp</span><span class="p">)</span>
-</span><span data-line="142">        <span class="k">else</span><span class="p">:</span>
-</span><span data-line="143">            <span class="n">roles</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SubstepRoleInfo</span><span class="p">(</span><span class="n">SubstepRole</span><span class="o">.</span><span class="n">STATIC</span><span class="p">)</span>
-</span><span data-line="144">    <span class="k">return</span> <span class="n">roles</span>
-</span><span data-line="145">
-</span><span data-line="146">
-</span><span data-line="147"><span class="k">def</span><span class="w"> </span><span class="nf">_storage_size</span><span class="p">(</span><span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span data-line="148">    <span class="k">return</span> <span class="n">prod</span><span class="p">(</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">)</span> <span class="k">if</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span> <span class="k">else</span> <span class="mi">1</span>
-</span><span data-line="149">
-</span><span data-line="150">
-</span><span data-line="151"><span class="k">def</span><span class="w"> </span><span class="nf">_batch_shape</span><span class="p">(</span>
-</span><span data-line="152">    <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">TensorWrapper</span><span class="p">,</span>
-</span><span data-line="153">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
-</span><span data-line="154"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">:</span>
-</span><span data-line="155"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Strip the type&#39;s base-shape suffix to recover ``(*dyn, *sub_batch)``.&quot;&quot;&quot;</span>
-</span><span data-line="156">    <span class="n">shape</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span>
-</span><span data-line="157">    <span class="k">if</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="158">        <span class="k">return</span> <span class="n">shape</span>
-</span><span data-line="159">    <span class="k">return</span> <span class="n">shape</span><span class="p">[:</span> <span class="o">-</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="p">]</span>
-</span><span data-line="160">
-</span><span data-line="161">
-</span><span data-line="162"><span class="k">def</span><span class="w"> </span><span class="nf">_flatten_base</span><span class="p">(</span>
-</span><span data-line="163">    <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">TensorWrapper</span><span class="p">,</span>
-</span><span data-line="164">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
-</span><span data-line="165"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="166"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Collapse all base axes into one trailing axis.&quot;&quot;&quot;</span>
-</span><span data-line="167">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
-</span><span data-line="168">        <span class="k">return</span> <span class="n">Tensor</span><span class="o">.</span><span class="n">from_typed</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span><span class="o">.</span><span class="n">flatten_base</span><span class="p">()</span>
-</span><span data-line="169">    <span class="k">if</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="170">        <span class="n">raw</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-</span><span data-line="171">        <span class="k">return</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</span><span data-line="172">    <span class="n">raw</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="o">-</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="p">],</span> <span class="n">_storage_size</span><span class="p">(</span><span class="n">type_cls</span><span class="p">))</span>
-</span><span data-line="173">    <span class="k">return</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</span><span data-line="174">
-</span><span data-line="175">
-</span><span data-line="176"><span class="k">def</span><span class="w"> </span><span class="nf">_expanded_identity_seed</span><span class="p">(</span><span class="n">primal</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="177"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Canonical no-classification seed for the v2-parity chain rule.</span>
-</span><span data-line="178">
-</span><span data-line="179"><span class="sd">    For each sub_batch axis of the primal, emit a broadcast K-paired axis</span>
-</span><span data-line="180"><span class="sd">    (size 1, paired with that sub axis) -- the &quot;diagonal&quot; of the per-site</span>
-</span><span data-line="181"><span class="sd">    Jacobian, stored compactly. For the base region, emit a single full K</span>
-</span><span data-line="182"><span class="sd">    axis of size ``prod(base_shape)`` enumerating the base-direction</span>
-</span><span data-line="183"><span class="sd">    components. No classification, no labels, no compact/perturb dial.</span>
+</span><span data-line="136">        <span class="k">elif</span> <span class="n">lag</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">name_set</span><span class="p">:</span>
+</span><span data-line="137">            <span class="n">roles</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SubstepRoleInfo</span><span class="p">(</span><span class="n">SubstepRole</span><span class="o">.</span><span class="n">OLD_FORCE</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+</span><span data-line="138">        <span class="k">elif</span> <span class="n">lag</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">cp</span> <span class="o">:=</span> <span class="n">_lagged_counterpart</span><span class="p">(</span><span class="n">base</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="139">            <span class="n">roles</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SubstepRoleInfo</span><span class="p">(</span><span class="n">SubstepRole</span><span class="o">.</span><span class="n">CUR_FORCE</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="n">cp</span><span class="p">)</span>
+</span><span data-line="140">        <span class="k">else</span><span class="p">:</span>
+</span><span data-line="141">            <span class="n">roles</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SubstepRoleInfo</span><span class="p">(</span><span class="n">SubstepRole</span><span class="o">.</span><span class="n">STATIC</span><span class="p">)</span>
+</span><span data-line="142">    <span class="k">return</span> <span class="n">roles</span>
+</span><span data-line="143">
+</span><span data-line="144">
+</span><span data-line="145"><span class="k">def</span><span class="w"> </span><span class="nf">_storage_size</span><span class="p">(</span><span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span data-line="146">    <span class="k">return</span> <span class="n">prod</span><span class="p">(</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">)</span> <span class="k">if</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span> <span class="k">else</span> <span class="mi">1</span>
+</span><span data-line="147">
+</span><span data-line="148">
+</span><span data-line="149"><span class="k">def</span><span class="w"> </span><span class="nf">_batch_shape</span><span class="p">(</span>
+</span><span data-line="150">    <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">TensorWrapper</span><span class="p">,</span>
+</span><span data-line="151">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
+</span><span data-line="152"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">:</span>
+</span><span data-line="153"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Strip the type&#39;s base-shape suffix to recover ``(*dyn, *sub_batch)``.&quot;&quot;&quot;</span>
+</span><span data-line="154">    <span class="n">shape</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span>
+</span><span data-line="155">    <span class="k">if</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="156">        <span class="k">return</span> <span class="n">shape</span>
+</span><span data-line="157">    <span class="k">return</span> <span class="n">shape</span><span class="p">[:</span> <span class="o">-</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="p">]</span>
+</span><span data-line="158">
+</span><span data-line="159">
+</span><span data-line="160"><span class="k">def</span><span class="w"> </span><span class="nf">_flatten_base</span><span class="p">(</span>
+</span><span data-line="161">    <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">TensorWrapper</span><span class="p">,</span>
+</span><span data-line="162">    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">],</span>
+</span><span data-line="163"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+</span><span data-line="164"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Collapse all base axes into one trailing axis.&quot;&quot;&quot;</span>
+</span><span data-line="165">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
+</span><span data-line="166">        <span class="k">return</span> <span class="n">Tensor</span><span class="o">.</span><span class="n">from_typed</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span><span class="o">.</span><span class="n">flatten_base</span><span class="p">()</span>
+</span><span data-line="167">    <span class="k">if</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="168">        <span class="n">raw</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="169">        <span class="k">return</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span data-line="170">    <span class="n">raw</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="o">-</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="p">],</span> <span class="n">_storage_size</span><span class="p">(</span><span class="n">type_cls</span><span class="p">))</span>
+</span><span data-line="171">    <span class="k">return</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span data-line="172">
+</span><span data-line="173">
+</span><span data-line="174"><span class="k">def</span><span class="w"> </span><span class="nf">_expanded_identity_seed</span><span class="p">(</span><span class="n">primal</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="175"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Canonical no-classification seed for the v2-parity chain rule.</span>
+</span><span data-line="176">
+</span><span data-line="177"><span class="sd">    For each sub_batch axis of the primal, emit a broadcast K-paired axis</span>
+</span><span data-line="178"><span class="sd">    (size 1, paired with that sub axis) -- the &quot;diagonal&quot; of the per-site</span>
+</span><span data-line="179"><span class="sd">    Jacobian, stored compactly. For the base region, emit a single full K</span>
+</span><span data-line="180"><span class="sd">    axis of size ``prod(base_shape)`` enumerating the base-direction</span>
+</span><span data-line="181"><span class="sd">    components. No classification, no labels, no compact/perturb dial.</span>
+</span><span data-line="182">
+</span><span data-line="183"><span class="sd">    Layout::</span>
 </span><span data-line="184">
-</span><span data-line="185"><span class="sd">    Layout::</span>
-</span><span data-line="186">
-</span><span data-line="187"><span class="sd">        data.shape = (1*N_sub, K_base, *dyn_shape, *sub_data_shape, *BASE_SHAPE)</span>
-</span><span data-line="188"><span class="sd">                     ^^^^^^^^^^^^^^^^</span>
-</span><span data-line="189"><span class="sd">                     k_ndim axes total</span>
-</span><span data-line="190">
-</span><span data-line="191"><span class="sd">    where ``sub_data_shape[i] = 1`` for every sub axis (paired-broadcast</span>
-</span><span data-line="192"><span class="sd">    storage). ``k_state[i] = &quot;broadcast&quot;`` for paired-sub K axes and</span>
-</span><span data-line="193"><span class="sd">    ``&quot;full&quot;`` for the single K_base axis. ``k_pairing[i] = i`` for paired-sub</span>
-</span><span data-line="194"><span class="sd">    K axes and ``None`` for K_base.</span>
-</span><span data-line="195">
-</span><span data-line="196"><span class="sd">    For a primal with no sub_batch axes, the seed is just K_base. For a</span>
-</span><span data-line="197"><span class="sd">    primal with no base axes (Scalar with base_size=()), K_base is omitted</span>
-</span><span data-line="198"><span class="sd">    so the seed is just the paired K axes.</span>
-</span><span data-line="199"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="200">    <span class="n">type_cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">primal</span><span class="p">)</span>
-</span><span data-line="201">    <span class="n">base_size</span> <span class="o">=</span> <span class="n">_storage_size</span><span class="p">(</span><span class="n">type_cls</span><span class="p">)</span>
-</span><span data-line="202">    <span class="n">has_base</span> <span class="o">=</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">base_size</span> <span class="o">&gt;</span> <span class="mi">1</span>
-</span><span data-line="203">    <span class="n">n_sub</span> <span class="o">=</span> <span class="n">primal</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="204">    <span class="n">sub_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">primal</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">)</span>
-</span><span data-line="205">    <span class="c1"># NB: do NOT cast dyn_shape entries to int(); during AOTI / torch.export</span>
-</span><span data-line="206">    <span class="c1"># tracing the dyn batch dim is a ``SymInt`` and ``int(s)`` collapses it</span>
-</span><span data-line="207">    <span class="c1"># to its example value (e.g. 2), triggering the &quot;marked batch as dynamic</span>
-</span><span data-line="208">    <span class="c1"># but specialized to a constant&quot; error. The downstream torch.zeros /</span>
-</span><span data-line="209">    <span class="c1"># torch.ones / eye.expand happily accept SymInts.</span>
-</span><span data-line="210">    <span class="n">dyn_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">primal</span><span class="o">.</span><span class="n">dynamic_batch_shape</span><span class="p">)</span>
-</span><span data-line="211">    <span class="n">dtype</span> <span class="o">=</span> <span class="n">primal</span><span class="o">.</span><span class="n">dtype</span>
-</span><span data-line="212">    <span class="n">device</span> <span class="o">=</span> <span class="n">primal</span><span class="o">.</span><span class="n">device</span>
-</span><span data-line="213">    <span class="c1"># Special case: Scalar with no sub_batch (e.g. equivalent_plastic_strain</span>
-</span><span data-line="214">    <span class="c1"># in isoharden). k_paired_count=0 and would-be k_base_count=0 → k_ndim=0,</span>
-</span><span data-line="215">    <span class="c1"># which makes the seed indistinguishable from a primal in the chain rule.</span>
-</span><span data-line="216">    <span class="c1"># Force a single K axis of size 1 so the chain rule can track this seed.</span>
-</span><span data-line="217">    <span class="n">force_k_base</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">has_base</span> <span class="ow">and</span> <span class="n">n_sub</span> <span class="o">==</span> <span class="mi">0</span>
-</span><span data-line="218">
-</span><span data-line="219">    <span class="c1"># K_paired axes (one per sub axis, broadcast size 1).</span>
-</span><span data-line="220">    <span class="n">k_paired_count</span> <span class="o">=</span> <span class="n">n_sub</span>
-</span><span data-line="221">    <span class="c1"># K_base axis (size = base_size if base region is non-trivial OR</span>
-</span><span data-line="222">    <span class="c1"># forced for the Scalar-no-sub seed case).</span>
-</span><span data-line="223">    <span class="n">k_base_count</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="n">has_base</span> <span class="ow">or</span> <span class="n">force_k_base</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
-</span><span data-line="224">    <span class="n">k_ndim</span> <span class="o">=</span> <span class="n">k_paired_count</span> <span class="o">+</span> <span class="n">k_base_count</span>
-</span><span data-line="225">
-</span><span data-line="226">    <span class="c1"># Build storage shape:</span>
-</span><span data-line="227">    <span class="c1">#   leading K_paired axes (each size 1)</span>
-</span><span data-line="228">    <span class="c1">#   K_base axis (size base_size or omitted)</span>
-</span><span data-line="229">    <span class="c1">#   dyn axes (full size)</span>
-</span><span data-line="230">    <span class="c1">#   sub axes (storage size 1 for paired-broadcast)</span>
-</span><span data-line="231">    <span class="c1">#   base axes (BASE_SHAPE)</span>
-</span><span data-line="232">    <span class="c1"># K_paired axes store size 1 (broadcast). Sub axes are at their full</span>
-</span><span data-line="233">    <span class="c1"># extent in storage; the broadcast is on the K side (the size-1 K_paired</span>
-</span><span data-line="234">    <span class="c1"># axis pairs with the full sub axis to form an eye diagonal).</span>
-</span><span data-line="235">    <span class="n">k_paired_storage</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">k_paired_count</span>
-</span><span data-line="236">    <span class="c1"># K_base storage axis: size base_size for real-base types; size 1 for the</span>
-</span><span data-line="237">    <span class="c1"># force_k_base case (Scalar with no sub_batch, so base_size=1). Always</span>
-</span><span data-line="238">    <span class="c1"># include the axis when k_base_count &gt; 0 so storage and metadata agree.</span>
-</span><span data-line="239">    <span class="n">k_base_storage</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_size</span><span class="p">,)</span> <span class="k">if</span> <span class="p">(</span><span class="n">has_base</span> <span class="ow">or</span> <span class="n">force_k_base</span><span class="p">)</span> <span class="k">else</span> <span class="p">()</span>
-</span><span data-line="240">    <span class="n">sub_data_shape</span> <span class="o">=</span> <span class="n">sub_shape</span>
-</span><span data-line="241">    <span class="n">full_shape</span> <span class="o">=</span> <span class="p">(</span>
-</span><span data-line="242">        <span class="o">*</span><span class="n">k_paired_storage</span><span class="p">,</span>
-</span><span data-line="243">        <span class="o">*</span><span class="n">k_base_storage</span><span class="p">,</span>
-</span><span data-line="244">        <span class="o">*</span><span class="n">dyn_shape</span><span class="p">,</span>
-</span><span data-line="245">        <span class="o">*</span><span class="n">sub_data_shape</span><span class="p">,</span>
-</span><span data-line="246">        <span class="o">*</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">,</span>
-</span><span data-line="247">    <span class="p">)</span>
-</span><span data-line="248">
-</span><span data-line="249">    <span class="k">if</span> <span class="n">has_base</span><span class="p">:</span>
-</span><span data-line="250">        <span class="c1"># Build K_base eye on the base axis as the identity over base components.</span>
-</span><span data-line="251">        <span class="c1"># When BASE_NDIM &gt; 1 (e.g. R2 = (3,3)), unflatten K_base into the base</span>
-</span><span data-line="252">        <span class="c1"># shape via reshape.</span>
-</span><span data-line="253">        <span class="n">eye</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">base_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span data-line="254">        <span class="c1"># Reshape eye to (base_size, *BASE_SHAPE) where the second axis-group</span>
-</span><span data-line="255">        <span class="c1"># tiles base directions.</span>
-</span><span data-line="256">        <span class="n">eye</span> <span class="o">=</span> <span class="n">eye</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">base_size</span><span class="p">,</span> <span class="o">*</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">))</span>
-</span><span data-line="257">        <span class="c1"># Insert K_paired leading singleton axes + dyn singletons + sub singletons</span>
-</span><span data-line="258">        <span class="c1"># to align with full_shape.</span>
-</span><span data-line="259">        <span class="c1"># Currently eye has shape (base_size, *BASE_SHAPE). We need to insert</span>
-</span><span data-line="260">        <span class="c1"># k_paired_count leading 1s + dyn_ndim 1s + n_sub 1s after K_base</span>
-</span><span data-line="261">        <span class="c1"># before BASE_SHAPE.</span>
-</span><span data-line="262">        <span class="n">reshape_target</span> <span class="o">=</span> <span class="p">(</span>
-</span><span data-line="263">            <span class="o">*</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">k_paired_count</span><span class="p">),</span>
-</span><span data-line="264">            <span class="n">base_size</span><span class="p">,</span>
-</span><span data-line="265">            <span class="o">*</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">dyn_shape</span><span class="p">)),</span>
-</span><span data-line="266">            <span class="o">*</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_sub</span><span class="p">),</span>
-</span><span data-line="267">            <span class="o">*</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">,</span>
-</span><span data-line="268">        <span class="p">)</span>
-</span><span data-line="269">        <span class="n">eye</span> <span class="o">=</span> <span class="n">eye</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">reshape_target</span><span class="p">)</span>
-</span><span data-line="270">        <span class="c1"># Sub axes stored size 1 in eye (since K_base axis enumerates base</span>
-</span><span data-line="271">        <span class="c1"># directions). Expand to sub_shape (full sub extent) so storage matches</span>
-</span><span data-line="272">        <span class="c1"># the paired-broadcast convention (size-1 K_paired against size-N sub).</span>
-</span><span data-line="273">        <span class="n">data</span> <span class="o">=</span> <span class="n">eye</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">full_shape</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
-</span><span data-line="274">    <span class="k">else</span><span class="p">:</span>
-</span><span data-line="275">        <span class="c1"># No real base region. Either (a) Scalar primal with no sub</span>
-</span><span data-line="276">        <span class="c1"># (force_k_base path → full_shape has a leading K_base=1 axis) or</span>
-</span><span data-line="277">        <span class="c1"># (b) wrapper with only sub_batch → full_shape is purely</span>
-</span><span data-line="278">        <span class="c1"># K_paired (size-1 each). In both cases the seed is uniformly 1</span>
-</span><span data-line="279">        <span class="c1"># along the K axes (a degenerate-but-consistent identity).</span>
-</span><span data-line="280">        <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">full_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span data-line="281">
-</span><span data-line="282">    <span class="c1"># Build K state and pairing.</span>
-</span><span data-line="283">    <span class="n">state_paired</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;broadcast&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="n">k_paired_count</span>
-</span><span data-line="284">    <span class="n">state_base</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;full&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="n">k_base_count</span>
-</span><span data-line="285">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">state_paired</span> <span class="o">+</span> <span class="n">state_base</span>
-</span><span data-line="286">    <span class="n">pairing_paired</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">k_paired_count</span><span class="p">))</span>
-</span><span data-line="287">    <span class="n">pairing_base</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="n">k_base_count</span>
-</span><span data-line="288">    <span class="n">k_pairing</span> <span class="o">=</span> <span class="n">pairing_paired</span> <span class="o">+</span> <span class="n">pairing_base</span>
-</span><span data-line="289">
-</span><span data-line="290">    <span class="c1"># Sub_batch state: paired-broadcast since K_paired matches storage.</span>
-</span><span data-line="291">    <span class="n">sb_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-</span><span data-line="292">    <span class="n">sb_meta</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-</span><span data-line="293">    <span class="k">if</span> <span class="n">n_sub</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="294">        <span class="n">sb_state</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;broadcast&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_sub</span>
-</span><span data-line="295">        <span class="n">sb_meta</span> <span class="o">=</span> <span class="n">sub_shape</span>
-</span><span data-line="296">    <span class="k">else</span><span class="p">:</span>
-</span><span data-line="297">        <span class="n">sb_state</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="298">        <span class="n">sb_meta</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="299">
-</span><span data-line="300">    <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span>
-</span><span data-line="301">        <span class="n">data</span><span class="p">,</span>
-</span><span data-line="302">        <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">n_sub</span><span class="p">,</span>
-</span><span data-line="303">        <span class="n">sub_batch_state</span><span class="o">=</span><span class="n">sb_state</span><span class="p">,</span>
-</span><span data-line="304">        <span class="n">sub_batch_meta</span><span class="o">=</span><span class="n">sb_meta</span><span class="p">,</span>
-</span><span data-line="305">        <span class="n">k_ndim</span><span class="o">=</span><span class="n">k_ndim</span><span class="p">,</span>
-</span><span data-line="306">        <span class="n">k_state</span><span class="o">=</span><span class="n">k_state</span><span class="p">,</span>
-</span><span data-line="307">        <span class="n">k_pairing</span><span class="o">=</span><span class="n">k_pairing</span><span class="p">,</span>
-</span><span data-line="308">    <span class="p">)</span>
-</span><span data-line="309">
-</span><span data-line="310">
-</span><span data-line="311"><span class="k">def</span><span class="w"> </span><span class="nf">build_identity_seed</span><span class="p">(</span>
-</span><span data-line="312">    <span class="n">state</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">],</span>
-</span><span data-line="313">    <span class="n">seed_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-</span><span data-line="314">    <span class="n">n_residual_groups</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-</span><span data-line="315">    <span class="n">input_spec</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]],</span>
-</span><span data-line="316">    <span class="n">sub_batch_shapes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">],</span>
-</span><span data-line="317"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]]:</span>
-</span><span data-line="318"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-(input, residual_group) expanded identity seeds for the chain rule.</span>
-</span><span data-line="319">
-</span><span data-line="320"><span class="sd">    Single source of truth shared by the native eager assembly</span>
-</span><span data-line="321"><span class="sd">    (``ModelNonlinearSystem._identity_seed``) and the AOTI export wrappers</span>
-</span><span data-line="322"><span class="sd">    (``neml2.es.implicit._SystemModule``) -- previously these had divergent</span>
-</span><span data-line="323"><span class="sd">    copies, and the wrapper copy was missing the dynamic-batch padding below</span>
-</span><span data-line="324"><span class="sd">    (it only worked under the uniform-batch shapes used at trace time).</span>
-</span><span data-line="325">
-</span><span data-line="326"><span class="sd">    For each ``(name, residual_group)`` the seed leaf is</span>
-</span><span data-line="327"><span class="sd">    :func:`_expanded_identity_seed` of the primal. Seeds for variables whose</span>
-</span><span data-line="328"><span class="sd">    state value has fewer dynamic-batch axes than the system-wide maximum are</span>
-</span><span data-line="329"><span class="sd">    LEFT-padded with size-1 placeholders so the leading-K tangent contract</span>
-</span><span data-line="330"><span class="sd">    ``(K, *dyn, *sub, *base)`` lines up position-wise across all variables --</span>
-</span><span data-line="331"><span class="sd">    without the pad, a base-only unknown&#39;s ``(K, base)`` tangent collides</span>
-</span><span data-line="332"><span class="sd">    positionally with a batched given primal&#39;s ``(dyn, base)`` and torch&#39;s</span>
-</span><span data-line="333"><span class="sd">    right-aligned broadcast misaligns K with dyn.</span>
-</span><span data-line="334">
-</span><span data-line="335"><span class="sd">    Leaf keys use the ``&quot;{name}:rgroup{gi}&quot;`` format that</span>
-</span><span data-line="336"><span class="sd">    ``_build_block_matrix`` reads.</span>
-</span><span data-line="337"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="338">    <span class="n">max_dyn_ndim</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="339">    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span><span data-line="340">        <span class="n">type_cls</span> <span class="o">=</span> <span class="n">input_spec</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-</span><span data-line="341">        <span class="n">declared_sbn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">()))</span>
-</span><span data-line="342">        <span class="n">v_dyn_ndim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">declared_sbn</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-</span><span data-line="343">        <span class="n">max_dyn_ndim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_dyn_ndim</span><span class="p">,</span> <span class="n">v_dyn_ndim</span><span class="p">)</span>
-</span><span data-line="344">
-</span><span data-line="345">    <span class="n">seed</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span data-line="346">    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">seed_names</span><span class="p">:</span>
-</span><span data-line="347">        <span class="n">value</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-</span><span data-line="348">        <span class="n">type_cls</span> <span class="o">=</span> <span class="n">input_spec</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-</span><span data-line="349">        <span class="n">declared_sbn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">()))</span>
-</span><span data-line="350">        <span class="n">v_dyn_ndim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">declared_sbn</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-</span><span data-line="351">        <span class="c1"># Left-pad the dyn region with size-1 axes (the sub_batch axes are</span>
-</span><span data-line="352">        <span class="c1"># re-attached via the kwarg, so the pad slots in front of the existing</span>
-</span><span data-line="353">        <span class="c1"># dyn axes).</span>
-</span><span data-line="354">        <span class="n">new_data</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">data</span>
-</span><span data-line="355">        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_dyn_ndim</span> <span class="o">-</span> <span class="n">v_dyn_ndim</span><span class="p">):</span>
-</span><span data-line="356">            <span class="n">new_data</span> <span class="o">=</span> <span class="n">new_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-</span><span data-line="357">        <span class="n">seed_value</span> <span class="o">=</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">declared_sbn</span><span class="p">)</span>
-</span><span data-line="358">        <span class="n">seed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="359">            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">:rgroup</span><span class="si">{</span><span class="n">gi</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">_expanded_identity_seed</span><span class="p">(</span><span class="n">seed_value</span><span class="p">)</span>
-</span><span data-line="360">            <span class="k">for</span> <span class="n">gi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_residual_groups</span><span class="p">)</span>
-</span><span data-line="361">        <span class="p">}</span>
-</span><span data-line="362">    <span class="k">return</span> <span class="n">seed</span>
-</span><span data-line="363">
-</span><span data-line="364">
-</span><span data-line="365"><span class="k">def</span><span class="w"> </span><span class="nf">_tangent_block_to_trailing_k</span><span class="p">(</span><span class="n">block</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="366"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a leading-K typed tangent block to trailing-K ``Tensor``.</span>
-</span><span data-line="367">
-</span><span data-line="368"><span class="sd">    The wrapper has K as the leftmost batch dim(s). Assembly consumes</span>
-</span><span data-line="369"><span class="sd">    trailing-K blocks; we move K to the end, flatten base into a single</span>
-</span><span data-line="370"><span class="sd">    row dim, and return a Tensor with the region split set from the</span>
-</span><span data-line="371"><span class="sd">    wrapper&#39;s metadata.</span>
-</span><span data-line="372">
-</span><span data-line="373"><span class="sd">    K materialisation: assembly needs the FULL ``K = prod(sub_extents) *</span>
-</span><span data-line="374"><span class="sd">    base_size`` (one direction per (sub_site, base_component) pair); the</span>
-</span><span data-line="375"><span class="sd">    chain-rule tangent carries compact-K (paired-broadcast K_paired axes</span>
-</span><span data-line="376"><span class="sd">    of storage size 1). We :func:`~neml2.types.functions.fullify` the</span>
-</span><span data-line="377"><span class="sd">    tangent here so paired-broadcast K_paired axes expand to per-site</span>
-</span><span data-line="378"><span class="sd">    enumeration before the trailing-K move.</span>
-</span><span data-line="379"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="380">    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
-</span><span data-line="381">        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="382">            <span class="sa">f</span><span class="s2">&quot;_tangent_block_to_trailing_k expects a TensorWrapper, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">block</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span data-line="383">        <span class="p">)</span>
-</span><span data-line="384">    <span class="c1"># Fullify: expand every K-paired broadcast axis to its enumerated form.</span>
-</span><span data-line="385">    <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">fullify</span>  <span class="c1"># noqa: PLC0415</span>
-</span><span data-line="386">
-</span><span data-line="387">    <span class="n">block</span> <span class="o">=</span> <span class="n">fullify</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
-</span><span data-line="388">    <span class="c1"># Materialise any still-broadcast sub axes (typically none after fullify</span>
-</span><span data-line="389">    <span class="c1"># demoted the paired-broadcast sub axes, but defensively materialise the</span>
-</span><span data-line="390">    <span class="c1"># rest so trailing-K assembly sees fully-expanded sub_batch storage).</span>
-</span><span data-line="391">    <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">sub_batch_state</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">s</span> <span class="o">==</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="p">):</span>
-</span><span data-line="392">        <span class="n">block</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">materialize</span><span class="p">()</span>
-</span><span data-line="393">    <span class="n">base_ndim</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">block</span><span class="p">)</span><span class="o">.</span><span class="n">BASE_NDIM</span>
-</span><span data-line="394">    <span class="n">sub_ndim</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="395">    <span class="n">k_ndim</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">k_ndim</span>
-</span><span data-line="396">    <span class="k">if</span> <span class="n">k_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="397">        <span class="c1"># No K -- treat the leading axis as K of size 1 for trailing form.</span>
-</span><span data-line="398">        <span class="n">dyn_ndim</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">sub_ndim</span> <span class="o">-</span> <span class="n">base_ndim</span>
-</span><span data-line="399">        <span class="n">moved</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (*dyn, *sub, *base, 1)</span>
-</span><span data-line="400">    <span class="k">elif</span> <span class="n">k_ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="401">        <span class="n">dyn_ndim</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">sub_ndim</span> <span class="o">-</span> <span class="n">base_ndim</span>
-</span><span data-line="402">        <span class="n">moved</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">movedim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (*dyn, *sub, *base, K)</span>
-</span><span data-line="403">    <span class="k">else</span><span class="p">:</span>
-</span><span data-line="404">        <span class="c1"># Permute leading K axes to trailing as a contiguous group, THEN</span>
-</span><span data-line="405">        <span class="c1"># reshape them into one. The two-step (permute + reshape on adjacent</span>
-</span><span data-line="406">        <span class="c1"># trailing dims) is symbolically equivalent to the prior</span>
-</span><span data-line="407">        <span class="c1"># ``reshape(K_flat, *rest).movedim(0, -1)`` but avoids torch.export&#39;s</span>
-</span><span data-line="408">        <span class="c1"># collapse-view stride check on a leading-K layout: the check fires</span>
-</span><span data-line="409">        <span class="c1"># the Min(K_base*B, K_base^2*B) == K_base*B guard (trivially true</span>
-</span><span data-line="410">        <span class="c1"># for B&gt;0 but not symbolically provable) when the reshape sees a</span>
-</span><span data-line="411">        <span class="c1"># non-trivial leading stride pattern.</span>
-</span><span data-line="412">        <span class="n">k_shape</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="n">k_ndim</span><span class="p">]</span>
-</span><span data-line="413">        <span class="n">K_flat</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="n">k_shape</span><span class="p">)</span>
-</span><span data-line="414">        <span class="c1"># Move K group from leading to trailing: (K_1..K_n, *rest) -&gt; (*rest, K_1..K_n)</span>
-</span><span data-line="415">        <span class="n">perm</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="n">k_ndim</span><span class="p">,</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span> <span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="n">k_ndim</span><span class="p">))</span>
-</span><span data-line="416">        <span class="n">permuted</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
-</span><span data-line="417">        <span class="c1"># Now trailing k_ndim axes are contiguous; collapse them to one.</span>
-</span><span data-line="418">        <span class="n">moved</span> <span class="o">=</span> <span class="n">permuted</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">permuted</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="n">k_ndim</span><span class="p">],</span> <span class="n">K_flat</span><span class="p">)</span>
-</span><span data-line="419">        <span class="n">dyn_ndim</span> <span class="o">=</span> <span class="n">moved</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">sub_ndim</span> <span class="o">-</span> <span class="n">base_ndim</span>
-</span><span data-line="420">    <span class="k">if</span> <span class="n">base_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="421">        <span class="n">raw</span> <span class="o">=</span> <span class="n">moved</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
-</span><span data-line="422">    <span class="k">elif</span> <span class="n">base_ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="423">        <span class="n">raw</span> <span class="o">=</span> <span class="n">moved</span>
-</span><span data-line="424">    <span class="k">else</span><span class="p">:</span>
-</span><span data-line="425">        <span class="n">K</span> <span class="o">=</span> <span class="n">moved</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</span><span data-line="426">        <span class="n">raw</span> <span class="o">=</span> <span class="n">moved</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">moved</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="n">moved</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">base_ndim</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
-</span><span data-line="427">    <span class="k">return</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">dyn_ndim</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sub_ndim</span><span class="p">)</span>
-</span><span data-line="428">
-</span><span data-line="429">
-</span><span data-line="430"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-</span><span data-line="431">    <span class="s2">&quot;lag_order&quot;</span><span class="p">,</span>
-</span><span data-line="432">    <span class="s2">&quot;change_lag_order&quot;</span><span class="p">,</span>
-</span><span data-line="433">    <span class="s2">&quot;SubstepRole&quot;</span><span class="p">,</span>
-</span><span data-line="434">    <span class="s2">&quot;SubstepRoleInfo&quot;</span><span class="p">,</span>
-</span><span data-line="435">    <span class="s2">&quot;classify_substep_roles&quot;</span><span class="p">,</span>
-</span><span data-line="436">    <span class="s2">&quot;_storage_size&quot;</span><span class="p">,</span>
-</span><span data-line="437">    <span class="s2">&quot;_batch_shape&quot;</span><span class="p">,</span>
-</span><span data-line="438">    <span class="s2">&quot;_flatten_base&quot;</span><span class="p">,</span>
-</span><span data-line="439">    <span class="s2">&quot;_expanded_identity_seed&quot;</span><span class="p">,</span>
-</span><span data-line="440">    <span class="s2">&quot;build_identity_seed&quot;</span><span class="p">,</span>
-</span><span data-line="441">    <span class="s2">&quot;_tangent_block_to_trailing_k&quot;</span><span class="p">,</span>
-</span><span data-line="442"><span class="p">]</span>
+</span><span data-line="185"><span class="sd">        data.shape = (1*N_sub, K_base, *dyn_shape, *sub_data_shape, *BASE_SHAPE)</span>
+</span><span data-line="186"><span class="sd">                     ^^^^^^^^^^^^^^^^</span>
+</span><span data-line="187"><span class="sd">                     k_ndim axes total</span>
+</span><span data-line="188">
+</span><span data-line="189"><span class="sd">    where ``sub_data_shape[i] = 1`` for every sub axis (paired-broadcast</span>
+</span><span data-line="190"><span class="sd">    storage). ``k_state[i] = &quot;broadcast&quot;`` for paired-sub K axes and</span>
+</span><span data-line="191"><span class="sd">    ``&quot;full&quot;`` for the single K_base axis. ``k_pairing[i] = i`` for paired-sub</span>
+</span><span data-line="192"><span class="sd">    K axes and ``None`` for K_base.</span>
+</span><span data-line="193">
+</span><span data-line="194"><span class="sd">    For a primal with no sub_batch axes, the seed is just K_base. For a</span>
+</span><span data-line="195"><span class="sd">    primal with no base axes (Scalar with base_size=()), K_base is omitted</span>
+</span><span data-line="196"><span class="sd">    so the seed is just the paired K axes.</span>
+</span><span data-line="197"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="198">    <span class="n">type_cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">primal</span><span class="p">)</span>
+</span><span data-line="199">    <span class="n">base_size</span> <span class="o">=</span> <span class="n">_storage_size</span><span class="p">(</span><span class="n">type_cls</span><span class="p">)</span>
+</span><span data-line="200">    <span class="n">has_base</span> <span class="o">=</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">base_size</span> <span class="o">&gt;</span> <span class="mi">1</span>
+</span><span data-line="201">    <span class="n">n_sub</span> <span class="o">=</span> <span class="n">primal</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="202">    <span class="n">sub_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">primal</span><span class="o">.</span><span class="n">sub_batch_shape</span><span class="p">)</span>
+</span><span data-line="203">    <span class="c1"># NB: do NOT cast dyn_shape entries to int(); during AOTI / torch.export</span>
+</span><span data-line="204">    <span class="c1"># tracing the dyn batch dim is a ``SymInt`` and ``int(s)`` collapses it</span>
+</span><span data-line="205">    <span class="c1"># to its example value (e.g. 2), triggering the &quot;marked batch as dynamic</span>
+</span><span data-line="206">    <span class="c1"># but specialized to a constant&quot; error. The downstream torch.zeros /</span>
+</span><span data-line="207">    <span class="c1"># torch.ones / eye.expand happily accept SymInts.</span>
+</span><span data-line="208">    <span class="n">dyn_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">primal</span><span class="o">.</span><span class="n">dynamic_batch_shape</span><span class="p">)</span>
+</span><span data-line="209">    <span class="n">dtype</span> <span class="o">=</span> <span class="n">primal</span><span class="o">.</span><span class="n">dtype</span>
+</span><span data-line="210">    <span class="n">device</span> <span class="o">=</span> <span class="n">primal</span><span class="o">.</span><span class="n">device</span>
+</span><span data-line="211">    <span class="c1"># Special case: Scalar with no sub_batch (e.g. equivalent_plastic_strain</span>
+</span><span data-line="212">    <span class="c1"># in isoharden). k_paired_count=0 and would-be k_base_count=0 → k_ndim=0,</span>
+</span><span data-line="213">    <span class="c1"># which makes the seed indistinguishable from a primal in the chain rule.</span>
+</span><span data-line="214">    <span class="c1"># Force a single K axis of size 1 so the chain rule can track this seed.</span>
+</span><span data-line="215">    <span class="n">force_k_base</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">has_base</span> <span class="ow">and</span> <span class="n">n_sub</span> <span class="o">==</span> <span class="mi">0</span>
+</span><span data-line="216">
+</span><span data-line="217">    <span class="c1"># K_paired axes (one per sub axis, broadcast size 1).</span>
+</span><span data-line="218">    <span class="n">k_paired_count</span> <span class="o">=</span> <span class="n">n_sub</span>
+</span><span data-line="219">    <span class="c1"># K_base axis (size = base_size if base region is non-trivial OR</span>
+</span><span data-line="220">    <span class="c1"># forced for the Scalar-no-sub seed case).</span>
+</span><span data-line="221">    <span class="n">k_base_count</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="n">has_base</span> <span class="ow">or</span> <span class="n">force_k_base</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+</span><span data-line="222">    <span class="n">k_ndim</span> <span class="o">=</span> <span class="n">k_paired_count</span> <span class="o">+</span> <span class="n">k_base_count</span>
+</span><span data-line="223">
+</span><span data-line="224">    <span class="c1"># Build storage shape:</span>
+</span><span data-line="225">    <span class="c1">#   leading K_paired axes (each size 1)</span>
+</span><span data-line="226">    <span class="c1">#   K_base axis (size base_size or omitted)</span>
+</span><span data-line="227">    <span class="c1">#   dyn axes (full size)</span>
+</span><span data-line="228">    <span class="c1">#   sub axes (storage size 1 for paired-broadcast)</span>
+</span><span data-line="229">    <span class="c1">#   base axes (BASE_SHAPE)</span>
+</span><span data-line="230">    <span class="c1"># K_paired axes store size 1 (broadcast). Sub axes are at their full</span>
+</span><span data-line="231">    <span class="c1"># extent in storage; the broadcast is on the K side (the size-1 K_paired</span>
+</span><span data-line="232">    <span class="c1"># axis pairs with the full sub axis to form an eye diagonal).</span>
+</span><span data-line="233">    <span class="n">k_paired_storage</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">k_paired_count</span>
+</span><span data-line="234">    <span class="c1"># K_base storage axis: size base_size for real-base types; size 1 for the</span>
+</span><span data-line="235">    <span class="c1"># force_k_base case (Scalar with no sub_batch, so base_size=1). Always</span>
+</span><span data-line="236">    <span class="c1"># include the axis when k_base_count &gt; 0 so storage and metadata agree.</span>
+</span><span data-line="237">    <span class="n">k_base_storage</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_size</span><span class="p">,)</span> <span class="k">if</span> <span class="p">(</span><span class="n">has_base</span> <span class="ow">or</span> <span class="n">force_k_base</span><span class="p">)</span> <span class="k">else</span> <span class="p">()</span>
+</span><span data-line="238">    <span class="n">sub_data_shape</span> <span class="o">=</span> <span class="n">sub_shape</span>
+</span><span data-line="239">    <span class="n">full_shape</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="240">        <span class="o">*</span><span class="n">k_paired_storage</span><span class="p">,</span>
+</span><span data-line="241">        <span class="o">*</span><span class="n">k_base_storage</span><span class="p">,</span>
+</span><span data-line="242">        <span class="o">*</span><span class="n">dyn_shape</span><span class="p">,</span>
+</span><span data-line="243">        <span class="o">*</span><span class="n">sub_data_shape</span><span class="p">,</span>
+</span><span data-line="244">        <span class="o">*</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">,</span>
+</span><span data-line="245">    <span class="p">)</span>
+</span><span data-line="246">
+</span><span data-line="247">    <span class="k">if</span> <span class="n">has_base</span><span class="p">:</span>
+</span><span data-line="248">        <span class="c1"># Build K_base eye on the base axis as the identity over base components.</span>
+</span><span data-line="249">        <span class="c1"># When BASE_NDIM &gt; 1 (e.g. R2 = (3,3)), unflatten K_base into the base</span>
+</span><span data-line="250">        <span class="c1"># shape via reshape.</span>
+</span><span data-line="251">        <span class="n">eye</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">base_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="252">        <span class="c1"># Reshape eye to (base_size, *BASE_SHAPE) where the second axis-group</span>
+</span><span data-line="253">        <span class="c1"># tiles base directions.</span>
+</span><span data-line="254">        <span class="n">eye</span> <span class="o">=</span> <span class="n">eye</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">base_size</span><span class="p">,</span> <span class="o">*</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">))</span>
+</span><span data-line="255">        <span class="c1"># Insert K_paired leading singleton axes + dyn singletons + sub singletons</span>
+</span><span data-line="256">        <span class="c1"># to align with full_shape.</span>
+</span><span data-line="257">        <span class="c1"># Currently eye has shape (base_size, *BASE_SHAPE). We need to insert</span>
+</span><span data-line="258">        <span class="c1"># k_paired_count leading 1s + dyn_ndim 1s + n_sub 1s after K_base</span>
+</span><span data-line="259">        <span class="c1"># before BASE_SHAPE.</span>
+</span><span data-line="260">        <span class="n">reshape_target</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="261">            <span class="o">*</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">k_paired_count</span><span class="p">),</span>
+</span><span data-line="262">            <span class="n">base_size</span><span class="p">,</span>
+</span><span data-line="263">            <span class="o">*</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">dyn_shape</span><span class="p">)),</span>
+</span><span data-line="264">            <span class="o">*</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_sub</span><span class="p">),</span>
+</span><span data-line="265">            <span class="o">*</span><span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_SHAPE</span><span class="p">,</span>
+</span><span data-line="266">        <span class="p">)</span>
+</span><span data-line="267">        <span class="n">eye</span> <span class="o">=</span> <span class="n">eye</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">reshape_target</span><span class="p">)</span>
+</span><span data-line="268">        <span class="c1"># Sub axes stored size 1 in eye (since K_base axis enumerates base</span>
+</span><span data-line="269">        <span class="c1"># directions). Expand to sub_shape (full sub extent) so storage matches</span>
+</span><span data-line="270">        <span class="c1"># the paired-broadcast convention (size-1 K_paired against size-N sub).</span>
+</span><span data-line="271">        <span class="n">data</span> <span class="o">=</span> <span class="n">eye</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">full_shape</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+</span><span data-line="272">    <span class="k">else</span><span class="p">:</span>
+</span><span data-line="273">        <span class="c1"># No real base region. Either (a) Scalar primal with no sub</span>
+</span><span data-line="274">        <span class="c1"># (force_k_base path → full_shape has a leading K_base=1 axis) or</span>
+</span><span data-line="275">        <span class="c1"># (b) wrapper with only sub_batch → full_shape is purely</span>
+</span><span data-line="276">        <span class="c1"># K_paired (size-1 each). In both cases the seed is uniformly 1</span>
+</span><span data-line="277">        <span class="c1"># along the K axes (a degenerate-but-consistent identity).</span>
+</span><span data-line="278">        <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">full_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</span><span data-line="279">
+</span><span data-line="280">    <span class="c1"># Build K state and pairing.</span>
+</span><span data-line="281">    <span class="n">state_paired</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;broadcast&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="n">k_paired_count</span>
+</span><span data-line="282">    <span class="n">state_base</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;full&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="n">k_base_count</span>
+</span><span data-line="283">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">state_paired</span> <span class="o">+</span> <span class="n">state_base</span>
+</span><span data-line="284">    <span class="n">pairing_paired</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">k_paired_count</span><span class="p">))</span>
+</span><span data-line="285">    <span class="n">pairing_base</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="n">k_base_count</span>
+</span><span data-line="286">    <span class="n">k_pairing</span> <span class="o">=</span> <span class="n">pairing_paired</span> <span class="o">+</span> <span class="n">pairing_base</span>
+</span><span data-line="287">
+</span><span data-line="288">    <span class="c1"># Sub_batch state: paired-broadcast since K_paired matches storage.</span>
+</span><span data-line="289">    <span class="n">sb_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</span><span data-line="290">    <span class="n">sb_meta</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</span><span data-line="291">    <span class="k">if</span> <span class="n">n_sub</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="292">        <span class="n">sb_state</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;broadcast&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_sub</span>
+</span><span data-line="293">        <span class="n">sb_meta</span> <span class="o">=</span> <span class="n">sub_shape</span>
+</span><span data-line="294">    <span class="k">else</span><span class="p">:</span>
+</span><span data-line="295">        <span class="n">sb_state</span> <span class="o">=</span> <span class="p">()</span>
+</span><span data-line="296">        <span class="n">sb_meta</span> <span class="o">=</span> <span class="p">()</span>
+</span><span data-line="297">
+</span><span data-line="298">    <span class="k">return</span> <span class="n">type_cls</span><span class="p">(</span>
+</span><span data-line="299">        <span class="n">data</span><span class="p">,</span>
+</span><span data-line="300">        <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">n_sub</span><span class="p">,</span>
+</span><span data-line="301">        <span class="n">sub_batch_state</span><span class="o">=</span><span class="n">sb_state</span><span class="p">,</span>
+</span><span data-line="302">        <span class="n">sub_batch_meta</span><span class="o">=</span><span class="n">sb_meta</span><span class="p">,</span>
+</span><span data-line="303">        <span class="n">k_ndim</span><span class="o">=</span><span class="n">k_ndim</span><span class="p">,</span>
+</span><span data-line="304">        <span class="n">k_state</span><span class="o">=</span><span class="n">k_state</span><span class="p">,</span>
+</span><span data-line="305">        <span class="n">k_pairing</span><span class="o">=</span><span class="n">k_pairing</span><span class="p">,</span>
+</span><span data-line="306">    <span class="p">)</span>
+</span><span data-line="307">
+</span><span data-line="308">
+</span><span data-line="309"><span class="k">def</span><span class="w"> </span><span class="nf">build_identity_seed</span><span class="p">(</span>
+</span><span data-line="310">    <span class="n">state</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">],</span>
+</span><span data-line="311">    <span class="n">seed_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span data-line="312">    <span class="n">n_residual_groups</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span data-line="313">    <span class="n">input_spec</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">]],</span>
+</span><span data-line="314">    <span class="n">sub_batch_shapes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">],</span>
+</span><span data-line="315"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]]:</span>
+</span><span data-line="316"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-(input, residual_group) expanded identity seeds for the chain rule.</span>
+</span><span data-line="317">
+</span><span data-line="318"><span class="sd">    Single source of truth shared by the native eager assembly</span>
+</span><span data-line="319"><span class="sd">    (``ModelNonlinearSystem._identity_seed``) and the AOTI export wrappers</span>
+</span><span data-line="320"><span class="sd">    (``neml2.es.implicit._SystemModule``) -- previously these had divergent</span>
+</span><span data-line="321"><span class="sd">    copies, and the wrapper copy was missing the dynamic-batch padding below</span>
+</span><span data-line="322"><span class="sd">    (it only worked under the uniform-batch shapes used at trace time).</span>
+</span><span data-line="323">
+</span><span data-line="324"><span class="sd">    For each ``(name, residual_group)`` the seed leaf is</span>
+</span><span data-line="325"><span class="sd">    :func:`_expanded_identity_seed` of the primal. Seeds for variables whose</span>
+</span><span data-line="326"><span class="sd">    state value has fewer dynamic-batch axes than the system-wide maximum are</span>
+</span><span data-line="327"><span class="sd">    LEFT-padded with size-1 placeholders so the leading-K tangent contract</span>
+</span><span data-line="328"><span class="sd">    ``(K, *dyn, *sub, *base)`` lines up position-wise across all variables --</span>
+</span><span data-line="329"><span class="sd">    without the pad, a base-only unknown&#39;s ``(K, base)`` tangent collides</span>
+</span><span data-line="330"><span class="sd">    positionally with a batched given primal&#39;s ``(dyn, base)`` and torch&#39;s</span>
+</span><span data-line="331"><span class="sd">    right-aligned broadcast misaligns K with dyn.</span>
+</span><span data-line="332">
+</span><span data-line="333"><span class="sd">    Leaf keys use the ``&quot;{name}:rgroup{gi}&quot;`` format that</span>
+</span><span data-line="334"><span class="sd">    ``_build_block_matrix`` reads.</span>
+</span><span data-line="335"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="336">    <span class="n">max_dyn_ndim</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span data-line="337">    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span data-line="338">        <span class="n">type_cls</span> <span class="o">=</span> <span class="n">input_spec</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+</span><span data-line="339">        <span class="n">declared_sbn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">()))</span>
+</span><span data-line="340">        <span class="n">v_dyn_ndim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">declared_sbn</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span><span data-line="341">        <span class="n">max_dyn_ndim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_dyn_ndim</span><span class="p">,</span> <span class="n">v_dyn_ndim</span><span class="p">)</span>
+</span><span data-line="342">
+</span><span data-line="343">    <span class="n">seed</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span data-line="344">    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">seed_names</span><span class="p">:</span>
+</span><span data-line="345">        <span class="n">value</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+</span><span data-line="346">        <span class="n">type_cls</span> <span class="o">=</span> <span class="n">input_spec</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+</span><span data-line="347">        <span class="n">declared_sbn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_batch_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">()))</span>
+</span><span data-line="348">        <span class="n">v_dyn_ndim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">type_cls</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">declared_sbn</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span><span data-line="349">        <span class="c1"># Left-pad the dyn region with size-1 axes (the sub_batch axes are</span>
+</span><span data-line="350">        <span class="c1"># re-attached via the kwarg, so the pad slots in front of the existing</span>
+</span><span data-line="351">        <span class="c1"># dyn axes).</span>
+</span><span data-line="352">        <span class="n">new_data</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">data</span>
+</span><span data-line="353">        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_dyn_ndim</span> <span class="o">-</span> <span class="n">v_dyn_ndim</span><span class="p">):</span>
+</span><span data-line="354">            <span class="n">new_data</span> <span class="o">=</span> <span class="n">new_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span><span data-line="355">        <span class="n">seed_value</span> <span class="o">=</span> <span class="n">type_cls</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">declared_sbn</span><span class="p">)</span>
+</span><span data-line="356">        <span class="n">seed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="357">            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">:rgroup</span><span class="si">{</span><span class="n">gi</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">_expanded_identity_seed</span><span class="p">(</span><span class="n">seed_value</span><span class="p">)</span>
+</span><span data-line="358">            <span class="k">for</span> <span class="n">gi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_residual_groups</span><span class="p">)</span>
+</span><span data-line="359">        <span class="p">}</span>
+</span><span data-line="360">    <span class="k">return</span> <span class="n">seed</span>
+</span><span data-line="361">
+</span><span data-line="362">
+</span><span data-line="363"><span class="k">def</span><span class="w"> </span><span class="nf">_tangent_block_to_trailing_k</span><span class="p">(</span><span class="n">block</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+</span><span data-line="364"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a leading-K typed tangent block to trailing-K ``Tensor``.</span>
+</span><span data-line="365">
+</span><span data-line="366"><span class="sd">    The wrapper has K as the leftmost batch dim(s). Assembly consumes</span>
+</span><span data-line="367"><span class="sd">    trailing-K blocks; we move K to the end, flatten base into a single</span>
+</span><span data-line="368"><span class="sd">    row dim, and return a Tensor with the region split set from the</span>
+</span><span data-line="369"><span class="sd">    wrapper&#39;s metadata.</span>
+</span><span data-line="370">
+</span><span data-line="371"><span class="sd">    K materialisation: assembly needs the FULL ``K = prod(sub_extents) *</span>
+</span><span data-line="372"><span class="sd">    base_size`` (one direction per (sub_site, base_component) pair); the</span>
+</span><span data-line="373"><span class="sd">    chain-rule tangent carries compact-K (paired-broadcast K_paired axes</span>
+</span><span data-line="374"><span class="sd">    of storage size 1). We :func:`~neml2.types.functions.fullify` the</span>
+</span><span data-line="375"><span class="sd">    tangent here so paired-broadcast K_paired axes expand to per-site</span>
+</span><span data-line="376"><span class="sd">    enumeration before the trailing-K move.</span>
+</span><span data-line="377"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="378">    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">TensorWrapper</span><span class="p">):</span>
+</span><span data-line="379">        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+</span><span data-line="380">            <span class="sa">f</span><span class="s2">&quot;_tangent_block_to_trailing_k expects a TensorWrapper, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">block</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="381">        <span class="p">)</span>
+</span><span data-line="382">    <span class="c1"># Fullify: expand every K-paired broadcast axis to its enumerated form.</span>
+</span><span data-line="383">    <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">fullify</span>  <span class="c1"># noqa: PLC0415</span>
+</span><span data-line="384">
+</span><span data-line="385">    <span class="n">block</span> <span class="o">=</span> <span class="n">fullify</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+</span><span data-line="386">    <span class="c1"># Materialise any still-broadcast sub axes (typically none after fullify</span>
+</span><span data-line="387">    <span class="c1"># demoted the paired-broadcast sub axes, but defensively materialise the</span>
+</span><span data-line="388">    <span class="c1"># rest so trailing-K assembly sees fully-expanded sub_batch storage).</span>
+</span><span data-line="389">    <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">sub_batch_state</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">s</span> <span class="o">==</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="p">):</span>
+</span><span data-line="390">        <span class="n">block</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">materialize</span><span class="p">()</span>
+</span><span data-line="391">    <span class="n">base_ndim</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">block</span><span class="p">)</span><span class="o">.</span><span class="n">BASE_NDIM</span>
+</span><span data-line="392">    <span class="n">sub_ndim</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="393">    <span class="n">k_ndim</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">k_ndim</span>
+</span><span data-line="394">    <span class="k">if</span> <span class="n">k_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="395">        <span class="c1"># No K -- treat the leading axis as K of size 1 for trailing form.</span>
+</span><span data-line="396">        <span class="n">dyn_ndim</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">sub_ndim</span> <span class="o">-</span> <span class="n">base_ndim</span>
+</span><span data-line="397">        <span class="n">moved</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (*dyn, *sub, *base, 1)</span>
+</span><span data-line="398">    <span class="k">elif</span> <span class="n">k_ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="399">        <span class="n">dyn_ndim</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">sub_ndim</span> <span class="o">-</span> <span class="n">base_ndim</span>
+</span><span data-line="400">        <span class="n">moved</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">movedim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (*dyn, *sub, *base, K)</span>
+</span><span data-line="401">    <span class="k">else</span><span class="p">:</span>
+</span><span data-line="402">        <span class="c1"># Permute leading K axes to trailing as a contiguous group, THEN</span>
+</span><span data-line="403">        <span class="c1"># reshape them into one. The two-step (permute + reshape on adjacent</span>
+</span><span data-line="404">        <span class="c1"># trailing dims) is symbolically equivalent to the prior</span>
+</span><span data-line="405">        <span class="c1"># ``reshape(K_flat, *rest).movedim(0, -1)`` but avoids torch.export&#39;s</span>
+</span><span data-line="406">        <span class="c1"># collapse-view stride check on a leading-K layout: the check fires</span>
+</span><span data-line="407">        <span class="c1"># the Min(K_base*B, K_base^2*B) == K_base*B guard (trivially true</span>
+</span><span data-line="408">        <span class="c1"># for B&gt;0 but not symbolically provable) when the reshape sees a</span>
+</span><span data-line="409">        <span class="c1"># non-trivial leading stride pattern.</span>
+</span><span data-line="410">        <span class="n">k_shape</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="n">k_ndim</span><span class="p">]</span>
+</span><span data-line="411">        <span class="n">K_flat</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="n">k_shape</span><span class="p">)</span>
+</span><span data-line="412">        <span class="c1"># Move K group from leading to trailing: (K_1..K_n, *rest) -&gt; (*rest, K_1..K_n)</span>
+</span><span data-line="413">        <span class="n">perm</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="n">k_ndim</span><span class="p">,</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span> <span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="n">k_ndim</span><span class="p">))</span>
+</span><span data-line="414">        <span class="n">permuted</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+</span><span data-line="415">        <span class="c1"># Now trailing k_ndim axes are contiguous; collapse them to one.</span>
+</span><span data-line="416">        <span class="n">moved</span> <span class="o">=</span> <span class="n">permuted</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">permuted</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="n">k_ndim</span><span class="p">],</span> <span class="n">K_flat</span><span class="p">)</span>
+</span><span data-line="417">        <span class="n">dyn_ndim</span> <span class="o">=</span> <span class="n">moved</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">sub_ndim</span> <span class="o">-</span> <span class="n">base_ndim</span>
+</span><span data-line="418">    <span class="k">if</span> <span class="n">base_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="419">        <span class="n">raw</span> <span class="o">=</span> <span class="n">moved</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+</span><span data-line="420">    <span class="k">elif</span> <span class="n">base_ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="421">        <span class="n">raw</span> <span class="o">=</span> <span class="n">moved</span>
+</span><span data-line="422">    <span class="k">else</span><span class="p">:</span>
+</span><span data-line="423">        <span class="n">K</span> <span class="o">=</span> <span class="n">moved</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span data-line="424">        <span class="n">raw</span> <span class="o">=</span> <span class="n">moved</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">moved</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="n">moved</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">base_ndim</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+</span><span data-line="425">    <span class="k">return</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">batch_ndim</span><span class="o">=</span><span class="n">dyn_ndim</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">sub_ndim</span><span class="p">)</span>
+</span><span data-line="426">
+</span><span data-line="427">
+</span><span data-line="428"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+</span><span data-line="429">    <span class="s2">&quot;lag_order&quot;</span><span class="p">,</span>
+</span><span data-line="430">    <span class="s2">&quot;change_lag_order&quot;</span><span class="p">,</span>
+</span><span data-line="431">    <span class="s2">&quot;SubstepRole&quot;</span><span class="p">,</span>
+</span><span data-line="432">    <span class="s2">&quot;SubstepRoleInfo&quot;</span><span class="p">,</span>
+</span><span data-line="433">    <span class="s2">&quot;classify_substep_roles&quot;</span><span class="p">,</span>
+</span><span data-line="434">    <span class="s2">&quot;_storage_size&quot;</span><span class="p">,</span>
+</span><span data-line="435">    <span class="s2">&quot;_batch_shape&quot;</span><span class="p">,</span>
+</span><span data-line="436">    <span class="s2">&quot;_flatten_base&quot;</span><span class="p">,</span>
+</span><span data-line="437">    <span class="s2">&quot;_expanded_identity_seed&quot;</span><span class="p">,</span>
+</span><span data-line="438">    <span class="s2">&quot;build_identity_seed&quot;</span><span class="p">,</span>
+</span><span data-line="439">    <span class="s2">&quot;_tangent_block_to_trailing_k&quot;</span><span class="p">,</span>
+</span><span data-line="440"><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

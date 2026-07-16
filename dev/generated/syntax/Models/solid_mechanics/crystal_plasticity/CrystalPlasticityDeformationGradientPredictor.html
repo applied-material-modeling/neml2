@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>crystal_plasticity - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="CrystalPlasticityDeformationGradientPredictor" href="CrystalPlasticityDeformationGradientPredictor.html" /><link rel="prev" title="solid_mechanics" href="../index.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CrystalPlasticityDeformationGradientPredictor - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" /><link rel="next" title="CrystalPlasticityStrainPredictor" href="CrystalPlasticityStrainPredictor.html" /><link rel="prev" title="crystal_plasticity" href="index.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -21,7 +21,7 @@
 }
 </style>
     
-  <meta property="og:type" content="website"/><meta property="og:title" content="crystal_plasticity"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content="CrystalPlasticityDeformationGradientPredictor"/>
     <meta name="twitter:card" content="summary"/>
   </head>
 <body><div class="sy-head">
@@ -299,7 +299,7 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html">solid_mechanics</a><ul class="current">
-<li class="toctree-l4 current"><a class="current reference internal" href="#">crystal_plasticity</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html">crystal_plasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../elasticity/index.html">elasticity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../kinematics/index.html">kinematics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../plasticity/index.html">plasticity</a></li>
@@ -379,7 +379,12 @@ data-aria-dark="Switch to auto color mode">
     <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
       <i class="i-lucide close"></i>
     </button>
-    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#inputs">Inputs</a></li>
+<li><a class="reference internal" href="#outputs">Outputs</a></li>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
   <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
   <main class="sy-main w-full max-sm:max-w-full print:pt-6">
@@ -407,8 +412,12 @@ data-aria-dark="Switch to auto color mode">
         <span>/</span>
         <meta itemprop="position" content="4" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <strong itemprop="name">crystal_plasticity</strong>
+        <a itemprop="item" href="index.html"><span itemprop="name">crystal_plasticity</span></a>
+        <span>/</span>
         <meta itemprop="position" content="5" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">CrystalPlasticityDeformationGradientPredictor</strong>
+        <meta itemprop="position" content="6" />
       </li></ol>
     <div class="xl:hidden ml-1">
       <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
@@ -420,29 +429,48 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="crystal-plasticity">
-<h1>crystal_plasticity<a class="headerlink" href="#crystal-plasticity" title="Link to this heading">#</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">[Models]</span></code> types under <code class="docutils literal notranslate"><span class="pre">solid_mechanics/crystal_plasticity/</span></code>.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="CrystalPlasticityDeformationGradientPredictor.html">CrystalPlasticityDeformationGradientPredictor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="CrystalPlasticityStrainPredictor.html">CrystalPlasticityStrainPredictor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="DislocationObstacleStrengthMap.html">DislocationObstacleStrengthMap</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ElasticStrainRate.html">ElasticStrainRate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="FixOrientation.html">FixOrientation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="LinearSingleSlipHardeningRule.html">LinearSingleSlipHardeningRule</a></li>
-<li class="toctree-l1"><a class="reference internal" href="OrientationRate.html">OrientationRate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PerSlipForestDislocationEvolution.html">PerSlipForestDislocationEvolution</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PlasticDeformationRate.html">PlasticDeformationRate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PlasticSpatialVelocityGradient.html">PlasticSpatialVelocityGradient</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PlasticVorticity.html">PlasticVorticity</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PowerLawSlipRule.html">PowerLawSlipRule</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ResolvedShear.html">ResolvedShear</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SingleSlipStrengthMap.html">SingleSlipStrengthMap</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SumSlipRates.html">SumSlipRates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="VoceSingleSlipHardeningRule.html">VoceSingleSlipHardeningRule</a></li>
-</ul>
+          <section class="tex2jax_ignore mathjax_ignore" id="crystalplasticitydeformationgradientpredictor">
+<span id="models-crystalplasticitydeformationgradientpredictor"></span><h1>CrystalPlasticityDeformationGradientPredictor<a class="headerlink" href="#crystalplasticitydeformationgradientpredictor" title="Link to this heading">#</a></h1>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/solid_mechanics/crystal_plasticity/CrystalPlasticityDeformationGradientPredictor.py</span></code></p>
+<p>Warm-up predictor for multiplicative crystal plasticity.</p>
+<p>Seeds the plastic deformation gradient so the local Newton starts from a
+low-stress state instead of the frozen-<span class="math notranslate nohighlight">\(F_p\)</span> elastic trial (which over-stresses
+for a large step and inflates the initial residual). With the trial elastic
+deformation <span class="math notranslate nohighlight">\(F_e^{tr} = F F_{p,n}^{-1}\)</span>, the guess is</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[ F_e^{pred} = I + s (F_e^{tr} - I), \qquad F_p^{pred} = (F_e^{pred})^{-1} F, \]</div>
 </div>
+<p>where the scale <span class="math notranslate nohighlight">\(s &lt; 1\)</span> relaxes the over-shot trial elastic strain back toward
+the yield surface and the remainder is absorbed into <span class="math notranslate nohighlight">\(F_p\)</span>. The guess is applied
+only where the trial elastic strain norm exceeds <code class="docutils literal notranslate"><span class="pre">threshold</span></code> (i.e. the frozen
+trial over-stresses); elsewhere <span class="math notranslate nohighlight">\(F_{p,n}\)</span> is kept. This mirrors
+<code class="docutils literal notranslate"><span class="pre">CrystalPlasticityStrainPredictor</span></code> for the <span class="math notranslate nohighlight">\(F_p\)</span>-based (multiplicative)
+formulation. It is a one-shot warm-up: its derivative does not enter the Newton
+residual, so the chain rule is a trivial pass-through.</p>
+<section id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
+<dl class="simple myst">
+<dt><code class="docutils literal notranslate"><span class="pre">deformation_gradient</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">R2</span></code> · <strong>required</strong></dt><dd><p>Deformation gradient</p>
+</dd>
+</dl>
+</section>
+<section id="outputs">
+<h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
+<dl class="simple myst">
+<dt><code class="docutils literal notranslate"><span class="pre">plastic_deformation_gradient</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">R2</span></code> · <strong>required</strong></dt><dd><p>Predicted plastic deformation gradient</p>
+</dd>
+</dl>
+</section>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
+<dl class="simple myst">
+<dt><code class="docutils literal notranslate"><span class="pre">scale</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">0.1</span></code></dt><dd><p>Scale factor applied to the trial elastic deformation increment</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">threshold</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">1e-3</span></code></dt><dd><p>Apply the predictor only where the trial elastic strain norm exceeds this value.</p>
+</dd>
+</dl>
+</section>
 </section>
 
         </article><button class="back-to-top" type="button">
@@ -451,16 +479,16 @@ data-aria-dark="Switch to auto color mode">
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="../index.html">
+    <a href="index.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">solid_mechanics</div></div>
+        <span>Previous</span><div class="title">crystal_plasticity</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="CrystalPlasticityDeformationGradientPredictor.html">
+    <a href="CrystalPlasticityStrainPredictor.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">CrystalPlasticityDeformationGradientPredictor</div>
+        <div class="title">CrystalPlasticityStrainPredictor</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
