@@ -619,6 +619,8 @@ def test_export_implicit_model_produces_artifacts(implicit_export):
         "ls_max_iters",
         "ls_cutback",
         "ls_c",
+        # The masked-substep relative-branch step-norm gate (default 1e-6).
+        "substep_del_tol",
         # schema v11: the linear-solver kind (this fixture uses the default direct
         # DenseLU, so no nested `krylov` block).
         "solver_kind",

@@ -55,10 +55,10 @@ Model::Impl::_apply_substep_span(const Segment & seg,
 {
   // Paired forces interpolate linearly between the increment's endpoints (so the
   // deformation *rate* over dt/M is unchanged -- time is itself an old/cur force
-  // pair, so dt subdivides automatically); a listed increment is scaled by the
-  // span fraction (b - a); an old-state takes the chained value; anything else is
-  // held at its endpoint value. The same coefficients apply to the primal state
-  // and to the dstate (chain-rule) carrier -- that is why this is shared.
+  // pair, so dt subdivides automatically); an old-state takes the chained value;
+  // anything else is held at its endpoint value. The same coefficients apply to
+  // the primal state and to the dstate (chain-rule) carrier -- that is why this
+  // is shared.
   for (const auto & g : seg.givens)
   {
     if (g.role == "old_state")
@@ -83,10 +83,6 @@ Model::Impl::_apply_substep_span(const Segment & seg,
       const auto & old_e = orig.at(g.pair);
       const auto & new_e = orig.at(g.name);
       dst[g.name] = old_e + (new_e - old_e) * b;
-    }
-    else if (g.role == "incremental")
-    {
-      dst[g.name] = orig.at(g.name) * (b - a);
     }
     else
     {

@@ -276,7 +276,8 @@ Empty when the model was compiled with no ``--parameter`` flags.
              const std::string & ls_type,
              std::size_t ls_max_iters,
              double ls_cutback,
-             double ls_c)
+             double ls_c,
+             double substep_del_tol)
           {
             neml2::aoti::SolverConfig cfg;
             cfg.atol = atol;
@@ -286,6 +287,7 @@ Empty when the model was compiled with no ``--parameter`` flags.
             cfg.ls_max_iters = ls_max_iters;
             cfg.ls_cutback = ls_cutback;
             cfg.ls_c = ls_c;
+            cfg.substep_del_tol = substep_del_tol;
             self.set_solver_config(cfg);
           },
           py::arg("atol"),
@@ -295,6 +297,7 @@ Empty when the model was compiled with no ``--parameter`` flags.
           py::arg("ls_max_iters"),
           py::arg("ls_cutback"),
           py::arg("ls_c"),
+          py::arg("substep_del_tol") = 1.0e-6,
           "Configure the implicit-segment Newton solve (override the values "
           "read from metadata.json at load time).");
 
@@ -316,6 +319,7 @@ Empty when the model was compiled with no ``--parameter`` flags.
          std::size_t ls_max_iters,
          double ls_cutback,
          double ls_c,
+         double substep_del_tol,
          bool collect_log)
       {
         neml2::aoti::SolverConfig cfg;
@@ -326,6 +330,7 @@ Empty when the model was compiled with no ``--parameter`` flags.
         cfg.ls_max_iters = ls_max_iters;
         cfg.ls_cutback = ls_cutback;
         cfg.ls_c = ls_c;
+        cfg.substep_del_tol = substep_del_tol;
         cfg.collect_log = collect_log;
         return neml2::aoti::run_eager_newton(cfg,
                                              std::move(residual_fn),
@@ -346,6 +351,7 @@ Empty when the model was compiled with no ``--parameter`` flags.
       py::arg("ls_max_iters"),
       py::arg("ls_cutback"),
       py::arg("ls_c"),
+      py::arg("substep_del_tol") = 1.0e-6,
       py::arg("collect_log") = false,
       R"(
 Run the shared C++ Newton solver over an eager (Python-delegating) system.
@@ -377,6 +383,7 @@ per group. Returns ``(u_solved, converged, iterations)``.
          std::size_t ls_max_iters,
          double ls_cutback,
          double ls_c,
+         double substep_del_tol,
          bool collect_log,
          const std::string & method,
          int64_t restart,
@@ -394,6 +401,7 @@ per group. Returns ``(u_solved, converged, iterations)``.
         ncfg.ls_max_iters = ls_max_iters;
         ncfg.ls_cutback = ls_cutback;
         ncfg.ls_c = ls_c;
+        ncfg.substep_del_tol = substep_del_tol;
         ncfg.collect_log = collect_log;
 
         neml2::aoti::KrylovConfig kcfg;
@@ -435,6 +443,7 @@ per group. Returns ``(u_solved, converged, iterations)``.
       py::arg("ls_max_iters"),
       py::arg("ls_cutback"),
       py::arg("ls_c"),
+      py::arg("substep_del_tol") = 1.0e-6,
       py::arg("collect_log") = false,
       py::arg("method") = "gmres",
       py::arg("restart") = 40,

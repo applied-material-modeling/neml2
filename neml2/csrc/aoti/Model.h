@@ -56,6 +56,17 @@ struct SolverConfig
   std::size_t ls_max_iters = 1;
   double ls_cutback = 2.0;
   double ls_c = 1.0e-3;
+  /// Relative Newton-step tolerance gating the RELATIVE convergence branch of
+  /// the masked (substepping) solve: a row is accepted via ||b||/||b0|| < rtol
+  /// only if its step also satisfies ||du|| < substep_del_tol*(||u|| + atol).
+  /// This rejects a still-moving, non-physical waypoint that merely dips under a
+  /// loose rtol*||b0|| threshold when the predictor residual ||b0|| is inflated
+  /// (e.g. an exponential-map integrator under a cold, large-jump predictor), so
+  /// the substep driver bisects instead of freezing a non-converged iterate. A
+  /// genuinely converged root has a vanishing step and still passes; set this
+  /// large to recover the pure relative test. Only the masking/substepping path
+  /// (`solve_masked`) consults it; the single-shot `solve` is unaffected.
+  double substep_del_tol = 1.0e-6;
   /// When true, the Newton solve records its per-iteration convergence log
   /// (the same `ITERATION ...` / `LS ITERATION ...` lines the `newton` log
   /// channel emits at debug; see log.h) into `NewtonResult::log` so a caller can

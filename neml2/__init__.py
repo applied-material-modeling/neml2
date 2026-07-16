@@ -160,6 +160,7 @@ from .models.solid_mechanics import (  # noqa: F401 (registers solid-mechanics l
 from .models.solid_mechanics import elasticity as _elasticity_module
 from .models.solid_mechanics import plasticity as _plasticity_module
 from .models.solid_mechanics.crystal_plasticity import (  # noqa: F401 (re-export for direct construction in tests)
+    CrystalPlasticityDeformationGradientPredictor,
     CrystalPlasticityStrainPredictor,
     ElasticStrainRate,
     OrientationRate,
@@ -241,6 +242,7 @@ __all__ = [
     "CrystalGeometry",
     "CubicCrystal",
     "cubic_symmetry_operators",
+    "CrystalPlasticityDeformationGradientPredictor",
     "CrystalPlasticityStrainPredictor",
     "ElasticStrainRate",
     "OrientationRate",

@@ -26,16 +26,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from ....factory import register_neml2_object
-from ....schema import HitSchema, parameter
+from ....schema import HitSchema, derived_input, input, output, parameter
 from ....types import SR2, Scalar, lt, norm, where
 from ...chain_rule import ChainRuleDict
 from ...model import Model
-
-if TYPE_CHECKING:
-    from ....factory import _NativeInputFile
 
 
 @register_neml2_object("CrystalPlasticityStrainPredictor")
@@ -47,6 +42,11 @@ class CrystalPlasticityStrainPredictor(Model):
     """
 
     hit = HitSchema(
+        input("deformation_rate", SR2, "Deformation rate", attr="_D"),
+        input("time", Scalar, "Time", default="t", attr="_t"),
+        derived_input("time", Scalar, attr="_t_n", suffix="~1"),
+        output("elastic_strain", SR2, "Predicted elastic strain", attr="_Ee"),
+        derived_input("elastic_strain", SR2, attr="_Ee_n", suffix="~1"),
         parameter("scale", Scalar, "Scale factor applied to the strain increment", default="1.0"),
         parameter(
             "threshold",
@@ -56,34 +56,13 @@ class CrystalPlasticityStrainPredictor(Model):
         ),
     )
 
+    _D: str
+    _t: str
+    _t_n: str
+    _Ee: str
+    _Ee_n: str
     scale: Scalar
     threshold: Scalar
-
-    def __init__(
-        self,
-        scale=1.0,
-        threshold=1e-3,
-        *,
-        deformation_rate: str = "deformation_rate",
-        time: str = "t",
-        elastic_strain: str = "elastic_strain",
-        factory: _NativeInputFile | None = None,
-    ) -> None:
-        super().__init__()
-        self._D = deformation_rate
-        self._t = time
-        self._t_n = f"{time}~1"
-        self._Ee = elastic_strain
-        self._Ee_n = f"{elastic_strain}~1"
-        self.input_spec = {
-            deformation_rate: SR2,
-            self._t: Scalar,
-            self._t_n: Scalar,
-            self._Ee_n: SR2,
-        }
-        self.output_spec = {elastic_strain: SR2}
-        self.declare_typed_parameter("scale", scale, Scalar, factory=factory)
-        self.declare_typed_parameter("threshold", threshold, Scalar, factory=factory)
 
     def forward(  # type: ignore[override]
         self,

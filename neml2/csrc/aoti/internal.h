@@ -267,10 +267,10 @@ struct Model::Impl
       std::vector<int64_t> base_shape;
       // Substep role: how the host-side substep driver treats this
       // given across sub-steps -- "old_state" (chain the solved unknown),
-      // "old_force" / "cur_force" (interpolate the paired force), "incremental"
-      // (scale by the span fraction), "static" / "unknown" (hold). ``pair`` is
-      // the counterpart variable name (the paired force, or the base unknown for
-      // old_state); empty when none. Only populated on an implicit segment's
+      // "old_force" / "cur_force" (interpolate the paired force), "static" /
+      // "unknown" (hold). ``pair`` is the counterpart variable name (the paired
+      // force, or the base unknown for old_state); empty when none. Only
+      // populated on an implicit segment's
       // ``givens``; the defaults leave single-shot behavior unchanged.
       std::string role = "static";
       std::string pair;

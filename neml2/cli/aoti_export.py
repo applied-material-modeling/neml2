@@ -89,7 +89,7 @@ if TYPE_CHECKING:
 #: ``scripts/dep_manager.py`` (which keeps this literal, the C++ loader, and the
 #: docs in sync).
 # dependencies: aoti.schema_version
-AOTI_META_SCHEMA_VERSION = 12
+AOTI_META_SCHEMA_VERSION = 13
 
 
 def _var_size(type_cls) -> int:
@@ -2477,18 +2477,33 @@ def _compile_implicit_segment(
     given_infos = [_var_info(system.glayout, n) for n in system.given_names]
     residual_infos = [_var_info(system.blayout, n) for n in system.residual_names]
 
+    # Ramped forces (``incremental_variables``) are sub-incremented by interpolating
+    # from their previous-step value. Declare a phantom ``X~1`` given (same shape as
+    # ``X``) so the substep driver has the old endpoint to interpolate from. It rides
+    # in the flat ``givens`` list ONLY -- it is deliberately kept out of the given
+    # groups below, so the compiled residual, which never consumes it, does not
+    # receive it. Appended after the real givens so ``givens[0]`` stays real (the C++
+    # runtime infers the solve batch shape from it).
+    existing_given = {gi["name"] for gi in given_infos}
+    phantom_given_names: list[str] = []
+    for x in inner.incremental_variables:
+        lag1 = f"{x}~1"
+        if lag1 in existing_given:
+            continue  # X already carries a natural ~1 counterpart; ramped as-is.
+        given_infos.append(dict(_var_info(system.glayout, x), name=lag1))
+        phantom_given_names.append(lag1)
+
     # Substep role classification: the single source of truth for how the
     # host-side substep driver treats each given -- interpolate a paired force,
-    # chain an old-state, scale a listed increment, or hold. Computed here
-    # (Python) and serialized into the artifact metadata; consumed by the C++
-    # runtime. Uses the live residual input set for pair detection so it is
-    # robust to parameter promotion.
+    # chain an old-state, or hold. Computed here (Python) and serialized into the
+    # artifact metadata; consumed by the C++ runtime. The phantom ``X~1`` names are
+    # threaded in so ``X`` classifies as CUR_FORCE (interpolate) and ``X~1`` as
+    # OLD_FORCE.
     from ..es._helpers import classify_substep_roles  # noqa: PLC0415
 
     substep_roles = classify_substep_roles(
-        list(system.model.input_spec),
+        list(system.model.input_spec) + phantom_given_names,
         system.unknown_names,
-        inner.incremental_variables,
     )
     for gi in given_infos:
         role_info = substep_roles.get(gi["name"])

@@ -45,8 +45,11 @@ function(neml2_inductor_cache_dir out_var fixture_name default_dir)
       endif()
 endfunction()
 
-# --- Pure-logic tests: schedulers + batch slice/cat helpers + exceptions + log -
-foreach(t test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions test_log)
+# --- Pure-logic tests: schedulers + batch slice/cat helpers + exceptions + log +
+# the masked-Newton substep_del_tol convergence gate (hand-built NonlinearSystem,
+# no compiled artifact) -----------------------------------------------------------
+foreach(t test_scheduler test_batch_chunk test_static_hybrid_scheduler test_exceptions test_log
+          test_newton_substep_del_tol)
       add_executable(${t} ${t}.cpp)
       target_link_libraries(${t} PRIVATE aoti)
       neml2_add_test_warning_flags(${t})

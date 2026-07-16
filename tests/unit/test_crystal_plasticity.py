@@ -497,3 +497,101 @@ def test_crystal_plasticity_strain_predictor_zero_old_strain():
     # Old norm is 0 < threshold so we use Ee_pred = Ee_n + scale*D*dt = D*0.1
     expected = D.data * 0.1
     assert torch.allclose(out.data, expected, atol=1e-12)
+
+
+def test_cp_deformation_gradient_predictor_below_threshold_holds_fp_n():
+    """Trial elastic strain below ``threshold`` -> the frozen ``Fp_n`` is kept."""
+    from neml2 import CrystalPlasticityDeformationGradientPredictor
+
+    leaf = CrystalPlasticityDeformationGradientPredictor(scale=0.1, threshold=100.0)
+    assert list(leaf.input_spec) == ["deformation_gradient", "plastic_deformation_gradient~1"]
+    assert list(leaf.output_spec) == ["plastic_deformation_gradient"]
+    F = R2(torch.tensor([[1.02, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]))
+    Fp_n = R2.identity()
+    out = leaf(F, Fp_n)
+    # norm(sym(F) - I) = 0.02 < threshold=100 -> predictor not applied.
+    assert torch.allclose(out.data, Fp_n.data, atol=1e-12)
+
+
+def test_cp_deformation_gradient_predictor_above_threshold_relaxes():
+    """Trial elastic strain above ``threshold`` -> seed Fp from the relaxed trial.
+
+    Cross-checked against an independent torch oracle of
+    ``Fp = inv(I + s (Fe_tr - I)) @ F`` with ``Fe_tr = F Fp_n^{-1}``.
+    """
+    from neml2 import CrystalPlasticityDeformationGradientPredictor
+
+    scale = 0.1
+    leaf = CrystalPlasticityDeformationGradientPredictor(scale=scale, threshold=1e-3)
+    F = R2(torch.tensor([[1.02, 0.01, 0.0], [0.0, 0.99, 0.0], [0.005, 0.0, 1.0]]))
+    Fp_n = R2.identity()
+    out = leaf(F, Fp_n)
+
+    Fd, Fpn = F.data, Fp_n.data
+    I3 = torch.eye(3, dtype=torch.float64)
+    Fe_tr = Fd @ torch.linalg.inv(Fpn)
+    Fe_pred = I3 + scale * (Fe_tr - I3)
+    Fp_ref = torch.linalg.inv(Fe_pred) @ Fd
+    assert torch.allclose(out.data, Fp_ref, rtol=1e-10, atol=1e-12)
+    # Sanity: the predictor genuinely moved off the frozen guess.
+    assert not torch.allclose(out.data, Fpn, atol=1e-6)
+
+
+def test_cp_deformation_gradient_predictor_trivial_chain_rule():
+    """One-shot warm-up: its chain rule is a zero pass-through (not differentiated)."""
+    from neml2 import CrystalPlasticityDeformationGradientPredictor
+    from neml2.models.chain_rule import ChainRuleDict
+
+    leaf = CrystalPlasticityDeformationGradientPredictor(scale=0.1, threshold=1e-3)
+    F = R2(torch.tensor([[1.02, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]))
+    Fp_n = R2.identity()
+    seed = R2.identity()
+    v: ChainRuleDict = {"deformation_gradient": {"deformation_gradient": seed}}
+    result, v_out = leaf(F, Fp_n, v=v)
+    tangent = v_out["plastic_deformation_gradient"]["deformation_gradient"]
+    assert torch.allclose(tangent.data, torch.zeros_like(tangent.data), atol=1e-14)
+
+
+def test_cp_deformation_gradient_predictor_renamed_via_hit():
+    """The schema fix makes the I/O variable names configurable from an input file."""
+    from neml2 import ModelUnitTest
+
+    text = """
+[Drivers]
+  [unit]
+    type = ModelUnitTest
+    model = 'model'
+    input_R2_names = 'F Fp~1'
+    input_R2_values = 'F Fpn'
+    output_R2_names = 'Fp'
+    output_R2_values = 'Fpn'
+    value_rel_tol = 1e-10
+  []
+[]
+[Models]
+  [model]
+    type = CrystalPlasticityDeformationGradientPredictor
+    deformation_gradient = 'F'
+    plastic_deformation_gradient = 'Fp'
+    threshold = 100.0
+  []
+[]
+[Tensors]
+  [F]
+    type = Python
+    expr = 'R2(torch.diag(torch.tensor([1.02, 1.0, 1.0], dtype=torch.float64)))'
+  []
+  [Fpn]
+    type = Python
+    expr = 'R2.identity()'
+  []
+[]
+"""
+    ut = ModelUnitTest.from_string(text)
+    # Renamed I/O resolved through the HIT factory path.
+    assert list(ut.model.input_spec) == ["F", "Fp~1"]
+    assert list(ut.model.output_spec) == ["Fp"]
+    # threshold=100 -> below the gate -> output holds Fp_n (== identity). Skip the
+    # JVP oracle: this is a one-shot predictor with a deliberately trivial chain rule.
+    report = ut.run(check_dvalue=False)
+    assert report.value_checks == 1

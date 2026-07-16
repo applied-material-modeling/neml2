@@ -225,12 +225,13 @@ class ImplicitUpdate(Model):
         option(
             "incremental_variables",
             list,
-            "Names of driving-force inputs the COMPILED substep driver treats as pure "
-            "increments (scaled by the sub-step fraction rather than interpolated). "
-            "Forces that already carry a ~1 counterpart are interpolated automatically "
-            "and need not be listed; a lone increment with no ~1 counterpart is held "
-            "constant unless listed here. Like ``max_substepping_level`` this is an "
-            "AOTI-compile directive; setting it rejects eager evaluation.",
+            "Names of driving-force inputs the substep driver ramps across each sub-step -- "
+            "interpolating the force from its previous-step value to its current value rather "
+            "than applying the full increment at once. List a total-form force here (e.g. the "
+            "deformation gradient) to sub-increment it; its previous-step value is supplied "
+            "automatically. A force that already has a ``~1`` counterpart is ramped without "
+            "being listed. Applied by the compiled AOTI routes only; not used by the eager "
+            "runtime.",
             default=[],
             optional_reader=_opt_list_str,
         ),
@@ -352,12 +353,21 @@ class ImplicitUpdate(Model):
         # ``neml2-compile`` can load the model and read them.
         self.max_substepping_level = int(max_substepping_level)
         self.incremental_variables = list(incremental_variables or [])
-        unknown_missing = [u for u in self.incremental_variables if u not in self.input_spec]
-        if unknown_missing:
+        not_given = [u for u in self.incremental_variables if u not in system.given_names]
+        if not_given:
             raise ValueError(
-                f"ImplicitUpdate: incremental_variables {unknown_missing} are not inputs of "
-                f"this model; valid inputs are {list(self.input_spec)}."
+                f"ImplicitUpdate: incremental_variables {not_given} are not driving-force "
+                f"(given) inputs of this model; givens are {list(system.given_names)}."
             )
+        # Auto-pair each ramped force X with a phantom old-value input ``X~1`` so the
+        # compiled substep driver interpolates X~1 -> X across sub-spans (CUR_FORCE/OLD_FORCE
+        # roles) instead of holding it static. The phantom is declared as a model input (so it
+        # reaches ``meta["inputs"]`` -> the host gathers X's old value, and the C++ runtime
+        # requires it) but is never consumed by the residual: the exporter keeps it out of the
+        # residual's given groups. Appended last so it never displaces a real given[0].
+        for name in self.incremental_variables:
+            lag1 = f"{name}~1"
+            self.input_spec.setdefault(lag1, self.input_spec[name])
 
     def _initial_unknowns(
         self,
