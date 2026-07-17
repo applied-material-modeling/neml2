@@ -1,0 +1,35 @@
+(models-ScalarBilinearInterpolation)=
+# ScalarBilinearInterpolation
+
+**Source:** `models/common/BilinearInterpolation.py`
+
+Bilinearly interpolate a Scalar parameter on a 2-D grid.
+
+See ``neml2::Interpolation`` for the shape rules and ``neml2::BilinearInterpolation`` for the corner formula.
+
+## Inputs
+
+`argument1` &mdash; `input` &middot; `Scalar` &middot; **required**
+: First argument used to query the interpolant
+
+`argument2` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Second argument used to query the interpolant
+
+
+## Outputs
+
+`output` &mdash; `output` &middot; `Scalar`
+: Output of the interpolant. If not specified, the object name will be used.
+
+
+## Parameters
+
+`abscissa1` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Scalar defining the abscissa values of the first interpolation axis
+
+`abscissa2` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Scalar defining the abscissa values of the second interpolation axis
+
+`ordinate` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Scalar defining the ordinate values of the interpolant
+
