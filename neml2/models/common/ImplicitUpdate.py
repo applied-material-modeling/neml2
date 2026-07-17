@@ -26,6 +26,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -46,6 +47,17 @@ if TYPE_CHECKING:
     from ...factory import _NativeInputFile
     from ...solvers import GMRES, BiCGStab
     from ...solvers.newton import _LinearSolver
+
+
+def _capture_solve_failure() -> bool:
+    """Whether to attach a *failure context* (per-element convergence mask +
+    best-effort iterate) to the ``ConvergenceError`` a failed solve raises, for
+    offline debugging. Opt-in via the ``NEML2_CAPTURE_SOLVE_FAILURE`` env var
+    (any non-empty value other than ``"0"``) because the capture costs an extra
+    masked re-solve. Same switch the compiled runtime reads in ``aoti/solve.cpp``
+    so both routes enrich the exception identically."""
+    v = os.environ.get("NEML2_CAPTURE_SOLVE_FAILURE")
+    return bool(v) and v != "0"
 
 
 def _var_offset(layout: AxisLayout, group_index: int, name: str) -> tuple[int, int]:
@@ -447,11 +459,45 @@ class ImplicitUpdate(Model):
     ) -> SparseVector:
         """Single-shot solve; raises the recoverable :class:`ConvergenceError`
         on non-convergence so an outer driver (substepping, or MOOSE's
-        time-stepper) can cut the increment and retry."""
+        time-stepper) can cut the increment and retry.
+
+        When failure capture is enabled (the ``NEML2_CAPTURE_SOLVE_FAILURE`` env
+        var), the raised error additionally carries a *failure context* for
+        offline debugging -- ``converged_mask`` (per-element bool) and
+        ``unknown`` (best-effort iterate per unknown variable) -- recovered by a
+        masked re-solve, mirroring the compiled runtime's capture in
+        ``aoti/solve.cpp``."""
         solution, ret = self._try_solve(state, sub_batch_ndim)
         if solution is None:
-            raise ConvergenceError(f"Nonlinear solve failed with status {ret.name}")
+            err = ConvergenceError(f"Nonlinear solve failed with status {ret.name}")
+            if _capture_solve_failure():
+                self._attach_failure_context(err)
+            raise err
         return solution
+
+    def _attach_failure_context(self, err: ConvergenceError) -> None:
+        """Best-effort: re-run the just-failed solve in masking mode (no throw)
+        to recover the per-element convergence mask + best-effort iterate, and
+        attach them to ``err`` as its ``converged_mask`` / ``unknown``
+        attributes. The system is still initialized from the failed
+        :meth:`_try_solve`, so this reuses it. A masked solve is only available
+        for direct linear solvers -- otherwise attach nothing and keep the bare
+        error."""
+        solve_masked = getattr(self.solver, "solve_masked", None)
+        if solve_masked is None:
+            return
+        try:
+            mask, _ = solve_masked(self.system)
+        except NotImplementedError:
+            return
+        err.converged_mask = mask
+        # Expose raw tensors keyed by unknown name -- uniform with the compiled
+        # route (aoti/solve.cpp), which has no typed wrappers, so an offline
+        # consumer reads e.unknown[name] as a plain torch.Tensor either way.
+        err.unknown = {
+            name: w.data  # data-ok: read-only failure-context export boundary
+            for name, w in dict(self.system.u().disassemble().values).items()
+        }
 
     def _output_sensitivities(self, v: ChainRuleDict) -> ChainRuleDict:
         A, B = self.system.A_and_B()

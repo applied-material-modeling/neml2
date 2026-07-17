@@ -100,6 +100,15 @@ FatalError::recoverable() const noexcept
   return false;
 }
 
+ConvergenceError::ConvergenceError(const std::string & what_arg,
+                                   at::Tensor converged_mask,
+                                   std::map<std::string, at::Tensor> unknowns)
+  : Exception(what_arg),
+    _converged_mask(std::move(converged_mask)),
+    _unknowns(std::move(unknowns))
+{
+}
+
 bool
 ConvergenceError::recoverable() const noexcept
 {

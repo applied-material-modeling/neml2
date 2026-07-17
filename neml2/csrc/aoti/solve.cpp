@@ -29,17 +29,38 @@
 // per-group state and wires an AOTINonlinearSystem (compiled loaders) into the
 // shared `Newton` solver.
 
+#include "neml2/csrc/aoti/Exception.h"
 #include "neml2/csrc/aoti/internal.h"
 #include "neml2/csrc/aoti/newton.h"
 #include "neml2/csrc/aoti/nonlinear_system_aoti.h"
 #include "neml2/csrc/aoti/nonlinear_system_krylov_aoti.h"
 
+#include <cstdlib>
 #include <memory>
+#include <string>
 
 #include <torch/csrc/inductor/aoti_package/model_package_loader.h>
 
 namespace neml2::aoti
 {
+namespace
+{
+/// Whether to capture a *failure context* (per-element convergence mask +
+/// best-effort iterate) onto the recoverable ``ConvergenceError`` a failed
+/// implicit solve throws, for offline debugging. Opt-in via the
+/// ``NEML2_CAPTURE_SOLVE_FAILURE`` env var (any non-empty value other than
+/// ``"0"``) because the capture costs an extra masked re-solve. Read live on
+/// each failure (not cached) so it can be toggled at runtime and mirrors the
+/// Python path's ``os.environ`` lookup; a solve failure is the rare recoverable
+/// path (it triggers an outer cutback anyway), so the getenv is free.
+bool
+capture_solve_failure_enabled()
+{
+  const char * v = std::getenv("NEML2_CAPTURE_SOLVE_FAILURE");
+  return v != nullptr && v[0] != '\0' && std::string(v) != "0";
+}
+} // namespace
+
 void
 Model::Impl::_run_forward_segment(const Segment & seg,
                                   std::map<std::string, at::Tensor> & state,
@@ -323,7 +344,26 @@ Model::Impl::_run_implicit_segment(const Segment & seg,
   // ConvergenceError out of solve(), so reaching `.u` means it converged -- the
   // recoverable error propagates up through Model::forward/jacobian to the
   // caller, who can cut the time step and retry.
-  u_solved_groups = Newton(_solver_config).solve(*sys, u0_groups).u;
+  try
+  {
+    u_solved_groups = Newton(_solver_config).solve(*sys, u0_groups).u;
+  }
+  catch (const ConvergenceError & e)
+  {
+    if (!capture_solve_failure_enabled())
+      throw;
+    // Opt-in failure capture: re-run the *same* solve in masking mode (no throw)
+    // to recover the per-element convergence mask + best-effort iterate, unpack
+    // that iterate to per-variable state, and re-throw the recoverable error
+    // enriched with the context. Only the (debug) capture path pays the extra
+    // masked solve; the normal failure path re-throws untouched above.
+    const auto res = Newton(_solver_config).solve_masked(*sys, u0_groups);
+    _unpack_groups(res.u, seg.unknown_groups, state);
+    std::map<std::string, at::Tensor> stuck;
+    for (const auto & v : seg.unknowns)
+      stuck[v.name] = state.at(v.name);
+    throw ConvergenceError(e.what(), res.converged_mask, std::move(stuck));
+  }
 
   // Unpack converged per-group unknowns back to per-variable state for
   // downstream forward segments / master outputs to read by name.

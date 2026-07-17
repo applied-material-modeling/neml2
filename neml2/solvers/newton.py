@@ -228,6 +228,59 @@ class Newton:
         ret = RetCode.SUCCESS if converged else RetCode.MAXITER
         return NonlinearResult(ret, iterations, log=tuple(log))
 
+    def solve_masked(self, system: ModelNonlinearSystem) -> tuple[torch.Tensor, int]:
+        """Diagnostic masked solve: run the shared ``Newton::solve_masked`` (which
+        never throws), commit the best-effort iterate into ``system``, and return
+        ``(converged_mask, iterations)``.
+
+        ``converged_mask`` is a raw per-dynamic-batch-element boolean tensor
+        (``True`` where the element converged) -- a diagnostic, not a physical
+        quantity, so it carries no typed wrapper. Used by the failure-capture path
+        (``NEML2_DUMP_SOLVE_FAILURE``) to record which entries diverged and the
+        iterate they got stuck at. Direct linear solvers only.
+        """
+        if getattr(self.linear_solver, "is_iterative", False):
+            raise NotImplementedError("solve_masked is only available for direct linear solvers")
+        from neml2.aoti._aoti import newton_solve_eager_masked  # noqa: PLC0415
+        from neml2.es.implicit import (  # noqa: PLC0415
+            RHS,
+            Jacobian,
+            LinearSolve,
+            _vector_to_per_group_raws,
+        )
+
+        rhs = RHS(system)
+        jacobian = Jacobian(system)
+        linear_solve = LinearSolve(system, self.linear_solver)
+        n_a = system.blayout.ngroup * system.ulayout.ngroup
+
+        with torch.no_grad():
+            g_raws = list(_vector_to_per_group_raws(system.g()))
+            u0_raws = list(_vector_to_per_group_raws(system.u()))
+
+            def residual_fn(u_raws: list[torch.Tensor]) -> list[torch.Tensor]:
+                return list(rhs(*u_raws, *g_raws))
+
+            def step_fn(
+                u_raws: list[torch.Tensor],
+            ) -> tuple[list[torch.Tensor], list[torch.Tensor]]:
+                jac_out = jacobian(*u_raws, *g_raws)
+                du = linear_solve(*jac_out)
+                b = jac_out[n_a:]
+                return list(du), list(b)
+
+            u_star, converged_mask, iterations = newton_solve_eager_masked(
+                residual_fn=residual_fn,
+                step_fn=step_fn,
+                unknown_layout=_group_layout_descriptor(system.ulayout),
+                residual_layout=_group_layout_descriptor(system.blayout),
+                u0=u0_raws,
+                **self._solver_config(),
+            )
+            system.set_u_from_group_raws(u_star)
+
+        return converged_mask, int(iterations)
+
     def _solve_iterative(self, system: ModelNonlinearSystem) -> NonlinearResult:
         """Solve via the shared C++ Newton loop with a matrix-free Krylov step.
 

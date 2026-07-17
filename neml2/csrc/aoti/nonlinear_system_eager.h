@@ -61,6 +61,20 @@ run_eager_newton(const SolverConfig & cfg,
                  std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
                  std::vector<at::Tensor> u0);
 
+/// Masking variant of run_eager_newton: drives ``Newton::solve_masked`` (which
+/// never throws) and returns ``(u_best, converged_mask, iterations)`` -- the
+/// best-effort iterate, the per-dynamic-batch-element convergence mask (``true``
+/// where the element converged), and the iteration count. Used to capture a
+/// failed batch's non-converged state and which elements diverged, for offline
+/// debugging (see ``NEML2_DUMP_SOLVE_FAILURE``). Must be called with the GIL held.
+std::tuple<std::vector<at::Tensor>, at::Tensor, std::size_t>
+run_eager_newton_masked(const SolverConfig & cfg,
+                        pybind11::object residual_fn,
+                        pybind11::object step_fn,
+                        std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
+                        std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
+                        std::vector<at::Tensor> u0);
+
 /// Drive the shared C++ Newton solver over an eager system whose inner linear
 /// solve is a matrix-free Krylov iteration (krylov.h) rather than a direct solve.
 ///
