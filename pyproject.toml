@@ -89,7 +89,7 @@ dev = [
   "nbmake",
   # lint + format
   # dependencies: ruff.version
-  "ruff==0.15.21",
+  "ruff==0.15.22",
   # typecheck
   # dependencies: pyright.version
   "pyright==1.1.411",
