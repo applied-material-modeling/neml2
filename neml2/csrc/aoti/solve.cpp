@@ -35,6 +35,8 @@
 #include "neml2/csrc/aoti/nonlinear_system_aoti.h"
 #include "neml2/csrc/aoti/nonlinear_system_krylov_aoti.h"
 
+#include <algorithm>
+#include <cctype>
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -43,23 +45,22 @@
 
 namespace neml2::aoti
 {
-namespace
-{
-/// Whether to capture a *failure context* (per-element convergence mask +
-/// best-effort iterate) onto the recoverable ``ConvergenceError`` a failed
-/// implicit solve throws, for offline debugging. Opt-in via the
-/// ``NEML2_CAPTURE_SOLVE_FAILURE`` env var (any non-empty value other than
-/// ``"0"``) because the capture costs an extra masked re-solve. Read live on
-/// each failure (not cached) so it can be toggled at runtime and mirrors the
-/// Python path's ``os.environ`` lookup; a solve failure is the rare recoverable
-/// path (it triggers an outer cutback anyway), so the getenv is free.
 bool
 capture_solve_failure_enabled()
 {
   const char * v = std::getenv("NEML2_CAPTURE_SOLVE_FAILURE");
-  return v != nullptr && v[0] != '\0' && std::string(v) != "0";
+  if (v == nullptr)
+    return false;
+  // Truthy/falsy parse (case-insensitive, trimmed), mirroring the Python path's
+  // ``_env_flag`` in ImplicitUpdate.py so both routes toggle identically:
+  // unset / "" / "0" / "false" / "no" / "off" are OFF, everything else is ON.
+  std::string s(v);
+  const auto not_space = [](unsigned char c) { return std::isspace(c) == 0; };
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), not_space));
+  s.erase(std::find_if(s.rbegin(), s.rend(), not_space).base(), s.end());
+  std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
+  return !(s.empty() || s == "0" || s == "false" || s == "no" || s == "off");
 }
-} // namespace
 
 void
 Model::Impl::_run_forward_segment(const Segment & seg,

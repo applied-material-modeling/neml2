@@ -66,7 +66,7 @@ run_eager_newton(const SolverConfig & cfg,
 /// best-effort iterate, the per-dynamic-batch-element convergence mask (``true``
 /// where the element converged), and the iteration count. Used to capture a
 /// failed batch's non-converged state and which elements diverged, for offline
-/// debugging (see ``NEML2_DUMP_SOLVE_FAILURE``). Must be called with the GIL held.
+/// debugging (see ``NEML2_CAPTURE_SOLVE_FAILURE``). Must be called with the GIL held.
 std::tuple<std::vector<at::Tensor>, at::Tensor, std::size_t>
 run_eager_newton_masked(const SolverConfig & cfg,
                         pybind11::object residual_fn,

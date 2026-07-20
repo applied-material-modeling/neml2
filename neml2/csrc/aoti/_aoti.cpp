@@ -80,7 +80,7 @@ PYBIND11_MODULE(_aoti, m)
   // captures under NEML2_CAPTURE_SOLVE_FAILURE (see aoti/solve.cpp) as Python
   // attributes on the raised exception:
   //   .converged_mask -- per-dynamic-batch-element bool tensor (True = converged)
-  //   .unknown        -- dict {unknown-variable name -> best-effort iterate}
+  //   .unknowns       -- dict {unknown-variable name -> best-effort iterate}
   // so an offline replay can read the stuck state with near-zero boilerplate.
   // When capture was disabled both are absent (mask undefined, unknowns empty),
   // and this behaves exactly like the default typed translator.
@@ -103,10 +103,10 @@ PYBIND11_MODULE(_aoti, m)
             inst.attr("converged_mask") = e.converged_mask();
           if (!e.unknowns().empty())
           {
-            py::dict unknown;
+            py::dict unknowns;
             for (const auto & [name, tensor] : e.unknowns())
-              unknown[py::str(name)] = tensor;
-            inst.attr("unknown") = unknown;
+              unknowns[py::str(name)] = tensor;
+            inst.attr("unknowns") = unknowns;
           }
           PyErr_SetObject(convergence_error_type.ptr(), inst.ptr());
         }

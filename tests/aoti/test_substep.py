@@ -26,7 +26,7 @@
 
 These exercise the host-side substep driver through the compiled runtime end to
 end: the Python role classification is serialized into the shared ``metadata.json``,
-the C++ ``Model`` parses it, and ``_run_implicit_segment_substepped``
+the C++ ``Model`` parses it, and ``_run_implicit_segment_substepped_masked``
 dispatches per the roles. The scenario integration is linear-in-time, so the
 substepped answer equals the single-shot answer -- the "no-op equivalence" that
 validates the interpolation / chaining machinery. Genuine convergence-recovery
@@ -459,10 +459,10 @@ def test_substep_trace_logs(tmp_path: Path, capfd):
 
 
 def test_multiaxis_batch_substepping_forward(tmp_path: Path):
-    """A multi-axis (non-1-D) dynamic batch cannot use per-element masking (that
-    requires a single leading batch axis), so it takes the whole-batch
-    ``_run_implicit_segment_substepped`` driver. On a hard step it bisects and
-    recovers the same finite solution the 1-D masked path reaches."""
+    """A multi-axis (non-1-D) dynamic batch is flattened to a single leading axis
+    inside the masked substep driver (masking indexes dim 0), substepped, and
+    reshaped back -- so it recovers the same finite solution the 1-D path reaches
+    on a hard step, at its original (2, 2) shape."""
     from neml2.aoti import Model as AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
 
@@ -484,12 +484,13 @@ def test_multiaxis_batch_substepping_forward(tmp_path: Path):
     assert torch.allclose(out2d, out1d.expand_as(out2d), rtol=1e-8, atol=1e-8)
 
 
-def test_multiaxis_batch_substepped_jacobian_not_implemented(tmp_path: Path):
-    """The whole-batch substepped Jacobian enters the non-masked driver and runs
-    the substepped forward, but the underlying per-block (sub-batch) IFT Jacobian
-    is not implemented -- so a multi-axis batch Jacobian raises a clear error
-    rather than returning a wrong tangent. Pins that contract (and the driver's
-    forward-then-compose entry path)."""
+def test_multiaxis_batch_substepped_jacobian(tmp_path: Path):
+    """A multi-axis (non-1-D) dynamic batch Jacobian is flattened to 1-D inside
+    the masked substepped-Jacobian driver, composed, and reshaped back -- so it
+    returns the correct consistent tangent at its original (2, 2) shape, matching
+    the same hard step solved through the 1-D path. (Previously the multi-axis
+    Jacobian took the removed non-masked driver and raised 'not implemented'; the
+    unified masked+flatten path now handles it.)"""
     from neml2.aoti import Model as AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
 
@@ -501,8 +502,18 @@ def test_multiaxis_batch_substepped_jacobian_not_implemented(tmp_path: Path):
         return torch.full((2, 2), v, dtype=torch.float64)
 
     ins2d = {"x": mk(0.2), "x~1": mk(0.2), "t": mk(8.0), "t~1": mk(0.0)}
-    with pytest.raises(RuntimeError, match="not yet implemented|BLOCK"):
-        aoti.jacobian(ins2d)
+    out2d, jac2d = aoti.jacobian(ins2d)
+    assert out2d["x"].shape == (2, 2)
+    assert torch.isfinite(jac2d["x"]["t"]).all()
+
+    # Same hard step through the 1-D path -> identical value + tangent per element
+    # (every (2, 2) entry saw the identical increment, so each equals the 1-D one).
+    ins1d = {k: v.reshape(-1)[:1] for k, v in ins2d.items()}
+    out1d, jac1d = aoti.jacobian(ins1d)
+    assert torch.allclose(out2d["x"], out1d["x"].expand_as(out2d["x"]), rtol=1e-8, atol=1e-8)
+    assert torch.allclose(
+        jac2d["x"]["t"], jac1d["x"]["t"].expand_as(jac2d["x"]["t"]), rtol=1e-8, atol=1e-8
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -740,10 +751,10 @@ def test_substep_ramp_role_and_phantom(tmp_path: Path):
 
 
 def test_multiaxis_substep_maxout_raises_recoverable(tmp_path: Path):
-    """A multi-axis (non-masked) batch on a step too hard to rescue even at the
-    depth cap makes the whole-batch substep driver throw a **recoverable**
-    ConvergenceError at ``max_substepping_level`` (so a host can cut the outer
-    step and retry) -- the non-masked counterpart of the masked max-out path."""
+    """A multi-axis batch on a step too hard to rescue even at the depth cap makes
+    the (flatten-to-1-D) masked substep driver throw a **recoverable**
+    ConvergenceError at ``max_substepping_level`` (so a host can cut the outer step
+    and retry) -- the multi-axis counterpart of the 1-D masked max-out path."""
     from neml2.aoti import Model as AOTIModel
     from neml2.cli.aoti_export import export_model_for_aoti
 

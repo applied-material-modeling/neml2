@@ -57,6 +57,16 @@ class AOTIModelPackageLoader;
 
 namespace neml2::aoti
 {
+/// Whether to capture a *failure context* (per-element convergence mask +
+/// best-effort iterate) onto the recoverable ``ConvergenceError`` a failed
+/// implicit solve throws, for offline debugging. Opt-in via the
+/// ``NEML2_CAPTURE_SOLVE_FAILURE`` env var (truthy/falsy; see the definition in
+/// solve.cpp) because the capture holds the extra masked state. Read live on
+/// each failure (not cached) so it can be toggled at runtime and mirrors the
+/// Python path's ``os.environ`` lookup. Shared by the single-solve (solve.cpp)
+/// and substepping (substep.cpp) failure paths.
+bool capture_solve_failure_enabled();
+
 // The abstract residual/step provider the shared Newton loop drives; concrete
 // backends (AOTINonlinearSystem / KrylovAOTINonlinearSystem) are built by
 // `_make_implicit_system`. Defined in nonlinear_system.h.
@@ -430,62 +440,35 @@ struct Model::Impl
   std::unique_ptr<NonlinearSystem>
   _make_implicit_system(const Segment & seg, const std::vector<at::Tensor> & g_groups) const;
 
-  /// Adaptive substepping driver: wraps `_run_implicit_segment` in a
-  /// recursive bisection over the increment. Snapshots the segment's endpoint
-  /// givens, then solves the increment in one shot; on a recoverable
-  /// ConvergenceError it halves the span -- interpolating each paired force,
-  /// scaling each listed increment, and chaining each old-state to the previous
-  /// sub-step's solved unknown, per the given's `role` -- recursing up to
-  /// `seg.max_substepping_level` levels before re-raising. On return `state`
-  /// holds the final converged unknowns and the out-params hold the LAST
-  /// sub-step's per-group solved unknowns + givens (the point the IFT path,
-  /// when substepping the Jacobian, evaluates at). Only called when
-  /// `seg.max_substepping_level > 0`.
-  void _run_implicit_segment_substepped(const Segment & seg,
-                                        std::map<std::string, at::Tensor> & state,
-                                        std::vector<at::Tensor> & u_solved_groups,
-                                        std::vector<at::Tensor> & g_groups) const;
-
   /// Masked single implicit solve: like `_run_implicit_segment` but drives
   /// `Newton::solve_masked` and returns the per-element convergence mask (bool,
   /// dynamic-batch shape) WITHOUT throwing. Converged rows' solved unknowns are
   /// written to `state`; the mask tells the substep driver which rows to freeze
-  /// vs bisect. `_masking_ok` gates whether masking applies (1-D dynamic batch).
+  /// vs bisect.
   at::Tensor _run_implicit_segment_masked(const Segment & seg,
                                           std::map<std::string, at::Tensor> & state) const;
 
-  /// Per-element (masked) substepping: solve only the still-unconverged subset of
-  /// the dynamic batch at each sub-step, freezing converged rows at their
-  /// coarsest converging solution and bisecting only the failing subset. The
-  /// value + Jacobian variants mirror `_run_implicit_segment_substepped[_jacobian]`
-  /// but scatter converged rows into full-batch accumulators. Require a 1-D
-  /// dynamic batch (see `_masking_ok`); `ops.cpp` falls back to the whole-batch
-  /// driver otherwise. Only called when `seg.max_substepping_level > 0`.
+  /// Adaptive per-element (masked) substepping -- the ONLY substepping path.
+  /// Solve only the still-unconverged subset of the dynamic batch at each
+  /// sub-step, freeze converged rows at their coarsest converging solution, and
+  /// bisect only the failing subset (so a few hard elements do not drag the whole
+  /// batch through the deep sub-steps), recursing up to `seg.max_substepping_level`
+  /// levels before raising a recoverable `ConvergenceError`. Masking indexes dim
+  /// 0, so a non-1-D dynamic batch (multi-axis, or unbatched) is flattened to a
+  /// single leading axis internally and the solved unknowns reshaped back on
+  /// return -- the compiled solve accepts any dynamic-batch rank, so this is a
+  /// pure reshape. When `capture_solve_failure_enabled()`, a raised error carries
+  /// the level-0 (single-shot) convergence mask + best-effort iterate as its
+  /// failure context. On return `state` (value) / `state` + `dstate` (jacobian)
+  /// hold the final unknowns / total `du_M/d(master inputs)`. Only called when
+  /// `seg.max_substepping_level > 0`; the jacobian variant requires the IFT
+  /// operator (`seg.jacobian_given_loader`).
   void _run_implicit_segment_substepped_masked(const Segment & seg,
                                                std::map<std::string, at::Tensor> & state) const;
   void _run_implicit_segment_substepped_masked_jacobian(
       const Segment & seg,
       std::map<std::string, at::Tensor> & state,
       std::map<std::string, at::Tensor> & dstate) const;
-
-  /// True iff masking applies to `state` for this segment: the dynamic batch is
-  /// a single axis (dim 0), so per-row `index_select`/`index_copy` cleanly
-  /// selects elements. Multi-axis dynamic batches fall back to whole-batch.
-  bool _masking_ok(const Segment & seg, const std::map<std::string, at::Tensor> & state) const;
-
-  /// Substepping analogue of `_run_implicit_segment_jacobian`: solves the
-  /// increment by the same bisection AND accumulates the chained consistent
-  /// tangent into `dstate`. At each successfully-solved leaf sub-span it runs
-  /// the value solve then the IFT composition, having first written the span's
-  /// givens into `dstate` per their role -- interpolated force sensitivities,
-  /// scaled increments, and each old-state seeded with the previous span's
-  /// solved-unknown sensitivity -- so one IFT call yields
-  /// `J_k = A_k·J_{k-1} + B_k·frac_k·J_endpoint`. On return `state` holds the
-  /// final unknowns and `dstate[unknown]` the total `du_M/d(master inputs)`.
-  /// Requires `seg.solve_ift_loader`. Only called when `seg.max_substepping_level > 0`.
-  void _run_implicit_segment_substepped_jacobian(const Segment & seg,
-                                                 std::map<std::string, at::Tensor> & state,
-                                                 std::map<std::string, at::Tensor> & dstate) const;
 
   /// Write the substep sub-span [a, b] transform of a name->tensor map into
   /// `dst`, reading the endpoint snapshot `orig` and the chained old-state

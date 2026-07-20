@@ -236,7 +236,7 @@ class Newton:
         ``converged_mask`` is a raw per-dynamic-batch-element boolean tensor
         (``True`` where the element converged) -- a diagnostic, not a physical
         quantity, so it carries no typed wrapper. Used by the failure-capture path
-        (``NEML2_DUMP_SOLVE_FAILURE``) to record which entries diverged and the
+        (``NEML2_CAPTURE_SOLVE_FAILURE``) to record which entries diverged and the
         iterate they got stuck at. Direct linear solvers only.
         """
         if getattr(self.linear_solver, "is_iterative", False):

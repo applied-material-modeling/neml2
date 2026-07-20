@@ -96,7 +96,7 @@ public:
   /// stuck at, keyed by unknown-variable name. This context is populated only on
   /// the opt-in capture path (the `NEML2_CAPTURE_SOLVE_FAILURE` env var); the
   /// message-only constructor above leaves both empty. The pybind layer surfaces
-  /// them to Python as the `converged_mask` / `unknown` attributes so an offline
+  /// them to Python as the `converged_mask` / `unknowns` attributes so an offline
   /// replay can read the stuck state with near-zero boilerplate.
   ConvergenceError(const std::string & what_arg,
                    at::Tensor converged_mask,
