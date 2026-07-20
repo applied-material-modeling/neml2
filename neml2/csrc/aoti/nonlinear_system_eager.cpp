@@ -159,6 +159,22 @@ run_eager_newton(const SolverConfig & cfg,
   return {std::move(result.u), result.converged, result.iterations, std::move(result.log)};
 }
 
+std::tuple<std::vector<at::Tensor>, at::Tensor, std::size_t>
+run_eager_newton_masked(const SolverConfig & cfg,
+                        py::object residual_fn,
+                        py::object step_fn,
+                        std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
+                        std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
+                        std::vector<at::Tensor> u0)
+{
+  EagerNonlinearSystem sys(std::move(residual_fn),
+                           std::move(step_fn),
+                           to_layouts(unknown_layout),
+                           to_layouts(residual_layout));
+  NewtonResult result = Newton(cfg).solve_masked(sys, u0);
+  return {std::move(result.u), std::move(result.converged_mask), result.iterations};
+}
+
 std::tuple<std::vector<at::Tensor>, bool, std::size_t, std::vector<std::string>>
 run_eager_krylov(const SolverConfig & newton_cfg,
                  const KrylovConfig & krylov_cfg,

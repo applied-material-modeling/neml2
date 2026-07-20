@@ -174,12 +174,10 @@ Model::Impl::forward(const std::map<std::string, at::Tensor> & inputs,
       std::vector<at::Tensor> u_solved_groups;
       std::vector<at::Tensor> g_groups;
       if (seg.max_substepping_level > 0)
-      {
-        if (_masking_ok(seg, state))
-          _run_implicit_segment_substepped_masked(seg, state);
-        else
-          _run_implicit_segment_substepped(seg, state, u_solved_groups, g_groups);
-      }
+        // Adaptive substepping: per-element masking over the dynamic batch
+        // (flattened to a single axis for any rank) -- freeze converged rows and
+        // bisect only the still-failing subset.
+        _run_implicit_segment_substepped_masked(seg, state);
       else
         _run_implicit_segment(seg, state, u_solved_groups, g_groups);
     }
@@ -247,21 +245,21 @@ Model::Impl::_jacobian_dstate(const std::map<std::string, at::Tensor> & inputs) 
     else if (seg.max_substepping_level > 0 && seg.jacobian_given_loader)
     {
       // Substepped solve + chained consistent-tangent accumulation in one
-      // bisection recursion (state + dstate advanced together). Masked when the
-      // dynamic batch is 1-D so only the still-unconverged rows are re-solved.
-      // Gated on the IFT OPERATOR (jacobian_given), present for both a direct and
-      // an iterative input-sensitivity solver.
-      if (_masking_ok(seg, state))
-        _run_implicit_segment_substepped_masked_jacobian(seg, state, dstate);
-      else
-        _run_implicit_segment_substepped_jacobian(seg, state, dstate);
+      // bisection recursion (state + dstate advanced together): per-element
+      // masking over the dynamic batch (flattened to a single axis for any rank)
+      // so only the still-unconverged rows are re-solved. Gated on the IFT
+      // OPERATOR (jacobian_given), present for both a direct and an iterative
+      // input-sensitivity solver.
+      _run_implicit_segment_substepped_masked_jacobian(seg, state, dstate);
     }
     else
     {
       std::vector<at::Tensor> u_solved_groups;
       std::vector<at::Tensor> g_groups;
       if (seg.max_substepping_level > 0)
-        _run_implicit_segment_substepped(seg, state, u_solved_groups, g_groups);
+        // Off-path implicit segment (no IFT operator requested): advance `state`
+        // via masked substepping; its unknowns' dstate is zero-filled below.
+        _run_implicit_segment_substepped_masked(seg, state);
       else
         _run_implicit_segment(seg, state, u_solved_groups, g_groups);
       if (seg.jacobian_given_loader)

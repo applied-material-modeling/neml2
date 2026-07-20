@@ -70,7 +70,56 @@ PYBIND11_MODULE(_aoti, m)
   // round trip; see neml2/csrc/eager/Model.cpp) can match it precisely. Without
   // this, pybind's default translator collapses every neml2::aoti::Exception
   // (a std::runtime_error) to a bare RuntimeError, losing recoverable().
-  py::register_exception<neml2::aoti::ConvergenceError>(m, "ConvergenceError", PyExc_RuntimeError);
+  //
+  // Stored in a static, NON-OWNING handle (``.release()`` leaks the type-object
+  // reference) so the translator below can reference it without a capture. A
+  // ``static py::exception``/``py::object`` would instead dec_ref the type at
+  // interpreter teardown -- after the GIL is gone -- aborting with
+  // "dec_ref() PyGILState_Check() failure" (surfaced by the embedded-interpreter
+  // test_eager under the coverage build). The registered exception type lives for
+  // the interpreter's lifetime regardless, so leaking its ref is the standard,
+  // safe fix.
+  static const py::handle convergence_error_type =
+      py::register_exception<neml2::aoti::ConvergenceError>(
+          m, "ConvergenceError", PyExc_RuntimeError)
+          .release();
+
+  // A second translator, registered after the line above so pybind tries it
+  // first, additionally surfaces the optional *failure context* a failed solve
+  // captures under NEML2_CAPTURE_SOLVE_FAILURE (see aoti/solve.cpp) as Python
+  // attributes on the raised exception:
+  //   .converged_mask -- per-dynamic-batch-element bool tensor (True = converged)
+  //   .unknowns       -- dict {unknown-variable name -> best-effort iterate}
+  // so an offline replay can read the stuck state with near-zero boilerplate.
+  // When capture was disabled both are absent (mask undefined, unknowns empty),
+  // and this behaves exactly like the default typed translator.
+  py::register_exception_translator(
+      [](std::exception_ptr p)
+      {
+        try
+        {
+          if (p)
+            std::rethrow_exception(p);
+        }
+        catch (const neml2::aoti::ConvergenceError & e)
+        {
+          // Construct an instance by calling the type object directly (so we can
+          // set attributes on it before raising); `convergence_error_type` is a
+          // borrowed handle to that registered type.
+          py::object exc_type = py::reinterpret_borrow<py::object>(convergence_error_type.ptr());
+          py::object inst = exc_type(e.what());
+          if (e.converged_mask().defined())
+            inst.attr("converged_mask") = e.converged_mask();
+          if (!e.unknowns().empty())
+          {
+            py::dict unknowns;
+            for (const auto & [name, tensor] : e.unknowns())
+              unknowns[py::str(name)] = tensor;
+            inst.attr("unknowns") = unknowns;
+          }
+          PyErr_SetObject(convergence_error_type.ptr(), inst.ptr());
+        }
+      });
 
   py::class_<Model>(m, "Model", R"(
 Thin C++ runtime for an AOTI-exported NEML2 model.
@@ -361,6 +410,61 @@ Run the shared C++ Newton solver over an eager (Python-delegating) system.
 (they bind the givens + linear solver, e.g. ``RHS`` + ``Jacobian`` -> ``LinearSolve``).
 ``unknown_layout`` / ``residual_layout`` are ``(structure, sub_batch_shape)``
 per group. Returns ``(u_solved, converged, iterations)``.
+)");
+
+  // Masking variant of newton_solve_eager: drives Newton::solve_masked (no throw)
+  // and returns the best-effort iterate + per-element convergence mask. Used to
+  // capture a failed batch's non-converged state for offline debugging.
+  m.def(
+      "newton_solve_eager_masked",
+      [](py::object residual_fn,
+         py::object step_fn,
+         std::vector<std::pair<std::string, std::vector<int64_t>>> unknown_layout,
+         std::vector<std::pair<std::string, std::vector<int64_t>>> residual_layout,
+         std::vector<at::Tensor> u0,
+         double atol,
+         double rtol,
+         std::size_t miters,
+         const std::string & ls_type,
+         std::size_t ls_max_iters,
+         double ls_cutback,
+         double ls_c,
+         double substep_del_tol)
+      {
+        neml2::aoti::SolverConfig cfg;
+        cfg.atol = atol;
+        cfg.rtol = rtol;
+        cfg.miters = miters;
+        cfg.ls_type = ls_type;
+        cfg.ls_max_iters = ls_max_iters;
+        cfg.ls_cutback = ls_cutback;
+        cfg.ls_c = ls_c;
+        cfg.substep_del_tol = substep_del_tol;
+        return neml2::aoti::run_eager_newton_masked(cfg,
+                                                    std::move(residual_fn),
+                                                    std::move(step_fn),
+                                                    std::move(unknown_layout),
+                                                    std::move(residual_layout),
+                                                    std::move(u0));
+      },
+      py::arg("residual_fn"),
+      py::arg("step_fn"),
+      py::arg("unknown_layout"),
+      py::arg("residual_layout"),
+      py::arg("u0"),
+      py::arg("atol"),
+      py::arg("rtol"),
+      py::arg("miters"),
+      py::arg("ls_type"),
+      py::arg("ls_max_iters"),
+      py::arg("ls_cutback"),
+      py::arg("ls_c"),
+      py::arg("substep_del_tol") = 1.0e-6,
+      R"(
+Masking variant of newton_solve_eager: runs Newton::solve_masked (which never
+throws) over an eager system. Returns ``(u_best, converged_mask, iterations)``:
+the best-effort iterate, a per-dynamic-batch-element boolean convergence mask
+(``true`` where converged), and the iteration count.
 )");
 
   // Eager iterative path: the SAME C++ Newton loop, but each Newton step's linear

@@ -92,151 +92,19 @@ Model::Impl::_apply_substep_span(const Segment & seg,
   }
 }
 
-void
-Model::Impl::_run_implicit_segment_substepped(const Segment & seg,
-                                              std::map<std::string, at::Tensor> & state,
-                                              std::vector<at::Tensor> & u_solved_groups,
-                                              std::vector<at::Tensor> & g_groups) const
-{
-  // Snapshot the endpoint value of every given before we start overwriting them.
-  std::map<std::string, at::Tensor> orig;
-  for (const auto & g : seg.givens)
-  {
-    auto it = state.find(g.name);
-    _assert(it != state.end(),
-            "aoti::Model substepping: implicit segment given '",
-            g.name,
-            "' is not in the state map.");
-    orig[g.name] = it->second;
-  }
-
-  std::function<void(double, double, const std::map<std::string, at::Tensor> &, int)> solve_span =
-      [&](double a, double b, const std::map<std::string, at::Tensor> & chained_old, int level)
-  {
-    _apply_substep_span(seg, orig, a, b, chained_old, state);
-    try
-    {
-      _run_implicit_segment(seg, state, u_solved_groups, g_groups);
-      return;
-    }
-    catch (const ConvergenceError &)
-    {
-      // Only a recoverable divergence / max-iters is retried by subdivision; a
-      // FatalError (shape/device/config) propagates immediately.
-      if (level >= seg.max_substepping_level)
-        throw;
-    }
-    const double mid = 0.5 * (a + b);
-    solve_span(a, mid, chained_old, level + 1);
-    // The first half's converged unknowns now sit in `state`; feed each as the
-    // second half's old-state (chain old-state given -> its base unknown).
-    std::map<std::string, at::Tensor> chained_next;
-    for (const auto & g : seg.givens)
-      if (g.role == "old_state")
-        chained_next[g.name] = state.at(g.pair);
-    solve_span(mid, b, chained_next, level + 1);
-  };
-
-  // Initial chained old-state = the increment's own ~1 values (the true history).
-  std::map<std::string, at::Tensor> chained0;
-  for (const auto & g : seg.givens)
-    if (g.role == "old_state")
-      chained0[g.name] = orig.at(g.name);
-
-  solve_span(0.0, 1.0, chained0, 0);
-}
-
-void
-Model::Impl::_run_implicit_segment_substepped_jacobian(
-    const Segment & seg,
-    std::map<std::string, at::Tensor> & state,
-    std::map<std::string, at::Tensor> & dstate) const
-{
-  // Snapshot endpoint VALUES (for the primal interpolation) and endpoint DSTATE
-  // (the givens' sensitivity to the master inputs, for the tangent interpolation)
-  // before either is overwritten per sub-span.
-  std::map<std::string, at::Tensor> orig_val;
-  std::map<std::string, at::Tensor> orig_dstate;
-  for (const auto & g : seg.givens)
-  {
-    auto vit = state.find(g.name);
-    _assert(vit != state.end(),
-            "aoti::Model substepping: implicit segment given '",
-            g.name,
-            "' is not in the state map.");
-    orig_val[g.name] = vit->second;
-    auto dit = dstate.find(g.name);
-    _assert(dit != dstate.end(),
-            "aoti::Model substepping: dstate missing given '",
-            g.name,
-            "' at Jacobian composition time.");
-    orig_dstate[g.name] = dit->second;
-  }
-
-  std::function<void(double,
-                     double,
-                     const std::map<std::string, at::Tensor> &,
-                     const std::map<std::string, at::Tensor> &,
-                     int)>
-      solve_span = [&](double a,
-                       double b,
-                       const std::map<std::string, at::Tensor> & chained_val,
-                       const std::map<std::string, at::Tensor> & chained_dstate,
-                       int level)
-  {
-    _apply_substep_span(seg, orig_val, a, b, chained_val, state);
-    _apply_substep_span(seg, orig_dstate, a, b, chained_dstate, dstate);
-    try
-    {
-      std::vector<at::Tensor> u_solved_groups;
-      std::vector<at::Tensor> g_groups;
-      _run_implicit_segment(seg, state, u_solved_groups, g_groups);
-      // Overwrites dstate[unknown] with Σ_g (-A⁻¹B)_{u,g} · dstate[g]. With
-      // dstate[old_state] carrying J_{k-1} and dstate[forces] the interpolated
-      // endpoint sensitivities, this is exactly A_k·J_{k-1} + B_k·frac_k·J_endpoint.
-      _run_implicit_segment_jacobian(seg, u_solved_groups, g_groups, dstate);
-      return;
-    }
-    catch (const ConvergenceError &)
-    {
-      if (level >= seg.max_substepping_level)
-        throw;
-    }
-    const double mid = 0.5 * (a + b);
-    solve_span(a, mid, chained_val, chained_dstate, level + 1);
-    // Chain BOTH the solved values and their sensitivities into the next half.
-    std::map<std::string, at::Tensor> chained_val_next;
-    std::map<std::string, at::Tensor> chained_dstate_next;
-    for (const auto & g : seg.givens)
-      if (g.role == "old_state")
-      {
-        chained_val_next[g.name] = state.at(g.pair);
-        chained_dstate_next[g.name] = dstate.at(g.pair);
-      }
-    solve_span(mid, b, chained_val_next, chained_dstate_next, level + 1);
-  };
-
-  std::map<std::string, at::Tensor> chained0_val;
-  std::map<std::string, at::Tensor> chained0_dstate;
-  for (const auto & g : seg.givens)
-    if (g.role == "old_state")
-    {
-      chained0_val[g.name] = orig_val.at(g.name);
-      chained0_dstate[g.name] = orig_dstate.at(g.name);
-    }
-
-  solve_span(0.0, 1.0, chained0_val, chained0_dstate, 0);
-}
-
 // ----------------------------------------------------------------------------
-// Per-element (masked) substepping
+// Per-element (masked) substepping -- the ONLY substepping path
 // ----------------------------------------------------------------------------
 // Solve only the still-unconverged subset of the dynamic batch at each sub-step,
 // freeze converged rows at their coarsest converging solution, and bisect only
 // the failing subset -- so a few hard elements no longer drag the whole batch
 // through the deep sub-steps. `a,b` stay scalar per span (uniform interval);
 // masking is purely *which rows are active*, so `_apply_substep_span` and the
-// coefficient math are reused unchanged. Requires a 1-D dynamic batch.
+// coefficient math are reused unchanged. Masking indexes dim 0, so the drivers
+// flatten the dynamic batch to a single leading axis (any rank -> 1-D; an
+// unbatched call -> a leading 1) before running and reshape the solved unknowns
+// back on return -- the compiled solve accepts any dynamic-batch rank, so this
+// is a pure reshape (see `flatten_dyn` / `unflatten_dyn`).
 
 namespace
 {
@@ -247,29 +115,63 @@ mask_to_idx(const at::Tensor & m)
   return at::nonzero(m).squeeze(-1);
 }
 
-} // namespace
-
-bool
-Model::Impl::_masking_ok(const Segment & seg, const std::map<std::string, at::Tensor> & state) const
+// Trailing (sub_batch + base) axis count of a segment given/unknown -- the axes
+// that sit behind the dynamic batch. Works for both `seg.givens` and
+// `seg.unknowns` (both carry `sub_batch_shape` + `base_shape`).
+template <typename VarT>
+int64_t
+var_trail(const VarT & v)
 {
-  if (seg.givens.empty())
-    return false;
-  auto it = state.find(seg.givens[0].name);
-  if (it == state.end())
-    return false;
-  const auto & g0 = it->second;
-  const auto & g0i = seg.givens[0];
-  const int64_t trail = static_cast<int64_t>(g0i.sub_batch_shape.size() + g0i.base_shape.size());
-  // Masking indexes dim 0; it is well-defined only when the dynamic batch is a
-  // single leading axis (the batch_chunk.h contract). Multi-axis dynamic batches
-  // fall back to the whole-batch driver.
-  return (g0.dim() - trail) == 1;
+  return static_cast<int64_t>(v.sub_batch_shape.size() + v.base_shape.size());
 }
+
+// Flatten the leading dynamic-batch axes of `t` (everything before its `trail`
+// trailing axes) into a single axis, so the masking driver's dim-0
+// index/scatter is well-defined for any dynamic-batch rank (0-D -> a leading 1).
+inline at::Tensor
+flatten_dyn(const at::Tensor & t, int64_t trail)
+{
+  std::vector<int64_t> shape;
+  shape.reserve(static_cast<std::size_t>(trail) + 1);
+  shape.push_back(-1);
+  for (int64_t d = t.dim() - trail; d < t.dim(); ++d)
+    shape.push_back(t.size(d));
+  return t.reshape(shape);
+}
+
+// Inverse of `flatten_dyn`: restore the dynamic batch `dyn` in front of the last
+// `trail` trailing axes of `t` (whose leading axis is the flattened batch).
+inline at::Tensor
+unflatten_dyn(const at::Tensor & t, const std::vector<int64_t> & dyn, int64_t trail)
+{
+  std::vector<int64_t> shape(dyn);
+  for (int64_t d = t.dim() - trail; d < t.dim(); ++d)
+    shape.push_back(t.size(d));
+  return t.reshape(shape);
+}
+
+} // namespace
 
 void
 Model::Impl::_run_implicit_segment_substepped_masked(
     const Segment & seg, std::map<std::string, at::Tensor> & state) const
 {
+  const bool capture = capture_solve_failure_enabled();
+
+  // Flatten the dynamic batch to a single leading axis (see the file-level note);
+  // restored / reshaped back on return. `dyn` is the original dynamic batch.
+  const int64_t g0_dyn_trail = var_trail(seg.givens[0]);
+  const auto & g0_orig = state.at(seg.givens[0].name);
+  const std::vector<int64_t> dyn(g0_orig.sizes().begin(), g0_orig.sizes().end() - g0_dyn_trail);
+  const bool reshape_needed = dyn.size() != 1;
+  std::map<std::string, at::Tensor> saved_givens;
+  if (reshape_needed)
+    for (const auto & g : seg.givens)
+    {
+      saved_givens[g.name] = state.at(g.name);
+      state[g.name] = flatten_dyn(saved_givens[g.name], var_trail(g));
+    }
+
   std::map<std::string, at::Tensor> orig;
   for (const auto & g : seg.givens)
     orig[g.name] = state.at(g.name);
@@ -301,6 +203,10 @@ Model::Impl::_run_implicit_segment_substepped_masked(
 
   const bool console_info = nlog::enabled(nlog::Channel::Substep, nlog::Level::Info);
   const bool console_debug = nlog::enabled(nlog::Channel::Substep, nlog::Level::Debug);
+  // Opt-in failure context (attached to the recoverable error if substepping
+  // ultimately fails): the level-0 single-shot mask + best-effort iterate.
+  at::Tensor cap_mask;
+  std::map<std::string, at::Tensor> cap_unknowns;
   int64_t n_solves = 0, max_depth = 0, n_substepped = 0;
   std::function<void(double, double, const at::Tensor &, int)> solve_to =
       [&](double a, double b, const at::Tensor & active, int level)
@@ -316,6 +222,15 @@ Model::Impl::_run_implicit_segment_substepped_masked(
     max_depth = std::max(max_depth, static_cast<int64_t>(level));
     if (level == 0)
       n_substepped = fail.numel(); // rows that failed the full step need substepping
+    if (capture && level == 0)
+    {
+      // Level 0 = the single-shot masked solve over the full increment (all rows
+      // active): its mask + best-effort iterate are the failure context, matching
+      // the non-substepped capture in solve.cpp.
+      cap_mask = mask;
+      for (const auto & u : seg.unknowns)
+        cap_unknowns[u.name] = span.at(u.name);
+    }
     // LCOV_EXCL_START -- diagnostic per-sub-span trace (verbosity-gated; see neml2.log)
     if (console_debug)
     {
@@ -345,13 +260,27 @@ Model::Impl::_run_implicit_segment_substepped_masked(
       // time-stepping consumer (e.g. MOOSE) cuts the outer step and retries -- so
       // it must throw the recoverable ConvergenceError, NOT `_assert` (which
       // throws the non-recoverable FatalError, defeating a `recoverable()` retry
-      // and making a maxed-out substep unrecoverable downstream). This mirrors the
-      // whole-batch drivers, which re-throw the caught ConvergenceError.
+      // and making a maxed-out substep unrecoverable downstream).
       if (level >= seg.max_substepping_level)
-        throw ConvergenceError("aoti::Model substepping: " + std::to_string(fail.numel()) +
-                               " element(s) failed to converge at max_substepping_level=" +
-                               std::to_string(seg.max_substepping_level) +
-                               ". Reduce the outer time step.");
+      {
+        const std::string msg = "aoti::Model substepping: " + std::to_string(fail.numel()) +
+                                " element(s) failed to converge at max_substepping_level=" +
+                                std::to_string(seg.max_substepping_level) +
+                                ". Reduce the outer time step.";
+        // Attach the level-0 (single-shot) failure context when capture is on,
+        // reshaped back to the original dynamic batch.
+        if (capture)
+        {
+          std::map<std::string, at::Tensor> stuck;
+          for (const auto & u : seg.unknowns)
+            stuck[u.name] = reshape_needed
+                                ? unflatten_dyn(cap_unknowns.at(u.name), dyn, var_trail(u))
+                                : cap_unknowns.at(u.name);
+          throw ConvergenceError(
+              msg, reshape_needed ? cap_mask.reshape(dyn) : cap_mask, std::move(stuck));
+        }
+        throw ConvergenceError(msg);
+      }
       auto fail_g = active.index_select(0, fail);
       const double mid = 0.5 * (a + b);
       solve_to(a, mid, fail_g, level + 1);
@@ -371,6 +300,16 @@ Model::Impl::_run_implicit_segment_substepped_masked(
   // LCOV_EXCL_STOP
   for (const auto & u : seg.unknowns)
     state[u.name] = result[u.name];
+
+  // Restore original-shape givens + reshape the solved unknowns back to the call
+  // batch (the driver ran on the flattened 1-D dynamic batch).
+  if (reshape_needed)
+  {
+    for (const auto & g : seg.givens)
+      state[g.name] = saved_givens[g.name];
+    for (const auto & u : seg.unknowns)
+      state[u.name] = unflatten_dyn(state.at(u.name), dyn, var_trail(u));
+  }
 }
 
 void
@@ -379,6 +318,26 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
     std::map<std::string, at::Tensor> & state,
     std::map<std::string, at::Tensor> & dstate) const
 {
+  const bool capture = capture_solve_failure_enabled();
+
+  // Flatten the dynamic batch to a single leading axis (see the file-level note).
+  // A dstate block is (*dyn, folded, M) -- the pure dynamic batch (sub-batch
+  // stripped; see `_init_dstate`) plus exactly two trailing axes (folded storage,
+  // derivative width M) -- so its trail is 2, regardless of the primal given's.
+  const int64_t g0_dyn_trail = var_trail(seg.givens[0]);
+  const auto & g0_orig = state.at(seg.givens[0].name);
+  const std::vector<int64_t> dyn(g0_orig.sizes().begin(), g0_orig.sizes().end() - g0_dyn_trail);
+  const bool reshape_needed = dyn.size() != 1;
+  std::map<std::string, at::Tensor> saved_givens, saved_givens_d;
+  if (reshape_needed)
+    for (const auto & g : seg.givens)
+    {
+      saved_givens[g.name] = state.at(g.name);
+      saved_givens_d[g.name] = dstate.at(g.name);
+      state[g.name] = flatten_dyn(saved_givens[g.name], var_trail(g));
+      dstate[g.name] = flatten_dyn(saved_givens_d[g.name], /*trail=*/2);
+    }
+
   std::map<std::string, at::Tensor> orig, orig_d;
   for (const auto & g : seg.givens)
   {
@@ -422,6 +381,9 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
 
   const bool console_info = nlog::enabled(nlog::Channel::Substep, nlog::Level::Info);
   const bool console_debug = nlog::enabled(nlog::Channel::Substep, nlog::Level::Debug);
+  // Opt-in failure context (level-0 single-shot mask + best-effort value iterate).
+  at::Tensor cap_mask;
+  std::map<std::string, at::Tensor> cap_unknowns;
   int64_t n_solves = 0, max_depth = 0, n_substepped = 0;
   std::function<void(double, double, const at::Tensor &, int)> solve_to =
       [&](double a, double b, const at::Tensor & active, int level)
@@ -440,6 +402,14 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
     max_depth = std::max(max_depth, static_cast<int64_t>(level));
     if (level == 0)
       n_substepped = fail.numel();
+    if (capture && level == 0)
+    {
+      // Level 0 = the single-shot masked solve; its mask + best-effort value
+      // iterate are the failure context (same semantics as solve.cpp).
+      cap_mask = mask;
+      for (const auto & u : seg.unknowns)
+        cap_unknowns[u.name] = span.at(u.name);
+    }
     // LCOV_EXCL_START -- diagnostic per-sub-span trace (verbosity-gated; see neml2.log)
     if (console_debug)
     {
@@ -484,13 +454,27 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
       // time-stepping consumer (e.g. MOOSE) cuts the outer step and retries -- so
       // it must throw the recoverable ConvergenceError, NOT `_assert` (which
       // throws the non-recoverable FatalError, defeating a `recoverable()` retry
-      // and making a maxed-out substep unrecoverable downstream). This mirrors the
-      // whole-batch drivers, which re-throw the caught ConvergenceError.
+      // and making a maxed-out substep unrecoverable downstream).
       if (level >= seg.max_substepping_level)
-        throw ConvergenceError("aoti::Model substepping: " + std::to_string(fail.numel()) +
-                               " element(s) failed to converge at max_substepping_level=" +
-                               std::to_string(seg.max_substepping_level) +
-                               ". Reduce the outer time step.");
+      {
+        const std::string msg = "aoti::Model substepping: " + std::to_string(fail.numel()) +
+                                " element(s) failed to converge at max_substepping_level=" +
+                                std::to_string(seg.max_substepping_level) +
+                                ". Reduce the outer time step.";
+        // Attach the level-0 (single-shot) failure context when capture is on,
+        // reshaped back to the original dynamic batch.
+        if (capture)
+        {
+          std::map<std::string, at::Tensor> stuck;
+          for (const auto & u : seg.unknowns)
+            stuck[u.name] = reshape_needed
+                                ? unflatten_dyn(cap_unknowns.at(u.name), dyn, var_trail(u))
+                                : cap_unknowns.at(u.name);
+          throw ConvergenceError(
+              msg, reshape_needed ? cap_mask.reshape(dyn) : cap_mask, std::move(stuck));
+        }
+        throw ConvergenceError(msg);
+      }
       auto fail_g = active.index_select(0, fail);
       const double mid = 0.5 * (a + b);
       solve_to(a, mid, fail_g, level + 1);
@@ -512,6 +496,22 @@ Model::Impl::_run_implicit_segment_substepped_masked_jacobian(
   {
     state[u.name] = result[u.name];
     dstate[u.name] = result_d[u.name];
+  }
+
+  // Restore original-shape givens (value + dstate) and reshape the solved
+  // unknowns + their tangents (*, var_size, M) back to the call batch.
+  if (reshape_needed)
+  {
+    for (const auto & g : seg.givens)
+    {
+      state[g.name] = saved_givens[g.name];
+      dstate[g.name] = saved_givens_d[g.name];
+    }
+    for (const auto & u : seg.unknowns)
+    {
+      state[u.name] = unflatten_dyn(state.at(u.name), dyn, var_trail(u));
+      dstate[u.name] = unflatten_dyn(dstate.at(u.name), dyn, /*trail=*/2);
+    }
   }
 }
 } // namespace neml2::aoti

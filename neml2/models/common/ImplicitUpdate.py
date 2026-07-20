@@ -26,6 +26,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -46,6 +47,29 @@ if TYPE_CHECKING:
     from ...factory import _NativeInputFile
     from ...solvers import GMRES, BiCGStab
     from ...solvers.newton import _LinearSolver
+
+
+#: Falsy spellings of a boolean env var (case-insensitive, trimmed); anything
+#: else that is set counts as truthy. Mirrors the C++ parse in
+#: ``aoti/solve.cpp::capture_solve_failure_enabled`` so both routes agree.
+_FALSY_ENV = frozenset({"", "0", "false", "no", "off"})
+
+
+def _env_flag(name: str) -> bool:
+    """Truthy/falsy read of a boolean env var: unset / ``""`` / ``0`` / ``false``
+    / ``no`` / ``off`` (case-insensitive) are OFF, everything else is ON."""
+    v = os.environ.get(name)
+    return v is not None and v.strip().lower() not in _FALSY_ENV
+
+
+def _capture_solve_failure() -> bool:
+    """Whether to attach a *failure context* (per-element convergence mask +
+    best-effort iterate) to the ``ConvergenceError`` a failed solve raises, for
+    offline debugging. Opt-in via the ``NEML2_CAPTURE_SOLVE_FAILURE`` env var
+    (truthy/falsy) because the capture costs an extra masked re-solve. Same switch
+    the compiled runtime reads in ``aoti/solve.cpp`` so both routes enrich the
+    exception identically."""
+    return _env_flag("NEML2_CAPTURE_SOLVE_FAILURE")
 
 
 def _var_offset(layout: AxisLayout, group_index: int, name: str) -> tuple[int, int]:
@@ -447,11 +471,44 @@ class ImplicitUpdate(Model):
     ) -> SparseVector:
         """Single-shot solve; raises the recoverable :class:`ConvergenceError`
         on non-convergence so an outer driver (substepping, or MOOSE's
-        time-stepper) can cut the increment and retry."""
+        time-stepper) can cut the increment and retry.
+
+        When failure capture is enabled (the ``NEML2_CAPTURE_SOLVE_FAILURE`` env
+        var), the raised error additionally carries a *failure context* for
+        offline debugging -- ``converged_mask`` (per-element bool) and
+        ``unknowns`` (best-effort iterate per unknown variable) -- recovered by a
+        masked re-solve, mirroring the compiled runtime's capture in
+        ``aoti/solve.cpp``."""
         solution, ret = self._try_solve(state, sub_batch_ndim)
         if solution is None:
-            raise ConvergenceError(f"Nonlinear solve failed with status {ret.name}")
+            err = ConvergenceError(f"Nonlinear solve failed with status {ret.name}")
+            if _capture_solve_failure():
+                self._attach_failure_context(err)
+            raise err
         return solution
+
+    def _attach_failure_context(self, err: ConvergenceError) -> None:
+        """Best-effort: re-run the just-failed solve in masking mode (no throw)
+        to recover the per-element convergence mask + best-effort iterate, and
+        attach them to ``err`` as its ``converged_mask`` / ``unknowns``
+        attributes. The system is still initialized from the failed
+        :meth:`_try_solve`, so this reuses it. A masked solve is only available
+        for direct linear solvers -- otherwise attach nothing and keep the bare
+        error."""
+        solve_masked = getattr(self.solver, "solve_masked", None)
+        if solve_masked is None:
+            return
+        try:
+            mask, _ = solve_masked(self.system)
+        except NotImplementedError:
+            return
+        err.converged_mask = mask
+        # Expose the best-effort iterate as the TYPED wrapper per unknown name.
+        # This is a deliberate eager-mode enrichment over the compiled route
+        # (aoti/solve.cpp), which has no typed wrappers and can only surface a raw
+        # ``torch.Tensor``; both remain keyed by unknown name and both carry the
+        # dynamic-batch leading dim, so an offline consumer indexes them the same.
+        err.unknowns = dict(self.system.u().disassemble().values)
 
     def _output_sensitivities(self, v: ChainRuleDict) -> ChainRuleDict:
         A, B = self.system.A_and_B()

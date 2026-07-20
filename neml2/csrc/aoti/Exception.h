@@ -46,8 +46,12 @@
 // working; only code that wants the recoverable/fatal split needs the new types.
 
 #include <exception>
+#include <map>
 #include <stdexcept>
+#include <string>
 #include <vector>
+
+#include <ATen/core/Tensor.h>
 
 #include "neml2/csrc/aoti/aoti_export.h"
 
@@ -85,7 +89,32 @@ class AOTI_EXPORT ConvergenceError : public Exception
 {
 public:
   using Exception::Exception;
+
+  /// Enriched constructor that additionally carries a *failure context* for
+  /// offline debugging: a per-dynamic-batch-element convergence mask (`true`
+  /// where the element converged) and the best-effort iterate the solve got
+  /// stuck at, keyed by unknown-variable name. This context is populated only on
+  /// the opt-in capture path (the `NEML2_CAPTURE_SOLVE_FAILURE` env var); the
+  /// message-only constructor above leaves both empty. The pybind layer surfaces
+  /// them to Python as the `converged_mask` / `unknowns` attributes so an offline
+  /// replay can read the stuck state with near-zero boilerplate.
+  ConvergenceError(const std::string & what_arg,
+                   at::Tensor converged_mask,
+                   std::map<std::string, at::Tensor> unknowns);
+
   bool recoverable() const noexcept override;
+
+  /// Per-dynamic-batch-element convergence mask captured at failure (an undefined
+  /// tensor when capture was disabled). `true` where the element converged.
+  const at::Tensor & converged_mask() const noexcept { return _converged_mask; }
+
+  /// Best-effort iterate at failure, keyed by unknown-variable name (empty when
+  /// capture was disabled).
+  const std::map<std::string, at::Tensor> & unknowns() const noexcept { return _unknowns; }
+
+private:
+  at::Tensor _converged_mask;
+  std::map<std::string, at::Tensor> _unknowns;
 };
 
 /// Several concurrent dispatches failed at once (the asynchronous
