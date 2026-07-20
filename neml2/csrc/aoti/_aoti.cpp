@@ -69,11 +69,20 @@ PYBIND11_MODULE(_aoti, m)
   // recoverable neml2::aoti::ConvergenceError after the C++ -> Python -> C++
   // round trip; see neml2/csrc/eager/Model.cpp) can match it precisely. Without
   // this, pybind's default translator collapses every neml2::aoti::Exception
-  // (a std::runtime_error) to a bare RuntimeError, losing recoverable(). Static
-  // so the translator below can reference it without a capture.
-  static const py::exception<neml2::aoti::ConvergenceError> convergence_error_type =
+  // (a std::runtime_error) to a bare RuntimeError, losing recoverable().
+  //
+  // Stored in a static, NON-OWNING handle (``.release()`` leaks the type-object
+  // reference) so the translator below can reference it without a capture. A
+  // ``static py::exception``/``py::object`` would instead dec_ref the type at
+  // interpreter teardown -- after the GIL is gone -- aborting with
+  // "dec_ref() PyGILState_Check() failure" (surfaced by the embedded-interpreter
+  // test_eager under the coverage build). The registered exception type lives for
+  // the interpreter's lifetime regardless, so leaking its ref is the standard,
+  // safe fix.
+  static const py::handle convergence_error_type =
       py::register_exception<neml2::aoti::ConvergenceError>(
-          m, "ConvergenceError", PyExc_RuntimeError);
+          m, "ConvergenceError", PyExc_RuntimeError)
+          .release();
 
   // A second translator, registered after the line above so pybind tries it
   // first, additionally surfaces the optional *failure context* a failed solve
@@ -94,9 +103,9 @@ PYBIND11_MODULE(_aoti, m)
         }
         catch (const neml2::aoti::ConvergenceError & e)
         {
-          // `convergence_error_type` is a py::exception whose operator() *sets*
-          // the Python error (returns void); to construct an instance we call the
-          // underlying type object directly.
+          // Construct an instance by calling the type object directly (so we can
+          // set attributes on it before raising); `convergence_error_type` is a
+          // borrowed handle to that registered type.
           py::object exc_type = py::reinterpret_borrow<py::object>(convergence_error_type.ptr());
           py::object inst = exc_type(e.what());
           if (e.converged_mask().defined())

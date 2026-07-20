@@ -114,7 +114,16 @@ jobs:
         # torch lifts that cap; neml2 builds via scikit-build-core (not
         # setuptools' FileList) and ships nothing from a setuptools sdist, so
         # there is no exploit path. Remove once torch permits setuptools >= 83.
-        run: pip-audit --vulnerability-service osv --strict --ignore-vuln PYSEC-2026-3447
+        #
+        # PYSEC-2025-194 (CVE-2025-3000): a local memory-corruption in
+        # ``torch.jit.script`` (fixed in torch 2.13.0). neml2 never calls
+        # ``torch.jit.script`` -- it lowers via ``torch.export`` / AOTInductor,
+        # and its only ``torch.jit`` use is ``torch.jit.load`` of its own
+        # regression golds (a different, trusted-input path) -- so there is no
+        # exploit path. The 2.13.0 fix is unreachable while torch is pinned at
+        # 2.12.1 for the AOTI runtime ABI lock. Remove once neml2 moves to
+        # torch >= 2.13.0.
+        run: pip-audit --vulnerability-service osv --strict --ignore-vuln PYSEC-2026-3447 --ignore-vuln PYSEC-2025-194
 
   coverage:
     # Python branch + line coverage. Runs the fast lane only -- the

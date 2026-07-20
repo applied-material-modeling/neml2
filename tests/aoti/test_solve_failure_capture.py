@@ -64,7 +64,7 @@ _MIXED = {
 _B = 2
 
 
-def _model_i(max_substepping_level: int) -> str:
+def _model_i(max_substepping_level: int, linear_solver: str = "lu") -> str:
     """A minimal NONLINEAR scalar implicit (Perzyna cubic rate + backward Euler):
     ``r(x) = x - x~1 - (t - t~1) * (max(x,0))^3``. A small step converges
     single-shot; a huge step overshoots to a non-finite residual and cannot. The
@@ -110,10 +110,13 @@ def _model_i(max_substepping_level: int) -> str:
     abs_tol = 1e-10
     rel_tol = 1e-08
     max_its = 25
-    linear_solver = 'lu'
+    linear_solver = '{linear_solver}'
   []
   [lu]
     type = DenseLU
+  []
+  [gmres]
+    type = GMRES
   []
 []
 [Models]
@@ -132,9 +135,9 @@ def _model_i(max_substepping_level: int) -> str:
 """
 
 
-def _write_model(tmp: Path, max_substepping_level: int) -> Path:
-    src = tmp / f"model_L{max_substepping_level}.i"
-    src.write_text(_model_i(max_substepping_level))
+def _write_model(tmp: Path, max_substepping_level: int, linear_solver: str = "lu") -> Path:
+    src = tmp / f"model_L{max_substepping_level}_{linear_solver}.i"
+    src.write_text(_model_i(max_substepping_level, linear_solver))
     return src
 
 
@@ -153,18 +156,43 @@ def _py_eager_fail(src: Path) -> ConvergenceError:
     return ei.value
 
 
-def _cpp_aoti_fail(out: Path) -> ConvergenceError:
-    """Same mixed batch through a compiled model rooted at ``out``."""
+def _cpp_aoti_fail(out: Path, ins: dict[str, torch.Tensor] | None = None) -> ConvergenceError:
+    """Mixed batch through a compiled model's forward, rooted at ``out``."""
     aoti = AOTIModel(str(out))
     with pytest.raises(ConvergenceError) as ei:
-        aoti.forward(_mixed_tensors())
+        aoti.forward(_mixed_tensors() if ins is None else ins)
     return ei.value
+
+
+def _cpp_aoti_jacobian_fail(
+    out: Path, ins: dict[str, torch.Tensor] | None = None
+) -> ConvergenceError:
+    """Mixed batch through a compiled model's Jacobian, rooted at ``out``."""
+    aoti = AOTIModel(str(out))
+    with pytest.raises(ConvergenceError) as ei:
+        aoti.jacobian(_mixed_tensors() if ins is None else ins)
+    return ei.value
+
+
+def _mixed_2d_tensors() -> dict[str, torch.Tensor]:
+    """A multi-axis (2, 2) dynamic batch mixing easy + impossible columns, so the
+    driver flattens (2, 2) -> (4,), maxes out on the hard entries, and the capture
+    context is reshaped back to (2, 2)."""
+    row = {"x": [0.2, 0.2], "x~1": [0.2, 0.2], "t": [1.0, 1000.0], "t~1": [0.0, 0.0]}
+    return {k: torch.tensor([v, v], dtype=torch.float64) for k, v in row.items()}
 
 
 @pytest.fixture(scope="module")
 def eager_src(tmp_path_factory) -> Path:
     """The eager runtime rejects substepping, so this model caps it at 0."""
     return _write_model(tmp_path_factory.mktemp("eager"), 0)
+
+
+@pytest.fixture(scope="module")
+def eager_gmres_src(tmp_path_factory) -> Path:
+    """Same model with a matrix-free (GMRES) linear solver -- a masked re-solve is
+    only available for direct solvers, so capture degrades to a bare error here."""
+    return _write_model(tmp_path_factory.mktemp("eager_gmres"), 0, linear_solver="gmres")
 
 
 @pytest.fixture(scope="module")
@@ -180,26 +208,28 @@ def nonsubstep_artifact(tmp_path_factory) -> Path:
 @pytest.fixture(scope="module")
 def substep_artifact(tmp_path_factory) -> Path:
     """Compiled model with substepping ON but capped low, so the hard row maxes
-    out substepping and raises -- exercising the masked-substep capture path."""
+    out substepping and raises -- exercising the masked-substep capture path.
+    Exported with a derivative pair so both the value AND the substepped-Jacobian
+    capture paths are reachable from this one artifact."""
     tmp = tmp_path_factory.mktemp("nl_substep")
     out = tmp / "nl"
-    export_model_for_aoti(_write_model(tmp, 1), "model", out)
+    export_model_for_aoti(_write_model(tmp, 1), "model", out, derivatives=["x:t"])
     return out
 
 
-def _assert_mixed_enriched(err, *, typed: bool) -> None:
+def _assert_mixed_enriched(err, *, typed: bool, shape: tuple[int, ...] = (_B,)) -> None:
     """The error carries a genuinely *mixed* per-element convergence mask and the
-    best-effort iterate keyed by unknown name. ``typed`` selects the py-eager
-    (typed wrapper) vs cpp-aoti (raw tensor) surface."""
+    best-effort iterate keyed by unknown name, at the original dynamic-batch
+    ``shape``. ``typed`` selects the py-eager (typed wrapper) vs cpp-aoti (raw
+    tensor) surface."""
     mask = getattr(err, "converged_mask", None)
     assert mask is not None, "converged_mask not attached"
     assert mask.dtype == torch.bool
-    assert tuple(mask.shape) == (_B,)
-    # The isolation the feature exists for: some rows converged, some did not --
-    # NOT a trivially all-False mask. The impossible row (index 1) is unconverged.
-    assert mask.any(), "expected the easy row to have converged"
-    assert not mask.all(), "expected the hard row to be unconverged"
-    assert not bool(mask[1]), "the impossible row must be reported unconverged"
+    assert tuple(mask.shape) == shape
+    # The isolation the feature exists for: some elements converged, some did not
+    # -- NOT a trivially all-False mask (and not all-True either).
+    assert mask.any(), "expected at least one element to have converged"
+    assert not mask.all(), "expected at least one element to be unconverged"
 
     unknowns = getattr(err, "unknowns", None)
     assert unknowns is not None, "unknowns not attached"
@@ -207,14 +237,14 @@ def _assert_mixed_enriched(err, *, typed: bool) -> None:
     w = unknowns["x"]
     if typed:
         # py-eager enrichment: a typed wrapper (NOT a raw torch.Tensor), whose
-        # underlying data carries the dynamic-batch leading dim.
+        # underlying data carries the dynamic-batch shape.
         assert not isinstance(w, torch.Tensor)
         assert isinstance(w.data, torch.Tensor)
-        assert tuple(w.data.shape) == (_B,)
+        assert tuple(w.data.shape) == shape
     else:
         # cpp-aoti: a plain torch.Tensor at the boundary (no typed wrappers).
         assert isinstance(w, torch.Tensor)
-        assert tuple(w.shape) == (_B,)
+        assert tuple(w.shape) == shape
 
 
 # --- capture enriches the error, per route ---------------------------------
@@ -236,6 +266,33 @@ def test_cpp_aoti_substep_capture_enriches_error(monkeypatch, substep_artifact):
     reports -- so a substepping-compiled model is diagnosable too."""
     monkeypatch.setenv(_ENV, "1")
     _assert_mixed_enriched(_cpp_aoti_fail(substep_artifact), typed=False)
+
+
+def test_cpp_aoti_substep_jacobian_capture_enriches_error(monkeypatch, substep_artifact):
+    """The substepped-Jacobian driver, when it maxes out, attaches the same
+    level-0 failure context as the value path -- so a failed consistent-tangent
+    evaluation is diagnosable too, not just a failed forward."""
+    monkeypatch.setenv(_ENV, "1")
+    _assert_mixed_enriched(_cpp_aoti_jacobian_fail(substep_artifact), typed=False)
+
+
+def test_cpp_aoti_substep_multiaxis_capture_enriches_error(monkeypatch, substep_artifact):
+    """A multi-axis (2, 2) dynamic batch is flattened to 1-D inside the masked
+    driver; on max-out the captured mask + iterate are reshaped back to (2, 2), so
+    the failure context matches the caller's batch shape."""
+    monkeypatch.setenv(_ENV, "1")
+    err = _cpp_aoti_fail(substep_artifact, _mixed_2d_tensors())
+    _assert_mixed_enriched(err, typed=False, shape=(2, 2))
+
+
+def test_py_eager_iterative_solver_skips_capture(monkeypatch, eager_gmres_src):
+    """Capture needs a masked re-solve, which only direct linear solvers support;
+    with a matrix-free (GMRES) solver the masked path raises NotImplementedError,
+    so capture is skipped and the error stays bare -- even with capture enabled."""
+    monkeypatch.setenv(_ENV, "1")
+    err = _py_eager_fail(eager_gmres_src)
+    assert not hasattr(err, "converged_mask")
+    assert not hasattr(err, "unknowns")
 
 
 # --- opt-out leaves the error bare (byte-for-byte legacy behavior) ----------

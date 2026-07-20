@@ -49,10 +49,25 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import torch
+
     # For the type checker, present a stable RuntimeError subclass. At runtime it
     # is aliased to the C++-registered type (below) so identity is unified.
     class ConvergenceError(RuntimeError):
-        """Recoverable nonlinear-solve failure (Newton divergence / max-iters)."""
+        """Recoverable nonlinear-solve failure (Newton divergence / max-iters).
+
+        When failure capture is enabled (the ``NEML2_CAPTURE_SOLVE_FAILURE`` env
+        var) a raised instance additionally carries a *failure context* for
+        offline debugging -- absent otherwise, so read them defensively (e.g.
+        ``getattr(err, "converged_mask", None)``)."""
+
+        #: Per-dynamic-batch-element convergence mask (``True`` where the element
+        #: converged); attached only under failure capture.
+        converged_mask: torch.Tensor
+        #: Best-effort iterate at failure, keyed by unknown-variable name. py-eager
+        #: surfaces a typed wrapper (an eager-mode enrichment), cpp-aoti a raw
+        #: ``torch.Tensor``; attached only under failure capture.
+        unknowns: dict
 else:
     try:
         from neml2.aoti._aoti import ConvergenceError
