@@ -661,7 +661,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="236"><span class="sd">        ``converged_mask`` is a raw per-dynamic-batch-element boolean tensor</span>
 </span><span data-line="237"><span class="sd">        (``True`` where the element converged) -- a diagnostic, not a physical</span>
 </span><span data-line="238"><span class="sd">        quantity, so it carries no typed wrapper. Used by the failure-capture path</span>
-</span><span data-line="239"><span class="sd">        (``NEML2_DUMP_SOLVE_FAILURE``) to record which entries diverged and the</span>
+</span><span data-line="239"><span class="sd">        (``NEML2_CAPTURE_SOLVE_FAILURE``) to record which entries diverged and the</span>
 </span><span data-line="240"><span class="sd">        iterate they got stuck at. Direct linear solvers only.</span>
 </span><span data-line="241"><span class="sd">        &quot;&quot;&quot;</span>
 </span><span data-line="242">        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_solver</span><span class="p">,</span> <span class="s2">&quot;is_iterative&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>

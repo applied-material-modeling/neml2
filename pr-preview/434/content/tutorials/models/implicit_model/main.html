@@ -435,9 +435,9 @@ assembled from leaves already in NEML2’s catalog.</p>
 <section id="the-physics">
 <h2>The physics<a class="headerlink" href="#the-physics" title="Link to this heading">#</a></h2>
 <p>The Perzyna viscoplastic update we will solve is, in continuous form,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-926d1f0e-74e4-4b0f-9e13-9c157bf693ff">
-<div class="amsmath math notranslate nohighlight" id="equation-926d1f0e-74e4-4b0f-9e13-9c157bf693ff">
-<span class="eqno">(2)<a class="headerlink" href="#equation-926d1f0e-74e4-4b0f-9e13-9c157bf693ff" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-a65cc2cc-4ec5-4471-badc-0a781cdfe55a">
+<div class="amsmath math notranslate nohighlight" id="equation-a65cc2cc-4ec5-4471-badc-0a781cdfe55a">
+<span class="eqno">(2)<a class="headerlink" href="#equation-a65cc2cc-4ec5-4471-badc-0a781cdfe55a" title="Permalink to this equation">#</a></span>\[\begin{align}
   \boldsymbol{\varepsilon}^e &amp;= \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^p, \\
   \boldsymbol{\sigma} &amp;= 3K\,\operatorname{vol}\boldsymbol{\varepsilon}^e
                        + 2G\,\operatorname{dev}\boldsymbol{\varepsilon}^e, \\
@@ -748,7 +748,10 @@ See <a class="reference internal" href="../../../deployment/verbosity.html#verbo
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION   9, |R| = 8.269535e-09, |R0| = 3.540990e+01
 </span></pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][info] converged (iters=9, reason=rel_tol)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][dbg ] ITERATION  10, |R| = 2.544568e-15, |R0| = 3.540990e+01
+</span></pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][info] converged (iters=10, reason=both)
 </span></pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">[neml2:newton ][info] ---- end newton solve ----
@@ -770,7 +773,7 @@ See <a class="reference internal" href="../../../deployment/verbosity.html#verbo
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">8.269534733945765e-09
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">2.5445675374487247e-15
 </span></pre></div>
 </div>
 </div>
@@ -850,7 +853,7 @@ the plastic-strain answer, and call <code class="docutils literal notranslate"><
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">(0.006223590888647602, 0.006312596842231734)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">(0.006223590938545682, 0.006312596817112916)
 </span></pre></div>
 </div>
 </div>

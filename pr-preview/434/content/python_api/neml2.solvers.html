@@ -933,7 +933,7 @@ never throws), commit the best-effort iterate into <code class="docutils literal
 <p><code class="docutils literal notranslate"><span class="pre">converged_mask</span></code> is a raw per-dynamic-batch-element boolean tensor
 (<code class="docutils literal notranslate"><span class="pre">True</span></code> where the element converged) – a diagnostic, not a physical
 quantity, so it carries no typed wrapper. Used by the failure-capture path
-(<code class="docutils literal notranslate"><span class="pre">NEML2_DUMP_SOLVE_FAILURE</span></code>) to record which entries diverged and the
+(<code class="docutils literal notranslate"><span class="pre">NEML2_CAPTURE_SOLVE_FAILURE</span></code>) to record which entries diverged and the
 iterate they got stuck at. Direct linear solvers only.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
