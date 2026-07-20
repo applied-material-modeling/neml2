@@ -429,6 +429,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.solvers.Newton.from_hit"><code class="docutils literal notranslate"><span class="pre">Newton.from_hit()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.solvers.Newton.hit"><code class="docutils literal notranslate"><span class="pre">Newton.hit</span></code></a></li>
 <li><a class="reference internal" href="#neml2.solvers.Newton.solve"><code class="docutils literal notranslate"><span class="pre">Newton.solve()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.solvers.Newton.solve_masked"><code class="docutils literal notranslate"><span class="pre">Newton.solve_masked()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.solvers.NewtonWithLineSearch"><code class="docutils literal notranslate"><span class="pre">NewtonWithLineSearch</span></code></a><ul>
@@ -919,6 +920,27 @@ loop, but each step’s linear solve is a Krylov iteration over the
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.solvers.NonlinearResult" title="neml2.solvers.NonlinearResult">NonlinearResult</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.solvers.Newton.solve_masked">
+<span class="sig-name descname"><span class="pre">solve_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/solvers/newton.html#Newton.solve_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.solvers.Newton.solve_masked" title="Link to this definition">#</a></dt>
+<dd><p>Diagnostic masked solve: run the shared <code class="docutils literal notranslate"><span class="pre">Newton::solve_masked</span></code> (which
+never throws), commit the best-effort iterate into <code class="docutils literal notranslate"><span class="pre">system</span></code>, and return
+<code class="docutils literal notranslate"><span class="pre">(converged_mask,</span> <span class="pre">iterations)</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">converged_mask</span></code> is a raw per-dynamic-batch-element boolean tensor
+(<code class="docutils literal notranslate"><span class="pre">True</span></code> where the element converged) – a diagnostic, not a physical
+quantity, so it carries no typed wrapper. Used by the failure-capture path
+(<code class="docutils literal notranslate"><span class="pre">NEML2_CAPTURE_SOLVE_FAILURE</span></code>) to record which entries diverged and the
+iterate they got stuck at. Direct linear solvers only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>system</strong> (<a class="reference internal" href="neml2.es.html#neml2.es.ModelNonlinearSystem" title="neml2.es.ModelNonlinearSystem"><em>ModelNonlinearSystem</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)">torch.Tensor</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a>]</p>
 </dd>
 </dl>
 </dd></dl>
