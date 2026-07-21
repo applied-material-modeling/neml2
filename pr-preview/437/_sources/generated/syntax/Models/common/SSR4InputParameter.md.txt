@@ -1,0 +1,18 @@
+(models-SSR4InputParameter)=
+# SSR4InputParameter
+
+**Source:** `models/common/InputParameter.py`
+
+SSR4-valued input parameter. Mirrors ``InputParameter<SSR4>``.
+
+## Inputs
+
+`variable` &mdash; `input` &middot; `SSR4` &middot; **required**
+: The input variable that defines this parameter
+
+
+## Outputs
+
+`parameter` &mdash; `output` &middot; `SSR4` &middot; **required**
+: Output parameter
+

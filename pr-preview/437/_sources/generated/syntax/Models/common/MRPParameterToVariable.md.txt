@@ -1,0 +1,18 @@
+(models-MRPParameterToVariable)=
+# MRPParameterToVariable
+
+**Source:** `models/common/ParameterToVariable.py`
+
+MRP parameter-to-variable. Mirrors ``ParameterToVariable<MRP>``.
+
+## Outputs
+
+`to` &mdash; `output` &middot; `MRP` &middot; **required**
+: The name of the variable
+
+
+## Parameters
+
+`from` &mdash; `parameter` &middot; `MRP` &middot; **required**
+: The input parameter
+
