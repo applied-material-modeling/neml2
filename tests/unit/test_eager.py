@@ -58,6 +58,10 @@ _IMPLICIT = _REPO / "tests" / "aoti" / "implicit_simple" / "model.i"
 _SUB_BATCH = (
     _REPO / "tests" / "models" / "solid_mechanics" / "crystal_plasticity" / "ResolvedShear.i"
 )
+# An interpolation leaf whose abscissa/ordinate grid parameters carry a knot
+# sub-batch axis (declared via `.sub_batch.retag(1)`) -- exercises call-batch
+# shape stripping of parameter sub-batch axes.
+_INTERP = _REPO / "tests" / "models" / "common" / "ScalarLinearInterpolation.i"
 
 
 def _rand_inputs(m, b):
@@ -208,6 +212,27 @@ def test_jacobian_matches_autograd():
     # d sum_b stress_k / d strain_{b,j} -> (6, 4, 6); permute to per-batch (4,6,6).
     ref = torch.autograd.functional.jacobian(f, x).permute(1, 0, 2)
     assert torch.allclose(block, ref, atol=1e-10)
+
+
+def test_jacobian_interpolation_sub_batch_param():
+    """An interpolation model's grid parameters (``abscissa``/``ordinate``) carry a
+    knot *sub-batch* axis, NOT a call-batch axis. ``jacobian`` must strip that
+    sub-batch axis when forming the common call batch; otherwise it broadcasts the
+    knot count (here 100) against the input batch (8) and crashes. Regression for
+    the eager interpolation shape error."""
+    m = _EagerModel(str(_INTERP), "E")
+    B = 8  # deliberately != the 100 interpolation knots
+    T = torch.linspace(300.0, 1500.0, B, dtype=m.dtype, device=m.device)
+
+    outputs, jac = m.jacobian({"T": T})
+    block = jac["E"]["T"]
+    assert block.shape == (B,)  # (*B, *out_base=(), *in_base=()); knot axis not leaked
+    # The value half matches a plain forward.
+    assert torch.allclose(outputs["E"], m.forward({"T": T})["E"])
+    # dE/dT equals the (constant) slope of the piecewise-linear grid, per element.
+    h = 1.0
+    fd = (m.forward({"T": T + h})["E"] - m.forward({"T": T - h})["E"]) / (2 * h)
+    assert torch.allclose(block.reshape(-1), fd.reshape(-1), atol=1e-6)
 
 
 def test_jvp_equals_jacobian_times_tangent():
