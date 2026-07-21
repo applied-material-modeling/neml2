@@ -110,7 +110,17 @@ def call_batch_shape(
     for q in param_names:
         base = tuple(param_base_shapes.get(q, ()))
         pshape = tuple(params[q].shape)
-        shapes.append(pshape[: len(pshape) - len(base)])
+        # A parameter's stored tensor is laid out (*batch, *sub_batch, *base). Strip
+        # the natural base AND any sub-batch (intermediate) axes -- e.g. an
+        # interpolation grid's knot axis declared via `.sub_batch.retag(1)`. The
+        # forward reduces over sub-batch axes, so they are NOT broadcastable
+        # call-batch axes; only the remaining leading dims are the parameter's true
+        # batch. NEML2 records the per-parameter count in the owning module's
+        # _typed_storage_sub_batch_ndim (Model.__setattr__/__getattr__).
+        mod_path, _, pname = q.rpartition(".")
+        owner = model.get_submodule(mod_path) if mod_path else model
+        sub_ndim = owner.__dict__.get("_typed_storage_sub_batch_ndim", {}).get(pname, 0)
+        shapes.append(pshape[: len(pshape) - len(base) - sub_ndim])
     return tuple(torch.broadcast_shapes(*shapes)) if shapes else ()
 
 
