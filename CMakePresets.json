@@ -16,7 +16,14 @@
         "NEML2_DOC": "OFF",
         "NEML2_WORK_DISPATCHER": "ON",
         "NEML2_JSON": "ON",
-        "NEML2_CSV": "ON"
+        "NEML2_CSV": "ON",
+        "Python3_EXECUTABLE": "/home/colinmg/anaconda3/envs/neml2/bin/python",
+        "MPI_C_COMPILER": "/home/colinmg/anaconda3/envs/neml2/bin/mpicc",
+        "MPI_CXX_COMPILER": "/home/colinmg/anaconda3/envs/neml2/bin/mpicxx"
+      },
+      "environment": {
+        "PATH": "/home/colinmg/anaconda3/envs/neml2/bin:$penv{PATH}",
+        "CONDA_PREFIX": "/home/colinmg/anaconda3/envs/neml2"
       }
     },
     {
@@ -39,7 +46,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "NEML2_PYBIND": "ON",
-        "NEML2_DOC": "ON"
+        "NEML2_DOC": "OFF"
       }
     },
     {
