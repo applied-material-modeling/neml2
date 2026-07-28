@@ -206,7 +206,7 @@ refuses any non-matching version with a clear "regenerate via
 `neml2-compile`" message; the only remediation is a re-compile.
 
 <!-- dependencies: aoti.schema_version -->
-The current schema version is `12`.
+The current schema version is `13`.
 
 ### Segment kinds
 

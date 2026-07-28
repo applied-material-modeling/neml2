@@ -12,6 +12,12 @@ $\dot{k} = -\left(\frac{\lVert k \rVert}{\tau}\right)^{n-1} \frac{k}{\tau}$
 : Isotropic hardening variable
 
 
+## Outputs
+
+`isotropic_hardening_rate` &mdash; `output` &middot; `Scalar` &middot; default `isotropic_hardening_rate`
+: Optional name for the derived output (defaults to 'isotropic_hardening_rate', i.e. the 'isotropic_hardening' variable name with the '_rate' suffix).
+
+
 ## Parameters
 
 `tau` &mdash; `parameter` &middot; `Scalar` &middot; **required**

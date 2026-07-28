@@ -8,6 +8,21 @@ for the elastic strain as $\varepsilon^e = s \cdot \Delta t \cdot d$
 where $\Delta t = t - t_n$ is the time increment, $d$ is the
 deformation rate, and $s$ is a scale factor.
 
+## Inputs
+
+`deformation_rate` &mdash; `input` &middot; `SR2` &middot; **required**
+: Deformation rate
+
+`time` &mdash; `input` &middot; `Scalar` &middot; default `t`
+: Time
+
+
+## Outputs
+
+`elastic_strain` &mdash; `output` &middot; `SR2` &middot; **required**
+: Predicted elastic strain
+
+
 ## Parameters
 
 `scale` &mdash; `parameter` &middot; `Scalar` &middot; default `1.0`

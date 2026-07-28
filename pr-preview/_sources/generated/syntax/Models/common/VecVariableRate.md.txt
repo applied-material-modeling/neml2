@@ -15,3 +15,9 @@ previous time step, and $t$ is time.
 `time` &mdash; `input` &middot; `Scalar` &middot; default `t`
 : Time
 
+
+## Outputs
+
+`variable_rate` &mdash; `output` &middot; `Vec` &middot; default `variable_rate`
+: Optional name for the derived output (defaults to 'variable_rate', i.e. the 'variable' variable name with the '_rate' suffix).
+

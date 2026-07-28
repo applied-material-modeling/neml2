@@ -51,11 +51,13 @@ block-bidiagonal nonlinear system. Two consequences follow:
   storage.
 
 The NEML2 ↔ pyzag interface lives in the {mod}`neml2.pyzag` submodule.
-{class}`~neml2.pyzag.NEML2PyzagModel` wraps a NEML2 nonlinear system as
-a pyzag `NonlinearRecursiveFunction`, exposing each NEML2 parameter as
-a `torch.nn.Parameter` on the wrapper. From there the calibration loop
-is a standard PyTorch optimizer loop, with `nonlinear.solve_adjoint(...)`
-in place of `solve(...).backward()`.
+{class}`~neml2.pyzag.NEML2PyzagFactory` adapts a NEML2 nonlinear system
+to pyzag's `NonlinearFunctionOperatorFactory` protocol: it evaluates the
+residual and Jacobians through NEML2's fast forward-mode chain-rule path
+and exposes each NEML2 parameter as a `torch.nn.Parameter` on the
+factory. From there the calibration loop is a standard PyTorch optimizer
+loop, with `nonlinear.solve_adjoint(...)` in place of
+`solve(...).backward()`.
 
 ## Where to go from here
 
