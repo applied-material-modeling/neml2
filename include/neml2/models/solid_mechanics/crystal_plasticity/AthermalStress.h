@@ -19,6 +19,7 @@ protected:
     const Scalar & _G;
     const Scalar & _alpha;
     const Scalar & _b;
+    const Scalar & _sigma_ss;
 
     // Input variable
     const Variable<Scalar> & _L;

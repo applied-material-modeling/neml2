@@ -107,7 +107,7 @@ ThermallyActivatedDislocationMobility::set_value(bool out, bool dout_din, bool /
 
         // -------- CHAIN RULE COMPUTATION for dv_dBk --------
 
-        const auto dv_kp_dBk            = -(2 * _h * _b) / (_w * pow(_Bk, 2.0)) * mcl_eff * exp_val;
+        const auto dv_kp_dBk            = -(2 * _h * _b) / (_w * pow(_Bk, 2.0)) * tau_1 * exp_val;
 
         if (const auto * const Bk = nl_param("Bk"))
             _v.d(*Bk) = dv_kp_dBk;

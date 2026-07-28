@@ -1,69 +1,62 @@
 [Tensors]
-    [E] #MPa
-        type = Scalar
-        values = 410000
-    []
-    [nu]
-        type = Scalar
-        values = 0.28
-    []
-    [G]
-        type = Scalar
-        values = 160156.25
-    []
     [C] # MPa
         type = Scalar
-        values = '41.5e3'
+        values = '0.0'
         batch_shape = '(1)'
     []
     [g] # unitless
         type = Scalar
-        values = '350.0'
+        values = '0.0'
         batch_shape = '(1)'
     []
     [k1] # mm^-1
         type = Scalar
-        values = '8.3e4'
+        values = '3.0e7'
         batch_shape = '(1)'
     []
-    [k2] # unitless
+    [k2_0] # unitless
         type = Scalar
-        values = '150.0'
+        values = '6000.0'
+        batch_shape = '(1)'
+    []
+    [Q_d]
+        type = Scalar
+        values = '0.01'
         batch_shape = '(1)'
     []
     [T_0] # K
         type = Scalar
-        values = '2956.0'
+        values = '3325.5'
         batch_shape = '(1)'
     []
     [Bk] # MPa * s
         type = Scalar
-        values = '8.3e-6'
+        values = '8.3e-11'
         batch_shape = '(1)'
     []
     [tau_p] # MPa
         type = Scalar
-        values = '2030.0'
+        values = '950.0'
     []
     [H_0] # eV
         type = Scalar
-        values = '1.63'
+        values = '2.55'
     []
     [alpha]
         type = Scalar
-        values = '0.5'
+        values = '0.23'
     []
     [p]
         type = Scalar
-        values = '0.86'
+        values = '0.6'
     []
     [q]
         type = Scalar
-        values = '1.69'
+        values = '1.4'
     []
     [m]
         type = Scalar
-        values = '0.333'
+        values = '0.33'
     []
     [a] # mm
         type = Scalar
@@ -88,6 +81,40 @@
 []
 
 [Models]
+    [E]
+        type = ScalarQuadraticInterpolation
+        a = -2.716e-2
+        b = 0.01253e3
+        c = 396.507e3
+        argument = 'forces/T'
+        output = 'E'
+    []
+    [nu]
+        type = ScalarQuadraticInterpolation
+        a = 3.157e-9
+        b = -8.030e-6
+        c = 0.285
+        argument = 'forces/T'
+        output = 'nu'
+    []
+    [G_bottom_inner]
+        type = ScalarLinearCombination
+        from_var = 'nu'
+        to_var = 'G_bottom_inner'
+        constant_coefficient = 1
+    []
+    [G_bottom]
+        type = ScalarMultiplication
+        from_var = 'G_bottom_inner'
+        to_var = 'G_bottom'
+        coefficient = 2
+    []
+    [G]
+        type = ScalarMultiplication
+        from_var = 'E G_bottom'
+        to_var = 'G'
+        reciprocal = 'false true'
+    []
     [mandel_stress]
         type = IsotropicMandelStress
     []
@@ -120,6 +147,7 @@
         shear_modulus = 'G'
         alpha = 'alpha'
         b = 'b'
+        sigma_ss = 0.0
         L = 'state/internal/L'
         athermal_stress = 'state/internal/s_a'
     []
@@ -140,15 +168,21 @@
         to = 'state/internal/NM'
     []
     [shear_eff]
-        type = NormalToShearStress
-        normal_stress = 'state/internal/s'
-        shear_stress = 'state/internal/tau_eff'
-        schmid_factor = 'm'
+        type = ScalarMultiplication
+        from_var = 'state/internal/s'
+        to_var = 'state/internal/tau_eff'
+        coefficient = 'm'
+    []
+    [shear_a]
+        type = ScalarMultiplication
+        from_var = 'state/internal/s_a'
+        to_var = 'state/internal/tau_a'
+        coefficient = 'm'
     []
     [v_disl]
         type = ThermallyActivatedDislocationMobility
         effective_shear = 'state/internal/tau_eff'
-        athermal_shear = 'state/internal/s_a'
+        athermal_shear = 'state/internal/tau_a'
         temperature = 'forces/T'
         h = 'h'
         w = 'w'
@@ -167,7 +201,11 @@
         type = KocksMeckingDislocationDensity
         plastic_flow_rate = 'state/internal/gamma_rate'
         k1 = 'k1'
-        k2 = 'k2'
+        L = 'state/internal/L'
+        k2_0 = 'k2_0'
+        Q_d = 'Q_d'
+        k_B = 'kB'
+        temperature = 'forces/T'
         dislocation_density = 'state/internal/rho_m'
         density_rate = 'state/internal/rho_m_rate'
     []
@@ -230,6 +268,6 @@
     []
     [implicit_rate]
         type = ComposedModel
-        models = 'mandel_stress kinharden overstress vonmises L athermal normality shear_eff v_disl rho_m_rate flow_rate Eprate Erate Eerate elasticity integrate_rho_m integrate_stress integrate_X mixed mixed_old rename'
+        models = 'G_bottom_inner G_bottom G mandel_stress kinharden overstress vonmises L athermal normality shear_eff shear_a v_disl rho_m_rate flow_rate Eprate Erate Eerate elasticity integrate_rho_m integrate_stress integrate_X mixed mixed_old rename'
     []
 []

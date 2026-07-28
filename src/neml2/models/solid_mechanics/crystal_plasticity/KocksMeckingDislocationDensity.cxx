@@ -1,5 +1,6 @@
 #include "neml2/models/solid_mechanics/crystal_plasticity/KocksMeckingDislocationDensity.h"
 #include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/exp.h"
 
 namespace neml2
 {
@@ -9,27 +10,26 @@ OptionSet
 KocksMeckingDislocationDensity::expected_options()
 {
     OptionSet options = Model::expected_options();
-    options.doc() = "Computes the dislocation density rate using the Kocks-Mecking model: "
-                    "\\f$ \\dot{\\rho_m} = (\\left \\frac{k_1}{L} - k_2 \\rho_m \\right) \\dot{\\gamma} \\f$"
-                    "where \\f$ k_1 \\f$ is the hardening coefficient, \\f$ k_2 \\f$ is the recovery coefficient, "
-                    "\\f$ L \\f$ is the mean free path, and \\f$ \\dot{\\rho_m} \\f$ is the dislocation density rate.";
     options.set_input("plastic_flow_rate");
-    options.set("plastic_flow_rate").doc() = "Plastic flow rate (from Orowan equation)";
     options.set_parameter<TensorName<Scalar>>("k1");
-    options.set("k1").doc() = "Hardening coefficient";
-    options.set_parameter<TensorName<Scalar>>("k2");
-    options.set("k2").doc() = "Recovery coefficient";
+    options.set_input("L");
+    options.set_parameter<TensorName<Scalar>>("k2_0");
+    options.set_parameter<TensorName<Scalar>>("Q_d");
+    options.set_buffer<TensorName<Scalar>>("k_B");
+    options.set_input("temperature");
     options.set_input("dislocation_density");
-    options.set("dislocation_density").doc() = "Current dislocation density";
     options.set_output("density_rate");
-    options.set("density_rate").doc() = "Dislocation density rate";
 
     return options;
 }
 KocksMeckingDislocationDensity::KocksMeckingDislocationDensity(const OptionSet & options) : Model(options),
     _gamma_dot(declare_input_variable<Scalar>("plastic_flow_rate")),
     _k1(declare_parameter<Scalar>("k1", "k1", true)),
-    _k2(declare_parameter<Scalar>("k2", "k2", true)),
+    _L(declare_input_variable<Scalar>("L")),
+    _k2_0(declare_parameter<Scalar>("k2_0", "k2_0", true)),
+    _Q_d(declare_parameter<Scalar>("Q_d", "Q_d", true)),
+    _k_B(declare_buffer<Scalar>("k_B", "k_B")),
+    _T(declare_input_variable<Scalar>("temperature")),
     _rho_m(declare_input_variable<Scalar>("dislocation_density")),
     _rho_m_dot(declare_output_variable<Scalar>("density_rate"))
 {
@@ -37,24 +37,33 @@ KocksMeckingDislocationDensity::KocksMeckingDislocationDensity(const OptionSet &
 void
 KocksMeckingDislocationDensity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {   
-    const auto L_eff = pow(_rho_m(), -0.5);
+    const auto k2 = _k2_0 * neml2::exp(- _Q_d / (_k_B * _T()));
 
     if (out)
-        _rho_m_dot = (_k1/L_eff - _k2 * _rho_m()) * _gamma_dot();
+        _rho_m_dot = (_k1/_L() - k2 * _rho_m()) * _gamma_dot();
 
     if (dout_din)
     {
         if (_gamma_dot.is_dependent())
-            _rho_m_dot.d(_gamma_dot) = _k1/L_eff - _k2 * _rho_m();
+            _rho_m_dot.d(_gamma_dot) = _k1/_L() - k2 * _rho_m();
+        
+        if (_L.is_dependent())
+            _rho_m_dot.d(_L) = - (_k1 * _gamma_dot()) / neml2::pow(_L(), 2.0);
+
+        if (_T.is_dependent())
+            _rho_m_dot.d(_T) = - (_k2_0 * _Q_d) / (_k_B * neml2::pow(_T(), 2.0)) * neml2::exp(- _Q_d / (_k_B * _T())) * _rho_m() * _gamma_dot();
         
         if (_rho_m.is_dependent())
-            _rho_m_dot.d(_rho_m) = (0.5 * _k1 * pow(_rho_m(), -0.5) - _k2) * _gamma_dot();
+            _rho_m_dot.d(_rho_m) = - k2 * _gamma_dot();
 
         if (const auto * const k1 = nl_param("k1"))
-            _rho_m_dot.d(*k1) = _gamma_dot() / L_eff;
+            _rho_m_dot.d(*k1) = _gamma_dot() / _L();
         
-        if (const auto * const k2 = nl_param("k2"))
-            _rho_m_dot.d(*k2) = -_rho_m() * _gamma_dot();
+        if (const auto * const k2_0 = nl_param("k2_0"))
+            _rho_m_dot.d(*k2_0) = - neml2::exp(- _Q_d / (_k_B * _T())) * _rho_m() * _gamma_dot();
+        
+        if (const auto * const Q_d = nl_param("Q_d"))
+            _rho_m_dot.d(*Q_d) = _k2_0 / (_k_B * _T()) * neml2::exp(- _Q_d / (_k_B * _T())) * _rho_m() * _gamma_dot();
     }
 }
 }
