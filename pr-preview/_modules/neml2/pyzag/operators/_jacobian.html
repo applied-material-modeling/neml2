@@ -575,72 +575,78 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="156">        <span class="n">A_ops</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="o">.</span><span class="n">factored</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="p">)</span>
 </span><span data-line="157">        <span class="n">B_ops</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="p">(</span><span class="n">_select_dynamic_am</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_am</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span>
 </span><span data-line="158">        <span class="n">inverse_operator</span> <span class="o">=</span> <span class="n">_select_inverse</span><span class="p">(</span><span class="n">inverse_operator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="p">)</span>
-</span><span data-line="159">        <span class="k">return</span> <span class="n">BidiagonalForwardOperator</span><span class="p">(</span><span class="n">A_ops</span><span class="p">,</span> <span class="n">B_ops</span><span class="p">,</span> <span class="n">inverse_operator</span><span class="o">=</span><span class="n">inverse_operator</span><span class="p">)</span></div>
+</span><span data-line="159">        <span class="k">return</span> <span class="n">BidiagonalForwardOperator</span><span class="p">(</span>
+</span><span data-line="160">            <span class="n">A_ops</span><span class="p">,</span>
+</span><span data-line="161">            <span class="n">B_ops</span><span class="p">,</span>
+</span><span data-line="162">            <span class="n">inverse_operator</span><span class="o">=</span><span class="n">inverse_operator</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+</span><span data-line="163">        <span class="p">)</span></div>
 
-</span><span data-line="160">
+</span><span data-line="164">
+</span><span data-line="165">    <span class="c1"># pyzag&#39;s abstract adjoint_system is unannotated (inferred -&gt; None), so our</span>
+</span><span data-line="166">    <span class="c1"># concrete operator return trips the override check.</span>
 <div class="viewcode-block" id="NEML2BlockJacobian.adjoint_system">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockJacobian.adjoint_system">[docs]</a>
-</span><span data-line="161">    <span class="k">def</span><span class="w"> </span><span class="nf">adjoint_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inverse_operator</span><span class="p">):</span>
-</span><span data-line="162"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the transposed, time-reversed bidiagonal operator for the adjoint sweep.</span>
-</span><span data-line="163">
-</span><span data-line="164"><span class="sd">        Uses the transposed diagonal/subdiagonal blocks in reverse time order. Must</span>
-</span><span data-line="165"><span class="sd">        be called on the Jacobian returned by :meth:`as_adjoint_walk`. As with</span>
-</span><span data-line="166"><span class="sd">        :meth:`forward_system`, PCR/Hybrid on a BLOCK layout routes to the lifted</span>
-</span><span data-line="167"><span class="sd">        factorization.</span>
-</span><span data-line="168"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="169">        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed</span><span class="p">:</span>
-</span><span data-line="170">            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span data-line="171">                <span class="s2">&quot;adjoint_system() must be called on the BlockJacobian returned by &quot;</span>
-</span><span data-line="172">                <span class="s2">&quot;as_adjoint_walk(), not the forward one.&quot;</span>
-</span><span data-line="173">            <span class="p">)</span>
-</span><span data-line="174">        <span class="n">diag_walk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_diag</span><span class="p">()</span>
-</span><span data-line="175">        <span class="n">sub_walk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_sub</span><span class="p">()</span>
-</span><span data-line="176">        <span class="n">A_T</span> <span class="o">=</span> <span class="n">_transpose_am</span><span class="p">(</span><span class="n">_select_dynamic_am</span><span class="p">(</span><span class="n">diag_walk</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span>
-</span><span data-line="177">        <span class="n">B_T</span> <span class="o">=</span> <span class="n">_transpose_am</span><span class="p">(</span><span class="n">_select_dynamic_am</span><span class="p">(</span><span class="n">sub_walk</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
-</span><span data-line="178">        <span class="n">A_ops</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="o">.</span><span class="n">factored</span><span class="p">(</span><span class="n">A_T</span><span class="p">)</span>
-</span><span data-line="179">        <span class="n">B_ops</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="p">(</span><span class="n">B_T</span><span class="p">)</span>
-</span><span data-line="180">        <span class="n">inverse_operator</span> <span class="o">=</span> <span class="n">_select_inverse</span><span class="p">(</span><span class="n">inverse_operator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="p">)</span>
-</span><span data-line="181">        <span class="k">return</span> <span class="n">inverse_operator</span><span class="p">(</span><span class="n">A_ops</span><span class="p">,</span> <span class="n">B_ops</span><span class="p">)</span></div>
+</span><span data-line="167">    <span class="k">def</span><span class="w"> </span><span class="nf">adjoint_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inverse_operator</span><span class="p">):</span>  <span class="c1"># type: ignore[override]</span>
+</span><span data-line="168"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the transposed, time-reversed bidiagonal operator for the adjoint sweep.</span>
+</span><span data-line="169">
+</span><span data-line="170"><span class="sd">        Uses the transposed diagonal/subdiagonal blocks in reverse time order. Must</span>
+</span><span data-line="171"><span class="sd">        be called on the Jacobian returned by :meth:`as_adjoint_walk`. As with</span>
+</span><span data-line="172"><span class="sd">        :meth:`forward_system`, PCR/Hybrid on a BLOCK layout routes to the lifted</span>
+</span><span data-line="173"><span class="sd">        factorization.</span>
+</span><span data-line="174"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="175">        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed</span><span class="p">:</span>
+</span><span data-line="176">            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+</span><span data-line="177">                <span class="s2">&quot;adjoint_system() must be called on the BlockJacobian returned by &quot;</span>
+</span><span data-line="178">                <span class="s2">&quot;as_adjoint_walk(), not the forward one.&quot;</span>
+</span><span data-line="179">            <span class="p">)</span>
+</span><span data-line="180">        <span class="n">diag_walk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_diag</span><span class="p">()</span>
+</span><span data-line="181">        <span class="n">sub_walk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_sub</span><span class="p">()</span>
+</span><span data-line="182">        <span class="n">A_T</span> <span class="o">=</span> <span class="n">_transpose_am</span><span class="p">(</span><span class="n">_select_dynamic_am</span><span class="p">(</span><span class="n">diag_walk</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span>
+</span><span data-line="183">        <span class="n">B_T</span> <span class="o">=</span> <span class="n">_transpose_am</span><span class="p">(</span><span class="n">_select_dynamic_am</span><span class="p">(</span><span class="n">sub_walk</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+</span><span data-line="184">        <span class="n">A_ops</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="o">.</span><span class="n">factored</span><span class="p">(</span><span class="n">A_T</span><span class="p">)</span>
+</span><span data-line="185">        <span class="n">B_ops</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="p">(</span><span class="n">B_T</span><span class="p">)</span>
+</span><span data-line="186">        <span class="n">inverse_operator</span> <span class="o">=</span> <span class="n">_select_inverse</span><span class="p">(</span><span class="n">inverse_operator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="p">)</span>
+</span><span data-line="187">        <span class="k">return</span> <span class="n">inverse_operator</span><span class="p">(</span><span class="n">A_ops</span><span class="p">,</span> <span class="n">B_ops</span><span class="p">)</span></div>
 
-</span><span data-line="182">
+</span><span data-line="188">
 <div class="viewcode-block" id="NEML2BlockJacobian.solve_terminal_adjoint">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockJacobian.solve_terminal_adjoint">[docs]</a>
-</span><span data-line="183">    <span class="k">def</span><span class="w"> </span><span class="nf">solve_terminal_adjoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g_terminal</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="184"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Seed the adjoint recursion from the terminal cost gradient ``g_terminal``.</span>
-</span><span data-line="185">
-</span><span data-line="186"><span class="sd">        Solves ``-A_last^T x = g_terminal`` on the last step&#39;s transposed diagonal.</span>
-</span><span data-line="187"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="188">        <span class="n">terminal</span> <span class="o">=</span> <span class="n">_select_dynamic_am</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-</span><span data-line="189">        <span class="n">op</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="o">.</span><span class="n">factored</span><span class="p">(</span><span class="n">_transpose_am</span><span class="p">(</span><span class="n">terminal</span><span class="p">))</span>
-</span><span data-line="190">        <span class="n">g_bv</span> <span class="o">=</span> <span class="n">NEML2BlockVector</span><span class="o">.</span><span class="n">from_av</span><span class="p">(</span><span class="n">_split_flat_to_av</span><span class="p">(</span><span class="n">g_terminal</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="p">))</span>
-</span><span data-line="191">        <span class="n">sol</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">g_bv</span><span class="p">)</span>
-</span><span data-line="192">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="p">([</span><span class="o">-</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">sol</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">],</span> <span class="n">sol</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="n">sol</span><span class="o">.</span><span class="n">intmd_dims</span><span class="p">)</span></div>
+</span><span data-line="189">    <span class="k">def</span><span class="w"> </span><span class="nf">solve_terminal_adjoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g_terminal</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
+</span><span data-line="190"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Seed the adjoint recursion from the terminal cost gradient ``g_terminal``.</span>
+</span><span data-line="191">
+</span><span data-line="192"><span class="sd">        Solves ``-A_last^T x = g_terminal`` on the last step&#39;s transposed diagonal.</span>
+</span><span data-line="193"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="194">        <span class="n">terminal</span> <span class="o">=</span> <span class="n">_select_dynamic_am</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+</span><span data-line="195">        <span class="n">op</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="o">.</span><span class="n">factored</span><span class="p">(</span><span class="n">_transpose_am</span><span class="p">(</span><span class="n">terminal</span><span class="p">))</span>
+</span><span data-line="196">        <span class="n">g_bv</span> <span class="o">=</span> <span class="n">NEML2BlockVector</span><span class="o">.</span><span class="n">from_av</span><span class="p">(</span><span class="n">_split_flat_to_av</span><span class="p">(</span><span class="n">g_terminal</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="p">))</span>
+</span><span data-line="197">        <span class="n">sol</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">g_bv</span><span class="p">)</span>
+</span><span data-line="198">        <span class="k">return</span> <span class="n">NEML2BlockVector</span><span class="p">([</span><span class="o">-</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">sol</span><span class="o">.</span><span class="n">raw_tensors</span><span class="p">],</span> <span class="n">sol</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="n">sol</span><span class="o">.</span><span class="n">intmd_dims</span><span class="p">)</span></div>
 
-</span><span data-line="193">
+</span><span data-line="199">
 <div class="viewcode-block" id="NEML2BlockJacobian.couple_prev_chunk">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockJacobian.couple_prev_chunk">[docs]</a>
-</span><span data-line="194">    <span class="k">def</span><span class="w"> </span><span class="nf">couple_prev_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_first</span><span class="p">:</span> <span class="n">BlockVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
-</span><span data-line="195"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Propagate the adjoint across the chunk boundary via the subdiagonal coupling.</span>
-</span><span data-line="196">
-</span><span data-line="197"><span class="sd">        Applies the transpose of this chunk&#39;s boundary subdiagonal block to the</span>
-</span><span data-line="198"><span class="sd">        first adjoint variable ``a_first``, giving the contribution into the</span>
-</span><span data-line="199"><span class="sd">        previous chunk&#39;s terminal adjoint.</span>
-</span><span data-line="200"><span class="sd">        &quot;&quot;&quot;</span>
-</span><span data-line="201">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a_first</span><span class="p">,</span> <span class="n">NEML2BlockVector</span><span class="p">):</span>
-</span><span data-line="202">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;NEML2BlockJacobian.couple_prev_chunk expects NEML2BlockVector.&quot;</span><span class="p">)</span>
-</span><span data-line="203">        <span class="n">sub_walk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_sub</span><span class="p">()</span>
-</span><span data-line="204">        <span class="n">boundary</span> <span class="o">=</span> <span class="n">_select_dynamic_am</span><span class="p">(</span><span class="n">sub_walk</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-</span><span data-line="205">        <span class="n">op</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="p">(</span><span class="n">boundary</span><span class="p">)</span>
-</span><span data-line="206">        <span class="k">return</span> <span class="n">op</span><span class="o">.</span><span class="n">t_matvec</span><span class="p">(</span><span class="n">a_first</span><span class="p">)</span></div>
+</span><span data-line="200">    <span class="k">def</span><span class="w"> </span><span class="nf">couple_prev_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_first</span><span class="p">:</span> <span class="n">BlockVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockVector</span><span class="p">:</span>
+</span><span data-line="201"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Propagate the adjoint across the chunk boundary via the subdiagonal coupling.</span>
+</span><span data-line="202">
+</span><span data-line="203"><span class="sd">        Applies the transpose of this chunk&#39;s boundary subdiagonal block to the</span>
+</span><span data-line="204"><span class="sd">        first adjoint variable ``a_first``, giving the contribution into the</span>
+</span><span data-line="205"><span class="sd">        previous chunk&#39;s terminal adjoint.</span>
+</span><span data-line="206"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="207">        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a_first</span><span class="p">,</span> <span class="n">NEML2BlockVector</span><span class="p">):</span>
+</span><span data-line="208">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;NEML2BlockJacobian.couple_prev_chunk expects NEML2BlockVector.&quot;</span><span class="p">)</span>
+</span><span data-line="209">        <span class="n">sub_walk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_sub</span><span class="p">()</span>
+</span><span data-line="210">        <span class="n">boundary</span> <span class="o">=</span> <span class="n">_select_dynamic_am</span><span class="p">(</span><span class="n">sub_walk</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</span><span data-line="211">        <span class="n">op</span> <span class="o">=</span> <span class="n">NEML2SolvableBlockOperator</span><span class="p">(</span><span class="n">boundary</span><span class="p">)</span>
+</span><span data-line="212">        <span class="k">return</span> <span class="n">op</span><span class="o">.</span><span class="n">t_matvec</span><span class="p">(</span><span class="n">a_first</span><span class="p">)</span></div>
 
-</span><span data-line="207">
+</span><span data-line="213">
 <div class="viewcode-block" id="NEML2BlockJacobian.as_adjoint_walk">
 <a class="viewcode-back" href="../../../../content/python_api/neml2.pyzag.html#neml2.pyzag.NEML2BlockJacobian.as_adjoint_walk">[docs]</a>
-</span><span data-line="208">    <span class="k">def</span><span class="w"> </span><span class="nf">as_adjoint_walk</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockJacobian</span><span class="p">:</span>
-</span><span data-line="209"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a view of this Jacobian marked for the reverse-time adjoint walk.&quot;&quot;&quot;</span>
-</span><span data-line="210">        <span class="k">return</span> <span class="n">NEML2BlockJacobian</span><span class="p">(</span>
-</span><span data-line="211">            <span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_am</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="p">,</span> <span class="n">_reversed</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed</span>
-</span><span data-line="212">        <span class="p">)</span></div>
+</span><span data-line="214">    <span class="k">def</span><span class="w"> </span><span class="nf">as_adjoint_walk</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NEML2BlockJacobian</span><span class="p">:</span>
+</span><span data-line="215"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a view of this Jacobian marked for the reverse-time adjoint walk.&quot;&quot;&quot;</span>
+</span><span data-line="216">        <span class="k">return</span> <span class="n">NEML2BlockJacobian</span><span class="p">(</span>
+</span><span data-line="217">            <span class="bp">self</span><span class="o">.</span><span class="n">diag_am</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_am</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="p">,</span> <span class="n">_reversed</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed</span>
+</span><span data-line="218">        <span class="p">)</span></div>
 </div>
 
 </span></pre></div>
