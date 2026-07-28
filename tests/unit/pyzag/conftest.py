@@ -22,32 +22,43 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Adapter exposing a NEML2 nonlinear system to the pyzag time-integration library.
+from pathlib import Path
 
-:class:`NEML2PyzagFactory` wraps a NEML2 ``ModelNonlinearSystem`` as a
-``pyzag.nonlinear.NonlinearFunctionOperatorFactory`` -- assembling the per-chunk
-residual and bidiagonal Jacobian from NEML2's equation-systems layer and mirroring
-the model's HIT parameters as ``torch.nn.Parameter`` s for gradient-based
-calibration. The backing block-operator implementations live in
-:mod:`neml2.pyzag.operators`.
-"""
+import pytest
 
-from .interface import NEML2PyzagFactory, change_lag_order, lag_order
-from .operators import (
-    NEML2BlockJacobian,
-    NEML2BlockVector,
-    NEML2LiftedPCRFactorization,
-    NEML2SolvableBlockOperator,
-    NEML2Wrapper,
-)
-
-__all__ = [
-    "NEML2PyzagFactory",
-    "change_lag_order",
-    "lag_order",
-    "NEML2BlockVector",
-    "NEML2SolvableBlockOperator",
-    "NEML2BlockJacobian",
-    "NEML2LiftedPCRFactorization",
-    "NEML2Wrapper",
+# Default-valued SR2LinearCombination weights/offset that the native model
+# registers as parameters but are framework plumbing, not material parameters.
+LINCOMB_INTERNAL_PARAMS = [
+    "Eerate_offset",
+    "Eerate_weight_0",
+    "Eerate_weight_1",
 ]
+
+# Per-scenario tolerances for comparing native trajectories against the gold
+# baked by the retired C++ pipeline (float op-order drift).
+COMPARE_TOLERANCES = {
+    "km_mixed_model": {"rtol": 1e-4, "atol": 1e-8},
+}
+
+MODELS_DIR = Path(__file__).parent / "models"
+GOLD_DIR = Path(__file__).parent / "gold"
+
+
+@pytest.fixture
+def models_dir():
+    return MODELS_DIR
+
+
+@pytest.fixture
+def gold_dir():
+    return GOLD_DIR
+
+
+@pytest.fixture
+def lincomb_internal_params():
+    return list(LINCOMB_INTERNAL_PARAMS)
+
+
+@pytest.fixture
+def compare_tolerances():
+    return dict(COMPARE_TOLERANCES)

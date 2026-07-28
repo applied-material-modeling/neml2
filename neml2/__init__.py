@@ -107,7 +107,7 @@ except ImportError as _aoti_err:
 from . import log as log  # noqa: F401
 
 # Eagerly expose ``neml2.pyzag`` as an attribute so notebooks / tests
-# can write ``neml2.pyzag.NEML2PyzagModel(...)`` without an explicit
+# can write ``neml2.pyzag.NEML2PyzagFactory(...)`` without an explicit
 # import. Safe to place anywhere in this file -- ``pyzag.interface``
 # imports only from the leaf modules (``neml2.es``, ``neml2.types``,
 # ``neml2.models``) that are already loaded by this point. It used

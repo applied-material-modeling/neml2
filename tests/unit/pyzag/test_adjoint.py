@@ -22,42 +22,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Verify the wrapper's adjoint gradients match finite differences.
-
-This is the load-bearing pyzag test — if the parameter
-mirroring + per-forward sync (interface.py ``_update_parameter_values`` +
-``_param_targets``) is wrong, the adjoint backward pass returns garbage
-gradients and this test fails.
-
-The C++-side fixture used a constellation of typed constructors
-(``SR2.dynamic_linspace``, ``SR2.fill``, ``Scalar.full``, ``SparseVector``)
-to build the (time × stress × strain × etc.) forcing tensors. The native
-side has bare ``SR2``/``Scalar`` wrappers but not the same convenience
-constructors, so we build the forcing tensors with raw torch.linspace +
-torch.cat instead — the wrapper only consumes flat ``(*time, ..., nforce)``
-torch tensors anyway.
-"""
+"""Adjoint gradients of the factory must match finite differences -- the load-bearing
+check on parameter mirroring and per-forward sync (``_update_parameter_values`` /
+``_param_targets``)."""
 
 import math
-from pathlib import Path
 
 import pytest
 import torch
 from pyzag import nonlinear
 
 from neml2 import load_nonlinear_system
-from neml2.pyzag import NEML2PyzagModel
+from neml2.pyzag import NEML2PyzagFactory
 
 
-def _per_var_forces(model, force_pieces: dict[str, torch.Tensor]) -> torch.Tensor:
-    """Pack a per-variable dict ``{var_name: tensor_with_shape_(*time, *base)}``
-    into the flat ``(*time, ..., nforce)`` layout the wrapper consumes.
-
-    Reshapes each piece's trailing base axes to its flat var size, then
-    concatenates in ``model.fvars`` order so the wrapper's
-    ``_split_by_layout`` round-trips correctly.
-    """
-    flat_pieces: list[torch.Tensor] = []
+def _per_var_forces(model, force_pieces):
+    """Pack ``{var: (*time, *base)}`` into the flat ``(*time, ..., nforce)`` layout."""
+    flat_pieces = []
     for name in model.fvars:
         piece = force_pieces[name]
         type_cls = model.flayout.type_of(name)
@@ -70,8 +51,25 @@ def _per_var_forces(model, force_pieces: dict[str, torch.Tensor]) -> torch.Tenso
     return torch.cat(flat_pieces, dim=-1)
 
 
+def _ramp_strain(nstep, nbatch):
+    """A (nstep, nbatch, 6) Mandel-strain ramp from zero to a fixed end strain."""
+    end = torch.tensor([0.1, -0.05, -0.05, 0.0, 0.0, 0.0], dtype=torch.float64)
+    t = torch.linspace(0.0, 1.0, nstep, dtype=torch.float64)
+    base = t.unsqueeze(-1).unsqueeze(-1) * end.reshape(1, 1, 6)
+    return base.expand(nstep, nbatch, 6).contiguous()
+
+
+def _ramp_time(nstep, nbatch):
+    """Per-batch log-spaced final time so step rates span several orders of magnitude."""
+    end = torch.logspace(-1, -5, nbatch, dtype=torch.float64)
+    t = torch.linspace(0.0, 1.0, nstep, dtype=torch.float64).unsqueeze(-1)
+    return t * end
+
+
 class DerivativeCheck:
-    model: NEML2PyzagModel
+    """Base for adjoint-vs-FD checks; subclasses populate the attributes in ``_setup``."""
+
+    model: NEML2PyzagFactory
     nchunk: int
     initial_state: torch.Tensor
     nstep: int
@@ -87,8 +85,7 @@ class DerivativeCheck:
         )
         solver.zero_grad()
         res = nonlinear.solve_adjoint(solver, self.initial_state, self.nstep, self.forces)
-        val = torch.norm(res)
-        val.backward()
+        torch.norm(res).backward()
         return {n: torch.Tensor(p.grad) for n, p in solver.named_parameters()}
 
     def fd_grads(self, eps=1.0e-6):
@@ -115,57 +112,17 @@ class DerivativeCheck:
         grads_adjoint = self.adjoint_grads()
         grads_fd = self.fd_grads()
         assert grads_adjoint.keys() == grads_fd.keys()
-        for n in grads_adjoint.keys():
+        for n in grads_adjoint:
             assert torch.allclose(grads_adjoint[n], grads_fd[n], atol=self.atol, rtol=self.rtol)
-
-
-def _ramp_strain(nstep: int, nbatch: int) -> torch.Tensor:
-    """Build a (nstep, nbatch, 6) Mandel-strain ramp from 0 to a fixed
-    end strain. Linear-in-time so any rate-form viscoplastic model sees a
-    non-trivial driving signal."""
-    end = torch.tensor([0.1, -0.05, -0.05, 0.0, 0.0, 0.0], dtype=torch.float64)
-    t = torch.linspace(0.0, 1.0, nstep, dtype=torch.float64)
-    # (nstep, 1, 6) * (1, 1, 6) → (nstep, 1, 6) → broadcast across nbatch.
-    base = t.unsqueeze(-1).unsqueeze(-1) * end.reshape(1, 1, 6)
-    return base.expand(nstep, nbatch, 6).contiguous()
-
-
-def _ramp_time(nstep: int, nbatch: int) -> torch.Tensor:
-    """Per-batch log-spaced final time so step rates span several orders of
-    magnitude — exercises the viscoplastic rate equation."""
-    end = torch.logspace(-1, -5, nbatch, dtype=torch.float64)  # (nbatch,)
-    t = torch.linspace(0.0, 1.0, nstep, dtype=torch.float64).unsqueeze(-1)
-    return t * end  # (nstep, nbatch)
-
-
-_LINCOMB_INTERNAL_PARAMS = [
-    # Native `SR2LinearCombination` registers `weights` (`weight_N`) and
-    # `offset` as `nn.Parameter`s even when the HIT block leaves them at
-    # their defaults; the C++ side didn't expose them as tunable parameters
-    # at all. They're framework plumbing rather than material parameters the
-    # user would calibrate, so the original C++ pyzag test never had them in
-    # scope.
-    #
-    # Of these three, only `Eerate_offset` actually produces an adjoint that
-    # disagrees with FD — the wrapper's J/Jn are correct (verified against
-    # FD to 1e-7), but the IFT-propagated adjoint vector at the converged
-    # state is EPS-residual-dominated while `dR/d(offset)` is purely
-    # stress-residual-side, so the `α^T · ∂R/∂offset` dot product collapses
-    # to ~0. FD captures a different quantity (the full implicit total
-    # derivative). The other two parameters work, but the C++ exclusion
-    # rule applies uniformly to the whole LinearCombination triple.
-    "Eerate_offset",
-    "Eerate_weight_0",
-    "Eerate_weight_1",
-]
 
 
 class TestElasticModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
-    def _setup(self):
-        pwd = Path(__file__).parent
-        nmodel = load_nonlinear_system(pwd / "models" / "elastic_model.i", "eq_sys")
-        self.model = NEML2PyzagModel(nmodel, exclude_parameters=_LINCOMB_INTERNAL_PARAMS)
+    def _setup(self, models_dir, lincomb_internal_params):
+        nmodel = load_nonlinear_system(models_dir / "elastic_model.i", "eq_sys")
+        self.model = NEML2PyzagFactory(
+            nmodel, exclude_parameters=lincomb_internal_params, compile=False
+        )
 
         self.nbatch = 20
         self.nstep = 100
@@ -181,10 +138,11 @@ class TestElasticModel(DerivativeCheck):
 
 class TestViscoplasticModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
-    def _setup(self):
-        pwd = Path(__file__).parent
-        nmodel = load_nonlinear_system(pwd / "models" / "viscoplastic_model.i", "eq_sys")
-        self.model = NEML2PyzagModel(nmodel, exclude_parameters=_LINCOMB_INTERNAL_PARAMS)
+    def _setup(self, models_dir, lincomb_internal_params):
+        nmodel = load_nonlinear_system(models_dir / "viscoplastic_model.i", "eq_sys")
+        self.model = NEML2PyzagFactory(
+            nmodel, exclude_parameters=lincomb_internal_params, compile=False
+        )
 
         self.nbatch = 20
         self.nstep = 100
@@ -200,24 +158,17 @@ class TestViscoplasticModel(DerivativeCheck):
 
 class TestKocksMeckingMixedControlModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
-    def _setup(self):
-        pwd = Path(__file__).parent
-        nmodel = load_nonlinear_system(pwd / "models" / "km_mixed_model.i", "eq_sys")
-        # The C++ test excluded ``yield_zero_sy`` (a ScalarConstantParameter
-        # alias) plus ``mu_X`` / ``mu_Y`` — the two abscissa/ordinate knobs
-        # of the ScalarLinearInterpolation lookup table for the shear
-        # modulus. The native side exposes them as ``mu_abscissa`` /
-        # ``mu_ordinate``; they're framework-internal table values rather
-        # than material parameters and the original C++ test never had
-        # them in scope.
-        self.model = NEML2PyzagModel(
+    def _setup(self, models_dir, lincomb_internal_params):
+        nmodel = load_nonlinear_system(models_dir / "km_mixed_model.i", "eq_sys")
+        self.model = NEML2PyzagFactory(
             nmodel,
             exclude_parameters=[
                 "yield_zero_value",
                 "mu_abscissa",
                 "mu_ordinate",
-                *_LINCOMB_INTERNAL_PARAMS,
+                *lincomb_internal_params,
             ],
+            compile=False,
         )
 
         self.nbatch = 20
@@ -228,9 +179,6 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
 
         time = _ramp_time(self.nstep, self.nbatch)
 
-        # Mixed-control loading — 1st and 4th Mandel components are stress-controlled,
-        # the rest are strain-controlled. Build the prescribed condition tensor
-        # the model consumes (it gets unpacked by the model's control mask).
         sqrt2 = math.sqrt(2)
         end_condition = torch.tensor(
             [0.1, -50.0, -0.025, 0.15 / sqrt2, 75.0 / sqrt2, 0.05 / sqrt2],
@@ -243,7 +191,6 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
             .contiguous()
         )
 
-        # Control mask broadcast across (nstep, nbatch).
         control = (
             torch.tensor([0.0, 1.0, 0.0, 0.0, 1.0, 0.0], dtype=torch.float64)
             .reshape(1, 1, 6)
@@ -251,7 +198,6 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
             .contiguous()
         )
 
-        # Temperature ramp — per-batch start/end so calls span the table.
         t_start = torch.linspace(300.0, 500.0, self.nbatch, dtype=torch.float64)
         t_end = torch.linspace(600.0, 1200.0, self.nbatch, dtype=torch.float64)
         temperature = t.unsqueeze(-1) * (t_end - t_start) + t_start

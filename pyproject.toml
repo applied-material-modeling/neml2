@@ -74,7 +74,7 @@ dependencies = [
   # dependencies: torch.version_min
   "torch>=2.10.0",
   # dependencies: pyzag.version
-  "pyzag==1.1.4",
+  "pyzag==2.0.0",
   # dependencies: nmhit.version_min
   "nmhit>=0.3.6",
 ]
@@ -303,7 +303,7 @@ before-build = "python -m pip install scikit-build-core ninja torch==2.12.1 'nmh
 # compat matrix (.github/workflows/compat.yaml) is the one place torch is swept.
 # dependencies: torch.version
 # dependencies: pyzag.version
-test-requires = "pytest torch==2.12.1 pyzag==1.1.4"
+test-requires = "pytest torch==2.12.1 pyzag==2.0.0"
 test-command = "pytest -v {project}/tests"
 
 [tool.cibuildwheel.linux]
