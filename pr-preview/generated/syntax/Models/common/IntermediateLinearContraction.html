@@ -110,6 +110,10 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../content/modules/pbm/index.html">Population balance (fragmentation)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/pbm/grinding.html">Grinding example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../content/modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../content/modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../content/modules/solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -439,8 +443,9 @@ data-aria-dark="Switch to auto color mode">
 <p><code class="docutils literal notranslate"><span class="pre">operator</span></code> is a two-dimensional intermediate quantity (sub_batch_ndim=2,
 rows x cols) and <code class="docutils literal notranslate"><span class="pre">field</span></code> is a one-dimensional field (sub_batch_ndim=1)
 whose length matches the column axis of <code class="docutils literal notranslate"><span class="pre">operator</span></code>. The output <code class="docutils literal notranslate"><span class="pre">out</span></code> is
-the row-length field. Linear in both operands, so the pushforward is the
-same contraction applied to each tangent. Reusable beyond any one physics.</p>
+the field on the operator’s row axis. Linear in both operands, so the
+pushforward is the same contraction applied to each tangent. Reusable
+beyond any one physics.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">

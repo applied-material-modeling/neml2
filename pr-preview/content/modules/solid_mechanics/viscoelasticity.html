@@ -110,6 +110,10 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../pbm/index.html">Population balance (fragmentation)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pbm/grinding.html">Grinding example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Solid mechanics</a><ul class="current">
@@ -475,9 +479,9 @@ unknown:</p>
 </div>
 <p>For <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/ZenerElement.html#models-zenerelement"><span class="std std-ref">ZenerElement</span></a> — equilibrium spring in parallel with a Maxwell
 branch (Standard Linear Solid):</p>
-<div class="math-wrapper amsmath docutils container" id="equation-45c3555c-5030-417c-a943-491baf5adb72">
-<div class="amsmath math notranslate nohighlight" id="equation-45c3555c-5030-417c-a943-491baf5adb72">
-<span class="eqno">(13)<a class="headerlink" href="#equation-45c3555c-5030-417c-a943-491baf5adb72" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-183c9bfa-6f1d-4cc5-9d41-94b933435573">
+<div class="amsmath math notranslate nohighlight" id="equation-183c9bfa-6f1d-4cc5-9d41-94b933435573">
+<span class="eqno">(13)<a class="headerlink" href="#equation-183c9bfa-6f1d-4cc5-9d41-94b933435573" title="Permalink to this equation">#</a></span>\[\begin{align}
 \boldsymbol{\sigma} &amp;= (E_\infty + E_M) \boldsymbol{\varepsilon} - E_M \boldsymbol{\varepsilon}_v, \\
 \dot{\boldsymbol{\varepsilon}}_v &amp;= \frac{E_M}{\eta_M} (\boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_v).
 \end{align}\]</div>
@@ -485,9 +489,9 @@ branch (Standard Linear Solid):</p>
 <p>For <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/WiechertElement.html#models-wiechertelement"><span class="std std-ref">WiechertElement</span></a> — an equilibrium spring in parallel with two
 Maxwell branches (generalized Maxwell), one viscous strain
 <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}_{v,i}\)</span> per branch:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-a2db18fc-071c-4319-bf37-916822bf6ff5">
-<div class="amsmath math notranslate nohighlight" id="equation-a2db18fc-071c-4319-bf37-916822bf6ff5">
-<span class="eqno">(14)<a class="headerlink" href="#equation-a2db18fc-071c-4319-bf37-916822bf6ff5" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-4050070b-f8e8-4d3f-ac12-26ae2c30913c">
+<div class="amsmath math notranslate nohighlight" id="equation-4050070b-f8e8-4d3f-ac12-26ae2c30913c">
+<span class="eqno">(14)<a class="headerlink" href="#equation-4050070b-f8e8-4d3f-ac12-26ae2c30913c" title="Permalink to this equation">#</a></span>\[\begin{align}
 \boldsymbol{\sigma} &amp;= E_\infty \boldsymbol{\varepsilon} + \sum_{i=1}^{2} E_i \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_{v,i} \right), \\
 \dot{\boldsymbol{\varepsilon}}_{v,i} &amp;= \frac{E_i}{\eta_i} \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_{v,i} \right), \quad i = 1, 2.
 \end{align}\]</div>
@@ -495,9 +499,9 @@ Maxwell branches (generalized Maxwell), one viscous strain
 <p>For <a class="reference internal" href="../../../generated/syntax/Models/solid_mechanics/viscoelasticity/BurgersElement.html#models-burgerselement"><span class="std std-ref">BurgersElement</span></a> — a Maxwell branch in series with a Kelvin-Voigt
 block, with <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}_v^M\)</span> the Maxwell dashpot strain and
 <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}^K\)</span> the Kelvin-Voigt block strain:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-5c6413c9-5eaa-4c7d-bbcd-bcb187674b05">
-<div class="amsmath math notranslate nohighlight" id="equation-5c6413c9-5eaa-4c7d-bbcd-bcb187674b05">
-<span class="eqno">(15)<a class="headerlink" href="#equation-5c6413c9-5eaa-4c7d-bbcd-bcb187674b05" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-c7a363e1-5586-4d30-9c9a-d8dfbee16d14">
+<div class="amsmath math notranslate nohighlight" id="equation-c7a363e1-5586-4d30-9c9a-d8dfbee16d14">
+<span class="eqno">(15)<a class="headerlink" href="#equation-c7a363e1-5586-4d30-9c9a-d8dfbee16d14" title="Permalink to this equation">#</a></span>\[\begin{align}
 \boldsymbol{\sigma} &amp;= E_M \left( \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_v^M - \boldsymbol{\varepsilon}^K \right), \\
 \dot{\boldsymbol{\varepsilon}}_v^M &amp;= \boldsymbol{\sigma} / \eta_M, \\
 \dot{\boldsymbol{\varepsilon}}^K &amp;= \left( \boldsymbol{\sigma} - E_K \boldsymbol{\varepsilon}^K \right) / \eta_K.

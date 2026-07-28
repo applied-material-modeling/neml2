@@ -12,8 +12,9 @@ $$
 ``operator`` is a two-dimensional intermediate quantity (sub_batch_ndim=2,
 rows x cols) and ``field`` is a one-dimensional field (sub_batch_ndim=1)
 whose length matches the column axis of ``operator``. The output ``out`` is
-the row-length field. Linear in both operands, so the pushforward is the
-same contraction applied to each tangent. Reusable beyond any one physics.
+the field on the operator's row axis. Linear in both operands, so the
+pushforward is the same contraction applied to each tangent. Reusable
+beyond any one physics.
 
 ## Inputs
 

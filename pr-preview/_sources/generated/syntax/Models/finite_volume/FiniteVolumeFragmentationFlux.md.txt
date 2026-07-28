@@ -3,14 +3,13 @@
 
 **Source:** `models/finite_volume/FiniteVolumeFragmentationFlux.py`
 
-Assemble the interior-edge fragment-flux operator of a population balance.
+Assemble the interior edge fragment flux operator of a population balance.
 
-For the fragmentation-only population balance in particle-volume
-coordinate, with mass density $u = \rho v n$ on $N$ cells, the
-conservative form $\partial_t u + \partial_v J = 0$ has interior-edge
-flux $J = M u$. This model builds the $(N-1) \times N$ operator $M$ from
-the per-cell density, volume, width, fragmentation rate, and the breakage
-matrix $p$.
+For fragmentation alone in the particle volume coordinate, with mass
+density $u = \rho v n$ on $N$ cells, the conservative form
+$\partial_t u + \partial_v J = 0$ has interior edge flux $J = M u$. This
+model builds the $(N-1) \times N$ operator $M$ from the per cell density,
+volume, width, fragmentation rate, and the breakage matrix $p$.
 
 $$
 K_{kj} = \Delta v_j\, \Delta v_k\, \gamma_j\,
@@ -28,16 +27,16 @@ independent of $u$; the contraction $M u$ is applied downstream by
 ## Inputs
 
 `cell_density` &mdash; `input` &middot; `Scalar` &middot; **required**
-: Per-cell material density.
+: Per cell material density.
 
 `cell_volume` &mdash; `input` &middot; `Scalar` &middot; **required**
-: Per-cell particle volume (size coordinate at cell centers).
+: Per cell particle volume (size coordinate at cell centers).
 
 `cell_width` &mdash; `input` &middot; `Scalar` &middot; **required**
-: Per-cell width in the volume (size) coordinate.
+: Per cell width in the volume (size) coordinate.
 
 `fragmentation_rate` &mdash; `input` &middot; `Scalar` &middot; **required**
-: Per-cell fragmentation rate.
+: Per cell fragmentation rate.
 
 `breakage_matrix` &mdash; `input` &middot; `Scalar` &middot; **required**
 : Breakage matrix p[k,j] (child k from parent j).
@@ -46,5 +45,5 @@ independent of $u$; the contraction $M u$ is applied downstream by
 ## Outputs
 
 `flux_operator` &mdash; `output` &middot; `Scalar` &middot; **required**
-: Interior-edge fragment-flux operator (N-1, N).
+: Interior edge fragment flux operator (N-1, N).
 

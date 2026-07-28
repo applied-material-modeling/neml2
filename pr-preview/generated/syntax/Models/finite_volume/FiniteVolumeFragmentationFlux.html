@@ -110,6 +110,10 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../content/modules/pbm/index.html">Population balance (fragmentation)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../content/modules/pbm/grinding.html">Grinding example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../content/modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../content/modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../content/modules/solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -429,13 +433,12 @@ data-aria-dark="Switch to auto color mode">
           <section class="tex2jax_ignore mathjax_ignore" id="finitevolumefragmentationflux">
 <span id="models-finitevolumefragmentationflux"></span><h1>FiniteVolumeFragmentationFlux<a class="headerlink" href="#finitevolumefragmentationflux" title="Link to this heading">#</a></h1>
 <p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/finite_volume/FiniteVolumeFragmentationFlux.py</span></code></p>
-<p>Assemble the interior-edge fragment-flux operator of a population balance.</p>
-<p>For the fragmentation-only population balance in particle-volume
-coordinate, with mass density <span class="math notranslate nohighlight">\(u = \rho v n\)</span> on <span class="math notranslate nohighlight">\(N\)</span> cells, the
-conservative form <span class="math notranslate nohighlight">\(\partial_t u + \partial_v J = 0\)</span> has interior-edge
-flux <span class="math notranslate nohighlight">\(J = M u\)</span>. This model builds the <span class="math notranslate nohighlight">\((N-1) \times N\)</span> operator <span class="math notranslate nohighlight">\(M\)</span> from
-the per-cell density, volume, width, fragmentation rate, and the breakage
-matrix <span class="math notranslate nohighlight">\(p\)</span>.</p>
+<p>Assemble the interior edge fragment flux operator of a population balance.</p>
+<p>For fragmentation alone in the particle volume coordinate, with mass
+density <span class="math notranslate nohighlight">\(u = \rho v n\)</span> on <span class="math notranslate nohighlight">\(N\)</span> cells, the conservative form
+<span class="math notranslate nohighlight">\(\partial_t u + \partial_v J = 0\)</span> has interior edge flux <span class="math notranslate nohighlight">\(J = M u\)</span>. This
+model builds the <span class="math notranslate nohighlight">\((N-1) \times N\)</span> operator <span class="math notranslate nohighlight">\(M\)</span> from the per cell density,
+volume, width, fragmentation rate, and the breakage matrix <span class="math notranslate nohighlight">\(p\)</span>.</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
@@ -453,13 +456,13 @@ independent of <span class="math notranslate nohighlight">\(u\)</span>; the cont
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">cell_density</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per-cell material density.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">cell_density</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per cell material density.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">cell_volume</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per-cell particle volume (size coordinate at cell centers).</p>
+<dt><code class="docutils literal notranslate"><span class="pre">cell_volume</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per cell particle volume (size coordinate at cell centers).</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">cell_width</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per-cell width in the volume (size) coordinate.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">cell_width</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per cell width in the volume (size) coordinate.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">fragmentation_rate</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per-cell fragmentation rate.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">fragmentation_rate</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Per cell fragmentation rate.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">breakage_matrix</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Breakage matrix p[k,j] (child k from parent j).</p>
 </dd>
@@ -468,7 +471,7 @@ independent of <span class="math notranslate nohighlight">\(u\)</span>; the cont
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">flux_operator</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Interior-edge fragment-flux operator (N-1, N).</p>
+<dt><code class="docutils literal notranslate"><span class="pre">flux_operator</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>Interior edge fragment flux operator (N-1, N).</p>
 </dd>
 </dl>
 </section>
