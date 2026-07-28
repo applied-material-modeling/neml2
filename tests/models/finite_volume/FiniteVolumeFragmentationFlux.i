@@ -1,4 +1,4 @@
-# N=3 fragment-flux operator. Uniform density, dv=1, gamma_0=0 (sink bin),
+# N=3 fragment flux operator. Uniform density, dv=1, gamma_0=0 (sink bin),
 # upper-triangular daughter matrix p. The (N-1, N) = (2, 3) reference M is
 # hand-computed from K_{kj} = dv_j dv_k gamma_j (rho_k v_k)/(rho_j v_j) p_{kj},
 # M_{ij} = -sum_{k<=i} K_{kj} for j>i. ModelUnitTest auto-checks all five

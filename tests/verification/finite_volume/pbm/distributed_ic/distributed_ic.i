@@ -1,7 +1,7 @@
 # Population balance, 30 bins, distributed Gaussian initial condition with a
-# nearest-neighbor (parent j -> child j-1) mass-conserving daughter matrix.
+# nearest neighbor (parent j -> child j-1) mass conserving daughter matrix.
 # This case checks that the assembled pipeline reproduces the initial condition
-# exactly at step 0 (a wiring / round-trip check); the trajectory still has to
+# exactly at step 0 (a wiring / round trip check); the trajectory still has to
 # integrate stably through every step.
 [Tensors]
   [rho_val]
@@ -21,7 +21,7 @@
     type = Python
     expr = 'Scalar(torch.cat([torch.zeros(1), torch.full((29,), 0.2)]), sub_batch_ndim=1)'
   []
-  # Nearest-neighbor daughter matrix: parent j deposits into child j-1 on the
+  # Nearest neighbor daughter matrix: parent j deposits into child j-1 on the
   # superdiagonal (k = j-1), with p[j-1, j] = v_j / v_{j-1} for mass conservation
   # (dv = rho = 1).
   [p_val]

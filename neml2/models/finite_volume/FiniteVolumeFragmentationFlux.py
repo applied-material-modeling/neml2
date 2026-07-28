@@ -36,14 +36,13 @@ from ..model import Model
 
 @register_neml2_object("FiniteVolumeFragmentationFlux")
 class FiniteVolumeFragmentationFlux(Model):
-    """Assemble the interior-edge fragment-flux operator of a population balance.
+    """Assemble the interior edge fragment flux operator of a population balance.
 
-    For the fragmentation-only population balance in particle-volume
-    coordinate, with mass density $u = \\rho v n$ on $N$ cells, the
-    conservative form $\\partial_t u + \\partial_v J = 0$ has interior-edge
-    flux $J = M u$. This model builds the $(N-1) \\times N$ operator $M$ from
-    the per-cell density, volume, width, fragmentation rate, and the breakage
-    matrix $p$.
+    For fragmentation alone in the particle volume coordinate, with mass
+    density $u = \\rho v n$ on $N$ cells, the conservative form
+    $\\partial_t u + \\partial_v J = 0$ has interior edge flux $J = M u$. This
+    model builds the $(N-1) \\times N$ operator $M$ from the per cell density,
+    volume, width, fragmentation rate, and the breakage matrix $p$.
 
     $$
     K_{kj} = \\Delta v_j\\, \\Delta v_k\\, \\gamma_j\\,
@@ -60,23 +59,23 @@ class FiniteVolumeFragmentationFlux(Model):
     """
 
     hit = HitSchema(
-        input("cell_density", Scalar, "Per-cell material density.", attr="_cell_density_name"),
+        input("cell_density", Scalar, "Per cell material density.", attr="_cell_density_name"),
         input(
             "cell_volume",
             Scalar,
-            "Per-cell particle volume (size coordinate at cell centers).",
+            "Per cell particle volume (size coordinate at cell centers).",
             attr="_cell_volume_name",
         ),
         input(
             "cell_width",
             Scalar,
-            "Per-cell width in the volume (size) coordinate.",
+            "Per cell width in the volume (size) coordinate.",
             attr="_cell_width_name",
         ),
         input(
             "fragmentation_rate",
             Scalar,
-            "Per-cell fragmentation rate.",
+            "Per cell fragmentation rate.",
             attr="_fragmentation_rate_name",
         ),
         input(
@@ -88,7 +87,7 @@ class FiniteVolumeFragmentationFlux(Model):
         output(
             "flux_operator",
             Scalar,
-            "Interior-edge fragment-flux operator (N-1, N).",
+            "Interior edge fragment flux operator (N-1, N).",
             attr="_flux_operator_name",
         ),
     )
@@ -110,7 +109,7 @@ class FiniteVolumeFragmentationFlux(Model):
 
     def forward(self, *inputs, v: ChainRuleDict | None = None):  # type: ignore[override]
         rho, vol, dv, gamma, p = inputs
-        # Broadcast per-cell fields onto the (k, j) grid (k = child/row, j = parent/col).
+        # Broadcast per cell fields onto the (k, j) grid (k = child/row, j = parent/col).
         rho_k = rho.sub_batch.unsqueeze(1)
         rho_j = rho.sub_batch.unsqueeze(0)
         v_k = vol.sub_batch.unsqueeze(1)

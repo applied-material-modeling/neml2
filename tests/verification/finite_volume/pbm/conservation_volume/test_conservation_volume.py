@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Mass- and volume-conservation check for the non-uniform-density PBM case.
+"""Mass and volume conservation check for the non-uniform density PBM case.
 
 The finite-volume flux form conserves total mass by construction; the daughter
 matrix (see ``gen_p.py``) is additionally designed so total particle volume is

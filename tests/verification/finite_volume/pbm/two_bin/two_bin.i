@@ -1,6 +1,6 @@
 # Population balance, two bins, closed-form check.
 # Uniform density; bin 0 is a sink (gamma_0 = 0); bin 1 fragments into bin 0 at
-# rate gamma_1. The mass-conserving daughter matrix reduces the discrete system
+# rate gamma_1. The mass conserving daughter matrix reduces the discrete system
 # to du_1/dt = -gamma_1 u_1, so u_1(t) = u_1(0) exp(-gamma_1 t) and the mass lost
 # by bin 1 accumulates in bin 0. Reference is the closed form at the final step.
 g1 = 1.0
