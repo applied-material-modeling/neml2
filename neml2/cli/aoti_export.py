@@ -2586,7 +2586,20 @@ def _compile_implicit_segment(
     if inner.predictor is not None:
         pred = inner.predictor.to(device)
         pred_exportable = ComposedModel([pred])
-        pred_inputs = _example_inputs_for(pred_exportable, device, shapes=shapes)
+        # A custom predictor may consume a "given" that is internal to the
+        # enclosing composed model (e.g. a frozen trial-state quantity threaded
+        # in as one of this system's `given_names`, not a top-level model
+        # input) -- unlike `ConstantExtrapolationPredictor`, which only ever
+        # consumes `<unknown>~1` history variables that are always top-level
+        # inputs and thus already keyed in `shapes`. Fall back to the same
+        # bare-name / shared-dyn-shape default used by `_example_for_given`
+        # above so a name missing from `shapes` doesn't crash the hard index
+        # inside `_example_inputs_for`.
+        pred_shapes = {
+            name: shapes.get(name, shapes.get(name.split("~", 1)[0], (dyn_shape, ())))
+            for name in pred_exportable.input_spec
+        }
+        pred_inputs = _example_inputs_for(pred_exportable, device, shapes=pred_shapes)
         pred_name = f"{pkg_basename}_predictor.pt2"
         compile_model(
             pred_exportable, pred_inputs, output_dir / pred_name, dynamic_batch_dim=dynamic_dim
