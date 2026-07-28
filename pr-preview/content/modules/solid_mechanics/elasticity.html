@@ -189,6 +189,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -259,6 +260,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -493,9 +495,9 @@ and deviatoric projectors:</p>
 <p>Any pair drawn from <span class="math notranslate nohighlight">\(\{E,\,\nu,\,K,\,G,\,\lambda,\,M\}\)</span> converts to
 <span class="math notranslate nohighlight">\((K,\,G)\)</span> via the standard textbook relations; e.g. with
 <span class="math notranslate nohighlight">\(E,\,\nu\)</span> as inputs,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-2f3a4588-f6bf-4e80-8d4d-4979a2148565">
-<div class="amsmath math notranslate nohighlight" id="equation-2f3a4588-f6bf-4e80-8d4d-4979a2148565">
-<span class="eqno">(11)<a class="headerlink" href="#equation-2f3a4588-f6bf-4e80-8d4d-4979a2148565" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-4d36f643-e386-4751-8073-f8e4ca3f4189">
+<div class="amsmath math notranslate nohighlight" id="equation-4d36f643-e386-4751-8073-f8e4ca3f4189">
+<span class="eqno">(11)<a class="headerlink" href="#equation-4d36f643-e386-4751-8073-f8e4ca3f4189" title="Permalink to this equation">#</a></span>\[\begin{align}
   K &amp;= \dfrac{E}{3(1 - 2\nu)}, \\
   G &amp;= \dfrac{E}{2(1 + \nu)}.
 \end{align}\]</div>
@@ -511,9 +513,9 @@ fourth-order stiffness onto three cubic-symmetry projectors
 \]</div>
 </div>
 <p>With <span class="math notranslate nohighlight">\((G,\,E,\,\nu)\)</span> as inputs, the canonical triple is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-e3bf4b2c-77a6-44fc-bcd1-24cd27069120">
-<div class="amsmath math notranslate nohighlight" id="equation-e3bf4b2c-77a6-44fc-bcd1-24cd27069120">
-<span class="eqno">(12)<a class="headerlink" href="#equation-e3bf4b2c-77a6-44fc-bcd1-24cd27069120" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-f8b5d9a5-cf0e-452e-8968-f60c4699ee29">
+<div class="amsmath math notranslate nohighlight" id="equation-f8b5d9a5-cf0e-452e-8968-f60c4699ee29">
+<span class="eqno">(12)<a class="headerlink" href="#equation-f8b5d9a5-cf0e-452e-8968-f60c4699ee29" title="Permalink to this equation">#</a></span>\[\begin{align}
   C_1 &amp;= \dfrac{E\,(1 - \nu)}{(1 + \nu)(1 - 2\nu)}, \\
   C_2 &amp;= \dfrac{E\,\nu}{(1 + \nu)(1 - 2\nu)}, \\
   C_3 &amp;= 2G.

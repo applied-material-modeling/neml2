@@ -19,6 +19,7 @@ CopyWR2
 FBComplementarity
 HermiteSmoothStep
 ImplicitUpdate
+IntermediateLinearContraction
 IrreversibleScalar
 LinearExtrapolationPredictor
 MRPConstantParameter

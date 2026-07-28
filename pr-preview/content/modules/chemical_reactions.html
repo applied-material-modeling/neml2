@@ -189,6 +189,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -259,6 +260,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -460,9 +462,9 @@ chemical-reactions types slot into that machinery.</p>
 <p>A reaction mechanism is a constitutive relation between the conversion
 degree <span class="math notranslate nohighlight">\(\alpha \in [0, 1]\)</span> and the reaction rate
 <span class="math notranslate nohighlight">\(\dot{\alpha} = f(\alpha)\)</span>. The three mechanisms in this module are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-3767a131-809a-4ff8-8af8-d18bc5168de6">
-<div class="amsmath math notranslate nohighlight" id="equation-3767a131-809a-4ff8-8af8-d18bc5168de6">
-<span class="eqno">(4)<a class="headerlink" href="#equation-3767a131-809a-4ff8-8af8-d18bc5168de6" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-d4f615c6-51ca-490a-aa4d-6774ff5f0144">
+<div class="amsmath math notranslate nohighlight" id="equation-d4f615c6-51ca-490a-aa4d-6774ff5f0144">
+<span class="eqno">(4)<a class="headerlink" href="#equation-d4f615c6-51ca-490a-aa4d-6774ff5f0144" title="Permalink to this equation">#</a></span>\[\begin{align}
 \dot{\alpha} &amp;= k \, (1 - \alpha)^n
   &amp;&amp;\text{(contracting geometry)} \\
 \dot{\alpha} &amp;= k \, (1 - \alpha) \, \bigl(-\ln(1 - \alpha)\bigr)^n

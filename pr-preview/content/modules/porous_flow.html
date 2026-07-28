@@ -189,6 +189,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -259,6 +260,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -468,9 +470,9 @@ log-linear extension below a transition saturation <span class="math notranslate
 <p>Permeability <span class="math notranslate nohighlight">\(K\)</span> is a function of porosity <span class="math notranslate nohighlight">\(\varphi\)</span> (not
 saturation), and three closures are provided. With reference values
 <span class="math notranslate nohighlight">\((\varphi_0, K_0)\)</span> they are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-4388e7df-bf1b-4c46-853b-2791187ced7a">
-<div class="amsmath math notranslate nohighlight" id="equation-4388e7df-bf1b-4c46-853b-2791187ced7a">
-<span class="eqno">(10)<a class="headerlink" href="#equation-4388e7df-bf1b-4c46-853b-2791187ced7a" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-345f35fc-d5ed-4bce-870f-650423d7cd91">
+<div class="amsmath math notranslate nohighlight" id="equation-345f35fc-d5ed-4bce-870f-650423d7cd91">
+<span class="eqno">(10)<a class="headerlink" href="#equation-345f35fc-d5ed-4bce-870f-650423d7cd91" title="Permalink to this equation">#</a></span>\[\begin{align}
 K^{\mathrm{pow}}(\varphi) &amp;= K_0 \left( \frac{\varphi}{\varphi_0} \right)^p, \\
 K^{\mathrm{exp}}(\varphi) &amp;= K_0 \exp\!\left[ -a\,(\varphi - \varphi_0) \right], \\
 K^{\mathrm{KC}}(\varphi)  &amp;= K_0 \, \frac{(\varphi / (1 - \varphi))^n}{(\varphi_0 / (1 - \varphi_0))^m}.

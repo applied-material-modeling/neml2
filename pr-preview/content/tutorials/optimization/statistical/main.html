@@ -189,6 +189,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -259,6 +260,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -466,7 +468,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/home/tranh/miniconda3/envs/nemlv3_pyzag/lib/python3.13/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/home/thu/.conda/envs/neml2/lib/python3.14/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
 </span><span data-line="2">  from .autonotebook import tqdm as notebook_tqdm
 </span></pre></div>
 </div>
@@ -587,59 +589,74 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="42">                <span class="n">nonlinear_solver</span><span class="o">=</span><span class="n">chunktime</span><span class="o">.</span><span class="n">ChunkNewtonRaphson</span><span class="p">(</span><span class="n">rtol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atol</span><span class="p">),</span>
 </span><span data-line="43">            <span class="p">)</span>
 </span><span data-line="44">
-</span><span data-line="45">        <span class="n">control</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">loading</span><span class="p">)</span>
-</span><span data-line="46">        <span class="n">control</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="mf">1.0</span>
-</span><span data-line="47">
-</span><span data-line="48">        <span class="c1"># Pack the per-force raw tensors into the single flat forces tensor</span>
-</span><span data-line="49">        <span class="c1"># pyzag consumes. ``assemble_forces`` uses the adapter&#39;s own force</span>
-</span><span data-line="50">        <span class="c1"># layout, so the packing is guaranteed to match how the factory later</span>
-</span><span data-line="51">        <span class="c1"># splits the tensor back apart (``_split_by_layout``); base sizes come</span>
-</span><span data-line="52">        <span class="c1"># from the layout, so the scalars are passed plain (drop the trailing</span>
-</span><span data-line="53">        <span class="c1"># unit axis with ``squeeze(-1)``).</span>
-</span><span data-line="54">        <span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discrete_equations</span><span class="o">.</span><span class="n">assemble_forces</span><span class="p">(</span>
-</span><span data-line="55">            <span class="p">{</span>
-</span><span data-line="56">                <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
-</span><span data-line="57">                <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="n">temperature</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
-</span><span data-line="58">                <span class="s2">&quot;fixed_values&quot;</span><span class="p">:</span> <span class="n">loading</span><span class="p">,</span>
-</span><span data-line="59">                <span class="s2">&quot;control&quot;</span><span class="p">:</span> <span class="n">control</span><span class="p">,</span>
-</span><span data-line="60">            <span class="p">}</span>
-</span><span data-line="61">        <span class="p">)</span>
-</span><span data-line="62">        <span class="n">state0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-</span><span data-line="63">            <span class="n">forces</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discrete_equations</span><span class="o">.</span><span class="n">nstate</span><span class="p">,),</span> <span class="n">device</span><span class="o">=</span><span class="n">forces</span><span class="o">.</span><span class="n">device</span>
-</span><span data-line="64">        <span class="p">)</span>
-</span><span data-line="65">
-</span><span data-line="66">        <span class="n">result</span> <span class="o">=</span> <span class="n">nonlinear</span><span class="o">.</span><span class="n">solve_adjoint</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">state0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">forces</span><span class="p">),</span> <span class="n">forces</span><span class="p">)</span>
-</span><span data-line="67">
-</span><span data-line="68">        <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-</span><span data-line="69">            <span class="bp">self</span><span class="o">.</span><span class="n">cached_solution</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-</span><span data-line="70">
-</span><span data-line="71">        <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
+</span><span data-line="45">        <span class="c1"># We could pass this in as input, but it&#39;s easy enough to do here</span>
+</span><span data-line="46">        <span class="n">control</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">loading</span><span class="p">)</span>
+</span><span data-line="47">        <span class="n">control</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="mf">1.0</span>
+</span><span data-line="48">
+</span><span data-line="49">        <span class="c1"># Build the per-force typed-wrapper dict and pack into a SparseVector</span>
+</span><span data-line="50">        <span class="c1"># whose layout matches the pyzag-wrapped model&#39;s force layout. v3</span>
+</span><span data-line="51">        <span class="c1"># SparseVector takes a dict keyed by variable name (the v2 list-by-</span>
+</span><span data-line="52">        <span class="c1"># fvars-order pattern was retired). ``.data`` on the assembled</span>
+</span><span data-line="53">        <span class="c1"># typed Tensor surfaces the raw torch.Tensor that pyzag wants.</span>
+</span><span data-line="54">        <span class="n">forces</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="55">            <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">neml2</span><span class="o">.</span><span class="n">Scalar</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">),</span>
+</span><span data-line="56">            <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="n">neml2</span><span class="o">.</span><span class="n">Scalar</span><span class="p">(</span><span class="n">temperature</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">),</span>
+</span><span data-line="57">            <span class="s2">&quot;fixed_values&quot;</span><span class="p">:</span> <span class="n">neml2</span><span class="o">.</span><span class="n">SR2</span><span class="p">(</span><span class="n">loading</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span><span data-line="58">            <span class="s2">&quot;control&quot;</span><span class="p">:</span> <span class="n">neml2</span><span class="o">.</span><span class="n">SR2</span><span class="p">(</span><span class="n">control</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span><span data-line="59">        <span class="p">}</span>
+</span><span data-line="60">        <span class="n">forces</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="61">            <span class="n">neml2</span><span class="o">.</span><span class="n">SparseVector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discrete_equations</span><span class="o">.</span><span class="n">flayout</span><span class="p">,</span> <span class="n">forces</span><span class="p">)</span><span class="o">.</span><span class="n">assemble</span><span class="p">()</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+</span><span data-line="62">        <span class="p">)</span>
+</span><span data-line="63">        <span class="n">state0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+</span><span data-line="64">            <span class="n">forces</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discrete_equations</span><span class="o">.</span><span class="n">nstate</span><span class="p">,),</span> <span class="n">device</span><span class="o">=</span><span class="n">forces</span><span class="o">.</span><span class="n">device</span>
+</span><span data-line="65">        <span class="p">)</span>
+</span><span data-line="66">
+</span><span data-line="67">        <span class="n">result</span> <span class="o">=</span> <span class="n">nonlinear</span><span class="o">.</span><span class="n">solve_adjoint</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">state0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">forces</span><span class="p">),</span> <span class="n">forces</span><span class="p">)</span>
+</span><span data-line="68">
+</span><span data-line="69">        <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
+</span><span data-line="70">            <span class="bp">self</span><span class="o">.</span><span class="n">cached_solution</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+</span><span data-line="71">
+</span><span data-line="72">        <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
 </span></pre></div>
 </div>
 </div>
 </div>
 <section id="actually-setup-the-model">
 <h3>Actually setup the model<a class="headerlink" href="#actually-setup-the-model" title="Link to this heading">#</a></h3>
-<p>Load the NEML model from disk, wrap it in both the <code class="docutils literal notranslate"><span class="pre">pyzag</span></code> factory (<code class="docutils literal notranslate"><span class="pre">neml2.pyzag.NEML2PyzagFactory</span></code>) and our thin wrapper class above.  We pass <code class="docutils literal notranslate"><span class="pre">include_parameters</span></code> to select only the model parameters we want to train; every other parameter is held fixed.</p>
-<p><code class="docutils literal notranslate"><span class="pre">NEML2PyzagFactory</span></code> adapts a NEML2 nonlinear system to pyzag’s <code class="docutils literal notranslate"><span class="pre">NonlinearFunctionOperatorFactory</span></code> protocol: it evaluates the residual and Jacobians through NEML2’s fast forward-mode chain-rule path and exposes each selected NEML2 parameter as a <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code> on the factory.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">compile=True</span></code> argument JIT-compiles the residual/Jacobian evaluation with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> in-process (no AOT export or C++ round-trip), so each Newton and adjoint step in the SVI training loop runs a fused compiled graph instead of eager Python.  It is a transparent, in-place acceleration — the model is used exactly as before, and gradients still flow for SVI.</p>
+<p>Load the NEML model from disk, wrap it in both the <code class="docutils literal notranslate"><span class="pre">pyzag</span></code> wrapper and our thin wrapper class above.  Exclude some of the model parameters we don’t want to train.</p>
+<p>We also call <code class="docutils literal notranslate"><span class="pre">neml2.compile</span></code> on the <code class="docutils literal notranslate"><span class="pre">pyzag</span></code>-wrapped model. This JIT-compiles the residual/Jacobian evaluation with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> in-process (no AOT export or C++ round-trip), so each Newton and adjoint step in the SVI training loop runs a fused compiled graph instead of eager Python. It is a transparent, in-place acceleration — the model is used exactly as before, and gradients still flow for SVI.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">nmodel</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">load_nonlinear_system</span><span class="p">(</span><span class="s2">&quot;demo_model.i&quot;</span><span class="p">,</span> <span class="s2">&quot;eq_sys&quot;</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">nmodel</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</span><span data-line="3"><span class="n">pmodel</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">pyzag</span><span class="o">.</span><span class="n">NEML2PyzagFactory</span><span class="p">(</span>
+</span><span data-line="3"><span class="n">pmodel</span> <span class="o">=</span> <span class="n">neml2</span><span class="o">.</span><span class="n">pyzag</span><span class="o">.</span><span class="n">NEML2PyzagModel</span><span class="p">(</span>
 </span><span data-line="4">    <span class="n">nmodel</span><span class="p">,</span>
 </span><span data-line="5">    <span class="n">include_parameters</span><span class="o">=</span><span class="p">[</span>
-</span><span data-line="6">        <span class="s2">&quot;A_value&quot;</span><span class="p">,</span>
-</span><span data-line="7">        <span class="s2">&quot;B_value&quot;</span><span class="p">,</span>
-</span><span data-line="8">        <span class="s2">&quot;C_value&quot;</span><span class="p">,</span>
-</span><span data-line="9">        <span class="s2">&quot;R_ordinate&quot;</span><span class="p">,</span>
-</span><span data-line="10">        <span class="s2">&quot;d_ordinate&quot;</span><span class="p">,</span>
-</span><span data-line="11">    <span class="p">],</span>
-</span><span data-line="12">    <span class="nb">compile</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span data-line="13"><span class="p">)</span>
-</span><span data-line="14">
-</span><span data-line="15"><span class="n">model</span> <span class="o">=</span> <span class="n">SolveStrain</span><span class="p">(</span><span class="n">pmodel</span><span class="p">)</span>
+</span><span data-line="6">        <span class="c1"># The calibration targets, declared directly. A/B/C_value are the</span>
+</span><span data-line="7">        <span class="c1"># rate-law scalar coefficients; R_ordinate / d_ordinate are the Voce</span>
+</span><span data-line="8">        <span class="c1"># isotropic-hardening interpolation ordinates (saturated hardening and</span>
+</span><span data-line="9">        <span class="c1"># saturation rate). Everything else -- elasticity, the fixed</span>
+</span><span data-line="10">        <span class="c1"># interpolation abscissae, the known shear modulus, the alternate</span>
+</span><span data-line="11">        <span class="c1"># yield surface, and SR2LinearCombination&#39;s definitional weights /</span>
+</span><span data-line="12">        <span class="c1"># offset -- is held fixed.</span>
+</span><span data-line="13">        <span class="s2">&quot;A_value&quot;</span><span class="p">,</span>
+</span><span data-line="14">        <span class="s2">&quot;B_value&quot;</span><span class="p">,</span>
+</span><span data-line="15">        <span class="s2">&quot;C_value&quot;</span><span class="p">,</span>
+</span><span data-line="16">        <span class="s2">&quot;R_ordinate&quot;</span><span class="p">,</span>
+</span><span data-line="17">        <span class="s2">&quot;d_ordinate&quot;</span><span class="p">,</span>
+</span><span data-line="18">    <span class="p">],</span>
+</span><span data-line="19"><span class="p">)</span>
+</span><span data-line="20">
+</span><span data-line="21"><span class="c1"># Accelerate the residual + Jacobian evaluation with in-process torch.compile</span>
+</span><span data-line="22"><span class="c1"># (no AOTI artifact / C++ round-trip). pyzag owns the Newton solve and the</span>
+</span><span data-line="23"><span class="c1"># adjoint; neml2.compile JIT-compiles the feed-forward residual model so every</span>
+</span><span data-line="24"><span class="c1"># solve and adjoint step runs a fused compiled graph. Compilation happens on the</span>
+</span><span data-line="25"><span class="c1"># first call and is reused across iterations, which speeds up the SVI training</span>
+</span><span data-line="26"><span class="c1"># loop below. Autograd flows through the compiled graph, so SVI&#39;s gradient</span>
+</span><span data-line="27"><span class="c1"># estimates are unaffected.</span>
+</span><span data-line="28"><span class="n">neml2</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pmodel</span><span class="p">)</span>
+</span><span data-line="29">
+</span><span data-line="30"><span class="n">model</span> <span class="o">=</span> <span class="n">SolveStrain</span><span class="p">(</span><span class="n">pmodel</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </div>
@@ -706,12 +723,8 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/home/tranh/.claude_tmp/ipykernel_2118409/3858731050.py:38: UserWarning: pyzag lowered torch._functorch.config.donated_buffer&#39;s default to False process-wide. AOTAutograd &#39;donated buffers&#39; (torch&gt;=2.12) are incompatible with pyzag&#39;s retain_graph=True adjoint over torch.compile&#39;d models, which otherwise raises &#39;compiled with non-empty donated buffers&#39;. To keep donated buffers enabled, restore torch._functorch.config._config[&#39;donated_buffer&#39;].default = True -- compiled models differentiated through the adjoint will then error.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/tmp/ipykernel_1910802/2719391774.py:38: UserWarning: pyzag lowered torch._functorch.config.donated_buffer&#39;s default to False process-wide. AOTAutograd &#39;donated buffers&#39; (torch&gt;=2.12) are incompatible with pyzag&#39;s retain_graph=True adjoint over torch.compile&#39;d models, which otherwise raises &#39;compiled with non-empty donated buffers&#39;. To keep donated buffers enabled, restore torch._functorch.config._config[&#39;donated_buffer&#39;].default = True -- compiled models differentiated through the adjoint will then error.
 </span><span data-line="2">  solver = nonlinear.RecursiveNonlinearEquationSolver(
-</span></pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/home/tranh/miniconda3/envs/nemlv3_pyzag/lib/python3.13/site-packages/torch/_dynamo/guards.py:1176: RuntimeWarning: Guards may run slower on Python 3.13.0. Consider upgrading to Python 3.13.1+.
-</span><span data-line="2">  warnings.warn(
 </span></pre></div>
 </div>
 </div>
@@ -731,7 +744,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../../../_images/4e3c0aa11dc93338320504ef4e1abaaae364954f0ba3070a57610306f8d6ac91.png" src="../../../../_images/4e3c0aa11dc93338320504ef4e1abaaae364954f0ba3070a57610306f8d6ac91.png" />
+<img alt="../../../../_images/e550dfc91a963b3719fb94abd271320d8a5f8af7940a93ef1ecfa106288521ae.png" src="../../../../_images/e550dfc91a963b3719fb94abd271320d8a5f8af7940a93ef1ecfa106288521ae.png" />
 </div>
 </div>
 </section>
@@ -761,11 +774,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/home/tranh/miniconda3/envs/nemlv3_pyzag/lib/python3.13/site-packages/torch/_dynamo/guards.py:1176: RuntimeWarning: Guards may run slower on Python 3.13.0. Consider upgrading to Python 3.13.1+.
-</span><span data-line="2">  warnings.warn(
-</span></pre></div>
-</div>
-<img alt="../../../../_images/a85f666cc051dc7e88f3f0ffb2f35042fccbc1dc6191ed023d880274fd5c7faa.png" src="../../../../_images/a85f666cc051dc7e88f3f0ffb2f35042fccbc1dc6191ed023d880274fd5c7faa.png" />
+<img alt="../../../../_images/1723b9cd6f86690afad8d2e4adcbe37c6b8514e49f47e30615b140eee354b4b3.png" src="../../../../_images/1723b9cd6f86690afad8d2e4adcbe37c6b8514e49f47e30615b140eee354b4b3.png" />
 </div>
 </div>
 </section>
@@ -904,7 +913,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../../../_images/0f8b9c42532d2166355409cbfa7814aa72d405d1b0836c3ef3023c3b24d837b0.png" src="../../../../_images/0f8b9c42532d2166355409cbfa7814aa72d405d1b0836c3ef3023c3b24d837b0.png" />
+<img alt="../../../../_images/48c816e19ac6132ade486ee9a1746eef5272babb1be6e34242c0f4a52e344a5d.png" src="../../../../_images/48c816e19ac6132ade486ee9a1746eef5272babb1be6e34242c0f4a52e344a5d.png" />
 </div>
 </div>
 <section id="setup-a-guide-and-training-hyperparameters">
@@ -955,10 +964,6 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">/home/tranh/miniconda3/envs/nemlv3_pyzag/lib/python3.13/site-packages/torch/_dynamo/guards.py:1176: RuntimeWarning: Guards may run slower on Python 3.13.0. Consider upgrading to Python 3.13.1+.
-</span><span data-line="2">  warnings.warn(
-</span></pre></div>
-</div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">Iteration    1/150    ELBO loss = 4.829e+04
 </span></pre></div>
 </div>
@@ -986,7 +991,7 @@ data-aria-dark="Switch to auto color mode">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span data-line="1">Iteration  150/150    ELBO loss = 1.505e+04
 </span></pre></div>
 </div>
-<img alt="../../../../_images/7e80f327d31bb41452ec001bab51d1d8582b68e8544d2bad6ceb01a2eae4e4c5.png" src="../../../../_images/7e80f327d31bb41452ec001bab51d1d8582b68e8544d2bad6ceb01a2eae4e4c5.png" />
+<img alt="../../../../_images/ce1d1540909f1edf4dae742610f023a168d3c73bd964c9e238524e871b344850.png" src="../../../../_images/ce1d1540909f1edf4dae742610f023a168d3c73bd964c9e238524e871b344850.png" />
 </div>
 </div>
 </section>
@@ -1040,7 +1045,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../../../_images/239f71decd96894e999e277febe69425363886a09cc2e26bb8bdb47eaec68fb0.png" src="../../../../_images/239f71decd96894e999e277febe69425363886a09cc2e26bb8bdb47eaec68fb0.png" />
+<img alt="../../../../_images/46d65a93ef025cda0feab8d485357c521c6289153df870a8e1a5282fc36cd765.png" src="../../../../_images/46d65a93ef025cda0feab8d485357c521c6289153df870a8e1a5282fc36cd765.png" />
 </div>
 </div>
 </section>
@@ -1096,17 +1101,17 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../../../_images/1cd969c51ea6e5bba835758be31b25cdbf3e9dfea18bdf39a48e75696b9e4769.png" src="../../../../_images/1cd969c51ea6e5bba835758be31b25cdbf3e9dfea18bdf39a48e75696b9e4769.png" />
-<img alt="../../../../_images/b787d2b39d470c9132d9b1b1de4fbeab602d443198cf7009c49c77a2539858a3.png" src="../../../../_images/b787d2b39d470c9132d9b1b1de4fbeab602d443198cf7009c49c77a2539858a3.png" />
-<img alt="../../../../_images/8f745163d634cc024526b6d69b7a52f7305d5491a3210171e6df02039dabd2c7.png" src="../../../../_images/8f745163d634cc024526b6d69b7a52f7305d5491a3210171e6df02039dabd2c7.png" />
-<img alt="../../../../_images/e045b729631fc30a2e6ba737c77886b9c358504ea08953d9600b2f1ca36c0438.png" src="../../../../_images/e045b729631fc30a2e6ba737c77886b9c358504ea08953d9600b2f1ca36c0438.png" />
-<img alt="../../../../_images/3f7872622a11871460a6adb005788b24f3ea6844a600666c5461a65dbbf4a6a2.png" src="../../../../_images/3f7872622a11871460a6adb005788b24f3ea6844a600666c5461a65dbbf4a6a2.png" />
-<img alt="../../../../_images/0ae14ea7ef66aafa0fdb29e14e34298f137d41b54d9c83362461a9b5732c3464.png" src="../../../../_images/0ae14ea7ef66aafa0fdb29e14e34298f137d41b54d9c83362461a9b5732c3464.png" />
-<img alt="../../../../_images/0a4409d550d285383e06ecadb4134a6dd6fa2175fde65ea6c390afecacf8546c.png" src="../../../../_images/0a4409d550d285383e06ecadb4134a6dd6fa2175fde65ea6c390afecacf8546c.png" />
-<img alt="../../../../_images/c425b204af4d7cc7217893e67a5fd213fda23a9e63a23bbfe7d8e92feb10e81f.png" src="../../../../_images/c425b204af4d7cc7217893e67a5fd213fda23a9e63a23bbfe7d8e92feb10e81f.png" />
-<img alt="../../../../_images/8e6218b96451661b62eb40ef8705fe49db280a679bf75b74562fea797cb0c991.png" src="../../../../_images/8e6218b96451661b62eb40ef8705fe49db280a679bf75b74562fea797cb0c991.png" />
-<img alt="../../../../_images/b5809b490aaf831fd8c997a17ca318cfc4524fe126bb0d0eaae2d636d1490e5b.png" src="../../../../_images/b5809b490aaf831fd8c997a17ca318cfc4524fe126bb0d0eaae2d636d1490e5b.png" />
-<img alt="../../../../_images/796f97b5733127b2fc69ac1a5c0ba1dff05222231e8717d7fe5a70cdbe9f55b8.png" src="../../../../_images/796f97b5733127b2fc69ac1a5c0ba1dff05222231e8717d7fe5a70cdbe9f55b8.png" />
+<img alt="../../../../_images/6c31b12530fd39119dfb23f1f3642032c6e192151afda95d9d3225781e295fe6.png" src="../../../../_images/6c31b12530fd39119dfb23f1f3642032c6e192151afda95d9d3225781e295fe6.png" />
+<img alt="../../../../_images/3cbc7b8a60ca5f98820fe411a244ad00a11e492c8fbe0a31f9284bf503340bcb.png" src="../../../../_images/3cbc7b8a60ca5f98820fe411a244ad00a11e492c8fbe0a31f9284bf503340bcb.png" />
+<img alt="../../../../_images/72c7f791ca98e9342fb33f73afcc03771955931db313a5a0799074e1f39d586a.png" src="../../../../_images/72c7f791ca98e9342fb33f73afcc03771955931db313a5a0799074e1f39d586a.png" />
+<img alt="../../../../_images/b99e23436da5d4262d31cea512861562aa0dce0f9022db865709bbf5db17aa0d.png" src="../../../../_images/b99e23436da5d4262d31cea512861562aa0dce0f9022db865709bbf5db17aa0d.png" />
+<img alt="../../../../_images/bed0e96e2bdd7b08a9191c88d7334a6ba53827f525debaaa49a207ed4564d8bf.png" src="../../../../_images/bed0e96e2bdd7b08a9191c88d7334a6ba53827f525debaaa49a207ed4564d8bf.png" />
+<img alt="../../../../_images/4e7b36dfae190286f76d3ce2992ff63f7f4e19cc2e57844a1c657531702f0c58.png" src="../../../../_images/4e7b36dfae190286f76d3ce2992ff63f7f4e19cc2e57844a1c657531702f0c58.png" />
+<img alt="../../../../_images/3b8cf672d54679358aeabae51e51185fec443d3de113024e55602903b3f7a234.png" src="../../../../_images/3b8cf672d54679358aeabae51e51185fec443d3de113024e55602903b3f7a234.png" />
+<img alt="../../../../_images/24dc35db8a9f6eaf0fa0ae6b03462f2e824fab920f4815decf04145566d1a6e0.png" src="../../../../_images/24dc35db8a9f6eaf0fa0ae6b03462f2e824fab920f4815decf04145566d1a6e0.png" />
+<img alt="../../../../_images/3a4ae1adfc7a9e5c119c8ab3121cea3ccff06efd4ac611826568c35ad3958ac0.png" src="../../../../_images/3a4ae1adfc7a9e5c119c8ab3121cea3ccff06efd4ac611826568c35ad3958ac0.png" />
+<img alt="../../../../_images/8f5bee8f69c35cc9f587ffc65d7df38a79d5e78dc9ac384d7bae2ceb52971d49.png" src="../../../../_images/8f5bee8f69c35cc9f587ffc65d7df38a79d5e78dc9ac384d7bae2ceb52971d49.png" />
+<img alt="../../../../_images/c008a0826e81aed13031016c20007fce094a2edef9f2f97ebf221758309b2b23.png" src="../../../../_images/c008a0826e81aed13031016c20007fce094a2edef9f2f97ebf221758309b2b23.png" />
 </div>
 </div>
 </section>

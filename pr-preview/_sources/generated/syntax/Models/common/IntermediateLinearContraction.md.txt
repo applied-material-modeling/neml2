@@ -1,0 +1,31 @@
+(models-IntermediateLinearContraction)=
+# IntermediateLinearContraction
+
+**Source:** `models/common/IntermediateLinearContraction.py`
+
+Contract an operator with a field over the last intermediate dimension.
+
+$$
+\text{out}_i = \sum_j \text{operator}_{ij}\, \text{field}_j
+$$
+
+``operator`` is a two-dimensional intermediate quantity (sub_batch_ndim=2,
+rows x cols) and ``field`` is a one-dimensional field (sub_batch_ndim=1)
+whose length matches the column axis of ``operator``. The output ``out`` is
+the row-length field. Linear in both operands, so the pushforward is the
+same contraction applied to each tangent. Reusable beyond any one physics.
+
+## Inputs
+
+`operator` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Linear operator whose trailing intermediate axis is contracted (rows x cols).
+
+`field` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Field contracted against the operator's column axis.
+
+
+## Outputs
+
+`out` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Contraction result over the operator's row axis.
+

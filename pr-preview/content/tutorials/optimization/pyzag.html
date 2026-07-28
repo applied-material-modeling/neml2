@@ -189,6 +189,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -259,6 +260,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -467,13 +469,11 @@ equivalent to full backward AD, but with orders of magnitude less
 storage.</p></li>
 </ul>
 <p>The NEML2 ↔ pyzag interface lives in the <a class="reference internal" href="../../python_api/neml2.pyzag.html#module-neml2.pyzag" title="neml2.pyzag"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neml2.pyzag</span></code></a> submodule.
-<a class="reference internal" href="../../python_api/neml2.pyzag.html#neml2.pyzag.NEML2PyzagFactory" title="neml2.pyzag.NEML2PyzagFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">NEML2PyzagFactory</span></code></a> adapts a NEML2 nonlinear system
-to pyzag’s <code class="docutils literal notranslate"><span class="pre">NonlinearFunctionOperatorFactory</span></code> protocol: it evaluates the
-residual and Jacobians through NEML2’s fast forward-mode chain-rule path
-and exposes each NEML2 parameter as a <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code> on the
-factory. From there the calibration loop is a standard PyTorch optimizer
-loop, with <code class="docutils literal notranslate"><span class="pre">nonlinear.solve_adjoint(...)</span></code> in place of
-<code class="docutils literal notranslate"><span class="pre">solve(...).backward()</span></code>.</p>
+<a class="reference internal" href="../../python_api/neml2.pyzag.html#neml2.pyzag.NEML2PyzagModel" title="neml2.pyzag.NEML2PyzagModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">NEML2PyzagModel</span></code></a> wraps a NEML2 nonlinear system as
+a pyzag <code class="docutils literal notranslate"><span class="pre">NonlinearRecursiveFunction</span></code>, exposing each NEML2 parameter as
+a <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code> on the wrapper. From there the calibration loop
+is a standard PyTorch optimizer loop, with <code class="docutils literal notranslate"><span class="pre">nonlinear.solve_adjoint(...)</span></code>
+in place of <code class="docutils literal notranslate"><span class="pre">solve(...).backward()</span></code>.</p>
 </section>
 <section id="where-to-go-from-here">
 <h2>Where to go from here<a class="headerlink" href="#where-to-go-from-here" title="Link to this heading">#</a></h2>

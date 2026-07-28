@@ -189,6 +189,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -259,6 +260,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -528,9 +530,9 @@ cell widths).</p>
 <section id="advective-flux">
 <h3>Advective flux<a class="headerlink" href="#advective-flux" title="Link to this heading">#</a></h3>
 <p>Advective fluxes are stabilized with first-order upwinding,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-41ef57cf-2cb0-4b06-8f30-0aa273c89026">
-<div class="amsmath math notranslate nohighlight" id="equation-41ef57cf-2cb0-4b06-8f30-0aa273c89026">
-<span class="eqno">(5)<a class="headerlink" href="#equation-41ef57cf-2cb0-4b06-8f30-0aa273c89026" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-f3face21-f540-4589-9613-14d5103cf7c5">
+<div class="amsmath math notranslate nohighlight" id="equation-f3face21-f540-4589-9613-14d5103cf7c5">
+<span class="eqno">(5)<a class="headerlink" href="#equation-f3face21-f540-4589-9613-14d5103cf7c5" title="Permalink to this equation">#</a></span>\[\begin{align}
 \hat{J}_{\mathrm{adv}, i+\tfrac{1}{2}}
 &amp;= v^{+}_{i+\tfrac{1}{2}}\, \bar{u}_i
  + v^{-}_{i+\tfrac{1}{2}}\, \bar{u}_{i+1}, \\
