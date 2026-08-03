@@ -1,0 +1,53 @@
+(models-BilinearTraction)=
+# BilinearTraction
+
+**Source:** `models/solid_mechanics/traction_separation_law/BilinearTraction.py`
+
+Bilinear cohesive-zone traction with internal damage state. Computes the
+bilinear damage variable from $(\delta_m, \delta_c, \delta_f)$
+(effective separation, critical / damage-onset separation, full / failure
+separation), caps it for irreversibility against the previous-step value
+(auto-declared via `history_name`), and assembles
+$T_n = K(1-d)\delta_n^+ + K\delta_n^-,\;T_{si} = K(1-d)\delta_{si}$. Damage is
+exposed as a secondary output for diagnostics; the irreversibility cap is
+internal to this model and does not require an external
+`IrreversibleScalar`.
+
+## Inputs
+
+`effective_separation` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Effective separation
+
+`normal_separation` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Normal separation (typically the Macaulay-positive part of the normal jump)
+
+`normal_penetration` &mdash; `input` &middot; `Scalar`
+: Optional normal penetration (typically the Macaulay-negative part of the normal jump). When supplied, K times this is added to the normal traction as a penalty term resisting interpenetration.
+
+`tangential_separation_1` &mdash; `input` &middot; `Scalar` &middot; **required**
+: First tangential separation
+
+`tangential_separation_2` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Second tangential separation
+
+
+## Outputs
+
+`traction` &mdash; `output` &middot; `Vec` &middot; **required**
+: Traction Vec
+
+`damage` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Damage scalar (current step, irreversibility-capped)
+
+
+## Parameters
+
+`penalty_stiffness` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Penalty stiffness
+
+`critical_separation` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Critical (damage-onset) separation. May be wired to an upstream `CamanhoDavilaCriticalSeparation` (promotion-capable).
+
+`full_separation` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Full (failure) separation. May be wired to an upstream `BenzeggaghKenaneFullSeparation` or `PowerLawFullSeparation` (promotion-capable).
+

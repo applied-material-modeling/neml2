@@ -1,0 +1,48 @@
+(models-ChabochePlasticHardening)=
+# ChabochePlasticHardening
+
+**Source:** `models/solid_mechanics/plasticity/ChabochePlasticHardening.py`
+
+Map the flow rate (i.e., the consistency parameter in the KKT conditions)
+to the rate of internal variables. This object defines the non-associative
+Fredrick-Armstrong kinematic hardening. In the model, back stress is
+directly treated as an internal variable. Rate of back stress is given as
+$\dot{\boldsymbol{X}} = \left( \frac{2}{3} C \frac{\partial f}{\partial \boldsymbol{M}} - g \boldsymbol{X} \right) \dot{\gamma}$.$\frac{\partial f}{\partial \boldsymbol{M}}$
+is the flow direction, $\dot{\gamma}$ is the flow rate, and $C$ and $g$ are material
+parameters. The complete Chaboche model adds static recovery terms
+$- A \lVert \boldsymbol{X} \rVert^{a - 1} \boldsymbol{X}$, so the model
+includes kinematic hardening, dynamic recovery, and static recovery. $A$ and $a$ are additional
+material parameters.
+
+## Inputs
+
+`flow_rate` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Flow rate
+
+`flow_direction` &mdash; `input` &middot; `SR2` &middot; **required**
+: Flow direction
+
+`back_stress` &mdash; `input` &middot; `SR2` &middot; **required**
+: Back stress
+
+
+## Outputs
+
+`back_stress_rate` &mdash; `output` &middot; `SR2` &middot; default `back_stress_rate`
+: Optional name for the derived output (defaults to 'back_stress_rate', i.e. the 'back_stress' variable name with the '_rate' suffix).
+
+
+## Parameters
+
+`C` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Kinematic hardening coefficient
+
+`g` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Dynamic recovery coefficient
+
+`A` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Static recovery prefactor
+
+`a` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Static recovery exponent
+
