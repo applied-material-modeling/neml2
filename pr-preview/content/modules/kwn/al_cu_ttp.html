@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Al–Cu TTP diagram - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Population balance (fragmentation)" href="../pbm/index.html" /><link rel="prev" title="316H two-phase precipitation (carbide + Laves)" href="precipitation_316h.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Al–Cu TTP diagram - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Phase-field fracture" href="../phase_field_fracture.html" /><link rel="prev" title="316H two-phase precipitation (carbide + Laves)" href="precipitation_316h.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=e1a1ceaf" />
@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../tensor_types/index.html">Tensor types</a><ul>
@@ -108,10 +109,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">KWN (precipitation kinetics)</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Al–Cu TTP diagram</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../pbm/index.html">Population balance (fragmentation)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../pbm/grinding.html">Grinding example</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../phase_field_fracture.html">Phase-field fracture</a></li>
@@ -193,7 +190,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -264,7 +260,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -699,10 +694,10 @@ temperature, tailing off above and below it.</p>
         <span>Previous</span><div class="title">316H two-phase precipitation (carbide + Laves)</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="../pbm/index.html">
+    <a href="../phase_field_fracture.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">Population balance (fragmentation)</div>
+        <div class="title">Phase-field fracture</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>

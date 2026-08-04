@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -108,10 +109,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/pbm/index.html">Population balance (fragmentation)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modules/pbm/grinding.html">Grinding example</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/phase_field_fracture.html">Phase-field fracture</a></li>
@@ -193,7 +190,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -264,7 +260,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -428,6 +423,11 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.solvers.JacobiPreconditioner.hit"><code class="docutils literal notranslate"><span class="pre">JacobiPreconditioner.hit</span></code></a></li>
 <li><a class="reference internal" href="#neml2.solvers.JacobiPreconditioner.kind"><code class="docutils literal notranslate"><span class="pre">JacobiPreconditioner.kind</span></code></a></li>
 <li><a class="reference internal" href="#neml2.solvers.JacobiPreconditioner.setup_module"><code class="docutils literal notranslate"><span class="pre">JacobiPreconditioner.setup_module()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#neml2.solvers.LUCache"><code class="docutils literal notranslate"><span class="pre">LUCache</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.solvers.LUCache.factor"><code class="docutils literal notranslate"><span class="pre">LUCache.factor()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.solvers.LUCache.invalidate"><code class="docutils literal notranslate"><span class="pre">LUCache.invalidate()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.solvers.Newton"><code class="docutils literal notranslate"><span class="pre">Newton</span></code></a><ul>
@@ -857,6 +857,52 @@ an O(N^3) dense factorization. Configure it as a <code class="docutils literal n
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="neml2.solvers.LUCache">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.solvers.</span></span><span class="sig-name descname"><span class="pre">LUCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor_fn=&lt;built-in</span> <span class="pre">function</span> <span class="pre">linalg_lu_factor&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/solvers/_lu_cache.html#LUCache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.solvers.LUCache" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Cache one batched LU factorization, reused across solves of the same matrix.</p>
+<p>Skips the repeated <code class="docutils literal notranslate"><span class="pre">lu_factor</span></code> when a matrix is solved against several
+right-hand sides in a row (a <a class="reference internal" href="#neml2.solvers.SchurComplement" title="neml2.solvers.SchurComplement"><code class="xref py py-class docutils literal notranslate"><span class="pre">SchurComplement</span></code></a>’s two
+primary solves, or a Thomas sweep reusing a diagonal block).</p>
+<p>The source tensor is held <strong>by reference</strong> and keyed by identity plus its
+<code class="docutils literal notranslate"><span class="pre">_version</span></code>: holding it alive keeps the key safe (a freed tensor’s <code class="docutils literal notranslate"><span class="pre">id</span></code> can
+be recycled, so <code class="docutils literal notranslate"><span class="pre">id()</span></code> alone could return a stale factorization), and the
+<code class="docutils literal notranslate"><span class="pre">_version</span></code> check invalidates on an in-place edit. <code class="docutils literal notranslate"><span class="pre">factor_fn</span></code> selects the
+routine (default <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.linalg.lu_factor.html#torch.linalg.lu_factor" title="(in PyTorch v2.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.linalg.lu_factor()</span></code></a>; a CUDA caller may inject a
+guarded variant).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>factor_fn</strong> (<em>Callable</em>)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.solvers.LUCache.factor">
+<span class="sig-name descname"><span class="pre">factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/solvers/_lu_cache.html#LUCache.factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.solvers.LUCache.factor" title="Link to this definition">#</a></dt>
+<dd><p>Return the cached <code class="docutils literal notranslate"><span class="pre">(LU,</span> <span class="pre">pivots)</span></code> of <code class="docutils literal notranslate"><span class="pre">matrix</span></code>, refactoring on change.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>matrix</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>, <a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.solvers.LUCache.invalidate">
+<span class="sig-name descname"><span class="pre">invalidate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/solvers/_lu_cache.html#LUCache.invalidate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.solvers.LUCache.invalidate" title="Link to this definition">#</a></dt>
+<dd><p>Drop the cached factorization and release the held source tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
 </dd></dl>

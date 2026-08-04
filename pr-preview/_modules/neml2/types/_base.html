@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/tensor_types/index.html">Tensor types</a><ul>
@@ -108,10 +109,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../../content/modules/kwn/index.html">KWN (precipitation kinetics)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../content/modules/kwn/precipitation_316h.html">316H two-phase precipitation (carbide + Laves)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../content/modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../content/modules/pbm/index.html">Population balance (fragmentation)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../content/modules/pbm/grinding.html">Grinding example</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/modules/phase_field_fracture.html">Phase-field fracture</a></li>
@@ -193,7 +190,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -264,7 +260,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -1140,419 +1135,426 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="707">        <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
 </span><span data-line="708">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sub_batch.expand_at: size must be positive, got </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span><span data-line="709">        <span class="n">insert_at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_insert_dim</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
-</span><span data-line="710">        <span class="n">new_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">insert_at</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span>
-</span><span data-line="711">            <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="n">insert_at</span><span class="p">],</span> <span class="n">size</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">insert_at</span><span class="p">:]</span>
-</span><span data-line="712">        <span class="p">)</span>
-</span><span data-line="713">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-</span><span data-line="714">
-</span><span data-line="715">    <span class="k">def</span><span class="w"> </span><span class="nf">diagonalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WT</span><span class="p">:</span>
-</span><span data-line="716">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="717">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="718">                <span class="s2">&quot;sub_batch.diagonalize requires at least one sub-batch dim; got sub_batch_ndim=0&quot;</span>
-</span><span data-line="719">            <span class="p">)</span>
-</span><span data-line="720">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="721">            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-</span><span data-line="722">                <span class="s2">&quot;sub_batch.diagonalize for BASE_NDIM &gt; 0 wrappers is not &quot;</span>
-</span><span data-line="723">                <span class="s2">&quot;implemented; no in-scope caller needs it.&quot;</span>
-</span><span data-line="724">            <span class="p">)</span>
-</span><span data-line="725">        <span class="n">new_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag_embed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-</span><span data-line="726">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-</span><span data-line="727">
-</span><span data-line="728">    <span class="k">def</span><span class="w"> </span><span class="nf">retag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ndim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WT</span><span class="p">:</span>
-</span><span data-line="729"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a view of the same ``data`` with ``sub_batch_ndim=ndim``.&quot;&quot;&quot;</span>
-</span><span data-line="730">        <span class="k">if</span> <span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="731">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sub_batch.retag: ndim must be non-negative, got </span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="732">        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span>
-</span><span data-line="733">        <span class="n">batch_ndim</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span>
-</span><span data-line="734">        <span class="k">if</span> <span class="n">ndim</span> <span class="o">&gt;</span> <span class="n">batch_ndim</span><span class="p">:</span>
-</span><span data-line="735">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="736">                <span class="sa">f</span><span class="s2">&quot;sub_batch.retag: ndim=</span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> exceeds available batch dims &quot;</span>
-</span><span data-line="737">                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">batch_ndim</span><span class="si">}</span><span class="s2">); tensor shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
-</span><span data-line="738">                <span class="sa">f</span><span class="s2">&quot;BASE_NDIM=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="si">}</span><span class="s2">, k_ndim=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span data-line="739">            <span class="p">)</span>
-</span><span data-line="740">        <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">:</span>
-</span><span data-line="741">            <span class="k">return</span> <span class="n">w</span>
-</span><span data-line="742">        <span class="k">return</span> <span class="n">w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">ndim</span><span class="p">)</span>
-</span><span data-line="743">
-</span><span data-line="744">    <span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WT</span><span class="p">:</span>
-</span><span data-line="745"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Demote the sub-batch region to dynamic batch (``retag(0)``).&quot;&quot;&quot;</span>
-</span><span data-line="746">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">retag</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-</span><span data-line="747">
-</span><span data-line="748">
-</span><span data-line="749"><span class="k">class</span><span class="w"> </span><span class="nc">BaseView</span><span class="p">(</span><span class="n">_RegionView</span><span class="p">[</span><span class="n">_WT</span><span class="p">]):</span>
-</span><span data-line="750"><span class="w">    </span><span class="sd">&quot;&quot;&quot;View into the base region.&quot;&quot;&quot;</span>
-</span><span data-line="751">
-</span><span data-line="752">    <span class="n">_REGION</span> <span class="o">=</span> <span class="s2">&quot;base&quot;</span>
-</span><span data-line="753">
-</span><span data-line="754">    <span class="k">def</span><span class="w"> </span><span class="nf">_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-</span><span data-line="755">        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span>
-</span><span data-line="756">        <span class="k">return</span> <span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="p">)</span>
-</span><span data-line="757">
-</span><span data-line="758">    <span class="k">def</span><span class="w"> </span><span class="nf">transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim0</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim1</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WT</span><span class="p">:</span>
-</span><span data-line="759">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-</span><span data-line="760">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span data-line="761">                <span class="sa">f</span><span class="s2">&quot;base.transpose requires BASE_NDIM &gt;= 2; &quot;</span>
-</span><span data-line="762">                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> has BASE_NDIM=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span data-line="763">            <span class="p">)</span>
-</span><span data-line="764">        <span class="n">ax0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_dim</span><span class="p">(</span><span class="n">dim0</span><span class="p">)</span>
-</span><span data-line="765">        <span class="n">ax1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_dim</span><span class="p">(</span><span class="n">dim1</span><span class="p">)</span>
-</span><span data-line="766">        <span class="n">new_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">ax0</span><span class="p">,</span> <span class="n">ax1</span><span class="p">)</span>
-</span><span data-line="767">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="768">
-</span><span data-line="769">
-</span><span data-line="770"><span class="k">class</span><span class="w"> </span><span class="nc">KView</span><span class="p">(</span><span class="n">_RegionView</span><span class="p">[</span><span class="n">_WT</span><span class="p">]):</span>
-</span><span data-line="771"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read-only view over the K (seed-direction) region.</span>
-</span><span data-line="772">
-</span><span data-line="773"><span class="sd">    Exposes ``.shape`` and ``.ndim`` for the leading ``k_ndim`` axes;</span>
-</span><span data-line="774"><span class="sd">    mutation of the K region is driven by the typed chain-rule primitives</span>
-</span><span data-line="775"><span class="sd">    in :mod:`neml2.types.functions` (``fullify``, the exposing reductions</span>
-</span><span data-line="776"><span class="sd">    on ``sum`` / ``mean`` / ``sum_sub_batch``).</span>
-</span><span data-line="777"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="778">
-</span><span data-line="779">    <span class="n">_REGION</span> <span class="o">=</span> <span class="s2">&quot;k&quot;</span>
-</span><span data-line="780">
-</span><span data-line="781">    <span class="k">def</span><span class="w"> </span><span class="nf">_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-</span><span data-line="782">        <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">)</span>
-</span><span data-line="783">
-</span><span data-line="784">
-</span><span data-line="785"><span class="c1"># ---------------------------------------------------------------------------</span>
-</span><span data-line="786"><span class="c1"># Sub-batch alignment + state combination</span>
-</span><span data-line="787"><span class="c1"># ---------------------------------------------------------------------------</span>
-</span><span data-line="788">
-</span><span data-line="789">
-</span><span data-line="790"><span class="n">_W1</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_W1&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">TensorWrapper</span><span class="p">)</span>
-</span><span data-line="791"><span class="n">_W2</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_W2&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">TensorWrapper</span><span class="p">)</span>
-</span><span data-line="792"><span class="n">_W3</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_W3&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">TensorWrapper</span><span class="p">)</span>
-</span><span data-line="793">
-</span><span data-line="794">
-</span><span data-line="795"><span class="k">def</span><span class="w"> </span><span class="nf">wrap_like</span><span class="p">(</span>
-</span><span data-line="796">    <span class="n">result_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">_WT</span><span class="p">],</span>
-</span><span data-line="797">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-</span><span data-line="798">    <span class="n">source</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span>
-</span><span data-line="799"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WT</span><span class="p">:</span>
-</span><span data-line="800"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct ``result_cls`` around ``data`` with metadata copied from</span>
-</span><span data-line="801"><span class="sd">    ``source``. Used by type-changing free functions (``tr(SR2) -&gt; Scalar``,</span>
-</span><span data-line="802"><span class="sd">    ``vol(SR2) -&gt; SR2``, ...) whose output keeps the source wrapper&#39;s</span>
-</span><span data-line="803"><span class="sd">    ``sub_batch_ndim``, per-axis storage state, AND K region verbatim.</span>
-</span><span data-line="804"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="805">    <span class="k">return</span> <span class="n">result_cls</span><span class="p">(</span>
-</span><span data-line="806">        <span class="n">data</span><span class="p">,</span>
-</span><span data-line="807">        <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">,</span>
-</span><span data-line="808">        <span class="n">sub_batch_state</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="p">,</span>
-</span><span data-line="809">        <span class="n">sub_batch_meta</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">sub_batch_meta</span><span class="p">,</span>
-</span><span data-line="810">        <span class="n">k_ndim</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">,</span>
-</span><span data-line="811">        <span class="n">k_state</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">k_state</span><span class="p">,</span>
-</span><span data-line="812">        <span class="n">k_pairing</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">k_pairing</span><span class="p">,</span>
-</span><span data-line="813">    <span class="p">)</span>
-</span><span data-line="814">
-</span><span data-line="815">
-</span><span data-line="816"><span class="k">def</span><span class="w"> </span><span class="nf">drop_sub_batch_state_axes</span><span class="p">(</span>
-</span><span data-line="817">    <span class="n">state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-</span><span data-line="818">    <span class="n">meta</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-</span><span data-line="819">    <span class="n">axes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
-</span><span data-line="820"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
-</span><span data-line="821"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Drop the given sub-batch-relative axes from ``state`` and ``meta``.&quot;&quot;&quot;</span>
-</span><span data-line="822">    <span class="k">if</span> <span class="ow">not</span> <span class="n">state</span><span class="p">:</span>
-</span><span data-line="823">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
-</span><span data-line="824">    <span class="n">kill</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
-</span><span data-line="825">    <span class="n">new_state</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span>
-</span><span data-line="826">        <span class="s2">&quot;tuple[SubBatchStateFlag, ...]&quot;</span><span class="p">,</span>
-</span><span data-line="827">        <span class="nb">tuple</span><span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kill</span><span class="p">),</span>
-</span><span data-line="828">    <span class="p">)</span>
-</span><span data-line="829">    <span class="n">new_meta</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">m</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kill</span><span class="p">)</span>
-</span><span data-line="830">    <span class="k">return</span> <span class="n">new_state</span><span class="p">,</span> <span class="n">new_meta</span>
-</span><span data-line="831">
-</span><span data-line="832">
-</span><span data-line="833"><span class="k">def</span><span class="w"> </span><span class="nf">combine_sub_batch_state</span><span class="p">(</span>
-</span><span data-line="834">    <span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span>
-</span><span data-line="835"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
-</span><span data-line="836"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine per-axis state + meta across binary/n-ary op operands.</span>
-</span><span data-line="837">
-</span><span data-line="838"><span class="sd">    Returns ``(state, meta)``. Caller has already passed the inputs</span>
-</span><span data-line="839"><span class="sd">    through :func:`align_sub_batch` so they share a common</span>
-</span><span data-line="840"><span class="sd">    ``sub_batch_ndim`` and aligned axis positions.</span>
-</span><span data-line="841">
-</span><span data-line="842"><span class="sd">    Per-axis rule:</span>
-</span><span data-line="843">
-</span><span data-line="844"><span class="sd">    - Output axis i is ``&quot;broadcast&quot;`` iff EVERY tangent input axis i</span>
-</span><span data-line="845"><span class="sd">      is ``&quot;broadcast&quot;``. Compact tangent representation is preserved.</span>
-</span><span data-line="846"><span class="sd">    - Otherwise output axis i is ``&quot;full&quot;``.</span>
-</span><span data-line="847">
-</span><span data-line="848"><span class="sd">    Primals (empty ``sub_batch_state``) don&#39;t degrade the broadcast flag</span>
-</span><span data-line="849"><span class="sd">    -- they contribute their logical extent for meta inference but</span>
-</span><span data-line="850"><span class="sd">    cannot promote a tangent. Returns ``((), ())`` when no input carries</span>
-</span><span data-line="851"><span class="sd">    non-empty state (legacy lane).</span>
-</span><span data-line="852"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="853">    <span class="k">if</span> <span class="ow">not</span> <span class="n">wrappers</span><span class="p">:</span>
-</span><span data-line="854">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
-</span><span data-line="855">    <span class="n">sb_ndim</span> <span class="o">=</span> <span class="n">wrappers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="856">    <span class="k">if</span> <span class="n">sb_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="857">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
-</span><span data-line="858">    <span class="n">have_any</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="p">())</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">)</span>
-</span><span data-line="859">    <span class="k">if</span> <span class="ow">not</span> <span class="n">have_any</span><span class="p">:</span>
-</span><span data-line="860">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
-</span><span data-line="861">    <span class="n">state_out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="862">    <span class="n">meta_out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="863">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sb_ndim</span><span class="p">):</span>
-</span><span data-line="864">        <span class="n">all_broadcast</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span data-line="865">        <span class="n">any_tangent</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span data-line="866">        <span class="n">extent</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="867">        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">:</span>
-</span><span data-line="868">            <span class="n">w_state</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="p">())</span>
-</span><span data-line="869">            <span class="n">w_meta</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_meta&quot;</span><span class="p">,</span> <span class="p">())</span>
-</span><span data-line="870">            <span class="n">sb_start</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="871">            <span class="k">if</span> <span class="ow">not</span> <span class="n">w_state</span><span class="p">:</span>
-</span><span data-line="872">                <span class="n">axis_extent</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">sb_start</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span>
-</span><span data-line="873">            <span class="k">else</span><span class="p">:</span>
-</span><span data-line="874">                <span class="n">any_tangent</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span data-line="875">                <span class="n">axis_state</span> <span class="o">=</span> <span class="n">w_state</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span><span data-line="876">                <span class="n">axis_extent</span> <span class="o">=</span> <span class="p">(</span>
-</span><span data-line="877">                    <span class="nb">int</span><span class="p">(</span><span class="n">w_meta</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">if</span> <span class="n">axis_state</span> <span class="o">==</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">sb_start</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span>
-</span><span data-line="878">                <span class="p">)</span>
-</span><span data-line="879">                <span class="k">if</span> <span class="n">axis_state</span> <span class="o">!=</span> <span class="s2">&quot;broadcast&quot;</span><span class="p">:</span>
-</span><span data-line="880">                    <span class="n">all_broadcast</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span data-line="881">            <span class="k">if</span> <span class="n">extent</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
-</span><span data-line="882">                <span class="n">extent</span> <span class="o">=</span> <span class="n">axis_extent</span>
-</span><span data-line="883">        <span class="n">flag</span><span class="p">:</span> <span class="n">SubBatchStateFlag</span> <span class="o">=</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">if</span> <span class="p">(</span><span class="n">any_tangent</span> <span class="ow">and</span> <span class="n">all_broadcast</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;full&quot;</span>
-</span><span data-line="884">        <span class="n">state_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
-</span><span data-line="885">        <span class="n">meta_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span>
-</span><span data-line="886">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">state_out</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">meta_out</span><span class="p">)</span>
-</span><span data-line="887">
-</span><span data-line="888">
-</span><span data-line="889"><span class="k">def</span><span class="w"> </span><span class="nf">align_scalar_base</span><span class="p">(</span><span class="n">scalar_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">base_ndim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-</span><span data-line="890"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Pad a Scalar&#39;s data with ``base_ndim`` trailing length-1 axes so it</span>
-</span><span data-line="891"><span class="sd">    broadcasts against a higher-base-rank wrapper.</span>
-</span><span data-line="892">
-</span><span data-line="893"><span class="sd">    Skips unsqueezes when ``scalar_data`` is 0-d (broadcasts against any</span>
-</span><span data-line="894"><span class="sd">    shape natively, and unsqueeze on a 0-d Constant IR node crashes</span>
-</span><span data-line="895"><span class="sd">    Inductor&#39;s AOTI lowering).</span>
-</span><span data-line="896"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="897">    <span class="k">if</span> <span class="n">scalar_data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="898">        <span class="k">return</span> <span class="n">scalar_data</span>
-</span><span data-line="899">    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">base_ndim</span><span class="p">):</span>
-</span><span data-line="900">        <span class="n">scalar_data</span> <span class="o">=</span> <span class="n">scalar_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-</span><span data-line="901">    <span class="k">return</span> <span class="n">scalar_data</span>
-</span><span data-line="902">
-</span><span data-line="903">
-</span><span data-line="904"><span class="nd">@overload</span>
-</span><span data-line="905"><span class="k">def</span><span class="w"> </span><span class="nf">align_sub_batch</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">_W1</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_W2</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">_W1</span><span class="p">,</span> <span class="n">_W2</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
-</span><span data-line="906"><span class="nd">@overload</span>
-</span><span data-line="907"><span class="k">def</span><span class="w"> </span><span class="nf">align_sub_batch</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">_W1</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_W2</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">_W3</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">_W1</span><span class="p">,</span> <span class="n">_W2</span><span class="p">,</span> <span class="n">_W3</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
-</span><span data-line="908"><span class="nd">@overload</span>
-</span><span data-line="909"><span class="k">def</span><span class="w"> </span><span class="nf">align_sub_batch</span><span class="p">(</span><span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
+</span><span data-line="710">        <span class="c1"># Materialize the broadcast (like every other region expand: expand +</span>
+</span><span data-line="711">        <span class="c1"># contiguous). Leaving a stride-0 view here tags the new axis &quot;full&quot;</span>
+</span><span data-line="712">        <span class="c1"># while its storage is a size-N broadcast -- invisible to materialize()</span>
+</span><span data-line="713">        <span class="c1"># and, when it reaches a torch.compile graph output, breaks AOTAutograd&#39;s</span>
+</span><span data-line="714">        <span class="c1"># tangent memory-format coercion on torch&gt;=2.12.</span>
+</span><span data-line="715">        <span class="n">new_data</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="716">            <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">insert_at</span><span class="p">)</span>
+</span><span data-line="717">            <span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="n">insert_at</span><span class="p">],</span> <span class="n">size</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">insert_at</span><span class="p">:])</span>
+</span><span data-line="718">            <span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+</span><span data-line="719">        <span class="p">)</span>
+</span><span data-line="720">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</span><span data-line="721">
+</span><span data-line="722">    <span class="k">def</span><span class="w"> </span><span class="nf">diagonalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WT</span><span class="p">:</span>
+</span><span data-line="723">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="724">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="725">                <span class="s2">&quot;sub_batch.diagonalize requires at least one sub-batch dim; got sub_batch_ndim=0&quot;</span>
+</span><span data-line="726">            <span class="p">)</span>
+</span><span data-line="727">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="728">            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+</span><span data-line="729">                <span class="s2">&quot;sub_batch.diagonalize for BASE_NDIM &gt; 0 wrappers is not &quot;</span>
+</span><span data-line="730">                <span class="s2">&quot;implemented; no in-scope caller needs it.&quot;</span>
+</span><span data-line="731">            <span class="p">)</span>
+</span><span data-line="732">        <span class="n">new_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag_embed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span><span data-line="733">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</span><span data-line="734">
+</span><span data-line="735">    <span class="k">def</span><span class="w"> </span><span class="nf">retag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ndim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WT</span><span class="p">:</span>
+</span><span data-line="736"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a view of the same ``data`` with ``sub_batch_ndim=ndim``.&quot;&quot;&quot;</span>
+</span><span data-line="737">        <span class="k">if</span> <span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="738">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sub_batch.retag: ndim must be non-negative, got </span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="739">        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span>
+</span><span data-line="740">        <span class="n">batch_ndim</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span>
+</span><span data-line="741">        <span class="k">if</span> <span class="n">ndim</span> <span class="o">&gt;</span> <span class="n">batch_ndim</span><span class="p">:</span>
+</span><span data-line="742">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="743">                <span class="sa">f</span><span class="s2">&quot;sub_batch.retag: ndim=</span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> exceeds available batch dims &quot;</span>
+</span><span data-line="744">                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">batch_ndim</span><span class="si">}</span><span class="s2">); tensor shape=</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+</span><span data-line="745">                <span class="sa">f</span><span class="s2">&quot;BASE_NDIM=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="si">}</span><span class="s2">, k_ndim=</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="746">            <span class="p">)</span>
+</span><span data-line="747">        <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">:</span>
+</span><span data-line="748">            <span class="k">return</span> <span class="n">w</span>
+</span><span data-line="749">        <span class="k">return</span> <span class="n">w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">ndim</span><span class="p">)</span>
+</span><span data-line="750">
+</span><span data-line="751">    <span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WT</span><span class="p">:</span>
+</span><span data-line="752"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Demote the sub-batch region to dynamic batch (``retag(0)``).&quot;&quot;&quot;</span>
+</span><span data-line="753">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">retag</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span><span data-line="754">
+</span><span data-line="755">
+</span><span data-line="756"><span class="k">class</span><span class="w"> </span><span class="nc">BaseView</span><span class="p">(</span><span class="n">_RegionView</span><span class="p">[</span><span class="n">_WT</span><span class="p">]):</span>
+</span><span data-line="757"><span class="w">    </span><span class="sd">&quot;&quot;&quot;View into the base region.&quot;&quot;&quot;</span>
+</span><span data-line="758">
+</span><span data-line="759">    <span class="n">_REGION</span> <span class="o">=</span> <span class="s2">&quot;base&quot;</span>
+</span><span data-line="760">
+</span><span data-line="761">    <span class="k">def</span><span class="w"> </span><span class="nf">_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+</span><span data-line="762">        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span>
+</span><span data-line="763">        <span class="k">return</span> <span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="p">)</span>
+</span><span data-line="764">
+</span><span data-line="765">    <span class="k">def</span><span class="w"> </span><span class="nf">transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim0</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim1</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WT</span><span class="p">:</span>
+</span><span data-line="766">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+</span><span data-line="767">            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+</span><span data-line="768">                <span class="sa">f</span><span class="s2">&quot;base.transpose requires BASE_NDIM &gt;= 2; &quot;</span>
+</span><span data-line="769">                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> has BASE_NDIM=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">BASE_NDIM</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="770">            <span class="p">)</span>
+</span><span data-line="771">        <span class="n">ax0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_dim</span><span class="p">(</span><span class="n">dim0</span><span class="p">)</span>
+</span><span data-line="772">        <span class="n">ax1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_dim</span><span class="p">(</span><span class="n">dim1</span><span class="p">)</span>
+</span><span data-line="773">        <span class="n">new_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">ax0</span><span class="p">,</span> <span class="n">ax1</span><span class="p">)</span>
+</span><span data-line="774">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="775">
+</span><span data-line="776">
+</span><span data-line="777"><span class="k">class</span><span class="w"> </span><span class="nc">KView</span><span class="p">(</span><span class="n">_RegionView</span><span class="p">[</span><span class="n">_WT</span><span class="p">]):</span>
+</span><span data-line="778"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read-only view over the K (seed-direction) region.</span>
+</span><span data-line="779">
+</span><span data-line="780"><span class="sd">    Exposes ``.shape`` and ``.ndim`` for the leading ``k_ndim`` axes;</span>
+</span><span data-line="781"><span class="sd">    mutation of the K region is driven by the typed chain-rule primitives</span>
+</span><span data-line="782"><span class="sd">    in :mod:`neml2.types.functions` (``fullify``, the exposing reductions</span>
+</span><span data-line="783"><span class="sd">    on ``sum`` / ``mean`` / ``sum_sub_batch``).</span>
+</span><span data-line="784"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="785">
+</span><span data-line="786">    <span class="n">_REGION</span> <span class="o">=</span> <span class="s2">&quot;k&quot;</span>
+</span><span data-line="787">
+</span><span data-line="788">    <span class="k">def</span><span class="w"> </span><span class="nf">_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+</span><span data-line="789">        <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">)</span>
+</span><span data-line="790">
+</span><span data-line="791">
+</span><span data-line="792"><span class="c1"># ---------------------------------------------------------------------------</span>
+</span><span data-line="793"><span class="c1"># Sub-batch alignment + state combination</span>
+</span><span data-line="794"><span class="c1"># ---------------------------------------------------------------------------</span>
+</span><span data-line="795">
+</span><span data-line="796">
+</span><span data-line="797"><span class="n">_W1</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_W1&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">TensorWrapper</span><span class="p">)</span>
+</span><span data-line="798"><span class="n">_W2</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_W2&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">TensorWrapper</span><span class="p">)</span>
+</span><span data-line="799"><span class="n">_W3</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_W3&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">TensorWrapper</span><span class="p">)</span>
+</span><span data-line="800">
+</span><span data-line="801">
+</span><span data-line="802"><span class="k">def</span><span class="w"> </span><span class="nf">wrap_like</span><span class="p">(</span>
+</span><span data-line="803">    <span class="n">result_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">_WT</span><span class="p">],</span>
+</span><span data-line="804">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+</span><span data-line="805">    <span class="n">source</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span>
+</span><span data-line="806"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_WT</span><span class="p">:</span>
+</span><span data-line="807"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct ``result_cls`` around ``data`` with metadata copied from</span>
+</span><span data-line="808"><span class="sd">    ``source``. Used by type-changing free functions (``tr(SR2) -&gt; Scalar``,</span>
+</span><span data-line="809"><span class="sd">    ``vol(SR2) -&gt; SR2``, ...) whose output keeps the source wrapper&#39;s</span>
+</span><span data-line="810"><span class="sd">    ``sub_batch_ndim``, per-axis storage state, AND K region verbatim.</span>
+</span><span data-line="811"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="812">    <span class="k">return</span> <span class="n">result_cls</span><span class="p">(</span>
+</span><span data-line="813">        <span class="n">data</span><span class="p">,</span>
+</span><span data-line="814">        <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">,</span>
+</span><span data-line="815">        <span class="n">sub_batch_state</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">sub_batch_state</span><span class="p">,</span>
+</span><span data-line="816">        <span class="n">sub_batch_meta</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">sub_batch_meta</span><span class="p">,</span>
+</span><span data-line="817">        <span class="n">k_ndim</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">k_ndim</span><span class="p">,</span>
+</span><span data-line="818">        <span class="n">k_state</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">k_state</span><span class="p">,</span>
+</span><span data-line="819">        <span class="n">k_pairing</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">k_pairing</span><span class="p">,</span>
+</span><span data-line="820">    <span class="p">)</span>
+</span><span data-line="821">
+</span><span data-line="822">
+</span><span data-line="823"><span class="k">def</span><span class="w"> </span><span class="nf">drop_sub_batch_state_axes</span><span class="p">(</span>
+</span><span data-line="824">    <span class="n">state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+</span><span data-line="825">    <span class="n">meta</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+</span><span data-line="826">    <span class="n">axes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+</span><span data-line="827"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+</span><span data-line="828"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Drop the given sub-batch-relative axes from ``state`` and ``meta``.&quot;&quot;&quot;</span>
+</span><span data-line="829">    <span class="k">if</span> <span class="ow">not</span> <span class="n">state</span><span class="p">:</span>
+</span><span data-line="830">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
+</span><span data-line="831">    <span class="n">kill</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+</span><span data-line="832">    <span class="n">new_state</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span>
+</span><span data-line="833">        <span class="s2">&quot;tuple[SubBatchStateFlag, ...]&quot;</span><span class="p">,</span>
+</span><span data-line="834">        <span class="nb">tuple</span><span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kill</span><span class="p">),</span>
+</span><span data-line="835">    <span class="p">)</span>
+</span><span data-line="836">    <span class="n">new_meta</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">m</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kill</span><span class="p">)</span>
+</span><span data-line="837">    <span class="k">return</span> <span class="n">new_state</span><span class="p">,</span> <span class="n">new_meta</span>
+</span><span data-line="838">
+</span><span data-line="839">
+</span><span data-line="840"><span class="k">def</span><span class="w"> </span><span class="nf">combine_sub_batch_state</span><span class="p">(</span>
+</span><span data-line="841">    <span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span>
+</span><span data-line="842"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+</span><span data-line="843"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine per-axis state + meta across binary/n-ary op operands.</span>
+</span><span data-line="844">
+</span><span data-line="845"><span class="sd">    Returns ``(state, meta)``. Caller has already passed the inputs</span>
+</span><span data-line="846"><span class="sd">    through :func:`align_sub_batch` so they share a common</span>
+</span><span data-line="847"><span class="sd">    ``sub_batch_ndim`` and aligned axis positions.</span>
+</span><span data-line="848">
+</span><span data-line="849"><span class="sd">    Per-axis rule:</span>
+</span><span data-line="850">
+</span><span data-line="851"><span class="sd">    - Output axis i is ``&quot;broadcast&quot;`` iff EVERY tangent input axis i</span>
+</span><span data-line="852"><span class="sd">      is ``&quot;broadcast&quot;``. Compact tangent representation is preserved.</span>
+</span><span data-line="853"><span class="sd">    - Otherwise output axis i is ``&quot;full&quot;``.</span>
+</span><span data-line="854">
+</span><span data-line="855"><span class="sd">    Primals (empty ``sub_batch_state``) don&#39;t degrade the broadcast flag</span>
+</span><span data-line="856"><span class="sd">    -- they contribute their logical extent for meta inference but</span>
+</span><span data-line="857"><span class="sd">    cannot promote a tangent. Returns ``((), ())`` when no input carries</span>
+</span><span data-line="858"><span class="sd">    non-empty state (legacy lane).</span>
+</span><span data-line="859"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="860">    <span class="k">if</span> <span class="ow">not</span> <span class="n">wrappers</span><span class="p">:</span>
+</span><span data-line="861">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
+</span><span data-line="862">    <span class="n">sb_ndim</span> <span class="o">=</span> <span class="n">wrappers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="863">    <span class="k">if</span> <span class="n">sb_ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="864">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
+</span><span data-line="865">    <span class="n">have_any</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="p">())</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">)</span>
+</span><span data-line="866">    <span class="k">if</span> <span class="ow">not</span> <span class="n">have_any</span><span class="p">:</span>
+</span><span data-line="867">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
+</span><span data-line="868">    <span class="n">state_out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="869">    <span class="n">meta_out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="870">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sb_ndim</span><span class="p">):</span>
+</span><span data-line="871">        <span class="n">all_broadcast</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span data-line="872">        <span class="n">any_tangent</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span data-line="873">        <span class="n">extent</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span data-line="874">        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">:</span>
+</span><span data-line="875">            <span class="n">w_state</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="p">())</span>
+</span><span data-line="876">            <span class="n">w_meta</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_meta&quot;</span><span class="p">,</span> <span class="p">())</span>
+</span><span data-line="877">            <span class="n">sb_start</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="878">            <span class="k">if</span> <span class="ow">not</span> <span class="n">w_state</span><span class="p">:</span>
+</span><span data-line="879">                <span class="n">axis_extent</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">sb_start</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span>
+</span><span data-line="880">            <span class="k">else</span><span class="p">:</span>
+</span><span data-line="881">                <span class="n">any_tangent</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span data-line="882">                <span class="n">axis_state</span> <span class="o">=</span> <span class="n">w_state</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span><span data-line="883">                <span class="n">axis_extent</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="884">                    <span class="nb">int</span><span class="p">(</span><span class="n">w_meta</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">if</span> <span class="n">axis_state</span> <span class="o">==</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">sb_start</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span>
+</span><span data-line="885">                <span class="p">)</span>
+</span><span data-line="886">                <span class="k">if</span> <span class="n">axis_state</span> <span class="o">!=</span> <span class="s2">&quot;broadcast&quot;</span><span class="p">:</span>
+</span><span data-line="887">                    <span class="n">all_broadcast</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span data-line="888">            <span class="k">if</span> <span class="n">extent</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+</span><span data-line="889">                <span class="n">extent</span> <span class="o">=</span> <span class="n">axis_extent</span>
+</span><span data-line="890">        <span class="n">flag</span><span class="p">:</span> <span class="n">SubBatchStateFlag</span> <span class="o">=</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">if</span> <span class="p">(</span><span class="n">any_tangent</span> <span class="ow">and</span> <span class="n">all_broadcast</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;full&quot;</span>
+</span><span data-line="891">        <span class="n">state_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
+</span><span data-line="892">        <span class="n">meta_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span>
+</span><span data-line="893">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">state_out</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">meta_out</span><span class="p">)</span>
+</span><span data-line="894">
+</span><span data-line="895">
+</span><span data-line="896"><span class="k">def</span><span class="w"> </span><span class="nf">align_scalar_base</span><span class="p">(</span><span class="n">scalar_data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">base_ndim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+</span><span data-line="897"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Pad a Scalar&#39;s data with ``base_ndim`` trailing length-1 axes so it</span>
+</span><span data-line="898"><span class="sd">    broadcasts against a higher-base-rank wrapper.</span>
+</span><span data-line="899">
+</span><span data-line="900"><span class="sd">    Skips unsqueezes when ``scalar_data`` is 0-d (broadcasts against any</span>
+</span><span data-line="901"><span class="sd">    shape natively, and unsqueeze on a 0-d Constant IR node crashes</span>
+</span><span data-line="902"><span class="sd">    Inductor&#39;s AOTI lowering).</span>
+</span><span data-line="903"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="904">    <span class="k">if</span> <span class="n">scalar_data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="905">        <span class="k">return</span> <span class="n">scalar_data</span>
+</span><span data-line="906">    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">base_ndim</span><span class="p">):</span>
+</span><span data-line="907">        <span class="n">scalar_data</span> <span class="o">=</span> <span class="n">scalar_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="908">    <span class="k">return</span> <span class="n">scalar_data</span>
+</span><span data-line="909">
+</span><span data-line="910">
+</span><span data-line="911"><span class="nd">@overload</span>
+</span><span data-line="912"><span class="k">def</span><span class="w"> </span><span class="nf">align_sub_batch</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">_W1</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_W2</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">_W1</span><span class="p">,</span> <span class="n">_W2</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
+</span><span data-line="913"><span class="nd">@overload</span>
+</span><span data-line="914"><span class="k">def</span><span class="w"> </span><span class="nf">align_sub_batch</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">_W1</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_W2</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">_W3</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">_W1</span><span class="p">,</span> <span class="n">_W2</span><span class="p">,</span> <span class="n">_W3</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
+</span><span data-line="915"><span class="nd">@overload</span>
+</span><span data-line="916"><span class="k">def</span><span class="w"> </span><span class="nf">align_sub_batch</span><span class="p">(</span><span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
 <div class="viewcode-block" id="align_sub_batch">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.models.chain_rule.align_sub_batch">[docs]</a>
-</span><span data-line="910"><span class="k">def</span><span class="w"> </span><span class="nf">align_sub_batch</span><span class="p">(</span><span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
-</span><span data-line="911"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Pad each wrapper&#39;s ``sub_batch_ndim`` up to the common max.</span>
-</span><span data-line="912">
-</span><span data-line="913"><span class="sd">    Direct Python analogue of C++ ``utils::align_intmd_dim``. For each</span>
-</span><span data-line="914"><span class="sd">    input wrapper whose ``sub_batch_ndim &lt; smax``, returns a view whose</span>
-</span><span data-line="915"><span class="sd">    ``data`` has ``(smax - sub_batch_ndim)`` size-1 axes inserted at the</span>
-</span><span data-line="916"><span class="sd">    start of its sub-batch region.</span>
-</span><span data-line="917">
-</span><span data-line="918"><span class="sd">    Returns ``(aligned, smax)``.</span>
-</span><span data-line="919"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="920">    <span class="k">if</span> <span class="ow">not</span> <span class="n">wrappers</span><span class="p">:</span>
-</span><span data-line="921">        <span class="k">return</span> <span class="p">(),</span> <span class="mi">0</span>
-</span><span data-line="922">    <span class="n">smax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">)</span>
-</span><span data-line="923">    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">==</span> <span class="n">smax</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">):</span>
-</span><span data-line="924">        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">wrappers</span><span class="p">),</span> <span class="n">smax</span>
-</span><span data-line="925">
-</span><span data-line="926">    <span class="n">peer_state</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">smax</span>
-</span><span data-line="927">    <span class="n">peer_meta</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">smax</span>
-</span><span data-line="928">    <span class="n">have_state</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="p">())</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">)</span>
-</span><span data-line="929">    <span class="k">if</span> <span class="n">have_state</span><span class="p">:</span>
-</span><span data-line="930">        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">:</span>
-</span><span data-line="931">            <span class="n">w_state</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="p">())</span>
-</span><span data-line="932">            <span class="k">if</span> <span class="ow">not</span> <span class="n">w_state</span><span class="p">:</span>
-</span><span data-line="933">                <span class="k">continue</span>
-</span><span data-line="934">            <span class="n">w_meta</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_meta&quot;</span><span class="p">,</span> <span class="p">())</span>
-</span><span data-line="935">            <span class="n">offset</span> <span class="o">=</span> <span class="n">smax</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="936">            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">w_state</span><span class="p">):</span>
-</span><span data-line="937">                <span class="k">if</span> <span class="n">peer_state</span><span class="p">[</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
-</span><span data-line="938">                    <span class="n">peer_state</span><span class="p">[</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
-</span><span data-line="939">                <span class="k">if</span> <span class="n">peer_meta</span><span class="p">[</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="940">                    <span class="n">extent</span> <span class="o">=</span> <span class="p">(</span>
-</span><span data-line="941">                        <span class="n">w_meta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span><span data-line="942">                        <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="s2">&quot;broadcast&quot;</span>
-</span><span data-line="943">                        <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span>
-</span><span data-line="944">                    <span class="p">)</span>
-</span><span data-line="945">                    <span class="n">peer_meta</span><span class="p">[</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span>
-</span><span data-line="946">
-</span><span data-line="947">    <span class="k">def</span><span class="w"> </span><span class="nf">_aligned</span><span class="p">(</span><span class="n">w</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="948">        <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">==</span> <span class="n">smax</span><span class="p">:</span>
-</span><span data-line="949">            <span class="k">return</span> <span class="n">w</span>
-</span><span data-line="950">        <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="951">            <span class="n">padded</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">smax</span><span class="p">,</span> <span class="n">sub_batch_state</span><span class="o">=</span><span class="p">(),</span> <span class="n">sub_batch_meta</span><span class="o">=</span><span class="p">())</span>
-</span><span data-line="952">        <span class="k">else</span><span class="p">:</span>
-</span><span data-line="953">            <span class="n">padded</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">smax</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="954">        <span class="k">if</span> <span class="n">have_state</span><span class="p">:</span>
-</span><span data-line="955">            <span class="n">offset</span> <span class="o">=</span> <span class="n">smax</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="956">            <span class="n">w_state</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="p">())</span>
-</span><span data-line="957">            <span class="n">w_meta</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_meta&quot;</span><span class="p">,</span> <span class="p">())</span>
-</span><span data-line="958">            <span class="n">tail_state</span> <span class="o">=</span> <span class="n">w_state</span> <span class="k">if</span> <span class="n">w_state</span> <span class="k">else</span> <span class="p">(</span><span class="s2">&quot;full&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
-</span><span data-line="959">            <span class="n">tail_meta</span> <span class="o">=</span> <span class="p">(</span>
-</span><span data-line="960">                <span class="n">w_meta</span>
-</span><span data-line="961">                <span class="k">if</span> <span class="n">w_meta</span>
-</span><span data-line="962">                <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span>
-</span><span data-line="963">                    <span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span>
-</span><span data-line="964">                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
-</span><span data-line="965">                <span class="p">)</span>
-</span><span data-line="966">            <span class="p">)</span>
-</span><span data-line="967">            <span class="n">head</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-</span><span data-line="968">                <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;SubBatchStateFlag&quot;</span><span class="p">,</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">if</span> <span class="n">peer_meta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;full&quot;</span><span class="p">)</span>
-</span><span data-line="969">                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
-</span><span data-line="970">            <span class="p">)</span>
-</span><span data-line="971">            <span class="n">new_state</span> <span class="o">=</span> <span class="n">head</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tail_state</span><span class="p">)</span>
-</span><span data-line="972">            <span class="n">new_meta</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">peer_meta</span><span class="p">[:</span><span class="n">offset</span><span class="p">])</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tail_meta</span><span class="p">)</span>
-</span><span data-line="973">            <span class="n">padded</span> <span class="o">=</span> <span class="n">padded</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span>
-</span><span data-line="974">                <span class="n">padded</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-</span><span data-line="975">                <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">smax</span><span class="p">,</span>
-</span><span data-line="976">                <span class="n">sub_batch_state</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;tuple[SubBatchStateFlag, ...]&quot;</span><span class="p">,</span> <span class="n">new_state</span><span class="p">),</span>
-</span><span data-line="977">                <span class="n">sub_batch_meta</span><span class="o">=</span><span class="n">new_meta</span><span class="p">,</span>
-</span><span data-line="978">            <span class="p">)</span>
-</span><span data-line="979">        <span class="k">return</span> <span class="n">padded</span>
-</span><span data-line="980">
-</span><span data-line="981">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_aligned</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">),</span> <span class="n">smax</span></div>
-
-</span><span data-line="982">
-</span><span data-line="983">
-</span><span data-line="984"><span class="c1"># ---------------------------------------------------------------------------</span>
-</span><span data-line="985"><span class="c1"># K-region alignment + state combination (v2-parity plan §Appendix A)</span>
-</span><span data-line="986"><span class="c1"># ---------------------------------------------------------------------------</span>
+</span><span data-line="917"><span class="k">def</span><span class="w"> </span><span class="nf">align_sub_batch</span><span class="p">(</span><span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
+</span><span data-line="918"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Pad each wrapper&#39;s ``sub_batch_ndim`` up to the common max.</span>
+</span><span data-line="919">
+</span><span data-line="920"><span class="sd">    Direct Python analogue of C++ ``utils::align_intmd_dim``. For each</span>
+</span><span data-line="921"><span class="sd">    input wrapper whose ``sub_batch_ndim &lt; smax``, returns a view whose</span>
+</span><span data-line="922"><span class="sd">    ``data`` has ``(smax - sub_batch_ndim)`` size-1 axes inserted at the</span>
+</span><span data-line="923"><span class="sd">    start of its sub-batch region.</span>
+</span><span data-line="924">
+</span><span data-line="925"><span class="sd">    Returns ``(aligned, smax)``.</span>
+</span><span data-line="926"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="927">    <span class="k">if</span> <span class="ow">not</span> <span class="n">wrappers</span><span class="p">:</span>
+</span><span data-line="928">        <span class="k">return</span> <span class="p">(),</span> <span class="mi">0</span>
+</span><span data-line="929">    <span class="n">smax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">)</span>
+</span><span data-line="930">    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">==</span> <span class="n">smax</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">):</span>
+</span><span data-line="931">        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">wrappers</span><span class="p">),</span> <span class="n">smax</span>
+</span><span data-line="932">
+</span><span data-line="933">    <span class="n">peer_state</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">smax</span>
+</span><span data-line="934">    <span class="n">peer_meta</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">smax</span>
+</span><span data-line="935">    <span class="n">have_state</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="p">())</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">)</span>
+</span><span data-line="936">    <span class="k">if</span> <span class="n">have_state</span><span class="p">:</span>
+</span><span data-line="937">        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">:</span>
+</span><span data-line="938">            <span class="n">w_state</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="p">())</span>
+</span><span data-line="939">            <span class="k">if</span> <span class="ow">not</span> <span class="n">w_state</span><span class="p">:</span>
+</span><span data-line="940">                <span class="k">continue</span>
+</span><span data-line="941">            <span class="n">w_meta</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_meta&quot;</span><span class="p">,</span> <span class="p">())</span>
+</span><span data-line="942">            <span class="n">offset</span> <span class="o">=</span> <span class="n">smax</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="943">            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">w_state</span><span class="p">):</span>
+</span><span data-line="944">                <span class="k">if</span> <span class="n">peer_state</span><span class="p">[</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+</span><span data-line="945">                    <span class="n">peer_state</span><span class="p">[</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+</span><span data-line="946">                <span class="k">if</span> <span class="n">peer_meta</span><span class="p">[</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="947">                    <span class="n">extent</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="948">                        <span class="n">w_meta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span><span data-line="949">                        <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="s2">&quot;broadcast&quot;</span>
+</span><span data-line="950">                        <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span>
+</span><span data-line="951">                    <span class="p">)</span>
+</span><span data-line="952">                    <span class="n">peer_meta</span><span class="p">[</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span>
+</span><span data-line="953">
+</span><span data-line="954">    <span class="k">def</span><span class="w"> </span><span class="nf">_aligned</span><span class="p">(</span><span class="n">w</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="955">        <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">==</span> <span class="n">smax</span><span class="p">:</span>
+</span><span data-line="956">            <span class="k">return</span> <span class="n">w</span>
+</span><span data-line="957">        <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="958">            <span class="n">padded</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">smax</span><span class="p">,</span> <span class="n">sub_batch_state</span><span class="o">=</span><span class="p">(),</span> <span class="n">sub_batch_meta</span><span class="o">=</span><span class="p">())</span>
+</span><span data-line="959">        <span class="k">else</span><span class="p">:</span>
+</span><span data-line="960">            <span class="n">padded</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">smax</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="961">        <span class="k">if</span> <span class="n">have_state</span><span class="p">:</span>
+</span><span data-line="962">            <span class="n">offset</span> <span class="o">=</span> <span class="n">smax</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="963">            <span class="n">w_state</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_state&quot;</span><span class="p">,</span> <span class="p">())</span>
+</span><span data-line="964">            <span class="n">w_meta</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;sub_batch_meta&quot;</span><span class="p">,</span> <span class="p">())</span>
+</span><span data-line="965">            <span class="n">tail_state</span> <span class="o">=</span> <span class="n">w_state</span> <span class="k">if</span> <span class="n">w_state</span> <span class="k">else</span> <span class="p">(</span><span class="s2">&quot;full&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span>
+</span><span data-line="966">            <span class="n">tail_meta</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="967">                <span class="n">w_meta</span>
+</span><span data-line="968">                <span class="k">if</span> <span class="n">w_meta</span>
+</span><span data-line="969">                <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span>
+</span><span data-line="970">                    <span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">BASE_NDIM</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span>
+</span><span data-line="971">                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">)</span>
+</span><span data-line="972">                <span class="p">)</span>
+</span><span data-line="973">            <span class="p">)</span>
+</span><span data-line="974">            <span class="n">head</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SubBatchStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+</span><span data-line="975">                <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;SubBatchStateFlag&quot;</span><span class="p">,</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">if</span> <span class="n">peer_meta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;full&quot;</span><span class="p">)</span>
+</span><span data-line="976">                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+</span><span data-line="977">            <span class="p">)</span>
+</span><span data-line="978">            <span class="n">new_state</span> <span class="o">=</span> <span class="n">head</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tail_state</span><span class="p">)</span>
+</span><span data-line="979">            <span class="n">new_meta</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">peer_meta</span><span class="p">[:</span><span class="n">offset</span><span class="p">])</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tail_meta</span><span class="p">)</span>
+</span><span data-line="980">            <span class="n">padded</span> <span class="o">=</span> <span class="n">padded</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span>
+</span><span data-line="981">                <span class="n">padded</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+</span><span data-line="982">                <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">smax</span><span class="p">,</span>
+</span><span data-line="983">                <span class="n">sub_batch_state</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;tuple[SubBatchStateFlag, ...]&quot;</span><span class="p">,</span> <span class="n">new_state</span><span class="p">),</span>
+</span><span data-line="984">                <span class="n">sub_batch_meta</span><span class="o">=</span><span class="n">new_meta</span><span class="p">,</span>
+</span><span data-line="985">            <span class="p">)</span>
+</span><span data-line="986">        <span class="k">return</span> <span class="n">padded</span>
 </span><span data-line="987">
-</span><span data-line="988">
-</span><span data-line="989"><span class="nd">@overload</span>
-</span><span data-line="990"><span class="k">def</span><span class="w"> </span><span class="nf">align_k</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">_W1</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_W2</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">_W1</span><span class="p">,</span> <span class="n">_W2</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
-</span><span data-line="991"><span class="nd">@overload</span>
-</span><span data-line="992"><span class="k">def</span><span class="w"> </span><span class="nf">align_k</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">_W1</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_W2</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">_W3</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">_W1</span><span class="p">,</span> <span class="n">_W2</span><span class="p">,</span> <span class="n">_W3</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
-</span><span data-line="993"><span class="nd">@overload</span>
-</span><span data-line="994"><span class="k">def</span><span class="w"> </span><span class="nf">align_k</span><span class="p">(</span><span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
-</span><span data-line="995"><span class="k">def</span><span class="w"> </span><span class="nf">align_k</span><span class="p">(</span><span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
-</span><span data-line="996"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Pad each wrapper&#39;s ``k_ndim`` up to the common max by inserting</span>
-</span><span data-line="997"><span class="sd">    size-1 leading K axes on lower-rank operands.</span>
-</span><span data-line="998">
-</span><span data-line="999"><span class="sd">    Padded axes default to ``state=&quot;broadcast&quot;`` and ``pairing=None``</span>
-</span><span data-line="1000"><span class="sd">    (an empty K direction -- no per-site interpretation, broadcasts</span>
-</span><span data-line="1001"><span class="sd">    against any peer K dim).</span>
-</span><span data-line="1002"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="1003">    <span class="k">if</span> <span class="ow">not</span> <span class="n">wrappers</span><span class="p">:</span>
-</span><span data-line="1004">        <span class="k">return</span> <span class="p">(),</span> <span class="mi">0</span>
-</span><span data-line="1005">    <span class="n">kmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">)</span>
-</span><span data-line="1006">    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span> <span class="o">==</span> <span class="n">kmax</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">):</span>
-</span><span data-line="1007">        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">wrappers</span><span class="p">),</span> <span class="n">kmax</span>
-</span><span data-line="1008">
-</span><span data-line="1009">    <span class="k">def</span><span class="w"> </span><span class="nf">_aligned</span><span class="p">(</span><span class="n">w</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
-</span><span data-line="1010">        <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span> <span class="o">==</span> <span class="n">kmax</span><span class="p">:</span>
-</span><span data-line="1011">            <span class="k">return</span> <span class="n">w</span>
-</span><span data-line="1012">        <span class="n">pad</span> <span class="o">=</span> <span class="n">kmax</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span>
-</span><span data-line="1013">        <span class="c1"># If the underlying data is a 0-d scalar, torch broadcast handles the</span>
-</span><span data-line="1014">        <span class="c1"># alignment against any other K-padded operand &quot;for free&quot; -- we don&#39;t</span>
-</span><span data-line="1015">        <span class="c1"># need to physically prepend leading size-1 axes to the tensor.</span>
-</span><span data-line="1016">        <span class="c1"># Skipping the unsqueeze here avoids hitting an Inductor lowering</span>
-</span><span data-line="1017">        <span class="c1"># bug where ``aten.unsqueeze.default`` (and ``aten.reshape.default``)</span>
-</span><span data-line="1018">        <span class="c1"># crash on a ``Constant`` IR node (a scalar coefficient like</span>
-</span><span data-line="1019">        <span class="c1"># ``vf = 1.0 / (3.0 * K)`` that the constant-folder reduced after</span>
-</span><span data-line="1020">        <span class="c1"># all its inputs were baked parameters). The wrapper metadata still</span>
-</span><span data-line="1021">        <span class="c1"># claims ``k_ndim == kmax``; downstream ``op_fn(aa.data, bb.data)``</span>
-</span><span data-line="1022">        <span class="c1"># broadcasts the scalar against the K-padded side. The result of</span>
-</span><span data-line="1023">        <span class="c1"># the op has the full K-padded shape, so the post-op rewrap stays</span>
-</span><span data-line="1024">        <span class="c1"># consistent.</span>
-</span><span data-line="1025">        <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="1026">            <span class="n">new_data</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span>
-</span><span data-line="1027">        <span class="k">else</span><span class="p">:</span>
-</span><span data-line="1028">            <span class="n">new_data</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span>
-</span><span data-line="1029">            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pad</span><span class="p">):</span>
-</span><span data-line="1030">                <span class="n">new_data</span> <span class="o">=</span> <span class="n">new_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-</span><span data-line="1031">        <span class="n">new_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;KStateFlag&quot;</span><span class="p">,</span> <span class="s2">&quot;broadcast&quot;</span><span class="p">),)</span> <span class="o">*</span> <span class="n">pad</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span>
-</span><span data-line="1032">            <span class="n">w</span><span class="o">.</span><span class="n">k_state</span>
-</span><span data-line="1033">        <span class="p">)</span>
-</span><span data-line="1034">        <span class="n">new_pairing</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="n">pad</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">k_pairing</span><span class="p">)</span>
-</span><span data-line="1035">        <span class="k">return</span> <span class="n">w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span>
-</span><span data-line="1036">            <span class="n">new_data</span><span class="p">,</span>
-</span><span data-line="1037">            <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">,</span>
-</span><span data-line="1038">            <span class="n">k_ndim</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span>
-</span><span data-line="1039">            <span class="n">k_state</span><span class="o">=</span><span class="n">new_state</span><span class="p">,</span>
-</span><span data-line="1040">            <span class="n">k_pairing</span><span class="o">=</span><span class="n">new_pairing</span><span class="p">,</span>
-</span><span data-line="1041">        <span class="p">)</span>
-</span><span data-line="1042">
-</span><span data-line="1043">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_aligned</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">),</span> <span class="n">kmax</span>
-</span><span data-line="1044">
-</span><span data-line="1045">
-</span><span data-line="1046"><span class="k">def</span><span class="w"> </span><span class="nf">combine_k_state</span><span class="p">(</span>
-</span><span data-line="1047">    <span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span>
-</span><span data-line="1048"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
-</span><span data-line="1049"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine per-K-axis state + pairing across n-ary op operands.</span>
-</span><span data-line="1050">
-</span><span data-line="1051"><span class="sd">    Caller has already passed the inputs through :func:`align_k` so they</span>
-</span><span data-line="1052"><span class="sd">    share a common ``k_ndim``.</span>
-</span><span data-line="1053">
-</span><span data-line="1054"><span class="sd">    Per-K-axis rules:</span>
-</span><span data-line="1055">
-</span><span data-line="1056"><span class="sd">    - If any operand is ``&quot;full&quot;`` at axis i, output state[i] is ``&quot;full&quot;``.</span>
-</span><span data-line="1057"><span class="sd">    - Else if every operand is ``&quot;broadcast&quot;``, output state[i] is ``&quot;broadcast&quot;``.</span>
-</span><span data-line="1058"><span class="sd">    - Pairing combine:</span>
-</span><span data-line="1059"><span class="sd">        * If exactly one operand has a non-None pairing, output takes it.</span>
-</span><span data-line="1060"><span class="sd">        * If multiple operands have non-None pairings and they agree, output takes it.</span>
-</span><span data-line="1061"><span class="sd">        * Multiple non-None pairings that disagree raise.</span>
-</span><span data-line="1062"><span class="sd">        * Mixing a &quot;full&quot; lane with any K-paired-broadcast lane breaks the</span>
-</span><span data-line="1063"><span class="sd">          pairing (the full lane has no per-site interpretation) -- pairing</span>
-</span><span data-line="1064"><span class="sd">          collapses to ``None``.</span>
-</span><span data-line="1065">
-</span><span data-line="1066"><span class="sd">    Returns ``((), ())`` when every operand has empty K state (the legacy</span>
-</span><span data-line="1067"><span class="sd">    primal lane).</span>
-</span><span data-line="1068"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="1069">    <span class="k">if</span> <span class="ow">not</span> <span class="n">wrappers</span><span class="p">:</span>
-</span><span data-line="1070">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
-</span><span data-line="1071">    <span class="n">kmax</span> <span class="o">=</span> <span class="n">wrappers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">k_ndim</span>
-</span><span data-line="1072">    <span class="k">if</span> <span class="n">kmax</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span data-line="1073">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
-</span><span data-line="1074">    <span class="n">have_any</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;k_state&quot;</span><span class="p">,</span> <span class="p">())</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">)</span>
-</span><span data-line="1075">    <span class="k">if</span> <span class="ow">not</span> <span class="n">have_any</span><span class="p">:</span>
-</span><span data-line="1076">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
-</span><span data-line="1077">    <span class="n">state_out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="1078">    <span class="n">pairing_out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span data-line="1079">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">kmax</span><span class="p">):</span>
-</span><span data-line="1080">        <span class="n">all_broadcast</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span data-line="1081">        <span class="n">any_kstate</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span data-line="1082">        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">:</span>
-</span><span data-line="1083">            <span class="n">ws</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;k_state&quot;</span><span class="p">,</span> <span class="p">())</span>
-</span><span data-line="1084">            <span class="k">if</span> <span class="ow">not</span> <span class="n">ws</span><span class="p">:</span>
-</span><span data-line="1085">                <span class="k">continue</span>
-</span><span data-line="1086">            <span class="n">any_kstate</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span data-line="1087">            <span class="k">if</span> <span class="n">ws</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;broadcast&quot;</span><span class="p">:</span>
-</span><span data-line="1088">                <span class="n">all_broadcast</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span data-line="1089">        <span class="n">flag</span><span class="p">:</span> <span class="n">KStateFlag</span> <span class="o">=</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">if</span> <span class="p">(</span><span class="n">any_kstate</span> <span class="ow">and</span> <span class="n">all_broadcast</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;full&quot;</span>
-</span><span data-line="1090">        <span class="c1"># Pairing resolution.</span>
-</span><span data-line="1091">        <span class="n">seen</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="1092">        <span class="n">seen_set</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span data-line="1093">        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">:</span>
-</span><span data-line="1094">            <span class="n">wp</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;k_pairing&quot;</span><span class="p">,</span> <span class="p">())</span>
-</span><span data-line="1095">            <span class="n">ws</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;k_state&quot;</span><span class="p">,</span> <span class="p">())</span>
-</span><span data-line="1096">            <span class="k">if</span> <span class="ow">not</span> <span class="n">wp</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ws</span><span class="p">:</span>
-</span><span data-line="1097">                <span class="k">continue</span>
-</span><span data-line="1098">            <span class="n">p</span> <span class="o">=</span> <span class="n">wp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span><span data-line="1099">            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span data-line="1100">                <span class="k">continue</span>
-</span><span data-line="1101">            <span class="k">if</span> <span class="ow">not</span> <span class="n">seen_set</span><span class="p">:</span>
-</span><span data-line="1102">                <span class="n">seen</span> <span class="o">=</span> <span class="n">p</span>
-</span><span data-line="1103">                <span class="n">seen_set</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span data-line="1104">            <span class="k">elif</span> <span class="n">seen</span> <span class="o">!=</span> <span class="n">p</span><span class="p">:</span>
-</span><span data-line="1105">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span data-line="1106">                    <span class="sa">f</span><span class="s2">&quot;combine_k_state: K axis </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> has disagreeing pairings &quot;</span>
-</span><span data-line="1107">                    <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">seen</span><span class="si">!r}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">p</span><span class="si">!r}</span><span class="s2">) across operands; align upstream.&quot;</span>
-</span><span data-line="1108">                <span class="p">)</span>
-</span><span data-line="1109">        <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">all_broadcast</span><span class="p">:</span>
-</span><span data-line="1110">            <span class="c1"># Result is &quot;full&quot;; pairing only survives if every contributing</span>
-</span><span data-line="1111">            <span class="c1"># operand had the same pairing AND none of them was a primal/</span>
-</span><span data-line="1112">            <span class="c1"># naked-full lane that would dilute the per-site interpretation.</span>
-</span><span data-line="1113">            <span class="c1"># Conservative choice: drop pairing on any full result.</span>
-</span><span data-line="1114">            <span class="n">pairing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="1115">        <span class="k">else</span><span class="p">:</span>
-</span><span data-line="1116">            <span class="n">pairing</span> <span class="o">=</span> <span class="n">seen</span>
-</span><span data-line="1117">        <span class="n">state_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
-</span><span data-line="1118">        <span class="n">pairing_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pairing</span><span class="p">)</span>
-</span><span data-line="1119">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">state_out</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pairing_out</span><span class="p">)</span>
+</span><span data-line="988">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_aligned</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">),</span> <span class="n">smax</span></div>
+
+</span><span data-line="989">
+</span><span data-line="990">
+</span><span data-line="991"><span class="c1"># ---------------------------------------------------------------------------</span>
+</span><span data-line="992"><span class="c1"># K-region alignment + state combination (v2-parity plan §Appendix A)</span>
+</span><span data-line="993"><span class="c1"># ---------------------------------------------------------------------------</span>
+</span><span data-line="994">
+</span><span data-line="995">
+</span><span data-line="996"><span class="nd">@overload</span>
+</span><span data-line="997"><span class="k">def</span><span class="w"> </span><span class="nf">align_k</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">_W1</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_W2</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">_W1</span><span class="p">,</span> <span class="n">_W2</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
+</span><span data-line="998"><span class="nd">@overload</span>
+</span><span data-line="999"><span class="k">def</span><span class="w"> </span><span class="nf">align_k</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">_W1</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_W2</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">_W3</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">_W1</span><span class="p">,</span> <span class="n">_W2</span><span class="p">,</span> <span class="n">_W3</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
+</span><span data-line="1000"><span class="nd">@overload</span>
+</span><span data-line="1001"><span class="k">def</span><span class="w"> </span><span class="nf">align_k</span><span class="p">(</span><span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
+</span><span data-line="1002"><span class="k">def</span><span class="w"> </span><span class="nf">align_k</span><span class="p">(</span><span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TensorWrapper</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
+</span><span data-line="1003"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Pad each wrapper&#39;s ``k_ndim`` up to the common max by inserting</span>
+</span><span data-line="1004"><span class="sd">    size-1 leading K axes on lower-rank operands.</span>
+</span><span data-line="1005">
+</span><span data-line="1006"><span class="sd">    Padded axes default to ``state=&quot;broadcast&quot;`` and ``pairing=None``</span>
+</span><span data-line="1007"><span class="sd">    (an empty K direction -- no per-site interpretation, broadcasts</span>
+</span><span data-line="1008"><span class="sd">    against any peer K dim).</span>
+</span><span data-line="1009"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="1010">    <span class="k">if</span> <span class="ow">not</span> <span class="n">wrappers</span><span class="p">:</span>
+</span><span data-line="1011">        <span class="k">return</span> <span class="p">(),</span> <span class="mi">0</span>
+</span><span data-line="1012">    <span class="n">kmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">)</span>
+</span><span data-line="1013">    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span> <span class="o">==</span> <span class="n">kmax</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">):</span>
+</span><span data-line="1014">        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">wrappers</span><span class="p">),</span> <span class="n">kmax</span>
+</span><span data-line="1015">
+</span><span data-line="1016">    <span class="k">def</span><span class="w"> </span><span class="nf">_aligned</span><span class="p">(</span><span class="n">w</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorWrapper</span><span class="p">:</span>
+</span><span data-line="1017">        <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span> <span class="o">==</span> <span class="n">kmax</span><span class="p">:</span>
+</span><span data-line="1018">            <span class="k">return</span> <span class="n">w</span>
+</span><span data-line="1019">        <span class="n">pad</span> <span class="o">=</span> <span class="n">kmax</span> <span class="o">-</span> <span class="n">w</span><span class="o">.</span><span class="n">k_ndim</span>
+</span><span data-line="1020">        <span class="c1"># If the underlying data is a 0-d scalar, torch broadcast handles the</span>
+</span><span data-line="1021">        <span class="c1"># alignment against any other K-padded operand &quot;for free&quot; -- we don&#39;t</span>
+</span><span data-line="1022">        <span class="c1"># need to physically prepend leading size-1 axes to the tensor.</span>
+</span><span data-line="1023">        <span class="c1"># Skipping the unsqueeze here avoids hitting an Inductor lowering</span>
+</span><span data-line="1024">        <span class="c1"># bug where ``aten.unsqueeze.default`` (and ``aten.reshape.default``)</span>
+</span><span data-line="1025">        <span class="c1"># crash on a ``Constant`` IR node (a scalar coefficient like</span>
+</span><span data-line="1026">        <span class="c1"># ``vf = 1.0 / (3.0 * K)`` that the constant-folder reduced after</span>
+</span><span data-line="1027">        <span class="c1"># all its inputs were baked parameters). The wrapper metadata still</span>
+</span><span data-line="1028">        <span class="c1"># claims ``k_ndim == kmax``; downstream ``op_fn(aa.data, bb.data)``</span>
+</span><span data-line="1029">        <span class="c1"># broadcasts the scalar against the K-padded side. The result of</span>
+</span><span data-line="1030">        <span class="c1"># the op has the full K-padded shape, so the post-op rewrap stays</span>
+</span><span data-line="1031">        <span class="c1"># consistent.</span>
+</span><span data-line="1032">        <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="1033">            <span class="n">new_data</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span>
+</span><span data-line="1034">        <span class="k">else</span><span class="p">:</span>
+</span><span data-line="1035">            <span class="n">new_data</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">data</span>
+</span><span data-line="1036">            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pad</span><span class="p">):</span>
+</span><span data-line="1037">                <span class="n">new_data</span> <span class="o">=</span> <span class="n">new_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span><span data-line="1038">        <span class="n">new_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;KStateFlag&quot;</span><span class="p">,</span> <span class="s2">&quot;broadcast&quot;</span><span class="p">),)</span> <span class="o">*</span> <span class="n">pad</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span>
+</span><span data-line="1039">            <span class="n">w</span><span class="o">.</span><span class="n">k_state</span>
+</span><span data-line="1040">        <span class="p">)</span>
+</span><span data-line="1041">        <span class="n">new_pairing</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="n">pad</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">k_pairing</span><span class="p">)</span>
+</span><span data-line="1042">        <span class="k">return</span> <span class="n">w</span><span class="o">.</span><span class="n">_rewrap</span><span class="p">(</span>
+</span><span data-line="1043">            <span class="n">new_data</span><span class="p">,</span>
+</span><span data-line="1044">            <span class="n">sub_batch_ndim</span><span class="o">=</span><span class="n">w</span><span class="o">.</span><span class="n">sub_batch_ndim</span><span class="p">,</span>
+</span><span data-line="1045">            <span class="n">k_ndim</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span>
+</span><span data-line="1046">            <span class="n">k_state</span><span class="o">=</span><span class="n">new_state</span><span class="p">,</span>
+</span><span data-line="1047">            <span class="n">k_pairing</span><span class="o">=</span><span class="n">new_pairing</span><span class="p">,</span>
+</span><span data-line="1048">        <span class="p">)</span>
+</span><span data-line="1049">
+</span><span data-line="1050">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_aligned</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">),</span> <span class="n">kmax</span>
+</span><span data-line="1051">
+</span><span data-line="1052">
+</span><span data-line="1053"><span class="k">def</span><span class="w"> </span><span class="nf">combine_k_state</span><span class="p">(</span>
+</span><span data-line="1054">    <span class="o">*</span><span class="n">wrappers</span><span class="p">:</span> <span class="n">TensorWrapper</span><span class="p">,</span>
+</span><span data-line="1055"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+</span><span data-line="1056"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine per-K-axis state + pairing across n-ary op operands.</span>
+</span><span data-line="1057">
+</span><span data-line="1058"><span class="sd">    Caller has already passed the inputs through :func:`align_k` so they</span>
+</span><span data-line="1059"><span class="sd">    share a common ``k_ndim``.</span>
+</span><span data-line="1060">
+</span><span data-line="1061"><span class="sd">    Per-K-axis rules:</span>
+</span><span data-line="1062">
+</span><span data-line="1063"><span class="sd">    - If any operand is ``&quot;full&quot;`` at axis i, output state[i] is ``&quot;full&quot;``.</span>
+</span><span data-line="1064"><span class="sd">    - Else if every operand is ``&quot;broadcast&quot;``, output state[i] is ``&quot;broadcast&quot;``.</span>
+</span><span data-line="1065"><span class="sd">    - Pairing combine:</span>
+</span><span data-line="1066"><span class="sd">        * If exactly one operand has a non-None pairing, output takes it.</span>
+</span><span data-line="1067"><span class="sd">        * If multiple operands have non-None pairings and they agree, output takes it.</span>
+</span><span data-line="1068"><span class="sd">        * Multiple non-None pairings that disagree raise.</span>
+</span><span data-line="1069"><span class="sd">        * Mixing a &quot;full&quot; lane with any K-paired-broadcast lane breaks the</span>
+</span><span data-line="1070"><span class="sd">          pairing (the full lane has no per-site interpretation) -- pairing</span>
+</span><span data-line="1071"><span class="sd">          collapses to ``None``.</span>
+</span><span data-line="1072">
+</span><span data-line="1073"><span class="sd">    Returns ``((), ())`` when every operand has empty K state (the legacy</span>
+</span><span data-line="1074"><span class="sd">    primal lane).</span>
+</span><span data-line="1075"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="1076">    <span class="k">if</span> <span class="ow">not</span> <span class="n">wrappers</span><span class="p">:</span>
+</span><span data-line="1077">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
+</span><span data-line="1078">    <span class="n">kmax</span> <span class="o">=</span> <span class="n">wrappers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">k_ndim</span>
+</span><span data-line="1079">    <span class="k">if</span> <span class="n">kmax</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="1080">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
+</span><span data-line="1081">    <span class="n">have_any</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;k_state&quot;</span><span class="p">,</span> <span class="p">())</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">)</span>
+</span><span data-line="1082">    <span class="k">if</span> <span class="ow">not</span> <span class="n">have_any</span><span class="p">:</span>
+</span><span data-line="1083">        <span class="k">return</span> <span class="p">(),</span> <span class="p">()</span>
+</span><span data-line="1084">    <span class="n">state_out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">KStateFlag</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="1085">    <span class="n">pairing_out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span data-line="1086">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">kmax</span><span class="p">):</span>
+</span><span data-line="1087">        <span class="n">all_broadcast</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span data-line="1088">        <span class="n">any_kstate</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span data-line="1089">        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">:</span>
+</span><span data-line="1090">            <span class="n">ws</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;k_state&quot;</span><span class="p">,</span> <span class="p">())</span>
+</span><span data-line="1091">            <span class="k">if</span> <span class="ow">not</span> <span class="n">ws</span><span class="p">:</span>
+</span><span data-line="1092">                <span class="k">continue</span>
+</span><span data-line="1093">            <span class="n">any_kstate</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span data-line="1094">            <span class="k">if</span> <span class="n">ws</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;broadcast&quot;</span><span class="p">:</span>
+</span><span data-line="1095">                <span class="n">all_broadcast</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span data-line="1096">        <span class="n">flag</span><span class="p">:</span> <span class="n">KStateFlag</span> <span class="o">=</span> <span class="s2">&quot;broadcast&quot;</span> <span class="k">if</span> <span class="p">(</span><span class="n">any_kstate</span> <span class="ow">and</span> <span class="n">all_broadcast</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;full&quot;</span>
+</span><span data-line="1097">        <span class="c1"># Pairing resolution.</span>
+</span><span data-line="1098">        <span class="n">seen</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="1099">        <span class="n">seen_set</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span data-line="1100">        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wrappers</span><span class="p">:</span>
+</span><span data-line="1101">            <span class="n">wp</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;k_pairing&quot;</span><span class="p">,</span> <span class="p">())</span>
+</span><span data-line="1102">            <span class="n">ws</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">&quot;k_state&quot;</span><span class="p">,</span> <span class="p">())</span>
+</span><span data-line="1103">            <span class="k">if</span> <span class="ow">not</span> <span class="n">wp</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ws</span><span class="p">:</span>
+</span><span data-line="1104">                <span class="k">continue</span>
+</span><span data-line="1105">            <span class="n">p</span> <span class="o">=</span> <span class="n">wp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span><span data-line="1106">            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="1107">                <span class="k">continue</span>
+</span><span data-line="1108">            <span class="k">if</span> <span class="ow">not</span> <span class="n">seen_set</span><span class="p">:</span>
+</span><span data-line="1109">                <span class="n">seen</span> <span class="o">=</span> <span class="n">p</span>
+</span><span data-line="1110">                <span class="n">seen_set</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span data-line="1111">            <span class="k">elif</span> <span class="n">seen</span> <span class="o">!=</span> <span class="n">p</span><span class="p">:</span>
+</span><span data-line="1112">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span data-line="1113">                    <span class="sa">f</span><span class="s2">&quot;combine_k_state: K axis </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> has disagreeing pairings &quot;</span>
+</span><span data-line="1114">                    <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">seen</span><span class="si">!r}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">p</span><span class="si">!r}</span><span class="s2">) across operands; align upstream.&quot;</span>
+</span><span data-line="1115">                <span class="p">)</span>
+</span><span data-line="1116">        <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">all_broadcast</span><span class="p">:</span>
+</span><span data-line="1117">            <span class="c1"># Result is &quot;full&quot;; pairing only survives if every contributing</span>
+</span><span data-line="1118">            <span class="c1"># operand had the same pairing AND none of them was a primal/</span>
+</span><span data-line="1119">            <span class="c1"># naked-full lane that would dilute the per-site interpretation.</span>
+</span><span data-line="1120">            <span class="c1"># Conservative choice: drop pairing on any full result.</span>
+</span><span data-line="1121">            <span class="n">pairing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="1122">        <span class="k">else</span><span class="p">:</span>
+</span><span data-line="1123">            <span class="n">pairing</span> <span class="o">=</span> <span class="n">seen</span>
+</span><span data-line="1124">        <span class="n">state_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
+</span><span data-line="1125">        <span class="n">pairing_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pairing</span><span class="p">)</span>
+</span><span data-line="1126">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">state_out</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pairing_out</span><span class="p">)</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
