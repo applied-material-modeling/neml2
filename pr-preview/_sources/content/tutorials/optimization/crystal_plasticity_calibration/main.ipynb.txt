@@ -48,7 +48,12 @@
    },
    "outputs": [],
    "source": [
-    "if \"google.colab\" in sys.modules:  # noqa: F821\n",
+    "# When this notebook runs in Google Colab, install NEML2 from PyPI. The guard\n",
+    "# makes the cell a no-op everywhere else (the docs build and local Jupyter\n",
+    "# already have NEML2 installed), and the cell is hidden from the rendered docs.\n",
+    "import sys\n",
+    "\n",
+    "if \"google.colab\" in sys.modules:\n",
     "    !pip install -q neml2 pyzag"
    ]
   },
