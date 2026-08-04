@@ -14,7 +14,12 @@
         values = 0
         batch_shape = '(1)'
     []
-    [k2] # unitless
+    [k2_0] # unitless
+        type = Scalar
+        values = 0
+        batch_shape = '(1)'
+    []
+    [Q_d]
         type = Scalar
         values = 0
         batch_shape = '(1)'
@@ -118,6 +123,7 @@
         shear_modulus = 'G'
         alpha = 'alpha'
         b = 'b'
+        sigma_ss = 0
         L = 'state/internal/L'
         athermal_stress = 'state/internal/s_a'
     []
@@ -138,15 +144,21 @@
         to = 'state/internal/NM'
     []
     [shear_eff]
-        type = NormalToShearStress
-        normal_stress = 'state/internal/s'
-        shear_stress = 'state/internal/tau_eff'
-        schmid_factor = 'm'
+        type = ScalarMultiplication
+        from_var = 'state/internal/s'
+        to_var = 'state/internal/tau_eff'
+        coefficient = 'm'
+    []
+    [shear_a]
+        type = ScalarMultiplication
+        from_var = 'state/internal/s_a'
+        to_var = 'state/internal/tau_a'
+        coefficient = 'm'
     []
     [v_disl]
         type = ThermallyActivatedDislocationMobility
         effective_shear = 'state/internal/tau_eff'
-        athermal_shear = 'state/internal/s_a'
+        athermal_shear = 'state/internal/tau_a'
         temperature = 'forces/T'
         h = 'h'
         w = 'w'
@@ -164,7 +176,7 @@
     [v_disl_diag]
         type = ThermallyActivatedDislocationMobility_diag
         effective_shear      = 'state/internal/tau_eff'
-        athermal_shear       = 'state/internal/s_a'
+        athermal_shear       = 'state/internal/tau_a'
         temperature          = 'forces/T'
         h    = 'h'
         w    = 'w'
@@ -190,7 +202,11 @@
         type = KocksMeckingDislocationDensity
         plastic_flow_rate = 'state/internal/gamma_rate'
         k1 = 'k1'
-        k2 = 'k2'
+        L = 'state/internal/L'
+        k2_0 = 'k2_0'
+        Q_d = 'Q_d'
+        k_B = 'k_B'
+        temperature = 'forces/T'
         dislocation_density = 'state/internal/rho_m'
         density_rate = 'state/internal/rho_m_rate'
     []
@@ -253,6 +269,6 @@
     []
     [implicit_rate]
         type = ComposedModel
-        models = 'mandel_stress kinharden overstress vonmises L athermal normality shear_eff v_disl rho_m_rate flow_rate Eprate Erate Eerate elasticity integrate_rho_m integrate_stress integrate_X mixed mixed_old rename'
+        models = 'mandel_stress kinharden overstress vonmises L athermal normality shear_eff shear_a v_disl rho_m_rate flow_rate Eprate Erate Eerate elasticity integrate_rho_m integrate_stress integrate_X mixed mixed_old rename'
     []
 []

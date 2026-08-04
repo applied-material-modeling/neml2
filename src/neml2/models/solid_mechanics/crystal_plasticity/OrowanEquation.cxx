@@ -18,8 +18,8 @@ OrowanEquation::expected_options()
     options.set("v_disl").doc() = "Dislocation velocity";
     options.set_parameter<TensorName<Scalar>>("b");
     options.set("b").doc() = "Burgers vector magnitude";
-    options.set_output("plastic_flow_rate");
-    options.set("plastic_flow_rate").doc() = "Plastic flow rate";
+    options.set_output("plastic_shear_rate");
+    options.set("plastic_shear_rate").doc() = "Plastic shear rate";
 
     return options;
 }
@@ -27,7 +27,7 @@ OrowanEquation::OrowanEquation(const OptionSet & options) : Model(options),
     _rho_m(declare_input_variable<Scalar>("dislocation_density")),
     _v_disl(declare_input_variable<Scalar>("v_disl")),
     _b(declare_parameter<Scalar>("b","b")),
-    _gamma_dot(declare_output_variable<Scalar>("plastic_flow_rate"))
+    _gamma_dot(declare_output_variable<Scalar>("plastic_shear_rate"))
 {
 }
 void

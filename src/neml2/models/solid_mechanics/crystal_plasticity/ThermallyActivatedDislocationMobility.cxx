@@ -56,9 +56,9 @@ void
 ThermallyActivatedDislocationMobility::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
     // Precompute common subexpressions
-    const auto K            = (2 * _h * _b) / (_w * _Bk);                   // Kink-pair prefactor: K = h·L·b / (a²·Bk)
-    const auto mcl_eff      = macaulay(_tau_eff());                         // Positive effective shear stress (for pre-exponential driving force)
-    const auto tau_1        = macaulay(_tau_eff() - _tau_a());              // Excess stress above athermal threshold
+    const auto K            = (2 * _h * _b) / (_w * _Bk);
+    const auto mcl_eff      = macaulay(_tau_eff());
+    const auto tau_1        = macaulay(_tau_eff() - _tau_a());
     const auto tau_tilda    = tau_1 / _tau_p;
     const auto tau_ratio    = clamp(tau_tilda, 1.0e-30, 1.0 - 1.0e-6);
     const auto D_G          = pow(1.0 - pow(tau_ratio, _p), _q) - _T() / _T_0;

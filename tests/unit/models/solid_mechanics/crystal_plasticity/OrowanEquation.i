@@ -15,7 +15,7 @@
         dislocation_density = 'state/internal/rho_m'
         v_disl = 'state/internal/v_disl'
         b = 2.5e-10
-        plastic_flow_rate = 'state/internal/gamma_rate'
+        plastic_shear_rate = 'state/internal/gamma_rate'
     []
 []
 

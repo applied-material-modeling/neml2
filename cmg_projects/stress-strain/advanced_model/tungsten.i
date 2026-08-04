@@ -137,7 +137,15 @@
     []
     [L]
         type = MeanFreePath
-        use_L2 = false
+        use_L2 = true
+        c_lath = 1.0
+        d_lath = 0.5e-3
+        c_block = 0.0
+        d_block = 1.0
+        c_packet = 0.0
+        d_packet = 1.0
+        c_PAG = 0.0
+        d_PAG = 1.0
         use_L3 = false
         rho_m = 'state/internal/rho_m'
         L = 'state/internal/L'
@@ -197,9 +205,22 @@
         H_0 = 'H_0'
         v_disl = 'state/internal/v_disl'
     []
+    [shear_rate]
+        type = OrowanEquation
+        dislocation_density = 'state/internal/rho_m'
+        v_disl = 'state/internal/v_disl'
+        b = 'b'
+        plastic_shear_rate = 'state/internal/gamma_rate'
+    []
+    [flow_rate]
+        type = ScalarMultiplication
+        from_var = 'state/internal/gamma_rate'
+        to_var = 'state/internal/p_rate'
+        coefficient = 'm'
+    []
     [rho_m_rate]
         type = KocksMeckingDislocationDensity
-        plastic_flow_rate = 'state/internal/gamma_rate'
+        plastic_flow_rate = 'state/internal/p_rate'
         k1 = 'k1'
         L = 'state/internal/L'
         k2_0 = 'k2_0'
@@ -208,13 +229,6 @@
         temperature = 'forces/T'
         dislocation_density = 'state/internal/rho_m'
         density_rate = 'state/internal/rho_m_rate'
-    []
-    [flow_rate]
-        type = OrowanEquation
-        dislocation_density = 'state/internal/rho_m'
-        v_disl = 'state/internal/v_disl'
-        b = 'b'
-        plastic_flow_rate = 'state/internal/gamma_rate'
     []
     [Eprate]
         type = AssociativePlasticFlow
@@ -253,7 +267,7 @@
         above_variable = 'state/S'
         below_variable = 'forces/E'
     []
-    [mixed_old]
+    [mixed_old] 
         type = MixedControlSetup
         control = 'old_forces/control'
         mixed_state = 'old_state/mixed_state'
@@ -268,6 +282,6 @@
     []
     [implicit_rate]
         type = ComposedModel
-        models = 'G_bottom_inner G_bottom G mandel_stress kinharden overstress vonmises L athermal normality shear_eff shear_a v_disl rho_m_rate flow_rate Eprate Erate Eerate elasticity integrate_rho_m integrate_stress integrate_X mixed mixed_old rename'
+        models = 'G_bottom_inner G_bottom G mandel_stress kinharden overstress vonmises L athermal normality shear_eff shear_a v_disl shear_rate rho_m_rate flow_rate Eprate Erate Eerate elasticity integrate_rho_m integrate_stress integrate_X mixed mixed_old rename'
     []
 []
