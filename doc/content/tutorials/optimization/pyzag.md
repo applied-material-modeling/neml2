@@ -51,7 +51,7 @@ block-bidiagonal nonlinear system. Two consequences follow:
   storage.
 
 The NEML2 ↔ pyzag interface lives in the {mod}`neml2.pyzag` submodule.
-{class}`~neml2.pyzag.NEML2PyzagFactory` adapts a NEML2 nonlinear system
+{class}`~neml2.pyzag.NEML2PyzagModel` adapts a NEML2 nonlinear system
 to pyzag's `NonlinearFunctionOperatorFactory` protocol: it evaluates the
 residual and Jacobians through NEML2's fast forward-mode chain-rule path
 and exposes each NEML2 parameter as a `torch.nn.Parameter` on the
@@ -61,18 +61,22 @@ loop, with `nonlinear.solve_adjoint(...)` in place of
 
 ## Where to go from here
 
-Two end-to-end notebooks demonstrate the workflow on a temperature- and
-rate-dependent viscoplastic model. Both ship with pre-baked outputs, so
-they're readable without re-execution:
+Three end-to-end notebooks demonstrate the workflow. All ship with pre-baked
+outputs, so they're readable without re-execution:
 
-- [](deterministic/main) — point-estimate calibration with the
-  chunked adjoint, covering parameter rescaling
-  (`reparametrization.RangeRescale`), an Adam optimization loop, and
+- [](deterministic/main) — point-estimate calibration of a temperature- and
+  rate-dependent viscoplastic model with the chunked adjoint, covering parameter
+  rescaling (`reparametrization.RangeRescale`), an Adam optimization loop, and
   stress–strain comparison plots against the synthetic data.
 - [](statistical/main) — extends the same setup to a hierarchical
   Bayesian fit with Stochastic Variational Inference via
   [`pyro`](https://pyro.ai/), so we get parameter posteriors instead
   of point estimates.
+- [](crystal_plasticity_calibration/main) — calibrates a Taylor polycrystal
+  (crystal plasticity), exercising the per-grain **BLOCK** + global **DENSE**
+  Schur split and the chunked adjoint over sub-batch state, and swapping the
+  chunk solve from the sequential Thomas sweep to the parallel lifted-arrowhead
+  PCR factorization.
 
 For the underlying algorithms (chunked adjoint derivation, predictors,
 block-size trade-offs, custom solver choices), see the

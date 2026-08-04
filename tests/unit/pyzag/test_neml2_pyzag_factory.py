@@ -27,14 +27,14 @@ import torch
 from pyzag import chunktime, nonlinear
 
 from neml2 import load_nonlinear_system
-from neml2.pyzag import NEML2PyzagFactory
+from neml2.pyzag import NEML2PyzagModel
 
 _ALL_MODELS = ["elastic_model", "viscoplastic_model", "km_mixed_model"]
 
 
 def _load_factory(models_dir, input_name, **kwargs):
     nmodel = load_nonlinear_system(models_dir / f"{input_name}.i", "eq_sys")
-    return NEML2PyzagFactory(nmodel, compile=False, **kwargs)
+    return NEML2PyzagModel(nmodel, **kwargs)
 
 
 def test_definition(models_dir, lincomb_internal_params):
@@ -112,7 +112,7 @@ def test_include_parameters(models_dir):
 def test_include_and_exclude_are_mutually_exclusive(models_dir):
     nmodel = load_nonlinear_system(models_dir / "correct_model.i", "eq_sys")
     with pytest.raises(ValueError, match="mutually exclusive"):
-        NEML2PyzagFactory(
+        NEML2PyzagModel(
             nmodel,
             include_parameters=["elasticity_E"],
             exclude_parameters=["elasticity_nu"],
@@ -122,7 +122,7 @@ def test_include_and_exclude_are_mutually_exclusive(models_dir):
 def test_include_unknown_parameter_raises(models_dir):
     nmodel = load_nonlinear_system(models_dir / "correct_model.i", "eq_sys")
     with pytest.raises(ValueError, match="unknown parameter"):
-        NEML2PyzagFactory(nmodel, include_parameters=["elasticity_E", "not_a_param"])
+        NEML2PyzagModel(nmodel, include_parameters=["elasticity_E", "not_a_param"])
 
 
 def test_evaluate_raw_accepts_multiple_forces(models_dir, gold_dir):

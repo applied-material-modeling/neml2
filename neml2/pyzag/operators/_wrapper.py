@@ -29,10 +29,9 @@ from __future__ import annotations
 import torch
 from pyzag.operators.base import BlockVector
 
-from neml2.es import AssembledMatrix
+from neml2.es import AssembledMatrix, AssembledVector
 from neml2.es.axis_layout import AxisLayout
 
-from ._flat import _av_to_flat, _split_flat_to_av
 from ._jacobian import NEML2BlockJacobian
 from ._vector import NEML2BlockVector
 
@@ -46,13 +45,13 @@ class NEML2Wrapper:
 
     def wrap_vector(self, raw: torch.Tensor) -> NEML2BlockVector:
         """Flat torch ``(..., nflat)`` -> :class:`NEML2BlockVector`."""
-        return NEML2BlockVector.from_av(_split_flat_to_av(raw, self.layout))
+        return NEML2BlockVector.from_av(AssembledVector.from_flat(self.layout, raw))
 
     def unwrap_vector(self, bv: BlockVector) -> torch.Tensor:
         """:class:`NEML2BlockVector` -> flat torch ``(..., nflat)``."""
         if not isinstance(bv, NEML2BlockVector):
             raise TypeError("NEML2Wrapper.unwrap_vector requires NEML2BlockVector.")
-        return _av_to_flat(bv.to_av())
+        return bv.to_av().to_flat()
 
     def wrap_jacobian(self, diag: AssembledMatrix, sub: AssembledMatrix) -> NEML2BlockJacobian:
         """Wrap diag / sub ``AssembledMatrix`` blocks into an :class:`NEML2BlockJacobian`."""

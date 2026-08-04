@@ -38,9 +38,6 @@ pyzag dense backend); other layouts use the Thomas factorization.
 
 from __future__ import annotations
 
-from math import prod
-from typing import cast
-
 import torch
 from pyzag.operators.base import (
     BlockOperator,
@@ -58,13 +55,11 @@ from pyzag.operators.dense import (
 )
 
 from neml2.es import AssembledMatrix
-from neml2.solvers import SchurComplement
+from neml2.solvers import LUCache, SchurComplement
 from neml2.types import Tensor
-from neml2.types._boundary import to_torch
 
-from ._assembly import _require_le_one_intmd, _select_dynamic_am
+from ._assembly import _require_le_one_intmd
 from ._cache import CachingLU
-from ._flat import _group_flat_size
 from ._vector import NEML2BlockVector
 
 _PCR_MESSAGE = (
@@ -91,13 +86,6 @@ def _is_block(layout, g: int) -> bool:
     return layout.structure[g] == "block"
 
 
-def _group_intmd_sizes(layout, g: int) -> list[int]:
-    """Intermediate (sub-batch/site) sizes of group ``g``; empty for a DENSE group."""
-    if not _is_block(layout, g):
-        return []
-    return [int(s) for s in layout.group_sub_batch_shape(g)]
-
-
 class NEML2SolvableBlockOperator(SolvableBlockOperator):
     """Block operator backed by a neml2 ``AssembledMatrix``."""
 
@@ -106,6 +94,9 @@ class NEML2SolvableBlockOperator(SolvableBlockOperator):
         self.am = am
         self._lu = None
         self._piv = None
+        # _lu / _piv are kept as working copies alongside the cache because
+        # __getitem__ slices them along time for the Thomas sweep.
+        self._lu_cache = LUCache(factor_fn=_lu_factor_guarded)
 
     @classmethod
     def factored(cls, am: AssembledMatrix) -> NEML2SolvableBlockOperator:
@@ -131,125 +122,48 @@ class NEML2SolvableBlockOperator(SolvableBlockOperator):
             return
         if self.am.row_layout.ngroup != 1:
             return
-        self._lu, self._piv = _lu_factor_guarded(to_torch(self.am.tensors[0][0]))
+        raw = self.am.tensors[0][0].data  # data-ok pyzag boundary
+        self._lu, self._piv = self._lu_cache.factor(raw)
 
     @property
     def device(self) -> torch.device:
         """Device of the backing tensors."""
-        return to_torch(self.am.tensors[0][0]).device
+        return self.am.tensors[0][0].device
 
     @property
     def dtype(self) -> torch.dtype:
         """Dtype of the backing tensors."""
-        return to_torch(self.am.tensors[0][0]).dtype
+        return self.am.tensors[0][0].dtype
 
     @property
     def nblk(self) -> int:
         """Number of blocks along the dynamic (time) axis."""
-        return to_torch(self.am.tensors[0][0]).shape[0]
+        return self.am.tensors[0][0].batch_shape[0]
 
     @property
     def batch_size(self) -> int:
         """Size of the plain (non-dynamic) batch axis."""
-        return to_torch(self.am.tensors[0][0]).shape[1]
+        return self.am.tensors[0][0].batch_shape[1]
 
     def matvec(self, x: BlockVector) -> NEML2BlockVector:
-        """Matrix-vector product ``self @ x`` (see :meth:`_mv_per_instance`)."""
+        """Grain-diagonal matrix-vector product ``self @ x``.
+
+        Delegates to :meth:`~neml2.es.AssembledMatrix.per_instance_matvec` (a
+        BLOCK output stays per-site; only a DENSE output consuming a BLOCK input
+        aggregates the site axis). Raw tensors appear only at the final
+        :class:`NEML2BlockVector` hand-off.
+        """
         if not isinstance(x, NEML2BlockVector):
             raise TypeError("NEML2SolvableBlockOperator.matvec expects NEML2BlockVector.")
-        return self._mv_per_instance(self.am, x, transpose=False)
+        _require_le_one_intmd(self.am, "matvec")
+        return NEML2BlockVector.from_av(self.am.per_instance_matvec(x.to_av()))
 
     def t_matvec(self, x: BlockVector) -> NEML2BlockVector:
-        """Transposed matrix-vector product ``self.T @ x`` (see :meth:`_mv_per_instance`)."""
+        """Transposed grain-diagonal matrix-vector product ``self.T @ x`` (see :meth:`matvec`)."""
         if not isinstance(x, NEML2BlockVector):
             raise TypeError("NEML2SolvableBlockOperator.t_matvec expects NEML2BlockVector.")
-        return self._mv_per_instance(self.am, x, transpose=True)
-
-    @staticmethod
-    def _mv_per_instance(am, x, transpose: bool):
-        """Per-instance matrix-vector product (matvec or its transpose).
-
-        Deliberately not neml2's ``AssembledMatrix @``: that unconditionally sums
-        over a contracted BLOCK group's site axis (correct only for the Schur
-        cross-terms). Here a BLOCK output stays per-site -- the grain-diagonal
-        ``B @ v`` that Thomas and adjoint coupling need. The site sum fires only
-        when a DENSE output consumes a BLOCK input -- in Schur terms the
-        ``A_sp @ x_p`` term (DENSE row x BLOCK col) that aggregates the per-grain
-        contributions into the global (Schur) residual ``b_s``.
-
-        The two loops range over variable *groups* (typically 1, or 2 for a
-        BLOCK+DENSE split) -- not over sites or time steps.
-        """
-        _require_le_one_intmd(am, "matvec")
-        if transpose:
-            out_layout = am.col_layout
-            in_layout = am.row_layout
-        else:
-            out_layout = am.row_layout
-            in_layout = am.col_layout
-
-        n_out = out_layout.ngroup
-        n_in = in_layout.ngroup
-        out_tensors: list[torch.Tensor | None] = [None] * n_out
-
-        for i in range(n_out):
-            out_is_block = _is_block(out_layout, i)
-            accum: torch.Tensor | None = None
-
-            for j in range(n_in):
-                blk = am.tensors[j][i] if transpose else am.tensors[i][j]
-                blk_raw = to_torch(blk)
-                if transpose:
-                    blk_raw = blk_raw.transpose(-1, -2)
-
-                xj = x.raw_tensors[j]
-                x_intmd = x.intmd_dims[j]
-                blk_intmd = blk.sub_batch_ndim
-
-                diff = blk_intmd - x_intmd
-                if diff > 0:
-                    for _ in range(diff):
-                        xj = xj.unsqueeze(2)
-                elif diff < 0:
-                    for _ in range(-diff):
-                        blk_raw = blk_raw.unsqueeze(2)
-                effective_intmd = max(blk_intmd, x_intmd)
-
-                r = torch.matmul(blk_raw, xj.unsqueeze(-1)).squeeze(-1)
-
-                if not out_is_block and effective_intmd > 0:
-                    for _ in range(effective_intmd):
-                        r = r.sum(dim=-2)
-
-                if accum is None:
-                    accum = r
-                else:
-                    if r.ndim != accum.ndim:
-                        if r.ndim < accum.ndim:
-                            for _ in range(accum.ndim - r.ndim):
-                                r = r.unsqueeze(2)
-                        else:
-                            for _ in range(r.ndim - accum.ndim):
-                                accum = accum.unsqueeze(2)
-                    accum = accum + r
-
-            if accum is None:
-                intmd_sizes = _group_intmd_sizes(out_layout, i) if out_is_block else []
-                ref_shape = to_torch(am.tensors[0][0]).shape
-                nblk, sbat = ref_shape[0], ref_shape[1]
-                group_dofs = _group_flat_size(out_layout, i)
-                intmd_numel = int(prod(intmd_sizes)) if intmd_sizes else 1
-                n_out_var = group_dofs // intmd_numel
-                accum = torch.zeros(
-                    (nblk, sbat, *intmd_sizes, n_out_var),
-                    dtype=x.raw_tensors[0].dtype,
-                    device=x.raw_tensors[0].device,
-                )
-            out_tensors[i] = accum
-
-        filled = cast(list[torch.Tensor], out_tensors)  # every group is set above
-        out_intmd_dims = [max(0, t.ndim - 3) for t in filled]
-        return NEML2BlockVector(filled, out_layout, out_intmd_dims)
+        _require_le_one_intmd(self.am, "matvec")
+        return NEML2BlockVector.from_av(self.am.per_instance_matvec(x.to_av(), transpose=True))
 
     def _primary_group(self) -> int:
         """Index of the per-site (BLOCK) group to use as the Schur primary; 0 if none."""
@@ -289,17 +203,7 @@ class NEML2SolvableBlockOperator(SolvableBlockOperator):
 
     def clone(self) -> NEML2SolvableBlockOperator:
         """Deep copy the operator, cloning every backing tensor (cache dropped)."""
-        blocks = [
-            [
-                Tensor(
-                    to_torch(t).clone(),
-                    batch_ndim=t.batch_ndim,
-                    sub_batch_ndim=t.sub_batch_ndim,
-                )
-                for t in row
-            ]
-            for row in self.am.tensors
-        ]
+        blocks = [[t.clone() for t in row] for row in self.am.tensors]
         return NEML2SolvableBlockOperator(
             AssembledMatrix(self.am.row_layout, self.am.col_layout, blocks)
         )
@@ -315,7 +219,7 @@ class NEML2SolvableBlockOperator(SolvableBlockOperator):
         # bare int would collapse it, desyncing self.am from _lu / _piv.
         if isinstance(idx, int):
             idx = slice(idx, idx + 1) if idx != -1 else slice(idx, None)
-        sliced = NEML2SolvableBlockOperator(_select_dynamic_am(self.am, idx))
+        sliced = NEML2SolvableBlockOperator(self.am.batch[idx])
         if self._lu is not None and self._piv is not None:
             sliced._lu = self._lu[idx]
             sliced._piv = self._piv[idx]
@@ -327,23 +231,17 @@ class NEML2SolvableBlockOperator(SolvableBlockOperator):
             raise TypeError(
                 "NEML2SolvableBlockOperator assignment requires NEML2SolvableBlockOperator."
             )
-        blocks = []
-        for row_self, row_other in zip(self.am.tensors, other.am.tensors, strict=True):
-            new_row = []
-            for t_self, t_other in zip(row_self, row_other, strict=True):
-                new_raw = to_torch(t_self).clone()
-                new_raw[idx] = to_torch(t_other)
-                new_row.append(
-                    Tensor(
-                        new_raw,
-                        batch_ndim=t_self.batch_ndim,
-                        sub_batch_ndim=t_self.sub_batch_ndim,
-                    )
-                )
-            blocks.append(new_row)
+        blocks = [
+            [
+                t_self.batch.set(idx, t_other)
+                for t_self, t_other in zip(row_self, row_other, strict=True)
+            ]
+            for row_self, row_other in zip(self.am.tensors, other.am.tensors, strict=True)
+        ]
         self.am = AssembledMatrix(self.am.row_layout, self.am.col_layout, blocks)
         self._lu = None
         self._piv = None
+        self._lu_cache.invalidate()
 
     def pad_front(self, n: int = 1) -> NEML2SolvableBlockOperator:
         """Return a copy with ``n`` zero blocks prepended along the dynamic axis.
@@ -355,20 +253,7 @@ class NEML2SolvableBlockOperator(SolvableBlockOperator):
             raise ValueError("n must be nonnegative.")
         if n == 0:
             return self.clone()
-        blocks = []
-        for row in self.am.tensors:
-            new_row = []
-            for t in row:
-                raw = to_torch(t)
-                raw_pad = torch.nn.functional.pad(raw, (0,) * (2 * (raw.ndim - 1)) + (n, 0))
-                new_row.append(
-                    Tensor(
-                        raw_pad,
-                        batch_ndim=t.batch_ndim,
-                        sub_batch_ndim=t.sub_batch_ndim,
-                    )
-                )
-            blocks.append(new_row)
+        blocks = [[t.batch.pad(0, before=n) for t in row] for row in self.am.tensors]
         return NEML2SolvableBlockOperator(
             AssembledMatrix(self.am.row_layout, self.am.col_layout, blocks)
         )
@@ -400,8 +285,8 @@ class NEML2SolvableBlockOperator(SolvableBlockOperator):
             or v.intmd_dims[0] != 0
         ):
             raise NotImplementedError(_PCR_MESSAGE)
-        dense_op = DenseBlockOperator(to_torch(self.am.tensors[0][0]))
-        dense_B = DenseBlockOperator(to_torch(B.am.tensors[0][0]))
+        dense_op = DenseBlockOperator(self.am.tensors[0][0].data)  # data-ok pyzag boundary
+        dense_B = DenseBlockOperator(B.am.tensors[0][0].data)  # data-ok pyzag boundary
         dense_v = DenseBlockVector(v.raw_tensors[0])
         dense_state = dense_op.pcr_init(dense_B, dense_v)
         return _SingleGroupPCRState(dense_op, dense_state, self.am.row_layout, self.am.col_layout)

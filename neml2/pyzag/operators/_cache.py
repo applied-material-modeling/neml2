@@ -28,53 +28,32 @@ from __future__ import annotations
 
 import torch
 
-from neml2.es import AssembledMatrix, AssembledVector
+from neml2.solvers import DenseLU, LUCache
 from neml2.types import Tensor
-from neml2.types._boundary import to_torch
 
 
-class CachingLU:
-    """Single-group LU linear solver, drop-in for :class:`~neml2.solvers.DenseLU`.
+class CachingLU(DenseLU):
+    """:class:`~neml2.solvers.DenseLU` that caches the block factorization.
 
-    Factorizes the diagonal block once and reuses that factorization while the
-    same block is solved against multiple right-hand sides. When injected as the
-    ``primary_solver`` of a :class:`~neml2.solvers.SchurComplement`, this reuses
-    the primary-block factorization across the two solves the Schur step makes
-    against it (``A_pp^{-1} A_ps`` and ``A_pp^{-1} b_p``).
+    Inherits DenseLU's single-group ``solve`` dispatch and overrides only the
+    per-block solve to factor once (via :class:`~neml2.solvers.LUCache`) and
+    reuse it across right-hand sides. When injected as the ``primary_solver`` of
+    a :class:`~neml2.solvers.SchurComplement`, this reuses the primary-block
+    factorization across the two solves the Schur step makes against it
+    (``A_pp^{-1} A_ps`` and ``A_pp^{-1} b_p``).
     """
 
     def __init__(self) -> None:
-        """Start with an empty cache (factorization computed on first :meth:`solve`)."""
-        self._key = None
-        self._lu = None
-        self._piv = None
+        """Start with an empty factorization cache (computed on first solve)."""
+        self._cache = LUCache()
 
-    def _factor(self, block: Tensor):
-        """Return the cached LU of ``block``, recomputing only if the tensor changed."""
-        raw = to_torch(block)
-        key = id(raw)
-        if key != self._key:
-            self._lu, self._piv = torch.linalg.lu_factor(raw)
-            self._key = key
-        return self._lu, self._piv
-
-    def _lu_solve(self, lu, piv, rhs: Tensor) -> Tensor:
-        """Apply a cached LU factorization to a vector or matrix ``rhs``, preserving its type."""
-        raw = to_torch(rhs)
+    def _solve_block(self, A00: Tensor, rhs: Tensor) -> Tensor:
+        """Solve ``A00 @ x = rhs`` reusing a cached LU of ``A00``."""
+        lu, piv = self._cache.factor(A00.data)  # data-ok pyzag boundary
+        raw = rhs.data  # data-ok pyzag boundary
         is_vector = raw.ndim == lu.ndim - 1
         stacked = raw.unsqueeze(-1) if is_vector else raw
         sol = torch.linalg.lu_solve(lu, piv, stacked)
         if is_vector:
             sol = sol.squeeze(-1)
         return Tensor(sol, batch_ndim=rhs.batch_ndim, sub_batch_ndim=rhs.sub_batch_ndim)
-
-    def solve(self, A: AssembledMatrix, b):
-        """Solve ``A x = b`` for a single-group ``A`` (vector or matrix RHS)."""
-        if A.row_layout.ngroup != 1 or A.col_layout.ngroup != 1:
-            raise ValueError("CachingLU only supports single-group layouts")
-        lu, piv = self._factor(A.tensors[0][0])
-        if isinstance(b, AssembledVector):
-            return AssembledVector(A.col_layout, [self._lu_solve(lu, piv, b.tensors[0])])
-        return AssembledMatrix(
-            A.col_layout, b.col_layout, [[self._lu_solve(lu, piv, b.tensors[0][0])]]
-        )

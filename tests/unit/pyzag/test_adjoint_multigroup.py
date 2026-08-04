@@ -32,7 +32,7 @@ import torch
 from pyzag import chunktime, nonlinear
 
 from neml2 import load_nonlinear_system
-from neml2.pyzag import NEML2PyzagFactory
+from neml2.pyzag import NEML2PyzagModel
 
 _TAYLOR_MODEL = (
     Path(__file__).parents[3]
@@ -74,7 +74,7 @@ def _make_solver(factory, nchunk):
 
 def _build_problem(ntime=12, nchunk=1, nbatch=1):
     nsys = load_nonlinear_system(str(_TAYLOR_MODEL), "eq_sys")
-    factory = NEML2PyzagFactory(nsys, include_parameters=_CALIBRATION_PARAMS, compile=False)
+    factory = NEML2PyzagModel(nsys, include_parameters=_CALIBRATION_PARAMS)
 
     ngrains = _ORIENTATIONS.shape[0]
     device = torch.device("cpu")

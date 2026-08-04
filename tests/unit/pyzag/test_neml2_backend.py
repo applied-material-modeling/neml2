@@ -36,9 +36,6 @@ from neml2.pyzag.operators import (
     NEML2BlockVector,
     NEML2SolvableBlockOperator,
     _require_le_one_intmd,
-    _select_dynamic_am,
-    _select_dynamic_av,
-    _transpose_am,
 )
 from neml2.solvers import DenseLU
 from neml2.types import Scalar, Tensor
@@ -55,46 +52,17 @@ def _dense_layout(names):
     )
 
 
-def _block(nb, batch, r, c):
-    return Tensor(torch.randn(nb, batch, r, c, dtype=torch.float64), batch_ndim=2, sub_batch_ndim=0)
-
-
-def test_transpose_am_roundtrip():
-    rl = _dense_layout(["a", "b"])
-    cl = _dense_layout(["c", "d"])
-    am = AssembledMatrix(
-        rl, cl, [[_block(4, 2, 2, 3), _block(4, 2, 2, 5)], [_block(4, 2, 7, 3), _block(4, 2, 7, 5)]]
-    )
-    amt = _transpose_am(am)
-    assert tuple(amt.tensors[0][0].data.shape[-2:]) == (3, 2)
-    assert torch.equal(amt.tensors[0][1].data, am.tensors[1][0].data.transpose(-1, -2))
-    amtt = _transpose_am(amt)
-    for i in range(2):
-        for j in range(2):
-            assert torch.equal(amtt.tensors[i][j].data, am.tensors[i][j].data)
-
-
-def test_select_dynamic():
-    rl = _dense_layout(["a"])
-    am = AssembledMatrix(rl, rl, [[_block(6, 2, 3, 3)]])
-    sl = _select_dynamic_am(am, slice(1, 4))
-    assert sl.tensors[0][0].data.shape[0] == 3
-    assert torch.equal(sl.tensors[0][0].data, am.tensors[0][0].data[1:4])
-    v = AssembledVector(
-        rl, [Tensor(torch.randn(6, 2, 3, dtype=torch.float64), batch_ndim=2, sub_batch_ndim=0)]
-    )
-    vs = _select_dynamic_av(v, slice(2, None))
-    assert vs.tensors[0].data.shape[0] == 4
-
-
 def test_two_intmd_block_rejected():
+    # AssembledMatrix.transpose / .batch and per_instance_matvec are covered in
+    # tests/unit/test_solvers.py; here we check the pyzag backend's own guard and
+    # its matvec rejection for a two-intmd block.
     rl = _dense_layout(["a"])
     blk = Tensor(torch.zeros(4, 2, 3, 3, 2, 2, dtype=torch.float64), batch_ndim=2, sub_batch_ndim=2)
     am = AssembledMatrix(rl, rl, [[blk]])
     with pytest.raises(NotImplementedError):
         _require_le_one_intmd(am)
     with pytest.raises(NotImplementedError):
-        _transpose_am(am)
+        am.transpose()
     op = NEML2SolvableBlockOperator(am)
     v = NEML2BlockVector([torch.zeros(4, 2, 3, 3, 2, dtype=torch.float64)], rl, [2])
     with pytest.raises(NotImplementedError):
@@ -125,9 +93,13 @@ def test_caching_lu_reuses_factorization():
     )
     solver = CachingLU()
     solver.solve(am, b)
-    key_after_first = solver._key
+    lu_after_first = solver._cache._lu
+    assert lu_after_first is not None
     solver.solve(am, b)
-    assert solver._key == key_after_first
+    # Same matrix object -> factorization reused (not recomputed) and keyed on
+    # the held block tensor, not its id().
+    assert solver._cache._lu is lu_after_first
+    assert solver._cache._src is am.tensors[0][0].data
 
 
 def test_pcr_single_group_dense_matches_thomas():

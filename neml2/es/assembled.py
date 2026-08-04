@@ -218,6 +218,62 @@ class AssembledVector:
     def group(self, index: int) -> AssembledVector:
         return AssembledVector(self.layout.sub_layout(index), [self.tensors[index]])
 
+    def to_flat(self) -> torch.Tensor:
+        """Pack all groups into one flat ``(*dyn, layout.flat_size())`` tensor.
+
+        Each group tensor is flattened past its dynamic-batch axes (folding
+        sub-batch + base) and concatenated along the feature axis -- the raw
+        form the pyzag adapter and time-integration solvers consume. Inverse of
+        :meth:`from_flat`.
+        """
+        parts = [t.data.flatten(start_dim=t.batch_ndim) for t in self.tensors]
+        return torch.cat(parts, dim=-1)
+
+    @classmethod
+    def from_flat(cls, layout: AxisLayout, flat: torch.Tensor) -> AssembledVector:
+        """Split a flat ``(*dyn, layout.flat_size())`` tensor into a per-group
+        :class:`AssembledVector`. Inverse of :meth:`to_flat`.
+
+        BLOCK groups recover their preserved sub-batch (site) axes; DENSE groups
+        stay flat (their sub-batch was folded into base at assembly).
+        """
+        dyn_ndim = flat.ndim - 1
+        group_sizes = [layout.group_flat_size(g) for g in range(layout.ngroup)]
+        group_flats = torch.split(flat, group_sizes, dim=-1)
+        tensors: list[Tensor] = []
+        for g, gflat in enumerate(group_flats):
+            if layout.structure[g] == "block":
+                sub_shape = tuple(int(s) for s in layout.group_sub_batch_shape(g))
+                sub_numel = prod(sub_shape) or 1
+                base = gflat.shape[-1] // sub_numel
+                reshaped = gflat.reshape(*gflat.shape[:-1], *sub_shape, base)
+                tensors.append(Tensor(reshaped, batch_ndim=dyn_ndim, sub_batch_ndim=len(sub_shape)))
+            else:
+                tensors.append(Tensor(gflat, batch_ndim=dyn_ndim, sub_batch_ndim=0))
+        return cls(layout, tensors)
+
+    @property
+    def batch(self) -> _BatchIndexAV:
+        """Index/slice the leading dynamic (batch) axis of every group tensor.
+
+        ``av.batch[key]`` returns a new :class:`AssembledVector` with each group
+        tensor sliced along its batch region (``t.batch[key]``) -- the dynamic
+        (e.g. time) axis indexing the pyzag adapter and solvers walk.
+        """
+        return _BatchIndexAV(self)
+
+
+class _BatchIndexAV:
+    """Subscript proxy for :attr:`AssembledVector.batch`."""
+
+    __slots__ = ("_av",)
+
+    def __init__(self, av: AssembledVector) -> None:
+        self._av = av
+
+    def __getitem__(self, key) -> AssembledVector:
+        return AssembledVector(self._av.layout, [t.batch[key] for t in self._av.tensors])
+
 
 def wrap_group_raw(
     raw: torch.Tensor,
@@ -545,6 +601,102 @@ class AssembledMatrix:
                 row_blocks.append(acc)
             out_blocks.append(row_blocks)
         return AssembledMatrix(self.row_layout, other.col_layout, out_blocks)
+
+    def per_instance_matvec(
+        self, x: AssembledVector, *, transpose: bool = False
+    ) -> AssembledVector:
+        """Grain-diagonal matrix-vector product ``A @ x`` (or ``Aᵀ @ x``).
+
+        Deliberately distinct from :meth:`__matmul__`: a BLOCK output group is
+        kept **per-site** (the grain-diagonal ``B @ v`` a block Thomas sweep or
+        adjoint coupling needs) instead of being summed over its site axis. The
+        per-site sum fires only when a DENSE output group consumes a BLOCK input
+        -- the ``A_sp @ x_p`` Schur cross-term (DENSE row × BLOCK col) that
+        aggregates per-grain contributions into the global residual. This makes
+        it the mutual inverse of the :class:`~neml2.solvers.SchurComplement`
+        solve, whereas ``@`` aggregates on every contracted BLOCK group (correct
+        only for the Schur cross-terms).
+
+        ``x``'s groups correspond positionally to the input layout (the column
+        layout, or the row layout when ``transpose``). ``transpose`` applies
+        ``Aᵀ`` (swap row/col layouts and transpose each block's base axes).
+        Returns an :class:`AssembledVector` over the output layout.
+        """
+        out_layout = self.col_layout if transpose else self.row_layout
+        in_layout = self.row_layout if transpose else self.col_layout
+        if x.layout.ngroup != in_layout.ngroup:
+            raise ValueError(
+                f"per_instance_matvec: x has {x.layout.ngroup} group(s) but the "
+                f"{'row' if transpose else 'col'} layout has {in_layout.ngroup}"
+            )
+        out_tensors: list[Tensor] = []
+        for i in range(out_layout.ngroup):
+            out_is_block = out_layout.structure[i] == "block"
+            acc: Tensor | None = None
+            for j in range(in_layout.ngroup):
+                blk = self.tensors[j][i].base.transpose() if transpose else self.tensors[i][j]
+                r = blk @ x.tensors[j]
+                # DENSE output consuming a BLOCK input: aggregate the per-site
+                # contributions (the Schur A_sp @ x_p cross-term). A BLOCK output
+                # keeps them per-site.
+                if not out_is_block and r.sub_batch_ndim > 0:
+                    r = _sum_sub_batch_all(r)
+                acc = r if acc is None else acc + r
+            assert acc is not None  # in_layout.ngroup >= 1
+            out_tensors.append(acc)
+        return AssembledVector(out_layout, out_tensors)
+
+    def transpose(self) -> AssembledMatrix:
+        """Block transpose: swap row/col layouts and transpose each block's base axes.
+
+        Correct for blocks with at most one intermediate (sub-batch) axis -- the
+        envelope the assembled ops support. A block carrying two distinct
+        intermediate axes (separate row and col sites) can't be transposed by a
+        base-axis swap alone (the intmd axes would need reordering too), so it is
+        rejected rather than silently mishandled.
+        """
+        for i, row in enumerate(self.tensors):
+            for j, t in enumerate(row):
+                if t.sub_batch_ndim >= 2:
+                    raise NotImplementedError(
+                        "AssembledMatrix.transpose supports at most one intermediate "
+                        f"(sub-batch) axis per block; block [{i}][{j}] has "
+                        f"sub_batch_ndim={t.sub_batch_ndim}."
+                    )
+        return AssembledMatrix(
+            self.col_layout,
+            self.row_layout,
+            [
+                [self.tensors[i][j].base.transpose() for i in range(self.row_layout.ngroup)]
+                for j in range(self.col_layout.ngroup)
+            ],
+        )
+
+    @property
+    def batch(self) -> _BatchIndexAM:
+        """Index/slice the leading dynamic (batch) axis of every block.
+
+        ``am.batch[key]`` returns a new :class:`AssembledMatrix` with each block
+        sliced along its batch region (``t.batch[key]``) -- the dynamic (e.g.
+        time) axis the pyzag adapter and solvers walk.
+        """
+        return _BatchIndexAM(self)
+
+
+class _BatchIndexAM:
+    """Subscript proxy for :attr:`AssembledMatrix.batch`."""
+
+    __slots__ = ("_am",)
+
+    def __init__(self, am: AssembledMatrix) -> None:
+        self._am = am
+
+    def __getitem__(self, key) -> AssembledMatrix:
+        return AssembledMatrix(
+            self._am.row_layout,
+            self._am.col_layout,
+            [[t.batch[key] for t in row] for row in self._am.tensors],
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -1010,6 +1162,19 @@ def _intmd_sum_k(r: Tensor, col_layout: AxisLayout, k: int) -> Tensor:
         batch_ndim=r.batch_ndim,
         sub_batch_ndim=r.sub_batch_ndim - n,
     )
+
+
+def _sum_sub_batch_all(t: Tensor) -> Tensor:
+    """Sum a vector ``Tensor`` over ALL its sub-batch (site) axes -> ``sub_batch_ndim=0``.
+
+    The per-site aggregation a DENSE output group applies when it consumes a
+    BLOCK input in :meth:`AssembledMatrix.per_instance_matvec` (the Schur
+    ``A_sp @ x_p`` cross-term).
+    """
+    if t.sub_batch_ndim == 0:
+        return t
+    axes = list(range(t.batch_ndim, t.batch_ndim + t.sub_batch_ndim))
+    return Tensor(t.data.sum(dim=axes), batch_ndim=t.batch_ndim, sub_batch_ndim=0)
 
 
 def _broadcast_batch(t: Tensor, target_dyn: tuple[int, ...]) -> Tensor:

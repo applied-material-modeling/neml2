@@ -37,7 +37,7 @@ from pyzag import chunktime, nonlinear
 from neml2 import load_nonlinear_system
 from neml2.es import AssembledMatrix
 from neml2.es.axis_layout import AxisLayout
-from neml2.pyzag import NEML2PyzagFactory
+from neml2.pyzag import NEML2PyzagModel
 from neml2.pyzag.operators import NEML2LiftedPCRFactorization, NEML2SolvableBlockOperator
 from neml2.pyzag.operators._lifted_pcr import (
     _DiagFactors,
@@ -241,7 +241,7 @@ _CALIBRATION_PARAMS = ["slip_strength_constant_strength", "voce_hardening_initia
 
 def _build_taylor(include_parameters=None, ntime=12, nbatch=1):
     nsys = load_nonlinear_system(str(_TAYLOR_MODEL), "eq_sys")
-    factory = NEML2PyzagFactory(nsys, include_parameters=include_parameters, compile=False)
+    factory = NEML2PyzagModel(nsys, include_parameters=include_parameters)
     ngrains = _ORIENTATIONS.shape[0]
     ic = {
         "elastic_strain": torch.zeros(nbatch, ngrains, 6),

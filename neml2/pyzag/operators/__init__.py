@@ -32,20 +32,8 @@ supported for single-group dense layouts; other layouts use the Thomas
 factorization.
 """
 
-from ._assembly import (
-    _require_le_one_intmd,
-    _select_dynamic_am,
-    _select_dynamic_av,
-    _transpose_am,
-)
+from ._assembly import _require_le_one_intmd
 from ._cache import CachingLU
-from ._flat import (
-    _av_to_flat,
-    _group_flat_size,
-    _group_intmd_dim,
-    _layout_flat_size,
-    _split_flat_to_av,
-)
 from ._jacobian import NEML2BlockJacobian
 from ._lifted_pcr import NEML2LiftedPCRFactorization
 from ._operator import NEML2SolvableBlockOperator
@@ -59,13 +47,5 @@ __all__ = [
     "NEML2BlockJacobian",
     "NEML2LiftedPCRFactorization",
     "NEML2Wrapper",
-    "_av_to_flat",
-    "_split_flat_to_av",
-    "_layout_flat_size",
-    "_group_flat_size",
-    "_group_intmd_dim",
-    "_transpose_am",
-    "_select_dynamic_am",
-    "_select_dynamic_av",
     "_require_le_one_intmd",
 ]

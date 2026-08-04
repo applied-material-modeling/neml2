@@ -35,9 +35,6 @@ from pyzag.operators.base import BlockVector
 from neml2.es import AssembledVector
 from neml2.es.axis_layout import AxisLayout
 from neml2.types import Tensor
-from neml2.types._boundary import to_torch
-
-from ._flat import _group_intmd_dim
 
 
 class NEML2BlockVector(BlockVector):
@@ -64,7 +61,7 @@ class NEML2BlockVector(BlockVector):
                 each group's layout-declared value.
         """
         if intmd_dims is None:
-            intmd_dims = [_group_intmd_dim(layout, g) for g in range(layout.ngroup)]
+            intmd_dims = [layout.group_intmd_ndim(g) for g in range(layout.ngroup)]
         if len(raw_tensors) != layout.ngroup:
             raise ValueError(
                 f"NEML2BlockVector expects {layout.ngroup} per-group tensors, "
@@ -90,7 +87,7 @@ class NEML2BlockVector(BlockVector):
     def from_av(cls, av: AssembledVector) -> NEML2BlockVector:
         """Construct from a neml2 ``AssembledVector``."""
         intmd_dims = [t.sub_batch_ndim for t in av.tensors]
-        raw_tensors = [to_torch(t) for t in av.tensors]
+        raw_tensors = [t.data for t in av.tensors]  # data-ok pyzag boundary
         return cls(raw_tensors, av.layout, intmd_dims)
 
     @property

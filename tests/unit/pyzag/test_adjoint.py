@@ -33,7 +33,7 @@ import torch
 from pyzag import nonlinear
 
 from neml2 import load_nonlinear_system
-from neml2.pyzag import NEML2PyzagFactory
+from neml2.pyzag import NEML2PyzagModel
 
 
 def _per_var_forces(model, force_pieces):
@@ -69,7 +69,7 @@ def _ramp_time(nstep, nbatch):
 class DerivativeCheck:
     """Base for adjoint-vs-FD checks; subclasses populate the attributes in ``_setup``."""
 
-    model: NEML2PyzagFactory
+    model: NEML2PyzagModel
     nchunk: int
     initial_state: torch.Tensor
     nstep: int
@@ -120,9 +120,7 @@ class TestElasticModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
     def _setup(self, models_dir, lincomb_internal_params):
         nmodel = load_nonlinear_system(models_dir / "elastic_model.i", "eq_sys")
-        self.model = NEML2PyzagFactory(
-            nmodel, exclude_parameters=lincomb_internal_params, compile=False
-        )
+        self.model = NEML2PyzagModel(nmodel, exclude_parameters=lincomb_internal_params)
 
         self.nbatch = 20
         self.nstep = 100
@@ -140,9 +138,7 @@ class TestViscoplasticModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
     def _setup(self, models_dir, lincomb_internal_params):
         nmodel = load_nonlinear_system(models_dir / "viscoplastic_model.i", "eq_sys")
-        self.model = NEML2PyzagFactory(
-            nmodel, exclude_parameters=lincomb_internal_params, compile=False
-        )
+        self.model = NEML2PyzagModel(nmodel, exclude_parameters=lincomb_internal_params)
 
         self.nbatch = 20
         self.nstep = 100
@@ -160,7 +156,7 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
     def _setup(self, models_dir, lincomb_internal_params):
         nmodel = load_nonlinear_system(models_dir / "km_mixed_model.i", "eq_sys")
-        self.model = NEML2PyzagFactory(
+        self.model = NEML2PyzagModel(
             nmodel,
             exclude_parameters=[
                 "yield_zero_value",
@@ -168,7 +164,6 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
                 "mu_ordinate",
                 *lincomb_internal_params,
             ],
-            compile=False,
         )
 
         self.nbatch = 20

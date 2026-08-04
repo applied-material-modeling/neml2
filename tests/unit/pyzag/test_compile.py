@@ -38,7 +38,7 @@ from pyzag import chunktime, nonlinear
 
 import neml2
 from neml2 import load_nonlinear_system
-from neml2.pyzag import NEML2PyzagFactory
+from neml2.pyzag import NEML2PyzagModel
 
 _ALL_MODELS = ["elastic_model", "viscoplastic_model", "km_mixed_model"]
 
@@ -67,14 +67,16 @@ def _is_compiled(model) -> bool:
 
 @pytest.mark.parametrize("input_name", _ALL_MODELS)
 def test_compiled_forward_solve_matches_gold(models_dir, gold_dir, compare_tolerances, input_name):
-    """A full pyzag solve through a ``compile=True`` factory reproduces the gold trajectory.
+    """A full pyzag solve through a ``neml2.compile``'d factory reproduces the gold trajectory.
 
-    Exercises ``NEML2PyzagFactory._compile`` (dynamo cache config + in-place
-    ``neml2.compile``) and the compiled residual driving the chunked Newton
-    solver end to end -- integration that neml2's own compile tests do not cover.
+    Exercises ``neml2.compile`` on a pyzag factory (dynamo cache-limit bump +
+    in-place residual compile) and the compiled residual driving the chunked
+    Newton solver end to end -- integration that neml2's own compile tests do not
+    cover.
     """
     nmodel = load_nonlinear_system(models_dir / f"{input_name}.i", "eq_sys")
-    compiled = NEML2PyzagFactory(nmodel, compile=True)
+    compiled = NEML2PyzagModel(nmodel)
+    neml2.compile(compiled)
     assert _is_compiled(compiled.sys.model)
 
     state, forces = _gold_state_forces(gold_dir, compiled, input_name)
@@ -93,7 +95,7 @@ def test_adjoint_matches_eager_under_compile(models_dir):
 
     def run(compile_it):
         nmodel = load_nonlinear_system(models_dir / "viscoplastic_model.i", "eq_sys")
-        pmodel = NEML2PyzagFactory(nmodel, compile=False)
+        pmodel = NEML2PyzagModel(nmodel)
         if compile_it:
             neml2.compile(pmodel)
         nstep, nbatch = 20, 4

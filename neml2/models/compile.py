@@ -32,7 +32,7 @@ artifact, no round-trip, and the compiled graph is reused across subsequent call
 (recompiling lazily only when an input shape signature changes).
 
 The intended consumer is the pyzag training interface
-(:class:`neml2.pyzag.NEML2PyzagFactory`): pyzag owns the Newton solve and the
+(:class:`neml2.pyzag.NEML2PyzagModel`): pyzag owns the Newton solve and the
 adjoint, and only asks NEML2 to evaluate the residual and Jacobian of an explicit
 *feed-forward* model. That evaluation -- ``ModelNonlinearSystem.assemble`` calling
 the residual ``Model`` with chain-rule JVP seeds -- carries essentially all the
@@ -106,7 +106,7 @@ def compile(  # noqa: A001 -- intentionally the public ``neml2.compile`` verb
     * a :class:`~neml2.models.model.Model` -- its ``forward`` is compiled;
     * a :class:`~neml2.es.ModelNonlinearSystem` -- its residual ``model`` is
       compiled (so ``assemble`` / ``A_and_B_and_b`` run compiled);
-    * a pyzag ``NEML2PyzagFactory`` (anything exposing a ``.sys`` that is a
+    * a pyzag ``NEML2PyzagModel`` (anything exposing a ``.sys`` that is a
       ``ModelNonlinearSystem``) -- the wrapped residual model is compiled.
 
     Compilation is applied **in place** -- the same object is returned, now
@@ -152,11 +152,12 @@ def compile(  # noqa: A001 -- intentionally the public ``neml2.compile`` verb
         **compile_kwargs,
     }
 
-    # pyzag NEML2PyzagFactory wraps a ModelNonlinearSystem in ``.sys`` and aliases
+    # pyzag NEML2PyzagModel wraps a ModelNonlinearSystem in ``.sys`` and aliases
     # ``.sys.model`` as ``.model`` (same object). Duck-typed on ``.sys`` so we do
     # not import ``neml2.pyzag`` here (it would invert the dependency direction).
     wrapped_system = getattr(target, "sys", None)
     if isinstance(wrapped_system, ModelNonlinearSystem):
+        _raise_dynamo_cache_limits()
         _compile_residual_in_place(wrapped_system, opts)
         return target
 
@@ -170,8 +171,26 @@ def compile(  # noqa: A001 -- intentionally the public ``neml2.compile`` verb
 
     raise TypeError(
         "neml2.compile expects a neml2 Model, a ModelNonlinearSystem, or an object "
-        "wrapping one via `.sys` (e.g. a pyzag NEML2PyzagFactory); got "
+        "wrapping one via `.sys` (e.g. a pyzag NEML2PyzagModel); got "
         f"{type(target).__name__}."
+    )
+
+
+_PYZAG_COMPILE_CACHE_SIZE_LIMIT = 512
+
+
+def _raise_dynamo_cache_limits(limit: int = _PYZAG_COMPILE_CACHE_SIZE_LIMIT) -> None:
+    """Raise Dynamo's recompile cache limits for the pyzag compile path.
+
+    pyzag compiles with ``dynamic=False`` (one graph per distinct input shape); a
+    chunked solve's spread of chunk / batch shapes can exceed Dynamo's default
+    ``cache_size_limit`` and thrash. Bumps the per-frame and accumulated limits.
+    """
+    import torch._dynamo.config  # noqa: PLC0415
+
+    torch._dynamo.config.cache_size_limit = max(torch._dynamo.config.cache_size_limit, limit)
+    torch._dynamo.config.accumulated_cache_size_limit = max(
+        torch._dynamo.config.accumulated_cache_size_limit, 8 * limit
     )
 
 

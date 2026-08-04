@@ -144,10 +144,8 @@ on one of the runtimes above:
   `ModelUnitTest`, `TransientRegression`, `Verification`) step a model through a
   load history on `py-eager`. If the input file names an `AOTIModel`, the same
   driver runs on `py-aoti` instead.
-- The **pyzag** adapter (`NEML2PyzagFactory`) drives calibration on `py-jit` by
-  default -- it compiles the residual model in place via `neml2.compile` on
-  construction -- and falls back to `py-eager` when constructed with
-  `compile=False` (a correctness oracle).
+- The **pyzag** adapter (`NEML2PyzagModel`) drives calibration on `py-eager`,
+  optionally accelerated to `py-jit` via `neml2.compile(factory)`.
 - `neml2-inspect <input.i> <model>` resolves and prints a model's input/output
   graph but does **not** evaluate it.
 

@@ -48,8 +48,6 @@ import torch
 from pyzag.chunktime import BidiagonalInverseOperator
 from pyzag.operators.base import BlockVector
 
-from neml2.types._boundary import to_torch
-
 from ._operator import NEML2SolvableBlockOperator
 from ._vector import NEML2BlockVector
 
@@ -154,12 +152,12 @@ def _diagonal_cells(am):
     and the reduction degenerates to per-site-independent PCR.
     """
     p, s = _group_roles(am.row_layout)
-    App = to_torch(am.tensors[p][p])  # (*b, N, np, np)
+    App = am.tensors[p][p].data  # data-ok pyzag boundary
     if s is None:
         return App, None, None, None, 0
-    Aps = to_torch(am.tensors[p][s])  # (*b, N, np, ns)
-    Asp = to_torch(am.tensors[s][p])  # (*b, N, ns, np)
-    Ass = to_torch(am.tensors[s][s])  # (*b, ns, ns)
+    Aps = am.tensors[p][s].data  # data-ok pyzag boundary
+    Asp = am.tensors[s][p].data  # data-ok pyzag boundary
+    Ass = am.tensors[s][s].data  # data-ok pyzag boundary
     return App, Aps, Asp, Ass, Ass.shape[-1]
 
 
@@ -174,11 +172,11 @@ def _subdiag_Bpp(am):
     pcol = am.col_layout
     p_row, s_row = _group_roles(prow)
     p_col, _ = _group_roles(pcol)
-    Bpp = to_torch(am.tensors[p_row][p_col])  # (*b, N, np, np)
+    Bpp = am.tensors[p_row][p_col].data  # data-ok pyzag boundary
     # Guard: the DENSE-residual rows of the subdiagonal must vanish (no global
     # time history), otherwise this simplified path would be silently wrong.
     if s_row is not None:
-        Bsp = to_torch(am.tensors[s_row][p_col])
+        Bsp = am.tensors[s_row][p_col].data  # data-ok pyzag boundary
         if Bsp.abs().max() > 1e-10 * (Bpp.abs().max() + 1e-30):
             raise NotImplementedError(
                 "Lifted PCR currently supports a site-only subdiagonal (Bsp == 0). "

@@ -34,8 +34,8 @@ from neml2.es import (
     SparseVector,
 )
 from neml2.models.model import Model
-from neml2.solvers import DenseLU, Newton, NewtonWithLineSearch, RetCode
-from neml2.types import Scalar, Tensor
+from neml2.solvers import DenseLU, Newton, NewtonWithLineSearch, RetCode, SchurComplement
+from neml2.types import SR2, Scalar, Tensor
 
 
 class ScalarResidual(Model):
@@ -224,3 +224,203 @@ def test_model_channel_logs_kstate_debug(capsys):
     assert "[neml2:model" in text
     assert "_call_model" in text
     assert "_assemble_matrix" in text
+
+
+# --------------------------------------------------------------------------- #
+# AssembledMatrix.per_instance_matvec (grain-diagonal matvec)                  #
+# --------------------------------------------------------------------------- #
+
+
+def test_per_instance_matvec_single_dense_matches_matmul():
+    """For a single DENSE group there is no site axis, so the per-instance matvec
+    equals both the plain ``@`` and a raw batched matmul."""
+    torch.manual_seed(0)
+    lay = AxisLayout([["a", "b"]], {"a": Scalar, "b": Scalar}, {}, ("dense",))
+    nblk, batch, m = 3, 2, 2
+    A = torch.randn(nblk, batch, m, m, dtype=torch.float64)
+    am = AssembledMatrix(lay, lay, [[Tensor(A, batch_ndim=2, sub_batch_ndim=0)]])
+    xv = torch.randn(nblk, batch, m, dtype=torch.float64)
+    x = AssembledVector(lay, [Tensor(xv, batch_ndim=2, sub_batch_ndim=0)])
+
+    out = am.per_instance_matvec(x)
+    ref = (A @ xv.unsqueeze(-1)).squeeze(-1)
+    assert out.tensors[0].sub_batch_ndim == 0
+    assert torch.allclose(out.tensors[0].data, ref)
+    # @ and per_instance agree when nothing is BLOCK.
+    assert torch.allclose(out.tensors[0].data, (am @ x).tensors[0].data)
+
+
+def test_per_instance_matvec_block_group_stays_per_site():
+    """A BLOCK output keeps its site axis (grain-diagonal ``B @ v``), whereas ``@``
+    aggregates over the contracted site axis."""
+    torch.manual_seed(0)
+    N, npp, nblk, batch = 4, 6, 3, 2
+    lay = AxisLayout([["p"]], {"p": SR2}, {"p": torch.Size([N])}, ("block",))
+    App = torch.randn(nblk, batch, N, npp, npp, dtype=torch.float64)
+    am = AssembledMatrix(lay, lay, [[Tensor(App, batch_ndim=2, sub_batch_ndim=1)]])
+    vp = torch.randn(nblk, batch, N, npp, dtype=torch.float64)
+    x = AssembledVector(lay, [Tensor(vp, batch_ndim=2, sub_batch_ndim=1)])
+
+    per_site = (App @ vp.unsqueeze(-1)).squeeze(-1)  # (nblk, batch, N, npp)
+    out = am.per_instance_matvec(x)
+    assert out.tensors[0].sub_batch_ndim == 1
+    assert torch.allclose(out.tensors[0].data, per_site)
+    # __matmul__ sums over the site axis -> dense (sub 0).
+    agg = am @ x
+    assert agg.tensors[0].sub_batch_ndim == 0
+    assert torch.allclose(agg.tensors[0].data, per_site.sum(dim=2))
+
+
+def test_per_instance_matvec_transpose_dense():
+    torch.manual_seed(1)
+    lay = AxisLayout([["a", "b"]], {"a": Scalar, "b": Scalar}, {}, ("dense",))
+    A = torch.randn(3, 2, 2, 2, dtype=torch.float64)
+    am = AssembledMatrix(lay, lay, [[Tensor(A, batch_ndim=2, sub_batch_ndim=0)]])
+    xv = torch.randn(3, 2, 2, dtype=torch.float64)
+    x = AssembledVector(lay, [Tensor(xv, batch_ndim=2, sub_batch_ndim=0)])
+
+    out = am.per_instance_matvec(x, transpose=True)
+    ref = (A.transpose(-1, -2) @ xv.unsqueeze(-1)).squeeze(-1)
+    assert torch.allclose(out.tensors[0].data, ref)
+
+
+def _arrowhead(N=4, npp=6, nss=6, nblk=2, batch=2, seed=0):
+    """SPD arrowhead: BLOCK(per-site) primary + DENSE(global) Schur block, and a rhs."""
+    torch.manual_seed(seed)
+    lay = AxisLayout(
+        [["p"], ["s"]],
+        {"p": SR2, "s": SR2},
+        {"p": torch.Size([N]), "s": torch.Size([])},
+        ("block", "dense"),
+    )
+    Ms = torch.randn(nblk, batch, N, npp, npp, dtype=torch.float64)
+    App = Ms @ Ms.transpose(-1, -2) + (npp + 4.0) * torch.eye(npp, dtype=torch.float64)
+    Md = torch.randn(nblk, batch, nss, nss, dtype=torch.float64)
+    Ass = Md @ Md.transpose(-1, -2) + (nss + 4.0) * torch.eye(nss, dtype=torch.float64)
+    Aps = 0.05 * torch.randn(nblk, batch, N, npp, nss, dtype=torch.float64)
+    Asp = 0.05 * torch.randn(nblk, batch, N, nss, npp, dtype=torch.float64)
+    tp = Tensor(App, batch_ndim=2, sub_batch_ndim=1)
+    tps = Tensor(Aps, batch_ndim=2, sub_batch_ndim=1)
+    tsp = Tensor(Asp, batch_ndim=2, sub_batch_ndim=1)
+    tss = Tensor(Ass, batch_ndim=2, sub_batch_ndim=0)
+    am = AssembledMatrix(lay, lay, [[tp, tps], [tsp, tss]])
+    bp = torch.randn(nblk, batch, N, npp, dtype=torch.float64)
+    bs = torch.randn(nblk, batch, nss, dtype=torch.float64)
+    b = AssembledVector(
+        lay,
+        [Tensor(bp, batch_ndim=2, sub_batch_ndim=1), Tensor(bs, batch_ndim=2, sub_batch_ndim=0)],
+    )
+    return am, b
+
+
+def test_per_instance_matvec_arrowhead_inverts_schur():
+    """per_instance_matvec is the true arrowhead ``A @ x`` (BLOCK row kept per-site,
+    DENSE row aggregating the BLOCK column), so it inverts the Schur solve."""
+    am, b = _arrowhead()
+    solver = SchurComplement(
+        residual_primary_group=0, unknown_primary_group=0, primary_solver=DenseLU()
+    )
+    x = solver.solve(am, b)
+    back = am.per_instance_matvec(x)
+    assert torch.allclose(back.tensors[0].data, b.tensors[0].data, atol=1e-8)
+    assert torch.allclose(back.tensors[1].data, b.tensors[1].data, atol=1e-8)
+
+
+# --------------------------------------------------------------------------- #
+# AssembledMatrix.transpose / AssembledMatrix.batch / AssembledVector.batch    #
+# --------------------------------------------------------------------------- #
+
+
+def test_assembled_matrix_transpose_roundtrip():
+    torch.manual_seed(0)
+    rl = AxisLayout([["a"], ["b"]], {"a": Scalar, "b": Scalar}, {}, ("dense", "dense"))
+    cl = AxisLayout([["c"], ["d"]], {"c": Scalar, "d": Scalar}, {}, ("dense", "dense"))
+
+    def blk(r, c):
+        return Tensor(torch.randn(4, 2, r, c, dtype=torch.float64), batch_ndim=2)
+
+    am = AssembledMatrix(rl, cl, [[blk(2, 3), blk(2, 5)], [blk(7, 3), blk(7, 5)]])
+    amt = am.transpose()
+    assert amt.row_layout == cl and amt.col_layout == rl
+    assert tuple(amt.tensors[0][0].data.shape[-2:]) == (3, 2)
+    # block (i, j) of the transpose is block (j, i) of the original, base-transposed
+    assert torch.equal(amt.tensors[0][1].data, am.tensors[1][0].data.transpose(-1, -2))
+    amtt = amt.transpose()
+    for i in range(2):
+        for j in range(2):
+            assert torch.equal(amtt.tensors[i][j].data, am.tensors[i][j].data)
+
+
+def test_assembled_matrix_transpose_rejects_two_intmd():
+    import pytest  # noqa: PLC0415
+
+    lay = AxisLayout([["a"]], {"a": Scalar}, {}, ("dense",))
+    blk = Tensor(torch.zeros(4, 2, 3, 3, 2, 2, dtype=torch.float64), batch_ndim=2, sub_batch_ndim=2)
+    am = AssembledMatrix(lay, lay, [[blk]])
+    with pytest.raises(NotImplementedError):
+        am.transpose()
+
+
+def test_assembled_matrix_batch_select():
+    torch.manual_seed(0)
+    lay = AxisLayout([["a"]], {"a": Scalar}, {}, ("dense",))
+    blk = Tensor(torch.randn(6, 2, 3, 3, dtype=torch.float64), batch_ndim=2)
+    am = AssembledMatrix(lay, lay, [[blk]])
+    sl = am.batch[1:4]
+    assert sl.tensors[0][0].data.shape[0] == 3
+    assert torch.equal(sl.tensors[0][0].data, blk.data[1:4])
+
+
+def test_assembled_vector_batch_select():
+    lay = AxisLayout([["a"]], {"a": Scalar}, {}, ("dense",))
+    v = AssembledVector(lay, [Tensor(torch.randn(6, 2, 3, dtype=torch.float64), batch_ndim=2)])
+    vs = v.batch[2:]
+    assert vs.tensors[0].data.shape[0] == 4
+    assert torch.equal(vs.tensors[0].data, v.tensors[0].data[2:])
+
+
+# --------------------------------------------------------------------------- #
+# AxisLayout flat DOF counts + AssembledVector.to_flat / from_flat            #
+# --------------------------------------------------------------------------- #
+
+
+def _block_dense_layout():
+    return AxisLayout(
+        [["p"], ["s"]],
+        {"p": SR2, "s": SR2},
+        {"p": torch.Size([4]), "s": torch.Size([])},
+        ("block", "dense"),
+    )
+
+
+def test_axis_layout_flat_dof_counts():
+    lay = _block_dense_layout()
+    # intmd ndim: preserved site axis for BLOCK, folded (0) for DENSE.
+    assert lay.group_intmd_ndim(0) == 1
+    assert lay.group_intmd_ndim(1) == 0
+    # flat size folds the sub-batch extent into the DOF count...
+    assert lay.group_flat_size(0) == 4 * 6
+    assert lay.group_flat_size(1) == 6
+    assert lay.flat_size() == 4 * 6 + 6
+    # ...whereas group_size / storage_size stay base-only (per site).
+    assert lay.group_size(0) == 6
+    assert lay.storage_size() == 12
+
+
+def test_assembled_vector_to_flat_from_flat_roundtrip():
+    torch.manual_seed(0)
+    lay = _block_dense_layout()
+    vp = torch.randn(3, 2, 4, 6, dtype=torch.float64)
+    vs = torch.randn(3, 2, 6, dtype=torch.float64)
+    av = AssembledVector(
+        lay,
+        [Tensor(vp, batch_ndim=2, sub_batch_ndim=1), Tensor(vs, batch_ndim=2, sub_batch_ndim=0)],
+    )
+    flat = av.to_flat()
+    assert flat.shape == (3, 2, lay.flat_size())
+
+    rt = AssembledVector.from_flat(lay, flat)
+    assert torch.equal(rt.tensors[0].data, vp)
+    assert rt.tensors[0].sub_batch_ndim == 1  # BLOCK site axis recovered
+    assert torch.equal(rt.tensors[1].data, vs)
+    assert rt.tensors[1].sub_batch_ndim == 0

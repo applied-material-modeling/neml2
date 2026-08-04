@@ -24,7 +24,7 @@
 
 """Adapter exposing a NEML2 nonlinear system to the pyzag time-integration library.
 
-:class:`NEML2PyzagFactory` wraps a NEML2 ``ModelNonlinearSystem`` as a
+:class:`NEML2PyzagModel` wraps a NEML2 ``ModelNonlinearSystem`` as a
 ``pyzag.nonlinear.NonlinearFunctionOperatorFactory`` -- assembling the per-chunk
 residual and bidiagonal Jacobian from NEML2's equation-systems layer and mirroring
 the model's HIT parameters as ``torch.nn.Parameter`` s for gradient-based
@@ -32,7 +32,7 @@ calibration. The backing block-operator implementations live in
 :mod:`neml2.pyzag.operators`.
 """
 
-from .interface import NEML2PyzagFactory, change_lag_order, lag_order
+from .interface import NEML2PyzagModel, change_lag_order, lag_order
 from .operators import (
     NEML2BlockJacobian,
     NEML2BlockVector,
@@ -42,7 +42,7 @@ from .operators import (
 )
 
 __all__ = [
-    "NEML2PyzagFactory",
+    "NEML2PyzagModel",
     "change_lag_order",
     "lag_order",
     "NEML2BlockVector",

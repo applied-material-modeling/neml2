@@ -22,20 +22,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Typed helpers on neml2 assembled matrices / vectors for the pyzag backend.
+"""Backend guard for the pyzag adapter's assembled-matrix envelope.
 
-Supported envelope: **at most one intermediate (sub-batch) dimension per block**
--- dense blocks (0 intmd), one-sided block x dense blocks (1 intmd), and paired
-single-site block x block blocks (1 shared intmd). Blocks with two or more
-intermediate axes (distinct row / col intmd, i.e. coupled sites) are rejected
-with a clear error rather than silently mishandled. These helpers stay typed
-(``Tensor.base.transpose`` / ``Tensor.batch[...]``); they do not reach around the
-typed API with raw-tensor ops.
+The generic assembled-matrix operations (transpose, batch/dynamic indexing) live
+on :class:`~neml2.es.AssembledMatrix` / :class:`~neml2.es.AssembledVector` in the
+ES layer. This module keeps only the pyzag-backend-specific envelope check:
+**at most one intermediate (sub-batch) dimension per block** -- dense blocks
+(0 intmd), one-sided block x dense blocks (1 intmd), and paired single-site
+block x block blocks (1 shared intmd). Blocks with two or more intermediate axes
+(distinct row / col intmd, i.e. coupled sites) are rejected with a clear error.
 """
 
 from __future__ import annotations
 
-from neml2.es import AssembledMatrix, AssembledVector
+from neml2.es import AssembledMatrix
 
 
 def _require_le_one_intmd(am: AssembledMatrix, what: str = "operator") -> None:
@@ -49,32 +49,3 @@ def _require_le_one_intmd(am: AssembledMatrix, what: str = "operator") -> None:
                     f"sub_batch_ndim={t.sub_batch_ndim}. Distinct row/col intermediate "
                     "axes (coupled sites) are not yet supported."
                 )
-
-
-def _transpose_am(am: AssembledMatrix) -> AssembledMatrix:
-    """Block transpose: swap row/col layouts and transpose each block's base axes.
-    Rejects blocks with two or more intmd axes.
-    """
-    _require_le_one_intmd(am, "transpose")
-    return AssembledMatrix(
-        am.col_layout,
-        am.row_layout,
-        [
-            [am.tensors[i][j].base.transpose() for i in range(am.row_layout.ngroup)]
-            for j in range(am.col_layout.ngroup)
-        ],
-    )
-
-
-def _select_dynamic_am(am: AssembledMatrix, key) -> AssembledMatrix:
-    """Index or slice the leading dynamic (time) axis of every block as a view."""
-    return AssembledMatrix(
-        am.row_layout,
-        am.col_layout,
-        [[t.batch[key] for t in row] for row in am.tensors],
-    )
-
-
-def _select_dynamic_av(av: AssembledVector, key) -> AssembledVector:
-    """Index or slice the leading dynamic (time) axis of every group tensor as a view."""
-    return AssembledVector(av.layout, [t.batch[key] for t in av.tensors])

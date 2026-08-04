@@ -30,12 +30,8 @@ import torch
 from pyzag.chunktime import BidiagonalForwardOperator, BidiagonalPCRFactorization
 from pyzag.operators.base import BlockJacobian, BlockVector
 
-from neml2.es import AssembledMatrix
-from neml2.types import Tensor
-from neml2.types._boundary import to_torch
+from neml2.es import AssembledMatrix, AssembledVector
 
-from ._assembly import _select_dynamic_am, _transpose_am
-from ._flat import _layout_flat_size, _split_flat_to_av
 from ._lifted_pcr import NEML2LiftedPCRFactorization
 from ._operator import NEML2SolvableBlockOperator
 from ._vector import NEML2BlockVector
@@ -65,17 +61,7 @@ def _select_inverse(inverse_operator, layout):
 
 def _flip_time(am: AssembledMatrix) -> AssembledMatrix:
     """Flip every block along the leading dynamic (time) axis."""
-    blocks = [
-        [
-            Tensor(
-                to_torch(t).flip(0),
-                batch_ndim=t.batch_ndim,
-                sub_batch_ndim=t.sub_batch_ndim,
-            )
-            for t in row
-        ]
-        for row in am.tensors
-    ]
+    blocks = [[t.batch.flip(0) for t in row] for row in am.tensors]
     return AssembledMatrix(am.row_layout, am.col_layout, blocks)
 
 
@@ -103,34 +89,30 @@ class NEML2BlockJacobian(BlockJacobian):
         self._layout = layout
         self._reversed = _reversed
 
-    def _first_diag_raw(self) -> torch.Tensor:
-        """Raw torch tensor of the first diagonal block (used for device/dtype/shape)."""
-        return to_torch(self.diag_am.tensors[0][0])
-
     @property
     def device(self) -> torch.device:
         """Device of the backing tensors."""
-        return self._first_diag_raw().device
+        return self.diag_am.tensors[0][0].device
 
     @property
     def dtype(self) -> torch.dtype:
         """Dtype of the backing tensors."""
-        return self._first_diag_raw().dtype
+        return self.diag_am.tensors[0][0].dtype
 
     @property
     def nblk_steps(self) -> int:
         """Number of time steps (blocks) in this chunk."""
-        return self._first_diag_raw().shape[0]
+        return self.diag_am.tensors[0][0].batch_shape[0]
 
     @property
     def batch_size(self) -> int:
         """Size of the plain (non-dynamic) batch axis."""
-        return self._first_diag_raw().shape[1]
+        return self.diag_am.tensors[0][0].batch_shape[1]
 
     @property
     def block_size(self) -> int:
         """Total per-step degrees of freedom of the state layout."""
-        return _layout_flat_size(self._layout)
+        return self._layout.flat_size()
 
     def _walk_diag(self) -> AssembledMatrix:
         """Diagonal blocks in walk order (time-flipped when reversed)."""
@@ -154,7 +136,7 @@ class NEML2BlockJacobian(BlockJacobian):
                 "not one returned by as_adjoint_walk()."
             )
         A_ops = NEML2SolvableBlockOperator.factored(self.diag_am)
-        B_ops = NEML2SolvableBlockOperator(_select_dynamic_am(self.sub_am, slice(1, None)))
+        B_ops = NEML2SolvableBlockOperator(self.sub_am.batch[1:])
         inverse_operator = _select_inverse(inverse_operator, self._layout)
         return BidiagonalForwardOperator(
             A_ops,
@@ -179,8 +161,8 @@ class NEML2BlockJacobian(BlockJacobian):
             )
         diag_walk = self._walk_diag()
         sub_walk = self._walk_sub()
-        A_T = _transpose_am(_select_dynamic_am(diag_walk, slice(1, None)))
-        B_T = _transpose_am(_select_dynamic_am(sub_walk, slice(1, -1)))
+        A_T = diag_walk.batch[1:].transpose()
+        B_T = sub_walk.batch[1:-1].transpose()
         A_ops = NEML2SolvableBlockOperator.factored(A_T)
         B_ops = NEML2SolvableBlockOperator(B_T)
         inverse_operator = _select_inverse(inverse_operator, self._layout)
@@ -191,9 +173,10 @@ class NEML2BlockJacobian(BlockJacobian):
 
         Solves ``-A_last^T x = g_terminal`` on the last step's transposed diagonal.
         """
-        terminal = _select_dynamic_am(self.diag_am, slice(-1, None))
-        op = NEML2SolvableBlockOperator.factored(_transpose_am(terminal))
-        g_bv = NEML2BlockVector.from_av(_split_flat_to_av(g_terminal.unsqueeze(0), self._layout))
+        terminal = self.diag_am.batch[-1:]
+        op = NEML2SolvableBlockOperator.factored(terminal.transpose())
+        g_av = AssembledVector.from_flat(self._layout, g_terminal.unsqueeze(0))
+        g_bv = NEML2BlockVector.from_av(g_av)
         sol = op.solve(g_bv)
         return NEML2BlockVector([-t for t in sol.raw_tensors], sol.layout, sol.intmd_dims)
 
@@ -207,7 +190,7 @@ class NEML2BlockJacobian(BlockJacobian):
         if not isinstance(a_first, NEML2BlockVector):
             raise TypeError("NEML2BlockJacobian.couple_prev_chunk expects NEML2BlockVector.")
         sub_walk = self._walk_sub()
-        boundary = _select_dynamic_am(sub_walk, slice(0, 1))
+        boundary = sub_walk.batch[0:1]
         op = NEML2SolvableBlockOperator(boundary)
         return op.t_matvec(a_first)
 

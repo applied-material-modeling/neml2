@@ -44,12 +44,9 @@ from neml2.es.axis_layout import SubBatchStructure
 from neml2.pyzag.operators import (
     NEML2BlockJacobian,
     NEML2Wrapper,
-    _av_to_flat,
     _require_le_one_intmd,
-    _split_flat_to_av,
 )
 from neml2.types import Tensor, TensorWrapper
-from neml2.types._boundary import to_torch
 
 
 def _extract_sublayout(
@@ -83,26 +80,28 @@ def _extract_sublayout(
 def _expand_am_dynamic(
     am: AssembledMatrix, target_dynamic_shape: tuple[int, ...]
 ) -> AssembledMatrix:
-    """Broadcast every block's dynamic dims to ``target_dynamic_shape``."""
-    target_ndim = len(target_dynamic_shape)
-    blocks = []
-    for row in am.tensors:
-        new_row = []
-        for t in row:
-            raw = to_torch(t)
-            cur = t.batch_ndim
-            while cur < target_ndim:
-                raw = raw.unsqueeze(0)
-                cur += 1
-            full = tuple(target_dynamic_shape) + tuple(raw.shape[target_ndim:])
-            raw = raw.expand(full).contiguous()
-            new_row.append(Tensor(raw, batch_ndim=target_ndim, sub_batch_ndim=t.sub_batch_ndim))
-        blocks.append(new_row)
+    """Broadcast each block's dynamic dims up to ``target_dynamic_shape``.
+
+    A block already at the full dynamic shape passes through untouched; only
+    genuinely time-broadcast (smaller-dynamic) blocks are expanded and
+    materialized -- so the whole diagonal Jacobian isn't recopied on every
+    ``evaluate_raw`` when its blocks are already full-size (the common case).
+    """
+    target = tuple(target_dynamic_shape)
+    blocks = [
+        [t if tuple(t.batch_shape) == target else t.batch.expand(*target) for t in row]
+        for row in am.tensors
+    ]
     return AssembledMatrix(am.row_layout, am.col_layout, blocks)
 
 
-class NEML2PyzagFactory(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFactory):
-    """Adapt a NEML2 ``ModelNonlinearSystem`` to pyzag's ``NonlinearFunctionOperatorFactory``.
+class NEML2PyzagModel(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFactory):
+    """Adapt a NEML2 ``ModelNonlinearSystem`` to pyzag's time-integration library.
+
+    Implements pyzag's ``NonlinearFunctionOperatorFactory`` ABC. The public name
+    stays ``NEML2PyzagModel`` for user-facing continuity even though the base
+    protocol is now the *factory* (pyzag 2.0) rather than the old
+    ``NonlinearRecursiveFunction``.
 
     Args:
         sys: the native NEML2 nonlinear system to wrap.
@@ -112,8 +111,10 @@ class NEML2PyzagFactory(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFact
             parameters. Mutually exclusive with ``include_parameters``.
         include_parameters (list of str): the *only* NEML2 parameters to mirror as
             torch parameters. Mutually exclusive with ``exclude_parameters``.
-        compile (bool): compile the residual model in place via ``neml2.compile`` on
-            construction. Default ``True``; pass ``False`` as a correctness oracle.
+
+    Construction yields a ``py-eager`` factory. To accelerate the residual with
+    in-process ``torch.compile`` (``py-jit``), opt in explicitly after
+    construction with :func:`neml2.compile` -- e.g. ``neml2.compile(factory)``.
     """
 
     def __init__(
@@ -122,7 +123,6 @@ class NEML2PyzagFactory(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFact
         *args,
         exclude_parameters: list[str] | None = None,
         include_parameters: list[str] | None = None,
-        compile: bool = True,
         **kwargs,
     ):
         """Wire the NEML2 system into pyzag layouts and mirror trainable parameters.
@@ -152,25 +152,6 @@ class NEML2PyzagFactory(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFact
         self._check_model()
         self._setup_parameters(exclude_parameters, include_parameters)
         self._wrapper = NEML2Wrapper(self.slayout)
-        if compile:
-            self._compile()
-
-    _COMPILE_CACHE_SIZE_LIMIT = 512
-
-    def _compile(self) -> None:
-        """Compile the residual model in place and raise dynamo cache limits."""
-        import torch._dynamo.config
-
-        from neml2.models.compile import compile as _neml2_compile
-
-        torch._dynamo.config.cache_size_limit = max(
-            torch._dynamo.config.cache_size_limit, self._COMPILE_CACHE_SIZE_LIMIT
-        )
-        torch._dynamo.config.accumulated_cache_size_limit = max(
-            torch._dynamo.config.accumulated_cache_size_limit,
-            8 * self._COMPILE_CACHE_SIZE_LIMIT,
-        )
-        _neml2_compile(self.sys)
 
     @property
     def lookback(self) -> int:
@@ -217,7 +198,7 @@ class NEML2PyzagFactory(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFact
             raw = value_dict[name]
             sbn = len(layout.sub_batch_shape(name))
             typed[name] = layout.type_of(name)(raw, sub_batch_ndim=sbn)
-        return _av_to_flat(AssembledVector.from_dict(layout, typed))
+        return AssembledVector.from_dict(layout, typed).to_flat()
 
     def assemble_state(self, ic_dict, dynamic_dim: int = 1) -> torch.Tensor:
         """Build a flat initial-state tensor from a per-variable IC dict.
@@ -437,7 +418,7 @@ class NEML2PyzagFactory(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFact
         rename_to_lag: int | None = None,
     ) -> dict[str, TensorWrapper]:
         """Split a flat ``(*batch, nflat)`` tensor into a per-variable typed wrapper dict."""
-        values = _split_flat_to_av(flat, layout).disassemble().values
+        values = AssembledVector.from_flat(layout, flat).disassemble().values
         out: dict[str, TensorWrapper] = {}
         for name in layout.vars():
             out_name = change_lag_order(name, rename_to_lag) if rename_to_lag is not None else name
@@ -463,7 +444,7 @@ class NEML2PyzagFactory(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFact
         """
         _require_le_one_intmd(A, "A (dr/du)")
         _require_le_one_intmd(B, "B (dr/dg)")
-        r = -_av_to_flat(b)
+        r = -b.to_flat()
         target_batch = tuple(r.shape[:-1])
 
         A_square = AssembledMatrix(self.slayout, self.slayout, A.tensors)
@@ -476,7 +457,7 @@ class NEML2PyzagFactory(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFact
         cells = B.disassemble().cells
         prow = self.rlayout
         pcol = self.snlayout
-        ref_dt = to_torch(B.tensors[0][0])
+        ref_dt = B.tensors[0][0].data  # data-ok pyzag boundary
         out: list[list[Tensor | None]] = [
             [None for _ in range(pcol.ngroup)] for _ in range(prow.ngroup)
         ]
@@ -527,7 +508,7 @@ class NEML2PyzagFactory(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFact
         cb: int,
     ) -> torch.Tensor:
         """Broadcast a disassembled cell to ``(*target_batch, *intmd, rb, cb)``."""
-        x = to_torch(cell)
+        x = cell.data  # data-ok pyzag boundary
         sbn = cell.sub_batch_ndim
         for _ in range(len(intmd) - sbn):
             x = x.unsqueeze(x.ndim - 2)

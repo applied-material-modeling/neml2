@@ -31,6 +31,7 @@ from typing import TYPE_CHECKING, overload
 from neml2.es import AssembledMatrix, AssembledVector
 from neml2.factory import register_neml2_object
 from neml2.schema import HitSchema
+from neml2.types import Tensor
 
 if TYPE_CHECKING:
     import nmhit
@@ -66,15 +67,26 @@ class DenseLU:
     def solve(self, A: AssembledMatrix, b: AssembledMatrix) -> AssembledMatrix: ...
     def solve(self, A, b):
         if A.row_layout.ngroup != 1 or A.col_layout.ngroup != 1:
-            raise ValueError("DenseLU only supports single-group layouts")
+            raise ValueError(f"{type(self).__name__} only supports single-group layouts")
         A00 = A.tensors[0][0]
         if isinstance(b, AssembledVector):
             if b.layout.ngroup != 1:
-                raise ValueError("DenseLU only supports single-group vector RHS")
-            return AssembledVector(A.col_layout, [A00.solve(b.tensors[0])])
+                raise ValueError(f"{type(self).__name__} only supports single-group vector RHS")
+            return AssembledVector(A.col_layout, [self._solve_block(A00, b.tensors[0])])
         if b.row_layout.ngroup != 1 or b.col_layout.ngroup != 1:
-            raise ValueError("DenseLU only supports single-group matrix RHS")
-        return AssembledMatrix(A.col_layout, b.col_layout, [[A00.solve(b.tensors[0][0])]])
+            raise ValueError(f"{type(self).__name__} only supports single-group matrix RHS")
+        return AssembledMatrix(
+            A.col_layout, b.col_layout, [[self._solve_block(A00, b.tensors[0][0])]]
+        )
+
+    def _solve_block(self, A00: Tensor, rhs: Tensor) -> Tensor:
+        """Solve one single-group block ``A00 @ x = rhs``.
+
+        A fresh ``torch.linalg.solve`` each call (via ``Tensor.solve``);
+        subclasses (e.g. a caching LU) override to reuse a factorization across
+        repeated right-hand sides against the same ``A00``.
+        """
+        return A00.solve(rhs)
 
 
 __all__ = ["DenseLU"]

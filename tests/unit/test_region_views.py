@@ -386,3 +386,79 @@ def test_linspace_rejects_nonpositive_nstep():
 
     with pytest.raises(ValueError, match="nstep must be >= 1"):
         linspace(Scalar(0.0).sub_batch, Scalar(1.0).sub_batch, 0)
+
+
+# ---------- flip / pad / clone (dynamic-base Tensor) ----------
+
+
+def test_batch_flip_reverses_leading_axis():
+    from neml2.types import Tensor  # noqa: PLC0415
+
+    t = Tensor(torch.arange(4 * 2, dtype=torch.float64).reshape(4, 2), batch_ndim=1)
+    f = t.batch.flip(0)
+    assert f.batch_ndim == 1 and f.sub_batch_ndim == 0
+    assert torch.equal(f.data, t.data.flip(0))
+
+
+def test_flip_preserves_region_metadata():
+    """A sub-batch flip reverses the right data axis and keeps region ndims."""
+    from neml2.types import Tensor  # noqa: PLC0415
+
+    t = Tensor(torch.randn(3, 5, 6), batch_ndim=1, sub_batch_ndim=1)
+    f = t.sub_batch.flip(0)  # sub axis 0 == data dim 1
+    assert f.batch_ndim == 1 and f.sub_batch_ndim == 1
+    assert torch.equal(f.data, t.data.flip(1))
+
+
+def test_batch_pad_prepends_zeros():
+    from neml2.types import Tensor  # noqa: PLC0415
+
+    t = Tensor(torch.ones(4, 2, 2, dtype=torch.float64), batch_ndim=1)
+    p = t.batch.pad(0, before=2)
+    assert p.data.shape == torch.Size([6, 2, 2])
+    assert p.batch_ndim == 1 and p.sub_batch_ndim == 0
+    assert torch.equal(p.data[:2], torch.zeros(2, 2, 2, dtype=torch.float64))
+    assert torch.equal(p.data[2:], t.data)
+
+
+def test_batch_pad_appends_zeros():
+    from neml2.types import Tensor  # noqa: PLC0415
+
+    t = Tensor(torch.ones(4, 2, 2, dtype=torch.float64), batch_ndim=1)
+    q = t.batch.pad(0, after=1)
+    assert q.data.shape == torch.Size([5, 2, 2])
+    assert torch.equal(q.data[4], torch.zeros(2, 2, dtype=torch.float64))
+
+
+def test_pad_rejects_negative():
+    from neml2.types import Tensor  # noqa: PLC0415
+
+    t = Tensor(torch.zeros(3, 2), batch_ndim=1)
+    with pytest.raises(ValueError, match="non-negative"):
+        t.batch.pad(0, before=-1)
+
+
+def test_clone_is_deep_copy_preserving_metadata():
+    from neml2.types import Tensor  # noqa: PLC0415
+
+    t = Tensor(torch.ones(2, 3, 6, dtype=torch.float64), batch_ndim=1, sub_batch_ndim=1)
+    c = t.clone()
+    assert c.batch_ndim == t.batch_ndim and c.sub_batch_ndim == t.sub_batch_ndim
+    assert torch.equal(c.data, t.data)
+    assert c.data is not t.data
+    c.data[0, 0, 0] = 999.0
+    assert float(t.data[0, 0, 0]) == 1.0  # original storage untouched
+
+
+def test_batch_set_is_functional_slice_assignment():
+    from neml2.types import Tensor  # noqa: PLC0415
+
+    t = Tensor(torch.zeros(5, 2, 3, dtype=torch.float64), batch_ndim=1)
+    other = Tensor(torch.ones(2, 2, 3, dtype=torch.float64), batch_ndim=1)
+    out = t.batch.set(slice(1, 3), other)
+    assert out.batch_ndim == 1 and out.sub_batch_ndim == 0
+    assert torch.equal(out.data[1:3], other.data)
+    assert torch.equal(out.data[0], torch.zeros(2, 3, dtype=torch.float64))
+    # functional: the source is untouched
+    assert torch.equal(t.data, torch.zeros(5, 2, 3, dtype=torch.float64))
+    assert out.data is not t.data
