@@ -35,7 +35,6 @@ factorization.
 from ._assembly import _require_le_one_intmd
 from ._cache import CachingLU
 from ._jacobian import NEML2BlockJacobian
-from ._lifted_pcr import NEML2LiftedPCRFactorization
 from ._operator import NEML2SolvableBlockOperator
 from ._vector import NEML2BlockVector
 from ._wrapper import NEML2Wrapper
@@ -45,7 +44,6 @@ __all__ = [
     "NEML2BlockVector",
     "NEML2SolvableBlockOperator",
     "NEML2BlockJacobian",
-    "NEML2LiftedPCRFactorization",
     "NEML2Wrapper",
     "_require_le_one_intmd",
 ]

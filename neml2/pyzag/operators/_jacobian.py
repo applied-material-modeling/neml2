@@ -27,36 +27,13 @@
 from __future__ import annotations
 
 import torch
-from pyzag.chunktime import BidiagonalForwardOperator, BidiagonalPCRFactorization
+from pyzag.chunktime import BidiagonalForwardOperator
 from pyzag.operators.base import BlockJacobian, BlockVector
 
 from neml2.es import AssembledMatrix, AssembledVector
 
-from ._lifted_pcr import NEML2LiftedPCRFactorization
 from ._operator import NEML2SolvableBlockOperator
 from ._vector import NEML2BlockVector
-
-
-def _has_block_group(layout) -> bool:
-    """True if the layout has an intermediate (BLOCK / per-site) dimension."""
-    return any(layout.structure[g] == "block" for g in range(layout.ngroup))
-
-
-def _select_inverse(inverse_operator, layout):
-    """Route PCR/Hybrid on a BLOCK layout to the lifted-arrowhead factorization.
-
-    The dense per-site operator is never manifested for a layout with an
-    intermediate dimension; single-group dense layouts keep pyzag's dense path.
-    ``BidiagonalHybridFactorizationImpl`` is a subclass of
-    ``BidiagonalPCRFactorization`` so both are covered when passed as a class.
-    """
-    if (
-        isinstance(inverse_operator, type)
-        and issubclass(inverse_operator, BidiagonalPCRFactorization)
-        and _has_block_group(layout)
-    ):
-        return NEML2LiftedPCRFactorization
-    return inverse_operator
 
 
 def _flip_time(am: AssembledMatrix) -> AssembledMatrix:
@@ -125,10 +102,8 @@ class NEML2BlockJacobian(BlockJacobian):
     def forward_system(self, inverse_operator):
         """Build the forward bidiagonal chunk operator solved during the state sweep.
 
-        ``inverse_operator`` is the factorization pyzag requests; a PCR/Hybrid
-        request on a BLOCK layout is redirected to
-        :class:`NEML2LiftedPCRFactorization` (see :func:`_select_inverse`). Must be
-        called on a forward-walk Jacobian, not one from :meth:`as_adjoint_walk`.
+        ``inverse_operator`` is the factorization pyzag requests. Must be called on
+        a forward-walk Jacobian, not one from :meth:`as_adjoint_walk`.
         """
         if self._reversed:
             raise RuntimeError(
@@ -137,7 +112,6 @@ class NEML2BlockJacobian(BlockJacobian):
             )
         A_ops = NEML2SolvableBlockOperator.factored(self.diag_am)
         B_ops = NEML2SolvableBlockOperator(self.sub_am.batch[1:])
-        inverse_operator = _select_inverse(inverse_operator, self._layout)
         return BidiagonalForwardOperator(
             A_ops,
             B_ops,
@@ -150,9 +124,7 @@ class NEML2BlockJacobian(BlockJacobian):
         """Build the transposed, time-reversed bidiagonal operator for the adjoint sweep.
 
         Uses the transposed diagonal/subdiagonal blocks in reverse time order. Must
-        be called on the Jacobian returned by :meth:`as_adjoint_walk`. As with
-        :meth:`forward_system`, PCR/Hybrid on a BLOCK layout routes to the lifted
-        factorization.
+        be called on the Jacobian returned by :meth:`as_adjoint_walk`.
         """
         if not self._reversed:
             raise RuntimeError(
@@ -165,7 +137,6 @@ class NEML2BlockJacobian(BlockJacobian):
         B_T = sub_walk.batch[1:-1].transpose()
         A_ops = NEML2SolvableBlockOperator.factored(A_T)
         B_ops = NEML2SolvableBlockOperator(B_T)
-        inverse_operator = _select_inverse(inverse_operator, self._layout)
         return inverse_operator(A_ops, B_ops)
 
     def solve_terminal_adjoint(self, g_terminal: torch.Tensor) -> NEML2BlockVector:

@@ -127,9 +127,8 @@ def test_pcr_single_group_dense_matches_thomas():
 
 def test_pcr_block_group_raises_not_implemented():
     # The raw operator's dense-backend PCR primitives (op.pcr_init) only handle
-    # single-group dense; a BLOCK layout still raises here by design. Block PCR
-    # is provided instead by NEML2LiftedPCRFactorization, dispatched through
-    # NEML2BlockJacobian.forward_system/adjoint_system -- see test_lifted_pcr.py.
+    # single-group dense; a BLOCK layout raises by design. BLOCK layouts must use
+    # the Thomas factorization (the solver default).
     lay = AxisLayout([["a"]], {"a": Scalar}, {"a": torch.Size([3])}, ("block",))
     blk = torch.zeros(4, 2, 3, 1, 1, dtype=torch.float64)
     op = NEML2SolvableBlockOperator(

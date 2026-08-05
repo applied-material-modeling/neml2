@@ -74,9 +74,7 @@ outputs, so they're readable without re-execution:
   of point estimates.
 - [](crystal_plasticity_calibration/main) — calibrates a Taylor polycrystal
   (crystal plasticity), exercising the per-grain **BLOCK** + global **DENSE**
-  Schur split and the chunked adjoint over sub-batch state, and swapping the
-  chunk solve from the sequential Thomas sweep to the parallel lifted-arrowhead
-  PCR factorization.
+  Schur split and the chunked adjoint over sub-batch state.
 
 For the underlying algorithms (chunked adjoint derivation, predictors,
 block-size trade-offs, custom solver choices), see the

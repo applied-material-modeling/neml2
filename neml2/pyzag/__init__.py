@@ -36,7 +36,6 @@ from .interface import NEML2PyzagModel, change_lag_order, lag_order
 from .operators import (
     NEML2BlockJacobian,
     NEML2BlockVector,
-    NEML2LiftedPCRFactorization,
     NEML2SolvableBlockOperator,
     NEML2Wrapper,
 )
@@ -48,6 +47,5 @@ __all__ = [
     "NEML2BlockVector",
     "NEML2SolvableBlockOperator",
     "NEML2BlockJacobian",
-    "NEML2LiftedPCRFactorization",
     "NEML2Wrapper",
 ]

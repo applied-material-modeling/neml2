@@ -266,9 +266,7 @@ class NEML2SolvableBlockOperator(SolvableBlockOperator):
         """Seed a parallel-cyclic-reduction sweep (single-group dense only).
 
         Delegates to pyzag's dense backend. Raises ``NotImplementedError`` for
-        multi-group / BLOCK layouts -- those are handled instead by
-        :class:`~neml2.pyzag.operators.NEML2LiftedPCRFactorization`, dispatched
-        through :class:`~neml2.pyzag.operators.NEML2BlockJacobian`.
+        multi-group / BLOCK layouts -- use the Thomas factorization for those.
         """
         if not self._is_single_dense():
             raise NotImplementedError(_PCR_MESSAGE)
