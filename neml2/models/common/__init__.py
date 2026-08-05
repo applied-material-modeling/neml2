@@ -89,7 +89,7 @@ from .IntermediateMean import SR2IntermediateMean
 from .IntermediateSum import SR2IntermediateSum
 from .Interpolation import Interpolation
 from .IrreversibleScalar import IrreversibleScalar
-from .LinearCombination import ScalarLinearCombination, SR2LinearCombination
+from .LinearCombination import R2LinearCombination, ScalarLinearCombination, SR2LinearCombination
 from .LinearExtrapolationPredictor import LinearExtrapolationPredictor
 from .LinearInterpolation import ScalarLinearInterpolation
 from .MacaulaySplit import MacaulaySplit
@@ -130,6 +130,7 @@ __all__ = [
     "ArrheniusParameter",
     "ComposedModel",
     "ImplicitUpdate",
+    "R2LinearCombination",
     "SR2LinearCombination",
     "ScalarLinearCombination",
     "SR2Invariant",
