@@ -145,7 +145,7 @@ on one of the runtimes above:
   load history on `py-eager`. If the input file names an `AOTIModel`, the same
   driver runs on `py-aoti` instead.
 - The **pyzag** adapter (`NEML2PyzagModel`) drives calibration on `py-eager`,
-  optionally accelerated to `py-jit` via `neml2.compile(factory)`.
+  optionally accelerated to `py-jit` via `neml2.compile`.
 - `neml2-inspect <input.i> <model>` resolves and prints a model's input/output
   graph but does **not** evaluate it.
 

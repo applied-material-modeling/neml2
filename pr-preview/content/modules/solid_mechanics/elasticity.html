@@ -92,7 +92,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../tensor_types/index.html">Tensor types</a><ul>
@@ -494,9 +493,9 @@ and deviatoric projectors:</p>
 <p>Any pair drawn from <span class="math notranslate nohighlight">\(\{E,\,\nu,\,K,\,G,\,\lambda,\,M\}\)</span> converts to
 <span class="math notranslate nohighlight">\((K,\,G)\)</span> via the standard textbook relations; e.g. with
 <span class="math notranslate nohighlight">\(E,\,\nu\)</span> as inputs,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-3e83f839-90f3-4481-8b2c-ef81d1dd8478">
-<div class="amsmath math notranslate nohighlight" id="equation-3e83f839-90f3-4481-8b2c-ef81d1dd8478">
-<span class="eqno">(11)<a class="headerlink" href="#equation-3e83f839-90f3-4481-8b2c-ef81d1dd8478" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-aee95401-ca42-478c-adf4-8a02d3a66f4c">
+<div class="amsmath math notranslate nohighlight" id="equation-aee95401-ca42-478c-adf4-8a02d3a66f4c">
+<span class="eqno">(11)<a class="headerlink" href="#equation-aee95401-ca42-478c-adf4-8a02d3a66f4c" title="Permalink to this equation">#</a></span>\[\begin{align}
   K &amp;= \dfrac{E}{3(1 - 2\nu)}, \\
   G &amp;= \dfrac{E}{2(1 + \nu)}.
 \end{align}\]</div>
@@ -512,9 +511,9 @@ fourth-order stiffness onto three cubic-symmetry projectors
 \]</div>
 </div>
 <p>With <span class="math notranslate nohighlight">\((G,\,E,\,\nu)\)</span> as inputs, the canonical triple is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-521534d4-bfbd-4924-9426-2b63ce2ae5b3">
-<div class="amsmath math notranslate nohighlight" id="equation-521534d4-bfbd-4924-9426-2b63ce2ae5b3">
-<span class="eqno">(12)<a class="headerlink" href="#equation-521534d4-bfbd-4924-9426-2b63ce2ae5b3" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-5eeeaba7-7ec1-46df-b7ea-f9a8df31e9cb">
+<div class="amsmath math notranslate nohighlight" id="equation-5eeeaba7-7ec1-46df-b7ea-f9a8df31e9cb">
+<span class="eqno">(12)<a class="headerlink" href="#equation-5eeeaba7-7ec1-46df-b7ea-f9a8df31e9cb" title="Permalink to this equation">#</a></span>\[\begin{align}
   C_1 &amp;= \dfrac{E\,(1 - \nu)}{(1 + \nu)(1 - 2\nu)}, \\
   C_2 &amp;= \dfrac{E\,\nu}{(1 + \nu)(1 - 2\nu)}, \\
   C_3 &amp;= 2G.

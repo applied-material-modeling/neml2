@@ -92,7 +92,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../statistical/main.html">Statistical material model learning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tensor_types/index.html">Tensor types</a><ul>
@@ -387,6 +386,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#optimizer-choice-and-conditioning">Optimizer choice and conditioning</a></li>
 <li><a class="reference internal" href="#calibration-loop">Calibration loop</a></li>
 <li><a class="reference internal" href="#diagnostics">Diagnostics</a></li>
+<li><a class="reference internal" href="#common-failure-modes">Common failure modes</a></li>
 <li><a class="reference internal" href="#where-to-go-next">Where to go next</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
@@ -665,6 +665,75 @@ optimizer’s tolerance rather than the data.</p>
 <img alt="../../../../_images/4b2618d1fb2661c5779b23cdb8fdf3f222ab68f0b07a368ff5402fdb723a7f7c.png" src="../../../../_images/4b2618d1fb2661c5779b23cdb8fdf3f222ab68f0b07a368ff5402fdb723a7f7c.png" />
 </div>
 </div>
+<p>What to look for in each panel:</p>
+<ul class="simple">
+<li><p><strong>Loss curve.</strong> A healthy run shows monotone (or near-monotone)
+decrease on a log scale, with curvature flattening as the optimum
+is approached. A plateau early on usually means the learning rate
+is too small; oscillations or divergence mean it’s too large. A
+loss that stalls at a non-zero value when synthetic data should be
+exactly fittable points at a mis-specified model.</p></li>
+<li><p><strong>Parameter trajectory.</strong> Dotted reference lines mark the truth.
+Both curves should approach their dotted line and stay there. A
+parameter that drifts past the truth and then returns is fine —
+Adam’s momentum routinely overshoots and corrects. A parameter that
+doesn’t move at all (flat trajectory) usually has a near-zero
+gradient — either because the loss is genuinely insensitive to it
+(non-identifiability — see below) or because the learning rate for
+that param group is too small.</p></li>
+<li><p><strong>Gradient norm.</strong> Should decrease alongside the loss. If the loss
+keeps drifting down while the gradient norm plateaus, we are
+usually watching one parameter that has nearly converged while the
+other still has a noticeable gradient — the plateau is the small
+parameter’s contribution dominating the norm.</p></li>
+</ul>
+</section>
+<section id="common-failure-modes">
+<h2>Common failure modes<a class="headerlink" href="#common-failure-modes" title="Link to this heading">#</a></h2>
+<p>A few patterns to recognize when calibrating real models:</p>
+<ul class="simple">
+<li><p><strong>Bad conditioning.</strong> Parameters with very different magnitudes (the
+<span class="math notranslate nohighlight">\(E\)</span>/<span class="math notranslate nohighlight">\(\nu\)</span> situation above) or very different sensitivities cause
+Adam to under- or overshoot in different directions. <em>Fixes:</em> per-
+parameter learning rates via <code class="docutils literal notranslate"><span class="pre">param_groups</span></code> (used here), reparameterize
+to bring magnitudes closer (e.g. optimize <span class="math notranslate nohighlight">\(\log E\)</span>), or precondition
+the optimizer.</p></li>
+<li><p><strong>Non-identifiable parameters.</strong> If the observations don’t contain
+information about a parameter, no amount of optimization will pin
+it down. The classic symptom is a parameter that doesn’t move and a
+loss that’s already nearly minimal at the (wrong) initial value.
+For elasticity parameterized by bulk and shear moduli <span class="math notranslate nohighlight">\((K, G)\)</span>,
+pure hydrostatic loading carries no information about <span class="math notranslate nohighlight">\(G\)</span>, so a
+calibrator given only volumetric data will leave <span class="math notranslate nohighlight">\(G\)</span> at its
+starting guess. (With the <span class="math notranslate nohighlight">\(E/\nu\)</span> parameterization used above, <span class="math notranslate nohighlight">\(\nu\)</span>
+enters both <span class="math notranslate nohighlight">\(K\)</span> and <span class="math notranslate nohighlight">\(G\)</span>, so hydrostatic data still pins it down,
+but the calibration is poorly conditioned.) <em>Fix:</em> add observations
+that probe the insensitive direction, or fix the unidentifiable
+parameter from prior knowledge.</p></li>
+<li><p><strong>Local minima.</strong> Non-convex loss landscapes (very common with
+rate-dependent or path-dependent models) can trap gradient descent
+in a basin that’s not the global optimum. <em>Fixes:</em> multi-start
+from different initial guesses, or hybrid global/local optimizers
+outside <code class="docutils literal notranslate"><span class="pre">torch.optim</span></code>.</p></li>
+<li><p><strong>Vanishing gradients.</strong> When the loss is near machine precision
+(synthetic data, late iterations) the gradient is dominated by
+numerical noise. Don’t chase iterations past the floor — relative
+improvement of <span class="math notranslate nohighlight">\(10^{-6}\)</span> or so per step is usually the signal to
+stop.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">torch.optim</span></code> provides several alternatives to Adam — SGD with
+momentum, RMSProp, and the line-search-based
+<a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.LBFGS.html#torch.optim.LBFGS" title="(in PyTorch v2.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.LBFGS</span></code></a>. LBFGS converges in many fewer steps on
+smooth, well-conditioned problems, but doesn’t support the
+per-parameter learning rates used above, so it’s the wrong tool until
+we’ve reparameterized to bring all parameters to similar scales. For
+two-parameter elastic calibration of the kind shown here, Adam is the
+simpler choice; for higher-dimensional calibration of smooth
+constitutive models, LBFGS is often the right tool once we’ve
+reparameterized to unit scale.</p>
+</div>
 </section>
 <section id="where-to-go-next">
 <h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
@@ -672,9 +741,7 @@ optimizer’s tolerance rather than the data.</p>
 <li><p>Calibrating a <em>transient</em> model (one that integrates a load
 history step by step) requires backpropagating through the
 time-stepping loop. The <code class="docutils literal notranslate"><span class="pre">pyzag</span></code> adapter handles that efficiently —
-see <a class="reference internal" href="../pyzag.html#tutorials-optimization-pyzag"><span class="std std-ref">Recurrent calibration with pyzag</span></a>, with a full crystal-plasticity
-worked example (per-grain BLOCK + global DENSE, chunked adjoint) in
-<a class="reference internal" href="../crystal_plasticity_calibration/main.html#tutorials-optimization-crystal-plasticity-calibration"><span class="std std-ref">Calibrating a crystal-plasticity model with pyzag</span></a>.</p></li>
+see <a class="reference internal" href="../pyzag.html#tutorials-optimization-pyzag"><span class="std std-ref">Recurrent calibration with pyzag</span></a>.</p></li>
 <li><p>The mechanics of reading, mutating, and freezing parameters are
 covered in <a class="reference internal" href="../../models/model_parameters/main.html#tutorials-models-parameters"><span class="std std-ref">Model parameters</span></a>; the advanced patterns
 (parameters supplied by other models, parameters promoted to
