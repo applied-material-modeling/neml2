@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../content/tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/tensor_types/index.html">Tensor types</a><ul>
@@ -446,62 +447,74 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="31"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.es</span><span class="w"> </span><span class="kn">import</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">AssembledVector</span>
 </span><span data-line="32"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_neml2_object</span>
 </span><span data-line="33"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">HitSchema</span>
-</span><span data-line="34">
-</span><span data-line="35"><span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-</span><span data-line="36">    <span class="kn">import</span><span class="w"> </span><span class="nn">nmhit</span>
-</span><span data-line="37">
-</span><span data-line="38">    <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">_NativeInputFile</span>
-</span><span data-line="39">
+</span><span data-line="34"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tensor</span>
+</span><span data-line="35">
+</span><span data-line="36"><span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+</span><span data-line="37">    <span class="kn">import</span><span class="w"> </span><span class="nn">nmhit</span>
+</span><span data-line="38">
+</span><span data-line="39">    <span class="kn">from</span><span class="w"> </span><span class="nn">neml2.factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">_NativeInputFile</span>
 </span><span data-line="40">
+</span><span data-line="41">
 <div class="viewcode-block" id="DenseLU">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.DenseLU">[docs]</a>
-</span><span data-line="41"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;DenseLU&quot;</span><span class="p">)</span>
-</span><span data-line="42"><span class="k">class</span><span class="w"> </span><span class="nc">DenseLU</span><span class="p">:</span>
-</span><span data-line="43"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dense LU linear solver. Assembles the (possibly) sparse matrix into a</span>
-</span><span data-line="44"><span class="sd">    dense one and uses a standard LU decomposition.</span>
-</span><span data-line="45">
-</span><span data-line="46"><span class="sd">    The dense-vs-block-diagonal dispatch is implicit in the wrapped</span>
-</span><span data-line="47"><span class="sd">    :class:`~neml2.types.Tensor` operand: ``Tensor.solve`` forwards to</span>
-</span><span data-line="48"><span class="sd">    ``torch.linalg.solve`` on the trailing matrix dims, so leading</span>
-</span><span data-line="49"><span class="sd">    sub-batch axes (if any) batch naturally as independent LUs per site</span>
-</span><span data-line="50"><span class="sd">    -- no special-case code at this layer.</span>
-</span><span data-line="51"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="52">
-</span><span data-line="53">    <span class="n">SECTION</span> <span class="o">=</span> <span class="s2">&quot;Solvers&quot;</span>
-</span><span data-line="54">
-</span><span data-line="55">    <span class="c1"># No tunable options; the empty schema documents that in the syntax catalog.</span>
-</span><span data-line="56">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">()</span>
-</span><span data-line="57">
+</span><span data-line="42"><span class="nd">@register_neml2_object</span><span class="p">(</span><span class="s2">&quot;DenseLU&quot;</span><span class="p">)</span>
+</span><span data-line="43"><span class="k">class</span><span class="w"> </span><span class="nc">DenseLU</span><span class="p">:</span>
+</span><span data-line="44"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dense LU linear solver. Assembles the (possibly) sparse matrix into a</span>
+</span><span data-line="45"><span class="sd">    dense one and uses a standard LU decomposition.</span>
+</span><span data-line="46">
+</span><span data-line="47"><span class="sd">    The dense-vs-block-diagonal dispatch is implicit in the wrapped</span>
+</span><span data-line="48"><span class="sd">    :class:`~neml2.types.Tensor` operand: ``Tensor.solve`` forwards to</span>
+</span><span data-line="49"><span class="sd">    ``torch.linalg.solve`` on the trailing matrix dims, so leading</span>
+</span><span data-line="50"><span class="sd">    sub-batch axes (if any) batch naturally as independent LUs per site</span>
+</span><span data-line="51"><span class="sd">    -- no special-case code at this layer.</span>
+</span><span data-line="52"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="53">
+</span><span data-line="54">    <span class="n">SECTION</span> <span class="o">=</span> <span class="s2">&quot;Solvers&quot;</span>
+</span><span data-line="55">
+</span><span data-line="56">    <span class="c1"># No tunable options; the empty schema documents that in the syntax catalog.</span>
+</span><span data-line="57">    <span class="n">hit</span> <span class="o">=</span> <span class="n">HitSchema</span><span class="p">()</span>
+</span><span data-line="58">
 <div class="viewcode-block" id="DenseLU.from_hit">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.DenseLU.from_hit">[docs]</a>
-</span><span data-line="58">    <span class="nd">@classmethod</span>
-</span><span data-line="59">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DenseLU</span><span class="p">:</span>
-</span><span data-line="60">        <span class="k">del</span> <span class="n">node</span><span class="p">,</span> <span class="n">factory</span>
-</span><span data-line="61">        <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span></div>
+</span><span data-line="59">    <span class="nd">@classmethod</span>
+</span><span data-line="60">    <span class="k">def</span><span class="w"> </span><span class="nf">from_hit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">nmhit</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">_NativeInputFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DenseLU</span><span class="p">:</span>
+</span><span data-line="61">        <span class="k">del</span> <span class="n">node</span><span class="p">,</span> <span class="n">factory</span>
+</span><span data-line="62">        <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span></div>
 
-</span><span data-line="62">
-</span><span data-line="63">    <span class="nd">@overload</span>
-</span><span data-line="64">    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">AssembledVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledVector</span><span class="p">:</span> <span class="o">...</span>
-</span><span data-line="65">    <span class="nd">@overload</span>
-</span><span data-line="66">    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span> <span class="o">...</span>
+</span><span data-line="63">
+</span><span data-line="64">    <span class="nd">@overload</span>
+</span><span data-line="65">    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">AssembledVector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledVector</span><span class="p">:</span> <span class="o">...</span>
+</span><span data-line="66">    <span class="nd">@overload</span>
+</span><span data-line="67">    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">AssembledMatrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssembledMatrix</span><span class="p">:</span> <span class="o">...</span>
 <div class="viewcode-block" id="DenseLU.solve">
 <a class="viewcode-back" href="../../../content/python_api/neml2.solvers.html#neml2.solvers.DenseLU.solve">[docs]</a>
-</span><span data-line="67">    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-</span><span data-line="68">        <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="69">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;DenseLU only supports single-group layouts&quot;</span><span class="p">)</span>
-</span><span data-line="70">        <span class="n">A00</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-</span><span data-line="71">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">AssembledVector</span><span class="p">):</span>
-</span><span data-line="72">            <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="73">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;DenseLU only supports single-group vector RHS&quot;</span><span class="p">)</span>
-</span><span data-line="74">            <span class="k">return</span> <span class="n">AssembledVector</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span> <span class="p">[</span><span class="n">A00</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span>
-</span><span data-line="75">        <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">b</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-</span><span data-line="76">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;DenseLU only supports single-group matrix RHS&quot;</span><span class="p">)</span>
-</span><span data-line="77">        <span class="k">return</span> <span class="n">AssembledMatrix</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span> <span class="p">[[</span><span class="n">A00</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])]])</span></div>
-</div>
+</span><span data-line="68">    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+</span><span data-line="69">        <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="70">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> only supports single-group layouts&quot;</span><span class="p">)</span>
+</span><span data-line="71">        <span class="n">A00</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="72">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">AssembledVector</span><span class="p">):</span>
+</span><span data-line="73">            <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="74">                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> only supports single-group vector RHS&quot;</span><span class="p">)</span>
+</span><span data-line="75">            <span class="k">return</span> <span class="n">AssembledVector</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_solve_block</span><span class="p">(</span><span class="n">A00</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span>
+</span><span data-line="76">        <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">row_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">b</span><span class="o">.</span><span class="n">col_layout</span><span class="o">.</span><span class="n">ngroup</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+</span><span data-line="77">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> only supports single-group matrix RHS&quot;</span><span class="p">)</span>
+</span><span data-line="78">        <span class="k">return</span> <span class="n">AssembledMatrix</span><span class="p">(</span>
+</span><span data-line="79">            <span class="n">A</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">col_layout</span><span class="p">,</span> <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">_solve_block</span><span class="p">(</span><span class="n">A00</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])]]</span>
+</span><span data-line="80">        <span class="p">)</span></div>
 
-</span><span data-line="78">
-</span><span data-line="79">
-</span><span data-line="80"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DenseLU&quot;</span><span class="p">]</span>
+</span><span data-line="81">
+</span><span data-line="82">    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A00</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+</span><span data-line="83"><span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve one single-group block ``A00 @ x = rhs``.</span>
+</span><span data-line="84">
+</span><span data-line="85"><span class="sd">        A fresh ``torch.linalg.solve`` each call (via ``Tensor.solve``);</span>
+</span><span data-line="86"><span class="sd">        subclasses (e.g. a caching LU) override to reuse a factorization across</span>
+</span><span data-line="87"><span class="sd">        repeated right-hand sides against the same ``A00``.</span>
+</span><span data-line="88"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span data-line="89">        <span class="k">return</span> <span class="n">A00</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span></div>
+
+</span><span data-line="90">
+</span><span data-line="91">
+</span><span data-line="92"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DenseLU&quot;</span><span class="p">]</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

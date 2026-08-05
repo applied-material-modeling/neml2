@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -381,24 +382,33 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.batch"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.batch</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.col_layout"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.col_layout</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.disassemble"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.disassemble()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.group"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.group()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.per_instance_matvec"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.per_instance_matvec()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.row_layout"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.row_layout</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.select_blocks"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.select_blocks()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledMatrix.tensors"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.tensors</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledMatrix.transpose"><code class="docutils literal notranslate"><span class="pre">AssembledMatrix.transpose()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector"><code class="docutils literal notranslate"><span class="pre">AssembledVector</span></code></a><ul>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.batch"><code class="docutils literal notranslate"><span class="pre">AssembledVector.batch</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector.disassemble"><code class="docutils literal notranslate"><span class="pre">AssembledVector.disassemble()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector.from_dict"><code class="docutils literal notranslate"><span class="pre">AssembledVector.from_dict()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.from_flat"><code class="docutils literal notranslate"><span class="pre">AssembledVector.from_flat()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector.group"><code class="docutils literal notranslate"><span class="pre">AssembledVector.group()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector.layout"><code class="docutils literal notranslate"><span class="pre">AssembledVector.layout</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AssembledVector.tensors"><code class="docutils literal notranslate"><span class="pre">AssembledVector.tensors</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AssembledVector.to_flat"><code class="docutils literal notranslate"><span class="pre">AssembledVector.to_flat()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout"><code class="docutils literal notranslate"><span class="pre">AxisLayout</span></code></a><ul>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.block_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.block_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.flat_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.flat_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.group_flat_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_flat_size()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.AxisLayout.group_intmd_ndim"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_intmd_ndim()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.group_size"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_size()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.group_sub_batch_shape"><code class="docutils literal notranslate"><span class="pre">AxisLayout.group_sub_batch_shape()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.AxisLayout.groups"><code class="docutils literal notranslate"><span class="pre">AxisLayout.groups</span></code></a></li>
@@ -590,6 +600,15 @@ group k) runs after the per-block mm. This is the v2-parity
 </ul>
 </dd>
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="neml2.es.AssembledMatrix.batch">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_BatchIndexAM</span></em><a class="headerlink" href="#neml2.es.AssembledMatrix.batch" title="Link to this definition">#</a></dt>
+<dd><p>Index/slice the leading dynamic (batch) axis of every block.</p>
+<p><code class="docutils literal notranslate"><span class="pre">am.batch[key]</span></code> returns a new <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.AssembledMatrix"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledMatrix</span></code></a> with each block
+sliced along its batch region (<code class="docutils literal notranslate"><span class="pre">t.batch[key]</span></code>) – the dynamic (e.g.
+time) axis the pyzag adapter and solvers walk.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.es.AssembledMatrix.col_layout">
 <span class="sig-name descname"><span class="pre">col_layout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><span class="pre">AxisLayout</span></a></em><a class="headerlink" href="#neml2.es.AssembledMatrix.col_layout" title="Link to this definition">#</a></dt>
@@ -625,6 +644,36 @@ at their own framework boundary.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AssembledMatrix.per_instance_matvec">
+<span class="sig-name descname"><span class="pre">per_instance_matvec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transpose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledMatrix.per_instance_matvec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledMatrix.per_instance_matvec" title="Link to this definition">#</a></dt>
+<dd><p>Grain-diagonal matrix-vector product <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">&#64;</span> <span class="pre">x</span></code> (or <code class="docutils literal notranslate"><span class="pre">Aᵀ</span> <span class="pre">&#64;</span> <span class="pre">x</span></code>).</p>
+<p>Deliberately distinct from <code class="xref py py-meth docutils literal notranslate"><span class="pre">__matmul__()</span></code>: a BLOCK output group is
+kept <strong>per-site</strong> (the grain-diagonal <code class="docutils literal notranslate"><span class="pre">B</span> <span class="pre">&#64;</span> <span class="pre">v</span></code> a block Thomas sweep or
+adjoint coupling needs) instead of being summed over its site axis. The
+per-site sum fires only when a DENSE output group consumes a BLOCK input
+– the <code class="docutils literal notranslate"><span class="pre">A_sp</span> <span class="pre">&#64;</span> <span class="pre">x_p</span></code> Schur cross-term (DENSE row × BLOCK col) that
+aggregates per-grain contributions into the global residual. This makes
+it the mutual inverse of the <a class="reference internal" href="neml2.solvers.html#neml2.solvers.SchurComplement" title="neml2.solvers.SchurComplement"><code class="xref py py-class docutils literal notranslate"><span class="pre">SchurComplement</span></code></a>
+solve, whereas <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> aggregates on every contracted BLOCK group (correct
+only for the Schur cross-terms).</p>
+<p><code class="docutils literal notranslate"><span class="pre">x</span></code>’s groups correspond positionally to the input layout (the column
+layout, or the row layout when <code class="docutils literal notranslate"><span class="pre">transpose</span></code>). <code class="docutils literal notranslate"><span class="pre">transpose</span></code> applies
+<code class="docutils literal notranslate"><span class="pre">Aᵀ</span></code> (swap row/col layouts and transpose each block’s base axes).
+Returns an <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.AssembledVector"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledVector</span></code></a> over the output layout.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a>)</p></li>
+<li><p><strong>transpose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -668,6 +717,22 @@ silently get the wrong shape.</p>
 <span class="sig-name descname"><span class="pre">tensors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AssembledMatrix.tensors" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AssembledMatrix.transpose">
+<span class="sig-name descname"><span class="pre">transpose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledMatrix.transpose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledMatrix.transpose" title="Link to this definition">#</a></dt>
+<dd><p>Block transpose: swap row/col layouts and transpose each block’s base axes.</p>
+<p>Correct for blocks with at most one intermediate (sub-batch) axis – the
+envelope the assembled ops support. A block carrying two distinct
+intermediate axes (separate row and col sites) can’t be transposed by a
+base-axis swap alone (the intmd axes would need reordering too), so it is
+rejected rather than silently mishandled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -692,6 +757,15 @@ silently get the wrong shape.</p>
 </ul>
 </dd>
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="neml2.es.AssembledVector.batch">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_BatchIndexAV</span></em><a class="headerlink" href="#neml2.es.AssembledVector.batch" title="Link to this definition">#</a></dt>
+<dd><p>Index/slice the leading dynamic (batch) axis of every group tensor.</p>
+<p><code class="docutils literal notranslate"><span class="pre">av.batch[key]</span></code> returns a new <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.AssembledVector"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledVector</span></code></a> with each group
+tensor sliced along its batch region (<code class="docutils literal notranslate"><span class="pre">t.batch[key]</span></code>) – the dynamic
+(e.g. time) axis indexing the pyzag adapter and solvers walk.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.es.AssembledVector.disassemble">
 <span class="sig-name descname"><span class="pre">disassemble</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledVector.disassemble"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledVector.disassemble" title="Link to this definition">#</a></dt>
@@ -737,6 +811,26 @@ appropriate <code class="docutils literal notranslate"><span class="pre">TensorW
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AssembledVector.from_flat">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_flat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledVector.from_flat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledVector.from_flat" title="Link to this definition">#</a></dt>
+<dd><p>Split a flat <code class="docutils literal notranslate"><span class="pre">(*dyn,</span> <span class="pre">layout.flat_size())</span></code> tensor into a per-group
+<a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.AssembledVector"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledVector</span></code></a>. Inverse of <a class="reference internal" href="#neml2.es.AssembledVector.to_flat" title="neml2.es.AssembledVector.to_flat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_flat()</span></code></a>.</p>
+<p>BLOCK groups recover their preserved sub-batch (site) axes; DENSE groups
+stay flat (their sub-batch was folded into base at assembly).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>layout</strong> (<a class="reference internal" href="#neml2.es.AxisLayout" title="neml2.es.axis_layout.AxisLayout"><em>AxisLayout</em></a>)</p></li>
+<li><p><strong>flat</strong> (<a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="neml2.es.AssembledVector.group">
 <span class="sig-name descname"><span class="pre">group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledVector.group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledVector.group" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
@@ -758,6 +852,21 @@ appropriate <code class="docutils literal notranslate"><span class="pre">TensorW
 <dt class="sig sig-object py" id="neml2.es.AssembledVector.tensors">
 <span class="sig-name descname"><span class="pre">tensors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="neml2.types.html#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><span class="pre">Tensor</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.AssembledVector.tensors" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AssembledVector.to_flat">
+<span class="sig-name descname"><span class="pre">to_flat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/assembled.html#AssembledVector.to_flat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AssembledVector.to_flat" title="Link to this definition">#</a></dt>
+<dd><p>Pack all groups into one flat <code class="docutils literal notranslate"><span class="pre">(*dyn,</span> <span class="pre">layout.flat_size())</span></code> tensor.</p>
+<p>Each group tensor is flattened past its dynamic-batch axes (folding
+sub-batch + base) and concatenated along the feature axis – the raw
+form the pyzag adapter and time-integration solvers consume. Inverse of
+<a class="reference internal" href="#neml2.es.AssembledVector.from_flat" title="neml2.es.AssembledVector.from_flat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_flat()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.13)"><em>Tensor</em></a></p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -784,6 +893,53 @@ sub-batch shapes, and per-group <code class="xref py py-data docutils literal no
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AxisLayout.flat_size">
+<span class="sig-name descname"><span class="pre">flat_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.flat_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.flat_size" title="Link to this definition">#</a></dt>
+<dd><p>Total flattened DOF count summed across all groups (base times sub-batch).</p>
+<p>The size of the single flat tensor an <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.AssembledVector"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssembledVector</span></code></a>
+over this layout packs to (see <a class="reference internal" href="#neml2.es.AssembledVector.to_flat" title="neml2.es.AssembledVector.to_flat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AssembledVector.to_flat()</span></code></a>); contrast
+<a class="reference internal" href="#neml2.es.AxisLayout.storage_size" title="neml2.es.AxisLayout.storage_size"><code class="xref py py-meth docutils literal notranslate"><span class="pre">storage_size()</span></code></a>, which folds nothing and counts base storage only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AxisLayout.group_flat_size">
+<span class="sig-name descname"><span class="pre">group_flat_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.group_flat_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.group_flat_size" title="Link to this definition">#</a></dt>
+<dd><p>Flattened DOF count of group <code class="docutils literal notranslate"><span class="pre">index</span></code> – base storage times sub-batch
+extent (BLOCK: the shared per-group site count; DENSE: per-variable,
+folded into base). Contrast <a class="reference internal" href="#neml2.es.AxisLayout.group_size" title="neml2.es.AxisLayout.group_size"><code class="xref py py-meth docutils literal notranslate"><span class="pre">group_size()</span></code></a>, which is base-only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.es.AxisLayout.group_intmd_ndim">
+<span class="sig-name descname"><span class="pre">group_intmd_ndim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/axis_layout.html#AxisLayout.group_intmd_ndim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.AxisLayout.group_intmd_ndim" title="Link to this definition">#</a></dt>
+<dd><p>Number of intermediate (sub-batch) axes the assembled tensor carries for
+group <code class="docutils literal notranslate"><span class="pre">index</span></code> – <code class="docutils literal notranslate"><span class="pre">len(group_sub_batch_shape)</span></code> for a BLOCK group, 0 for
+a DENSE group (sub-batch folded into base). Counts axes, not DOFs (see
+<a class="reference internal" href="#neml2.es.AxisLayout.group_flat_size" title="neml2.es.AxisLayout.group_flat_size"><code class="xref py py-meth docutils literal notranslate"><span class="pre">group_flat_size()</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
 </dd>
 </dl>
 </dd></dl>

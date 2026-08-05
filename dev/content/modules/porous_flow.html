@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -468,9 +469,9 @@ log-linear extension below a transition saturation <span class="math notranslate
 <p>Permeability <span class="math notranslate nohighlight">\(K\)</span> is a function of porosity <span class="math notranslate nohighlight">\(\varphi\)</span> (not
 saturation), and three closures are provided. With reference values
 <span class="math notranslate nohighlight">\((\varphi_0, K_0)\)</span> they are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-62a6a04c-5222-4c25-b802-1177dd2885d1">
-<div class="amsmath math notranslate nohighlight" id="equation-62a6a04c-5222-4c25-b802-1177dd2885d1">
-<span class="eqno">(10)<a class="headerlink" href="#equation-62a6a04c-5222-4c25-b802-1177dd2885d1" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-5da49b77-c78c-4f40-aede-c214377ab593">
+<div class="amsmath math notranslate nohighlight" id="equation-5da49b77-c78c-4f40-aede-c214377ab593">
+<span class="eqno">(10)<a class="headerlink" href="#equation-5da49b77-c78c-4f40-aede-c214377ab593" title="Permalink to this equation">#</a></span>\[\begin{align}
 K^{\mathrm{pow}}(\varphi) &amp;= K_0 \left( \frac{\varphi}{\varphi_0} \right)^p, \\
 K^{\mathrm{exp}}(\varphi) &amp;= K_0 \exp\!\left[ -a\,(\varphi - \varphi_0) \right], \\
 K^{\mathrm{KC}}(\varphi)  &amp;= K_0 \, \frac{(\varphi / (1 - \varphi))^n}{(\varphi_0 / (1 - \varphi_0))^m}.
