@@ -810,9 +810,9 @@ torch parameters. Mutually exclusive with <code class="docutils literal notransl
 </ul>
 </dd>
 </dl>
-<p>Construction yields a <code class="docutils literal notranslate"><span class="pre">py-eager</span></code> factory. To accelerate the residual with
+<p>Construction yields a <code class="docutils literal notranslate"><span class="pre">py-eager</span></code> model. To accelerate the residual with
 in-process <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> (<code class="docutils literal notranslate"><span class="pre">py-jit</span></code>), opt in explicitly after
-construction with <code class="xref py py-func docutils literal notranslate"><span class="pre">neml2.compile()</span></code> – e.g. <code class="docutils literal notranslate"><span class="pre">neml2.compile(factory)</span></code>.</p>
+construction with <code class="xref py py-func docutils literal notranslate"><span class="pre">neml2.compile()</span></code> – e.g. <code class="docutils literal notranslate"><span class="pre">neml2.compile(model)</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="neml2.pyzag.NEML2PyzagModel.assemble_forces">
 <span class="sig-name descname"><span class="pre">assemble_forces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forces_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/pyzag/interface.html#NEML2PyzagModel.assemble_forces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.pyzag.NEML2PyzagModel.assemble_forces" title="Link to this definition">#</a></dt>

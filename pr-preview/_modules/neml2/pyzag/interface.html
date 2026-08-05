@@ -530,9 +530,9 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="112"><span class="sd">        include_parameters (list of str): the *only* NEML2 parameters to mirror as</span>
 </span><span data-line="113"><span class="sd">            torch parameters. Mutually exclusive with ``exclude_parameters``.</span>
 </span><span data-line="114">
-</span><span data-line="115"><span class="sd">    Construction yields a ``py-eager`` factory. To accelerate the residual with</span>
+</span><span data-line="115"><span class="sd">    Construction yields a ``py-eager`` model. To accelerate the residual with</span>
 </span><span data-line="116"><span class="sd">    in-process ``torch.compile`` (``py-jit``), opt in explicitly after</span>
-</span><span data-line="117"><span class="sd">    construction with :func:`neml2.compile` -- e.g. ``neml2.compile(factory)``.</span>
+</span><span data-line="117"><span class="sd">    construction with :func:`neml2.compile` -- e.g. ``neml2.compile(model)``.</span>
 </span><span data-line="118"><span class="sd">    &quot;&quot;&quot;</span>
 </span><span data-line="119">
 </span><span data-line="120">    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>

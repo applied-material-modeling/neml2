@@ -606,7 +606,7 @@ on one of the runtimes above:</p>
 load history on <code class="docutils literal notranslate"><span class="pre">py-eager</span></code>. If the input file names an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code>, the same
 driver runs on <code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> instead.</p></li>
 <li><p>The <strong>pyzag</strong> adapter (<code class="docutils literal notranslate"><span class="pre">NEML2PyzagModel</span></code>) drives calibration on <code class="docutils literal notranslate"><span class="pre">py-eager</span></code>,
-optionally accelerated to <code class="docutils literal notranslate"><span class="pre">py-jit</span></code> via <code class="docutils literal notranslate"><span class="pre">neml2.compile(factory)</span></code>.</p></li>
+optionally accelerated to <code class="docutils literal notranslate"><span class="pre">py-jit</span></code> via <code class="docutils literal notranslate"><span class="pre">neml2.compile(model)</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">neml2-inspect</span> <span class="pre">&lt;input.i&gt;</span> <span class="pre">&lt;model&gt;</span></code> resolves and prints a model’s input/output
 graph but does <strong>not</strong> evaluate it.</p></li>
 </ul>
