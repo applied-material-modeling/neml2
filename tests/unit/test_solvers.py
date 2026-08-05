@@ -34,7 +34,14 @@ from neml2.es import (
     SparseVector,
 )
 from neml2.models.model import Model
-from neml2.solvers import DenseLU, Newton, NewtonWithLineSearch, RetCode, SchurComplement
+from neml2.solvers import (
+    DenseLU,
+    LUCache,
+    Newton,
+    NewtonWithLineSearch,
+    RetCode,
+    SchurComplement,
+)
 from neml2.types import SR2, Scalar, Tensor
 
 
@@ -424,3 +431,41 @@ def test_assembled_vector_to_flat_from_flat_roundtrip():
     assert rt.tensors[0].sub_batch_ndim == 1  # BLOCK site axis recovered
     assert torch.equal(rt.tensors[1].data, vs)
     assert rt.tensors[1].sub_batch_ndim == 0
+
+
+def test_lu_cache_invalidation_contract():
+    """LUCache must refactor exactly when the source changes. Both failure modes
+    (never / always refactor) still yield plausible numbers, so assert the contract
+    with a counting ``factor_fn``, not through the output."""
+    calls = {"n": 0}
+
+    def counting_factor(m):
+        calls["n"] += 1
+        return torch.linalg.lu_factor(m)
+
+    cache = LUCache(factor_fn=counting_factor)
+    M = torch.randn(3, 4, 4, dtype=torch.float64)
+    A = M @ M.transpose(-1, -2) + 3.0 * torch.eye(4, dtype=torch.float64)  # SPD batch
+
+    # (1) same object twice -> factored once
+    lu1, piv1 = cache.factor(A)
+    lu2, piv2 = cache.factor(A)
+    assert calls["n"] == 1
+    assert lu1 is lu2 and piv1 is piv2
+
+    # (2) in-place mutation bumps _version -> refactor, tracking the new matrix
+    A.add_(torch.eye(4, dtype=torch.float64))
+    lu3, _ = cache.factor(A)
+    assert calls["n"] == 2
+    ref_lu, _ = torch.linalg.lu_factor(A)
+    assert torch.allclose(lu3, ref_lu)
+
+    # (3) different object -> refactor
+    cache.factor(A.clone())
+    assert calls["n"] == 3
+
+    # (4) invalidate drops the cache and releases the source
+    cache.invalidate()
+    assert cache._src is None and cache._lu is None
+    cache.factor(A)
+    assert calls["n"] == 4

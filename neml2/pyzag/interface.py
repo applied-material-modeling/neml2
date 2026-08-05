@@ -112,9 +112,9 @@ class NEML2PyzagModel(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFactor
         include_parameters (list of str): the *only* NEML2 parameters to mirror as
             torch parameters. Mutually exclusive with ``exclude_parameters``.
 
-    Construction yields a ``py-eager`` factory. To accelerate the residual with
+    Construction yields a ``py-eager`` model. To accelerate the residual with
     in-process ``torch.compile`` (``py-jit``), opt in explicitly after
-    construction with :func:`neml2.compile` -- e.g. ``neml2.compile(factory)``.
+    construction with :func:`neml2.compile` -- e.g. ``neml2.compile(model)``.
     """
 
     def __init__(
