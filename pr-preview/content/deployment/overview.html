@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -605,7 +606,7 @@ on one of the runtimes above:</p>
 load history on <code class="docutils literal notranslate"><span class="pre">py-eager</span></code>. If the input file names an <code class="docutils literal notranslate"><span class="pre">AOTIModel</span></code>, the same
 driver runs on <code class="docutils literal notranslate"><span class="pre">py-aoti</span></code> instead.</p></li>
 <li><p>The <strong>pyzag</strong> adapter (<code class="docutils literal notranslate"><span class="pre">NEML2PyzagModel</span></code>) drives calibration on <code class="docutils literal notranslate"><span class="pre">py-eager</span></code>,
-optionally accelerated to <code class="docutils literal notranslate"><span class="pre">py-jit</span></code> via <code class="docutils literal notranslate"><span class="pre">neml2.compile</span></code>.</p></li>
+optionally accelerated to <code class="docutils literal notranslate"><span class="pre">py-jit</span></code> via <code class="docutils literal notranslate"><span class="pre">neml2.compile(factory)</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">neml2-inspect</span> <span class="pre">&lt;input.i&gt;</span> <span class="pre">&lt;model&gt;</span></code> resolves and prints a model’s input/output
 graph but does <strong>not</strong> evaluate it.</p></li>
 </ul>

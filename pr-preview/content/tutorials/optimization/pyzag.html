@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../tensor_types/index.html">Tensor types</a><ul>
@@ -467,26 +468,30 @@ equivalent to full backward AD, but with orders of magnitude less
 storage.</p></li>
 </ul>
 <p>The NEML2 ↔ pyzag interface lives in the <a class="reference internal" href="../../python_api/neml2.pyzag.html#module-neml2.pyzag" title="neml2.pyzag"><code class="xref py py-mod docutils literal notranslate"><span class="pre">neml2.pyzag</span></code></a> submodule.
-<a class="reference internal" href="../../python_api/neml2.pyzag.html#neml2.pyzag.NEML2PyzagModel" title="neml2.pyzag.NEML2PyzagModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">NEML2PyzagModel</span></code></a> wraps a NEML2 nonlinear system as
-a pyzag <code class="docutils literal notranslate"><span class="pre">NonlinearRecursiveFunction</span></code>, exposing each NEML2 parameter as
-a <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code> on the wrapper. From there the calibration loop
-is a standard PyTorch optimizer loop, with <code class="docutils literal notranslate"><span class="pre">nonlinear.solve_adjoint(...)</span></code>
-in place of <code class="docutils literal notranslate"><span class="pre">solve(...).backward()</span></code>.</p>
+<a class="reference internal" href="../../python_api/neml2.pyzag.html#neml2.pyzag.NEML2PyzagModel" title="neml2.pyzag.NEML2PyzagModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">NEML2PyzagModel</span></code></a> adapts a NEML2 nonlinear system
+to pyzag’s <code class="docutils literal notranslate"><span class="pre">NonlinearFunctionOperatorFactory</span></code> protocol: it evaluates the
+residual and Jacobians through NEML2’s fast forward-mode chain-rule path
+and exposes each NEML2 parameter as a <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code> on the
+factory. From there the calibration loop is a standard PyTorch optimizer
+loop, with <code class="docutils literal notranslate"><span class="pre">nonlinear.solve_adjoint(...)</span></code> in place of
+<code class="docutils literal notranslate"><span class="pre">solve(...).backward()</span></code>.</p>
 </section>
 <section id="where-to-go-from-here">
 <h2>Where to go from here<a class="headerlink" href="#where-to-go-from-here" title="Link to this heading">#</a></h2>
-<p>Two end-to-end notebooks demonstrate the workflow on a temperature- and
-rate-dependent viscoplastic model. Both ship with pre-baked outputs, so
-they’re readable without re-execution:</p>
+<p>Three end-to-end notebooks demonstrate the workflow. All ship with pre-baked
+outputs, so they’re readable without re-execution:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="deterministic/main.html"><span class="doc std std-doc">Deterministic material model calibration</span></a> — point-estimate calibration with the
-chunked adjoint, covering parameter rescaling
-(<code class="docutils literal notranslate"><span class="pre">reparametrization.RangeRescale</span></code>), an Adam optimization loop, and
+<li><p><a class="reference internal" href="deterministic/main.html"><span class="doc std std-doc">Deterministic material model calibration</span></a> — point-estimate calibration of a temperature- and
+rate-dependent viscoplastic model with the chunked adjoint, covering parameter
+rescaling (<code class="docutils literal notranslate"><span class="pre">reparametrization.RangeRescale</span></code>), an Adam optimization loop, and
 stress–strain comparison plots against the synthetic data.</p></li>
 <li><p><a class="reference internal" href="statistical/main.html"><span class="doc std std-doc">Statistical material model learning</span></a> — extends the same setup to a hierarchical
 Bayesian fit with Stochastic Variational Inference via
 <a class="reference external" href="https://pyro.ai/"><code class="docutils literal notranslate"><span class="pre">pyro</span></code></a>, so we get parameter posteriors instead
 of point estimates.</p></li>
+<li><p><a class="reference internal" href="crystal_plasticity_calibration/main.html"><span class="doc std std-doc">Calibrating a crystal-plasticity model with pyzag</span></a> — calibrates a Taylor polycrystal
+(crystal plasticity), exercising the per-grain <strong>BLOCK</strong> + global <strong>DENSE</strong>
+Schur split and the chunked adjoint over sub-batch state.</p></li>
 </ul>
 <p>For the underlying algorithms (chunked adjoint derivation, predictors,
 block-size trade-offs, custom solver choices), see the

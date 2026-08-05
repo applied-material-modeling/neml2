@@ -92,6 +92,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/pyzag.html">Recurrent calibration with pyzag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/deterministic/main.html">Deterministic material model calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/statistical/main.html">Statistical material model learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/optimization/crystal_plasticity_calibration/main.html">Calibrating a crystal-plasticity model with pyzag</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tensor_types/index.html">Tensor types</a><ul>
@@ -503,6 +504,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.Tensor.batch"><code class="docutils literal notranslate"><span class="pre">Tensor.batch</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.Tensor.batch_ndim"><code class="docutils literal notranslate"><span class="pre">Tensor.batch_ndim</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.Tensor.batch_shape"><code class="docutils literal notranslate"><span class="pre">Tensor.batch_shape</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.Tensor.clone"><code class="docutils literal notranslate"><span class="pre">Tensor.clone()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.Tensor.data"><code class="docutils literal notranslate"><span class="pre">Tensor.data</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.Tensor.device"><code class="docutils literal notranslate"><span class="pre">Tensor.device</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.Tensor.dtype"><code class="docutils literal notranslate"><span class="pre">Tensor.dtype</span></code></a></li>
@@ -1790,6 +1792,17 @@ the base region is mutable on a dynamic-base <cite>Tensor</cite> – <code class
 <dt class="sig sig-object py" id="neml2.types.Tensor.batch_shape">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch_shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><span class="pre">Size</span></a></em><a class="headerlink" href="#neml2.types.Tensor.batch_shape" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="neml2.types.Tensor.clone">
+<span class="sig-name descname"><span class="pre">clone</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/tensor.html#Tensor.clone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.Tensor.clone" title="Link to this definition">#</a></dt>
+<dd><p>Deep copy: clone the backing storage, preserving all region metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#neml2.types.Tensor" title="neml2.types.tensor.Tensor"><em>Tensor</em></a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="neml2.types.Tensor.data">
