@@ -64,7 +64,9 @@ import torch
 
 from neml2 import (
     CrystalGeometry,
+    compile,
     cubic_symmetry_operators,
+    load_string,
 )
 from neml2.types import (
     MRP,
@@ -595,3 +597,47 @@ def test_cp_deformation_gradient_predictor_renamed_via_hit():
     # JVP oracle: this is a one-shot predictor with a deliberately trivial chain rule.
     report = ut.run(check_dvalue=False)
     assert report.value_checks == 1
+
+
+def test_expand_at_compiled_batched_backward():
+    """``expand_at``'s stride-0 leak crashed ``neml2.compile`` + batched backward
+    on torch>=2.12 (AOTAutograd tangent coercion). ``SingleSlipStrengthMap`` is
+    the only ``expand_at`` caller; exercise it end to end."""
+    text = """
+    [Data]
+      [crystal_geometry]
+        type = CubicCrystal
+        lattice_parameter = '1.0'
+        slip_directions = 'sdirs'
+        slip_planes = 'splanes'
+      []
+    []
+    [Tensors]
+      [sdirs]
+        type = Python
+        expr = 'MillerIndex(torch.tensor([1.0, 1.0, 0.0]))'
+      []
+      [splanes]
+        type = Python
+        expr = 'MillerIndex(torch.tensor([1.0, 1.0, 1.0]))'
+      []
+    []
+    [Models]
+      [model]
+        type = SingleSlipStrengthMap
+        constant_strength = 50.0
+      []
+    []
+    """
+    model = load_string(text).get_model("model")
+    compile(model)
+
+    sh = Scalar(torch.linspace(1.0, 4.0, 4))  # batched (4,), sub-batch-trivial
+    out = model(sh)  # (4, nslip=12): per-grain strength broadcast across slips
+    assert out.data.shape == torch.Size([4, 12])
+    out.data.sum().backward()  # was the AOTAutograd stride-0 coercion error
+
+    grad = dict(model.named_parameters())["constant_strength"].grad
+    # d/d(constant_strength) of the sum over 4x12 of (slip_hardening + strength).
+    assert grad is not None
+    assert torch.allclose(grad, torch.tensor(48.0))

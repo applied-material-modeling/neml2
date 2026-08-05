@@ -130,6 +130,29 @@ def test_sub_batch_expand_at_inserts_at_chosen_position():
     assert e_back.dynamic_batch_shape == torch.Size([2])
 
 
+def test_sub_batch_expand_at_materializes_expanded_axis():
+    """``expand_at`` inserts a *full* axis: storage must be materialized, not a
+    stride-0 broadcast mislabelled ``"full"`` (which escapes ``materialize()``
+    and breaks AOTAutograd tangent coercion under compile on torch>=2.12)."""
+    # Leading axis.
+    e = Scalar(torch.tensor([10.0, 20.0])).sub_batch.expand_at(4)  # sb=(4,)
+    assert e.sub_batch_shape == torch.Size([4])
+    assert all(f == "full" for f in e.sub_batch_state)  # empty tuple => all-"full"
+    assert e.data.is_contiguous()
+    assert 0 not in e.data.stride()  # no broadcast axis masquerading as "full"
+
+    # Trailing axis -- the crystal-plasticity pattern (a per-grain scalar
+    # expanded across slip systems) that first surfaced the bug.
+    s = Scalar(torch.zeros(2, 5)).sub_batch.retag(1)  # dyn=(2,), sb=(5,)
+    e2 = s.sub_batch.expand_at(3, dim=-1)  # sb=(5, 3)
+    assert e2.sub_batch_shape == torch.Size([5, 3])
+    assert all(f == "full" for f in e2.sub_batch_state)
+    assert e2.data.is_contiguous()
+    assert 0 not in e2.data.stride()
+    # Values are still correctly replicated across the new axis.
+    assert torch.equal(e2.data[..., 0], e2.data[..., 2])
+
+
 def test_sub_batch_expand_at_rejects_nonpositive_size():
     with pytest.raises(ValueError, match="size must be positive"):
         Scalar(torch.zeros(2)).sub_batch.expand_at(0)

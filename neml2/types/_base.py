@@ -707,8 +707,15 @@ class SubBatchView(_MutableRegionView[_WT]):
         if size <= 0:
             raise ValueError(f"sub_batch.expand_at: size must be positive, got {size}")
         insert_at = self._resolve_insert_dim(dim)
-        new_data = self._w.data.unsqueeze(insert_at).expand(
-            *self._w.data.shape[:insert_at], size, *self._w.data.shape[insert_at:]
+        # Materialize the broadcast (like every other region expand: expand +
+        # contiguous). Leaving a stride-0 view here tags the new axis "full"
+        # while its storage is a size-N broadcast -- invisible to materialize()
+        # and, when it reaches a torch.compile graph output, breaks AOTAutograd's
+        # tangent memory-format coercion on torch>=2.12.
+        new_data = (
+            self._w.data.unsqueeze(insert_at)
+            .expand(*self._w.data.shape[:insert_at], size, *self._w.data.shape[insert_at:])
+            .contiguous()
         )
         return self._w._rewrap(new_data, sub_batch_ndim=self._w.sub_batch_ndim + 1)
 
