@@ -111,6 +111,10 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../modules/kwn/al_cu_ttp.html">Al–Cu TTP diagram</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/pbm/index.html">Population balance (fragmentation)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/pbm/grinding.html">Grinding example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/phase_field_fracture.html">Phase-field fracture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/porous_flow.html">Porous flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/solid_mechanics/index.html">Solid mechanics</a><ul>
@@ -190,6 +194,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/FBComplementarity.html">FBComplementarity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/HermiteSmoothStep.html">HermiteSmoothStep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/ImplicitUpdate.html">ImplicitUpdate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IntermediateLinearContraction.html">IntermediateLinearContraction</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/IrreversibleScalar.html">IrreversibleScalar</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/LinearExtrapolationPredictor.html">LinearExtrapolationPredictor</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/MRPConstantParameter.html">MRPConstantParameter</a></li>
@@ -205,6 +210,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2LinearCombination.html">R2LinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
@@ -260,6 +266,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/index.html">finite_volume</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/DumpInSmallestBin.html">DumpInSmallestBin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeAppendBoundaryCondition.html">FiniteVolumeAppendBoundaryCondition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeFragmentationFlux.html">FiniteVolumeFragmentationFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeGradient.html">FiniteVolumeGradient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.html">FiniteVolumeUpwindedAdvectiveFlux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/finite_volume/LinearlyInterpolateToCellEdges.html">LinearlyInterpolateToCellEdges</a></li>
@@ -598,6 +605,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.cos"><code class="docutils literal notranslate"><span class="pre">cos()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.cosh"><code class="docutils literal notranslate"><span class="pre">cosh()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.cross"><code class="docutils literal notranslate"><span class="pre">cross()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.cumsum"><code class="docutils literal notranslate"><span class="pre">cumsum()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.dV"><code class="docutils literal notranslate"><span class="pre">dV()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.det"><code class="docutils literal notranslate"><span class="pre">det()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.dev"><code class="docutils literal notranslate"><span class="pre">dev()</span></code></a></li>
@@ -651,6 +659,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#neml2.types.tanh"><code class="docutils literal notranslate"><span class="pre">tanh()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.to_quaternion"><code class="docutils literal notranslate"><span class="pre">to_quaternion()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.tr"><code class="docutils literal notranslate"><span class="pre">tr()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.types.triu"><code class="docutils literal notranslate"><span class="pre">triu()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.unit"><code class="docutils literal notranslate"><span class="pre">unit()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.vdot"><code class="docutils literal notranslate"><span class="pre">vdot()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.types.vec_component"><code class="docutils literal notranslate"><span class="pre">vec_component()</span></code></a></li>
@@ -2668,6 +2677,26 @@ composition with denominator $1 + ||r1||^2 ||r2||^2 - 2 r1·r2$.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.cumsum">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">cumsum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">view</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#cumsum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.cumsum" title="Link to this definition">#</a></dt>
+<dd><p>Cumulative sum along an axis of a region view.</p>
+<p>The selected axis length and the wrapper type are preserved (a running
+total is not a reduction). <code class="docutils literal notranslate"><span class="pre">view</span></code> must be <code class="docutils literal notranslate"><span class="pre">t.dynamic_batch</span></code> or
+<code class="docutils literal notranslate"><span class="pre">t.sub_batch</span></code>. K / sub-batch metadata is threaded through unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>view</strong> (<em>DynamicBatchView</em><em>[</em><em>_TW</em><em>] </em><em>| </em><em>SubBatchView</em><em>[</em><em>_TW</em><em>]</em>)</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>_TW</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="neml2.types.dV">
 <span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">dV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#dV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.dV" title="Link to this definition">#</a></dt>
 <dd><p>SO(3) volume element <code class="docutils literal notranslate"><span class="pre">(8/π)</span> <span class="pre">(1</span> <span class="pre">+</span> <span class="pre">||r||^2)^-3</span></code> (<code class="docutils literal notranslate"><span class="pre">Rot::dV</span></code>).</p>
@@ -3648,6 +3677,27 @@ off-diagonals carry the symmetric average times <code class="docutils literal no
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#neml2.types.Scalar" title="neml2.types.scalar.Scalar"><em>Scalar</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="neml2.types.triu">
+<span class="sig-prename descclassname"><span class="pre">neml2.types.</span></span><span class="sig-name descname"><span class="pre">triu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">view</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diagonal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/types/functions.html#triu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.types.triu" title="Link to this definition">#</a></dt>
+<dd><p>Zero the entries below the <code class="docutils literal notranslate"><span class="pre">diagonal</span></code>-th diagonal of the last two
+sub-batch axes (upper-triangular keep).</p>
+<p><code class="docutils literal notranslate"><span class="pre">diagonal=0</span></code> keeps the main diagonal and above; <code class="docutils literal notranslate"><span class="pre">diagonal=1</span></code> keeps
+the strict upper triangle. Requires <code class="docutils literal notranslate"><span class="pre">sub_batch_ndim</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code>; the two
+trailing sub-batch axes form the (row, col) grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>view</strong> (<em>SubBatchView</em><em>[</em><em>_TW</em><em>]</em>)</p></li>
+<li><p><strong>diagonal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>_TW</em></p>
 </dd>
 </dl>
 </dd></dl>
