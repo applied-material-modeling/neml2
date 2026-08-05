@@ -36,6 +36,7 @@
 """
 
 from ._exceptions import ConvergenceError
+from ._lu_cache import LUCache
 from ._result import NonlinearResult, RetCode
 from .bicgstab import BiCGStab
 from .dense_lu import DenseLU
@@ -56,6 +57,7 @@ __all__ = [
     "NonlinearResult",
     "ConvergenceError",
     "DenseLU",
+    "LUCache",
     "SchurComplement",
     "Preconditioner",
     "NoPreconditioner",

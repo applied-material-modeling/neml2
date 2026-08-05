@@ -157,6 +157,7 @@ def compile(  # noqa: A001 -- intentionally the public ``neml2.compile`` verb
     # not import ``neml2.pyzag`` here (it would invert the dependency direction).
     wrapped_system = getattr(target, "sys", None)
     if isinstance(wrapped_system, ModelNonlinearSystem):
+        _raise_dynamo_cache_limits()
         _compile_residual_in_place(wrapped_system, opts)
         return target
 
@@ -172,6 +173,24 @@ def compile(  # noqa: A001 -- intentionally the public ``neml2.compile`` verb
         "neml2.compile expects a neml2 Model, a ModelNonlinearSystem, or an object "
         "wrapping one via `.sys` (e.g. a pyzag NEML2PyzagModel); got "
         f"{type(target).__name__}."
+    )
+
+
+_PYZAG_COMPILE_CACHE_SIZE_LIMIT = 512
+
+
+def _raise_dynamo_cache_limits(limit: int = _PYZAG_COMPILE_CACHE_SIZE_LIMIT) -> None:
+    """Raise Dynamo's recompile cache limits for the pyzag compile path.
+
+    pyzag compiles with ``dynamic=False`` (one graph per distinct input shape); a
+    chunked solve's spread of chunk / batch shapes can exceed Dynamo's default
+    ``cache_size_limit`` and thrash. Bumps the per-frame and accumulated limits.
+    """
+    import torch._dynamo.config  # noqa: PLC0415
+
+    torch._dynamo.config.cache_size_limit = max(torch._dynamo.config.cache_size_limit, limit)
+    torch._dynamo.config.accumulated_cache_size_limit = max(
+        torch._dynamo.config.accumulated_cache_size_limit, 8 * limit
     )
 
 

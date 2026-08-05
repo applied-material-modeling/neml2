@@ -22,30 +22,28 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Adapter exposing a NEML2 nonlinear system to the pyzag time-integration library.
+"""pyzag block-operator backend backed by neml2 assembled types.
 
-:class:`NEML2PyzagModel` wraps a NEML2 ``ModelNonlinearSystem`` as a
-``pyzag.nonlinear.NonlinearFunctionOperatorFactory`` -- assembling the per-chunk
-residual and bidiagonal Jacobian from NEML2's equation-systems layer and mirroring
-the model's HIT parameters as ``torch.nn.Parameter`` s for gradient-based
-calibration. The backing block-operator implementations live in
-:mod:`neml2.pyzag.operators`.
+Implements pyzag's ``BlockVector`` / ``SolvableBlockOperator`` / ``BlockJacobian``
+ABCs on top of neml2's ``AssembledVector`` / ``AssembledMatrix``, solving the
+diagonal block with a cached batched LU (single group) or neml2's
+``SchurComplement`` (two-group Schur split). Parallel cyclic reduction is
+supported for single-group dense layouts; other layouts use the Thomas
+factorization.
 """
 
-from .interface import NEML2PyzagModel, change_lag_order, lag_order
-from .operators import (
-    NEML2BlockJacobian,
-    NEML2BlockVector,
-    NEML2SolvableBlockOperator,
-    NEML2Wrapper,
-)
+from ._assembly import _require_le_one_intmd
+from ._cache import CachingLU
+from ._jacobian import NEML2BlockJacobian
+from ._operator import NEML2SolvableBlockOperator
+from ._vector import NEML2BlockVector
+from ._wrapper import NEML2Wrapper
 
 __all__ = [
-    "NEML2PyzagModel",
-    "change_lag_order",
-    "lag_order",
+    "CachingLU",
     "NEML2BlockVector",
     "NEML2SolvableBlockOperator",
     "NEML2BlockJacobian",
     "NEML2Wrapper",
+    "_require_le_one_intmd",
 ]

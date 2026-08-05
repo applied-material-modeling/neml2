@@ -184,6 +184,7 @@ nb_execution_in_temp = True
 nb_execution_excludepatterns = [
     "optimization/deterministic/main.ipynb",
     "optimization/statistical/main.ipynb",
+    "optimization/crystal_plasticity_calibration/main.ipynb",
     "modules/kwn/precipitation_316h.ipynb",
     "modules/kwn/al_cu_ttp.ipynb",
     "modules/solid_mechanics/crystal_plasticity/formulations.ipynb",

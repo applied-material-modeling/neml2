@@ -57,6 +57,7 @@ group order). Defaults to all ``"dense"`` when omitted.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import prod
 from typing import Literal, TypeAlias
 
 import torch
@@ -184,6 +185,44 @@ class AxisLayout:
     def block_size(self) -> int:
         """Per-(dynamic-batch, sub-batch-site) storage size."""
         return self.storage_size()
+
+    def group_intmd_ndim(self, index: int) -> int:
+        """Number of intermediate (sub-batch) axes the assembled tensor carries for
+        group ``index`` -- ``len(group_sub_batch_shape)`` for a BLOCK group, 0 for
+        a DENSE group (sub-batch folded into base). Counts axes, not DOFs (see
+        :meth:`group_flat_size`).
+        """
+        if self.structure[index] != "block":
+            return 0
+        return len(self.group_sub_batch_shape(index))
+
+    def group_flat_size(self, index: int) -> int:
+        """Flattened DOF count of group ``index`` -- base storage times sub-batch
+        extent (BLOCK: the shared per-group site count; DENSE: per-variable,
+        folded into base). Contrast :meth:`group_size`, which is base-only.
+        """
+        structure = self.structure[index]
+        total = 0
+        for name in self.groups[index]:
+            base = self.var_size(name)
+            if structure == "block":
+                total += base
+            else:
+                sub = prod(int(s) for s in self.sub_batch_shape(name)) or 1
+                total += base * sub
+        if structure == "block":
+            sub_g = prod(int(s) for s in self.group_sub_batch_shape(index)) or 1
+            total *= sub_g
+        return total
+
+    def flat_size(self) -> int:
+        """Total flattened DOF count summed across all groups (base times sub-batch).
+
+        The size of the single flat tensor an :class:`~neml2.es.AssembledVector`
+        over this layout packs to (see :meth:`AssembledVector.to_flat`); contrast
+        :meth:`storage_size`, which folds nothing and counts base storage only.
+        """
+        return sum(self.group_flat_size(g) for g in range(self.ngroup))
 
     def type_of(self, name: str) -> type[TensorWrapper]:
         return self.specs[name]

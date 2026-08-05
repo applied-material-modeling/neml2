@@ -181,6 +181,10 @@ class Tensor:
             return self
         return self._rewrap(moved)
 
+    def clone(self) -> Tensor:
+        """Deep copy: clone the backing storage, preserving all region metadata."""
+        return self._rewrap(self.data.clone())
+
     # ---- factories ----
 
     @classmethod
@@ -849,6 +853,52 @@ class _RegionView:
         # rebuild the view on the new Tensor to expand to the final target.
         view_cls = type(self)
         return view_cls(trimmed).expand(*target)
+
+    def flip(self, dim: int = 0) -> Tensor:
+        """Reverse this region along region-relative axis ``dim``.
+
+        Shape-preserving: region ndims and all wrapper metadata ride through
+        unchanged (used e.g. to walk the time axis backward in the adjoint).
+        """
+        axis = self._resolve_dim(dim)
+        return self._t._rewrap(self._t.data.flip(axis))
+
+    def pad(self, dim: int = 0, *, before: int = 0, after: int = 0) -> Tensor:
+        """Zero-pad this region along region-relative axis ``dim``.
+
+        Grows the axis by ``before`` leading and ``after`` trailing zeros;
+        region ndims are unchanged (used e.g. to prepend zero time-steps to a
+        subdiagonal block so it aligns with the diagonal).
+        """
+        if before < 0 or after < 0:
+            raise ValueError(
+                f"Tensor.{self._REGION}.pad: before/after must be non-negative, "
+                f"got before={before}, after={after}"
+            )
+        axis = self._resolve_dim(dim)
+        n_trailing_pairs = self._t.data.ndim - 1 - axis
+        pad_arg = (0, 0) * n_trailing_pairs + (before, after)
+        new_data = torch.nn.functional.pad(self._t.data, pad_arg)
+        return self._t._rewrap(new_data)
+
+    def set(self, key, other: Tensor) -> Tensor:
+        """Functional slice-assignment: a copy of the parent with this region's
+        ``key`` slice overwritten by ``other``.
+
+        ``key`` addresses this region's leading axis (as in :meth:`__getitem__`);
+        pre-region axes pass through. ``other``'s data must match the addressed
+        slice. Region ndims and wrapper metadata are preserved (used e.g. to
+        write one time-step slice of a bidiagonal block without an in-place
+        mutation of the possibly-shared source).
+        """
+        if not isinstance(other, Tensor):
+            raise TypeError(
+                f"Tensor.{self._REGION}.set expects a Tensor, got {type(other).__name__}"
+            )
+        start, _ = self._bounds()
+        new_data = self._t.data.clone()
+        new_data[(*(slice(None),) * start, key)] = other.data
+        return self._t._rewrap(new_data)
 
     def __getitem__(self, key) -> Tensor:
         """Index / slice within this region only.
