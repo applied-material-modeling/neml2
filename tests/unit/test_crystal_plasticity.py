@@ -64,7 +64,9 @@ import torch
 
 from neml2 import (
     CrystalGeometry,
+    compile,
     cubic_symmetry_operators,
+    load_string,
 )
 from neml2.types import (
     MRP,
@@ -108,9 +110,15 @@ def _quat_to_R(q: torch.Tensor) -> torch.Tensor:
     xx, yy, zz = x * x, y * y, z * z
     return torch.stack(
         [
-            torch.stack([1 - 2 * (yy + zz), 2 * (x * y - z * w), 2 * (x * z + y * w)], dim=-1),
-            torch.stack([2 * (x * y + z * w), 1 - 2 * (xx + zz), 2 * (y * z - x * w)], dim=-1),
-            torch.stack([2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (xx + yy)], dim=-1),
+            torch.stack(
+                [1 - 2 * (yy + zz), 2 * (x * y - z * w), 2 * (x * z + y * w)], dim=-1
+            ),
+            torch.stack(
+                [2 * (x * y + z * w), 1 - 2 * (xx + zz), 2 * (y * z - x * w)], dim=-1
+            ),
+            torch.stack(
+                [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (xx + yy)], dim=-1
+            ),
         ],
         dim=-2,
     )
@@ -181,9 +189,9 @@ def test_rot_euler_rodrigues_matches_independent_quaternion_path():
         mrp = torch.tensor(r_vec, dtype=torch.float64)
         py = euler_rodrigues(MRP(mrp)).data
         ref = _mrp_to_R_via_quaternion(mrp)
-        assert torch.allclose(py, ref, atol=1e-13, rtol=1e-13), (
-            f"r={r_vec} mismatch: py={py}, ref={ref}"
-        )
+        assert torch.allclose(
+            py, ref, atol=1e-13, rtol=1e-13
+        ), f"r={r_vec} mismatch: py={py}, ref={ref}"
 
 
 def test_rot_euler_rodrigues_yields_orthogonal_unit_determinant():
@@ -252,7 +260,9 @@ def test_drotate_matches_finite_difference():
         rp[j] += eps
         rm = r2.clone()
         rm[j] -= eps
-        fd[:, j] = (compose(MRP(rp), MRP(r1)).data - compose(MRP(rm), MRP(r1)).data) / (2.0 * eps)
+        fd[:, j] = (compose(MRP(rp), MRP(r1)).data - compose(MRP(rm), MRP(r1)).data) / (
+            2.0 * eps
+        )
     assert torch.allclose(analytical, fd, atol=1e-6)
 
 
@@ -268,7 +278,9 @@ def test_drotate_self_matches_finite_difference():
         rp[j] += eps
         rm = r1.clone()
         rm[j] -= eps
-        fd[:, j] = (compose(MRP(r2), MRP(rp)).data - compose(MRP(r2), MRP(rm)).data) / (2.0 * eps)
+        fd[:, j] = (compose(MRP(r2), MRP(rp)).data - compose(MRP(r2), MRP(rm)).data) / (
+            2.0 * eps
+        )
     assert torch.allclose(analytical, fd, atol=1e-6)
 
 
@@ -286,7 +298,9 @@ def test_sym_skew_roundtrip_on_r2():
 def test_rotate_sym_round_trips_through_full_R2():
     """``rotate(s, R) == sym(R s_full R^T)`` — direct formula vs free fn."""
     r_vec = torch.tensor([0.1, -0.2, 0.3], dtype=torch.float64)
-    s_full = torch.tensor([[1.0, 2.0, 3.0], [2.0, 4.0, 5.0], [3.0, 5.0, 6.0]], dtype=torch.float64)
+    s_full = torch.tensor(
+        [[1.0, 2.0, 3.0], [2.0, 4.0, 5.0], [3.0, 5.0, 6.0]], dtype=torch.float64
+    )
     s_mandel = sym(R2(s_full))
     R = euler_rodrigues(MRP(r_vec))
     py_rot = rotate(s_mandel, R).data
@@ -358,7 +372,9 @@ def test_cubic_fcc_directions_and_planes_are_unit(fcc_geometry):
 
 
 def test_cubic_fcc_directions_perpendicular_to_planes(fcc_geometry):
-    dn = (fcc_geometry.cartesian_slip_directions * fcc_geometry.cartesian_slip_planes).sum(dim=-1)
+    dn = (
+        fcc_geometry.cartesian_slip_directions * fcc_geometry.cartesian_slip_planes
+    ).sum(dim=-1)
     assert torch.allclose(dn, torch.zeros(12, dtype=torch.float64), atol=1e-12)
 
 
@@ -366,8 +382,12 @@ def test_cubic_fcc_schmid_frobenius_norms(fcc_geometry):
     norm_M = torch.linalg.vector_norm(fcc_geometry.M.data, dim=-1)
     norm_W = torch.linalg.vector_norm(fcc_geometry.W.data, dim=-1)
     inv_sqrt2 = 1.0 / math.sqrt(2.0)
-    assert torch.allclose(norm_M, torch.full((12,), inv_sqrt2, dtype=torch.float64), atol=1e-12)
-    assert torch.allclose(norm_W, torch.full((12,), 0.5, dtype=torch.float64), atol=1e-12)
+    assert torch.allclose(
+        norm_M, torch.full((12,), inv_sqrt2, dtype=torch.float64), atol=1e-12
+    )
+    assert torch.allclose(
+        norm_W, torch.full((12,), 0.5, dtype=torch.float64), atol=1e-12
+    )
 
 
 def test_cubic_fcc_burgers_for_unit_lattice(fcc_geometry):
@@ -399,7 +419,9 @@ def test_cubic_crystal_factory_built_from_python_objects():
 # ---------------------------------------------------------------------------
 
 
-def _seed_identity(spec_var: str, n_components: int, batch_shape: tuple[int, ...]) -> dict:
+def _seed_identity(
+    spec_var: str, n_components: int, batch_shape: tuple[int, ...]
+) -> dict:
     """Identity-seeded tangent: ``v[var][var] = I_{n}`` broadcast over batch."""
     eye = torch.eye(n_components, dtype=torch.float64)
     eye_b = eye.expand(*batch_shape, n_components, n_components).contiguous()
@@ -425,7 +447,9 @@ def test_resolved_shear_chain_rule_matches_autograd(fcc_geometry):
     from neml2 import ResolvedShear
 
     leaf = ResolvedShear(crystal_geometry=fcc_geometry)
-    sigma_data = torch.tensor([100.0, 50.0, -10.0, 20.0, 30.0, -5.0], dtype=torch.float64)
+    sigma_data = torch.tensor(
+        [100.0, 50.0, -10.0, 20.0, 30.0, -5.0], dtype=torch.float64
+    )
     R_data = torch.eye(3, dtype=torch.float64)
     sigma_leaf = sigma_data.detach().clone().requires_grad_(True)
 
@@ -445,7 +469,9 @@ def test_sum_slip_rates_forward_and_chain_rule(fcc_geometry):
     from neml2 import SumSlipRates
 
     leaf = SumSlipRates()
-    g_data = torch.tensor([0.1, -0.2, 0.05, -0.3, 0.01, 0.02, -0.04, 0.07, -0.01, 0.0, 0.1, -0.05])
+    g_data = torch.tensor(
+        [0.1, -0.2, 0.05, -0.3, 0.01, 0.02, -0.04, 0.07, -0.01, 0.0, 0.1, -0.05]
+    )
     g = Scalar(g_data, sub_batch_ndim=1)
     sg = leaf(g)
     assert sg.sub_batch_ndim == 0
@@ -504,7 +530,10 @@ def test_cp_deformation_gradient_predictor_below_threshold_holds_fp_n():
     from neml2 import CrystalPlasticityDeformationGradientPredictor
 
     leaf = CrystalPlasticityDeformationGradientPredictor(scale=0.1, threshold=100.0)
-    assert list(leaf.input_spec) == ["deformation_gradient", "plastic_deformation_gradient~1"]
+    assert list(leaf.input_spec) == [
+        "deformation_gradient",
+        "plastic_deformation_gradient~1",
+    ]
     assert list(leaf.output_spec) == ["plastic_deformation_gradient"]
     F = R2(torch.tensor([[1.02, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]))
     Fp_n = R2.identity()
@@ -595,3 +624,47 @@ def test_cp_deformation_gradient_predictor_renamed_via_hit():
     # JVP oracle: this is a one-shot predictor with a deliberately trivial chain rule.
     report = ut.run(check_dvalue=False)
     assert report.value_checks == 1
+
+
+def test_expand_at_compiled_batched_backward():
+    """``expand_at``'s stride-0 leak crashed ``neml2.compile`` + batched backward
+    on torch>=2.12 (AOTAutograd tangent coercion). ``SingleSlipStrengthMap`` is
+    the only ``expand_at`` caller; exercise it end to end."""
+    text = """
+    [Data]
+      [crystal_geometry]
+        type = CubicCrystal
+        lattice_parameter = '1.0'
+        slip_directions = 'sdirs'
+        slip_planes = 'splanes'
+      []
+    []
+    [Tensors]
+      [sdirs]
+        type = Python
+        expr = 'MillerIndex(torch.tensor([1.0, 1.0, 0.0]))'
+      []
+      [splanes]
+        type = Python
+        expr = 'MillerIndex(torch.tensor([1.0, 1.0, 1.0]))'
+      []
+    []
+    [Models]
+      [model]
+        type = SingleSlipStrengthMap
+        constant_strength = 50.0
+      []
+    []
+    """
+    model = load_string(text).get_model("model")
+    compile(model)
+
+    sh = Scalar(torch.linspace(1.0, 4.0, 4))  # batched (4,), sub-batch-trivial
+    out = model(sh)  # (4, nslip=12): per-grain strength broadcast across slips
+    assert out.data.shape == torch.Size([4, 12])
+    out.data.sum().backward()  # was the AOTAutograd stride-0 coercion error
+
+    grad = dict(model.named_parameters())["constant_strength"].grad
+    # d/d(constant_strength) of the sum over 4x12 of (slip_hardening + strength).
+    assert grad is not None
+    assert torch.allclose(grad, torch.tensor(48.0))
