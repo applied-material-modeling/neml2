@@ -45,7 +45,9 @@ from . import cases as case_registry
 from .harness import BASE_NPOINT, GDOT_CUTOFF, GDOT_SEED, LS_ITERS
 
 
-def _run(name: str, *, nsteps: int, nbatch: int, flow_n: float, max_its: int) -> dict:
+def _run(
+    name: str, *, nsteps: int, nbatch: int, flow_n: float, max_its: int, linesearch: bool
+) -> dict:
     from neml2 import load_input, log  # noqa: PLC0415
 
     # Importing `.harness` turns the per-iteration newton debug stream on; this
@@ -61,7 +63,7 @@ def _run(name: str, *, nsteps: int, nbatch: int, flow_n: float, max_its: int) ->
             f"npoint={nsteps + 1}",
             f"tfrac={tfrac!r}",
             f"flow_n={flow_n}",
-            f"ls_iters={LS_ITERS[False]}",
+            f"ls_iters={LS_ITERS[linesearch]}",
             f"max_its={max_its}",
             f"gdot_cutoff={GDOT_CUTOFF!r}",
             f"gdot_seed={GDOT_SEED!r}",
@@ -80,12 +82,23 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--nbatch", type=int, default=8)
     ap.add_argument("--flow-n", type=float, default=2.0)
     ap.add_argument("--max-its", type=int, default=50)
+    # On by default: this checks that two formulations agree, not how hard they
+    # are to solve. Several cases (all of crystal plasticity) do not converge
+    # without line search in EITHER form, so defaulting it off just compares
+    # two failures.
+    ap.add_argument("--no-linesearch", action="store_true")
     ap.add_argument("--rtol", type=float, default=1e-6)
     ap.add_argument("--atol", type=float, default=1e-8)
     args = ap.parse_args(argv)
 
     torch.set_default_dtype(torch.float64)
-    kw = dict(nsteps=args.nsteps, nbatch=args.nbatch, flow_n=args.flow_n, max_its=args.max_its)
+    kw = dict(
+        nsteps=args.nsteps,
+        nbatch=args.nbatch,
+        flow_n=args.flow_n,
+        max_its=args.max_its,
+        linesearch=not args.no_linesearch,
+    )
     ref = _run(args.reference, **kw)  # type: ignore[arg-type]
     cand = _run(args.candidate, **kw)  # type: ignore[arg-type]
 

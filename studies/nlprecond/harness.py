@@ -205,7 +205,8 @@ class Record:
     #: Fraction of the parent's full load history covered.
     tfrac: float
     max_its: int
-    #: "ok", "diverged", or "skipped" (the arm is not runnable for this case).
+    #: "ok", "diverged" (Newton gave up), "failed" (the linear solve broke down),
+    #: or "skipped" (the arm is not runnable for this case).
     status: str
     #: Populated on divergence.
     error: str = ""
@@ -437,6 +438,15 @@ def run(
             mask = getattr(err, "converged_mask", None)
             if mask is not None:
                 rec.n_failed_members = int((~mask).sum().item())
+        except Exception as err:  # noqa: BLE001
+            # A diverging iterate can break the linear solve outright rather than
+            # reaching max-iters -- a singular Jacobian under Schur condensation,
+            # a non-finite block, an overflow. That is still a result for this
+            # grid point, so record it and let the sweep continue; `failed` keeps
+            # it distinguishable from an orderly Newton give-up. SystemExit (the
+            # case-file drift guard) derives from BaseException and still escapes.
+            rec.status = "failed"
+            rec.error = f"{type(err).__name__}: {str(err).splitlines()[0][:180]}"
         finally:
             log.set_sink(None)
 

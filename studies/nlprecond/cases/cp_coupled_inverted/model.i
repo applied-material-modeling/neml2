@@ -11,6 +11,14 @@
 # layout becomes BLOCK. slip_rates therefore needs a shaped initial condition
 # (12 is the slip-system count of the [Data] crystal_geometry below).
 #
+# Those 12 unknowns are nearly free, though: each slip rate's residual involves
+# only its own rate, so the (slip_rates, slip_rates) Jacobian block is exactly
+# diagonal (verified: off-diagonal is identically zero). The equation system is
+# therefore split into two groups with slip_rates FIRST -- 'block dense' with
+# the BLOCK group primary, the arrowhead orientation SchurComplement supports --
+# so the block condenses out per-site and the Schur complement is the ordinary
+# 10x10. Putting the dense group first instead does not converge.
+#
 # Originally from tests/regression/solid_mechanics/crystal_plasticity/single_crystal_coupled/model.i
 #
 # Differences from the parent regression scenario:
@@ -188,8 +196,9 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknowns = 'elastic_strain slip_hardening orientation slip_rates'
-    residuals = 'elastic_strain_residual slip_hardening_residual orientation_residual slip_rates_residual'
+    unknowns = 'slip_rates; elastic_strain slip_hardening orientation'
+    residuals = 'slip_rates_residual; elastic_strain_residual slip_hardening_residual orientation_residual'
+    structure = 'block dense'
   []
 []
 
@@ -198,10 +207,17 @@
     type = NewtonWithLineSearch
     max_linesearch_iterations = '${ls_iters}'
     max_its = '${max_its}'
-    linear_solver = 'lu'
+    linear_solver = 'schur'
   []
   [lu]
     type = DenseLU
+  []
+  [schur]
+    type = SchurComplement
+    residual_primary_group = '0'
+    unknown_primary_group = '0'
+    primary_solver = 'lu'
+    schur_solver = 'lu'
   []
 []
 

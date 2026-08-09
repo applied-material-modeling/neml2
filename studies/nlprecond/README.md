@@ -196,6 +196,27 @@ artifact of testing at `ls_iters=1`, which the *baseline* also fails at.
 Accuracy is governed by the cutoff: 2.9e-10 vs the baseline at 1e-20 and 1e-10,
 degrading to 1.7e-3 at 1e-4.
 
+**The 12 extra unknowns are nearly free.** Each slip rate's residual involves
+only its own rate, so the `(slip_rates, slip_rates)` Jacobian block is *exactly*
+diagonal -- measured off-diagonal is identically zero. The case therefore splits
+the equation system into two groups and condenses that block out with
+`SchurComplement`, taking the linear solve from a dense 22x22 to per-site
+scalar solves plus the ordinary 10x10 (22^3 = 10648 against 10^3 + 12 = 1012,
+about 10.5x). Newton iterates are unchanged -- Schur is an exact solve -- so
+this is purely a per-iteration cost win.
+
+Two ordering constraints, both easy to get wrong:
+
+* The BLOCK group must come **first** and be the Schur *primary*
+  (`structure = 'block dense'`, `residual_primary_group = 0`). The coupling is
+  an arrowhead -- `A(0,1)` is per-site `(12, 10, 1)`, not a plain rectangular
+  block -- and that is the orientation `SchurComplement` supports (see
+  `test_per_instance_matvec_arrowhead_inverts_schur`, and `taylor`, which uses
+  the same convention). Declaring `'dense block'` with the dense group primary
+  assembles fine and then fails to converge.
+* Line search is required, in both formulations. `check_equivalence` enables it
+  by default for exactly this reason.
+
 ## Cases
 
 Each case is a self-contained copy of a regression scenario, edited only to
