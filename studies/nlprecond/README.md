@@ -159,6 +159,43 @@ Regularization knobs live in `harness.py`: `GDOT_CUTOFF` (where the fractional
 power hands over to its tangent line) and `GDOT_SEED` (the strictly-positive
 initial condition, since at step 1 there is nothing to extrapolate from).
 
+### On crystal plasticity it buys robustness, not iterations
+
+`cp_coupled_inverted` applies the same idea to `PowerLawSlipRule`
+(`PowerLawSlipRuleResidual`). The law is odd and has no yield threshold, so the
+regularization below the cutoff is the unique odd cubic matching the power's
+value and slope -- not the tangent line used for Perzyna.
+
+The trade is the **opposite** of the viscoplastic case:
+
+| | `cp_coupled` | `cp_coupled_inverted` |
+| --- | --- | --- |
+| dt x1 | 16 step-1 / 34 total | 36 / 100 |
+| dt x2 | **diverges** | 108 |
+| dt x20 | **diverges** | 148 |
+
+Per step it is roughly 3x more expensive. But the baseline cannot take even
+*twice* its own increment, while the inverted form runs to x20. Compared at
+equal load coverage (120 parent increments, `pred+ls`):
+
+| formulation | steps x dt | total iterations |
+| --- | --- | --- |
+| `cp_coupled` | 120 x1 | 383 |
+| `cp_coupled` | 60 x2 | diverges |
+| `cp_coupled_inverted` | 120 x1 | 1670 |
+| `cp_coupled_inverted` | 6 x20 | **128** |
+
+So it is 3x cheaper for the same physics *if* the time-stepper exploits the
+larger step, and 4.4x more expensive if it does not. For a driver that cuts
+back on failure, the basin matters more than the per-step count.
+
+Both forms need line search here; neither converges without it. An earlier
+sweep of this concluded the reformulation failed outright for CP -- that was an
+artifact of testing at `ls_iters=1`, which the *baseline* also fails at.
+
+Accuracy is governed by the cutoff: 2.9e-10 vs the baseline at 1e-20 and 1e-10,
+degrading to 1.7e-3 at 1e-4.
+
 ## Cases
 
 Each case is a self-contained copy of a regression scenario, edited only to
@@ -172,6 +209,7 @@ expose knobs. The parents are untouched — they are pinned against a
 | `cp_coupled` | `crystal_plasticity/single_crystal_coupled` | 10 | canonical CP; one fully-coupled group |
 | `cp_decoupled` | `crystal_plasticity/single_crystal_decoupled` | 7 + 3 | two sequentially-solved sub-systems |
 | `vp_isoharden_inverted` | `studies/nlprecond/cases/vp_isoharden` | 8 | the reformulation candidate (see above) |
+| `cp_coupled_inverted` | `studies/nlprecond/cases/cp_coupled` | 22 | the same idea on CP -- a documented negative result |
 
 ## Ablation arms and knobs
 

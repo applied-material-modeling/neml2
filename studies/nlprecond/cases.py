@@ -116,6 +116,27 @@ CASES: dict[str, Case] = {
             why="canonical crystal plasticity; one fully-coupled group",
         ),
         Case(
+            name="cp_coupled_inverted",
+            parent="studies/nlprecond/cases/cp_coupled",
+            solves_per_step=1,
+            unknowns=22,
+            flow_law="powerlaw",
+            why=(
+                "cp_coupled with the slip rule inverted and the per-slip slip_rates "
+                "carried as unknowns. Opposite trade to the viscoplastic case: MORE "
+                "iterations per step, but the convergence basin grows by >=20x. At equal "
+                "load coverage it wins 3x (128 vs 383 iterations for 120 parent "
+                "increments) by taking dt x20 steps the baseline cannot. Needs line "
+                "search -- so does the baseline."
+            ),
+            supports_nopred=False,
+            no_pred_blocker=(
+                "slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a "
+                "plain model input, which TransientDriver zero-fills at base shape -- 10 "
+                "unknown rows against a 22-row residual."
+            ),
+        ),
+        Case(
             name="cp_decoupled",
             parent="tests/regression/solid_mechanics/crystal_plasticity/single_crystal_decoupled",
             solves_per_step=2,

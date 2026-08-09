@@ -135,6 +135,40 @@ stepsize,cp_coupled,nopred-ls,8,2,8,6,0.121212,50,diverged,49,,,49,49,7.57482e+9
 stepsize,cp_coupled,nopred-ls,8,5,8,6,0.30303,50,diverged,25,,,25,25,1.10431e+86,2.91029,2.91029,1,8,Nonlinear solve failed with status MAXITER
 stepsize,cp_coupled,nopred-ls,8,10,8,6,0.606061,50,diverged,23,,,23,23,1.20215e+85,2.91029,2.91029,1,8,Nonlinear solve failed with status MAXITER
 stepsize,cp_coupled,nopred-ls,8,20,8,6,1.21212,50,diverged,49,,,49,49,9.6001e+100,2.91029,2.91029,1,8,Nonlinear solve failed with status MAXITER
+arms,cp_coupled_inverted,pred+ls,8,1,8,6,0.0606061,50,ok,36,13,2.76923,100,36-13-15-15-13-8,6.01534,1.19642,2.91029,-1,-1,
+arms,cp_coupled_inverted,pred-ls,8,1,8,6,0.0606061,50,diverged,49,,,49,49,3.21958e+07,,2.91029,1,8,Nonlinear solve failed with status MAXITER
+arms,cp_coupled_inverted,nopred+ls,8,1,8,6,0.0606061,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+arms,cp_coupled_inverted,nopred-ls,8,1,8,6,0.0606061,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stiffness,cp_coupled_inverted,pred-ls,2,1,8,6,0.0606061,50,ok,19,7,2.71429,61,19-15-6-7-9-5,9.99906,1.13132,4,-1,-1,
+stiffness,cp_coupled_inverted,pred-ls,4,1,8,6,0.0606061,50,diverged,49,,,49,49,9.99864,0.998957,3.16049,1,5,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled_inverted,pred-ls,8,1,8,6,0.0606061,50,diverged,49,,,49,49,3.21958e+07,,2.91029,1,8,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled_inverted,pred-ls,12,1,8,6,0.0606061,50,diverged,49,,,49,49,4.2564e+11,,2.84094,1,8,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled_inverted,pred-ls,20,1,8,6,0.0606061,50,diverged,49,,,49,49,4.13622e+17,,2.78951,1,8,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled_inverted,nopred-ls,2,1,8,6,0.0606061,50,skipped,-1,,,0,,,,4,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stiffness,cp_coupled_inverted,nopred-ls,4,1,8,6,0.0606061,50,skipped,-1,,,0,,,,3.16049,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stiffness,cp_coupled_inverted,nopred-ls,8,1,8,6,0.0606061,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stiffness,cp_coupled_inverted,nopred-ls,12,1,8,6,0.0606061,50,skipped,-1,,,0,,,,2.84094,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stiffness,cp_coupled_inverted,nopred-ls,20,1,8,6,0.0606061,50,skipped,-1,,,0,,,,2.78951,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stepsize,cp_coupled_inverted,pred+ls,8,1,8,6,0.0606061,50,ok,36,13,2.76923,100,36-13-15-15-13-8,6.01534,1.19642,2.91029,-1,-1,
+stepsize,cp_coupled_inverted,pred+ls,8,2,8,6,0.121212,50,ok,32,14,2.28571,108,32-22-14-13-12-15,5.76214,1.25013,2.91029,-1,-1,
+stepsize,cp_coupled_inverted,pred+ls,8,5,8,6,0.30303,50,ok,38,18,2.11111,131,38-20-21-18-17-17,5.34662,1.21525,2.91029,-1,-1,
+stepsize,cp_coupled_inverted,pred+ls,8,10,8,6,0.606061,50,ok,46,20,2.3,147,46-20-18-23-17-23,5.30658,1.00652,2.91029,-1,-1,
+stepsize,cp_coupled_inverted,pred+ls,8,20,8,6,1.21212,50,ok,32,22,1.45455,148,32-30-22-26-19-19,4.74067,1.19488,2.91029,-1,-1,
+stepsize,cp_coupled_inverted,pred-ls,8,1,8,6,0.0606061,50,diverged,49,,,49,49,3.21958e+07,,2.91029,1,8,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled_inverted,pred-ls,8,2,8,6,0.121212,50,diverged,49,,,49,49,8.41441e+08,,2.91029,1,8,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled_inverted,pred-ls,8,5,8,6,0.30303,50,diverged,49,,,49,49,2.54016e+06,,2.91029,1,8,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled_inverted,pred-ls,8,10,8,6,0.606061,50,diverged,49,,,49,49,7.89767e+07,,2.91029,1,8,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled_inverted,pred-ls,8,20,8,6,1.21212,50,diverged,49,,,49,49,6.17862e+28,,2.91029,1,8,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled_inverted,nopred+ls,8,1,8,6,0.0606061,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stepsize,cp_coupled_inverted,nopred+ls,8,2,8,6,0.121212,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stepsize,cp_coupled_inverted,nopred+ls,8,5,8,6,0.30303,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stepsize,cp_coupled_inverted,nopred+ls,8,10,8,6,0.606061,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stepsize,cp_coupled_inverted,nopred+ls,8,20,8,6,1.21212,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stepsize,cp_coupled_inverted,nopred-ls,8,1,8,6,0.0606061,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stepsize,cp_coupled_inverted,nopred-ls,8,2,8,6,0.121212,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stepsize,cp_coupled_inverted,nopred-ls,8,5,8,6,0.30303,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stepsize,cp_coupled_inverted,nopred-ls,8,10,8,6,0.606061,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
+stepsize,cp_coupled_inverted,nopred-ls,8,20,8,6,1.21212,50,skipped,-1,,,0,,,,2.91029,-1,-1,"slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a plain model input, which TransientDriver zero-fills at base shape -- 10 unknown rows against a 22-row residual."
 arms,cp_decoupled,pred+ls,8,1,8,6,0.0606061,50,ok,19,6,3.16667,52,19-8-7-6-6-6,1,1.05589,2.91029,-1,-1,
 arms,cp_decoupled,pred-ls,8,1,8,6,0.0606061,50,ok,19,6,3.16667,52,19-8-7-6-6-6,4518.69,2.91001,2.91029,-1,-1,
 arms,cp_decoupled,nopred+ls,8,1,8,6,0.0606061,50,ok,21,15,1.4,102,21-15-15-16-15-20,28105.1,2.97772,2.91029,-1,-1,

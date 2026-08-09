@@ -44,6 +44,7 @@ from .PlasticDeformationRate import PlasticDeformationRate
 from .PlasticSpatialVelocityGradient import PlasticSpatialVelocityGradient
 from .PlasticVorticity import PlasticVorticity
 from .PowerLawSlipRule import PowerLawSlipRule
+from .PowerLawSlipRuleResidual import PowerLawSlipRuleResidual
 from .ResolvedShear import ResolvedShear
 from .SingleSlipHardeningRule import SingleSlipHardeningRule
 from .SingleSlipStrengthMap import SingleSlipStrengthMap
@@ -65,6 +66,7 @@ __all__ = [
     "PlasticSpatialVelocityGradient",
     "PlasticVorticity",
     "PowerLawSlipRule",
+    "PowerLawSlipRuleResidual",
     "ResolvedShear",
     "SingleSlipHardeningRule",
     "SingleSlipStrengthMap",
