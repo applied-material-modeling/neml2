@@ -89,6 +89,17 @@ CASES: dict[str, Case] = {
             why="minimal reproducer; the fastest grid point",
         ),
         Case(
+            name="vp_isoharden_inverted",
+            parent="studies/nlprecond/cases/vp_isoharden",
+            solves_per_step=1,
+            unknowns=8,
+            flow_law="perzyna",
+            why=(
+                "vp_isoharden with the flow rule stated in inverted form and flow_rate "
+                "carried as an unknown -- the residual-reformulation candidate fix"
+            ),
+        ),
+        Case(
             name="vp_chaboche",
             parent="tests/regression/solid_mechanics/viscoplasticity/chaboche",
             solves_per_step=1,

@@ -82,6 +82,13 @@ BASE_NPOINT = 100
 #: parent scenario's -- the same trick as ``benchmark/_gen_solver_study.py``.
 DEFAULT_NSTEPS = 6
 
+#: Inverted-form knobs (consumed only by the ``*_inverted`` cases).
+#: ``GDOT_CUTOFF`` is where the fractional power hands over to its tangent line;
+#: ``GDOT_SEED`` is the strictly-positive initial condition for the flow-rate
+#: unknown, so step 1's predictor hands Newton a nonzero start.
+GDOT_CUTOFF = 1e-20
+GDOT_SEED = 1e-12
+
 # `ITERATION   3, |R| = 1.08e-19, |R0| = 3.26e-04`. The literal `, |R| = `
 # suffix is load-bearing: it excludes the indented `  LS ITERATION   n,
 # min(alpha) = ...` line-search sub-iteration lines, which must not be counted
@@ -408,6 +415,11 @@ def run(
                 f"flow_n={flow_n}",
                 f"ls_iters={LS_ITERS[linesearch]}",
                 f"max_its={max_its}",
+                # Only the inverted-form cases reference these; HIT lets an
+                # unreferenced substitution go unused, so passing them
+                # unconditionally keeps the call site uniform.
+                f"gdot_cutoff={GDOT_CUTOFF!r}",
+                f"gdot_seed={GDOT_SEED!r}",
             ],
         )
         driver = f.get_driver("driver")

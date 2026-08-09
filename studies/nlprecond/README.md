@@ -114,6 +114,51 @@ Two distinct targets, and the second is the more interesting one:
    Note the viscoplastic contrast: `vp_isoharden` is flat at ~25 iterations from
    x1 to x20. Its whole cost *is* the cold start; the increment barely matters.
 
+## Candidate fix: state the flow rule in inverted form
+
+`vp_isoharden_inverted` is `vp_isoharden` with the Perzyna rule written as an
+implicit residual in *inverted* form and `flow_rate` carried as an unknown:
+
+```
+  eta * gdot^(1/n) - <f> = 0        instead of        gdot = (<f>/eta)^n
+```
+
+Same root — `check_equivalence` compares every output series at every step and
+finds a worst relative difference of **2e-11** (n=2) / **5e-11** (n=8). What
+changes is only what Newton sees: substituting the explicit map makes every
+residual degree-n in the stress; carrying `gdot` as an unknown relocates that
+to a single 1/n power and leaves the other residuals affine in it.
+
+The payoff tracks stiffness, which is the whole point — step-1 iterations,
+`vp_isoharden` `pred-ls`:
+
+| Δt multiple | rate form | inverted |
+| --- | --- | --- |
+| x1 | 15 | 9 |
+| x2 | 16 | 8 |
+| x5 | 17 | 7 |
+| x10 | 18 | 7 |
+| x20 | **19** | **7** |
+
+The rate form degrades as the step stiffens; the inverted form improves and
+then flattens. Total iterations over the run with no predictor go 90 → 114 for
+the rate form and 49 → 42 for the inverted one — 2.7x fewer at x20.
+
+Two secondary effects worth noting:
+
+* **Line search becomes irrelevant.** `pred+ls` and `pred-ls` give byte-identical
+  counts for the inverted case (24 and 24; 49 and 49). There is no overshoot
+  left for it to damp.
+* **The gain shrinks with n, opposite to the scalar model.** Step-1 counts are
+  15 → 9 at n=2 but 17 → 17 at n=20; totals still improve 40-46% throughout.
+  The coupled system keeps nonlinearity (flow direction, normality) that the
+  scalar radial-return model does not, so the flow rule is not the only
+  degree-n term. Worth chasing if more is wanted.
+
+Regularization knobs live in `harness.py`: `GDOT_CUTOFF` (where the fractional
+power hands over to its tangent line) and `GDOT_SEED` (the strictly-positive
+initial condition, since at step 1 there is nothing to extrapolate from).
+
 ## Cases
 
 Each case is a self-contained copy of a regression scenario, edited only to
@@ -126,6 +171,7 @@ expose knobs. The parents are untouched — they are pinned against a
 | `vp_chaboche` | `viscoplasticity/chaboche` | 19 | nonlinearity spread across backstress groups |
 | `cp_coupled` | `crystal_plasticity/single_crystal_coupled` | 10 | canonical CP; one fully-coupled group |
 | `cp_decoupled` | `crystal_plasticity/single_crystal_decoupled` | 7 + 3 | two sequentially-solved sub-systems |
+| `vp_isoharden_inverted` | `studies/nlprecond/cases/vp_isoharden` | 8 | the reformulation candidate (see above) |
 
 ## Ablation arms and knobs
 
