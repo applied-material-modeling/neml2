@@ -68,12 +68,16 @@
     expr = 'WR2(vorticity_single.data.unsqueeze(0).expand(${npoint}, ${nbatch}, 3).contiguous())'
   []
 
-  # Zero slip rates, shaped (nbatch, 12) with sub_batch_ndim=1. Required: with
-  # slip_rates an unknown, the driver would otherwise default it to base shape
-  # and the unknown vector would be 12x too short per grain.
+  # Step-1 seed for the slip-rate unknowns, shaped (nbatch, 12) with
+  # sub_batch_ndim=1. The shape is required (with slip_rates an unknown the
+  # driver would otherwise default it to base shape, 12x too short per grain);
+  # the MAGNITUDE is what dominates the step-1 iteration count. A zero seed sits
+  # inside the regularization cutoff, where the odd cubic's slope is ~1e17, so
+  # Newton multiplies the slip rate by only ~100 per iteration and burns ~12
+  # iterations climbing 20 decades to reach its physical value.
   [slip_rate_ic]
     type = Python
-    expr = 'Scalar(torch.zeros((${nbatch}, 12), dtype=torch.float64), sub_batch_ndim=1)'
+    expr = 'Scalar(torch.full((${nbatch}, 12), ${gdot_seed}, dtype=torch.float64), sub_batch_ndim=1)'
   []
 
   # Crystal geometry inputs: lattice parameter + slip direction + slip plane

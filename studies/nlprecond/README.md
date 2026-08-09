@@ -260,6 +260,47 @@ Two further costs, both recorded rather than tuned away:
   -3 converges all of them. A very dormant seed sits ~54 units from a root near
   `u = +24`, which 20 halvings cannot walk back for some orientations.
 
+### Where the CP iterations actually go
+
+Instrumenting one step-1 solve of `cp_coupled_inverted` (per-group and
+per-variable residuals, the Newton step, and the accepted line-search alpha)
+splits its 36 iterations into two distinct phases.
+
+**Phase 1, ~12 iterations: climbing out of the seed.** The slip-rate unknown is
+seeded at zero, 20 decades below its converged value of ~0.07. That sits inside
+the regularization cutoff, where the odd cubic's slope is ~1e17, so each Newton
+step multiplies the slip rate by only ~100:
+
+```
+it 0: 0.0e+00   it 4: 6.7e-12   it 8: 5.6e-06   it 12: 1.8e-02
+it 2: 3.0e-16   it 6: 1.5e-08   it 10: 4.8e-04  it 13: 7.5e-02  <- converged
+```
+
+Throughout, alpha is pinned at 1/32 -- the floor after five halvings -- and the
+residual *grows*, 118 to 347. Seeding helps but less than that trace suggests:
+36 iterations at zero, 31 at 1e-12, 28 at 1e-2, and divergence at 1e-1. The seed
+is now a knob (`gdot_seed`) rather than hardcoded zeros. The log form's `u_seed`
+sensitivity is the same effect in log coordinates.
+
+**Phase 2, ~25 iterations: damped decay.** alpha oscillates in [0.125, 0.5] and
+the residual contracts only ~1.2x per iteration. The line search rejects the
+full Newton step nearly every iteration. **This is the dominant cost and it is
+not yet explained.**
+
+Ruled out along the way: a units mismatch between the residual groups. At
+iteration 0 the slip-rate residual (58, stress units) dwarfs the elastic-strain
+residual (9e-3, strain units), which looks like it should mislead the
+line-search merit function. Swapping that merit function for a per-group
+*relative* norm makes things worse, not better (37 -> 60 iterations for
+`cp_coupled_inverted`, 39 -> 200 for `cp_coupled_log`), so the mismatch is not
+the mechanism.
+
+A caveat on the affine-invariance argument used earlier in this document: it
+rules out rescaling as a cure for the *undamped* Newton path, which is what the
+viscoplastic diagnosis needed. It does **not** extend to a line-searched solve,
+where the merit function is scale-dependent. Scaling is a legitimate lever
+there -- it just is not the one that helps here.
+
 ## Cases
 
 Each case is a self-contained copy of a regression scenario, edited only to
