@@ -71,6 +71,11 @@ class Case:
     supports_nopred: bool = True
     #: Why ``supports_nopred`` is False, surfaced in the skip record.
     no_pred_blocker: str = ""
+    #: ``max_linesearch_iterations`` for the ``+ls`` arms. The parent scenarios
+    #: use 5; a formulation needing more is paying a real globalization cost, so
+    #: this is recorded per case rather than raised globally (which would also
+    #: invalidate every committed baseline number).
+    linesearch_iters: int = 5
 
     @property
     def input_file(self) -> Path:
@@ -134,6 +139,27 @@ CASES: dict[str, Case] = {
                 "slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes a "
                 "plain model input, which TransientDriver zero-fills at base shape -- 10 "
                 "unknown rows against a 22-row residual."
+            ),
+        ),
+        Case(
+            name="cp_coupled_log",
+            parent="studies/nlprecond/cases/cp_coupled",
+            solves_per_step=1,
+            unknowns=22,
+            flow_law="powerlaw",
+            why=(
+                "cp_coupled with the slip rule in LOG space -- log(|gdot|/gamma0) as the "
+                "unknown, residual exactly affine in it. Avoids the 1/n-power form's "
+                "singular derivative at zero slip and compresses the ~70-decade slip-rate "
+                "range. Schur-condensed like cp_coupled_inverted. Needs deeper line "
+                "search than the other cases (fails at the usual 5)."
+            ),
+            linesearch_iters=20,
+            supports_nopred=False,
+            no_pred_blocker=(
+                "log_slip_rates is sub-batched (nbatch, 12). Without a predictor it becomes "
+                "a plain model input, which TransientDriver zero-fills at base shape -- and "
+                "a zero seed means gdot = gamma0, not a dormant system."
             ),
         ),
         Case(

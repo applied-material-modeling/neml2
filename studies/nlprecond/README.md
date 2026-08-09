@@ -217,6 +217,49 @@ Two ordering constraints, both easy to get wrong:
 * Line search is required, in both formulations. `check_equivalence` enables it
   by default for exactly this reason.
 
+### The log form: fixes the rate, not the basin
+
+`cp_coupled_log` carries `u = log(|gdot|/gamma0)` as the unknown
+(`PowerLawSlipRuleLogResidual` + `SlipRateFromLog`). Taking the log of the flow
+law's magnitude relation makes the residual **exactly affine in the unknown**
+(`dr/du = 1` identically) and collapses the ~70-decade slip-rate range onto a
+few hundred units. Agreement with the baseline: 2.7e-09.
+
+It is the only form that beats the baseline on **convergence rate**, and it
+barely moves the **basin** -- the mirror image of the inverted form:
+
+| | step-1 iters | per-step | basin (largest dt) |
+| --- | --- | --- | --- |
+| `cp_coupled` | 16 | `16-5-4-3-3-3` | x1 |
+| `cp_coupled_inverted` | 36 | `36-13-15-15-13-8` | **x20** |
+| `cp_coupled_log` | **12** | `12-6-5-13-4-5` | x2 |
+
+So the two reformulations are complementary: log space fixes the cold-start
+iteration count, the 1/n-power form fixes robustness.
+
+**But the log form is fragile, and does not win in practice.** Over 120 parent
+increments it diverges partway in both configurations it can attempt, while the
+inverted form completes by taking x20 steps:
+
+| | steps x dt | total |
+| --- | --- | --- |
+| `cp_coupled` | 120 x1 | 390 |
+| `cp_coupled_log` | 120 x1 | **diverges** |
+| `cp_coupled_log` | 60 x2 | **diverges** |
+| `cp_coupled_inverted` | 6 x20 | **148** |
+
+Two further costs, both recorded rather than tuned away:
+
+* It needs **deeper line search** -- `linesearch_iters = 20` against everything
+  else's 5, and it fails outright at 5. Undamped it fails completely (99+
+  iterations on a scalar model); the residual is nearly flat in `u` far from the
+  root, with a barrier where the slip absorbs the whole trial shear.
+* It is **sensitive to the initial guess and not to the tau floor**. Sweeping
+  both at nbatch=16: every `taufloor` from 1e-12 to 1e-2 behaves identically,
+  while `u_seed` of -60 or -30 leaves 3-4 batch members unconverged and -10 or
+  -3 converges all of them. A very dormant seed sits ~54 units from a root near
+  `u = +24`, which 20 halvings cannot walk back for some orientations.
+
 ## Cases
 
 Each case is a self-contained copy of a regression scenario, edited only to
@@ -230,7 +273,8 @@ expose knobs. The parents are untouched — they are pinned against a
 | `cp_coupled` | `crystal_plasticity/single_crystal_coupled` | 10 | canonical CP; one fully-coupled group |
 | `cp_decoupled` | `crystal_plasticity/single_crystal_decoupled` | 7 + 3 | two sequentially-solved sub-systems |
 | `vp_isoharden_inverted` | `studies/nlprecond/cases/vp_isoharden` | 8 | the reformulation candidate (see above) |
-| `cp_coupled_inverted` | `studies/nlprecond/cases/cp_coupled` | 22 | the same idea on CP -- a documented negative result |
+| `cp_coupled_inverted` | `studies/nlprecond/cases/cp_coupled` | 22 | the 1/n-power form on CP -- big basin lift |
+| `cp_coupled_log` | `studies/nlprecond/cases/cp_coupled` | 22 | the log form on CP -- best rate, fragile |
 
 ## Ablation arms and knobs
 

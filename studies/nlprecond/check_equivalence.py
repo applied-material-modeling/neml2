@@ -42,7 +42,7 @@ import sys
 import torch
 
 from . import cases as case_registry
-from .harness import BASE_NPOINT, GDOT_CUTOFF, GDOT_SEED, LS_ITERS
+from .harness import BASE_NPOINT, hit_knobs
 
 
 def _run(
@@ -58,16 +58,15 @@ def _run(
     tfrac = nsteps / (BASE_NPOINT - 1)
     f = load_input(
         case.input_file,
-        pre=[
-            f"nbatch={nbatch}",
-            f"npoint={nsteps + 1}",
-            f"tfrac={tfrac!r}",
-            f"flow_n={flow_n}",
-            f"ls_iters={LS_ITERS[linesearch]}",
-            f"max_its={max_its}",
-            f"gdot_cutoff={GDOT_CUTOFF!r}",
-            f"gdot_seed={GDOT_SEED!r}",
-        ],
+        pre=hit_knobs(
+            nbatch=nbatch,
+            nsteps=nsteps,
+            tfrac=tfrac,
+            flow_n=flow_n,
+            linesearch=linesearch,
+            max_its=max_its,
+            ls_iters=case.linesearch_iters,
+        ),
     )
     driver = f.get_driver("driver")
     driver.run()

@@ -89,6 +89,20 @@ DEFAULT_NSTEPS = 6
 GDOT_CUTOFF = 1e-20
 GDOT_SEED = 1e-12
 
+#: Log-form knobs (consumed only by the ``*_log`` cases). ``TAU_FLOOR`` keeps
+#: log|tau| finite for a slip system with no resolved shear; ``U_SEED`` is the
+#: step-1 initial condition for log(|gdot|/gamma0).
+#:
+#: U_SEED matters a great deal and TAU_FLOOR barely at all. Sweeping both at
+#: nbatch=16: every tau_floor from 1e-12 to 1e-2 behaves the same, while
+#: u_seed = -60 or -30 leaves 3-4 batch members unconverged and -10 or -3
+#: converges everything. A very dormant seed puts the iterate ~54 units from a
+#: root near u = +24, which even 20 backtracking halvings cannot walk back for
+#: some orientations. -10 is gdot = 4.5e-5 * gamma0: small, but not so small
+#: that step 1 starts unreachably far away.
+TAU_FLOOR = 1e-8
+U_SEED = -10.0
+
 # `ITERATION   3, |R| = 1.08e-19, |R0| = 3.26e-04`. The literal `, |R| = `
 # suffix is load-bearing: it excludes the indented `  LS ITERATION   n,
 # min(alpha) = ...` line-search sub-iteration lines, which must not be counted
@@ -295,6 +309,39 @@ class Record:
         return math.nan if n <= 1 else (1.0 - 1.0 / n) ** (-n)
 
 
+def hit_knobs(
+    *,
+    nbatch: int,
+    nsteps: int,
+    tfrac: float,
+    flow_n: float,
+    linesearch: bool,
+    max_its: int,
+    ls_iters: int | None = None,
+) -> list[str]:
+    """The full ``${...}`` substitution set every case is loaded with.
+
+    One list for every entry point. A case only references the knobs it needs
+    and HIT lets the rest go unused, so passing all of them unconditionally is
+    what keeps a tool from silently omitting one -- which is exactly how
+    ``check_equivalence`` broke when the log-form knobs were added.
+    """
+    return [
+        f"nbatch={nbatch}",
+        f"npoint={nsteps + 1}",
+        f"tfrac={tfrac!r}",
+        f"flow_n={flow_n}",
+        f"ls_iters={(ls_iters if linesearch and ls_iters else LS_ITERS[linesearch])}",
+        f"max_its={max_its}",
+        # inverted-form cases
+        f"gdot_cutoff={GDOT_CUTOFF!r}",
+        f"gdot_seed={GDOT_SEED!r}",
+        # log-form cases
+        f"taufloor={TAU_FLOOR!r}",
+        f"u_seed={U_SEED!r}",
+    ]
+
+
 def _prepare_input(case: Case, *, drop_predictor: bool, tmp: Path) -> Path:
     """Materialize the case input for one arm, stripping the predictor if asked.
 
@@ -409,19 +456,15 @@ def run(
         model_i = _prepare_input(case, drop_predictor=drop_predictor, tmp=Path(td))
         f = load_input(
             model_i,
-            pre=[
-                f"nbatch={nbatch}",
-                f"npoint={nsteps + 1}",
-                f"tfrac={tfrac!r}",
-                f"flow_n={flow_n}",
-                f"ls_iters={LS_ITERS[linesearch]}",
-                f"max_its={max_its}",
-                # Only the inverted-form cases reference these; HIT lets an
-                # unreferenced substitution go unused, so passing them
-                # unconditionally keeps the call site uniform.
-                f"gdot_cutoff={GDOT_CUTOFF!r}",
-                f"gdot_seed={GDOT_SEED!r}",
-            ],
+            pre=hit_knobs(
+                nbatch=nbatch,
+                nsteps=nsteps,
+                tfrac=tfrac,
+                flow_n=flow_n,
+                linesearch=linesearch,
+                max_its=max_its,
+                ls_iters=case.linesearch_iters,
+            ),
         )
         driver = f.get_driver("driver")
 
@@ -474,8 +517,11 @@ __all__ = [
     "ARMS",
     "BASE_NPOINT",
     "DEFAULT_NSTEPS",
+    "TAU_FLOOR",
+    "U_SEED",
     "LS_ITERS",
     "Record",
     "SolveTrace",
+    "hit_knobs",
     "run",
 ]
