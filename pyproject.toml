@@ -185,7 +185,7 @@ known-first-party = ["neml2"]
 # ``import neml2.x`` resolves through whatever environment pyright sees;
 # a source file missing from ``wheel.packages`` surfaces as an
 # unresolved import.
-include = ["neml2", "tests", "benchmark", "scripts", "doc"]
+include = ["neml2", "tests", "benchmark", "scripts", "doc", "studies"]
 exclude = [
   # pyright's built-in defaults (specifying `exclude` replaces them, so they
   # must be repeated here to keep .git/, __pycache__/, dotfiles, etc. ignored)

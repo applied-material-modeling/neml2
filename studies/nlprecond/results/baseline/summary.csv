@@ -1,0 +1,137 @@
+sweep,case,arm,flow_n,dt_scale,nbatch,nsteps,tfrac,max_its,status,iters_step1,median_iters_rest,imbalance,total_iters,iters_by_step,step1_overshoot,step1_contraction,theory_contraction,failed_step,n_failed_members,error
+arms,vp_isoharden,pred+ls,2,1,8,6,0.0606061,50,ok,11,3,3.66667,26,11-4-3-3-3-2,4983.09,4.03057,4,-1,-1,
+arms,vp_isoharden,pred-ls,2,1,8,6,0.0606061,50,ok,15,3,5,30,15-4-3-3-3-2,677334,4.00359,4,-1,-1,
+arms,vp_isoharden,nopred+ls,2,1,8,6,0.0606061,50,ok,11,11,1,66,11-11-11-11-11-11,4983.09,4.03057,4,-1,-1,
+arms,vp_isoharden,nopred-ls,2,1,8,6,0.0606061,50,ok,15,15,1,90,15-15-15-15-15-15,677334,4.00359,4,-1,-1,
+stiffness,vp_isoharden,pred-ls,2,1,8,6,0.0606061,50,ok,15,3,5,30,15-4-3-3-3-2,677334,4.00359,4,-1,-1,
+stiffness,vp_isoharden,pred-ls,4,1,8,6,0.0606061,50,ok,17,3,5.66667,34,17-5-4-3-3-2,561891,3.16174,3.16049,-1,-1,
+stiffness,vp_isoharden,pred-ls,8,1,8,6,0.0606061,50,ok,17,3,5.66667,34,17-6-4-3-2-2,386678,2.91178,2.91029,-1,-1,
+stiffness,vp_isoharden,pred-ls,12,1,8,6,0.0606061,50,ok,17,3,5.66667,35,17-7-4-3-2-2,266101,2.84232,2.84094,-1,-1,
+stiffness,vp_isoharden,pred-ls,20,1,8,6,0.0606061,50,ok,17,3,5.66667,37,17-10-3-3-2-2,126021,2.79121,2.78951,-1,-1,
+stiffness,vp_isoharden,nopred-ls,2,1,8,6,0.0606061,50,ok,15,15,1,90,15-15-15-15-15-15,677334,4.00359,4,-1,-1,
+stiffness,vp_isoharden,nopred-ls,4,1,8,6,0.0606061,50,ok,17,17,1,102,17-17-17-17-17-17,561891,3.16174,3.16049,-1,-1,
+stiffness,vp_isoharden,nopred-ls,8,1,8,6,0.0606061,50,ok,17,19,0.894737,112,17-19-19-19-19-19,386678,2.91178,2.91029,-1,-1,
+stiffness,vp_isoharden,nopred-ls,12,1,8,6,0.0606061,50,ok,17,21,0.809524,122,17-21-21-21-21-21,266101,2.84232,2.84094,-1,-1,
+stiffness,vp_isoharden,nopred-ls,20,1,8,6,0.0606061,50,ok,17,26,0.653846,146,17-25-26-26-26-26,126021,2.79121,2.78951,-1,-1,
+stepsize,vp_isoharden,pred+ls,2,1,8,6,0.0606061,50,ok,11,3,3.66667,26,11-4-3-3-3-2,4983.09,4.03057,4,-1,-1,
+stepsize,vp_isoharden,pred+ls,2,2,8,6,0.121212,50,ok,12,3,4,26,12-4-3-3-2-2,31713,4.00784,4,-1,-1,
+stepsize,vp_isoharden,pred+ls,2,5,8,6,0.30303,50,ok,14,2,7,26,14-3-3-2-2-2,250543,4.00402,4,-1,-1,
+stepsize,vp_isoharden,pred+ls,2,10,8,6,0.606061,50,ok,15,2,7.5,24,15-3-2-2-1-1,1.07739e+06,4.00235,4,-1,-1,
+stepsize,vp_isoharden,pred+ls,2,20,8,6,1.21212,50,ok,16,2,8,25,16-3-2-2-1-1,4.4641e+06,4.00091,4,-1,-1,
+stepsize,vp_isoharden,pred-ls,2,1,8,6,0.0606061,50,ok,15,3,5,30,15-4-3-3-3-2,677334,4.00359,4,-1,-1,
+stepsize,vp_isoharden,pred-ls,2,2,8,6,0.121212,50,ok,16,3,5.33333,30,16-4-3-3-2-2,2.83214e+06,4.0014,4,-1,-1,
+stepsize,vp_isoharden,pred-ls,2,5,8,6,0.30303,50,ok,17,2,8.5,29,17-3-3-2-2-2,1.81695e+07,4.00055,4,-1,-1,
+stepsize,vp_isoharden,pred-ls,2,10,8,6,0.606061,50,ok,18,2,9,27,18-3-2-2-1-1,7.33085e+07,4.00022,4,-1,-1,
+stepsize,vp_isoharden,pred-ls,2,20,8,6,1.21212,50,ok,19,2,9.5,28,19-3-2-2-1-1,2.94499e+08,4.00014,4,-1,-1,
+stepsize,vp_isoharden,nopred+ls,2,1,8,6,0.0606061,50,ok,11,11,1,66,11-11-11-11-11-11,4983.09,4.03057,4,-1,-1,
+stepsize,vp_isoharden,nopred+ls,2,2,8,6,0.121212,50,ok,12,12,1,72,12-12-12-12-12-12,31713,4.00784,4,-1,-1,
+stepsize,vp_isoharden,nopred+ls,2,5,8,6,0.30303,50,ok,14,14,1,84,14-14-14-14-14-14,250543,4.00402,4,-1,-1,
+stepsize,vp_isoharden,nopred+ls,2,10,8,6,0.606061,50,ok,15,15,1,90,15-15-15-15-15-15,1.07739e+06,4.00235,4,-1,-1,
+stepsize,vp_isoharden,nopred+ls,2,20,8,6,1.21212,50,ok,16,16,1,96,16-16-16-16-16-16,4.4641e+06,4.00091,4,-1,-1,
+stepsize,vp_isoharden,nopred-ls,2,1,8,6,0.0606061,50,ok,15,15,1,90,15-15-15-15-15-15,677334,4.00359,4,-1,-1,
+stepsize,vp_isoharden,nopred-ls,2,2,8,6,0.121212,50,ok,16,16,1,96,16-16-16-16-16-16,2.83214e+06,4.0014,4,-1,-1,
+stepsize,vp_isoharden,nopred-ls,2,5,8,6,0.30303,50,ok,17,17,1,102,17-17-17-17-17-17,1.81695e+07,4.00055,4,-1,-1,
+stepsize,vp_isoharden,nopred-ls,2,10,8,6,0.606061,50,ok,18,18,1,108,18-18-18-18-18-18,7.33085e+07,4.00022,4,-1,-1,
+stepsize,vp_isoharden,nopred-ls,2,20,8,6,1.21212,50,ok,19,19,1,114,19-19-19-19-19-19,2.94499e+08,4.00014,4,-1,-1,
+arms,vp_chaboche,pred+ls,2,1,8,6,0.0606061,50,ok,11,3,3.66667,27,11-4-3-3-3-3,5001.96,4.02968,4,-1,-1,
+arms,vp_chaboche,pred-ls,2,1,8,6,0.0606061,50,ok,15,3,5,31,15-4-3-3-3-3,679899,4.00355,4,-1,-1,
+arms,vp_chaboche,nopred+ls,2,1,8,6,0.0606061,50,ok,11,11,1,66,11-11-11-11-11-11,5001.96,4.02968,4,-1,-1,
+arms,vp_chaboche,nopred-ls,2,1,8,6,0.0606061,50,ok,15,15,1,90,15-15-15-15-15-15,679899,4.00355,4,-1,-1,
+stiffness,vp_chaboche,pred-ls,2,1,8,6,0.0606061,50,ok,15,3,5,31,15-4-3-3-3-3,679899,4.00355,4,-1,-1,
+stiffness,vp_chaboche,pred-ls,4,1,8,6,0.0606061,50,ok,17,3,5.66667,33,17-5-3-3-2-3,564018,3.16312,3.16049,-1,-1,
+stiffness,vp_chaboche,pred-ls,8,1,8,6,0.0606061,50,ok,17,3,5.66667,34,17-6-4-3-2-2,388142,2.91177,2.91029,-1,-1,
+stiffness,vp_chaboche,pred-ls,12,1,8,6,0.0606061,50,ok,18,3,6,36,18-7-4-3-2-2,267109,2.84232,2.84094,-1,-1,
+stiffness,vp_chaboche,pred-ls,20,1,8,6,0.0606061,50,ok,17,2,8.5,36,17-10-3-2-2-2,126498,2.79119,2.78951,-1,-1,
+stiffness,vp_chaboche,nopred-ls,2,1,8,6,0.0606061,50,ok,15,15,1,90,15-15-15-15-15-15,679899,4.00355,4,-1,-1,
+stiffness,vp_chaboche,nopred-ls,4,1,8,6,0.0606061,50,ok,17,17,1,102,17-17-17-17-17-17,564018,3.16312,3.16049,-1,-1,
+stiffness,vp_chaboche,nopred-ls,8,1,8,6,0.0606061,50,ok,17,19,0.894737,112,17-19-19-19-19-19,388142,2.91177,2.91029,-1,-1,
+stiffness,vp_chaboche,nopred-ls,12,1,8,6,0.0606061,50,ok,18,21,0.857143,123,18-21-21-21-21-21,267109,2.84232,2.84094,-1,-1,
+stiffness,vp_chaboche,nopred-ls,20,1,8,6,0.0606061,50,ok,17,26,0.653846,147,17-26-26-26-26-26,126498,2.79119,2.78951,-1,-1,
+stepsize,vp_chaboche,pred+ls,2,1,8,6,0.0606061,50,ok,11,3,3.66667,27,11-4-3-3-3-3,5001.96,4.02968,4,-1,-1,
+stepsize,vp_chaboche,pred+ls,2,2,8,6,0.121212,50,ok,12,3,4,28,12-4-3-3-3-3,31833,4.00775,4,-1,-1,
+stepsize,vp_chaboche,pred+ls,2,5,8,6,0.30303,50,ok,14,4,3.5,35,14-4-4-4-4-5,251491,4.00399,4,-1,-1,
+stepsize,vp_chaboche,pred+ls,2,10,8,6,0.606061,50,ok,15,9,1.66667,56,15-5-5-9-10-12,1.08147e+06,4.00233,4,-1,-1,
+stepsize,vp_chaboche,pred+ls,2,20,8,6,1.21212,50,ok,16,14,1.14286,83,16-11-12-15-14-15,4.481e+06,4.0009,4,-1,-1,
+stepsize,vp_chaboche,pred-ls,2,1,8,6,0.0606061,50,ok,15,3,5,31,15-4-3-3-3-3,679899,4.00355,4,-1,-1,
+stepsize,vp_chaboche,pred-ls,2,2,8,6,0.121212,50,ok,16,3,5.33333,32,16-4-3-3-3-3,2.84286e+06,4.00139,4,-1,-1,
+stepsize,vp_chaboche,pred-ls,2,5,8,6,0.30303,50,ok,17,4,4.25,37,17-4-4-4-4-4,1.82383e+07,4.00055,4,-1,-1,
+stepsize,vp_chaboche,pred-ls,2,10,8,6,0.606061,50,ok,18,4,4.5,38,18-4-4-4-4-4,7.3586e+07,4.00022,4,-1,-1,
+stepsize,vp_chaboche,pred-ls,2,20,8,6,1.21212,50,ok,19,5,3.8,44,19-5-5-5-5-5,2.95614e+08,4.00014,4,-1,-1,
+stepsize,vp_chaboche,nopred+ls,2,1,8,6,0.0606061,50,ok,11,11,1,66,11-11-11-11-11-11,5001.96,4.02968,4,-1,-1,
+stepsize,vp_chaboche,nopred+ls,2,2,8,6,0.121212,50,ok,12,12,1,72,12-12-12-12-12-12,31833,4.00775,4,-1,-1,
+stepsize,vp_chaboche,nopred+ls,2,5,8,6,0.30303,50,ok,14,14,1,84,14-14-14-14-14-14,251491,4.00399,4,-1,-1,
+stepsize,vp_chaboche,nopred+ls,2,10,8,6,0.606061,50,ok,15,15,1,90,15-15-15-15-15-15,1.08147e+06,4.00233,4,-1,-1,
+stepsize,vp_chaboche,nopred+ls,2,20,8,6,1.21212,50,ok,16,16,1,96,16-16-16-16-16-16,4.481e+06,4.0009,4,-1,-1,
+stepsize,vp_chaboche,nopred-ls,2,1,8,6,0.0606061,50,ok,15,15,1,90,15-15-15-15-15-15,679899,4.00355,4,-1,-1,
+stepsize,vp_chaboche,nopred-ls,2,2,8,6,0.121212,50,ok,16,16,1,96,16-16-16-16-16-16,2.84286e+06,4.00139,4,-1,-1,
+stepsize,vp_chaboche,nopred-ls,2,5,8,6,0.30303,50,ok,17,17,1,102,17-17-17-17-17-17,1.82383e+07,4.00055,4,-1,-1,
+stepsize,vp_chaboche,nopred-ls,2,10,8,6,0.606061,50,ok,18,18,1,108,18-18-18-18-18-18,7.3586e+07,4.00022,4,-1,-1,
+stepsize,vp_chaboche,nopred-ls,2,20,8,6,1.21212,50,ok,19,19,1,114,19-19-19-19-19-19,2.95614e+08,4.00014,4,-1,-1,
+arms,cp_coupled,pred+ls,8,1,8,6,0.0606061,50,ok,16,3,5.33333,34,16-5-4-3-3-3,1,1.05598,2.91029,-1,-1,
+arms,cp_coupled,pred-ls,8,1,8,6,0.0606061,50,diverged,49,,,49,49,4.92909e+93,2.91029,2.91029,1,3,Nonlinear solve failed with status MAXITER
+arms,cp_coupled,nopred+ls,8,1,8,6,0.0606061,50,ok,13,13,1,98,13-11-13-13-33-15,1263.23,3.17157,2.91029,-1,-1,
+arms,cp_coupled,nopred-ls,8,1,8,6,0.0606061,50,diverged,49,,,49,49,7.31049e+91,2.91029,2.91029,1,7,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled,pred-ls,2,1,8,6,0.0606061,50,ok,5,5,1,30,5-5-5-5-5-5,1,,4,-1,-1,
+stiffness,cp_coupled,pred-ls,4,1,8,6,0.0606061,50,ok,8,5,1.6,33,8-6-5-5-5-4,1.39033,3.37218,3.16049,-1,-1,
+stiffness,cp_coupled,pred-ls,8,1,8,6,0.0606061,50,diverged,49,,,49,49,4.92909e+93,2.91029,2.91029,1,3,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled,pred-ls,12,1,8,6,0.0606061,50,diverged,49,,,49,49,2.51138e+102,2.84094,2.84094,1,6,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled,pred-ls,20,1,8,6,0.0606061,50,diverged,3,,,3,3,9.53684e+84,,2.78951,1,7,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled,nopred-ls,2,1,8,6,0.0606061,50,ok,10,9,1.11111,56,10-10-9-9-9-9,15858.5,3.72321,4,-1,-1,
+stiffness,cp_coupled,nopred-ls,4,1,8,6,0.0606061,50,diverged,49,,,49,49,1.13535e+48,4.20577,3.16049,1,5,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled,nopred-ls,8,1,8,6,0.0606061,50,diverged,49,,,49,49,7.31049e+91,2.91029,2.91029,1,7,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled,nopred-ls,12,1,8,6,0.0606061,50,diverged,16,,,16,16,6.64802e+103,,2.84094,1,7,Nonlinear solve failed with status MAXITER
+stiffness,cp_coupled,nopred-ls,20,1,8,6,0.0606061,50,diverged,4,,,4,4,6.38893e+106,,2.78951,1,7,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,pred+ls,8,1,8,6,0.0606061,50,ok,16,3,5.33333,34,16-5-4-3-3-3,1,1.05598,2.91029,-1,-1,
+stepsize,cp_coupled,pred+ls,8,2,8,6,0.121212,50,diverged,49,,,49,49,1.06422e+30,2.91029,2.91029,1,2,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,pred+ls,8,5,8,6,0.30303,50,diverged,49,,,49,49,5.99479e+41,,2.91029,1,5,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,pred+ls,8,10,8,6,0.606061,50,diverged,49,,,49,49,1.35929e+34,1.17072,2.91029,1,7,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,pred+ls,8,20,8,6,1.21212,50,diverged,49,,,49,49,2.39901e+38,,2.91029,1,8,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,pred-ls,8,1,8,6,0.0606061,50,diverged,49,,,49,49,4.92909e+93,2.91029,2.91029,1,3,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,pred-ls,8,2,8,6,0.121212,50,diverged,49,,,49,49,6.23864e+82,2.91029,2.91029,1,3,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,pred-ls,8,5,8,6,0.30303,50,diverged,49,,,49,49,1.35381e+85,2.91029,2.91029,1,6,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,pred-ls,8,10,8,6,0.606061,50,diverged,35,,,35,35,9.35706e+80,,2.91029,1,7,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,pred-ls,8,20,8,6,1.21212,50,diverged,49,,,49,49,2.49676e+84,2.91029,2.91029,1,8,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,nopred+ls,8,1,8,6,0.0606061,50,ok,13,13,1,98,13-11-13-13-33-15,1263.23,3.17157,2.91029,-1,-1,
+stepsize,cp_coupled,nopred+ls,8,2,8,6,0.121212,50,diverged,49,,,49,49,8.59307e+35,1.11664,2.91029,1,2,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,nopred+ls,8,5,8,6,0.30303,50,diverged,49,,,49,49,2.52585e+47,,2.91029,1,5,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,nopred+ls,8,10,8,6,0.606061,50,diverged,49,,,49,49,3.55211e+43,,2.91029,1,7,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,nopred+ls,8,20,8,6,1.21212,50,diverged,49,,,49,49,1.58825e+53,,2.91029,1,7,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,nopred-ls,8,1,8,6,0.0606061,50,diverged,49,,,49,49,7.31049e+91,2.91029,2.91029,1,7,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,nopred-ls,8,2,8,6,0.121212,50,diverged,49,,,49,49,7.57482e+93,2.91029,2.91029,1,7,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,nopred-ls,8,5,8,6,0.30303,50,diverged,25,,,25,25,1.10431e+86,2.91029,2.91029,1,8,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,nopred-ls,8,10,8,6,0.606061,50,diverged,23,,,23,23,1.20215e+85,2.91029,2.91029,1,8,Nonlinear solve failed with status MAXITER
+stepsize,cp_coupled,nopred-ls,8,20,8,6,1.21212,50,diverged,49,,,49,49,9.6001e+100,2.91029,2.91029,1,8,Nonlinear solve failed with status MAXITER
+arms,cp_decoupled,pred+ls,8,1,8,6,0.0606061,50,ok,19,6,3.16667,52,19-8-7-6-6-6,1,1.05589,2.91029,-1,-1,
+arms,cp_decoupled,pred-ls,8,1,8,6,0.0606061,50,ok,19,6,3.16667,52,19-8-7-6-6-6,4518.69,2.91001,2.91029,-1,-1,
+arms,cp_decoupled,nopred+ls,8,1,8,6,0.0606061,50,ok,21,15,1.4,102,21-15-15-16-15-20,28105.1,2.97772,2.91029,-1,-1,
+arms,cp_decoupled,nopred-ls,8,1,8,6,0.0606061,50,ok,30,29,1.03448,173,30-29-29-29-28-28,4.71526e+11,2.91026,2.91029,-1,-1,
+stiffness,cp_decoupled,pred-ls,2,1,8,6,0.0606061,50,ok,7,7,1,42,7-7-7-7-7-7,1,,4,-1,-1,
+stiffness,cp_decoupled,pred-ls,4,1,8,6,0.0606061,50,ok,10,7,1.42857,46,10-8-7-7-7-7,1.39238,3.37173,3.16049,-1,-1,
+stiffness,cp_decoupled,pred-ls,8,1,8,6,0.0606061,50,ok,19,6,3.16667,52,19-8-7-6-6-6,4518.69,2.91001,2.91029,-1,-1,
+stiffness,cp_decoupled,pred-ls,12,1,8,6,0.0606061,50,ok,27,7,3.85714,63,27-9-7-7-6-7,9.34867e+06,2.84094,2.84094,-1,-1,
+stiffness,cp_decoupled,pred-ls,20,1,8,6,0.0606061,50,ok,43,7,6.14286,84,43-12-7-8-7-7,2.80594e+13,2.78951,2.78951,-1,-1,
+stiffness,cp_decoupled,nopred-ls,2,1,8,6,0.0606061,50,ok,13,12,1.08333,74,13-13-12-12-12-12,456763,3.92598,4,-1,-1,
+stiffness,cp_decoupled,nopred-ls,4,1,8,6,0.0606061,50,ok,18,16,1.125,100,18-17-17-16-16-16,3.86947e+07,3.15881,3.16049,-1,-1,
+stiffness,cp_decoupled,nopred-ls,8,1,8,6,0.0606061,50,ok,30,29,1.03448,173,30-29-29-29-28-28,4.71526e+11,2.91026,2.91029,-1,-1,
+stiffness,cp_decoupled,nopred-ls,12,1,8,6,0.0606061,50,ok,45,40,1.125,240,45-41-39-41-40-34,7.16284e+15,2.84094,2.84094,-1,-1,
+stiffness,cp_decoupled,nopred-ls,20,1,8,6,0.0606061,50,diverged,49,,,49,49,2.09428e+24,2.78951,2.78951,1,2,Nonlinear solve failed with status MAXITER
+stepsize,cp_decoupled,pred+ls,8,1,8,6,0.0606061,50,ok,19,6,3.16667,52,19-8-7-6-6-6,1,1.05589,2.91029,-1,-1,
+stepsize,cp_decoupled,pred+ls,8,2,8,6,0.121212,50,ok,14,7,2,49,14-8-6-7-7-7,1,2.88393,2.91029,-1,-1,
+stepsize,cp_decoupled,pred+ls,8,5,8,6,0.30303,50,ok,20,8,2.5,61,20-9-8-8-8-8,1,2.90958,2.91029,-1,-1,
+stepsize,cp_decoupled,pred+ls,8,10,8,6,0.606061,50,ok,25,11,2.27273,78,25-12-11-11-10-9,1,2.91022,2.91029,-1,-1,
+stepsize,cp_decoupled,pred+ls,8,20,8,6,1.21212,50,diverged,67,,,67,67,1,1.03707,2.91029,1,1,Nonlinear solve failed with status MAXITER
+stepsize,cp_decoupled,pred-ls,8,1,8,6,0.0606061,50,ok,19,6,3.16667,52,19-8-7-6-6-6,4518.69,2.91001,2.91029,-1,-1,
+stepsize,cp_decoupled,pred-ls,8,2,8,6,0.121212,50,ok,17,7,2.42857,52,17-8-6-7-7-7,1.25989,2.91314,2.91029,-1,-1,
+stepsize,cp_decoupled,pred-ls,8,5,8,6,0.30303,50,ok,20,8,2.5,61,20-9-8-8-8-8,1,2.90958,2.91029,-1,-1,
+stepsize,cp_decoupled,pred-ls,8,10,8,6,0.606061,50,ok,48,10,4.8,100,48-12-10-11-10-9,486.349,2.65668,2.91029,-1,-1,
+stepsize,cp_decoupled,pred-ls,8,20,8,6,1.21212,50,diverged,67,,,67,67,1,,2.91029,1,1,Nonlinear solve failed with status MAXITER
+stepsize,cp_decoupled,nopred+ls,8,1,8,6,0.0606061,50,ok,21,15,1.4,102,21-15-15-16-15-20,28105.1,2.97772,2.91029,-1,-1,
+stepsize,cp_decoupled,nopred+ls,8,2,8,6,0.121212,50,ok,21,22,0.954545,142,21-21-20-22-36-22,7.35616e+06,2.89983,2.91029,-1,-1,
+stepsize,cp_decoupled,nopred+ls,8,5,8,6,0.30303,50,ok,29,32,0.90625,189,29-32-34-34-30-30,1.18548e+10,2.91,2.91029,-1,-1,
+stepsize,cp_decoupled,nopred+ls,8,10,8,6,0.606061,50,ok,35,39,0.897436,252,35-41-38-36-63-39,3.18723e+12,2.91026,2.91029,-1,-1,
+stepsize,cp_decoupled,nopred+ls,8,20,8,6,1.21212,50,diverged,55,63,0.873016,315,55-54-57-69-80,7.69446e+14,2.91028,2.91029,5,1,Nonlinear solve failed with status MAXITER
+stepsize,cp_decoupled,nopred-ls,8,1,8,6,0.0606061,50,ok,30,29,1.03448,173,30-29-29-29-28-28,4.71526e+11,2.91026,2.91029,-1,-1,
+stepsize,cp_decoupled,nopred-ls,8,2,8,6,0.121212,50,ok,36,35,1.02857,220,36-37-35-46-34-32,1.23416e+14,2.91028,2.91029,-1,-1,
+stepsize,cp_decoupled,nopred-ls,8,5,8,6,0.30303,50,ok,47,37,1.27027,256,47-58-42-36-36-37,1.9889e+17,2.91028,2.91029,-1,-1,
+stepsize,cp_decoupled,nopred-ls,8,10,8,6,0.606061,50,diverged,71,87,0.816092,158,71-87,5.34728e+19,2.91029,2.91029,2,1,Nonlinear solve failed with status MAXITER
+stepsize,cp_decoupled,nopred-ls,8,20,8,6,1.21212,50,diverged,49,,,49,49,1.29092e+22,2.91029,2.91029,1,2,Nonlinear solve failed with status MAXITER
