@@ -415,6 +415,54 @@ against a converged ~59, and `n = 8` turns that into a 3.3x slip-rate error.
 Shipping variational crystal plasticity would need either much smaller steps or
 a variationally consistent implicit hardening treatment.
 
+### The step-1 cost is the initial guess, essentially all of it
+
+Seeding sub-system #1's slip rates directly (bypassing the predictor) on
+`cp_decoupled_variational`:
+
+| seed | max\|gdot\|_0 | step-1 iters |
+| --- | --- | --- |
+| IC, 1e-12 uniform | 1e-12 | **34** |
+| converged answer (oracle) | 8.2e-02 | **1** |
+| 0.5x converged | 4.1e-02 | 5 |
+| 2x converged | 1.6e-01 | 5 |
+| 0.1x converged | 8.2e-03 | 11 |
+
+One iteration from a good guess. Order-of-magnitude accuracy is enough -- a
+factor of 10 either way still gives 5-11.
+
+**This retires the earlier phase-1 / phase-2 decomposition.** Those 36 iterations
+were described above as ~12 climbing out of the seed plus ~25 of unexplained
+damped decay. With a good seed there is no phase 2 either: both were
+consequences of starting at a near-stationary point, not two separate phenomena.
+
+**A uniform IC does not substitute for a real predictor.** The IC can only carry
+one value for all 12 systems, and the solution has a few systems near 0.08 with
+the rest near zero:
+
+| uniform `gdot_seed` | 1e-12 | 1e-3 | 1e-2 | 4e-2 | 8e-2 | 2e-1 |
+| --- | --- | --- | --- | --- | --- | --- |
+| step-1 iters | 29 | 28 | **24** | 29 | diverges | 43 |
+
+24 at best against the oracle's 1. So the per-system predictor is worth
+building, and the IC workaround is not a way around it.
+
+**What blocks it.** The natural implementation adds no new leaf: `predictor1` is
+a `ComposedModel`, so chaining the *explicit* `PowerLawSlipRule` onto the elastic
+strain `CrystalPlasticityStrainPredictor` already predicts gives each system its
+own rate. That composes and loads, but the predicted `slip_rates` reaches the
+implicit system without its per-slip sub-batch axis and `SumSlipRates` fails with
+`IndexError: dim -1 out of range`.
+
+The root cause is a missing *declaration*: NEML2 has no way to know a
+sub-batched unknown's shape. The mechanism exists -- `[Settings]
+example_batch_shape` supports per-variable specs, sub-batch (`'(2; 100)'`) and
+even sub-batch labels -- but it is read only by `cli/aoti_export.py` and
+`cli/aoti_compile.py`. The eager path never sees it, which is also why
+`TransientDriver` zero-fills sub-batched inputs at base shape
+(`supports_nopred`) and why every case here hand-shapes an IC. Closing that
+parity gap is the prerequisite for the slip-rate predictor.
+
 ## Cases
 
 Each case is a self-contained copy of a regression scenario, edited only to
