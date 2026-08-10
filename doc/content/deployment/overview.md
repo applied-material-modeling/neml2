@@ -53,7 +53,8 @@ reproduces on `cpp-aoti` but not `py-eager`" is unambiguous.
 
 Every runtime supports `forward`. They differ on sensitivities and on whether
 they accept *sub-batch* models (e.g. crystal plasticity, which carries a per-slip
-inner batch dimension):
+inner batch dimension — see [](sub-batch-declaration) for how the extent is
+declared and which routes read it):
 
 | Codename | Entry point | Compile | Host | jvp / jacobian | Sub-batch | Primarily for |
 |---|---|---|---|:--:|:--:|---|

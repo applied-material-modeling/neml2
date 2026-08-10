@@ -52,7 +52,7 @@ Reach it via :attr:`neml2.factory._NativeInputFile.settings` rather than calling
 
 from __future__ import annotations
 
-from collections.abc import Collection, Iterable, Mapping
+from collections.abc import Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -162,30 +162,41 @@ def resolve_example_shapes(
 ) -> dict[str, tuple[tuple[int, ...], tuple[int, ...]]]:
     """Map each name in *input_spec* to its ``(dyn, sub)`` shape tuple.
 
-    Resolution order:
+    The two regions resolve differently, because they describe different
+    things. The **dynamic** region is per-input:
 
     1. Per-variable entry in *declared* (e.g. ``declared["strain"]``).
     2. Uniform entry in *declared* (key :data:`UNIFORM_KEY`).
     3. :data:`DEFAULT_EXAMPLE_SHAPE`.
 
-    This is the *export-time* resolution: it assigns every input a shape,
-    falling back to the default. The eager path wants to distinguish "declared
-    as un-sub-batched" from "not declared at all" and uses
-    :meth:`Settings.sub_batch_shape` instead.
+    The **sub-batch** region is per-*variable*, so it comes from
+    :meth:`Settings.sub_batch_shape` -- the same lookup the eager consumers
+    use, which resolves through the variable's lag family. Declaring
+    ``alpha = '(2; 12)'`` therefore also sizes ``alpha~1``; resolving the two
+    independently would trace the history input without its sub-batch axis and
+    silently diverge the compiled route from the eager one.
+
+    This is the *export-time* resolution: it assigns every input a full shape,
+    falling back to the default. The eager path needs to distinguish "declared
+    as un-sub-batched" from "not declared at all" and calls
+    :meth:`Settings.sub_batch_shape` directly.
 
     Unknown keys in *declared* raise -- see :func:`validate_declared_names`.
     """
     names = list(input_spec)
     validate_declared_names(declared, names)
+    settings = Settings(declared)
     uniform_spec = declared.get(UNIFORM_KEY)
     resolved: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] = {}
     for name in names:
         if name in declared:
-            resolved[name] = parse_example_batch_shape(declared[name])
+            dyn = parse_example_batch_shape(declared[name])[0]
         elif uniform_spec is not None:
-            resolved[name] = parse_example_batch_shape(uniform_spec)
+            dyn = parse_example_batch_shape(uniform_spec)[0]
         else:
-            resolved[name] = DEFAULT_EXAMPLE_SHAPE
+            dyn = DEFAULT_EXAMPLE_SHAPE[0]
+        sub = settings.sub_batch_shape(name)
+        resolved[name] = (dyn, DEFAULT_EXAMPLE_SHAPE[1] if sub is None else sub)
     return resolved
 
 
@@ -356,6 +367,41 @@ def read_settings(root: nmhit.Root) -> Settings:
     return Settings(example_shapes, dynamic_batch)
 
 
+def sub_batch_conflict(
+    declared: tuple[int, ...],
+    *,
+    sub_batch_shape: Sequence[int],
+    batch_shape: Sequence[int],
+) -> str | None:
+    """Why a value is incompatible with its *declared* sub-batch extent, or ``None``.
+
+    Three outcomes, given a value's own sub-batch region and the batch shape it
+    sits in (for a time history, pass the shape with the per-step axis already
+    dropped):
+
+    * it already carries the declared extent — compatible;
+    * it carries a *different* extent — a real contradiction, since both are
+      statements about the same variable's layout and ``neml2-compile`` would
+      trace one while the driver built the other;
+    * it carries none. This is the useful case and the reason the declaration
+      exists: a scalar seed (``Scalar(10.0)``) broadcasts into whatever extent
+      is declared, which is how an initial condition stops having to be
+      hand-shaped to ``(nbatch, nslip)`` just to establish a shape. It is only
+      a conflict when the value has batch axes that cannot line up with the
+      declared ones.
+    """
+    declared = tuple(declared)
+    sub = tuple(sub_batch_shape)
+    if sub == declared:
+        return None
+    if sub:
+        return f"carries sub_batch={sub}"
+    batch = tuple(batch_shape)
+    if not batch or (declared and batch[-len(declared) :] == declared):
+        return None
+    return f"is unmarked with batch shape {batch}, which does not broadcast to sub_batch={declared}"
+
+
 def _declares_sub_batch(spec: str) -> bool:
     """True iff *spec* writes a sub-batch region -- i.e. carries the ``;``."""
     return ";" in spec
@@ -376,5 +422,6 @@ __all__ = [
     "parse_example_batch_shape",
     "read_settings",
     "resolve_example_shapes",
+    "sub_batch_conflict",
     "validate_declared_names",
 ]

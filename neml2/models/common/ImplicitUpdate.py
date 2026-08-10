@@ -105,6 +105,42 @@ def _matrix_variable_block(
     return block.base[..., row_start:row_end, col_start:col_end]
 
 
+def _conform_to_declared_sub_batch(
+    name: str,
+    value: TensorWrapper,
+    declared: torch.Size | None,
+) -> TensorWrapper:
+    """Give *value* the sub-batch axes ``[Settings]`` declares for *name*.
+
+    An initial guess is often a seed rather than a shaped field -- a scalar
+    initial condition, or a predictor output built from one. Broadcasting
+    handles that everywhere except the equation-system layout, which needs the
+    axes to actually be there to count rows against the residual. Since the
+    declaration says how wide they are, put them there; this is what lets an
+    initial condition go back to being a value (``Scalar(10.0)``) instead of a
+    hand-built ``(nbatch, nslip)`` tensor whose only job was to establish a
+    shape.
+
+    A value that already carries a sub-batch region is left alone, but must
+    agree with the declaration -- two different extents for one variable is a
+    contradiction, not something to reconcile silently.
+    """
+    if declared is None or len(declared) == 0:
+        return value
+    if value.sub_batch_ndim > 0:
+        if tuple(value.sub_batch_shape) != tuple(declared):
+            raise ValueError(
+                f"ImplicitUpdate: [Settings]/example_batch_shape declares {name} "
+                f"sub_batch={tuple(declared)}, but its initial guess carries "
+                f"sub_batch={tuple(value.sub_batch_shape)} (shape {tuple(value.shape)}). "
+                f"Drop one or make them agree."
+            )
+        return value
+    for axis, size in enumerate(declared):
+        value = value.sub_batch.expand_at(int(size), axis)
+    return value
+
+
 def _resolve_unknown_sbn(
     unknown_name: str,
     *,
@@ -469,12 +505,16 @@ class ImplicitUpdate(Model):
         # that knows its sub-batch rank.
         full_sbn = dict(sub_batch_ndim) if sub_batch_ndim is not None else {}
         input_asserted = dict(full_sbn)
+        declared_sub = self.system.declared_sub_batch_shapes
         for uname in self.system.unknown_names:
+            unknowns[uname] = _conform_to_declared_sub_batch(
+                uname, unknowns[uname], declared_sub.get(uname)
+            )
             full_sbn[uname] = _resolve_unknown_sbn(
                 uname,
                 produced=unknowns[uname],
                 input_sbn=input_asserted,
-                declared=self.system.declared_sub_batch_shapes,
+                declared=declared_sub,
             )
         # Derive the system-wide dyn shape from the caller's state values —
         # specifically the widest leading-batch shape across all inputs after

@@ -571,8 +571,9 @@ def _introspect(input_file: str, target: str, name: str) -> IntrospectionForm:
     from .inspect import _model_to_dict  # noqa: PLC2701, PLC0415
 
     model_name = driver_target_model(Path(input_file), name) if target == "driver" else name
-    model = load_input(input_file).get_model(model_name)
-    return introspection_to_form(_model_to_dict(model))
+    factory = load_input(input_file)
+    model = factory.get_model(model_name)
+    return introspection_to_form(_model_to_dict(model, factory.settings))
 
 
 def _ask_derivatives(

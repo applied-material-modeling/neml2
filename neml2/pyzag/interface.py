@@ -181,12 +181,32 @@ class NEML2PyzagModel(torch.nn.Module, nonlinear.NonlinearFunctionOperatorFactor
         return self._wrapper
 
     def _infer_sub_batch(self, value_dict, layout: AxisLayout, dynamic_dim: int) -> dict:
-        """Infer each variable's runtime sub_batch shape from its tensor shape."""
+        """Each variable's runtime sub_batch shape, inferred from its tensor and
+        held to the input file's declaration where there is one.
+
+        pyzag is handed every state and force tensor up front, so unlike the
+        driver it never has to invent a shape -- inference always has something
+        to work from. What it does not have is a way to notice that the caller
+        shaped one of them wrong: the inferred region is simply believed, and a
+        mis-shaped initial condition surfaces much later as a packing error
+        against a residual of a different length. Where
+        ``[Settings]/example_batch_shape`` states the extent, check it here.
+        """
+        declared_all = self.sys.declared_sub_batch_shapes
         out: dict = {}
         for name in layout.vars():
             t = value_dict[name]
             base_ndim = len(layout.type_of(name).BASE_SHAPE or ())
-            out[name] = tuple(t.shape[dynamic_dim : t.ndim - base_ndim])
+            inferred = tuple(t.shape[dynamic_dim : t.ndim - base_ndim])
+            declared = declared_all.get(name, declared_all.get(lag_order(name)[0]))
+            if declared is not None and tuple(declared) != inferred:
+                raise ValueError(
+                    f"NEML2PyzagModel: [Settings]/example_batch_shape declares "
+                    f"{name} sub_batch={tuple(declared)}, but the supplied value has "
+                    f"sub_batch={inferred} (shape {tuple(t.shape)}, dynamic_dim="
+                    f"{dynamic_dim}). Drop one or make them agree."
+                )
+            out[name] = inferred
         return out
 
     def _assemble_dict_to_flat(

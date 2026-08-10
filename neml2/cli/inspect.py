@@ -39,19 +39,40 @@ import sys
 from typing import TYPE_CHECKING, Any
 
 from ..factory import load_input
+from ..settings import Settings
 from ._extensions import add_load_argument, load_user_extensions
 
 if TYPE_CHECKING:
     from ..models.model import Model
 
 
-def _model_to_dict(model: Model) -> dict[str, Any]:
+def _variable_entry(name: str, typ: type, settings: Settings) -> dict[str, Any]:
+    """One input / output row, carrying the declared sub-batch extent if any.
+
+    A sub-batch axis is invisible in the wiring until a tensor shows up with
+    the wrong rank, at which point the failure surfaces as a shape error deep
+    inside a solve. Printing what ``[Settings]/example_batch_shape`` declares
+    for each variable makes both a missing declaration and a mistyped one --
+    which reads as no declaration at all -- visible before a run.
+    """
+    entry: dict[str, Any] = {"name": name, "type": typ.__name__}
+    sub = settings.sub_batch_shape(name)
+    if sub is not None:
+        entry["sub_batch"] = list(sub)
+    return entry
+
+
+def _model_to_dict(model: Model, settings: Settings | None = None) -> dict[str, Any]:
+    """Structural summary of *model*, annotated with *settings*' declarations.
+
+    ``settings`` defaults to an empty block: a model handed over without its
+    input file simply has nothing declared about it.
+    """
+    settings = settings if settings is not None else Settings()
     return {
         "name": type(model).__name__,
-        "inputs": [{"name": name, "type": typ.__name__} for name, typ in model.input_spec.items()],
-        "outputs": [
-            {"name": name, "type": typ.__name__} for name, typ in model.output_spec.items()
-        ],
+        "inputs": [_variable_entry(n, t, settings) for n, t in model.input_spec.items()],
+        "outputs": [_variable_entry(n, t, settings) for n, t in model.output_spec.items()],
         "parameters": [
             {
                 "name": name,
@@ -118,7 +139,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
-    data = _model_to_dict(model)
+    data = _model_to_dict(model, factory.settings)
     if args.json_mode:
         data["retcode"] = 0
         print(json.dumps(data))

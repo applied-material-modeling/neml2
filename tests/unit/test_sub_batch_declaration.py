@@ -210,3 +210,186 @@ def test_predictor_output_keeps_its_sub_batch_axis():
     assert out["u"].sub_batch_ndim == 1
     assert tuple(out["u"].shape) == (_NBATCH, _NSITE)
     torch.testing.assert_close(out["u"].data, _per_site_given().data)
+
+
+# ---------------------------------------------------------------------------
+# TransientDriver: the declaration sizes what the driver has to invent
+# ---------------------------------------------------------------------------
+
+# A per-site unknown integrated in time, driven with a global rate. The initial
+# condition is a plain value -- NOT hand-shaped to (nbatch, nsite) -- so the
+# only thing that knows the per-site extent is the [Settings] declaration.
+_DRIVEN = """
+[Tensors]
+  [times]
+    type = Python
+    expr = '''
+      t = torch.linspace(0.0, 1.0, 5, dtype=torch.float64)
+      result = Scalar(t.unsqueeze(-1).expand(5, 3).contiguous())
+    '''
+  []
+  [rates]
+    type = Python
+    expr = 'Scalar(torch.full((5, 3), 2.0, dtype=torch.float64))'
+  []
+  [x0]
+    type = Python
+    expr = 'Scalar(10.0)'
+  []
+  [x0_per_site]
+    type = Python
+    expr = 'Scalar(torch.full((3, 4), 10.0, dtype=torch.float64), sub_batch_ndim=1)'
+  []
+  [x0_wrong_width]
+    type = Python
+    expr = 'Scalar(torch.full((3, 7), 10.0, dtype=torch.float64), sub_batch_ndim=1)'
+  []
+[]
+
+[Models]
+  [integrate]
+    type = ScalarBackwardEulerTimeIntegration
+    variable = 'x'
+    time = 't'
+  []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'integrate'
+    unknowns = 'x'
+    residuals = 'x_residual'
+  []
+[]
+
+[Solvers]
+  [lu]
+    type = DenseLU
+  []
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+    abs_tol = 1e-12
+    rel_tol = 1e-10
+    max_its = 25
+  []
+[]
+
+[Models]
+  [model]
+    type = ImplicitUpdate
+    equation_system = 'eq_sys'
+    solver = 'newton'
+  []
+[]
+
+[Drivers]
+  [driver]
+    type = TransientDriver
+    model = 'model'
+    prescribed_time = 'times'
+    prescribed_Scalar_names = 'x_rate'
+    prescribed_Scalar_values = 'rates'
+    ic_Scalar_names = 'x'
+    ic_Scalar_values = '{ic}'
+  []
+[]
+{settings}
+"""
+
+_DECLARE_PER_SITE = """
+[Settings]
+  [example_batch_shape]
+    x = '(2; 4)'
+  []
+[]
+"""
+
+
+def _driver(ic: str = "x0", settings: str = _DECLARE_PER_SITE):
+    return load_string(_DRIVEN.format(ic=ic, settings=settings)).get_driver("driver")
+
+
+def test_driver_reads_the_declaration_for_the_variable_and_its_lags():
+    driver = _driver()
+    assert driver.declared_sub_batch_shapes == {
+        "x": torch.Size([4]),
+        "x~1": torch.Size([4]),
+    }
+
+
+def test_driver_sizes_its_zero_fill_from_the_declaration():
+    """``x`` is an unknown with no predictor, so the driver has to invent its
+    initial guess. Zero-filled at base shape it gives the equation system one
+    row where the residual has one per site, and the linear solve dies on a
+    non-square matrix -- the reason `predictor = ` omitted, a schema-optional
+    configuration, was not usable for a sub-batched system."""
+    driver = _driver()
+    assert driver.run()
+    final = driver.result_out[-1]["x"]
+    assert final.sub_batch_ndim == 1
+    assert tuple(final.shape) == (3, 4)
+    # x0 = 10 broadcast over the 4 sites, integrated at rate 2 to t = 1.
+    torch.testing.assert_close(final.data, torch.full((3, 4), 12.0, dtype=torch.float64))
+
+
+def test_declared_and_hand_shaped_ic_agree_on_the_answer():
+    """The behaviour the declaration exists to replace: pinning the shape with
+    a hand-built ``(nbatch, nsite)`` initial condition. Both spellings solve,
+    and they solve to the same thing."""
+    declared = _driver()
+    declared.run()
+    hand_shaped = _driver(ic="x0_per_site", settings="")
+    hand_shaped.run()
+    torch.testing.assert_close(
+        declared.result_out[-1]["x"].data, hand_shaped.result_out[-1]["x"].data
+    )
+
+
+def test_driver_rejects_an_ic_that_contradicts_the_declaration():
+    with pytest.raises(ValueError, match=r"declares x sub_batch=\(4,\).*carries sub_batch=\(7,\)"):
+        _driver(ic="x0_wrong_width")
+
+
+def test_driver_accepts_an_ic_that_already_matches_the_declaration():
+    driver = _driver(ic="x0_per_site")
+    assert driver.declared_sub_batch_shapes["x"] == torch.Size([4])
+    assert driver.run()
+
+
+def test_undeclared_sub_batched_variable_still_infers_from_its_ic():
+    """No declaration: the pre-existing inference from a hand-shaped initial
+    condition keeps working, so files that predate this keep their behaviour."""
+    driver = _driver(ic="x0_per_site", settings="")
+    assert driver.declared_sub_batch_shapes == {}
+    assert driver.run()
+    assert tuple(driver.result_out[-1]["x"].shape) == (3, 4)
+
+
+# ---------------------------------------------------------------------------
+# Route parity
+# ---------------------------------------------------------------------------
+
+
+def test_eager_and_export_resolve_the_same_sub_batch_extents():
+    """Parity is an invariant (CLAUDE.md): a declaration that means one thing
+    to the driver and another to ``neml2-compile`` is worse than no
+    declaration, because the two routes would then disagree silently. Both
+    resolve through :class:`~neml2.settings.Settings`; this pins that neither
+    has grown a private interpretation of the same file.
+    """
+    factory = load_string(_DRIVEN.format(ic="x0", settings=_DECLARE_PER_SITE))
+    model = factory.get_model("model")
+    driver = factory.get_driver("driver")
+    system = model.system
+
+    # What ``neml2-compile`` would trace, i.e. the exporter's resolution.
+    exported = factory.settings.resolve(model.input_spec)
+
+    for name in model.input_spec:
+        declared = driver.declared_sub_batch_shapes.get(name)
+        if declared is None:
+            continue
+        assert tuple(exported[name][1]) == tuple(declared), name
+        assert tuple(system.declared_sub_batch_shapes[name]) == tuple(declared), name
