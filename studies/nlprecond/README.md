@@ -379,10 +379,34 @@ oscillates around 45. I is dominated by a few easy directions and nearly flat
 in the stiff ones, so *simple decrease* is too weak a criterion -- a full Newton
 step that lands at |R| = 1168 is accepted because I dropped by 1e-3.
 
-**Not yet tested:** Armijo sufficient decrease using the true directional
-derivative `grad(I).p = dt * r.p`, rather than simple decrease. That is the
-remaining variant and the fair test of a potential-based line search; it would
-reject the steps that simple decrease waves through.
+**Armijo does not rescue it, and the reason kills the trust-region idea too.**
+Using the true directional derivative `grad(I).p = dt * r_gamma . dgamma` with
+`c1 = 1e-4`, on the fully variational sub-system:
+
+| merit | ls=5 | ls=10 | ls=20 | ls=40 |
+| --- | --- | --- | --- | --- |
+| `max\|R\|` | **34** | 83 | 127 | 127 |
+| I, simple decrease | 168 | 218 | 300+ | 300+ |
+| I, Armijo | 166 | 179 | 187 | 300+ |
+
+The ratio of actual to predicted decrease, `rho`, explains it: rho sits between
+0.1 and 1.0 for the whole path. **The quadratic model is accurate.** The step is
+not overshooting the model's validity, so neither Armijo nor a trust region has
+anything to correct -- a trust region would keep its radius large and reduce to
+plain Newton.
+
+What is actually wrong is that **I is nearly flat where the iterations are
+spent**. At iteration 0 the directional derivative is `grad(I).p = -5.7e-08`
+against `I = 6.12`: the cold start, with slip rates seeded near zero, is
+essentially a stationary point of the potential. I carries almost no signal over
+the region the solver traverses, while max|R| there moves by orders of
+magnitude. Minimizing a flat function is intrinsically slow, whatever the
+line-search rule.
+
+So the potential-based merit is a dead end for this problem, and so is the
+trust region built on it. The variational structure is real -- and worth keeping
+as the reason to prefer the inverted residual -- but it does not make a useful
+merit function here.
 
 There is also a physics cost. Lagging `tauc` is *not* a small perturbation at
 these step sizes: `check_equivalence` puts `cp_coupled_variational` 16% away
