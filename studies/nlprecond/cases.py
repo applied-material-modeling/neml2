@@ -163,6 +163,36 @@ CASES: dict[str, Case] = {
             ),
         ),
         Case(
+            name="cp_coupled_variational",
+            parent="studies/nlprecond/cases/cp_coupled_inverted",
+            solves_per_step=1,
+            unknowns=22,
+            flow_law="powerlaw",
+            why=(
+                "cp_coupled_inverted with the slip strength evaluated from the PREVIOUS "
+                "step's hardening. Freezing tauc during the solve makes the update exactly "
+                "variational, so the incremental potential is a true merit function -- at "
+                "the cost of an O(dt) physics change."
+            ),
+            supports_nopred=False,
+            no_pred_blocker=("slip_rates is sub-batched (nbatch, 12); see cp_coupled_inverted."),
+        ),
+        Case(
+            name="cp_decoupled_variational",
+            parent="studies/nlprecond/cases/cp_decoupled",
+            solves_per_step=2,
+            unknowns=22,
+            flow_law="powerlaw",
+            why=(
+                "cp_decoupled with sub-system #1 made exactly variational: slip rates as "
+                "unknowns via the inverted residual, tauc lagged, orientation already "
+                "lagged. The only configuration where the incremental potential is a "
+                "complete merit function."
+            ),
+            supports_nopred=False,
+            no_pred_blocker="slip_rates is sub-batched (nbatch, 12); see cp_coupled_inverted.",
+        ),
+        Case(
             name="cp_decoupled",
             parent="tests/regression/solid_mechanics/crystal_plasticity/single_crystal_decoupled",
             solves_per_step=2,

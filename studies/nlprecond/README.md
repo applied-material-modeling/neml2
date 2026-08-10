@@ -355,6 +355,42 @@ max|R| the step-1 count goes 32 -> 82 -> 132 as `ls_iters` goes 5 -> 10 -> 20.
 More halvings just lets the solver settle for a tiny alpha that marginally
 improves the wrong quantity.
 
+### Lagging tauc makes it exactly variational -- and it still does not help
+
+`cp_coupled_variational` and `cp_decoupled_variational` evaluate the slip
+strength from the previous step's hardening. With `tauc` frozen during the
+solve the update is exactly variational; in the decoupled case, where the
+orientation is already lagged, sub-system #1's potential is **complete** --
+nothing else is an unknown, so `dI = 0` does imply `R = 0`.
+
+The structure is confirmed: I now decreases **monotonically** along the whole
+path, in both cases. Theory holds.
+
+But a monotone-descent line search on I converges far worse than on max|R|:
+
+| merit | ls=5 | ls=10 | ls=20 |
+| --- | --- | --- | --- |
+| `max\|R\|` | **34** | 83 | 127 |
+| `I` | 168 | 218 | 300+ |
+
+The path shows why: I falls 6.12 -> 1.00 in five iterations as elastic energy
+converts to plastic work, then changes by ~1e-4 per step while max|R| still
+oscillates around 45. I is dominated by a few easy directions and nearly flat
+in the stiff ones, so *simple decrease* is too weak a criterion -- a full Newton
+step that lands at |R| = 1168 is accepted because I dropped by 1e-3.
+
+**Not yet tested:** Armijo sufficient decrease using the true directional
+derivative `grad(I).p = dt * r.p`, rather than simple decrease. That is the
+remaining variant and the fair test of a potential-based line search; it would
+reject the steps that simple decrease waves through.
+
+There is also a physics cost. Lagging `tauc` is *not* a small perturbation at
+these step sizes: `check_equivalence` puts `cp_coupled_variational` 16% away
+from the baseline at step 1. With `h_n = 0` the first step sees `tauc = 50`
+against a converged ~59, and `n = 8` turns that into a 3.3x slip-rate error.
+Shipping variational crystal plasticity would need either much smaller steps or
+a variationally consistent implicit hardening treatment.
+
 ## Cases
 
 Each case is a self-contained copy of a regression scenario, edited only to
