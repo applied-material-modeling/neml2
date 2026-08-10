@@ -463,6 +463,47 @@ even sub-batch labels -- but it is read only by `cli/aoti_export.py` and
 (`supports_nopred`) and why every case here hand-shapes an IC. Closing that
 parity gap is the prerequisite for the slip-rate predictor.
 
+### Merit functions: three tried, the residual norm wins
+
+Deuflhard classifies merit functions by which affine invariance they respect
+(*Newton Methods for Nonlinear Problems*, Sec. 1.2.2). All three classes have now
+been tested as backtracking criteria on the same instrumented loop, step 1:
+
+| case | `max\|R\|` (contravariant) | potential I (conjugate) | natural `\|J^-1 F\|` (covariant) |
+| --- | --- | --- | --- |
+| `vp_isoharden` | **9** | -- | 9 |
+| `cp_coupled` | 9 | -- | **8** |
+| `cp_coupled_inverted` | **32** | 200+ | 37 |
+| `cp_decoupled_variational` | **34** | 168 | 68 |
+
+The residual norm wins or ties everywhere. (These counts come from the study's
+own line search -- simple decrease on the max group norm -- so they are
+comparable to each other but not to the C++ solver's numbers elsewhere in this
+document, which uses a sufficient-decrease test.)
+
+**Why the natural level function loses is instructive.** It is not a bad
+direction; it is too permissive. Measured on `cp_decoupled_variational`:
+
+| merit | iters | alpha=1 accepted | first 12 alphas |
+| --- | --- | --- | --- |
+| `max\|R\|` | 34 | 18% | `.031 .031 .031 .031 .031 .031 .031 .062 .5 1 .5 .5` |
+| natural | 68 | 22% | `1 1 1 1 1 .125 .125 .062 .062 .125 1 .25` |
+
+It takes full steps through the first five iterations where the residual norm
+forces 1/32. It cannot do otherwise: `r(x + a*p) ~ (1-a) r`, so
+`||J^-1 r(x + a*p)|| ~ (1-a) ||p||` decreases for *any* `a` in the local regime.
+Guaranteed descent -- the property that makes it theoretically attractive --
+is exactly what makes it useless as a monotonicity filter.
+
+**Caveat: this tests the merit, not Deuflhard's method.** Sec. 3.3.3 pairs the
+natural level function with an *adaptive damping-factor prediction* derived from
+affine-covariant Lipschitz estimates, not with naive backtracking. That is a
+different algorithm and nothing here speaks to it.
+
+Taken with the seeding result above -- an oracle initial guess takes step 1 from
+34 iterations to 1 -- the evidence is that the merit function is the wrong lever
+for this problem and the initial guess is the right one.
+
 ## Cases
 
 Each case is a self-contained copy of a regression scenario, edited only to
