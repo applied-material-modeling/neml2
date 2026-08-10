@@ -301,6 +301,60 @@ viscoplastic diagnosis needed. It does **not** extend to a line-searched solve,
 where the merit function is scale-dependent. Scaling is a legitimate lever
 there -- it just is not the one that helps here.
 
+### The incremental potential: right diagnosis, unusable as a merit
+
+The inverted residual is not merely better conditioned -- it is the *gradient*
+of an incremental potential (Ortiz-Stainier). For the power-law slip rule the
+primal dissipation potential is
+
+    phi(gdot) = n/(n+1) * gamma0 * tauc * |gdot/gamma0|^((n+1)/n)
+
+and `dphi/dgdot` reproduces `PowerLawSlipRuleResidual` to 1e-12 for both signs
+across five decades, with `phi'' > 0` everywhere. So
+
+    I(gdot) = Psi(Ee_trial - dt*sum_i gdot_i M_i) + dt * sum_i phi(gdot_i)
+
+satisfies `dI/dgdot_i = dt * r_i`: elastic energy plus plastic dissipation. The
+rate form is the gradient of nothing, which is an independent reason to prefer
+the inverted one.
+
+Evaluating I along a step-1 Newton path (using `Ee_slaved = Ee - r_Ee`, which
+avoids reconstructing trial strains and rotated Schmid tensors) **confirms that
+max|R| is a bad merit function** -- through the whole stalled phase:
+
+| iters | max\|R\| | I |
+| --- | --- | --- |
+| 0-11 | **grows** 116 -> 253 | **decreases monotonically** 6.122 -> 1.207 |
+| 12-29 | falls 82 -> 0.08 | drifts *up* ~1e-3/step |
+
+Those first 12 iterations are exactly the ones the line search wastes at
+alpha = 1/32. The Newton steps are good descent steps on the potential; the
+residual norm rejects them.
+
+**But an incomplete potential cannot be used as the merit.** The converged root
+sits at I = 1.1822, above the path minimum of 1.1652 -- the true solution is not
+I's minimizer, off by ~1.5%. A line search demanding I-descent therefore rejects
+every step once phase 2 begins and stalls completely: 200+ iterations at
+ls = 5, 10 and 20, against 32 for max\|R\|.
+
+The gap is the *implicit hardening coupling*. Voce itself is variational --
+`h(alpha) = h_s(1 - exp(-theta0*alpha/h_s))` integrates to a genuine stored
+energy `Psi_h(alpha)`, and its derivative is exactly NEML2's rate form. What
+breaks stationarity is evaluating `tauc` inside `phi` at the *new* alpha, which
+adds a `dphi/dtauc * dtauc/dgdot` term the residual omits. Adding `Psi_h` to the
+merit does not repair this -- it makes phase 2 worse, as expected if the missing
+piece is the coupling rather than an energy.
+
+Two routes follow, neither tried yet: freeze `tauc` at its step-n value inside
+`phi` (explicit hardening), which restores exact variational structure at the
+cost of an O(dt) physics change; or accept a non-monotone / hybrid merit that
+uses I-descent where available.
+
+Incidental but useful: **deeper backtracking on a bad merit is harmful.** With
+max|R| the step-1 count goes 32 -> 82 -> 132 as `ls_iters` goes 5 -> 10 -> 20.
+More halvings just lets the solver settle for a tiny alpha that marginally
+improves the wrong quantity.
+
 ## Cases
 
 Each case is a self-contained copy of a regression scenario, edited only to
