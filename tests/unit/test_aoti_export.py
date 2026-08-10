@@ -1057,3 +1057,48 @@ def test_prepare_opts_in_worker_no_load_is_identity_copy():
     opts = _prepare_opts_in_worker(src)
     assert opts == src
     assert opts is not src  # a copy -- never mutate the caller's dict
+
+
+# --------------------------------------------------------------------------- #
+# _predictor_input_shapes                                                      #
+# --------------------------------------------------------------------------- #
+
+
+class _FakePredictor:
+    """Stand-in for a predictor: `_predictor_input_shapes` only reads input_spec."""
+
+    def __init__(self, names):
+        self.input_spec = dict.fromkeys(names)
+
+
+def test_predictor_input_shapes_prefers_exact_then_bare_then_default():
+    from neml2.cli.aoti_export import _predictor_input_shapes
+
+    dyn = (7,)
+    shapes = {
+        "stress~1": ((2,), (5,)),  # exact hit, sub-batched
+        "trial_stress": ((3,), ()),  # bare-name hit for `trial_stress~1`
+    }
+    pred = _FakePredictor(["stress~1", "trial_stress~1", "frozen_given"])
+    got = _predictor_input_shapes(pred, shapes, dyn)
+
+    # Exact name wins, sub-batch preserved.
+    assert got["stress~1"] == ((2,), (5,))
+    # `~1` stripped to find the bare name -- a history variable whose current
+    # counterpart is the one actually keyed in `shapes`.
+    assert got["trial_stress~1"] == ((3,), ())
+    # Neither present: this is the case that used to raise a bare KeyError
+    # inside `_example_inputs_for`. A given internal to the composition falls
+    # back to the shared dynamic shape with no sub-batch.
+    assert got["frozen_given"] == (dyn, ())
+    # Exactly the predictor's inputs, nothing inherited from `shapes`.
+    assert set(got) == {"stress~1", "trial_stress~1", "frozen_given"}
+
+
+def test_predictor_input_shapes_handles_empty_and_multi_tilde():
+    from neml2.cli.aoti_export import _predictor_input_shapes
+
+    assert _predictor_input_shapes(_FakePredictor([]), {}, (2,)) == {}
+    # Only the FIRST `~` splits, so `a~2` resolves against bare `a`.
+    got = _predictor_input_shapes(_FakePredictor(["a~2"]), {"a": ((4,), (6,))}, (2,))
+    assert got["a~2"] == ((4,), (6,))

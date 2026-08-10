@@ -2035,6 +2035,34 @@ def _compile_param_vjp(
 # ---------------------------------------------------------------------------
 
 
+def _predictor_input_shapes(
+    predictor: Model,
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]],
+    dyn_shape: tuple[int, ...],
+) -> dict[str, tuple[tuple[int, ...], tuple[int, ...]]]:
+    """Example-input shapes for a predictor, tolerant of non-top-level givens.
+
+    ``shapes`` is keyed by the *enclosing* composed model's own ``input_spec``.
+    That is enough for ``ConstantExtrapolationPredictor``, which only ever
+    consumes ``<unknown>~1`` history variables -- always top-level inputs, so
+    always present. A custom predictor may instead consume a "given" that is
+    internal to the composition: a frozen trial-state quantity threaded into the
+    implicit system as one of its ``given_names`` but never a model input. That
+    name is absent from ``shapes``, and the hard index inside
+    :func:`_example_inputs_for` would raise a bare ``KeyError`` with no
+    diagnostic context.
+
+    Resolve each predictor input by the same cascade
+    :func:`_example_for_given` already uses for the system's own givens: the
+    exact name, then the bare name with any ``~k`` history suffix stripped, then
+    the shared dynamic shape with no sub-batch.
+    """
+    return {
+        name: shapes.get(name, shapes.get(name.split("~", 1)[0], (dyn_shape, ())))
+        for name in predictor.input_spec
+    }
+
+
 def _compile_implicit_segment(
     inner,
     pkg_basename: str,
@@ -2586,19 +2614,7 @@ def _compile_implicit_segment(
     if inner.predictor is not None:
         pred = inner.predictor.to(device)
         pred_exportable = ComposedModel([pred])
-        # A custom predictor may consume a "given" that is internal to the
-        # enclosing composed model (e.g. a frozen trial-state quantity threaded
-        # in as one of this system's `given_names`, not a top-level model
-        # input) -- unlike `ConstantExtrapolationPredictor`, which only ever
-        # consumes `<unknown>~1` history variables that are always top-level
-        # inputs and thus already keyed in `shapes`. Fall back to the same
-        # bare-name / shared-dyn-shape default used by `_example_for_given`
-        # above so a name missing from `shapes` doesn't crash the hard index
-        # inside `_example_inputs_for`.
-        pred_shapes = {
-            name: shapes.get(name, shapes.get(name.split("~", 1)[0], (dyn_shape, ())))
-            for name in pred_exportable.input_spec
-        }
+        pred_shapes = _predictor_input_shapes(pred_exportable, shapes, dyn_shape)
         pred_inputs = _example_inputs_for(pred_exportable, device, shapes=pred_shapes)
         pred_name = f"{pkg_basename}_predictor.pt2"
         compile_model(
