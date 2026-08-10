@@ -189,7 +189,23 @@ class ModelNonlinearSystem(NonlinearSystem):
             # HIT `structure = 'block dense'` -> ['block', 'dense'] (one per group).
             raw = node.param_list_str("structure")
             structure = [k.lower() for k in raw]
-        return cls(model, unknowns=unknowns, residuals=residuals, structure=structure)
+        # ``[Settings]/example_batch_shape`` is file-global, so it may well name
+        # variables this system has never heard of (driver-level forces, another
+        # system's unknowns). Keep the ones that are ours and let the consumers
+        # that can see the whole model tree police the rest.
+        settings = factory.settings
+        declared = {
+            name: torch.Size(sub)
+            for name in model.input_spec
+            if (sub := settings.sub_batch_shape(name)) is not None
+        }
+        return cls(
+            model,
+            unknowns=unknowns,
+            residuals=residuals,
+            structure=structure,
+            declared_sub_batch_shapes=declared,
+        )
 
     def __init__(
         self,
@@ -197,8 +213,18 @@ class ModelNonlinearSystem(NonlinearSystem):
         unknowns: list[list[str]],
         residuals: list[list[str]] | None = None,
         structure: list[str] | None = None,
+        declared_sub_batch_shapes: Mapping[str, torch.Size] | None = None,
     ) -> None:
         self.model = model
+        #: Per-variable sub-batch extents declared in the input file's
+        #: ``[Settings]/example_batch_shape``, keyed by variable name. Empty
+        #: when the system is constructed directly in Python. This is what lets
+        #: a sub-batched unknown have a known shape before any tensor for it
+        #: exists; :class:`~neml2.models.common.ImplicitUpdate` and the pyzag
+        #: adapter both read it from here rather than re-deriving it.
+        self.declared_sub_batch_shapes: dict[str, torch.Size] = dict(
+            declared_sub_batch_shapes or {}
+        )
         self.unknown_groups = [list(group) for group in unknowns]
         self.residual_groups = (
             [list(group) for group in residuals]

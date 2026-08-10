@@ -97,18 +97,36 @@ def test_sub_batch_shape_falls_back_to_the_lag_family():
     assert s.sub_batch_shape("elastic_strain~2") == (20,)
 
 
-def test_sub_batch_shape_falls_back_to_the_uniform_entry():
-    """A uniform spec declares every variable -- including that it has no
-    sub-batch axis, which is a real claim, not silence."""
-    s = Settings({"*": "(8,)"})
-    assert s.sub_batch_shape("anything") == ()
-    assert s.sub_batch_ndim("anything") == 0
+def test_a_spec_without_a_semicolon_declares_no_sub_batch():
+    """``'(N,)'`` writes a dynamic region only. Reading it as "and therefore no
+    sub-batch axis anywhere" would break every benchmark input, which uses the
+    uniform form purely to pin a production batch size."""
+    assert Settings({"*": "(8,)"}).sub_batch_shape("anything") is None
+    assert Settings({"x": "(8,)"}).sub_batch_shape("x") is None
+
+
+def test_an_explicitly_empty_sub_region_is_a_claim():
+    """``'(2; )'`` writes the region and leaves it empty -- that *is* an
+    assertion that the variable has no sub-batch axis."""
+    assert Settings({"x": "(2; )"}).sub_batch_shape("x") == ()
+    assert Settings({"x": "(2; )"}).sub_batch_ndim("x") == 0
+
+
+def test_uniform_entry_can_declare_a_sub_batch():
     assert Settings({"*": "(8; 5)"}).sub_batch_shape("anything") == (5,)
 
 
 def test_lag_entries_must_agree_on_the_sub_region():
     with pytest.raises(ValueError, match="history lags must declare the same sub-batch"):
-        Settings({"x": "(2; 4)", "x~1": "(2,)"})
+        Settings({"x": "(2; 4)", "x~1": "(2; 8)"})
+
+
+def test_a_silent_lag_does_not_conflict_with_a_declaring_one():
+    """``benchmark/mxpcdense/model.i`` shape: some entries pin a sub-batch,
+    others only pin a dynamic batch. The silent ones borrow, not fight."""
+    s = Settings({"x": "(2,)", "x~1": "(2; 12)"})
+    assert s.sub_batch_shape("x") == (12,)
+    assert s.sub_batch_shape("x~1") == (12,)
 
 
 def test_lag_entries_may_differ_on_the_dyn_region():
@@ -201,7 +219,8 @@ def test_read_settings_per_variable_section_form():
 """
     ).settings
     assert settings.sub_batch_shape("elastic_strain") == (12,)
-    assert settings.sub_batch_shape("cauchy_stress") == ()
+    # ``'(2,)'`` pins only the dynamic region -- silence about sub-batch.
+    assert settings.sub_batch_shape("cauchy_stress") is None
 
 
 def test_read_settings_rejects_both_forms_at_once():

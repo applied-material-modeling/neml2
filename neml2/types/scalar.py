@@ -60,7 +60,7 @@ from typing import ClassVar, TypeVar, overload
 
 import torch
 
-from neml2.types._base import TensorWrapper, align_sub_batch
+from neml2.types._base import TensorWrapper, align_sub_batch, inherit_rewrap_metadata
 from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
 
@@ -99,14 +99,16 @@ class Scalar(PrimitiveTensor):
         # (Vec, SR2, etc.). This branch is the Scalar-specific equivalent;
         # without it, ``Scalar(other_scalar, ...)`` falls through to
         # ``torch.as_tensor(other_scalar)`` which doesn't know about
-        # TensorWrapper and raises. The outer call's metadata wins, matching
-        # the base policy.
+        # TensorWrapper and raises. Metadata the caller did not supply is
+        # inherited from the inner wrapper below, matching the base policy.
+        inner: Scalar | None = None
         if isinstance(data, TensorWrapper):
             if not isinstance(data, Scalar):
                 raise TypeError(
                     f"Cannot wrap a {type(data).__name__} as a Scalar; "
                     "wrapper types must match. Pass `inner.data` instead of the wrapper."
                 )
+            inner = data
             data = data.data
             if dtype is not None or device is not None:
                 data = data.to(dtype=dtype, device=device)
@@ -125,6 +127,8 @@ class Scalar(PrimitiveTensor):
         object.__setattr__(self, "k_ndim", k_ndim)
         object.__setattr__(self, "k_state", k_state)
         object.__setattr__(self, "k_pairing", k_pairing)
+        if inner is not None:
+            inherit_rewrap_metadata(self, inner)
         self.__post_init__()
 
     @classmethod

@@ -27,12 +27,13 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 import torch
 
 from ...es import AssembledMatrix, AxisLayout, ModelNonlinearSystem, SparseVector
-from ...es._helpers import _flatten_base
+from ...es._helpers import _flatten_base, lag_order
 from ...factory import register_neml2_object
 from ...schema import HitSchema, dependency, option
 from ...solvers import ConvergenceError, DenseLU, Newton, RetCode
@@ -104,24 +105,59 @@ def _matrix_variable_block(
     return block.base[..., row_start:row_end, col_start:col_end]
 
 
-def _lookup_history_sbn(unknown_name: str, input_sbn: dict[str, int]) -> int:
-    """Resolve an unknown's ``sub_batch_ndim`` from its history input.
+def _resolve_unknown_sbn(
+    unknown_name: str,
+    *,
+    produced: TensorWrapper | None,
+    input_sbn: Mapping[str, int],
+    declared: Mapping[str, torch.Size] | None = None,
+) -> int:
+    """How many trailing batch axes of *unknown_name* are sub-batch axes.
 
-    Mirrors the lookup in :meth:`ImplicitUpdate._wrap_outputs`: prefer the
-    one-step-old ``<name>~1`` entry, fall back to ``<name>~k`` for ``k >= 2``,
-    then the bare ``<name>`` if it appears as an input itself. Returns 0 when
-    no history entry exists — the deterministic "nothing declared" default
-    that matches every existing single-group scenario.
+    A sub-batch axis is a property of the *variable*, so every lag of it
+    (``alpha``, ``alpha~1``, ...), the initial guess produced for it, and the
+    input file's declaration all describe the same rank. Three kinds of signal
+    are available here:
+
+    * ``[Settings]/example_batch_shape``, via
+      :attr:`~neml2.es.ModelNonlinearSystem.declared_sub_batch_shapes` -- the
+      only signal that exists before any tensor does, and the only one
+      available to an unknown with neither a history input nor a predictor;
+    * the caller's inputs, via their ``sub_batch_ndim`` (``input_sbn``);
+    * the value :meth:`ImplicitUpdate._initial_unknowns` produced — from a
+      predictor, which is a producer and returns typed, so its metadata is an
+      assertion, not a guess.
+
+    A signal of ``0`` is indistinguishable from *unmarked*, so it can never
+    contradict a positive one; the answer is the positive rank they agree on,
+    or ``0`` when nothing asserts anything. Two *different* positive ranks
+    cannot both be right and raise.
+
+    Reading only the history inputs -- which is what this did before -- silently
+    returned ``0`` for an unknown with no history (a rate, e.g. ``slip_rates``),
+    discarding the sub-batch axis a predictor had just marked and leaving the
+    residual model to fail on an unmarked value far downstream.
     """
-    sbn = input_sbn.get(f"{unknown_name}~1")
-    if sbn is None:
-        for k in range(2, 10):
-            sbn = input_sbn.get(f"{unknown_name}~{k}")
-            if sbn is not None:
-                break
-    if sbn is None:
-        sbn = input_sbn.get(unknown_name, 0)
-    return sbn
+    asserted: dict[str, int] = {}
+    declared_sub = (declared or {}).get(unknown_name)
+    if declared_sub is not None and len(declared_sub) > 0:
+        asserted[f"{unknown_name} ([Settings]/example_batch_shape)"] = len(declared_sub)
+    for name, sbn in input_sbn.items():
+        if sbn > 0 and lag_order(name)[0] == unknown_name:
+            asserted[name] = sbn
+    if produced is not None and produced.sub_batch_ndim > 0:
+        asserted[f"{unknown_name} (initial guess)"] = produced.sub_batch_ndim
+    ranks = set(asserted.values())
+    if not ranks:
+        return 0
+    if len(ranks) > 1:
+        detail = ", ".join(f"{k}={v}" for k, v in sorted(asserted.items()))
+        raise ValueError(
+            f"ImplicitUpdate: conflicting sub-batch ranks for unknown {unknown_name!r} "
+            f"({detail}). A sub-batch axis belongs to the variable, so every lag of it "
+            f"and its initial guess must agree."
+        )
+    return ranks.pop()
 
 
 def _matrix_pushforward(
@@ -427,11 +463,19 @@ class ImplicitUpdate(Model):
         unknowns = self._initial_unknowns(state)
         # Bridge: caller's ``sub_batch_ndim`` dict is keyed by INPUT names
         # (e.g. ``concentration~1``); mirror onto unknowns via ``name~k`` rule.
+        # The initial guess is passed in too: when a predictor produces an
+        # unknown, that unknown is NOT an input of this model (it is excluded
+        # from ``input_spec``), so the predictor's output is the only thing
+        # that knows its sub-batch rank.
         full_sbn = dict(sub_batch_ndim) if sub_batch_ndim is not None else {}
+        input_asserted = dict(full_sbn)
         for uname in self.system.unknown_names:
-            if uname in full_sbn:
-                continue
-            full_sbn[uname] = _lookup_history_sbn(uname, sub_batch_ndim or {})
+            full_sbn[uname] = _resolve_unknown_sbn(
+                uname,
+                produced=unknowns[uname],
+                input_sbn=input_asserted,
+                declared=self.system.declared_sub_batch_shapes,
+            )
         # Derive the system-wide dyn shape from the caller's state values —
         # specifically the widest leading-batch shape across all inputs after
         # stripping each one's declared sub_batch axes. This is deterministic
@@ -610,35 +654,6 @@ class ImplicitUpdate(Model):
             )
             for name, raw in zip(self.output_spec, raw_outputs, strict=True)
         )
-
-    def _wrap_outputs(
-        self,
-        raw_outputs: tuple[torch.Tensor, ...],
-        input_sbn: dict[str, int],
-    ) -> tuple[TensorWrapper, ...]:
-        """Return one typed wrapper per unknown.
-
-        Each output unknown's ``sub_batch_ndim`` AND ``sub_batch_labels``
-        are inherited from the caller-supplied history input (``alpha~1``
-        → ``alpha``). This is the right anchor because that's the shape
-        AND labelling the user already committed to -- the system's
-        internally inferred ``ulayout.sub_batch_shape`` can over-credit
-        sub-batch axes when a sibling input (e.g. a 0-d $T$) forces
-        ``_dynamic_batch_ndim`` to 0 and re-categorizes everyone else's
-        batch axes as sub-batch.
-
-        Returning raw ``torch.Tensor`` here would drop the hint and the
-        next consumer (typically ``ComposedModel._coerce_to_input_type``)
-        would re-wrap with the default ``sub_batch_ndim=0`` and no
-        labels -- broken for any per-bin scenario and silent label
-        dropping at the boundary E3a relies on.
-        """
-        wrapped: list[TensorWrapper] = []
-        for name, raw in zip(self.output_spec, raw_outputs, strict=True):
-            type_cls = self.output_spec[name]
-            sbn = _lookup_history_sbn(name, input_sbn)
-            wrapped.append(type_cls(raw, sub_batch_ndim=sbn))
-        return tuple(wrapped)
 
 
 class _ImplicitUpdateFn(torch.autograd.Function):

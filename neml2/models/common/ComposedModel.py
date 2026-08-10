@@ -73,30 +73,19 @@ def _coerce_to_input_type(
     Three cases:
 
     * already an instance of ``type_cls`` — pass through unchanged (the
-      typical hot path; preserves ``sub_batch_ndim`` exactly).
+      typical hot path).
     * different ``TensorWrapper`` subclass (rare; only happens when a leaf
       returns a wrapper whose type differs from the next consumer's
-      input_spec — e.g. an ``R2`` flowing into an op expecting raw ``data``)
-      — rewrap with explicit ``sub_batch_ndim`` so the hint isn't lost.
+      input_spec — e.g. an ``R2`` flowing into an op expecting raw ``data``).
+      The constructor refuses a cross-type wrapper outright, so this rewraps
+      from ``.data`` and carries ``sub_batch_ndim`` over by hand.
     * raw ``torch.Tensor`` — wrap with the default ``sub_batch_ndim=0``;
       covers the top-level model.forward entry point where the caller hands
       in raw tensors.
-
-    The ``TensorWrapper.__post_init__`` auto-unwrap would lose
-    ``sub_batch_ndim`` if we naively called ``type_cls(wrapper)`` — the
-    outer call's default ``sub_batch_ndim=0`` wins. The explicit
-    ``sub_batch_ndim=state_val.sub_batch_ndim`` here is what keeps the hint
-    alive across the rewrap.
     """
     if isinstance(state_val, type_cls):
         return state_val
     if isinstance(state_val, TensorWrapper):
-        labels = getattr(state_val, "sub_batch_labels", ())  # noqa: B009
-        if labels:
-            return type_cls(  # type: ignore[call-arg]
-                state_val.data,
-                sub_batch_ndim=state_val.sub_batch_ndim,
-            )
         return type_cls(state_val.data, sub_batch_ndim=state_val.sub_batch_ndim)  # type: ignore[call-arg]
     return type_cls(state_val)  # type: ignore[call-arg]
 

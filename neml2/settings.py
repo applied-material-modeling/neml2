@@ -207,40 +207,39 @@ class Settings:
 
     # ── declaration lookup ────────────────────────────────────────────────────
 
-    def spec_for(self, name: str) -> str | None:
-        """The spec string governing *name*, or ``None`` if nothing declares it.
-
-        Lookup order: the exact key, then any entry for the same variable at a
-        different lag (``foo`` ↔ ``foo~1`` ↔ ``foo~2``), then the uniform entry.
-
-        Only the **sub-batch** region of the returned spec is meaningful across
-        lags -- :meth:`__post_init__` pins that the lag family agrees on it,
-        while the dynamic region may legitimately differ per lag. Read the
-        result through :meth:`sub_batch_shape`, not directly.
-        """
-        declared = self.example_batch_shape
-        if name in declared:
-            return declared[name]
-        base = _base_name(name)
-        if base in declared:
-            return declared[base]
-        for key, spec in declared.items():
-            if key != UNIFORM_KEY and _base_name(key) == base:
-                return spec
-        return declared.get(UNIFORM_KEY)
-
     def sub_batch_shape(self, name: str) -> tuple[int, ...] | None:
         """*name*'s declared sub-batch extent, or ``None`` if undeclared.
 
-        ``None`` and ``()`` are different answers: ``()`` means "declared, and
-        it has no sub-batch axis" (which conflicts with a sub-batched value),
-        while ``None`` means nothing was said and the consumer should fall back
-        to whatever it can infer.
+        A spec declares a sub-batch extent only where it *writes* one -- that
+        is, only if it carries the ``;`` separator. ``'(2,)'`` names a dynamic
+        batch and says nothing at all about sub-batch, so it reads as ``None``
+        here even though :func:`resolve_example_shapes` (which must assign
+        every input a full ``(dyn, sub)`` pair for the trace) reports its sub
+        region as ``()``. That distinction is what lets a file declare a
+        production batch size uniformly -- ``example_batch_shape =
+        '(${nbatch},)'``, as every benchmark input does -- without thereby
+        asserting that no variable in the file has a sub-batch axis.
+
+        ``()`` is therefore a deliberate claim ("written, and empty":
+        ``'(2; )'``) and conflicts with a sub-batched value, while ``None``
+        means nothing was said and the consumer falls back to inference.
+
+        Lookup runs over the entries that write a sub-batch region, in order:
+        the exact key, the bare variable name, any other lag of the same
+        variable (they agree by :meth:`_check_lag_agreement`), the uniform
+        entry.
         """
-        spec = self.spec_for(name)
-        if spec is None:
-            return None
-        return parse_example_batch_shape(spec)[1]
+        declared = self.example_batch_shape
+        base = _base_name(name)
+        candidates = [declared.get(name), declared.get(base)]
+        candidates += [
+            spec for key, spec in declared.items() if key != UNIFORM_KEY and _base_name(key) == base
+        ]
+        candidates.append(declared.get(UNIFORM_KEY))
+        for spec in candidates:
+            if spec is not None and _declares_sub_batch(spec):
+                return parse_example_batch_shape(spec)[1]
+        return None
 
     def sub_batch_ndim(self, name: str) -> int | None:
         """``len(self.sub_batch_shape(name))``, or ``None`` if undeclared."""
@@ -268,11 +267,13 @@ class Settings:
         Declaring them differently would let the driver and the residual model
         disagree about the same variable's layout, so it is rejected here --
         once, at parse time -- rather than surfacing as a shape mismatch deep
-        in Newton. The *dynamic* regions may still differ per lag.
+        in Newton. The *dynamic* regions may still differ per lag, and a lag
+        that writes no sub-batch region at all is silent rather than in
+        conflict (see :meth:`sub_batch_shape`).
         """
         by_base: dict[str, dict[str, tuple[int, ...]]] = {}
         for key, spec in self.example_batch_shape.items():
-            if key == UNIFORM_KEY:
+            if key == UNIFORM_KEY or not _declares_sub_batch(spec):
                 continue
             by_base.setdefault(_base_name(key), {})[key] = parse_example_batch_shape(spec)[1]
         for base, entries in by_base.items():
@@ -353,6 +354,11 @@ def read_settings(root: nmhit.Root) -> Settings:
             example_shapes[var_name] = entry.param_str()
 
     return Settings(example_shapes, dynamic_batch)
+
+
+def _declares_sub_batch(spec: str) -> bool:
+    """True iff *spec* writes a sub-batch region -- i.e. carries the ``;``."""
+    return ";" in spec
 
 
 def _base_name(name: str) -> str:

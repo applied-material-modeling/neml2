@@ -87,7 +87,17 @@ the chain-rule primitives in :mod:`neml2.types.functions` (``fullify``,
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, ClassVar, Generic, Literal, TypeAlias, TypeVar, cast, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Generic,
+    Literal,
+    TypeAlias,
+    TypeVar,
+    cast,
+    overload,
+)
 
 import torch
 
@@ -116,6 +126,37 @@ SubBatchStateFlag: TypeAlias = Literal["full", "broadcast"]
 #:   Jacobian on that (K, sub) pair: per-site value at (K_i=k, sub_pair=g) is
 #:   ``data[k=0, sub_pair=g] * delta(k==g)``, materialised by :func:`fullify`.
 KStateFlag: TypeAlias = Literal["full", "broadcast"]
+
+
+#: Per-field "the caller said nothing" values, used when a typed wrapper is
+#: re-wrapped as its own type. Kept in step with the seven instance fields
+#: minus ``data`` -- see :func:`inherit_rewrap_metadata`.
+_REWRAP_DEFAULTS: tuple[tuple[str, Any], ...] = (
+    ("sub_batch_ndim", 0),
+    ("sub_batch_state", ()),
+    ("sub_batch_meta", ()),
+    ("k_ndim", 0),
+    ("k_state", ()),
+    ("k_pairing", ()),
+)
+
+
+def inherit_rewrap_metadata(outer: TensorWrapper, inner: TensorWrapper) -> None:
+    """Seat on *outer* every metadata field it left at its default, from *inner*.
+
+    ``type_cls(wrapper)`` re-wraps an already-typed value -- the double-wrap
+    ``ComposedModel`` and friends produce when a value crosses a model
+    boundary. The dataclass ``__init__`` fills the metadata fields from their
+    defaults, so without this the re-wrap would silently reset the sub-batch
+    and K regions to "none" and hand a per-slip quantity downstream as a plain
+    batched one. Callers that mean to change a field still win: an explicitly
+    passed value differs from the default and is left alone. To *drop* a
+    region deliberately, say so -- ``with_sub_batch_ndim(0)`` /
+    ``sub_batch.flatten()`` -- rather than laundering it through a re-wrap.
+    """
+    for name, default in _REWRAP_DEFAULTS:
+        if getattr(outer, name) == default:
+            object.__setattr__(outer, name, getattr(inner, name))
 
 
 class TensorWrapper:
@@ -191,7 +232,8 @@ class TensorWrapper:
         gets wrapped twice -- yielding e.g. ``SR2(SR2(tensor))`` where
         ``self.data`` is an ``SR2`` instead of a ``torch.Tensor``. This hook
         unwraps a same-type wrapper input to its inner ``data`` so the
-        double-wrap is a no-op.
+        double-wrap is a no-op -- metadata included, via
+        :func:`inherit_rewrap_metadata`.
 
         K-region invariants (Appendix A of v2-parity plan)
         --------------------------------------------------
@@ -212,6 +254,7 @@ class TensorWrapper:
                     f"Cannot wrap a {type(inner).__name__} as a {type(self).__name__}; "
                     "wrapper types must match. Pass `inner.data` instead of the wrapper."
                 )
+            inherit_rewrap_metadata(self, inner)
             object.__setattr__(self, "data", inner.data)
 
         # K-region invariants.
