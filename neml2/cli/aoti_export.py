@@ -62,7 +62,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from math import prod
 from pathlib import Path
@@ -2035,6 +2035,35 @@ def _compile_param_vjp(
 # ---------------------------------------------------------------------------
 
 
+def _predictor_input_shapes(
+    input_names: Iterable[str],
+    shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]],
+    dyn_shape: tuple[int, ...],
+) -> dict[str, tuple[tuple[int, ...], tuple[int, ...]]]:
+    """Example-input shapes for a predictor, tolerant of non-top-level givens.
+
+    ``shapes`` is keyed by the *enclosing* composed model's own ``input_spec``.
+    That is enough for ``ConstantExtrapolationPredictor``, which only ever
+    consumes ``<unknown>~1`` history variables -- always top-level inputs, so
+    always present. A custom predictor may instead consume a "given" that is
+    internal to the composition: a frozen trial-state quantity threaded into the
+    implicit system as one of its ``given_names`` but never a model input. That
+    name is absent from ``shapes``, and the hard index inside
+    :func:`_example_inputs_for` would raise a bare ``KeyError`` with no
+    diagnostic context.
+
+    Resolve each name in ``input_names`` -- the predictor's ``input_spec`` at
+    the call site -- by the same cascade :func:`_example_for_given` already uses
+    for the system's own givens: the exact name, then the bare name with any
+    ``~k`` history suffix stripped, then the shared dynamic shape with no
+    sub-batch.
+    """
+    return {
+        name: shapes.get(name, shapes.get(name.split("~", 1)[0], (dyn_shape, ())))
+        for name in input_names
+    }
+
+
 def _compile_implicit_segment(
     inner,
     pkg_basename: str,
@@ -2586,7 +2615,8 @@ def _compile_implicit_segment(
     if inner.predictor is not None:
         pred = inner.predictor.to(device)
         pred_exportable = ComposedModel([pred])
-        pred_inputs = _example_inputs_for(pred_exportable, device, shapes=shapes)
+        pred_shapes = _predictor_input_shapes(pred_exportable.input_spec, shapes, dyn_shape)
+        pred_inputs = _example_inputs_for(pred_exportable, device, shapes=pred_shapes)
         pred_name = f"{pkg_basename}_predictor.pt2"
         compile_model(
             pred_exportable, pred_inputs, output_dir / pred_name, dynamic_batch_dim=dynamic_dim
