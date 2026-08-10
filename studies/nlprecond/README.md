@@ -463,6 +463,38 @@ even sub-batch labels -- but it is read only by `cli/aoti_export.py` and
 (`supports_nopred`) and why every case here hand-shapes an IC. Closing that
 parity gap is the prerequisite for the slip-rate predictor.
 
+### More line-search budget makes crystal plasticity monotonically worse
+
+The clearest evidence that the merit function is the problem. Production solver
+(C++ Newton, *sufficient* decrease on max|R|), `cp_coupled`, step-1 iterations
+against `max_linesearch_iterations`:
+
+| ls | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| iters | fail | fail | 11 | **9** | 16 | 28 | 52 | 101 | fail |
+
+Each extra permitted halving roughly **doubles** the cost, until the solve fails
+altogether. Identical at nsteps 1 and 6, nbatch 4 and 8 -- structural, not noise.
+
+Three things follow.
+
+* **It is not an artifact of this study's harness.** The numbers above come from
+  the shipped solver with sufficient decrease, not the simple-decrease loop used
+  for the merit comparison below. Sufficient decrease does not prevent it.
+* **It is crystal-plasticity specific.** `vp_isoharden` over the same range is
+  monotone the *right* way -- 15, 11, 9, 8, 8 for ls = 2, 5, 10, 20, 40. More
+  budget helps, as it should.
+* **The shipped default sits past the optimum, in a narrow window.** The CP
+  regression scenarios use `max_linesearch_iterations = 5`; 4 is better (9 vs
+  16), and the whole viable range is roughly [3, 8].
+
+The doubling is the signature of a line search cutting a step that should not be
+cut: give it room to halve once more and it does, and progress halves with it.
+That matches the potential measurement exactly -- through the stalled phase,
+max|R| *grows* while the incremental potential decreases monotonically. The
+Newton steps are good; the residual norm rejects them; more budget means more
+rejection.
+
 ### Merit functions: three tried, the residual norm wins
 
 Deuflhard classifies merit functions by which affine invariance they respect
@@ -490,10 +522,23 @@ direction; it is too permissive. Measured on `cp_decoupled_variational`:
 | natural | 68 | 22% | `1 1 1 1 1 .125 .125 .062 .062 .125 1 .25` |
 
 It takes full steps through the first five iterations where the residual norm
-forces 1/32. It cannot do otherwise: `r(x + a*p) ~ (1-a) r`, so
+forces 1/32 -- which, given the budget result above, is arguably the right
+instinct taken too far. It cannot do otherwise: `r(x + a*p) ~ (1-a) r`, so
 `||J^-1 r(x + a*p)|| ~ (1-a) ||p||` decreases for *any* `a` in the local regime.
 Guaranteed descent -- the property that makes it theoretically attractive --
 is exactly what makes it useless as a monotonicity filter.
+
+Budget sensitivity of the two merits, same instrumented loop, step 1:
+
+| case | merit | ls=5 | ls=10 | ls=20 | ls=40 |
+| --- | --- | --- | --- | --- | --- |
+| `cp_coupled_inverted` | max\|R\| | 32 | 82 | 132 | 132 |
+| `cp_coupled_inverted` | natural | **37** | **37** | **37** | **37** |
+| `cp_decoupled_variational` | max\|R\| | 34 | 83 | 127 | 127 |
+| `cp_decoupled_variational` | natural | 68 | 300+ | 300+ | 300+ |
+
+The covariant merit is *immune* to the budget pathology on one case and subject
+to it on the other, so being permissive is not by itself a cure.
 
 **Caveat: this tests the merit, not Deuflhard's method.** Sec. 3.3.3 pairs the
 natural level function with an *adaptive damping-factor prediction* derived from
