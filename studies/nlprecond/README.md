@@ -522,6 +522,34 @@ of the formulation: that comparison pitted a baseline whose predictor covers all
 its unknowns against an inverted case whose *new* unknowns had none. Worth
 confirming directly once the predictor exists.
 
+### Is line search still needed?
+
+Only as insurance. `cp_decoupled_variational`, step-1 iterations, `ls=1` meaning
+no line search at all (full Newton step every iteration):
+
+| seed | dt x1, no LS | dt x1, ls=5 | dt x5, no LS | dt x20, no LS |
+| --- | --- | --- | --- | --- |
+| oracle 1.0x | **1** | 1 | **1** | **1** |
+| good 0.5x | **5** | 5 | **4** | **4** |
+| crude 0.1x | **fail** | 11 | 6 | 6 |
+| IC 1e-12 (shipped) | NaN | 34 | NaN | NaN |
+
+* **Within ~2x of the answer, line search is unnecessary.** Identical counts with
+  and without, across a 20x step range. Undamped Newton converges in 1-5
+  iterations.
+* **At ~10x off it is still load-bearing**, and only at the *small* step size --
+  at dt x1 the undamped solve fails where ls=5 takes 11. Larger steps are fine
+  undamped. That inversion is consistent with the flat-near-zero mechanism: at
+  small dt the converged slip rate is smaller, so a 0.1x seed sits nearer the
+  regularized region where the residual carries little signal.
+* **Line search is not a substitute for a predictor.** From the shipped IC it
+  produces NaN undamped and still needs 30-41 iterations damped.
+
+So keep it, but it should stop being load-bearing: with a good seed it accepts
+alpha = 1 immediately and costs nothing, while still covering the case where the
+predictor is poor. Keep the budget small -- see the budget pathology above, where
+more permitted halvings monotonically increase cost.
+
 ### Merit functions: three tried, the residual norm wins
 
 Deuflhard classifies merit functions by which affine invariance they respect
