@@ -1064,13 +1064,6 @@ def test_prepare_opts_in_worker_no_load_is_identity_copy():
 # --------------------------------------------------------------------------- #
 
 
-class _FakePredictor:
-    """Stand-in for a predictor: `_predictor_input_shapes` only reads input_spec."""
-
-    def __init__(self, names):
-        self.input_spec = dict.fromkeys(names)
-
-
 def test_predictor_input_shapes_prefers_exact_then_bare_then_default():
     from neml2.cli.aoti_export import _predictor_input_shapes
 
@@ -1079,8 +1072,8 @@ def test_predictor_input_shapes_prefers_exact_then_bare_then_default():
         "stress~1": ((2,), (5,)),  # exact hit, sub-batched
         "trial_stress": ((3,), ()),  # bare-name hit for `trial_stress~1`
     }
-    pred = _FakePredictor(["stress~1", "trial_stress~1", "frozen_given"])
-    got = _predictor_input_shapes(pred, shapes, dyn)
+    names = ["stress~1", "trial_stress~1", "frozen_given"]
+    got = _predictor_input_shapes(names, shapes, dyn)
 
     # Exact name wins, sub-batch preserved.
     assert got["stress~1"] == ((2,), (5,))
@@ -1098,7 +1091,7 @@ def test_predictor_input_shapes_prefers_exact_then_bare_then_default():
 def test_predictor_input_shapes_handles_empty_and_multi_tilde():
     from neml2.cli.aoti_export import _predictor_input_shapes
 
-    assert _predictor_input_shapes(_FakePredictor([]), {}, (2,)) == {}
+    assert _predictor_input_shapes([], {}, (2,)) == {}
     # Only the FIRST `~` splits, so `a~2` resolves against bare `a`.
-    got = _predictor_input_shapes(_FakePredictor(["a~2"]), {"a": ((4,), (6,))}, (2,))
+    got = _predictor_input_shapes(["a~2"], {"a": ((4,), (6,))}, (2,))
     assert got["a~2"] == ((4,), (6,))

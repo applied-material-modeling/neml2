@@ -62,7 +62,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from math import prod
 from pathlib import Path
@@ -2036,7 +2036,7 @@ def _compile_param_vjp(
 
 
 def _predictor_input_shapes(
-    predictor: Model,
+    input_names: Iterable[str],
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]],
     dyn_shape: tuple[int, ...],
 ) -> dict[str, tuple[tuple[int, ...], tuple[int, ...]]]:
@@ -2052,14 +2052,15 @@ def _predictor_input_shapes(
     :func:`_example_inputs_for` would raise a bare ``KeyError`` with no
     diagnostic context.
 
-    Resolve each predictor input by the same cascade
-    :func:`_example_for_given` already uses for the system's own givens: the
-    exact name, then the bare name with any ``~k`` history suffix stripped, then
-    the shared dynamic shape with no sub-batch.
+    Resolve each name in ``input_names`` -- the predictor's ``input_spec`` at
+    the call site -- by the same cascade :func:`_example_for_given` already uses
+    for the system's own givens: the exact name, then the bare name with any
+    ``~k`` history suffix stripped, then the shared dynamic shape with no
+    sub-batch.
     """
     return {
         name: shapes.get(name, shapes.get(name.split("~", 1)[0], (dyn_shape, ())))
-        for name in predictor.input_spec
+        for name in input_names
     }
 
 
@@ -2614,7 +2615,7 @@ def _compile_implicit_segment(
     if inner.predictor is not None:
         pred = inner.predictor.to(device)
         pred_exportable = ComposedModel([pred])
-        pred_shapes = _predictor_input_shapes(pred_exportable, shapes, dyn_shape)
+        pred_shapes = _predictor_input_shapes(pred_exportable.input_spec, shapes, dyn_shape)
         pred_inputs = _example_inputs_for(pred_exportable, device, shapes=pred_shapes)
         pred_name = f"{pkg_basename}_predictor.pt2"
         compile_model(
