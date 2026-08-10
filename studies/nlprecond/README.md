@@ -604,6 +604,47 @@ Taken with the seeding result above -- an oracle initial guess takes step 1 from
 34 iterations to 1 -- the evidence is that the merit function is the wrong lever
 for this problem and the initial guess is the right one.
 
+### Verified against the sub-batch declaration fix (PR #446)
+
+Tested on `feat/sub-batch-declaration-parity`. Both blockers recorded above are
+cleared, `cp_coupled_inverted`:
+
+| shaped IC | `[Settings]` decl | predictor | result |
+| --- | --- | --- | --- |
+| yes | no | yes | OK (the old workaround) |
+| yes | no | **no** | IndexError (the old `supports_nopred` failure) |
+| yes | yes | **no** | **OK** |
+| **no** | **yes** | yes | **OK** -- declaration replaces the hand-shaped IC |
+| **no** | **yes** | **no** | **OK** |
+
+Declaring `slip_rates = '(N; 12)'` under `[Settings]/example_batch_shape` removes
+the need for a hand-shaped IC entirely, and `ImplicitUpdate` with no predictor
+now works on a sub-batched system. The `supports_nopred` flag in `cases.py` can
+be retired once this lands.
+
+The chained predictor also composes now -- `SumSlipRates` no longer raises
+`IndexError: dim -1 out of range`.
+
+**But the obvious predictor is not good enough.** Chaining the *explicit*
+`PowerLawSlipRule` onto the predicted elastic strain gives only 27 -> 21
+step-1 iterations (17 at `scale = 1.0`), against the oracle's 1.
+
+The reason is structural, and it rules out the whole family: a stress-based
+prediction is amplified by the rate exponent. The batch spans `dt` by 10x, so
+the predicted resolved shear spans 10x, so the predicted slip rate spans 10^8 --
+under by ~15x for the slowest member and over by ~10^6 for the fastest. No
+choice of `scale` fixes both ends.
+
+Meanwhile the *converged* slip rate is 8.2e-02 for every member, essentially
+independent of `dt` and of `scale`, and the imposed deformation rate is
+|D| = 0.1 -- the same order. At the solution the slip rates are fixed by
+**kinematics** (`sum_i gdot_i M_i ~ D`), not by the stress.
+
+So the predictor should be kinematic: distribute the imposed deformation rate
+over the slip systems, e.g. a least-squares solve against the Schmid map
+(rank 8 of 12, so a pseudo-inverse), rather than routing through the elastic
+trial stress and letting the power law amplify the error. Not yet built.
+
 ## Cases
 
 Each case is a self-contained copy of a regression scenario, edited only to
