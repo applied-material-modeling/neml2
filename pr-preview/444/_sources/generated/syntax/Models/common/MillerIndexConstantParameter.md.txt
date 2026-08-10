@@ -1,0 +1,18 @@
+(models-MillerIndexConstantParameter)=
+# MillerIndexConstantParameter
+
+**Source:** `models/common/ConstantParameter.py`
+
+MillerIndex-valued constant parameter. Mirrors ``ConstantParameter<MillerIndex>``.
+
+## Outputs
+
+`parameter` &mdash; `output` &middot; `MillerIndex`
+: The output parameter. If not specified, the object name will be used.
+
+
+## Parameters
+
+`value` &mdash; `parameter` &middot; `MillerIndex` &middot; **required**
+: The constant value of the parameter
+
