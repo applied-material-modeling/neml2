@@ -50,6 +50,8 @@ from typing import Any, TypeVar
 import nmhit
 import torch
 
+from .settings import Settings, read_settings
+
 _registry: dict[str, type] = {}
 
 _T = TypeVar("_T")
@@ -141,6 +143,23 @@ class _NativeInputFile:
         # ambient defaults. Non-compiled models ignore these entirely.
         self._device = device
         self._dtype = dtype
+        self._settings: Settings | None = None
+
+    # ── [Settings] ────────────────────────────────────────────────────────────
+
+    @property
+    def settings(self) -> Settings:
+        """The file's ``[Settings]`` block, parsed once and cached.
+
+        Every ``from_hit`` already receives this factory, so this is how a
+        driver / equation system / model reaches the file-level declarations
+        (notably ``example_batch_shape``, which pins a variable's sub-batch
+        extent) without threading them through constructors. The AOTI exporter
+        reads the same object, which is what keeps the routes in parity.
+        """
+        if self._settings is None:
+            self._settings = read_settings(self._root)
+        return self._settings
 
     # ── section lookup ────────────────────────────────────────────────────────
 

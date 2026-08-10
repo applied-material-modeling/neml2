@@ -117,17 +117,14 @@ def _read_per_input_shapes(
     hit_path: Path, input_spec: dict
 ) -> dict[str, tuple[tuple[int, ...], tuple[int, ...]]]:
     """Resolve per-input ``(dyn, sub)`` shapes from the scenario's HIT
-    ``[Settings]/example_batch_shape`` block, mirroring the export-time
-    resolution in :func:`neml2.cli.aoti_export._resolve_example_shapes`.
+    ``[Settings]/example_batch_shape`` block via the same route-neutral
+    resolution the exporter uses (:meth:`neml2.settings.Settings.resolve`).
     Scenarios without a ``[Settings]`` block get the library default
     ``dyn=(2,), sub=()`` for every input, matching the legacy behavior.
     """
     from neml2 import load_input
-    from neml2.cli.aoti_export import _read_settings, _resolve_example_shapes
 
-    factory = load_input(hit_path)
-    declared, _ = _read_settings(factory)
-    return _resolve_example_shapes(input_spec, declared)
+    return load_input(hit_path).settings.resolve(input_spec)
 
 
 def _structural_input_spec(model, promoted: set[str]) -> dict:
