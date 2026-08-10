@@ -1,0 +1,18 @@
+(models-MRPConstantParameter)=
+# MRPConstantParameter
+
+**Source:** `models/common/ConstantParameter.py`
+
+MRP-valued constant parameter. Mirrors ``ConstantParameter<MRP>``.
+
+## Outputs
+
+`parameter` &mdash; `output` &middot; `MRP`
+: The output parameter. If not specified, the object name will be used.
+
+
+## Parameters
+
+`value` &mdash; `parameter` &middot; `MRP` &middot; **required**
+: The constant value of the parameter
+

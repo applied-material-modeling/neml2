@@ -1,0 +1,28 @@
+(models-LinearlyInterpolateToCellEdges)=
+# LinearlyInterpolateToCellEdges
+
+**Source:** `models/finite_volume/LinearlyInterpolateToCellEdges.py`
+
+Linear interpolation from cell centers to interior cell edges.
+
+``cell_values`` has size $N$; ``cell_centers`` has size $N$;
+``cell_edges`` has size ``N+1`` (interior + boundary edges); output has
+size ``M = N-1`` (interior edges only).
+
+## Outputs
+
+`edge_values` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Linearly interpolated cell-edge values.
+
+
+## Parameters
+
+`cell_values` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Cell-centered values to interpolate.
+
+`cell_centers` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Cell center positions.
+
+`cell_edges` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Cell edge positions.
+

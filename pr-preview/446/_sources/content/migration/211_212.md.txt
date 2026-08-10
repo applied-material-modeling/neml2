@@ -1,0 +1,180 @@
+(migration-211-212)=
+# Migrating from v2.1.1 to v2.1.2
+
+## Input file changes
+
+(variable-naming)=
+### Variable naming: subspace prefixes removed
+
+The most pervasive change in v2.1.2 is the removal of `LabeledAxis`.
+Variables no longer carry `state/`, `forces/`, `residual/`, or
+`state/internal/` prefixes anywhere in input files.
+
+Every option that previously accepted a prefixed variable name (e.g.
+`tensor`, `variable`, `from`, `to`, `invariant`, `cauchy_stress`,
+`temperature`, `stress`, etc.) now takes the bare variable name
+without any prefix.
+
+(history-naming)=
+### History variables renamed (`~N` suffix)
+
+"Old state" (history) variables, previously named under `old_state/`
+or `old_forces/` sub-axes, now use a `~N` suffix where `N` is the lag
+order:
+
+| v2.1.1 name      | v2.1.2 name |
+| :--------------- | :---------- |
+| `old_state/S`    | `S~1`       |
+| `old_forces/E`   | `E~1`       |
+
+If you reference history variables explicitly (e.g. in a
+`ComposedModel`'s `additional_outputs` list or a custom model),
+update those names accordingly.
+
+(nonlinearsystem-unknowns)=
+### `NonlinearSystem`: `unknowns` is now required
+
+In v2.1.1, `NonlinearSystem` inferred its unknowns from the model's
+`state` input sub-axis. In v2.1.2, you must list the unknown
+variables explicitly:
+
+```ini
+# v2.1.1
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_model'
+  []
+[]
+```
+
+```ini
+# v2.1.2
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_model'
+    unknowns = 'ep Ep'
+  []
+[]
+```
+
+Residual variable names default to `<unknown>_residual` for each
+unknown. Override with the `residuals` option when needed:
+
+```ini
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_model'
+    unknowns = 'phi_P phi_S'
+    residuals = 'phi_P_residual phi_S_residual'
+  []
+[]
+```
+
+(sdt-ldi-removed)=
+### `SDTSolidMechanicsDriver` / `LDISolidMechanicsDriver` removed
+
+These convenience driver types were removed. Use `TransientDriver`
+directly and supply the strain/stress controls through the generic
+`force_SR2_*` options.
+
+Strain-control (formerly `SDTSolidMechanicsDriver`):
+
+```ini
+# v2.1.1
+[Drivers]
+  [driver]
+    type = SDTSolidMechanicsDriver
+    model = 'model'
+    prescribed_time = 'times'
+    prescribed_strains = 'strains'
+    save_as = 'result.pt'
+  []
+[]
+```
+
+```ini
+# v2.1.2
+[Drivers]
+  [driver]
+    type = TransientDriver
+    model = 'model'
+    prescribed_time = 'times'
+    force_SR2_names = 'strain'
+    force_SR2_values = 'strains'
+    save_as = 'result.pt'
+  []
+[]
+```
+
+For mixed-control (formerly `LDISolidMechanicsDriver`), use the same
+pattern with the appropriate `force_SR2_names` / `ic_SR2_names`
+values for your control mode.
+
+(predictor-migration)=
+### Predictor moved from `TransientDriver` into `ImplicitUpdate`
+
+The `predictor`, `custom_predictor`, and `custom_predictor_apply`
+options have been removed from `TransientDriver`. Predictors are now
+ordinary model blocks in `[Models]` and are referenced from
+`ImplicitUpdate` via a new `predictor` option.
+
+**Before (v2.1.1):**
+
+```ini
+[Drivers]
+  [driver]
+    type = TransientDriver
+    model = 'model'
+    prescribed_time = 'times'
+    predictor = 'PREVIOUS_STATE'   # or LINEAR_EXTRAPOLATION, or via custom_predictor
+    # ...
+  []
+[]
+
+[Models]
+  [model]
+    type = ImplicitUpdate
+    equation_system = 'eq_sys'
+    solver = 'newton'
+  []
+[]
+```
+
+**After (v2.1.2):**
+
+```ini
+[Drivers]
+  [driver]
+    type = TransientDriver
+    model = 'model'
+    prescribed_time = 'times'
+    # predictor option removed
+  []
+[]
+
+[Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'stress'
+    unknowns_Scalar = 'equivalent_plastic_strain'
+  []
+  [model]
+    type = ImplicitUpdate
+    equation_system = 'eq_sys'
+    solver = 'newton'
+    predictor = 'predictor'
+  []
+[]
+```
+
+#### Choosing a predictor type
+
+| v2.1.1 driver option                 | v2.1.2 predictor type                                                                  |
+| :----------------------------------- | :------------------------------------------------------------------------------------- |
+| `predictor = 'PREVIOUS_STATE'`       | `ConstantExtrapolationPredictor`                                                       |
+| `predictor = 'LINEAR_EXTRAPOLATION'` | `LinearExtrapolationPredictor`                                                         |
+| `custom_predictor = '<name>'`        | keep the existing model block; wire it with `predictor = '<name>'` on `ImplicitUpdate` |
+| *(no predictor in driver)*           | `ConstantExtrapolationPredictor`                                                       |

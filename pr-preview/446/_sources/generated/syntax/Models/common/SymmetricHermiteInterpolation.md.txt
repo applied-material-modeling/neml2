@@ -1,0 +1,32 @@
+(models-SymmetricHermiteInterpolation)=
+# SymmetricHermiteInterpolation
+
+**Source:** `models/common/SymmetricHermiteInterpolation.py`
+
+Define the symmetric Hermite interpolation function, taking the form of
+$\dfrac{1}{x_h-x_l}(24c^2-32c^3)$ for $0 le c le 0.5$;
+$\dfrac{1}{x_h-x_l} (24(1-c)^2 - 32(1-c)^3)$ for $0.5 le c le 1$,
+and 0.0 otherwise. Here, $c = \frac{x-x_l}{x_h-x_l}$ where $x_l$
+and $x_h$ are the lower and upper bound for rescaling the input
+argument.
+
+## Inputs
+
+`argument` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Argument of the smooth step function
+
+
+## Outputs
+
+`output` &mdash; `output` &middot; `Scalar`
+: Value of the smooth step function. If not specified, the object name will be used as the output name.
+
+
+## Parameters
+
+`lower_bound` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Lower bound of the argument
+
+`upper_bound` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Upper bound of the argument
+
