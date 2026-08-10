@@ -495,6 +495,33 @@ max|R| *grows* while the incremental potential decreases monotonically. The
 Newton steps are good; the residual norm rejects them; more budget means more
 rejection.
 
+### A good predictor removes the globalization problem entirely
+
+`cp_decoupled_variational`, step-1 iterations, merit = max|R|, seeding the slip
+rates directly:
+
+| slip-rate seed | ls=2 | ls=5 | ls=10 | ls=20 | ls=40 |
+| --- | --- | --- | --- | --- | --- |
+| IC 1e-12 (as shipped) | fail | 34 | 83 | 127 | 127 |
+| oracle 1.0x | **1** | 1 | 1 | 1 | **1** |
+| good 0.5x | 5 | 5 | 5 | 5 | 5 |
+| crude 0.1x | 11 | 11 | 11 | 11 | 11 |
+
+The line search stops mattering. Not "matters less" -- identical counts across a
+20x range of budget, from a seed that is only order-of-magnitude right.
+
+So every globalization symptom in this document -- max|R| growing while the
+potential falls, steps cut that should not be, cost doubling per extra permitted
+halving, the narrow viable `ls` window -- is a *consequence* of the cold start,
+not an independent defect. Fix the initial guess and there is no stalled phase
+for a better merit to improve.
+
+This also implies the inverted form's apparent per-step penalty (36 iterations
+against the baseline's 16) is largely a seeding artifact rather than a property
+of the formulation: that comparison pitted a baseline whose predictor covers all
+its unknowns against an inverted case whose *new* unknowns had none. Worth
+confirming directly once the predictor exists.
+
 ### Merit functions: three tried, the residual norm wins
 
 Deuflhard classifies merit functions by which affine invariance they respect
