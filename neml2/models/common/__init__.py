@@ -53,6 +53,7 @@ from .ConstantParameter import (
     VecConstantParameter,
     WR2ConstantParameter,
 )
+from .CoordinateDescentPredictor import CoordinateDescentPredictor
 from .CopyVariable import (
     CopyMillerIndex,
     CopyMRP,
@@ -144,6 +145,7 @@ __all__ = [
     "MacaulaySplit",
     "MinMapComplementarity",
     "ConstantExtrapolationPredictor",
+    "CoordinateDescentPredictor",
     "LinearExtrapolationPredictor",
     "MillerIndexConstantParameter",
     "R2ConstantParameter",
