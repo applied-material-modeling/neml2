@@ -286,7 +286,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
   // a cryptic missing-field error deep in the parser. The canonical value lives
   // in scripts/dependencies.yaml; this literal is kept in sync by dep_manager.py.
   // dependencies: aoti.schema_version
-  static constexpr int kSupportedSchemaVersion = 13;
+  static constexpr int kSupportedSchemaVersion = 14;
   const auto schema_version = meta.value("schema_version", 0);
   _assert(schema_version == kSupportedSchemaVersion,
           "aoti::Model: metadata schema_version=",
@@ -834,6 +834,31 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
         if (seg_meta.contains("predictor_param_inputs"))
           seg.predictor_param_inputs =
               seg_meta["predictor_param_inputs"].get<std::vector<std::string>>();
+        // Optional runtime loop (schema v14). Absent for every predictor that
+        // did not opt in, leaving `iterations == 0` and the single-shot path.
+        if (seg_meta.contains("predictor_feedback"))
+        {
+          const auto & fb = seg_meta["predictor_feedback"];
+          auto & f = seg.predictor_feedback;
+          f.input = fb["name"].get<std::string>();
+          f.output = fb["output"].get<std::string>();
+          f.iterations = fb["iterations"].get<int64_t>();
+          f.sub_batch_shape = fb["sub_batch_shape"].get<std::vector<int64_t>>();
+          f.base_shape = fb["base_shape"].get<std::vector<int64_t>>();
+          _assert(f.iterations > 0,
+                  "aoti::Model: predictor_feedback.iterations must be positive, got ",
+                  f.iterations);
+          _assert(std::find(seg.predictor_inputs.begin(), seg.predictor_inputs.end(), f.input) !=
+                      seg.predictor_inputs.end(),
+                  "aoti::Model: predictor_feedback input '",
+                  f.input,
+                  "' is not among the predictor's inputs.");
+          _assert(std::find(seg.predictor_outputs.begin(), seg.predictor_outputs.end(), f.output) !=
+                      seg.predictor_outputs.end(),
+                  "aoti::Model: predictor_feedback output '",
+                  f.output,
+                  "' is not among the predictor's outputs.");
+        }
       }
     }
     else

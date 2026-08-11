@@ -60,12 +60,14 @@ no physics enters this class.
 
 from __future__ import annotations
 
+import copy
 from typing import TYPE_CHECKING
 
 from ...factory import register_neml2_object
 from ...schema import HitSchema, dependency, input, option, output
 from ...types import Scalar, lt, stack, where
-from ..model import Model
+from ...types._boundary import reinterpret_sub_batch
+from ..model import IterableExport, Model
 
 if TYPE_CHECKING:
     from ..chain_rule import ChainRuleDict
@@ -142,6 +144,8 @@ class CoordinateDescentPredictor(Model):
     _A: str
     _b: str
     _g: str
+    #: Set only on the single-sweep copy built by `iterable_export_form`.
+    _feedback_in: str
 
     def __init__(
         self,
@@ -279,25 +283,86 @@ class CoordinateDescentPredictor(Model):
             g[i] = self._coord_solve(A.sub_batch[i, i], c, self._slice_pt(pt, i, m))
         return g
 
+    def _sweeps_from(self, g: list[Scalar], vals: dict[str, Scalar], n: int) -> Scalar:
+        """Run *n* Gauss-Seidel sweeps starting from *g*, and reassemble."""
+        A, b = vals[self._A], vals[self._b]
+        pt = {name: vals[name] for name in self._passthrough}
+        m = int(b.sub_batch_shape[-1])
+        bs = [b.sub_batch[i] for i in range(m)]
+        for _ in range(n):
+            g = self._sweep(g, bs, A, pt, m)
+        return stack([x.sub_batch for x in g], dim=0)
+
+    def _unpack(self, args) -> dict[str, Scalar]:
+        # strict: a short pack means the caller resolved fewer inputs than this
+        # model declares, which is a wiring bug. Silently truncating turns it
+        # into a KeyError several lines later, pointing at the wrong thing.
+        return dict(zip(self.input_spec, args, strict=True))
+
     def forward(  # type: ignore[override]
         self,
         *args: Scalar,
         v: ChainRuleDict | None = None,
     ):
         del v  # a warm start is one-shot and is never differentiated
-        # strict: a short pack means the caller resolved fewer inputs than this
-        # model declares, which is a wiring bug. Silently truncating turns it
-        # into a KeyError several lines later, pointing at the wrong thing.
-        vals = dict(zip(self.input_spec, args, strict=True))
-        A, b = vals[self._A], vals[self._b]
-        pt = {n: vals[n] for n in self._passthrough}
+        vals = self._unpack(args)
+        b = vals[self._b]
         m = int(b.sub_batch_shape[-1])
+        zero = [b.sub_batch[i] * 0.0 for i in range(m)]
+        return self._sweeps_from(zero, vals, self.sweeps)
 
-        bs = [b.sub_batch[i] for i in range(m)]
-        g = [x * 0.0 for x in bs]
-        for _ in range(self.sweeps):
-            g = self._sweep(g, bs, A, pt, m)
-        return stack([x.sub_batch for x in g], dim=0)
+    # ------------------------------------------------------------------
+    # Iterable-export protocol
+    # ------------------------------------------------------------------
+
+    def iterable_export_form(self) -> IterableExport:
+        """One sweep, plus the feedback pair a runtime needs to iterate it.
+
+        The sweep count is a Python ``for`` here, so exporting this model as-is
+        unrolls it into the graph: at the defaults that is 16 sweeps x 12
+        components x ~19 inner iterations, several thousand copies of the rate
+        law. Worse, an unrolled count is frozen at compile time and can never
+        stop early.
+
+        So the compiled routes export a **single sweep** and run the loop
+        themselves, exactly as they already do for Newton. The single-sweep form
+        takes the incoming rate as an extra input and returns the outgoing one,
+        and the runtime feeds that output back to that input ``iterations``
+        times.
+
+        Note this iterates the *enclosing predictor graph*, not this leaf alone,
+        so the trial state and the back-substitution around it recompute on
+        every sweep. That is deliberate: splitting the predictor into pre/sweep/
+        post graphs would buy back a fraction of an already-cheap stage in
+        exchange for a three-way split of the export planner.
+        """
+        sweep = copy.copy(self)
+        # Shallow copy shares submodules (the rate law) but must not share the
+        # input_spec dict, which the feedback input extends.
+        sweep.sweeps = 1
+        feedback_in = f"{self._g}_in"
+        sweep.input_spec = {**self.input_spec, feedback_in: Scalar}
+        sweep._feedback_in = feedback_in
+        sweep.forward = sweep._forward_one_sweep  # type: ignore[method-assign]
+        return IterableExport(
+            model=sweep,
+            feedback_input=feedback_in,
+            feedback_output=self._g,
+            iterations=self.sweeps,
+        )
+
+    def _forward_one_sweep(self, *args: Scalar, v: ChainRuleDict | None = None):
+        """One sweep from the incoming rate. See :meth:`iterable_export_form`."""
+        del v
+        vals = self._unpack(args)
+        b = vals[self._b]
+        # The feedback arrives as a *graph input*, and `sub_batch_ndim` does not
+        # survive the export pytree round-trip -- it is rebuilt at 0, leaving the
+        # slip axis looking like batch. `b` is produced inside the graph, so its
+        # metadata is intact and says how many trailing axes to re-read.
+        g_in = reinterpret_sub_batch(vals[self._feedback_in], b.sub_batch_ndim)
+        m = int(b.sub_batch_shape[-1])
+        return self._sweeps_from([g_in.sub_batch[i] for i in range(m)], vals, 1)
 
 
 __all__ = ["CoordinateDescentPredictor"]

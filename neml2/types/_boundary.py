@@ -54,6 +54,29 @@ if TYPE_CHECKING:
     from .tensor import Tensor
 
 
+def reinterpret_sub_batch(x, ndim: int):
+    """Re-read the trailing *ndim* non-base axes of *x* as sub-batch axes.
+
+    A typed wrapper's ``sub_batch_ndim`` does **not** survive a pytree
+    round-trip: :func:`neml2.types._pytree.register` drops it, so
+    ``torch.export`` rebuilds every input wrapper at the default ``0``. The
+    tensor still has the right axes -- only their interpretation is gone -- so a
+    leaf that reaches a sub-batch axis on a *graph input* sees it as batch and
+    indexes out of range. Leaves fed from inside the graph are unaffected: their
+    producers set the metadata after the boundary.
+
+    This restores the interpretation. It reshapes nothing and moves nothing; it
+    only says how many trailing non-base axes to count as sub-batch, which the
+    caller knows from a sibling variable of the same structure.
+
+    Distinct from :func:`~neml2.types.align_sub_batch`, which *inserts* size-1
+    axes to bring wrappers to a common rank. Here the axes already exist.
+    """
+    if x.sub_batch_ndim == ndim:
+        return x
+    return x._rewrap(x.data, sub_batch_ndim=ndim)  # data-ok: metadata-only re-tag
+
+
 def check_tensor(
     t: torch.Tensor,
     name: str,

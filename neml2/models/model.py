@@ -169,6 +169,43 @@ class PromotedParam:
     provider_output: str | None = None
 
 
+@dataclass(frozen=True)
+class IterableExport:
+    """A model whose compiled form is one step of a loop the runtime drives.
+
+    Some models are a bounded iteration in Python -- a fixed number of sweeps,
+    passes or refinements. Exporting one as-is unrolls every iteration into the
+    graph, which is both large and rigid: the count is frozen at compile time
+    and no early exit is possible.
+
+    A model that would rather be looped by the runtime implements
+    ``iterable_export_form()`` and returns this. The exporter compiles
+    :attr:`model` -- a *single* step, taking the previous step's value on the
+    extra input :attr:`feedback_input` -- and records the pair plus
+    :attr:`iterations` in the segment metadata. The runtime then re-runs the
+    graph that many times, routing :attr:`feedback_output` back to
+    :attr:`feedback_input`, exactly as it already loops Newton.
+
+    The feedback variable must be reachable as an output of the graph actually
+    exported, which for a predictor is the enclosing
+    :class:`~neml2.models.common.ComposedModel.ComposedModel`; the exporter adds
+    it to that model's ``additional_outputs``.
+
+    Iterating in the runtime rather than the graph is also what leaves room for
+    a convergence test between steps later -- the reason the count lives in
+    metadata (retunable without recompiling) rather than baked into the graph.
+    """
+
+    #: The single-step model to compile, including the feedback input.
+    model: Model
+    #: Input variable carrying the previous step's value.
+    feedback_input: str
+    #: Output variable carrying this step's value.
+    feedback_output: str
+    #: Default number of steps. Metadata, so a host can lower it without recompiling.
+    iterations: int
+
+
 class Model(nn.Module, ABC):
     """Base class for Python-native NEML2 models with declared variable names.
 
