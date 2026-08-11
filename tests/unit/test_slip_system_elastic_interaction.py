@@ -136,6 +136,70 @@ def test_isotropic_matches_the_closed_form(fcc):
     assert torch.allclose(A, expected, rtol=1e-9, atol=1e-8)
 
 
+def test_a_promoted_stiffness_survives_construction(tmp_path):
+    """Construction contract: a promoted parameter must stay in ``input_spec``.
+
+    This model's ``__init__`` names only some of its schema fields, so
+    ``Model.from_hit`` applies the rest through ``_store_schema_values`` *after*
+    construction -- and that rebuilds ``input_spec`` from the class-level spec.
+    ``declare_typed_parameter`` (mode 3) had already added an input keyed by the
+    provider's output name, which the schema knows nothing about, so the rebuild
+    used to drop it while ``_promoted_params`` went on expecting it. The model
+    then died at forward time inside ``_get_param`` with a bare ``IndexError``.
+
+    Kept as a real-model test rather than a synthetic one because the shape that
+    triggers it -- custom ``__init__`` + unconsumed name-bearing fields +
+    promotable parameter -- is what this class actually has.
+    """
+    inp = tmp_path / "promoted.i"
+    inp.write_text("""
+[Tensors]
+  [a]
+    type = Python
+    expr = 'Scalar(1.0)'
+  []
+  [sdirs]
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1, 1, 0], dtype=torch.int64))'
+  []
+  [splanes]
+    type = Python
+    expr = 'MillerIndex(torch.tensor([1, 1, 1], dtype=torch.int64))'
+  []
+[]
+[Data]
+  [crystal_geometry]
+    type = CubicCrystal
+    lattice_parameter = 'a'
+    slip_directions = 'sdirs'
+    slip_planes = 'splanes'
+  []
+[]
+[Models]
+  [stiffness_provider]
+    type = IsotropicElasticityTensor
+    coefficients = '1e5 0.25'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+  []
+  [coupling]
+    type = SlipSystemElasticInteraction
+    orientation = 'orientation~1'
+    elastic_stiffness_tensor = 'stiffness_provider'
+  []
+[]
+""")
+    from neml2 import load_input  # noqa: PLC0415
+
+    model = load_input(inp).get_model("coupling")
+    promoted = [p.input_name for p in model._promoted_params.values()]
+    assert promoted, "the stiffness should have been promoted to an input"
+    for name in promoted:
+        assert name in model.input_spec, (
+            f"promoted parameter input {name!r} was dropped from input_spec; "
+            f"input_spec is {list(model.input_spec)}"
+        )
+
+
 def test_omits_the_spin_convection_term(fcc):
     r"""Pins the documented approximation against the exact condensed coupling.
 

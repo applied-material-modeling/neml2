@@ -87,17 +87,48 @@ class _ForwardEulerTimeIntegration(Model):
 def _forward_euler_schema(t: type[TensorWrapper]) -> HitSchema:
     """Schema shared by both subclasses, parameterized by the value type.
 
-    Same base options as backward Euler; ``variable`` here is the *output*
-    (the explicitly-computed value), with no residual. Field order matches
-    forward's positional signature (``s_n, t, t_n, s_dot``).
+    Like backward Euler, ``variable`` names the integrated quantity and the
+    remaining I/O derives from it -- except that here ``variable`` is the
+    *output* (the explicitly-computed value), with no residual. Field order
+    matches forward's positional signature (``s_n, t, t_n, s_dot``).
+
+    Both derived inputs carry a rename knob: ``rate`` for the increment and
+    ``old_variable`` for the previous-step value. The latter is what makes it
+    possible to integrate a *provisional* quantity -- one that starts from some
+    other variable's previous value, as in
+
+    .. code-block:: none
+
+        [trial_strain]
+          type         = SR2ForwardEulerTimeIntegration
+          variable     = 'elastic_strain_trial'   # a new name, no ~1 of its own
+          old_variable = 'elastic_strain~1'
+          rate         = 'deformation_rate'
+        []
+
+    Without it the old value would be forced to ``<variable>~1``, so a
+    provisional output could only ever start from a previous step of *itself*
+    -- and ``~1`` is the framework's own previous-step convention, so
+    fabricating one is not a workaround worth having. Backward Euler has the
+    same asymmetry but no caller needing it yet; the fix there is this same
+    line.
     """
     return HitSchema(
         output("variable", t, "Integrated variable", attr="_var"),
-        derived_input("variable", t, attr="_var_n", suffix="~1"),
+        derived_input("variable", t, attr="_var_n", suffix="~1", override="old_variable"),
         input("time", Scalar, "Time", default="t", attr="_t"),
         derived_input("time", Scalar, attr="_t_n", suffix="~1"),
         derived_input("variable", t, attr="_rate", suffix="_rate", override="rate"),
         option("rate", str, "Override name for the variable rate.", default="", attr="_rate_opt"),
+        option(
+            "old_variable",
+            str,
+            "Override name for the variable's previous-step value. Defaults to "
+            "`<variable>~1`; set it to integrate a provisional quantity forward "
+            "from some *other* variable's previous value.",
+            default="",
+            attr="_var_n_opt",
+        ),
     )
 
 

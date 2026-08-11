@@ -114,7 +114,6 @@ class SlipSystemElasticInteraction(Model):
             "elastic_stiffness_tensor",
             SSR4,
             "Elastic stiffness tensor, in the crystal frame",
-            attr="T",
             allow_promotion=True,
         ),
         dependency(
@@ -129,20 +128,37 @@ class SlipSystemElasticInteraction(Model):
     _t: str
     _tn: str
     _A: str
-    T: SSR4
+    elastic_stiffness_tensor: SSR4
 
     def __init__(
         self,
         *,
         crystal_geometry: CrystalGeometry,
         elastic_stiffness_tensor,
+        factory=None,
     ) -> None:
-        # A custom __init__ (needed for the crystal_geometry dependency) opts out
-        # of the schema's automatic parameter declaration, so declare it here --
-        # the same call `from_hit` would have made.
+        # A custom __init__ is needed for the crystal_geometry dependency, and a
+        # named kwarg only receives a schema field whose *ctor name* matches --
+        # which is `attr` when set, the option name otherwise. So the parameter
+        # field deliberately carries no `attr`: the HIT option, the constructor
+        # kwarg and the registered parameter name are all
+        # `elastic_stiffness_tensor`, which is also what a user promoting it
+        # writes.
+        #
+        # `factory` must be forwarded. Without it `declare_typed_parameter`
+        # cannot resolve a string spec as a [Tensors] cross-reference, and
+        # because this parameter allows promotion the string would instead be
+        # taken for a variable name and silently promoted to an input nobody
+        # supplies -- surfacing much later as an IndexError inside `_get_param`.
         super().__init__()
         self._cg = crystal_geometry
-        self.declare_typed_parameter("T", elastic_stiffness_tensor, SSR4, allow_promotion=True)
+        self.declare_typed_parameter(
+            "elastic_stiffness_tensor",
+            elastic_stiffness_tensor,
+            SSR4,
+            factory=factory,
+            allow_promotion=True,
+        )
 
     def forward(  # type: ignore[override]
         self,
@@ -153,7 +169,7 @@ class SlipSystemElasticInteraction(Model):
         v: ChainRuleDict | None = None,
     ):
         del v  # consumed only by a predictor, which is never differentiated
-        T = self._get_param("T", promoted_params, SSR4)
+        T = self._get_param("elastic_stiffness_tensor", promoted_params, SSR4)
         R = euler_rodrigues(q)
         # Rotate both the stiffness and the Schmid tensors into the lab frame --
         # the convention GeneralElasticity and ResolvedShear respectively use.

@@ -151,8 +151,20 @@ class CoordinateDescentPredictor(Model):
         sweeps: int = 16,
         bisections: int = 16,
         polish: int = 3,
+        **hit_values,
     ) -> None:
-        super().__init__()
+        # ``**hit_values`` is load-bearing, not boilerplate. This model's
+        # ``input_spec`` is only knowable at construction -- it depends on which
+        # rate law is plugged in -- so it has to be extended below. That edit
+        # survives only if schema resolution has already happened, and
+        # ``Model.from_hit`` decides *when* it happens from this very signature:
+        # with ``**kwargs`` it constructs once and ``super().__init__()``
+        # resolves the schema first; without it, the remaining schema fields are
+        # applied by a ``_store_schema_values`` call *after* ``__init__``, which
+        # rebuilds ``input_spec`` from the class-level spec and drops whatever
+        # was appended here. Named-only signatures are therefore fine for a
+        # static leaf and quietly wrong for a dynamic one.
+        super().__init__(**hit_values)
         if driving_force_input not in rate_law.input_spec:
             raise ValueError(
                 f"CoordinateDescentPredictor: driving_force_input {driving_force_input!r} "
@@ -173,8 +185,10 @@ class CoordinateDescentPredictor(Model):
         # invent -- surface them so the caller supplies them, exactly as
         # ImplicitUpdate surfaces a predictor's extra inputs.
         self._passthrough = [n for n in rate_law.input_spec if n != driving_force_input]
-        for name in self._passthrough:
-            self.input_spec.setdefault(name, rate_law.input_spec[name])
+        self.input_spec = {
+            **self.input_spec,
+            **{n: rate_law.input_spec[n] for n in self._passthrough},
+        }
 
     # ------------------------------------------------------------------
 
@@ -271,7 +285,10 @@ class CoordinateDescentPredictor(Model):
         v: ChainRuleDict | None = None,
     ):
         del v  # a warm start is one-shot and is never differentiated
-        vals = dict(zip(self.input_spec, args, strict=False))
+        # strict: a short pack means the caller resolved fewer inputs than this
+        # model declares, which is a wiring bug. Silently truncating turns it
+        # into a KeyError several lines later, pointing at the wrong thing.
+        vals = dict(zip(self.input_spec, args, strict=True))
         A, b = vals[self._A], vals[self._b]
         pt = {n: vals[n] for n in self._passthrough}
         m = int(b.sub_batch_shape[-1])

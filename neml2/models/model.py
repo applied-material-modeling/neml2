@@ -471,6 +471,20 @@ class Model(nn.Module, ABC):
                     instance_output[value] = field.value_type
 
         if instance_input is not None:
+            # Promoted parameters (``declare_typed_parameter`` modes 3/4) add an
+            # input keyed by a provider output name the schema knows nothing
+            # about, so the class-level seed above does not contain it. Deferring
+            # to pass 2 covers declarations made *by this call*; it does not
+            # cover one made earlier by a subclass ``__init__``, which is what
+            # happens on ``from_hit``'s leftover path (custom ``__init__`` +
+            # unconsumed name-bearing fields). Without this the input silently
+            # vanishes from ``input_spec`` while ``_promoted_params`` still
+            # expects it, and the model dies much later inside ``_get_param``
+            # with an IndexError that names nothing useful.
+            prior_input = self.input_spec
+            for pparam in self._promoted_params.values():
+                if pparam.input_name not in instance_input and pparam.input_name in prior_input:
+                    instance_input[pparam.input_name] = prior_input[pparam.input_name]
             self.input_spec = instance_input
         if instance_output is not None:
             self.output_spec = instance_output
