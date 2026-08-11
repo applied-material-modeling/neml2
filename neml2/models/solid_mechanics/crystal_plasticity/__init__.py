@@ -49,6 +49,7 @@ from .SingleSlipHardeningRule import SingleSlipHardeningRule
 from .SingleSlipStrengthMap import SingleSlipStrengthMap
 from .SlipRule import SlipRule
 from .SlipStrengthMap import SlipStrengthMap
+from .SlipSystemElasticInteraction import SlipSystemElasticInteraction
 from .SumSlipRates import SumSlipRates
 from .VoceSingleSlipHardeningRule import VoceSingleSlipHardeningRule
 
@@ -66,6 +67,7 @@ __all__ = [
     "PlasticVorticity",
     "PowerLawSlipRule",
     "ResolvedShear",
+    "SlipSystemElasticInteraction",
     "SingleSlipHardeningRule",
     "SingleSlipStrengthMap",
     "SlipRule",
