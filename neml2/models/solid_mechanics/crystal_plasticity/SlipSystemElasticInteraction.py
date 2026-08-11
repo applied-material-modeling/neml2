@@ -72,6 +72,32 @@ class SlipSystemElasticInteraction(Model):
     here. Getting this wrong yields a plausible but silently wrong matrix, so it
     is pinned by a test: for an isotropic stiffness, $A$ must not depend on the
     orientation at all.
+
+    **The spin convection is deliberately omitted.**
+    :class:`~neml2.models.solid_mechanics.crystal_plasticity.ElasticStrainRate`
+    carries $\dot\varepsilon^e = d - d^p + \Omega[\varepsilon^e]$ with
+    $\Omega[V] = [W, V]$ the material spin, so the elastic-strain block of the
+    Jacobian is $I - \Delta t\,\Omega$ rather than $I$ and the exact condensed
+    coupling is $\Delta t\,M^{\mathsf T}\mathbb{C}(I - \Delta t\,\Omega)^{-1}M$.
+    Because $\Omega$ generates a rotation it is skew-adjoint, which splits that
+    exactly: the symmetric part is what is computed here to within
+    $O((\Delta t\lVert\Omega\rVert)^2)$, and the whole deviation is a *skew*
+    contribution of size $\Delta t\lVert\Omega\rVert = 2\Delta t\lvert w\rvert$
+    -- the incremental rotation over the step.
+
+    That omission is required rather than tolerated. Coordinate descent
+    converges because $\varphi(\dot\gamma) + A\dot\gamma - b$ is the gradient of
+    a strictly convex potential, which needs $A$ symmetric; the exact coupling
+    is not symmetric and so is not the gradient of anything. This model computes
+    the variational part and drops the rest. One corollary worth knowing: a skew
+    matrix has zero diagonal, so the $A_{ii}\ge 0$ precondition that brackets
+    each coordinate solve holds *exactly*, not to within the spin error.
+
+    The $O((\Delta t\lVert\Omega\rVert)^2)$ bound on the symmetric part assumes
+    $[\mathbb{C}, \Omega] = 0$, i.e. isotropic elasticity. With an anisotropic
+    stiffness the symmetric part also picks up
+    $\tfrac{1}{2}\Delta t^2 M^{\mathsf T}[\mathbb{C},\Omega]M$, one order lower.
+    Still small, still $O(\Delta t)$ in the step.
     """
 
     hit = HitSchema(

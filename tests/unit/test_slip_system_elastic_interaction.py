@@ -44,7 +44,19 @@ import torch
 from neml2.data import CrystalGeometry
 from neml2.data.CubicCrystal import cubic_symmetry_operators
 from neml2.models.solid_mechanics.crystal_plasticity import SlipSystemElasticInteraction
-from neml2.types import MRP, SSR4, MillerIndex, Scalar
+from neml2.types import (
+    MRP,
+    SR2,
+    SSR4,
+    WR2,
+    MillerIndex,
+    Scalar,
+    euler_rodrigues,
+    r2_from_sr2,
+    r2_from_wr2,
+    rotate,
+    sym,
+)
 
 MU = 40000.0
 LAM = 60000.0
@@ -122,6 +134,58 @@ def test_isotropic_matches_the_closed_form(fcc):
     # the full double contraction.
     expected = 2.0 * MU * DT * (M @ M.T)
     assert torch.allclose(A, expected, rtol=1e-9, atol=1e-8)
+
+
+def test_omits_the_spin_convection_term(fcc):
+    r"""Pins the documented approximation against the exact condensed coupling.
+
+    ``ElasticStrainRate`` carries $\dot\varepsilon^e = d - d^p + \Omega[\varepsilon^e]$
+    with $\Omega[V] = [W, V]$, so the elastic block of the Jacobian is
+    $I - \Delta t\,\Omega$ and the exact coupling is
+    $\Delta t\,M^{\mathsf T}\mathbb{C}(I - \Delta t\,\Omega)^{-1}M$. Because
+    $\Omega$ generates a rotation it is skew-adjoint, which splits the deviation
+    cleanly: **skew** at $O(\Delta t\lVert\Omega\rVert)$ and **symmetric** at
+    $O((\Delta t\lVert\Omega\rVert)^2)$.
+
+    This model computes the symmetric part on purpose -- coordinate descent needs
+    a symmetric $A$ to have a potential to descend, and the exact coupling is not
+    symmetric. The test checks both sides of that claim: the symmetric agreement
+    is second order, and the discarded skew part is genuinely first order and
+    genuinely there (a lower bound, so this cannot pass by the term vanishing).
+    """
+    w = torch.tensor([0.1, -0.05, -0.05], dtype=torch.float64)
+    eps = DT * 2.0 * w.norm().item()  # dt * spectral radius of Omega
+
+    # Omega as a 6x6 Mandel matrix, built through the ops the leaf itself uses.
+    W = r2_from_wr2(WR2(w))
+    cols = []
+    for k in range(6):
+        e = torch.zeros(6, dtype=torch.float64)
+        e[k] = 1.0
+        V = r2_from_sr2(SR2(e))
+        cols.append(sym(W @ V - V @ W).data)  # data-ok: building a reference matrix
+    Omega = torch.stack(cols, dim=-1)
+    assert torch.allclose(Omega, -Omega.T, rtol=0, atol=1e-12), "Omega must be skew-adjoint"
+
+    r = torch.tensor([0.1, 0.2, -0.3], dtype=torch.float64)
+    A = _coupling(fcc, _isotropic(), r)
+
+    # Exact coupling. Schmid tensors are traceless and Omega preserves that, so
+    # the isotropic stiffness acts as 2*mu throughout.
+    R = euler_rodrigues(MRP(r))
+    M = rotate(fcc.M, R.sub_batch.unsqueeze(-1)).data  # data-ok
+    Jxx_inv = torch.linalg.inv(torch.eye(6, dtype=torch.float64) - DT * Omega)
+    A_exact = 2.0 * MU * DT * (M @ Jxx_inv @ M.T)
+
+    D = (A_exact - A) / A.abs().max()
+    sym_part = (0.5 * (D + D.T)).abs().max().item()
+    skew_part = (0.5 * (D - D.T)).abs().max().item()
+
+    assert sym_part < 2.0 * eps**2, f"symmetric deviation {sym_part:.2e} is not second order"
+    assert 0.25 * eps < skew_part < eps, f"skew deviation {skew_part:.2e} is not first order"
+    # A skew matrix has zero diagonal, so the bracket precondition A_ii >= 0 is
+    # unaffected by the omission at first order -- worth pinning separately.
+    assert torch.diagonal(D).abs().max().item() < 2.0 * eps**2
 
 
 def test_scales_with_the_time_step(fcc):
