@@ -41,7 +41,6 @@ from .BilinearInterpolation import (
     SR2BilinearInterpolation,
     VecBilinearInterpolation,
 )
-from .ColdStateGate import ScalarColdStateGate, SR2ColdStateGate
 from .ComposedModel import ComposedModel
 from .ConstantExtrapolationPredictor import ConstantExtrapolationPredictor
 from .ConstantParameter import (
@@ -94,6 +93,7 @@ from .LinearCombination import ScalarLinearCombination, SR2LinearCombination
 from .LinearExtrapolationPredictor import LinearExtrapolationPredictor
 from .LinearInterpolation import ScalarLinearInterpolation
 from .MacaulaySplit import MacaulaySplit
+from .MagnitudeGate import ScalarMagnitudeGate, SR2MagnitudeGate
 from .MinMapComplementarity import MinMapComplementarity
 from .MixedControlSetup import MixedControlSetup
 from .ParameterToVariable import (
@@ -146,8 +146,8 @@ __all__ = [
     "MacaulaySplit",
     "MinMapComplementarity",
     "ConstantExtrapolationPredictor",
-    "ScalarColdStateGate",
-    "SR2ColdStateGate",
+    "ScalarMagnitudeGate",
+    "SR2MagnitudeGate",
     "CoordinateDescentPredictor",
     "LinearExtrapolationPredictor",
     "MillerIndexConstantParameter",

@@ -34,14 +34,14 @@ from __future__ import annotations
 
 import torch
 
-from neml2.models.common import ScalarColdStateGate, SR2ColdStateGate
+from neml2.models.common import ScalarMagnitudeGate, SR2MagnitudeGate
 from neml2.types import SR2, Scalar
 
 THRESHOLD = 1e-3
 
 
 def _scalar_gate(pred, ref, threshold=THRESHOLD):
-    model = ScalarColdStateGate(
+    model = ScalarMagnitudeGate(
         prediction="prediction",
         reference="reference",
         gated="gated",
@@ -80,7 +80,7 @@ def test_scalar_coldness_uses_magnitude_not_sign():
 
 
 def test_sr2_gates_on_the_frobenius_norm():
-    model = SR2ColdStateGate(
+    model = SR2MagnitudeGate(
         prediction="prediction",
         reference="reference",
         gated="gated",

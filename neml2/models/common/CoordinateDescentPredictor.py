@@ -48,8 +48,12 @@ viscoplasticity), so specializing this predictor to a new physics means supplyin
 a coupling matrix and pointing at a law that already exists.
 
 Measured on a single-crystal scenario, warm-starting the *rate* (non-inverted)
-formulation this way takes the first time step from 16 Newton iterations to 3,
-against an oracle ceiling of 4, and widens the convergence basin fourfold. See
+formulation this way takes the first time step from 16 Newton iterations to 5,
+and widens the convergence basin fourfold. Five is one above the floor: seeding
+the *exact converged* values of the predicted unknowns still costs 4, because
+that seed leaves the remaining unknowns cold and so is not at the root either.
+Later steps are untouched -- the prediction is gated to the cold start, and
+applying it warm costs iterations rather than saving them. See
 ``studies/nlprecond/theory/cd_predictor.pdf`` for the derivation.
 
 This model outputs the **rate**. Converting that into whatever unknowns the
