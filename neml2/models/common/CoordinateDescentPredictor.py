@@ -47,6 +47,16 @@ and rate out, i.e. $\varphi^{-1}$. Every rate-dependent physics already has one
 viscoplasticity), so specializing this predictor to a new physics means supplying
 a coupling matrix and pointing at a law that already exists.
 
+$A$ arrives two ways. Where a closed form exists it is cheapest --
+``SlipSystemElasticInteraction`` gives crystal plasticity's
+$\Delta t\,M^{\mathsf T}\mathbb{C}M$ in one block, and deliberately drops the spin
+convection so that $A$ stays symmetric. Otherwise
+:class:`~neml2.models.common.RateCondensation` differentiates the authored return
+path at zero rate, which is exact for any hardening law and costs no per-physics
+code. Viscoplasticity takes the second route: writing $A$ out there means one term
+per hardening mechanism, and freezing them instead is not accurate enough (see
+that class).
+
 Measured on a single-crystal scenario, warm-starting the *rate* (non-inverted)
 formulation this way takes the first time step from 16 Newton iterations to 5,
 and widens the convergence basin fourfold. Five is one above the floor: seeding
@@ -54,6 +64,13 @@ the *exact converged* values of the predicted unknowns still costs 4, because
 that seed leaves the remaining unknowns cold and so is not at the root either.
 Later steps are untouched -- the prediction is gated to the cold start, and
 applying it warm costs iterations rather than saving them.
+
+Viscoplasticity is the one-coordinate case, and there the condensation is exact
+for a linear hardening law: with $A$ from
+:class:`~neml2.models.common.RateCondensation`, the first step converges *at the
+predictor* -- zero Newton iterations -- across six decades of step size, against
+15 with no predictor and 6-9 for the inverted (flow-rate-as-unknown) formulation.
+Chaboche, whose return path is genuinely nonlinear over a step, lands at 2-3.
 
 This model outputs the **rate**. Converting that into whatever unknowns the
 implicit system actually carries -- for crystal plasticity, the elastic strain
@@ -87,6 +104,11 @@ class CoordinateDescentPredictor(Model):
     sub-batch axes -- $b$ over ``(m,)`` and $A$ over ``(m, m)``. A matrix of
     scalars is exactly what the sub-batch machinery already represents, so this
     needs no dynamic-base tensor at the model boundary.
+
+    A system with a single coordinate is written without the sub-batch axes, as
+    plain scalars. Viscoplasticity is that case: the update condenses onto one
+    flow rate, so $m = 1$ and the sweep is a single exact scalar solve. The two
+    layouts are told apart by sub-batch rank and a mismatched pair is rejected.
     """
 
     hit = HitSchema(
@@ -106,19 +128,26 @@ class CoordinateDescentPredictor(Model):
             "coupling",
             Scalar,
             "The coupling matrix $A$, sub-batched over (m, m), symmetric positive "
-            "semi-definite. Its diagonal must be non-negative -- that is what "
-            "brackets each coordinate solve.",
+            "semi-definite -- or a plain scalar for a one-coordinate system. Its "
+            "diagonal must be non-negative -- that is what brackets each coordinate "
+            "solve.",
             attr="_A",
         ),
         input(
             "trial_driving_force",
             Scalar,
-            "The right-hand side $b$, sub-batched over (m,): the driving force that "
-            "would act with every rate at zero (for crystal plasticity, the trial "
-            "resolved shear).",
+            "The right-hand side $b$, sub-batched over (m,) -- or a plain scalar for a "
+            "one-coordinate system: the driving force that would act with every rate "
+            "at zero (for crystal plasticity, the trial resolved shear; for "
+            "viscoplasticity, the trial yield function).",
             attr="_b",
         ),
-        output("rate", Scalar, "The predicted rate, sub-batched over (m,)", attr="_g"),
+        output(
+            "rate",
+            Scalar,
+            "The predicted rate, laid out like `trial_driving_force`",
+            attr="_g",
+        ),
         option(
             "sweeps",
             int,
@@ -260,6 +289,57 @@ class CoordinateDescentPredictor(Model):
             for n, v in pt.items()
         }
 
+    # -- system layout ------------------------------------------------
+    #
+    # Two layouts are accepted, distinguished by whether the driving force
+    # carries a sub-batch axis:
+    #
+    # * ``b`` over ``(m,)`` and ``A`` over ``(m, m)`` -- the vector system.
+    #   Crystal plasticity: one coordinate per slip system.
+    # * ``b`` and ``A`` plain scalars -- the degenerate one-coordinate system.
+    #   Viscoplasticity: the whole update condenses onto a single flow rate, so
+    #   there is nothing to sub-batch over and Gauss-Seidel is one exact scalar
+    #   solve. Demanding a length-1 sub-batch axis here would mean inventing a
+    #   model whose only job is to unsqueeze one.
+
+    @staticmethod
+    def _dimension(b: Scalar) -> int:
+        return 1 if b.sub_batch_ndim == 0 else int(b.sub_batch_shape[-1])
+
+    @staticmethod
+    def _components(b: Scalar) -> list[Scalar]:
+        if b.sub_batch_ndim == 0:
+            return [b]
+        return [b.sub_batch[i] for i in range(int(b.sub_batch_shape[-1]))]
+
+    @staticmethod
+    def _entry(A: Scalar, i: int, j: int) -> Scalar:
+        return A if A.sub_batch_ndim == 0 else A.sub_batch[i, j]
+
+    @staticmethod
+    def _assemble(g: list[Scalar], b: Scalar) -> Scalar:
+        if b.sub_batch_ndim == 0:
+            return g[0]
+        return stack([x.sub_batch for x in g], dim=0)
+
+    @staticmethod
+    def _check_layout(A: Scalar, b: Scalar) -> None:
+        """Reject a mismatched ``(A, b)`` pair before it reads as garbage.
+
+        Sub-batch rank is the only thing distinguishing the two layouts, so a
+        mis-wired input -- an ``A`` that forgot its second axis, say -- would
+        otherwise index into the wrong axis and silently produce a plausible
+        number.
+        """
+        want = 0 if b.sub_batch_ndim == 0 else 2
+        if A.sub_batch_ndim != want or b.sub_batch_ndim > 1:
+            raise ValueError(
+                f"CoordinateDescentPredictor: the driving force {b.sub_batch_ndim} and coupling "
+                f"{A.sub_batch_ndim} sub-batch ranks do not form a system. Expected either "
+                f"(1, 2) for a vector system over (m,) and (m, m), or (0, 0) for a single "
+                f"coordinate."
+            )
+
     def _sweep(
         self, g: list[Scalar], bs: list[Scalar], A: Scalar, pt: dict[str, Scalar], m: int
     ) -> list[Scalar]:
@@ -281,19 +361,20 @@ class CoordinateDescentPredictor(Model):
             c = bs[i]
             for j in range(m):
                 if j != i:
-                    c = c - A.sub_batch[i, j] * g[j]
-            g[i] = self._coord_solve(A.sub_batch[i, i], c, self._slice_pt(pt, i, m))
+                    c = c - self._entry(A, i, j) * g[j]
+            g[i] = self._coord_solve(self._entry(A, i, i), c, self._slice_pt(pt, i, m))
         return g
 
     def _sweeps_from(self, g: list[Scalar], vals: dict[str, Scalar], n: int) -> Scalar:
         """Run *n* Gauss-Seidel sweeps starting from *g*, and reassemble."""
         A, b = vals[self._A], vals[self._b]
+        self._check_layout(A, b)
         pt = {name: vals[name] for name in self._passthrough}
-        m = int(b.sub_batch_shape[-1])
-        bs = [b.sub_batch[i] for i in range(m)]
+        m = self._dimension(b)
+        bs = self._components(b)
         for _ in range(n):
             g = self._sweep(g, bs, A, pt, m)
-        return stack([x.sub_batch for x in g], dim=0)
+        return self._assemble(g, b)
 
     def _unpack(self, args) -> dict[str, Scalar]:
         # strict: a short pack means the caller resolved fewer inputs than this
@@ -309,8 +390,7 @@ class CoordinateDescentPredictor(Model):
         del v  # a warm start is one-shot and is never differentiated
         vals = self._unpack(args)
         b = vals[self._b]
-        m = int(b.sub_batch_shape[-1])
-        zero = [b.sub_batch[i] * 0.0 for i in range(m)]
+        zero = [c * 0.0 for c in self._components(b)]
         return self._sweeps_from(zero, vals, self.sweeps)
 
     # ------------------------------------------------------------------
@@ -363,8 +443,7 @@ class CoordinateDescentPredictor(Model):
         # slip axis looking like batch. `b` is produced inside the graph, so its
         # metadata is intact and says how many trailing axes to re-read.
         g_in = vals[self._feedback_in].with_sub_batch_ndim(b.sub_batch_ndim)
-        m = int(b.sub_batch_shape[-1])
-        return self._sweeps_from([g_in.sub_batch[i] for i in range(m)], vals, 1)
+        return self._sweeps_from(self._components(g_in), vals, 1)
 
 
 __all__ = ["CoordinateDescentPredictor"]

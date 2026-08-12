@@ -109,6 +109,7 @@ from .ParameterToVariable import (
 from .R2Multiplication import R2Multiplication
 from .R2ToSR2 import R2ToSR2
 from .R2ToWR2 import R2ToWR2
+from .RateCondensation import RateCondensation
 from .Reduction import Reduction
 from .RotationMatrix import RotationMatrix
 from .ScalarMultiplication import ScalarMultiplication
@@ -195,6 +196,7 @@ __all__ = [
     "MixedControlSetup",
     "R2Determinant",
     "R2Multiplication",
+    "RateCondensation",
     "R2ToSR2",
     "R2ToWR2",
     "SR2Determinant",
