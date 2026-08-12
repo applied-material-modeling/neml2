@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="iris" data-content_root="../../../../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ScalarMagnitudeGate - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="ScalarMultiplication" href="ScalarMultiplication.html" /><link rel="prev" title="ScalarLinearInterpolation" href="ScalarLinearInterpolation.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>R2ForwardEulerTimeIntegration - NEML2 3.0.7</title><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="R2InputParameter" href="R2InputParameter.html" /><link rel="prev" title="R2Determinant" href="R2Determinant.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=e1a1ceaf" />
@@ -21,7 +21,7 @@
 }
 </style>
     
-  <meta property="og:type" content="website"/><meta property="og:title" content="ScalarMagnitudeGate"/>
+  <meta property="og:type" content="website"/><meta property="og:title" content="R2ForwardEulerTimeIntegration"/>
     <meta name="twitter:card" content="summary"/>
   </head>
 <body><div class="sy-head">
@@ -206,6 +206,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2ParameterToVariable.html">R2ParameterToVariable</a></li>
@@ -226,7 +227,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="SR2IntermediateSum.html">SR2IntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2Invariant.html">SR2Invariant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2LinearCombination.html">SR2LinearCombination</a></li>
-<li class="toctree-l4"><a class="reference internal" href="SR2MagnitudeGate.html">SR2MagnitudeGate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2ToR2.html">SR2ToR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2VariableRate.html">SR2VariableRate</a></li>
@@ -240,7 +240,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="ScalarInputParameter.html">ScalarInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">ScalarMagnitudeGate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarMultiplication.html">ScalarMultiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarPNorm.html">ScalarPNorm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
@@ -387,7 +386,7 @@ data-aria-dark="Switch to auto color mode">
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#inputs">Inputs</a></li>
 <li><a class="reference internal" href="#outputs">Outputs</a></li>
-<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#other-options">Other options</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -417,7 +416,7 @@ data-aria-dark="Switch to auto color mode">
         <span>/</span>
         <meta itemprop="position" content="4" />
       </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <strong itemprop="name">ScalarMagnitudeGate</strong>
+        <strong itemprop="name">R2ForwardEulerTimeIntegration</strong>
         <meta itemprop="position" content="5" />
       </li></ol>
     <div class="xl:hidden ml-1">
@@ -430,31 +429,33 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
   <article class="yue" role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="scalarmagnitudegate">
-<span id="models-scalarmagnitudegate"></span><h1>ScalarMagnitudeGate<a class="headerlink" href="#scalarmagnitudegate" title="Link to this heading">#</a></h1>
-<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/common/MagnitudeGate.py</span></code></p>
-<p>Substitute a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> while a reference is negligible.</p>
-<p>See <code class="docutils literal notranslate"><span class="pre">_MagnitudeGate</span></code> for the switch and its derivative.</p>
+          <section class="tex2jax_ignore mathjax_ignore" id="r2forwardeulertimeintegration">
+<span id="models-r2forwardeulertimeintegration"></span><h1>R2ForwardEulerTimeIntegration<a class="headerlink" href="#r2forwardeulertimeintegration" title="Link to this heading">#</a></h1>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">models/common/ForwardEulerTimeIntegration.py</span></code></p>
+<p>Perform forward Euler time integration defined as
+<span class="math notranslate nohighlight">\(s = s_n + (t - t_n) \dot{s}\)</span>, where <span class="math notranslate nohighlight">\(s\)</span> is the variable being
+integrated, <span class="math notranslate nohighlight">\(\dot{s}\)</span> is the variable rate, and <span class="math notranslate nohighlight">\(t\)</span> is time.
+Subscripts <span class="math notranslate nohighlight">\(n\)</span> denote quantities from the previous time step.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">prediction</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The value substituted in while the reference is negligible.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">reference</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The value whose norm decides the switch, and the fallback above the threshold. For a warm start this is the previous converged value of the quantity being predicted.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">time</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">t</span></code></dt><dd><p>Time</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">gated</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The prediction while the reference is negligible, the reference otherwise.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">variable</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">R2</span></code> · <strong>required</strong></dt><dd><p>Integrated variable</p>
 </dd>
 </dl>
 </section>
-<section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
+<section id="other-options">
+<h2>Other options<a class="headerlink" href="#other-options" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">threshold</span></code> — <code class="docutils literal notranslate"><span class="pre">parameter</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · default <code class="docutils literal notranslate"><span class="pre">1e-3</span></code></dt><dd><p>Substitute the prediction only while the reference’s norm is below this.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">rate</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>Override name for the variable rate.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">old_variable</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code></dt><dd><p>Override name for the variable’s previous-step value. Defaults to <code class="docutils literal notranslate"><span class="pre">&lt;variable&gt;~1</span></code>; set it to integrate a provisional quantity forward from some <em>other</em> variable’s previous value.</p>
 </dd>
 </dl>
 </section>
@@ -466,16 +467,16 @@ data-aria-dark="Switch to auto color mode">
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="ScalarLinearInterpolation.html">
+    <a href="R2Determinant.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">ScalarLinearInterpolation</div></div>
+        <span>Previous</span><div class="title">R2Determinant</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="ScalarMultiplication.html">
+    <a href="R2InputParameter.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">ScalarMultiplication</div>
+        <div class="title">R2InputParameter</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
@@ -509,6 +510,8 @@ data-aria-dark="Switch to auto color mode">
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../../_static/copybutton.js?v=7abfc884"></script>
       <script src="../../../../_static/shibuya.js?v=50760d75"></script>
+      <script>window.MathJax = {"tex": {"tags": "all", "tagSide": "right"}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../../../../_static/components/scheduler-demos.js?v=7d35ecce"></script>
       <script src="../../../../_static/components/version-banner.js?v=62c7e18e"></script></body>
 </html>

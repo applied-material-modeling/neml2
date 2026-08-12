@@ -206,6 +206,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
@@ -226,7 +227,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2Invariant.html">SR2Invariant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2LinearCombination.html">SR2LinearCombination</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2MagnitudeGate.html">SR2MagnitudeGate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2ToR2.html">SR2ToR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/SR2VariableRate.html">SR2VariableRate</a></li>
@@ -240,7 +240,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarMagnitudeGate.html">ScalarMagnitudeGate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarPNorm.html">ScalarPNorm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
@@ -453,9 +452,9 @@ export the composed graph through the compilation pipeline (see
 <h2>A worked example<a class="headerlink" href="#a-worked-example" title="Link to this heading">#</a></h2>
 <p>To keep the wiring visible we’ll use three small models from the
 catalog instead of the full plasticity stack:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-3be6adee-60f0-4047-8cd4-758aac90e448">
-<div class="amsmath math notranslate nohighlight" id="equation-3be6adee-60f0-4047-8cd4-758aac90e448">
-<span class="eqno">(1)<a class="headerlink" href="#equation-3be6adee-60f0-4047-8cd4-758aac90e448" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-2da42e16-98f2-4532-a6f6-0906847a117d">
+<div class="amsmath math notranslate nohighlight" id="equation-2da42e16-98f2-4532-a6f6-0906847a117d">
+<span class="eqno">(1)<a class="headerlink" href="#equation-2da42e16-98f2-4532-a6f6-0906847a117d" title="Permalink to this equation">#</a></span>\[\begin{align}
   \bar{a} &amp;= I_1(\boldsymbol{a}), \\
   \bar{b} &amp;= \sqrt{\tfrac{3}{2}\,\operatorname{dev}(\boldsymbol{b}) : \operatorname{dev}(\boldsymbol{b})}, \\
   \dot{\boldsymbol{b}} &amp;= \bar{b}\,\boldsymbol{a} + \bar{a}\,\boldsymbol{b}.

@@ -206,6 +206,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
@@ -226,7 +227,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2Invariant.html">SR2Invariant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2LinearCombination.html">SR2LinearCombination</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2MagnitudeGate.html">SR2MagnitudeGate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ToR2.html">SR2ToR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2VariableRate.html">SR2VariableRate</a></li>
@@ -240,7 +240,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarMagnitudeGate.html">ScalarMagnitudeGate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarPNorm.html">ScalarPNorm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
@@ -482,9 +481,9 @@ volume, phase fraction), NEML2 adopts the standard cumulative form</p>
 <span class="math notranslate nohighlight">\(\boldsymbol{I}\)</span> is the rank-2 identity. The three concrete leaves
 in the catalog differ only in how <span class="math notranslate nohighlight">\(\varepsilon^{*}_v\)</span> depends on its
 driver:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-ef176d17-d7c4-4fb6-95f0-548a594499e3">
-<div class="amsmath math notranslate nohighlight" id="equation-ef176d17-d7c4-4fb6-95f0-548a594499e3">
-<span class="eqno">(21)<a class="headerlink" href="#equation-ef176d17-d7c4-4fb6-95f0-548a594499e3" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-1d4d8a55-8151-4002-8ec1-1ed9b8de1309">
+<div class="amsmath math notranslate nohighlight" id="equation-1d4d8a55-8151-4002-8ec1-1ed9b8de1309">
+<span class="eqno">(21)<a class="headerlink" href="#equation-1d4d8a55-8151-4002-8ec1-1ed9b8de1309" title="Permalink to this equation">#</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;\varepsilon^{*}_v = \alpha\,(T - T_0), \\
 \text{Volume change:}\quad &amp;\varepsilon^{*}_v = \left(\dfrac{V}{V_0}\right)^{1/3} - 1, \\
 \text{Phase transformation:}\quad &amp;\varepsilon^{*}_v = \Delta V \, f.
@@ -514,9 +513,9 @@ in inelastic flows.</p>
 a scalar deformation Jacobian <span class="math notranslate nohighlight">\(J^{*}\)</span> — the determinant of the
 volumetric correction to be removed from the total deformation
 gradient:</p>
-<div class="math-wrapper amsmath docutils container" id="equation-51543b4a-400a-42e3-86b7-f305fb289f86">
-<div class="amsmath math notranslate nohighlight" id="equation-51543b4a-400a-42e3-86b7-f305fb289f86">
-<span class="eqno">(22)<a class="headerlink" href="#equation-51543b4a-400a-42e3-86b7-f305fb289f86" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-079f4daa-91ad-4694-a66f-889b4912d99f">
+<div class="amsmath math notranslate nohighlight" id="equation-079f4daa-91ad-4694-a66f-889b4912d99f">
+<span class="eqno">(22)<a class="headerlink" href="#equation-079f4daa-91ad-4694-a66f-889b4912d99f" title="Permalink to this equation">#</a></span>\[\begin{align}
 \text{Thermal:}\quad &amp;J^{*} = 1 + \alpha\,(T - T_0), \\
 \text{Swelling + phase change:}\quad &amp;J^{*} = 1 + \alpha\,c\,\phi^{f}
 + (1-c)\,\phi^{f}\,\Delta\Omega.

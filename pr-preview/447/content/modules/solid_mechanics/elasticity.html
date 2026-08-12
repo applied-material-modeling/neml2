@@ -206,6 +206,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2BackwardEulerTimeIntegration.html">R2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ConstantParameter.html">R2ConstantParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Determinant.html">R2Determinant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ForwardEulerTimeIntegration.html">R2ForwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2InputParameter.html">R2InputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2Multiplication.html">R2Multiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ParameterToVariable.html">R2ParameterToVariable</a></li>
@@ -226,7 +227,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2IntermediateSum.html">SR2IntermediateSum</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2Invariant.html">SR2Invariant</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2LinearCombination.html">SR2LinearCombination</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2MagnitudeGate.html">SR2MagnitudeGate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ParameterToVariable.html">SR2ParameterToVariable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2ToR2.html">SR2ToR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2VariableRate.html">SR2VariableRate</a></li>
@@ -240,7 +240,6 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarInputParameter.html">ScalarInputParameter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearCombination.html">ScalarLinearCombination</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarLinearInterpolation.html">ScalarLinearInterpolation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarMagnitudeGate.html">ScalarMagnitudeGate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarMultiplication.html">ScalarMultiplication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarPNorm.html">ScalarPNorm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/ScalarParameterToVariable.html">ScalarParameterToVariable</a></li>
@@ -498,9 +497,9 @@ and deviatoric projectors:</p>
 <p>Any pair drawn from <span class="math notranslate nohighlight">\(\{E,\,\nu,\,K,\,G,\,\lambda,\,M\}\)</span> converts to
 <span class="math notranslate nohighlight">\((K,\,G)\)</span> via the standard textbook relations; e.g. with
 <span class="math notranslate nohighlight">\(E,\,\nu\)</span> as inputs,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-733af9f0-8f53-49f5-a4e7-0f2186731b56">
-<div class="amsmath math notranslate nohighlight" id="equation-733af9f0-8f53-49f5-a4e7-0f2186731b56">
-<span class="eqno">(11)<a class="headerlink" href="#equation-733af9f0-8f53-49f5-a4e7-0f2186731b56" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-a314f5ce-b06f-45fe-9ae3-df788d395ff8">
+<div class="amsmath math notranslate nohighlight" id="equation-a314f5ce-b06f-45fe-9ae3-df788d395ff8">
+<span class="eqno">(11)<a class="headerlink" href="#equation-a314f5ce-b06f-45fe-9ae3-df788d395ff8" title="Permalink to this equation">#</a></span>\[\begin{align}
   K &amp;= \dfrac{E}{3(1 - 2\nu)}, \\
   G &amp;= \dfrac{E}{2(1 + \nu)}.
 \end{align}\]</div>
@@ -516,9 +515,9 @@ fourth-order stiffness onto three cubic-symmetry projectors
 \]</div>
 </div>
 <p>With <span class="math notranslate nohighlight">\((G,\,E,\,\nu)\)</span> as inputs, the canonical triple is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-ea99394f-eda7-42b4-acfe-85520076445d">
-<div class="amsmath math notranslate nohighlight" id="equation-ea99394f-eda7-42b4-acfe-85520076445d">
-<span class="eqno">(12)<a class="headerlink" href="#equation-ea99394f-eda7-42b4-acfe-85520076445d" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-7112e3b0-e07e-470c-889a-aee9043b11b9">
+<div class="amsmath math notranslate nohighlight" id="equation-7112e3b0-e07e-470c-889a-aee9043b11b9">
+<span class="eqno">(12)<a class="headerlink" href="#equation-7112e3b0-e07e-470c-889a-aee9043b11b9" title="Permalink to this equation">#</a></span>\[\begin{align}
   C_1 &amp;= \dfrac{E\,(1 - \nu)}{(1 + \nu)(1 - 2\nu)}, \\
   C_2 &amp;= \dfrac{E\,\nu}{(1 + \nu)(1 - 2\nu)}, \\
   C_3 &amp;= 2G.

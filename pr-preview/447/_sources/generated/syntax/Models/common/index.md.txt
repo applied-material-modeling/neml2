@@ -34,6 +34,7 @@ MixedControlSetup
 R2BackwardEulerTimeIntegration
 R2ConstantParameter
 R2Determinant
+R2ForwardEulerTimeIntegration
 R2InputParameter
 R2Multiplication
 R2ParameterToVariable
@@ -54,7 +55,6 @@ SR2IntermediateMean
 SR2IntermediateSum
 SR2Invariant
 SR2LinearCombination
-SR2MagnitudeGate
 SR2ParameterToVariable
 SR2ToR2
 SR2VariableRate
@@ -68,7 +68,6 @@ ScalarForwardEulerTimeIntegration
 ScalarInputParameter
 ScalarLinearCombination
 ScalarLinearInterpolation
-ScalarMagnitudeGate
 ScalarMultiplication
 ScalarPNorm
 ScalarParameterToVariable
