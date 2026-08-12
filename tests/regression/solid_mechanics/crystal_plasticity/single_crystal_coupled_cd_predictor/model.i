@@ -9,8 +9,8 @@
 # does not perturb the converged answer. If it ever fails, the predictor is
 # changing physics, which no predictor is allowed to do.
 #
-# The Newton counts it saves are measured in studies/nlprecond; this file only
-# pins that the answer is unmoved.
+# This file pins only that the answer is unmoved. The Newton counts the
+# predictor saves are exercised by tests/aoti/test_predictor_loop.py.
 [Tensors]
   # end_time = LinspaceScalar(1, 10, 20) -> shape (20,)
   [end_time]
