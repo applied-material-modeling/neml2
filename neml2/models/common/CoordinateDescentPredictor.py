@@ -70,7 +70,6 @@ from typing import TYPE_CHECKING
 from ...factory import register_neml2_object
 from ...schema import HitSchema, dependency, input, option, output
 from ...types import Scalar, lt, stack, where
-from ...types._boundary import reinterpret_sub_batch
 from ..model import IterableExport, Model
 
 if TYPE_CHECKING:
@@ -364,7 +363,7 @@ class CoordinateDescentPredictor(Model):
         # survive the export pytree round-trip -- it is rebuilt at 0, leaving the
         # slip axis looking like batch. `b` is produced inside the graph, so its
         # metadata is intact and says how many trailing axes to re-read.
-        g_in = reinterpret_sub_batch(vals[self._feedback_in], b.sub_batch_ndim)
+        g_in = vals[self._feedback_in].with_sub_batch_ndim(b.sub_batch_ndim)
         m = int(b.sub_batch_shape[-1])
         return self._sweeps_from([g_in.sub_batch[i] for i in range(m)], vals, 1)
 
