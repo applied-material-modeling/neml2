@@ -1,0 +1,48 @@
+(models-CoordinateDescentPredictor)=
+# CoordinateDescentPredictor
+
+**Source:** `models/common/CoordinateDescentPredictor.py`
+
+Coordinate descent on $\varphi(\dot{\gamma}) + A\dot{\gamma} = b$ as a warm start.
+
+Gauss-Seidel over the components, each coordinate solved by bisection in the
+driving-force variable. See the module docstring for the structure and why
+coordinate descent suits it.
+
+Both $A$ and $b$ are plain `Scalar`\ s carried on
+sub-batch axes -- $b$ over ``(m,)`` and $A$ over ``(m, m)``. A matrix of
+scalars is exactly what the sub-batch machinery already represents, so this
+needs no dynamic-base tensor at the model boundary.
+
+## Inputs
+
+`coupling` &mdash; `input` &middot; `Scalar` &middot; **required**
+: The coupling matrix $A$, sub-batched over (m, m), symmetric positive semi-definite. Its diagonal must be non-negative -- that is what brackets each coordinate solve.
+
+`trial_driving_force` &mdash; `input` &middot; `Scalar` &middot; **required**
+: The right-hand side $b$, sub-batched over (m,): the driving force that would act with every rate at zero (for crystal plasticity, the trial resolved shear).
+
+
+## Outputs
+
+`rate` &mdash; `output` &middot; `Scalar` &middot; **required**
+: The predicted rate, sub-batched over (m,)
+
+
+## Other options
+
+`rate_law` &mdash; `str` &middot; **required**
+: Explicit rate law, driving force in and rate out -- the inverse of the separable nonlinearity. Its driving-force input is named by `driving_force_input`; every other input is forwarded unchanged.
+
+`driving_force_input` &mdash; `str` &middot; **required**
+: Which of `rate_law`'s inputs is the driving force.
+
+`sweeps` &mdash; `int` &middot; default `16`
+: Gauss-Seidel sweeps. Measured: 16 suffices; more does not help once the coupling linearization dominates the error.
+
+`bisections` &mdash; `int` &middot; default `16`
+: Bisections of the bracket in each coordinate solve, before the Newton polish. Measured: unchanged from 6 upward and broken at 4, so the default carries roughly threefold margin.
+
+`polish` &mdash; `int` &middot; default `3`
+: Newton steps after bisection, using the rate law's own tangent. Three recovers full relative accuracy from a coarse bracket.
+
