@@ -22,23 +22,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Solid-mechanics damage models (Mazars CDM family).
+"""Solid-mechanics damage models.
 
 One file per registered type; this package re-imports each so the
 ``@register_neml2_object`` side effects fire on package import.
 
-Registered: DamagedStress (Phase B), MazarsEquivalentStrain (Phase D),
-MazarsDamageStressAlpha (Phase F). MazarsDamage with simplified α
-weighting (would have been Phase E) is intentionally not ported — not
-used in our CDM workflow.
+Registered:
+
+* Mazars CDM family: ``DamagedStress`` (Phase B), ``MazarsEquivalentStrain``
+  (Phase D), ``MazarsDamageStressAlpha`` (Phase F). ``MazarsDamage`` with
+  simplified α weighting (would have been Phase E) is intentionally not
+  ported -- not used in our CDM workflow.
+* Simo-Ju CDM family: ``WeibullDamage`` (three-parameter Brandyberry form).
 """
 
 from .DamagedStress import DamagedStress
 from .MazarsDamageStressAlpha import MazarsDamageStressAlpha
 from .MazarsEquivalentStrain import MazarsEquivalentStrain
+from .ViscousDamageRelaxation import ViscousDamageRelaxation
+from .WeibullDamage import WeibullDamage
 
 __all__ = [
     "DamagedStress",
     "MazarsEquivalentStrain",
     "MazarsDamageStressAlpha",
+    "WeibullDamage",
+    "ViscousDamageRelaxation",
 ]
