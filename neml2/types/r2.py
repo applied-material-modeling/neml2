@@ -41,7 +41,13 @@ from typing import ClassVar
 
 import torch
 
-from neml2.types._base import align_k, align_sub_batch, combine_k_state, combine_sub_batch_state
+from neml2.types._base import (
+    UNSET,
+    align_k,
+    align_sub_batch,
+    combine_k_state,
+    combine_sub_batch_state,
+)
 from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
 
@@ -51,12 +57,12 @@ class R2(PrimitiveTensor):
     """Wraps a `torch.Tensor` of shape ``(..., 3, 3)``."""
 
     data: torch.Tensor
-    sub_batch_ndim: int = 0
-    sub_batch_state: tuple = ()
-    sub_batch_meta: tuple = ()
-    k_ndim: int = 0
-    k_state: tuple = ()
-    k_pairing: tuple = ()
+    sub_batch_ndim: int = UNSET
+    sub_batch_state: tuple = UNSET
+    sub_batch_meta: tuple = UNSET
+    k_ndim: int = UNSET
+    k_state: tuple = UNSET
+    k_pairing: tuple = UNSET
     BASE_NDIM: ClassVar[int] = 2
     BASE_SHAPE: ClassVar[tuple[int, ...]] = (3, 3)
 

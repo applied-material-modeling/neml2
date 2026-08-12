@@ -64,11 +64,39 @@ def test_rewrapping_a_wrapper_inherits_its_sub_batch_ndim(cls, shape):
     assert cls(inner).sub_batch_ndim == 1
 
 
-def test_rewrapping_still_lets_an_explicit_value_win():
+def test_rewrapping_accepts_an_explicit_value_that_agrees():
     inner = Scalar(torch.zeros(2, 3, dtype=torch.float64), sub_batch_ndim=1)
-    assert Scalar(inner, 2).sub_batch_ndim == 2
-    # Dropping the region is available, but has to be asked for.
+    assert Scalar(inner, 1).sub_batch_ndim == 1
+    # ``()`` is the documented shorthand for all-"full", so spelling it out is
+    # the same statement, not a competing one.
+    assert Scalar(inner, 1, ("full",)).sub_batch_state == ("full",)
+
+
+@pytest.mark.parametrize("ndim", [0, 2], ids=["drop", "bump"])
+def test_rewrapping_refuses_an_explicit_value_that_disagrees(ndim):
+    """A re-wrap that is handed a rank *and* a value carrying a different one
+    has two answers and no way to choose. Preferring the argument drops the
+    region; preferring the value ignores the argument; taking the argument's
+    rank with the value's per-axis state builds an object neither described
+    (a rank-2 wrapper with a one-element ``sub_batch_state``, which crashed
+    ``sub_batch_shape``). So it refuses.
+
+    ``ndim=0`` is the case that has to raise rather than be treated as
+    silence: 0 is also the no-region default, and reading an explicit 0 as
+    "said nothing" is what let a per-site quantity keep its axis through a
+    re-wrap that meant to strip it.
+    """
+    inner = Scalar(torch.zeros(2, 3, dtype=torch.float64), sub_batch_ndim=1)
+    with pytest.raises(ValueError, match=r"Cannot re-wrap a Scalar.*sub_batch_ndim"):
+        Scalar(inner, ndim)
+
+
+def test_dropping_a_region_has_its_own_spelling():
+    """The escape hatch the refusal above points at: unambiguous by
+    construction, because there is no second opinion in the call."""
+    inner = Scalar(torch.zeros(2, 3, dtype=torch.float64), sub_batch_ndim=1)
     assert inner.with_sub_batch_ndim(0).sub_batch_ndim == 0
+    assert Scalar(inner.data).sub_batch_ndim == 0
 
 
 def test_wrapping_a_raw_tensor_still_defaults_to_zero():

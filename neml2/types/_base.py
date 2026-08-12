@@ -29,22 +29,29 @@
 ``@dataclass(frozen=True, eq=False)`` with these fields:
 
 - ``data: torch.Tensor`` -- the underlying storage.
-- ``sub_batch_ndim: int = 0`` -- count of trailing batch axes that act
+- ``sub_batch_ndim: int`` -- count of trailing batch axes that act
   as a structured "sub-batch" region (the Python-native analogue of the
   C++ ``intmd_dim``).
-- ``sub_batch_state: tuple[SubBatchStateFlag, ...] = ()`` -- per-axis
+- ``sub_batch_state: tuple[SubBatchStateFlag, ...]`` -- per-axis
   ``"full"`` / ``"broadcast"`` storage mode (see :mod:`neml2.chain_rule`).
-- ``sub_batch_meta: tuple[int, ...] = ()`` -- per-axis logical extent
+- ``sub_batch_meta: tuple[int, ...]`` -- per-axis logical extent
   consulted only when the axis is in broadcast mode.
-- ``k_ndim: int = 0`` -- count of leading K (seed-direction) axes
+- ``k_ndim: int`` -- count of leading K (seed-direction) axes
   carried by a chain-rule tangent. Primal wrappers have ``k_ndim == 0``.
-- ``k_state: tuple[KStateFlag, ...] = ()`` -- per-K-axis ``"full"`` /
+- ``k_state: tuple[KStateFlag, ...]`` -- per-K-axis ``"full"`` /
   ``"broadcast"`` storage mode. Length must equal ``k_ndim``.
-- ``k_pairing: tuple[int | None, ...] = ()`` -- per-K-axis pairing.
+- ``k_pairing: tuple[int | None, ...]`` -- per-K-axis pairing.
   ``k_pairing[i] = j`` means K axis i is paired with sub_batch axis j;
   the seed for that pair is the eye-shape diagonal on (K_i, sub_j).
   ``None`` means the K axis is a base-direction enumerator with no
   sub pairing. Length must equal ``k_ndim``.
+
+Every field but ``data`` defaults to :data:`UNSET` rather than to its
+no-region value, so that "said nothing" and "said there is no region" are
+distinguishable. :func:`seat_metadata` resolves them before
+``__post_init__`` returns -- inheriting from the inner wrapper on a re-wrap,
+falling back to the no-region value otherwise -- so no wrapper is ever
+observable holding :data:`UNSET`.
 
 Shape decomposition
 -------------------
@@ -128,10 +135,35 @@ SubBatchStateFlag: TypeAlias = Literal["full", "broadcast"]
 KStateFlag: TypeAlias = Literal["full", "broadcast"]
 
 
-#: Per-field "the caller said nothing" values, used when a typed wrapper is
-#: re-wrapped as its own type. Kept in step with the seven instance fields
-#: minus ``data`` -- see :func:`inherit_rewrap_metadata`.
-_REWRAP_DEFAULTS: tuple[tuple[str, Any], ...] = (
+#: Default for every metadata field on every typed wrapper, standing for "the
+#: caller said nothing". It exists so that *saying nothing* and *saying the
+#: default* are different statements: ``Scalar(x)`` leaves the sub-batch region
+#: to be decided, while ``Scalar(x, sub_batch_ndim=0)`` asserts there isn't one.
+#: The two only diverge when re-wrapping a value that already carries metadata
+#: -- see :func:`seat_metadata` -- but that is exactly the case that used to be
+#: resolved by guessing.
+#:
+#: ``None`` rather than a private sentinel class, for two reasons. It is
+#: unambiguous -- the ranks are ``int`` and the rest are ``tuple``, so no field
+#: has a legitimate ``None`` value (``k_pairing`` *contains* ``None``s but is
+#: never ``None`` itself). And it is the only spelling ``torch.export`` can
+#: trace: these constructors run inside the exported graph when
+#: ``pytree.tree_unflatten`` rebuilds a wrapper, and Dynamo's sourceless
+#: builder rejects an instance of a user-defined class appearing as a default
+#: argument (``Unsupported: Unexpected type in sourceless builder``, gb0116)
+#: while handling the ``None`` singleton natively.
+#:
+#: Typed ``Any`` so the concrete fields can keep their real annotations
+#: (``sub_batch_ndim: int = UNSET``); :func:`seat_metadata` replaces it with a
+#: value of the declared type before ``__post_init__`` returns, so no wrapper is
+#: ever observable holding it.
+UNSET: Any = None
+
+#: Per-field value meaning "no region here", used when nothing is inherited.
+#: Kept in step with the seven instance fields minus ``data``.
+_METADATA_DEFAULTS: tuple[tuple[str, Any], ...] = (
+    # ``sub_batch_ndim`` first: the state/meta agreement check below reads the
+    # already-seated rank.
     ("sub_batch_ndim", 0),
     ("sub_batch_state", ()),
     ("sub_batch_meta", ()),
@@ -141,22 +173,72 @@ _REWRAP_DEFAULTS: tuple[tuple[str, Any], ...] = (
 )
 
 
-def inherit_rewrap_metadata(outer: TensorWrapper, inner: TensorWrapper) -> None:
-    """Seat on *outer* every metadata field it left at its default, from *inner*.
+def _agrees(name: str, passed: Any, held: Any, outer: TensorWrapper, inner: TensorWrapper) -> bool:
+    """Whether an explicitly passed metadata value says the same thing as *inner*'s.
 
-    ``type_cls(wrapper)`` re-wraps an already-typed value -- the double-wrap
-    ``ComposedModel`` and friends produce when a value crosses a model
-    boundary. The dataclass ``__init__`` fills the metadata fields from their
-    defaults, so without this the re-wrap would silently reset the sub-batch
-    and K regions to "none" and hand a per-slip quantity downstream as a plain
-    batched one. Callers that mean to change a field still win: an explicitly
-    passed value differs from the default and is left alone. To *drop* a
-    region deliberately, say so -- ``with_sub_batch_ndim(0)`` /
-    ``sub_batch.flatten()`` -- rather than laundering it through a re-wrap.
+    Only ``sub_batch_state`` needs interpreting rather than comparing: an empty
+    tuple is the documented shorthand for all-``"full"`` (see
+    :attr:`TensorWrapper.sub_batch_shape`), so ``()`` and ``("full", "full")``
+    on a rank-2 value are the same statement written two ways.
     """
-    for name, default in _REWRAP_DEFAULTS:
-        if getattr(outer, name) == default:
-            object.__setattr__(outer, name, getattr(inner, name))
+    if name == "sub_batch_state":
+        return _normalized_state(passed, outer.sub_batch_ndim) == _normalized_state(
+            held, inner.sub_batch_ndim
+        )
+    return passed == held
+
+
+def _normalized_state(state: tuple, ndim: int) -> tuple:
+    return tuple(state) if state else ("full",) * ndim
+
+
+def seat_metadata(outer: TensorWrapper, inner: TensorWrapper | None) -> None:
+    """Resolve every :data:`UNSET` metadata field on *outer*.
+
+    With no *inner* -- the ordinary ``type_cls(tensor)`` construction -- an
+    unset field takes its :data:`_METADATA_DEFAULTS` value, so nothing changes
+    for callers who never mention the regions.
+
+    With an *inner*, *outer* is a **re-wrap**: ``type_cls(wrapper)``, the
+    double-wrap ``ComposedModel`` and ``Model.call_by_name`` produce when a
+    value crosses a model boundary. There the defaults are the wrong answer --
+    resetting the sub-batch and K regions to "none" hands a per-slip quantity
+    downstream as a plain batched one -- so an unset field inherits from
+    *inner* instead.
+
+    A field the caller *did* pass is checked, not applied. If it agrees with
+    *inner*, fine. If it disagrees, that is two statements about one value and
+    there is no reading of a re-wrap under which either is reliably the
+    intended one, so it raises. Silently preferring the caller loses the
+    region; silently preferring the inner ignores the argument; and the
+    combination of the two -- caller's rank with inner's per-axis state -- is
+    an object neither of them described, which is how a rank-2 value ended up
+    carrying a one-element ``sub_batch_state`` and crashing whatever read it.
+
+    Deliberate changes have their own spellings and do not go through here:
+    :meth:`TensorWrapper.with_sub_batch_ndim`, ``value.sub_batch.flatten()``,
+    or ``type_cls(value.data, ...)`` to build an unrelated wrapper from the
+    same storage.
+    """
+    for name, default in _METADATA_DEFAULTS:
+        passed = getattr(outer, name)
+        if inner is None:
+            if passed is UNSET:
+                object.__setattr__(outer, name, default)
+            continue
+        held = getattr(inner, name)
+        if passed is UNSET:
+            object.__setattr__(outer, name, held)
+        elif not _agrees(name, passed, held, outer, inner):
+            raise ValueError(
+                f"Cannot re-wrap a {type(inner).__name__}: the call passed "
+                f"{name}={passed!r} but the value being re-wrapped carries "
+                f"{name}={held!r}. A re-wrap inherits the metadata it is not given; "
+                f"it will not override it, because either one could be the intended "
+                f"answer and picking wrong is silent. To change the region say so "
+                f"({type(inner).__name__}.with_sub_batch_ndim(...) / .sub_batch.flatten()); "
+                f"to build an unrelated wrapper from the same storage pass `value.data`."
+            )
 
 
 class TensorWrapper:
@@ -182,12 +264,12 @@ class TensorWrapper:
     def __init__(
         self,
         data: torch.Tensor | TensorWrapper,
-        sub_batch_ndim: int = 0,
-        sub_batch_state: tuple[SubBatchStateFlag, ...] = (),
-        sub_batch_meta: tuple[int, ...] = (),
-        k_ndim: int = 0,
-        k_state: tuple[KStateFlag, ...] = (),
-        k_pairing: tuple[int | None, ...] = (),
+        sub_batch_ndim: int = UNSET,
+        sub_batch_state: tuple[SubBatchStateFlag, ...] = UNSET,
+        sub_batch_meta: tuple[int, ...] = UNSET,
+        k_ndim: int = UNSET,
+        k_state: tuple[KStateFlag, ...] = UNSET,
+        k_pairing: tuple[int | None, ...] = UNSET,
     ) -> None:
         # Subclasses are ``@dataclass(frozen=True, eq=False)``; the dataclass
         # decorator generates the real ``__init__`` on each one. This stub
@@ -220,8 +302,8 @@ class TensorWrapper:
     def __rmul__(self, other) -> TensorWrapper:
         raise NotImplementedError
 
-    def __post_init__(self) -> None:
-        """Defend against double-wrapping AND enforce K-region invariants.
+    def __post_init__(self, _inner: TensorWrapper | None = None) -> None:
+        """Seat the metadata, defend against double-wrapping, enforce K invariants.
 
         Double-wrap unwrap
         ------------------
@@ -232,8 +314,13 @@ class TensorWrapper:
         gets wrapped twice -- yielding e.g. ``SR2(SR2(tensor))`` where
         ``self.data`` is an ``SR2`` instead of a ``torch.Tensor``. This hook
         unwraps a same-type wrapper input to its inner ``data`` so the
-        double-wrap is a no-op -- metadata included, via
-        :func:`inherit_rewrap_metadata`.
+        double-wrap is a no-op -- metadata included, via :func:`seat_metadata`.
+
+        *_inner* is for the one wrapper that hand-writes ``__init__``
+        (:class:`~neml2.types.Scalar`, which has to unwrap early to apply
+        ``dtype``/``device``) and so has already replaced ``self.data`` by the
+        time it gets here. Everyone else lets the unwrap happen below. The
+        dataclass-generated ``__init__`` calls this with no arguments.
 
         K-region invariants (Appendix A of v2-parity plan)
         --------------------------------------------------
@@ -247,6 +334,7 @@ class TensorWrapper:
           at the K axis position (positional invariant for the
           eye-diagonal storage convention).
         """
+        inner = _inner
         if isinstance(self.data, TensorWrapper):
             inner = self.data
             if not isinstance(inner, type(self)):
@@ -254,8 +342,8 @@ class TensorWrapper:
                     f"Cannot wrap a {type(inner).__name__} as a {type(self).__name__}; "
                     "wrapper types must match. Pass `inner.data` instead of the wrapper."
                 )
-            inherit_rewrap_metadata(self, inner)
             object.__setattr__(self, "data", inner.data)
+        seat_metadata(self, inner)
 
         # K-region invariants.
         k_ndim = self.k_ndim
