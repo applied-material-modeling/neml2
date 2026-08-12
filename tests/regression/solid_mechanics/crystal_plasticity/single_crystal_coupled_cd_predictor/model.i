@@ -1,17 +1,22 @@
 # neml2
-# single_crystal_coupled with the coordinate-descent predictor in the
-# ImplicitUpdate predictor slot instead of CrystalPlasticityStrainPredictor.
+# single_crystal_coupled with the coordinate-descent predictor in the ImplicitUpdate
+# predictor slot.
 #
 # Everything else -- residual, unknowns, load history, solver -- is byte-identical
 # to the parent, and the gold is the parent's file COPIED UNCHANGED. That is the
-# whole point of the scenario: a predictor moves only the initial guess, so if
-# this passes against the parent's reference then coordinate descent provably
-# does not perturb the converged answer. If it ever fails, the predictor is
-# changing physics, which no predictor is allowed to do.
-#
-# This file pins only that the answer is unmoved. The Newton counts the
-# predictor saves are exercised by tests/aoti/test_predictor_loop.py.
+# point: a predictor moves only the initial guess, so passing against the
+# parent's reference proves coordinate descent does not perturb the converged
+# answer. A failure here means the predictor is changing physics, which no
+# predictor is allowed to do.
 [Tensors]
+
+  # Mandel isotropic stiffness for SlipSystemElasticInteraction, from the SAME
+  # (E, nu) as [Models/elasticity]. Keep the two in step: the coupling matrix is
+  # only consistent with the residual if they agree.
+  [C_cd_iso]
+    type = Python
+    expr = 'SSR4((lambda E, nu: (lambda lam, mu: 2.0 * mu * torch.eye(6, dtype=torch.float64) + torch.nn.functional.pad(torch.full((3, 3), lam, dtype=torch.float64), (0, 3, 0, 3)))(E * nu / ((1 + nu) * (1 - 2 * nu)), E / (2 * (1 + nu))))(100000, 0.25))'
+  []
   # end_time = LinspaceScalar(1, 10, 20) -> shape (20,)
   [end_time]
     type = Python
@@ -43,13 +48,6 @@
     expr = 'WR2(vorticity_single.data.unsqueeze(0).expand(100, 20, 3).contiguous())'
   []
 
-  # Mandel isotropic stiffness for SlipSystemElasticInteraction, from the SAME
-  # (E, nu) as [Models/elasticity]. Keep the two in step: the coupling matrix is
-  # only consistent with the residual if they agree.
-  [C_iso]
-    type = Python
-    expr = 'SSR4((lambda E, nu: (lambda lam, mu: 2.0 * mu * torch.eye(6, dtype=torch.float64) + torch.nn.functional.pad(torch.full((3, 3), lam, dtype=torch.float64), (0, 3, 0, 3)))(E * nu / ((1 + nu) * (1 - 2 * nu)), E / (2 * (1 + nu))))(1e5, 0.25))'
-  []
   # Crystal geometry inputs: lattice parameter + slip direction + slip plane
   [a]
     type = Python
@@ -217,7 +215,7 @@
   [pred_coupling]
     type = SlipSystemElasticInteraction
     orientation = 'orientation~1'
-    elastic_stiffness_tensor = 'C_iso'
+    elastic_stiffness_tensor = 'C_cd_iso'
     coupling = 'slip_coupling'
   []
   # Slip strengths are LAGGED: the condensed system treats them as frozen over
@@ -261,13 +259,6 @@
     old_variable = 'elastic_strain~1'
     rate = 'elastic_strain_rate'
   []
-  [pred_strain_gate]
-    type = SR2MagnitudeGate
-    prediction = 'elastic_strain_cd'
-    reference = 'elastic_strain~1'
-    gated = 'elastic_strain'
-    threshold = 1e-3
-  []
   [pred_sum_slip_rates]
     type = SumSlipRates
   []
@@ -283,14 +274,18 @@
     old_variable = 'slip_hardening~1'
     rate = 'slip_hardening_rate'
   []
-  [pred_hardening_gate]
-    type = ScalarMagnitudeGate
-    prediction = 'slip_hardening_cd'
-    reference = 'slip_hardening~1'
-    gated = 'slip_hardening'
-    threshold = 1e-3
+  # Cold step -> the coordinate-descent guess; every later step -> the previous
+  # converged value. One model, one first-step test, and it is the extrapolator's
+  # own: "is there a second history point", which is the actual question. A test
+  # on a variable's magnitude only coincides with coldness when that variable
+  # starts at zero -- false for a dislocation density or an identity Fp.
+  [pred_seed]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'elastic_strain'
+    unknowns_Scalar = 'slip_hardening'
+    cold = 'elastic_strain:elastic_strain_cd slip_hardening:slip_hardening_cd'
   []
-  # Orientation measured as not worth predicting over one step; carried forward.
+  # Orientation is not worth predicting over one step; carried forward.
   [pred_orientation]
     type = ConstantExtrapolationPredictor
     unknowns_MRP = 'orientation'
@@ -299,9 +294,9 @@
     type = ComposedModel
     models = 'pred_trial_strain pred_rotation pred_trial_stress pred_trial_rss
               pred_coupling pred_slip_strength pred_cd pred_plastic_rate
-              pred_elastic_rate pred_strain pred_strain_gate
+              pred_elastic_rate pred_strain
               pred_sum_slip_rates pred_hardening_rate pred_hardening
-              pred_hardening_gate pred_orientation'
+              pred_seed pred_orientation'
   []
   [model]
     type = ImplicitUpdate

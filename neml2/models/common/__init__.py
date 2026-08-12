@@ -69,6 +69,7 @@ from .DynamicMean import SR2DynamicMean
 from .DynamicSum import SR2DynamicSum
 from .FBComplementarity import FBComplementarity
 from .ForwardEulerTimeIntegration import (
+    R2ForwardEulerTimeIntegration,
     ScalarForwardEulerTimeIntegration,
     SR2ForwardEulerTimeIntegration,
 )
@@ -93,7 +94,6 @@ from .LinearCombination import ScalarLinearCombination, SR2LinearCombination
 from .LinearExtrapolationPredictor import LinearExtrapolationPredictor
 from .LinearInterpolation import ScalarLinearInterpolation
 from .MacaulaySplit import MacaulaySplit
-from .MagnitudeGate import ScalarMagnitudeGate, SR2MagnitudeGate
 from .MinMapComplementarity import MinMapComplementarity
 from .MixedControlSetup import MixedControlSetup
 from .ParameterToVariable import (
@@ -139,6 +139,7 @@ __all__ = [
     "SR2BackwardEulerTimeIntegration",
     "VecBackwardEulerTimeIntegration",
     "ScalarForwardEulerTimeIntegration",
+    "R2ForwardEulerTimeIntegration",
     "SR2ForwardEulerTimeIntegration",
     "FBComplementarity",
     "HermiteSmoothStep",
@@ -146,8 +147,6 @@ __all__ = [
     "MacaulaySplit",
     "MinMapComplementarity",
     "ConstantExtrapolationPredictor",
-    "ScalarMagnitudeGate",
-    "SR2MagnitudeGate",
     "CoordinateDescentPredictor",
     "LinearExtrapolationPredictor",
     "MillerIndexConstantParameter",

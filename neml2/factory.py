@@ -178,6 +178,19 @@ class _NativeInputFile:
 
     # ── generic dispatcher ────────────────────────────────────────────────────
 
+    def has_tensor(self, name: str) -> bool:
+        """Whether a ``[Tensors/<name>]`` block exists.
+
+        Lets a caller distinguish "no such tensor" from "the tensor exists but
+        building it failed", which catching ``KeyError`` around
+        :meth:`get_tensor` cannot: a ``KeyError`` escaping the expression
+        evaluation is indistinguishable from a missing block, and the caller
+        then silently takes its not-found branch.
+        """
+        return ("Tensors", name) in self._cache or self._find_in_section(
+            "Tensors", name
+        ) is not None
+
     def _get_object(self, section: str, name: str) -> Any:
         key = (section, name)
         if key in self._cache:
@@ -361,8 +374,11 @@ class _TensorNamespace(dict):
     def __missing__(self, key: str) -> Any:
         try:
             val = self._factory.get_tensor(key)
-        except KeyError:
-            raise NameError(f"name {key!r} is not defined") from None
+        except KeyError as exc:
+            # Keep the cause: the KeyError may come from a NESTED [Tensors]
+            # reference, in which case reporting only the outer name points at
+            # the wrong block.
+            raise NameError(f"name {key!r} is not defined") from exc
         self[key] = val  # cache resolved value in the namespace
         return val
 

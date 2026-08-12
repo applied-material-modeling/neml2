@@ -255,13 +255,6 @@
   # Cold-state gate: the prediction is worth having only on the step with no
   # previous solution to start from. At warm steps the previous converged value
   # is already the better guess, so it passes through untouched.
-  [pred_strain_gate]
-    type = SR2MagnitudeGate
-    prediction = 'elastic_strain_cd'
-    reference = 'elastic_strain~1'
-    gated = 'elastic_strain'
-    threshold = 1e-3
-  []
   [pred_sum_slip_rates]
     type = SumSlipRates
   []
@@ -277,12 +270,13 @@
     old_variable = 'slip_hardening~1'
     rate = 'slip_hardening_rate'
   []
-  [pred_hardening_gate]
-    type = ScalarMagnitudeGate
-    prediction = 'slip_hardening_cd'
-    reference = 'slip_hardening~1'
-    gated = 'slip_hardening'
-    threshold = 1e-3
+  # Cold step -> the coordinate-descent guess; later steps -> the previous
+  # converged value, via the extrapolator's own no-history test.
+  [pred_seed]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'elastic_strain'
+    unknowns_Scalar = 'slip_hardening'
+    cold = 'elastic_strain:elastic_strain_cd slip_hardening:slip_hardening_cd'
   []
   # Orientation is not worth predicting over one step -- measured as worth
   # nothing -- so it is simply carried forward.
@@ -295,9 +289,8 @@
     type = ComposedModel
     models = 'pred_trial_strain pred_rotation pred_trial_stress pred_trial_rss
               pred_coupling pred_slip_strength pred_cd pred_plastic_rate
-              pred_elastic_rate pred_strain pred_strain_gate
-              pred_sum_slip_rates pred_hardening_rate pred_hardening
-              pred_hardening_gate pred_orientation'
+              pred_elastic_rate pred_strain pred_sum_slip_rates
+              pred_hardening_rate pred_hardening pred_seed pred_orientation'
   []
   [model]
     type = ImplicitUpdate

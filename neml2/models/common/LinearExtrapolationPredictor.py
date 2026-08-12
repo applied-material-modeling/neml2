@@ -110,6 +110,17 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
             reader=_read_list_str,
             optional_reader=_opt_list_str,
         ),
+        option(
+            "cold",
+            list,
+            "Optional `unknown:variable` pairs naming a COLD value per unknown, "
+            "used on the step where there is no history to extrapolate from. "
+            "Every later step extrapolates as usual. Name only the unknowns you "
+            "want seeded; the rest fall back to `u~1`, unchanged.",
+            default=[],
+            reader=_read_list_str,
+            optional_reader=_opt_list_str,
+        ),
     )
 
     def __init__(
@@ -119,16 +130,29 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         unknowns_MRP: list[str] | None = None,
         unknowns_R2: list[str] | None = None,
         time: str = "t",
+        cold: list[str] | None = None,
     ) -> None:
         # Defer parent __init__ to fill in _sr2 / _scalar / _rot / _r2 and the
         # (var~1 -> var) spec, then extend the input spec with the time history
         # (t, t~1, t~2) and the (var~2) inputs that linear extrapolation needs.
+        # The parent builds the (u~1 -> u) spec and validates + records the cold
+        # mapping. It would also add its own time inputs, but this class always
+        # needs t/t~1/t~2 and declares them below in its own positional order,
+        # so re-derive the spec from scratch afterwards.
         super().__init__(
             unknowns_SR2=unknowns_SR2,
             unknowns_Scalar=unknowns_Scalar,
             unknowns_MRP=unknowns_MRP,
             unknowns_R2=unknowns_R2,
+            cold=cold,
+            time=time,
         )
+        self.input_spec = {
+            **{f"{u}~1": SR2 for u in self._sr2},
+            **{f"{u}~1": Scalar for u in self._scalar},
+            **{f"{u}~1": MRP for u in self._rot},
+            **{f"{u}~1": R2 for u in self._r2},
+        }
         self._time = time
         # Positional ordering for forward(): keep parent's (var~1) inputs first,
         # then time triple, then (var~2) for every unknown — same per-type
@@ -143,6 +167,20 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
             **{f"{u}~2": R2 for u in self._r2},
         }
         self.input_spec = {**self.input_spec, **extra_in}
+
+        # Optional cold values, appended LAST so the existing positional
+        # unpacking above is untouched when the option is unset.
+        if self._cold:
+            types = {
+                **{u: SR2 for u in self._sr2},
+                **{u: Scalar for u in self._scalar},
+                **{u: MRP for u in self._rot},
+                **{u: R2 for u in self._r2},
+            }
+            self.input_spec = {
+                **self.input_spec,
+                **{self._cold[u]: types[u] for u in self.output_spec if u in self._cold},
+            }
 
     def forward(  # type: ignore[override]
         self,
@@ -164,6 +202,16 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         t_n = cast(Scalar, inputs[n_n + 1])
         t_nm1 = cast(Scalar, inputs[n_n + 2])
         var_nm1: list[TensorWrapper] = list(inputs[n_n + 3 : 2 * n_n + 3])
+        # The cold branch: what to use when there is no history to extrapolate
+        # from. Defaults to var_n, which is the historical behaviour; a caller
+        # that has something better for the first step (a physics-based
+        # predictor, say) supplies it here instead of bolting a second
+        # first-step test on the outside.
+        supplied = iter(inputs[2 * n_n + 3 :])
+        var_cold: list[TensorWrapper] = [
+            next(supplied) if u in self._cold else u_n
+            for u, u_n in zip(self.output_spec, var_n, strict=True)
+        ]
 
         # Per the C++ predict(): on the first step (or whenever |t_n - t_nm1|
         # is at machine precision) fall back to ``var_n``; otherwise extrapolate.
@@ -184,12 +232,12 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         ratio = (t_val - t_n) / safe_dt_nm1  # Scalar
 
         outs: list[TensorWrapper] = []
-        for u_n, u_nm1 in zip(var_n, var_nm1, strict=True):
+        for u_n, u_nm1, u_cold in zip(var_n, var_nm1, var_cold, strict=True):
             # u_extrap = u_n + (u_n - u_nm1) * ratio. ``ratio`` is a Scalar;
             # mixed Scalar * SR2/MRP/Scalar dispatches via the wrapper's __mul__.
             delta = u_n - u_nm1
             u_extrap = u_n + delta * ratio
-            outs.append(where(cond, u_extrap, u_n))
+            outs.append(where(cond, u_extrap, u_cold))
 
         if v is None:
             if len(outs) == 1:
@@ -222,6 +270,7 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
         t_n_name = in_names[n_n + 1]
         t_nm1_name = in_names[n_n + 2]
         var_nm1_names = in_names[n_n + 3 : 2 * n_n + 3]
+        # (cold inputs are read by name from self._cold below)
         out_names = list(self.output_spec)
 
         v_out: ChainRuleDict = {}
@@ -230,9 +279,19 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
             u_nm1_i = var_nm1[i]
             delta_i = u_n_i - u_nm1_i
 
-            def make_var_n_action():  # captures cond, one_plus_ratio
+            def make_var_n_action(cold: bool = out_names[i] in self._cold):
                 def action(V: TensorWrapper) -> TensorWrapper:
-                    return where(cond, one_plus_ratio * V, V)
+                    # Inactive branch passes u_n through UNLESS a cold value
+                    # was supplied, in which case u_n does not reach the output.
+                    inactive = V * Scalar.from_value(0.0, like=t_val) if cold else V
+                    return where(cond, one_plus_ratio * V, inactive)
+
+                return action
+
+            def make_cold_action():
+                def action(V: TensorWrapper) -> TensorWrapper:
+                    # Only the inactive (no-history) branch reads the cold value.
+                    return where(cond, V * Scalar.from_value(0.0, like=t_val), V)
 
                 return action
 
@@ -274,6 +333,8 @@ class LinearExtrapolationPredictor(ConstantExtrapolationPredictor):
                 t_n_name: make_t_n_action(),
                 t_nm1_name: make_t_nm1_action(),
             }
+            if out_names[i] in self._cold:
+                actions[self._cold[out_names[i]]] = make_cold_action()
             # apply_chain_rule returns {ext_output: {leaf: contribution, ...}};
             # merge into the cross-output v_out.
             v_out.update(self.apply_chain_rule(v, out_name, actions, output=outs[i]))

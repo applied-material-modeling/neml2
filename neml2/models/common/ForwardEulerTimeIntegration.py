@@ -29,6 +29,7 @@ from __future__ import annotations
 from ...factory import register_neml2_object
 from ...schema import HitSchema, derived_input, input, option, output
 from ...types import (
+    R2,
     SR2,
     Scalar,
     TensorWrapper,
@@ -156,4 +157,20 @@ class SR2ForwardEulerTimeIntegration(_ForwardEulerTimeIntegration):
     hit = _forward_euler_schema(SR2)
 
 
-__all__ = ["ScalarForwardEulerTimeIntegration", "SR2ForwardEulerTimeIntegration"]
+@register_neml2_object("R2ForwardEulerTimeIntegration")
+class R2ForwardEulerTimeIntegration(_ForwardEulerTimeIntegration):
+    r"""Perform forward Euler time integration defined as
+    $s = s_n + (t - t_n) \dot{s}$, where $s$ is the variable being
+    integrated, $\dot{s}$ is the variable rate, and $t$ is time.
+    Subscripts $n$ denote quantities from the previous time step.
+    """
+
+    _type = R2
+    hit = _forward_euler_schema(R2)
+
+
+__all__ = [
+    "ScalarForwardEulerTimeIntegration",
+    "SR2ForwardEulerTimeIntegration",
+    "R2ForwardEulerTimeIntegration",
+]

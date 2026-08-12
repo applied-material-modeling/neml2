@@ -721,10 +721,13 @@ class Model(nn.Module, ABC):
 
         # ── mode 2: factory.get_tensor lookup ([Tensors] cross-ref) ───────────
         if factory is not None:
-            try:
-                tensor_val = factory.get_tensor(spec)
-            except KeyError:
-                tensor_val = None
+            # Existence check rather than catching KeyError around get_tensor:
+            # a KeyError raised from INSIDE the tensor's construction would
+            # otherwise be read as "no such tensor", and the caller would fall
+            # through to the next mode -- for a promotable parameter that means
+            # silently treating the name as a variable to promote, which only
+            # surfaces later as an IndexError in _get_param.
+            tensor_val = factory.get_tensor(spec) if factory.has_tensor(spec) else None
             if tensor_val is not None:
                 # get_tensor returns torch.Tensor or TensorWrapper; wrap if needed.
                 if isinstance(tensor_val, type_cls):
@@ -884,10 +887,13 @@ class Model(nn.Module, ABC):
 
         # ── mode 2: factory.get_tensor lookup ([Tensors] cross-ref) ───────────
         if factory is not None:
-            try:
-                tensor_val = factory.get_tensor(spec)
-            except KeyError:
-                tensor_val = None
+            # Existence check rather than catching KeyError around get_tensor:
+            # a KeyError raised from INSIDE the tensor's construction would
+            # otherwise be read as "no such tensor", and the caller would fall
+            # through to the next mode -- for a promotable parameter that means
+            # silently treating the name as a variable to promote, which only
+            # surfaces later as an IndexError in _get_param.
+            tensor_val = factory.get_tensor(spec) if factory.has_tensor(spec) else None
             if tensor_val is not None:
                 if isinstance(tensor_val, type_cls):
                     pass
