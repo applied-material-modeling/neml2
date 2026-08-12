@@ -86,7 +86,7 @@ With the extent declared, that last one goes back to being a value:
 []
 ```
 
-The seed broadcasts into the declared extent. `per_slip_hardening` and
+The seed expands into the declared extent. `per_slip_hardening` and
 `per_slip_hardening_declared` under
 `tests/regression/solid_mechanics/crystal_plasticity/` are the same scenario
 written both ways, and they agree exactly.
@@ -96,8 +96,18 @@ written both ways, and they agree exactly.
 A declaration and a hand-shaped value are two statements about one variable, so
 a file that makes them differently is rejected rather than silently resolved —
 otherwise the driver would build one shape while `neml2-compile` traced the
-other. A value carrying **no** sub-batch region is not a contradiction: it
-broadcasts into whatever is declared.
+other. Given a declared extent, a value is accepted when it either
+
+- carries exactly that sub-batch region (`sub_batch_ndim=` marks it), or
+- carries no batch axes at all, in which case the declared axes are added.
+
+An **unmarked value that has batch axes is rejected**, even one whose trailing
+axis happens to match. Nothing in `(nbatch, 12)` says whether the 12 is twelve
+batch members or twelve sites, and the two readings build different systems: if
+it is read as batch, the declared axes get appended and a value that already
+meant sites silently becomes `(nbatch, 12, 12)`. Rather than guess, say which
+you meant — mark the value, or drop the axes and let the declaration supply
+them.
 
 Check what a file declares before running it:
 
@@ -106,8 +116,8 @@ neml2-inspect model.i model
 ```
 
 Each input and output that carries a declared extent is printed with it. A
-variable you expected to see without one usually means a mistyped name — a
-declaration for a name no variable has is not applied.
+variable the model does not have is a hard error on every route — a mistyped
+name is caught when the file is read, not left to describe nothing.
 
 ## Where each route reads it
 
@@ -120,6 +130,11 @@ declaration for a name no variable has is not applied.
 
 All of them resolve it through the same reader, which is what keeps the routes
 from drifting apart.
+
+`ModelUnitTest` is not on the list, and not by oversight: its `.i` supplies
+every input by name, so it never has to invent a value and has nothing to size.
+A `[Settings]` block in a `tests/models/` input is read but changes nothing
+there.
 
 ## Limits
 

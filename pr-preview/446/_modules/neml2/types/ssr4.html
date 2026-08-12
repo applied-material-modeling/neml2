@@ -459,7 +459,7 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="42">
 </span><span data-line="43"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 </span><span data-line="44">
-</span><span data-line="45"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">align_sub_batch</span><span class="p">,</span> <span class="n">combine_sub_batch_state</span>
+</span><span data-line="45"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSET</span><span class="p">,</span> <span class="n">align_sub_batch</span><span class="p">,</span> <span class="n">combine_sub_batch_state</span>
 </span><span data-line="46"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._primitive</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrimitiveTensor</span>
 </span><span data-line="47"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._pytree</span><span class="w"> </span><span class="kn">import</span> <span class="n">register</span>
 </span><span data-line="48"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types.sr2</span><span class="w"> </span><span class="kn">import</span> <span class="n">SR2</span>
@@ -472,12 +472,12 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="53"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a `torch.Tensor` of shape ``(..., 6, 6)`` in Mandel packing.&quot;&quot;&quot;</span>
 </span><span data-line="54">
 </span><span data-line="55">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
-</span><span data-line="56">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="57">    <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="58">    <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="59">    <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="60">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="61">    <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+</span><span data-line="56">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="57">    <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="58">    <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="59">    <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="60">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="61">    <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
 </span><span data-line="62">    <span class="n">BASE_NDIM</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
 </span><span data-line="63">    <span class="n">BASE_SHAPE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 </span><span data-line="64">

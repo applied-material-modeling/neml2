@@ -491,7 +491,7 @@ that <em>something</em> in the file establishes the 12.</p></li>
 </span><span data-line="6"><span class="p">[]</span>
 </span></pre></div>
 </div>
-<p>The seed broadcasts into the declared extent. <code class="docutils literal notranslate"><span class="pre">per_slip_hardening</span></code> and
+<p>The seed expands into the declared extent. <code class="docutils literal notranslate"><span class="pre">per_slip_hardening</span></code> and
 <code class="docutils literal notranslate"><span class="pre">per_slip_hardening_declared</span></code> under
 <code class="docutils literal notranslate"><span class="pre">tests/regression/solid_mechanics/crystal_plasticity/</span></code> are the same scenario
 written both ways, and they agree exactly.</p>
@@ -501,15 +501,25 @@ written both ways, and they agree exactly.</p>
 <p>A declaration and a hand-shaped value are two statements about one variable, so
 a file that makes them differently is rejected rather than silently resolved —
 otherwise the driver would build one shape while <code class="docutils literal notranslate"><span class="pre">neml2-compile</span></code> traced the
-other. A value carrying <strong>no</strong> sub-batch region is not a contradiction: it
-broadcasts into whatever is declared.</p>
+other. Given a declared extent, a value is accepted when it either</p>
+<ul class="simple">
+<li><p>carries exactly that sub-batch region (<code class="docutils literal notranslate"><span class="pre">sub_batch_ndim=</span></code> marks it), or</p></li>
+<li><p>carries no batch axes at all, in which case the declared axes are added.</p></li>
+</ul>
+<p>An <strong>unmarked value that has batch axes is rejected</strong>, even one whose trailing
+axis happens to match. Nothing in <code class="docutils literal notranslate"><span class="pre">(nbatch,</span> <span class="pre">12)</span></code> says whether the 12 is twelve
+batch members or twelve sites, and the two readings build different systems: if
+it is read as batch, the declared axes get appended and a value that already
+meant sites silently becomes <code class="docutils literal notranslate"><span class="pre">(nbatch,</span> <span class="pre">12,</span> <span class="pre">12)</span></code>. Rather than guess, say which
+you meant — mark the value, or drop the axes and let the declaration supply
+them.</p>
 <p>Check what a file declares before running it:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">neml2-inspect<span class="w"> </span>model.i<span class="w"> </span>model
 </span></pre></div>
 </div>
 <p>Each input and output that carries a declared extent is printed with it. A
-variable you expected to see without one usually means a mistyped name — a
-declaration for a name no variable has is not applied.</p>
+variable the model does not have is a hard error on every route — a mistyped
+name is caught when the file is read, not left to describe nothing.</p>
 </section>
 <section id="where-each-route-reads-it">
 <h2>Where each route reads it<a class="headerlink" href="#where-each-route-reads-it" title="Link to this heading">#</a></h2>
@@ -538,6 +548,10 @@ declaration for a name no variable has is not applied.</p>
 </div>
 <p>All of them resolve it through the same reader, which is what keeps the routes
 from drifting apart.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ModelUnitTest</span></code> is not on the list, and not by oversight: its <code class="docutils literal notranslate"><span class="pre">.i</span></code> supplies
+every input by name, so it never has to invent a value and has nothing to size.
+A <code class="docutils literal notranslate"><span class="pre">[Settings]</span></code> block in a <code class="docutils literal notranslate"><span class="pre">tests/models/</span></code> input is read but changes nothing
+there.</p>
 </section>
 <section id="limits">
 <h2>Limits<a class="headerlink" href="#limits" title="Link to this heading">#</a></h2>
