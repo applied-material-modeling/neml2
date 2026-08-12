@@ -219,10 +219,9 @@ result = R2(F_full.contiguous())'
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'euler_rodrigues slip_strength voce_hardening
-              elasticity resolved_shear slip_rule sum_slip_rates
-              plastic_velgrad plastic_defgrad_rate
-              integrate_slip_hardening integrate_plastic_defgrad'
+    models = 'euler_rodrigues slip_strength voce_hardening elasticity resolved_shear slip_rule
+              sum_slip_rates plastic_velgrad plastic_defgrad_rate integrate_slip_hardening
+              integrate_plastic_defgrad'
   []
 []
 
@@ -246,6 +245,16 @@ result = R2(F_full.contiguous())'
 []
 
 [Models]
+  # Blocks whose variable names carry the same value in both graphs are the
+  # residual's OWN, listed here rather than duplicated: `euler_rodrigues`,
+  # `plastic_velgrad`, `slip_rule`, `sum_slip_rates`.
+  # The orientation is a given here rather than an unknown, so the rotation matrix
+  # is the same value in both graphs and is reused outright. The twins that remain
+  # are the ones
+  # that genuinely differ -- the trial chain (same leaves, trial values), the
+  # lagged strength/hardening leaves (they read `~1`), and the forward-Euler
+  # integrators (the residual integrates backward, which is a different model
+  # rather than a rename).
   # --- trial state: Fp frozen at its old value, so Fe_trial = F * Fp~1^-1 ---
   [pred_trial_Fe]
     type = R2Multiplication
@@ -266,15 +275,10 @@ result = R2(F_full.contiguous())'
     strain = 'E_trial'
     stress = 'S_trial'
   []
-  [pred_rotation]
-    type = RotationMatrix
-    from = 'r'
-    to = 'R_pred'
-  []
   [pred_trial_rss]
     type = ResolvedShear
     stress = 'S_trial'
-    orientation_matrix = 'R_pred'
+    orientation_matrix = 'R'
     resolved_shears = 'tau_i_trial'
   []
   [pred_coupling]
@@ -293,17 +297,9 @@ result = R2(F_full.contiguous())'
   []
 
   # --- coordinate descent on phi(gdot) + A gdot = b ---
-  [pred_slip_rule]
-    type = PowerLawSlipRule
-    n = 8.0
-    gamma0 = 2.0e-1
-    slip_rates = 'gamma_rate_i'
-    resolved_shears = 'tau_i'
-    slip_strengths = 'tauc_i'
-  []
   [pred_cd]
     type = CoordinateDescentPredictor
-    rate_law = 'pred_slip_rule'
+    rate_law = 'slip_rule'
     driving_force_input = 'tau_i'
     coupling = 'slip_coupling'
     trial_driving_force = 'tau_i_trial'
@@ -312,15 +308,9 @@ result = R2(F_full.contiguous())'
   []
 
   # --- push the predicted rates back onto Fp and tauc ---
-  [pred_Lp]
-    type = PlasticSpatialVelocityGradient
-    plastic_spatial_velocity_gradient = 'Lp_pred'
-    slip_rates = 'gamma_rate_i'
-    orientation_matrix = 'R_pred'
-  []
   [pred_Fp_rate]
     type = R2Multiplication
-    A = 'Lp_pred'
+    A = 'Lp'
     B = 'Fp~1'
     to = 'Fp_pred_rate'
   []
@@ -330,17 +320,12 @@ result = R2(F_full.contiguous())'
     old_variable = 'Fp~1'
     rate = 'Fp_pred_rate'
   []
-  [pred_sum_slip_rates]
-    type = SumSlipRates
-    slip_rates = 'gamma_rate_i'
-    sum_slip_rates = 'gamma_rate_pred'
-  []
   [pred_tauc_rate]
     type = VoceSingleSlipHardeningRule
     initial_slope = 500.0
     saturated_hardening = 50.0
     slip_hardening = 'tauc~1'
-    sum_slip_rates = 'gamma_rate_pred'
+    sum_slip_rates = 'gamma_rate'
     slip_hardening_rate = 'tauc_pred_rate'
   []
   [pred_tauc]
@@ -361,11 +346,9 @@ result = R2(F_full.contiguous())'
   []
   [predictor]
     type = ComposedModel
-    models = 'pred_trial_Fe pred_trial_E pred_trial_S pred_rotation
-              pred_trial_rss pred_coupling pred_slip_strength pred_cd
-              pred_Lp pred_Fp_rate pred_Fp
-              pred_sum_slip_rates pred_tauc_rate pred_tauc
-              pred_extrapolate'
+    models = 'pred_trial_Fe pred_trial_E pred_trial_S euler_rodrigues pred_trial_rss pred_coupling
+              pred_slip_strength pred_cd plastic_velgrad pred_Fp_rate pred_Fp sum_slip_rates
+              pred_tauc_rate pred_tauc pred_extrapolate'
   []
   [model]
     type = ImplicitUpdate

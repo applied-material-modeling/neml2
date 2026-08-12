@@ -170,10 +170,10 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'euler_rodrigues elasticity orientation_rate resolved_shear
-              elastic_stretch plastic_deformation_rate plastic_spin
-              slip_rule slip_strength dislocation_density_rate
-              integrate_dislocation_density integrate_elastic_strain integrate_orientation'
+    models = 'euler_rodrigues elasticity orientation_rate resolved_shear elastic_stretch
+              plastic_deformation_rate plastic_spin slip_rule slip_strength
+              dislocation_density_rate integrate_dislocation_density integrate_elastic_strain
+              integrate_orientation'
   []
 []
 
@@ -198,6 +198,15 @@
 []
 
 [Models]
+  # Blocks whose variable names carry the same value in both graphs are the
+  # residual's OWN, listed here rather than duplicated: `plastic_deformation_rate`, `slip_rule`.
+  # What turns that on is the rotation matrix below taking its plain name: with
+  # `orientation_matrix` bound to the OLD orientation, the reused rate leaves pick
+  # up the frozen trial frame without a rename. The twins that remain are the ones
+  # that genuinely differ -- the trial chain (same leaves, trial values), the
+  # lagged strength/hardening leaves (they read `~1`), and the forward-Euler
+  # integrators (the residual integrates backward, which is a different model
+  # rather than a rename).
   # --- trial state: elastic strain advanced with no plastic slip ---
   [pred_trial_strain]
     type = SR2ForwardEulerTimeIntegration
@@ -208,7 +217,7 @@
   [pred_rotation]
     type = RotationMatrix
     from = 'orientation~1'
-    to = 'orientation_matrix_old'
+    to = 'orientation_matrix'
   []
   [pred_trial_stress]
     type = LinearIsotropicElasticity
@@ -220,7 +229,6 @@
   [pred_trial_rss]
     type = ResolvedShear
     stress = 'cauchy_stress_trial'
-    orientation_matrix = 'orientation_matrix_old'
     resolved_shears = 'resolved_shears_trial'
   []
   [pred_coupling]
@@ -242,15 +250,11 @@
 
   # --- coordinate descent on phi(gdot) + A gdot = b ---
   # The rate law is a DEPENDENCY, not a graph member: the predictor calls it
-  # repeatedly at trial driving forces inside the scalar solves.
-  [pred_slip_rule]
-    type = PowerLawSlipRule
-    n = 8.0
-    gamma0 = 2.0e-1
-  []
+  # repeatedly at trial driving forces inside the scalar solves. It is the
+  # residual's own `slip_rule`, so the exponent and gamma0 are stated once.
   [pred_cd]
     type = CoordinateDescentPredictor
-    rate_law = 'pred_slip_rule'
+    rate_law = 'slip_rule'
     driving_force_input = 'resolved_shears'
     coupling = 'slip_coupling'
     trial_driving_force = 'resolved_shears_trial'
@@ -259,10 +263,6 @@
   []
 
   # --- push the predicted rates back onto the unknowns ---
-  [pred_plastic_rate]
-    type = PlasticDeformationRate
-    orientation_matrix = 'orientation_matrix_old'
-  []
   [pred_elastic_rate]
     type = ElasticStrainRate
     elastic_strain = 'elastic_strain~1'
@@ -304,11 +304,9 @@
   []
   [predictor]
     type = ComposedModel
-    models = 'pred_trial_strain pred_rotation pred_trial_stress pred_trial_rss
-              pred_coupling pred_slip_strength pred_cd pred_plastic_rate
-              pred_elastic_rate pred_strain
-              pred_hardening_rate pred_hardening
-              pred_seed pred_orientation'
+    models = 'pred_trial_strain pred_rotation pred_trial_stress pred_trial_rss pred_coupling
+              pred_slip_strength pred_cd plastic_deformation_rate pred_elastic_rate pred_strain
+              pred_hardening_rate pred_hardening pred_seed pred_orientation'
   []
   [update]
     type = ImplicitUpdate

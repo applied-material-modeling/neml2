@@ -157,10 +157,9 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'split_to_deformation_rate split_to_vorticity
-              euler_rodrigues elasticity orientation_rate resolved_shear
-              elastic_stretch plastic_deformation_rate plastic_spin
-              sum_slip_rates slip_rule slip_strength voce_hardening
+    models = 'split_to_deformation_rate split_to_vorticity euler_rodrigues elasticity
+              orientation_rate resolved_shear elastic_stretch plastic_deformation_rate
+              plastic_spin sum_slip_rates slip_rule slip_strength voce_hardening
               integrate_slip_hardening integrate_elastic_strain integrate_orientation'
   []
 []
@@ -186,6 +185,15 @@
 []
 
 [Models]
+  # Blocks whose variable names carry the same value in both graphs are the
+  # residual's OWN, listed here rather than duplicated: `plastic_deformation_rate`, `slip_rule`, `sum_slip_rates`.
+  # What turns that on is the rotation matrix below taking its plain name: with
+  # `orientation_matrix` bound to the OLD orientation, the reused rate leaves pick
+  # up the frozen trial frame without a rename. The twins that remain are the ones
+  # that genuinely differ -- the trial chain (same leaves, trial values), the
+  # lagged strength/hardening leaves (they read `~1`), and the forward-Euler
+  # integrators (the residual integrates backward, which is a different model
+  # rather than a rename).
   # This scenario prescribes the spatial velocity gradient, not d and w.
   # Redo the same split the implicit model does, so the trial state is real.
   [pred_split_deformation_rate]
@@ -208,7 +216,7 @@
   [pred_rotation]
     type = RotationMatrix
     from = 'orientation~1'
-    to = 'orientation_matrix_old'
+    to = 'orientation_matrix'
   []
   [pred_trial_stress]
     type = LinearIsotropicElasticity
@@ -220,7 +228,6 @@
   [pred_trial_rss]
     type = ResolvedShear
     stress = 'cauchy_stress_trial'
-    orientation_matrix = 'orientation_matrix_old'
     resolved_shears = 'resolved_shears_trial'
   []
   [pred_coupling]
@@ -239,15 +246,11 @@
 
   # --- coordinate descent on phi(gdot) + A gdot = b ---
   # The rate law is a DEPENDENCY, not a graph member: the predictor calls it
-  # repeatedly at trial driving forces inside the scalar solves.
-  [pred_slip_rule]
-    type = PowerLawSlipRule
-    n = 8.0
-    gamma0 = 2.0e-1
-  []
+  # repeatedly at trial driving forces inside the scalar solves. It is the
+  # residual's own `slip_rule`, so the exponent and gamma0 are stated once.
   [pred_cd]
     type = CoordinateDescentPredictor
-    rate_law = 'pred_slip_rule'
+    rate_law = 'slip_rule'
     driving_force_input = 'resolved_shears'
     coupling = 'slip_coupling'
     trial_driving_force = 'resolved_shears_trial'
@@ -256,10 +259,6 @@
   []
 
   # --- push the predicted rates back onto the unknowns ---
-  [pred_plastic_rate]
-    type = PlasticDeformationRate
-    orientation_matrix = 'orientation_matrix_old'
-  []
   [pred_elastic_rate]
     type = ElasticStrainRate
     elastic_strain = 'elastic_strain~1'
@@ -269,9 +268,6 @@
     variable = 'elastic_strain_cd'
     old_variable = 'elastic_strain~1'
     rate = 'elastic_strain_rate'
-  []
-  [pred_sum_slip_rates]
-    type = SumSlipRates
   []
   [pred_hardening_rate]
     type = VoceSingleSlipHardeningRule
@@ -303,11 +299,10 @@
   []
   [predictor]
     type = ComposedModel
-    models = 'pred_split_deformation_rate pred_split_vorticity pred_trial_strain pred_rotation pred_trial_stress pred_trial_rss
-              pred_coupling pred_slip_strength pred_cd pred_plastic_rate
-              pred_elastic_rate pred_strain
-              pred_sum_slip_rates pred_hardening_rate pred_hardening
-              pred_seed pred_orientation'
+    models = 'pred_split_deformation_rate pred_split_vorticity pred_trial_strain pred_rotation
+              pred_trial_stress pred_trial_rss pred_coupling pred_slip_strength pred_cd
+              plastic_deformation_rate pred_elastic_rate pred_strain sum_slip_rates
+              pred_hardening_rate pred_hardening pred_seed pred_orientation'
   []
   [model]
     type = ImplicitUpdate
