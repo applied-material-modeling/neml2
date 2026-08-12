@@ -163,6 +163,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -544,6 +545,10 @@ nested implicit equation system with zero-tensor stand-ins of the
 resolved shape, <em>without</em> running the Newton solver, so each
 system’s per-variable <code class="docutils literal notranslate"><span class="pre">sub_batch_shape</span></code> is committed before the
 tracer runs.</p>
+<p>The same declaration is read by the eager routes, through the same
+resolver, so a sub-batched variable has one shape across all six —
+see <a class="reference internal" href="sub_batch.html#sub-batch-declaration"><span class="std std-ref">Sub-batch axes</span></a> for the spec grammar and the other
+consumers.</p>
 </section>
 <section id="stage-6-partition-into-segments">
 <h2>Stage 6 — Partition into segments<a class="headerlink" href="#stage-6-partition-into-segments" title="Link to this heading">#</a></h2>

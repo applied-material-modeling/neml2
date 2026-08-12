@@ -163,6 +163,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -462,7 +463,8 @@ threads to say which path you’re on without a paragraph of description — “
 reproduces on <code class="docutils literal notranslate"><span class="pre">cpp-aoti</span></code> but not <code class="docutils literal notranslate"><span class="pre">py-eager</span></code>” is unambiguous.</p>
 <p>Every runtime supports <code class="docutils literal notranslate"><span class="pre">forward</span></code>. They differ on sensitivities and on whether
 they accept <em>sub-batch</em> models (e.g. crystal plasticity, which carries a per-slip
-inner batch dimension):</p>
+inner batch dimension — see <a class="reference internal" href="../references/sub_batch.html#sub-batch-declaration"><span class="std std-ref">Sub-batch axes</span></a> for how the extent is
+declared and which routes read it):</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>

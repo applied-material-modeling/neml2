@@ -163,6 +163,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -461,34 +462,35 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="45">
 </span><span data-line="46"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 </span><span data-line="47">
-</span><span data-line="48"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._primitive</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrimitiveTensor</span>
-</span><span data-line="49"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._pytree</span><span class="w"> </span><span class="kn">import</span> <span class="n">register</span>
-</span><span data-line="50">
+</span><span data-line="48"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSET</span>
+</span><span data-line="49"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._primitive</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrimitiveTensor</span>
+</span><span data-line="50"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._pytree</span><span class="w"> </span><span class="kn">import</span> <span class="n">register</span>
 </span><span data-line="51">
+</span><span data-line="52">
 <div class="viewcode-block" id="MillerIndex">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.MillerIndex">[docs]</a>
-</span><span data-line="52"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span data-line="53"><span class="k">class</span><span class="w"> </span><span class="nc">MillerIndex</span><span class="p">(</span><span class="n">PrimitiveTensor</span><span class="p">):</span>
-</span><span data-line="54"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a `torch.Tensor` of shape ``(..., 3)`` carrying Miller indices.</span>
-</span><span data-line="55">
-</span><span data-line="56"><span class="sd">    Inherits all arithmetic and ``zeros``/``ones``/``full``/``empty``/``fill``</span>
-</span><span data-line="57"><span class="sd">    factories from :class:`PrimitiveTensor`. No class-specific overrides — the</span>
-</span><span data-line="58"><span class="sd">    C++ analogue has the same minimal surface.</span>
-</span><span data-line="59"><span class="sd">    &quot;&quot;&quot;</span>
-</span><span data-line="60">
-</span><span data-line="61">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
-</span><span data-line="62">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="63">    <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="64">    <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="65">    <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="66">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="67">    <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="68">    <span class="n">BASE_NDIM</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-</span><span data-line="69">    <span class="n">BASE_SHAPE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span></div>
+</span><span data-line="53"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="54"><span class="k">class</span><span class="w"> </span><span class="nc">MillerIndex</span><span class="p">(</span><span class="n">PrimitiveTensor</span><span class="p">):</span>
+</span><span data-line="55"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a `torch.Tensor` of shape ``(..., 3)`` carrying Miller indices.</span>
+</span><span data-line="56">
+</span><span data-line="57"><span class="sd">    Inherits all arithmetic and ``zeros``/``ones``/``full``/``empty``/``fill``</span>
+</span><span data-line="58"><span class="sd">    factories from :class:`PrimitiveTensor`. No class-specific overrides — the</span>
+</span><span data-line="59"><span class="sd">    C++ analogue has the same minimal surface.</span>
+</span><span data-line="60"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span data-line="61">
+</span><span data-line="62">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+</span><span data-line="63">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="64">    <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="65">    <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="66">    <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="67">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="68">    <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="69">    <span class="n">BASE_NDIM</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span data-line="70">    <span class="n">BASE_SHAPE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span></div>
 
-</span><span data-line="70">
 </span><span data-line="71">
-</span><span data-line="72"><span class="n">register</span><span class="p">(</span><span class="n">MillerIndex</span><span class="p">)</span>
+</span><span data-line="72">
+</span><span data-line="73"><span class="n">register</span><span class="p">(</span><span class="n">MillerIndex</span><span class="p">)</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

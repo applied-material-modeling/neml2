@@ -163,6 +163,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -477,6 +478,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem</span></code></a><ul>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.assemble"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.assemble()</span></code></a></li>
+<li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.declared_sub_batch_shapes"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.declared_sub_batch_shapes</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.from_hit"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.from_hit()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.g"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.g()</span></code></a></li>
 <li><a class="reference internal" href="#neml2.es.ModelNonlinearSystem.hit"><code class="docutils literal notranslate"><span class="pre">ModelNonlinearSystem.hit</span></code></a></li>
@@ -1617,7 +1619,7 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="neml2.es.ModelNonlinearSystem">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">ModelNonlinearSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unknowns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residuals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#ModelNonlinearSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.ModelNonlinearSystem" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">neml2.es.</span></span><span class="sig-name descname"><span class="pre">ModelNonlinearSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unknowns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residuals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">declared_sub_batch_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/neml2/es/system.html#ModelNonlinearSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#neml2.es.ModelNonlinearSystem" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#neml2.es.NonlinearSystem" title="neml2.es.system.NonlinearSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">NonlinearSystem</span></code></a></p>
 <p>A nonlinear system defined by a Model.</p>
 <dl class="field-list simple">
@@ -1627,6 +1629,7 @@ registered hooks while the latter silently ignores them.</p>
 <li><p><strong>unknowns</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>)</p></li>
 <li><p><strong>residuals</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>] </em><em>| </em><em>None</em>)</p></li>
 <li><p><strong>structure</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>declared_sub_batch_shapes</strong> (<em>Mapping</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><em>torch.Size</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1645,6 +1648,17 @@ registered hooks while the latter silently ignores them.</p>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a> | None, <a class="reference internal" href="#neml2.es.AssembledMatrix" title="neml2.es.assembled.AssembledMatrix"><em>AssembledMatrix</em></a> | None, <a class="reference internal" href="#neml2.es.AssembledVector" title="neml2.es.assembled.AssembledVector"><em>AssembledVector</em></a> | None]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="neml2.es.ModelNonlinearSystem.declared_sub_batch_shapes">
+<span class="sig-name descname"><span class="pre">declared_sub_batch_shapes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="(in PyTorch v2.13)"><span class="pre">Size</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#neml2.es.ModelNonlinearSystem.declared_sub_batch_shapes" title="Link to this definition">#</a></dt>
+<dd><p>Per-variable sub-batch extents declared in the input file’s
+<code class="docutils literal notranslate"><span class="pre">[Settings]/example_batch_shape</span></code>, keyed by variable name. Empty
+when the system is constructed directly in Python. This is what lets
+a sub-batched unknown have a known shape before any tensor for it
+exists; <code class="xref py py-class docutils literal notranslate"><span class="pre">ImplicitUpdate</span></code> and the pyzag
+adapter both read it from here rather than re-deriving it.</p>
 </dd></dl>
 
 <dl class="py method">

@@ -163,6 +163,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -450,9 +451,9 @@ runtime-flexible status. Empty default = fully baked artifact.</p></li>
 either a single spec string (uniform across all inputs) or a dict
 mapping input variable name to spec string (per-variable). Each spec
 uses the <code class="docutils literal notranslate"><span class="pre">(dyn;</span> <span class="pre">sub)</span></code> grammar (see
-<code class="xref py py-func docutils literal notranslate"><span class="pre">_parse_example_batch_shape()</span></code>). Overrides any
+<code class="xref py py-func docutils literal notranslate"><span class="pre">parse_example_batch_shape()</span></code>). Overrides any
 <code class="docutils literal notranslate"><span class="pre">[Settings]/example_batch_shape</span></code> in the HIT file. When <code class="docutils literal notranslate"><span class="pre">None</span></code>
-(default), the HIT setting – or <code class="xref py py-data docutils literal notranslate"><span class="pre">_DEFAULT_EXAMPLE_SHAPE</span></code> if
+(default), the HIT setting – or <code class="xref py py-data docutils literal notranslate"><span class="pre">DEFAULT_EXAMPLE_SHAPE</span></code> if
 unset – applies.</p></li>
 <li><p><strong>dynamic_batch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em> | </em><em>None</em>) – Override for <code class="docutils literal notranslate"><span class="pre">[Settings]/dynamic_batch</span></code>. <code class="docutils literal notranslate"><span class="pre">True</span></code> lets the leading
 batch axis vary at runtime (the default); <code class="docutils literal notranslate"><span class="pre">False</span></code> produces a

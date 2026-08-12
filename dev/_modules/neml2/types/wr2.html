@@ -163,6 +163,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_dispatch.html"><code class="docutils literal notranslate"><span class="pre">cpp-dispatch</span></code> — dispatching across devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/cpp_eager.html"><code class="docutils literal notranslate"><span class="pre">cpp-eager</span></code> — eager evaluation from C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../content/references/sub_batch.html">Sub-batch axes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/aoti_packages.html">AOTI packages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../content/references/pipeline.html">Compilation pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../generated/syntax/index.html">Syntax catalog</a><ul>
@@ -464,39 +465,40 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="48">
 </span><span data-line="49"><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 </span><span data-line="50">
-</span><span data-line="51"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._primitive</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrimitiveTensor</span>
-</span><span data-line="52"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._pytree</span><span class="w"> </span><span class="kn">import</span> <span class="n">register</span>
-</span><span data-line="53">
+</span><span data-line="51"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSET</span>
+</span><span data-line="52"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._primitive</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrimitiveTensor</span>
+</span><span data-line="53"><span class="kn">from</span><span class="w"> </span><span class="nn">neml2.types._pytree</span><span class="w"> </span><span class="kn">import</span> <span class="n">register</span>
 </span><span data-line="54">
+</span><span data-line="55">
 <div class="viewcode-block" id="WR2">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.WR2">[docs]</a>
-</span><span data-line="55"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span data-line="56"><span class="k">class</span><span class="w"> </span><span class="nc">WR2</span><span class="p">(</span><span class="n">PrimitiveTensor</span><span class="p">):</span>
-</span><span data-line="57"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a `torch.Tensor` of shape ``(..., 3)`` storing the axial vector.&quot;&quot;&quot;</span>
-</span><span data-line="58">
-</span><span data-line="59">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
-</span><span data-line="60">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="61">    <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="62">    <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="63">    <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span data-line="64">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="65">    <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-</span><span data-line="66">    <span class="n">BASE_NDIM</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-</span><span data-line="67">    <span class="n">BASE_SHAPE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
-</span><span data-line="68">
+</span><span data-line="56"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="57"><span class="k">class</span><span class="w"> </span><span class="nc">WR2</span><span class="p">(</span><span class="n">PrimitiveTensor</span><span class="p">):</span>
+</span><span data-line="58"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a `torch.Tensor` of shape ``(..., 3)`` storing the axial vector.&quot;&quot;&quot;</span>
+</span><span data-line="59">
+</span><span data-line="60">    <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+</span><span data-line="61">    <span class="n">sub_batch_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="62">    <span class="n">sub_batch_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="63">    <span class="n">sub_batch_meta</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="64">    <span class="n">k_ndim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="65">    <span class="n">k_state</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="66">    <span class="n">k_pairing</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="n">UNSET</span>
+</span><span data-line="67">    <span class="n">BASE_NDIM</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span data-line="68">    <span class="n">BASE_SHAPE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
+</span><span data-line="69">
 <div class="viewcode-block" id="WR2.identity">
 <a class="viewcode-back" href="../../../content/python_api/neml2.types.html#neml2.types.WR2.identity">[docs]</a>
-</span><span data-line="69">    <span class="nd">@classmethod</span>
-</span><span data-line="70">    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span>
-</span><span data-line="71">        <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="72">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WR2</span><span class="p">:</span>
-</span><span data-line="73"><span class="w">        </span><span class="sd">&quot;&quot;&quot;The zero skew tensor — the additive identity (no canonical &#39;unit&#39; skew).&quot;&quot;&quot;</span>
-</span><span data-line="74">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
+</span><span data-line="70">    <span class="nd">@classmethod</span>
+</span><span data-line="71">    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span>
+</span><span data-line="72">        <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span data-line="73">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WR2</span><span class="p">:</span>
+</span><span data-line="74"><span class="w">        </span><span class="sd">&quot;&quot;&quot;The zero skew tensor — the additive identity (no canonical &#39;unit&#39; skew).&quot;&quot;&quot;</span>
+</span><span data-line="75">        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span></div>
 </div>
 
-</span><span data-line="75">
 </span><span data-line="76">
-</span><span data-line="77"><span class="n">register</span><span class="p">(</span><span class="n">WR2</span><span class="p">)</span>
+</span><span data-line="77">
+</span><span data-line="78"><span class="n">register</span><span class="p">(</span><span class="n">WR2</span><span class="p">)</span>
 </span></pre></div>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
