@@ -71,7 +71,7 @@ from typing import TYPE_CHECKING, cast
 import torch
 from torch import nn
 
-from ..settings import DEFAULT_EXAMPLE_SHAPE, resolve_example_shapes
+from ..settings import DEFAULT_EXAMPLE_SHAPE, model_variable_names, resolve_example_shapes
 from ..types import TensorWrapper
 
 if TYPE_CHECKING:
@@ -2737,7 +2737,15 @@ def _prepare_export(
         declared = settings.example_batch_shape
     if dynamic_batch is None:
         dynamic_batch = settings.dynamic_batch
-    resolved_shapes = resolve_example_shapes(model.input_spec, declared)
+    # Validate against every variable the model tree mentions, not just the
+    # top-level ``input_spec``: a sub-batched unknown owned by a predictor is
+    # an output, and declaring its extent is precisely the case the
+    # declaration exists for. Resolution still runs over ``input_spec`` -- the
+    # unknown's own shape reaches the tracer through ``_seed_implicit_subbatch``
+    # via its ``~1`` lag.
+    resolved_shapes = resolve_example_shapes(
+        model.input_spec, declared, model_variable_names(model)
+    )
 
     # Validate / resolve promoted names against the live model BEFORE any
     # ComposedModel wrapping. Snapshot the initial values now too.

@@ -124,6 +124,15 @@ def _conform_to_declared_sub_batch(
     A value that already carries a sub-batch region is left alone, but must
     agree with the declaration -- two different extents for one variable is a
     contradiction, not something to reconcile silently.
+
+    An unmarked value is only expanded when it has no batch axes at all. With
+    batch axes present nothing in the value distinguishes "twelve batch
+    members" from "twelve sites", and expanding regardless turns a value that
+    already meant sites into ``(12, 12)`` without a word. Guessing is worse
+    than refusing, so this raises and the caller says which it meant. This is
+    the same rule :func:`~neml2.settings.sub_batch_conflict` applies to the
+    driver's initial conditions and forces, so a value that got past the
+    driver reshapes here exactly as the driver assumed it would.
     """
     if declared is None or len(declared) == 0:
         return value
@@ -136,6 +145,15 @@ def _conform_to_declared_sub_batch(
                 f"Drop one or make them agree."
             )
         return value
+    if len(value.batch_shape) > 0:
+        raise ValueError(
+            f"ImplicitUpdate: [Settings]/example_batch_shape declares {name} "
+            f"sub_batch={tuple(declared)}, but its initial guess is unmarked with "
+            f"batch shape {tuple(value.batch_shape)} (shape {tuple(value.shape)}). "
+            f"Expanding it would append the declared axes to axes that may already "
+            f"be them. Mark it with sub_batch_ndim=, or drop the batch axes and let "
+            f"the declaration supply them."
+        )
     for axis, size in enumerate(declared):
         value = value.sub_batch.expand_at(int(size), axis)
     return value

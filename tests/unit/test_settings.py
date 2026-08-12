@@ -34,6 +34,7 @@ from neml2.settings import (
     Settings,
     parse_example_batch_shape,
     resolve_example_shapes,
+    sub_batch_conflict,
     validate_declared_names,
 )
 
@@ -122,8 +123,8 @@ def test_lag_entries_must_agree_on_the_sub_region():
 
 
 def test_a_silent_lag_does_not_conflict_with_a_declaring_one():
-    """``benchmark/mxpcdense/model.i`` shape: some entries pin a sub-batch,
-    others only pin a dynamic batch. The silent ones borrow, not fight."""
+    """``benchmark/mxpc/model.i`` shape: some entries pin a sub-batch, others
+    only pin a dynamic batch. The silent ones borrow, not fight."""
     s = Settings({"x": "(2,)", "x~1": "(2; 12)"})
     assert s.sub_batch_shape("x") == (12,)
     assert s.sub_batch_shape("x~1") == (12,)
@@ -132,7 +133,7 @@ def test_a_silent_lag_does_not_conflict_with_a_declaring_one():
 def test_lag_entries_may_differ_on_the_dyn_region():
     """Only the sub region is a property of the variable; the dynamic region
     is a per-input trace hint and may legitimately differ across lags (see
-    ``benchmark/mxpcdense/model.i``)."""
+    ``benchmark/mxpc/model.i``)."""
     s = Settings({"x": "(4; 12)", "x~1": "(2; 12)"})
     assert s.sub_batch_shape("x") == (12,)
 
@@ -155,7 +156,7 @@ def test_resolve_prefers_per_variable_over_uniform():
 
 
 def test_resolve_rejects_names_outside_the_universe():
-    with pytest.raises(ValueError, match="names not in model input_spec: \\['stress'\\]"):
+    with pytest.raises(ValueError, match="names not in model variables: \\['stress'\\]"):
         resolve_example_shapes(["strain"], {"stress": "(2,)"})
 
 
@@ -166,6 +167,63 @@ def test_validate_declared_names_reports_the_named_universe():
 
 def test_validate_declared_names_ignores_the_uniform_key():
     validate_declared_names({"*": "(2,)"}, ["a"])
+
+
+def test_validate_declared_names_accepts_a_lag_of_a_known_variable():
+    """A declaration on ``x~1`` governs ``x`` and vice versa, so a spelling
+    that resolves has to be a spelling that validates."""
+    validate_declared_names({"x~1": "(2; 4)"}, ["x"])
+    validate_declared_names({"x": "(2; 4)"}, ["x~1"])
+
+
+def test_resolve_applies_lag_agreement_to_a_cli_override_map():
+    """``--example-batch-shape x='(2;4)' --example-batch-shape 'x~1=(2;8)'``
+    reaches :func:`resolve_example_shapes` as a plain dict, bypassing
+    :func:`read_settings`. It is the same declaration either way, so it gets
+    the same consistency check -- an override that contradicts itself must not
+    be quieter than a ``[Settings]`` block that does."""
+    with pytest.raises(ValueError, match="history lags must declare the same sub-batch"):
+        resolve_example_shapes(["x", "x~1"], {"x": "(2; 4)", "x~1": "(2; 8)"})
+
+
+def test_resolve_accepts_a_declared_name_outside_input_spec_when_known_is_given():
+    """The exporter validates against every variable the model tree mentions,
+    because a predictor-owned implicit unknown is an output and declaring its
+    extent is exactly what the declaration is for. Resolution still runs over
+    ``input_spec``; the unknown reaches the tracer through its ``~1`` lag."""
+    resolved = resolve_example_shapes(["u~1"], {"u": "(2; 12)"}, known={"u", "u~1"})
+    assert resolved == {"u~1": ((2,), (12,))}
+
+
+# ---------------------------------------------------------------------------
+# Declaration-vs-value compatibility
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("sub", "batch", "ok"),
+    [
+        ((4,), (3,), True),  # already carries the declared extent
+        ((), (), True),  # a bare seed: the declared axes get added
+        ((7,), (3,), False),  # a different extent is a flat contradiction
+        ((), (3,), False),  # unmarked with batch axes: ambiguous
+        ((), (3, 4), False),  # ... including when the trailing axis matches
+    ],
+    ids=["matches", "bare-seed", "wrong-extent", "unmarked-batched", "unmarked-coincidental"],
+)
+def test_sub_batch_conflict(sub, batch, ok):
+    """An unmarked value is only expanded when it has no batch axes at all.
+    ``unmarked-coincidental`` is why: nothing in a ``(3, 4)`` tensor says
+    whether the 4 is four sites or four batch members, and reading it as batch
+    appends the declared axes to produce ``(3, 4, 4)``. Guessing right most of
+    the time is not good enough for a shape the whole solve is built on.
+
+    :func:`~neml2.models.common.ImplicitUpdate._conform_to_declared_sub_batch`
+    applies the same rule -- see
+    ``test_sub_batch_declaration.py`` for the paired end-to-end cases.
+    """
+    reason = sub_batch_conflict((4,), sub_batch_shape=sub, batch_shape=batch)
+    assert (reason is None) is ok, reason
 
 
 # ---------------------------------------------------------------------------

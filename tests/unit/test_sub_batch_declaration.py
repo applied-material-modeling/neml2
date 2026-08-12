@@ -41,6 +41,7 @@ import torch
 import neml2  # noqa: F401 -- registers the model types the HIT snippets name
 from neml2.factory import load_string
 from neml2.models.common.ImplicitUpdate import _resolve_unknown_sbn
+from neml2.settings import model_variable_names
 from neml2.types import SR2, Scalar
 
 # ---------------------------------------------------------------------------
@@ -186,6 +187,16 @@ _PER_SITE_WITH_PREDICTOR = """
 _NBATCH = 2
 _NSITE = 3
 
+#: Declares the predictor-owned unknown by its bare name -- the spelling the
+#: docs teach and ``per_slip_hardening_declared`` uses.
+_DECLARE_U_PER_SITE = f"""
+[Settings]
+  [example_batch_shape]
+    u = '(2; {_NSITE})'
+  []
+[]
+"""
+
 
 def _per_site_given() -> Scalar:
     return Scalar(
@@ -243,6 +254,16 @@ _DRIVEN = """
   [x0_wrong_width]
     type = Python
     expr = 'Scalar(torch.full((3, 7), 10.0, dtype=torch.float64), sub_batch_ndim=1)'
+  []
+  # Unmarked, with batch axes: ambiguous against a declared sub-batch extent.
+  # The second one is the trap -- its trailing axis is the declared 4.
+  [x0_batched]
+    type = Python
+    expr = 'Scalar(torch.full((3,), 10.0, dtype=torch.float64))'
+  []
+  [x0_batched_coincidental]
+    type = Python
+    expr = 'Scalar(torch.full((3, 4), 10.0, dtype=torch.float64))'
   []
 []
 
@@ -352,6 +373,18 @@ def test_driver_rejects_an_ic_that_contradicts_the_declaration():
         _driver(ic="x0_wrong_width")
 
 
+@pytest.mark.parametrize("ic", ["x0_batched", "x0_batched_coincidental"], ids=["(3,)", "(3,4)"])
+def test_driver_rejects_an_unmarked_ic_that_has_batch_axes(ic):
+    """An unmarked ``(3, 4)`` could be three batch members of four sites or a
+    twelve-element batch; nothing in the value says which. Reading it as batch
+    appends the declared axes and silently yields ``(3, 4, 4)``, so both
+    spellings are refused rather than guessed at. ``x0_batched_coincidental``
+    is the dangerous one -- its trailing axis matches the declaration, so a
+    guess would look right."""
+    with pytest.raises(ValueError, match=r"declares x sub_batch=\(4,\).*unmarked but has batch"):
+        _driver(ic=ic)
+
+
 def test_driver_accepts_an_ic_that_already_matches_the_declaration():
     driver = _driver(ic="x0_per_site")
     assert driver.declared_sub_batch_shapes["x"] == torch.Size([4])
@@ -385,7 +418,7 @@ def test_eager_and_export_resolve_the_same_sub_batch_extents():
     system = model.system
 
     # What ``neml2-compile`` would trace, i.e. the exporter's resolution.
-    exported = factory.settings.resolve(model.input_spec)
+    exported = factory.settings.resolve(model.input_spec, model_variable_names(model))
 
     for name in model.input_spec:
         declared = driver.declared_sub_batch_shapes.get(name)
@@ -393,3 +426,43 @@ def test_eager_and_export_resolve_the_same_sub_batch_extents():
             continue
         assert tuple(exported[name][1]) == tuple(declared), name
         assert tuple(system.declared_sub_batch_shapes[name]) == tuple(declared), name
+
+
+def test_export_accepts_a_declaration_for_a_predictor_owned_unknown():
+    """The case the parity test above cannot reach. ``_DRIVEN`` has no
+    predictor, so its unknown ``x`` is also an *input* of the ImplicitUpdate
+    and any universe that includes ``input_spec`` covers it. Give the unknown a
+    predictor and it becomes an output owned by nobody's input_spec -- yet
+    declaring its extent is the whole reason the declaration exists, and
+    ``dislocation_density`` in ``per_slip_hardening_declared`` is spelled
+    exactly this way. Validating against ``input_spec`` alone made the natural
+    spelling of the natural case a hard error on the compiled route while the
+    eager route accepted it.
+    """
+    factory = load_string(_PER_SITE_WITH_PREDICTOR + _DECLARE_U_PER_SITE)
+    model = factory.get_model("model")
+    assert "u" not in model.input_spec, "u must be predictor-owned for this test to bite"
+
+    # Resolution must not reject the declaration, and the lag family must carry
+    # the extent through to what actually gets traced.
+    resolved = factory.settings.resolve(model.input_spec, model_variable_names(model))
+    assert factory.settings.sub_batch_shape("u") == (3,)
+    assert all(sub == (3,) for _, sub in resolved.values() if sub)
+
+    # And the eager side agrees on the same file.
+    assert tuple(model.system.declared_sub_batch_shapes["u"]) == (3,)
+
+
+def test_a_declaration_for_a_name_no_variable_has_is_rejected_on_both_routes():
+    """A mistyped declaration describes nothing, so it is silent by
+    construction -- the variable it was meant to size keeps its inferred shape
+    and the run either works by luck or fails somewhere unrelated. Both routes
+    check against the same universe so neither can be the lenient one."""
+    typo = _DECLARE_U_PER_SITE.replace("u =", "you =")
+    factory = load_string(_PER_SITE_WITH_PREDICTOR + typo)
+    model = factory.get_model("model")
+    with pytest.raises(ValueError, match=r"names not in .*: \['you'\]"):
+        factory.settings.resolve(model.input_spec, model_variable_names(model))
+
+    with pytest.raises(ValueError, match=r"names not in .*: \['nope'\]"):
+        _driver(settings=_DECLARE_PER_SITE.replace("x =", "nope ="))

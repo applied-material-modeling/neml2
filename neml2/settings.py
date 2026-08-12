@@ -58,6 +58,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import nmhit
+    from torch import nn
 
 #: Key under which the uniform (non-per-variable) declaration is stored.
 UNIFORM_KEY = "*"
@@ -136,19 +137,47 @@ def parse_example_batch_shape(
     return _split_ints(body), ()
 
 
+def model_variable_names(model: nn.Module) -> set[str]:
+    """Every variable name the *model* tree mentions, as input or as output.
+
+    The universe a declaration is checked against. It has to be the whole tree
+    and both directions, not the top-level ``input_spec``: a sub-batched
+    implicit unknown owned by a predictor is an *output* of the model and an
+    input of nothing, yet declaring its extent is the entire point (that is the
+    ``slip_rates`` case). Narrowing this to ``input_spec`` makes the natural
+    spelling of the natural case a hard error on the compiled route while the
+    eager route accepts it -- exactly the divergence the declaration exists to
+    prevent.
+    """
+    known: set[str] = set()
+    for module in model.modules():
+        known.update(getattr(module, "input_spec", None) or {})
+        known.update(getattr(module, "output_spec", None) or {})
+    return known
+
+
 def validate_declared_names(
     declared: Mapping[str, str],
     known: Collection[str],
     *,
-    universe: str = "model input_spec",
+    universe: str = "model variables",
 ) -> None:
     """Raise if *declared* names a variable absent from *known*.
 
     An unknown key is almost always a typo (e.g. ``"stress"`` written instead
     of ``"strain"``); silently ignoring it would mask the bug and leave the
     variable it was meant to describe at its inferred shape.
+
+    A lag of a known variable counts as known, matching
+    :meth:`Settings.sub_batch_shape`: declaring ``x~1`` governs ``x`` and vice
+    versa, so a spelling that resolves has to be a spelling that validates.
     """
-    extras = set(declared) - {UNIFORM_KEY} - set(known)
+    known_bases = {_base_name(k) for k in known}
+    extras = {
+        key
+        for key in set(declared) - {UNIFORM_KEY}
+        if key not in known and _base_name(key) not in known_bases
+    }
     if extras:
         raise ValueError(
             f"example_batch_shape names not in {universe}: {sorted(extras)}. "
@@ -159,6 +188,7 @@ def validate_declared_names(
 def resolve_example_shapes(
     input_spec: Iterable[str],
     declared: Mapping[str, str],
+    known: Collection[str] | None = None,
 ) -> dict[str, tuple[tuple[int, ...], tuple[int, ...]]]:
     """Map each name in *input_spec* to its ``(dyn, sub)`` shape tuple.
 
@@ -182,9 +212,13 @@ def resolve_example_shapes(
     :meth:`Settings.sub_batch_shape` directly.
 
     Unknown keys in *declared* raise -- see :func:`validate_declared_names`.
+    They are checked against *known* when given, which is how the exporter
+    admits a declaration for a variable the model produces rather than
+    consumes; it falls back to *input_spec* for a caller that has nothing
+    wider to offer.
     """
     names = list(input_spec)
-    validate_declared_names(declared, names)
+    validate_declared_names(declared, names if known is None else known)
     settings = Settings(declared)
     uniform_spec = declared.get(UNIFORM_KEY)
     resolved: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] = {}
@@ -208,12 +242,19 @@ class Settings:
     name, with the uniform form under :data:`UNIFORM_KEY`. Consumers should go
     through :meth:`sub_batch_shape` / :meth:`sub_batch_ndim` (eager) or
     :meth:`resolve` (export) rather than reading the dict.
+
+    ``frozen=True`` would otherwise be nominal -- it protects the binding, not
+    the mapping behind it, and this object is cached on the factory and shared
+    by every consumer in the file. The mapping is therefore snapshotted at
+    construction, so a caller who keeps a reference to the dict they passed
+    cannot change what the driver and the exporter later disagree about.
     """
 
     example_batch_shape: Mapping[str, str] = field(default_factory=dict)
     dynamic_batch: bool = True
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "example_batch_shape", dict(self.example_batch_shape))
         self._check_lag_agreement()
 
     # ── declaration lookup ────────────────────────────────────────────────────
@@ -258,10 +299,12 @@ class Settings:
         return None if sub is None else len(sub)
 
     def resolve(
-        self, input_spec: Iterable[str]
+        self,
+        input_spec: Iterable[str],
+        known: Collection[str] | None = None,
     ) -> dict[str, tuple[tuple[int, ...], tuple[int, ...]]]:
         """Export-time ``(dyn, sub)`` per input -- see :func:`resolve_example_shapes`."""
-        return resolve_example_shapes(input_spec, self.example_batch_shape)
+        return resolve_example_shapes(input_spec, self.example_batch_shape, known)
 
     def validate_names(self, known: Collection[str], *, universe: str) -> None:
         """Raise if a declared name is absent from *known* -- see
@@ -383,12 +426,22 @@ def sub_batch_conflict(
     * it carries a *different* extent — a real contradiction, since both are
       statements about the same variable's layout and ``neml2-compile`` would
       trace one while the driver built the other;
-    * it carries none. This is the useful case and the reason the declaration
-      exists: a scalar seed (``Scalar(10.0)``) broadcasts into whatever extent
-      is declared, which is how an initial condition stops having to be
-      hand-shaped to ``(nbatch, nslip)`` just to establish a shape. It is only
-      a conflict when the value has batch axes that cannot line up with the
-      declared ones.
+    * it carries none, and no batch axes either. This is the useful case and
+      the reason the declaration exists: a seed (``Scalar(10.0)``) expands into
+      whatever extent is declared, which is how an initial condition stops
+      having to be hand-shaped to ``(nbatch, nslip)`` just to establish a shape.
+
+    An unmarked value that *does* have batch axes is rejected. Nothing in the
+    value says whether a trailing ``(12,)`` is twelve batch members or twelve
+    sites, and the two readings produce different systems: expanding treats it
+    as batch and appends the declared axes, so a value that already meant sites
+    silently becomes ``(12, 12)``. There is no reading that is right often
+    enough to guess, so the caller marks the value (``sub_batch_ndim=``) or
+    drops the axes and lets the declaration supply them.
+
+    :func:`~neml2.models.common.ImplicitUpdate._conform_to_declared_sub_batch`
+    enforces the same rule on the solve side; the two must agree, or a value
+    the driver accepted would be reshaped differently once it reached Newton.
     """
     declared = tuple(declared)
     sub = tuple(sub_batch_shape)
@@ -397,9 +450,13 @@ def sub_batch_conflict(
     if sub:
         return f"carries sub_batch={sub}"
     batch = tuple(batch_shape)
-    if not batch or (declared and batch[-len(declared) :] == declared):
+    if not batch:
         return None
-    return f"is unmarked with batch shape {batch}, which does not broadcast to sub_batch={declared}"
+    return (
+        f"is unmarked but has batch shape {batch}, which is ambiguous against "
+        f"sub_batch={declared}: mark it with sub_batch_ndim=, or drop the axes "
+        f"and let the declaration supply them"
+    )
 
 
 def _declares_sub_batch(spec: str) -> bool:
@@ -419,6 +476,7 @@ __all__ = [
     "DEFAULT_EXAMPLE_SHAPE",
     "UNIFORM_KEY",
     "Settings",
+    "model_variable_names",
     "parse_example_batch_shape",
     "read_settings",
     "resolve_example_shapes",

@@ -52,7 +52,7 @@ import torch
 from ..es._helpers import lag_order
 from ..factory import register_neml2_object
 from ..schema import HitField, HitSchema, dependency, option
-from ..settings import sub_batch_conflict
+from ..settings import model_variable_names, sub_batch_conflict
 from ..types import MRP, R2, SR2, SSR4, WR2, MillerIndex, Scalar, TensorWrapper, Vec
 from .driver import Driver
 
@@ -68,16 +68,18 @@ def _declared_sub_batch_shapes(model: Model, settings: Settings) -> dict[str, to
     Walks the whole model tree, not just the top-level ``input_spec``: a
     declaration for a variable that only a leaf deep inside a ``ComposedModel``
     names is still the driver's business, because that leaf's value may flow
-    back out as an unknown the driver has to zero-fill. Names the tree never
-    mentions are left out rather than rejected -- one input file may define
-    several models and declare shapes for a different one than this driver
-    drives; the exporter validates against its own model, where the universe
-    is unambiguous.
+    back out as an unknown the driver has to zero-fill.
+
+    A name the tree never mentions is rejected, through the same
+    :func:`~neml2.settings.validate_declared_names` the exporter uses and
+    against the same universe. A mistyped declaration is silent by
+    construction -- it describes nothing, so nothing changes shape -- and one
+    route noticing while the other shrugs is the drift this module exists to
+    prevent. The cost is that a file defining several models must scope its
+    declarations to names the driven model actually mentions.
     """
-    known: set[str] = set()
-    for module in model.modules():
-        known.update(getattr(module, "input_spec", None) or {})
-        known.update(getattr(module, "output_spec", None) or {})
+    known = model_variable_names(model)
+    settings.validate_names(known, universe=f"{type(model).__name__} variables")
     return {
         name: torch.Size(sub)
         for name in sorted(known)
