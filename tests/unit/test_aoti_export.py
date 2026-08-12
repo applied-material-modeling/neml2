@@ -41,34 +41,6 @@ _ELASTICITY_I = _TESTS_ROOT / "models/solid_mechanics/elasticity/LinearIsotropic
 _J2_NATIVE_I = _TESTS_UNIT / "fixtures/j2_linear_isoharden/model.i"
 
 
-def test_parse_example_batch_shape_no_sub_batch():
-    from neml2.cli.aoti_export import _parse_example_batch_shape
-
-    # No sub-batch axes: dyn-only specs return an empty sub tuple.
-    assert _parse_example_batch_shape("(2,)") == ((2,), ())
-    assert _parse_example_batch_shape("(2, 3)") == ((2, 3), ())
-
-
-def test_parse_example_batch_shape_with_sub_batch():
-    from neml2.cli.aoti_export import _parse_example_batch_shape
-
-    # Semicolon splits dyn from sub.
-    assert _parse_example_batch_shape("(2; 3)") == ((2,), (3,))
-    assert _parse_example_batch_shape("(2; 3, 12)") == ((2,), (3, 12))
-    # Empty dyn region is allowed (static-batch + sub).
-    assert _parse_example_batch_shape("(; 100)") == ((), (100,))
-
-
-def test_parse_example_batch_shape_rejects_label_suffix():
-    """The ``:label`` suffix on sub-batch extents was removed in V2P-9
-    (the chain rule no longer dispatches on labels). A leftover ``:foo``
-    must be flagged with a clear error rather than silently parsed."""
-    from neml2.cli.aoti_export import _parse_example_batch_shape
-
-    with pytest.raises(ValueError, match=":label.*removed"):
-        _parse_example_batch_shape("(2; 3:grain)")
-
-
 def test_resolve_derivative_specs_grammar_and_errors():
     """``-d/--derivative OUT:IN`` resolution: explicit pairs, the omission
     grammar (either/both sides empty = 'all'), the empty-specs default, the

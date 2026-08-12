@@ -60,7 +60,7 @@ from typing import ClassVar, TypeVar, overload
 
 import torch
 
-from neml2.types._base import TensorWrapper, align_sub_batch
+from neml2.types._base import UNSET, TensorWrapper, align_sub_batch
 from neml2.types._primitive import PrimitiveTensor
 from neml2.types._pytree import register
 
@@ -72,24 +72,24 @@ class Scalar(PrimitiveTensor):
     """Wraps a `torch.Tensor` of base shape ``()`` (i.e., one number per batch entry)."""
 
     data: torch.Tensor
-    sub_batch_ndim: int = 0
-    sub_batch_state: tuple = ()
-    sub_batch_meta: tuple = ()
-    k_ndim: int = 0
-    k_state: tuple = ()
-    k_pairing: tuple = ()
+    sub_batch_ndim: int = UNSET
+    sub_batch_state: tuple = UNSET
+    sub_batch_meta: tuple = UNSET
+    k_ndim: int = UNSET
+    k_state: tuple = UNSET
+    k_pairing: tuple = UNSET
     BASE_NDIM: ClassVar[int] = 0
     BASE_SHAPE: ClassVar[tuple[int, ...]] = ()
 
     def __init__(
         self,
         data,
-        sub_batch_ndim: int = 0,
-        sub_batch_state: tuple = (),
-        sub_batch_meta: tuple = (),
-        k_ndim: int = 0,
-        k_state: tuple = (),
-        k_pairing: tuple = (),
+        sub_batch_ndim: int = UNSET,
+        sub_batch_state: tuple = UNSET,
+        sub_batch_meta: tuple = UNSET,
+        k_ndim: int = UNSET,
+        k_state: tuple = UNSET,
+        k_pairing: tuple = UNSET,
         *,
         dtype: torch.dtype | None = None,
         device: torch.device | str | None = None,
@@ -99,14 +99,21 @@ class Scalar(PrimitiveTensor):
         # (Vec, SR2, etc.). This branch is the Scalar-specific equivalent;
         # without it, ``Scalar(other_scalar, ...)`` falls through to
         # ``torch.as_tensor(other_scalar)`` which doesn't know about
-        # TensorWrapper and raises. The outer call's metadata wins, matching
-        # the base policy.
+        # TensorWrapper and raises.
+        #
+        # Unlike the generated ``__init__``s this has to unwrap *here* rather
+        # than in ``__post_init__``, because ``dtype``/``device`` apply to the
+        # inner storage. The wrapper is handed to ``__post_init__`` explicitly
+        # so that ``seat_metadata`` still sees it and the inheritance rule is
+        # written once, in one place, for every wrapper type.
+        inner: Scalar | None = None
         if isinstance(data, TensorWrapper):
             if not isinstance(data, Scalar):
                 raise TypeError(
                     f"Cannot wrap a {type(data).__name__} as a Scalar; "
                     "wrapper types must match. Pass `inner.data` instead of the wrapper."
                 )
+            inner = data
             data = data.data
             if dtype is not None or device is not None:
                 data = data.to(dtype=dtype, device=device)
@@ -125,7 +132,7 @@ class Scalar(PrimitiveTensor):
         object.__setattr__(self, "k_ndim", k_ndim)
         object.__setattr__(self, "k_state", k_state)
         object.__setattr__(self, "k_pairing", k_pairing)
-        self.__post_init__()
+        self.__post_init__(inner)
 
     @classmethod
     def from_value(cls, x: float | int, *, like: TensorWrapper) -> Scalar:

@@ -43,6 +43,20 @@ Shape decomposition::
 the dense-vs-block-diagonal solver branch is implicit in `sub_batch_ndim`
 (both cases are the same ``torch.linalg.solve`` call; block-diagonal just
 has extra leading sub-batch axes that batch naturally).
+
+Not a `TensorWrapper`
+---------------------
+
+`Tensor` deliberately does **not** subclass
+:class:`~neml2.types._base.TensorWrapper`: its ``batch_ndim`` has no analogue
+there, and ``base_ndim`` is derived rather than declared. One consequence is
+that it does not inherit the wrapper re-wrap policy
+(:func:`~neml2.types._base.seat_metadata`) -- there is no auto-unwrap of a
+nested wrapper and no metadata inheritance, so ``Tensor(other_tensor)`` builds
+a `Tensor` whose ``data`` *is* the other `Tensor` rather than a no-op copy of
+it. Build one from a typed wrapper with :meth:`Tensor.from_typed`, and from
+another `Tensor` with :meth:`Tensor._rewrap` (which does carry the metadata
+across, field by field); the bare constructor takes a raw ``torch.Tensor``.
 """
 
 from __future__ import annotations

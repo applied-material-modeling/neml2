@@ -62,7 +62,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from math import prod
 from pathlib import Path
@@ -71,6 +71,7 @@ from typing import TYPE_CHECKING, cast
 import torch
 from torch import nn
 
+from ..settings import DEFAULT_EXAMPLE_SHAPE, model_variable_names, resolve_example_shapes
 from ..types import TensorWrapper
 
 if TYPE_CHECKING:
@@ -310,187 +311,6 @@ def _segment_var_infos(spec_or_infos) -> list[dict]:
     return [{"name": info["name"]} for info in spec_or_infos]
 
 
-#: Default per-input batch shape when nothing is declared in HIT [Settings] or
-#: on the CLI. ``(2,)`` for the dynamic-batch region, ``()`` for sub-batch.
-#:
-#: ``2`` is the smallest value that still gets ``torch.export`` to install
-#: a real dynamic ``Dim`` (a static ``1`` collapses to a constant). The
-#: dynamic-batch value seeds Inductor's per-kernel ``size_hints`` and
-#: biases the autotune search toward block sizes that match the example.
-#: There is no single "right" default: the autotune-optimal example
-#: shape is workload-dependent and not predictable from first principles.
-#: Measured on the same machine (idle GPU 1) at B=8192:
-#:
-#:   * scpcoup (low-K, per-slip-pointwise heavy)
-#:       example=2 -> 5253 ms      example=8192 -> 2097 ms      (large wins)
-#:   * chaboche6 (high-K=43, cuBLAS-LU heavy)
-#:       example=2 -> 6425 ms      example=8192 -> 8155 ms      (small wins)
-#:
-#: The opposite directions reflect different kernel families dominating
-#: each workload (Triton per-slip reductions vs cuBLAS-LU/trsm) and
-#: different autotune block-size sweet spots. ``(2,)`` is the historical
-#: safe default -- never optimal, but never wildly slow either, and easy
-#: to reason about. Users who know their production batch should
-#: override via ``example_batch_shape=`` on :func:`export_model_for_aoti`
-#: or ``--example-batch-shape`` on the CLI; the benchmark suite does
-#: this (see ``benchmark/run_benchmark.py``).
-_DEFAULT_EXAMPLE_SHAPE: tuple[tuple[int, ...], tuple[int, ...]] = ((2,), ())
-
-
-def _parse_example_batch_shape(
-    spec: str,
-) -> tuple[tuple[int, ...], tuple[int, ...]]:
-    """Parse a shape spec string like ``'(2; 100)'`` into ``(dyn, sub)``.
-
-    Grammar (semicolon delimits dynamic-batch from sub-batch axes):
-
-    * ``'(2,)'``           → ``((2,), ())``
-    * ``'(2; 100)'``       → ``((2,), (100,))``
-    * ``'(2, 3)'``         → ``((2, 3), ())``
-    * ``'(2; 100, 5)'``    → ``((2,), (100, 5))``
-    * ``'(; 100)'``        → ``((), (100,))``
-
-    V2P-9: the ``:label`` suffix syntax has been removed (chain rule no
-    longer dispatches on labels). A leftover ``:foo`` is rejected with
-    a clear error.
-
-    Trailing commas inside each region are tolerated. The outer
-    parentheses are required; whitespace is ignored.
-    """
-    s = spec.strip()
-    if not (s.startswith("(") and s.endswith(")")):
-        raise ValueError(
-            f"example_batch_shape spec {spec!r}: must be parenthesized, e.g. '(2,)' or '(2; 100)'."
-        )
-    body = s[1:-1].strip()
-    if ":" in body:
-        raise ValueError(
-            f"example_batch_shape spec {spec!r}: the ':label' suffix on sub-batch "
-            "extents was removed in v2-parity-chain-rule (V2P-9). Drop the suffix "
-            "and use positional ordering instead."
-        )
-
-    def _split_ints(region: str) -> tuple[int, ...]:
-        region = region.strip()
-        if not region:
-            return ()
-        parts = [p.strip() for p in region.split(",")]
-        return tuple(int(p) for p in parts if p)
-
-    if ";" in body:
-        dyn_str, sub_str = body.split(";", 1)
-        return _split_ints(dyn_str), _split_ints(sub_str)
-    return _split_ints(body), ()
-
-
-def _read_settings(factory) -> tuple[dict[str, str], bool]:
-    """Read the AOTI-relevant fields from the input file's ``[Settings]`` block.
-
-    Returns ``(example_batch_shape_map, dynamic_batch)`` where:
-
-    * ``example_batch_shape_map`` maps input variable name → spec string
-      (e.g. ``"strain" → "(2; 100)"``). Two HIT forms accepted:
-
-        [Settings]
-          example_batch_shape = '(2,)'         # uniform → key '*'
-
-        [Settings]
-          [example_batch_shape]                # per-variable → one key per entry
-            strain      = '(2; 100)'
-            temperature = '(2,)'
-          []
-
-    * ``dynamic_batch`` is the boolean ``[Settings]/dynamic_batch`` (default
-      ``True``).
-
-    Both default cleanly when no ``[Settings]`` block is present.
-    """
-    import nmhit  # noqa: PLC0415
-
-    example_shapes: dict[str, str] = {}
-    dynamic_batch = True
-
-    settings = None
-    for top in factory._root.children(nmhit.NodeType.Section):
-        if top.path() == "Settings":
-            settings = top
-            break
-    if settings is None:
-        return example_shapes, dynamic_batch
-
-    dyn_str = settings.param_optional_str("dynamic_batch", "")
-    if dyn_str:
-        if dyn_str.lower() in ("true", "1", "yes", "on"):
-            dynamic_batch = True
-        elif dyn_str.lower() in ("false", "0", "no", "off"):
-            dynamic_batch = False
-        else:
-            raise ValueError(
-                f"[Settings]/dynamic_batch={dyn_str!r}: expected boolean (true|false)."
-            )
-
-    # ``example_batch_shape`` can be either a Field (uniform) OR a Section
-    # (per-variable map). Probe by node type rather than calling
-    # ``param_optional_str`` unconditionally -- the latter throws "node has
-    # no value" on the Section case.
-    uniform = ""
-    ebs_node = settings.find("example_batch_shape")
-    if ebs_node is not None and ebs_node.type() == nmhit.NodeType.Field:
-        # Field form: example_batch_shape = '(2,)'  → uniform, key '*'.
-        uniform = settings.param_optional_str("example_batch_shape", "")
-        if uniform:
-            example_shapes["*"] = uniform
-
-    # Sub-section form: [Settings/example_batch_shape] [strain] [...]  → per-var.
-    for child in settings.children(nmhit.NodeType.Section):
-        if child.path().rsplit("/", 1)[-1] != "example_batch_shape":
-            continue
-        if uniform:
-            raise ValueError(
-                "[Settings]/example_batch_shape: cannot use both the field "
-                "(uniform) and sub-section (per-variable) forms in the same file."
-            )
-        for entry in child.children(nmhit.NodeType.Field):
-            var_name = entry.path().rsplit("/", 1)[-1]
-            example_shapes[var_name] = entry.param_str()
-
-    return example_shapes, dynamic_batch
-
-
-def _resolve_example_shapes(
-    input_spec: dict,
-    declared: dict[str, str],
-) -> dict[str, tuple[tuple[int, ...], tuple[int, ...]]]:
-    """Map each input name in *input_spec* to its ``(dyn, sub, labels)`` shape tuple.
-
-    Resolution order:
-
-    1. Per-variable entry in *declared* (e.g. ``declared["strain"]``).
-    2. Uniform entry in *declared* (key ``"*"``).
-    3. :data:`_DEFAULT_EXAMPLE_SHAPE`.
-
-    Unknown keys in *declared* (not in *input_spec*) raise — almost always a
-    typo (e.g. ``"stress"`` written instead of ``"strain"``); silently
-    ignoring them would mask the bug.
-    """
-    uniform_spec = declared.get("*")
-    extras = set(declared) - {"*"} - set(input_spec)
-    if extras:
-        raise ValueError(
-            f"example_batch_shape names not in model input_spec: {sorted(extras)}. "
-            f"Available: {sorted(input_spec)}."
-        )
-    resolved: dict[str, tuple[tuple[int, ...], tuple[int, ...]]] = {}
-    for name in input_spec:
-        if name in declared:
-            resolved[name] = _parse_example_batch_shape(declared[name])
-        elif uniform_spec is not None:
-            resolved[name] = _parse_example_batch_shape(uniform_spec)
-        else:
-            resolved[name] = _DEFAULT_EXAMPLE_SHAPE
-    return resolved
-
-
 def _shared_dyn_shape(
     shapes: dict[str, tuple[tuple[int, ...], tuple[int, ...]]],
     relevant_names,
@@ -501,7 +321,7 @@ def _shared_dyn_shape(
     structural inputs, so they must agree on the leading dynamic shape.
     Per-variable mode allows different sub-batch dims (those are static,
     each input keeps its own), but not different dyn dims. Raise with the
-    conflicting entries if they disagree; return ``_DEFAULT_EXAMPLE_SHAPE[0]``
+    conflicting entries if they disagree; return ``DEFAULT_EXAMPLE_SHAPE[0]``
     when no relevant input has a declared shape.
     """
     seen: dict[tuple[int, ...], list[str]] = {}
@@ -511,7 +331,7 @@ def _shared_dyn_shape(
         dyn = shapes[name][0]
         seen.setdefault(tuple(dyn), []).append(name)
     if not seen:
-        return _DEFAULT_EXAMPLE_SHAPE[0]
+        return DEFAULT_EXAMPLE_SHAPE[0]
     if len(seen) == 1:
         return next(iter(seen))
     parts = [f"{shape}: {names}" for shape, names in sorted(seen.items())]
@@ -603,7 +423,7 @@ def _example_inputs_for(
     Each entry is a :class:`TensorWrapper` instance of the spec's declared
     class with ``data`` shape ``(*dyn, *sub, *type_cls.BASE_SHAPE)`` and
     ``sub_batch_ndim = len(sub)``. The ``(dyn, sub)`` tuple comes from
-    *shapes* (defaulted via :func:`_resolve_example_shapes` when omitted).
+    *shapes* (defaulted via :func:`resolve_example_shapes` when omitted).
 
     Passing typed wrappers through ``torch.export`` records the wrapper
     class in the resulting ``ExportedProgram``'s pytree call_spec, which is
@@ -613,7 +433,7 @@ def _example_inputs_for(
     of duplicated metadata.
     """
     if shapes is None:
-        shapes = _resolve_example_shapes(model.input_spec, {})
+        shapes = resolve_example_shapes(model.input_spec, {})
     examples: list = []
     for name, type_cls in model.input_spec.items():
         dyn, sub = shapes[name]
@@ -638,7 +458,7 @@ def _seed_implicit_subbatch(
     For each unknown whose matching ``<unknown>~1`` history input has a
     declared shape, the unknown inherits that shape (state-at-end-of-step
     has the same per-site structure as state-at-start-of-step). Otherwise
-    the unknown falls back to the ``_DEFAULT_EXAMPLE_SHAPE``.
+    the unknown falls back to the ``DEFAULT_EXAMPLE_SHAPE``.
     """
     from ..models.common import ImplicitUpdate  # noqa: PLC0415
 
@@ -666,7 +486,7 @@ def _seed_implicit_subbatch(
             # bare-name shape so a caller-passed uniform shape applies
             # consistently (see u_dict block below for the same fix).
             bare = name.split("~", 1)[0]
-            dyn, sub = shapes.get(name, shapes.get(bare, _DEFAULT_EXAMPLE_SHAPE))
+            dyn, sub = shapes.get(name, shapes.get(bare, DEFAULT_EXAMPLE_SHAPE))
             g_dict[name] = _zero_for(type_cls, dyn, sub)
             sbn[name] = len(sub)
         u_dict: dict[str, TensorWrapper] = {}
@@ -684,7 +504,7 @@ def _seed_implicit_subbatch(
             # default, producing a symbolic-dim mismatch in the explicit-
             # orientation subsystem at torch.export trace time.
             history_name = f"{name}~1"
-            dyn, sub = shapes.get(history_name, shapes.get(name, _DEFAULT_EXAMPLE_SHAPE))
+            dyn, sub = shapes.get(history_name, shapes.get(name, DEFAULT_EXAMPLE_SHAPE))
             u_dict[name] = _zero_for(type_cls, dyn, sub)
             sbn[name] = len(sub)
         # ``initialize`` needs typed :class:`SparseVector` inputs whose
@@ -1508,7 +1328,7 @@ def _build_example_inputs(
 
     Structural inputs get a zero tensor of shape ``(*dyn, *sub, *BASE_SHAPE)``
     where ``(dyn, sub)`` comes from *shapes* (defaults to
-    :data:`_DEFAULT_EXAMPLE_SHAPE` when omitted). Promoted inputs use the
+    :data:`DEFAULT_EXAMPLE_SHAPE` when omitted). Promoted inputs use the
     live snapshot at its natural shape -- typically ``()`` for a Scalar
     parameter -- which AOTI then broadcasts against the structural batch at
     runtime.
@@ -1517,7 +1337,7 @@ def _build_example_inputs(
     dynamic batch shape. ``torch.export`` installs a single ``Dim("batch")``
     across all inputs and unifies their batch ``SymInt`` *only when the
     example sizes agree at trace time*. If a downstream-state input falls
-    back to ``_DEFAULT_EXAMPLE_SHAPE = ((2,), ())`` while the user-supplied
+    back to ``DEFAULT_EXAMPLE_SHAPE = ((2,), ())`` while the user-supplied
     structural inputs use ``((4,), ())``, pytorch sees two different sizes
     and assigns independent ``SymInt``s. A later binary op that broadcasts
     across them fires ``RuntimeError: tensor a (s21) must match tensor b
@@ -1529,7 +1349,7 @@ def _build_example_inputs(
     if shapes is None:
         shapes = {}
     fallback_dyn = (
-        _shared_dyn_shape(shapes, list(seg_spec.keys())) if shapes else _DEFAULT_EXAMPLE_SHAPE[0]
+        _shared_dyn_shape(shapes, list(seg_spec.keys())) if shapes else DEFAULT_EXAMPLE_SHAPE[0]
     )
     examples: list = []
     for name, type_cls in seg_spec.items():
@@ -1677,7 +1497,7 @@ def _compile_forward_segment(
             exportable, promoted_qnames, selected_pairs=selected_pairs
         ).to(device)
         # Probe eagerly first (example dynamic batch is >=2 by construction, see
-        # _DEFAULT_EXAMPLE_SHAPE) to classify each emitted pair: a block whose
+        # DEFAULT_EXAMPLE_SHAPE) to classify each emitted pair: a block whose
         # dynamic-batch axes stay size-1 does not depend on the runtime batch
         # (e.g. a constant elasticity tensor) and is recorded as
         # ``batch_independent`` so the runtime can carry / return it unbatched. The
@@ -1898,7 +1718,7 @@ def _compile_param_jacobian(
 
     shapes = shapes or {}
     fallback_dyn = (
-        _shared_dyn_shape(shapes, list(seg_spec.keys())) if shapes else _DEFAULT_EXAMPLE_SHAPE[0]
+        _shared_dyn_shape(shapes, list(seg_spec.keys())) if shapes else DEFAULT_EXAMPLE_SHAPE[0]
     )
     # Example inputs: structural at (*dyn, *sub, *base); promoted parameters at
     # (*dyn, *param_base) -- the per-batch form the derivative graph needs.
@@ -1989,7 +1809,7 @@ def _compile_param_vjp(
 
     shapes = shapes or {}
     fallback_dyn = (
-        _shared_dyn_shape(shapes, list(seg_spec.keys())) if shapes else _DEFAULT_EXAMPLE_SHAPE[0]
+        _shared_dyn_shape(shapes, list(seg_spec.keys())) if shapes else DEFAULT_EXAMPLE_SHAPE[0]
     )
     # Model inputs (structural typed + promoted parameters PER-BATCH, so the
     # adjoint is per-batch-element; a genuine per-batch input is also symbolic and
@@ -2908,16 +2728,24 @@ def _prepare_export(
 
     # Resolve example-batch-shape declarations: kwarg wins, then HIT [Settings],
     # then the (2,)/uniform default.
-    settings_shapes, settings_dyn = _read_settings(factory)
+    settings = factory.settings
     if isinstance(example_batch_shape, str):
-        declared = {"*": example_batch_shape}
+        declared: Mapping[str, str] = {"*": example_batch_shape}
     elif isinstance(example_batch_shape, dict):
         declared = dict(example_batch_shape)
     else:
-        declared = settings_shapes
+        declared = settings.example_batch_shape
     if dynamic_batch is None:
-        dynamic_batch = settings_dyn
-    resolved_shapes = _resolve_example_shapes(model.input_spec, declared)
+        dynamic_batch = settings.dynamic_batch
+    # Validate against every variable the model tree mentions, not just the
+    # top-level ``input_spec``: a sub-batched unknown owned by a predictor is
+    # an output, and declaring its extent is precisely the case the
+    # declaration exists for. Resolution still runs over ``input_spec`` -- the
+    # unknown's own shape reaches the tracer through ``_seed_implicit_subbatch``
+    # via its ``~1`` lag.
+    resolved_shapes = resolve_example_shapes(
+        model.input_spec, declared, model_variable_names(model)
+    )
 
     # Validate / resolve promoted names against the live model BEFORE any
     # ComposedModel wrapping. Snapshot the initial values now too.
@@ -3851,9 +3679,9 @@ def export_model_for_aoti(
         either a single spec string (uniform across all inputs) or a dict
         mapping input variable name to spec string (per-variable). Each spec
         uses the ``(dyn; sub)`` grammar (see
-        :func:`_parse_example_batch_shape`). Overrides any
+        :func:`parse_example_batch_shape`). Overrides any
         ``[Settings]/example_batch_shape`` in the HIT file. When ``None``
-        (default), the HIT setting -- or :data:`_DEFAULT_EXAMPLE_SHAPE` if
+        (default), the HIT setting -- or :data:`DEFAULT_EXAMPLE_SHAPE` if
         unset -- applies.
     dynamic_batch:
         Override for ``[Settings]/dynamic_batch``. ``True`` lets the leading

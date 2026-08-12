@@ -42,6 +42,7 @@ Key differences from C++:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -51,12 +52,40 @@ import torch
 from ..es._helpers import lag_order
 from ..factory import register_neml2_object
 from ..schema import HitField, HitSchema, dependency, option
+from ..settings import model_variable_names, sub_batch_conflict
 from ..types import MRP, R2, SR2, SSR4, WR2, MillerIndex, Scalar, TensorWrapper, Vec
 from .driver import Driver
 
 if TYPE_CHECKING:
     from ..factory import _NativeInputFile
     from ..models.model import Model
+    from ..settings import Settings
+
+
+def _declared_sub_batch_shapes(model: Model, settings: Settings) -> dict[str, torch.Size]:
+    """Resolve ``[Settings]/example_batch_shape`` against *model*'s variables.
+
+    Walks the whole model tree, not just the top-level ``input_spec``: a
+    declaration for a variable that only a leaf deep inside a ``ComposedModel``
+    names is still the driver's business, because that leaf's value may flow
+    back out as an unknown the driver has to zero-fill.
+
+    A name the tree never mentions is rejected, through the same
+    :func:`~neml2.settings.validate_declared_names` the exporter uses and
+    against the same universe. A mistyped declaration is silent by
+    construction -- it describes nothing, so nothing changes shape -- and one
+    route noticing while the other shrugs is the drift this module exists to
+    prevent. The cost is that a file defining several models must scope its
+    declarations to names the driven model actually mentions.
+    """
+    known = model_variable_names(model)
+    settings.validate_names(known, universe=f"{type(model).__name__} variables")
+    return {
+        name: torch.Size(sub)
+        for name in sorted(known)
+        if (sub := settings.sub_batch_shape(name)) is not None
+    }
+
 
 #: HIT ``prescribed_<Type>_*`` / ``ic_<Type>_*`` tag -> native wrapper class. Mirrors
 #: ``testing._TYPE_MAP`` (and the C++ ``FOR_ALL_TENSORBASE`` macro expansion).
@@ -199,6 +228,7 @@ class TransientDriver(Driver):
         prescribed: dict[str, TensorWrapper],
         ics: dict[str, TensorWrapper],
         save_as: str = "",
+        declared_sub_batch_shapes: Mapping[str, torch.Size] | None = None,
     ) -> None:
         self.model = model
         self.prescribed_time = prescribed_time
@@ -206,6 +236,14 @@ class TransientDriver(Driver):
         self.prescribed = prescribed
         self.ics = ics
         self.save_as = save_as
+        #: Per-variable sub-batch extents from ``[Settings]/example_batch_shape``.
+        #: The driver has to source *every* model input, and the ones it cannot
+        #: source it invents as zeros -- so for a sub-batched variable with no
+        #: initial condition this is the only thing that knows how big to make
+        #: them. Empty when constructed directly in Python.
+        self.declared_sub_batch_shapes: dict[str, torch.Size] = dict(
+            declared_sub_batch_shapes or {}
+        )
         self.nsteps = int(prescribed_time.data.shape[0])
         # Per-step input/output dicts, populated by run(). Values are typed
         # wrappers (TensorWrapper) so sub_batch_ndim propagates; the public
@@ -239,6 +277,41 @@ class TransientDriver(Driver):
                     f"TransientDriver prescribed variable {name!r} has leading shape "
                     f"{val.data.shape[0]} but prescribed_time has {self.nsteps}"
                 )
+        self._check_declarations_against_values()
+
+    def _check_declarations_against_values(self) -> None:
+        """Reject a declaration that contradicts a hand-shaped IC or force.
+
+        Both are statements about the same variable's layout, and a file that
+        makes them differently is inconsistent no matter which route reads it:
+        the driver would build one shape and ``neml2-compile`` would trace the
+        other. A value that carries no sub-batch region at all is fine — a
+        scalar seed broadcasts into the declared extent, which is the whole
+        point of declaring it and what lets an initial condition go back to
+        being a value rather than a hand-shaped ``(nbatch, nslip)`` tensor.
+        """
+        for source, values, lead in (
+            ("initial condition", self.ics, 0),
+            # A force's leading axis is the time history, which the declaration
+            # does not describe.
+            ("force", self.prescribed, 1),
+        ):
+            for name, val in values.items():
+                declared = self.declared_sub_batch_shapes.get(name)
+                if declared is None:
+                    continue
+                reason = sub_batch_conflict(
+                    tuple(declared),
+                    sub_batch_shape=val.sub_batch_shape,
+                    batch_shape=tuple(val.batch_shape)[lead:],
+                )
+                if reason is not None:
+                    raise ValueError(
+                        f"TransientDriver: [Settings]/example_batch_shape declares "
+                        f"{name} sub_batch={tuple(declared)}, but its {source} {reason} "
+                        f"(shape {tuple(val.shape)}, sub_batch_ndim={val.sub_batch_ndim}). "
+                        f"Drop one or make them agree."
+                    )
 
     @classmethod
     def from_hit(cls, node: nmhit.Node, factory: _NativeInputFile) -> TransientDriver:
@@ -271,6 +344,7 @@ class TransientDriver(Driver):
             prescribed=prescribed,
             ics=ics,
             save_as=save_as,
+            declared_sub_batch_shapes=_declared_sub_batch_shapes(model, factory.settings),
         )
 
     def run(self) -> bool:
@@ -339,13 +413,28 @@ class TransientDriver(Driver):
             # the residual), the unknown stays at the base-shape initial
             # guess — matching the C++ gold's ``output.<k>.flow_rate`` shape
             # of ``()`` rather than ``(per_step_batch,)``.
+            #
+            # A sub-batch axis is the one thing broadcasting cannot invent: a
+            # per-site unknown zero-filled at base shape gives the equation
+            # system one row where the residual has one per site, and the
+            # linear solve dies on a non-square matrix. Its extent is static
+            # and unknowable from the model, so it comes from the file's
+            # ``[Settings]/example_batch_shape`` declaration -- or, failing
+            # that, from another lag of the same variable that the initial
+            # conditions did shape (``x`` borrows from ``x~1``), which is how
+            # files written before the declaration existed still work.
             def _default(
                 name: str,
+                _cur_in: dict[str, TensorWrapper] = cur_in,
                 _dtype: torch.dtype = time_slice.dtype,
                 _device: torch.device = time_slice.device,
             ) -> TensorWrapper:
-                zero_data = _zero_for_step(spec[name], (), _dtype, _device)
-                return spec[name](zero_data)
+                sub = self.declared_sub_batch_shapes.get(name)
+                if sub is None:
+                    sub = _sub_batch_from_lag_family(name, _cur_in)
+                sub = tuple(sub)
+                zero_data = _zero_for_step(spec[name], sub, _dtype, _device)
+                return spec[name](zero_data, sub_batch_ndim=len(sub))
 
             ordered = tuple(
                 _as_typed(cur_in[name], spec[name]) if name in cur_in else _default(name)
@@ -439,20 +528,38 @@ def _parse_history(vname: str) -> tuple[str, int]:
         return vname, 0
 
 
+def _sub_batch_from_lag_family(name: str, values: Mapping[str, TensorWrapper]) -> tuple[int, ...]:
+    """The sub-batch extent another lag of *name* already carries, or ``()``.
+
+    A sub-batch axis belongs to the variable, not to the time step, so a value
+    the driver has for ``x~1`` describes ``x`` too. Same rule
+    :meth:`neml2.settings.Settings.sub_batch_shape` applies to declarations and
+    :func:`~neml2.models.common.ImplicitUpdate._resolve_unknown_sbn` applies to
+    the solve -- here it lets an undeclared file whose initial condition is
+    hand-shaped keep working.
+    """
+    base = _parse_history(name)[0]
+    for other, val in values.items():
+        if _parse_history(other)[0] == base and val.sub_batch_ndim > 0:
+            return tuple(val.sub_batch_shape)
+    return ()
+
+
 def _zero_for_step(
     type_cls: type[TensorWrapper],
-    per_step_batch_shape: tuple[int, ...],
+    leading_shape: tuple[int, ...],
     dtype: torch.dtype,
     device: torch.device,
 ) -> torch.Tensor:
-    """Make a zero ``torch.Tensor`` shaped ``(*per_step_batch_shape, *base_shape)``.
+    """Make a zero ``torch.Tensor`` shaped ``(*leading_shape, *base_shape)``.
 
-    ``per_step_batch_shape`` is read from the prescribed_time slice at the
-    current step — a Scalar with ``base_shape=()``, so its data shape IS the
-    per-step batch shape. Each typed wrapper adds its own base axes.
+    Each typed wrapper adds its own base axes; *leading_shape* is whatever the
+    caller needs in front of them. The caller passes the variable's sub-batch
+    extent, since that is the one region broadcasting cannot supply later; the
+    dynamic batch is left to broadcast during forward.
     """
     base_shape = tuple(getattr(type_cls, "BASE_SHAPE", ()))
-    return torch.zeros(per_step_batch_shape + base_shape, dtype=dtype, device=device)
+    return torch.zeros(leading_shape + base_shape, dtype=dtype, device=device)
 
 
 __all__ = ["TransientDriver"]
