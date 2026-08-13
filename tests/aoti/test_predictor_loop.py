@@ -184,3 +184,48 @@ def test_the_runtime_really_iterates(compiled: Path, tmp_path: Path):
         f"cutting the predictor loop from {_SWEEPS} sweeps to 1 left the Newton "
         f"count at {single_sweep} vs {full_sweeps} -- the runtime loop is not running"
     )
+
+
+# --------------------------------------------------------------------------- #
+# The two guards inside the runtime loop. Both are unreachable from a
+# well-formed package, so they are reached by corrupting the metadata -- the
+# same trick `test_the_runtime_really_iterates` uses to cut the sweep count,
+# and the only way to exercise an error path whose whole job is to catch a
+# malformed artifact.
+# --------------------------------------------------------------------------- #
+def _corrupted(compiled: Path, tmp_path: Path, mutate) -> Path:
+    out = tmp_path / "corrupt"
+    shutil.copytree(compiled, out)
+    meta_path = out / "metadata.json"
+    meta = json.loads(meta_path.read_text())
+    mutate(_implicit_seg(meta))
+    meta_path.write_text(json.dumps(meta))
+    return out
+
+
+def test_a_predictor_input_missing_from_the_state_map_is_reported(compiled: Path, tmp_path):
+    """Naming an input nothing produces must say so, not index past the map."""
+    from neml2.aoti import Model as AOTIModel
+
+    def mutate(seg):
+        seg["predictor_inputs"] = [*seg["predictor_inputs"], {"name": "not_a_variable"}]
+
+    bad = _corrupted(compiled, tmp_path, mutate)
+    with pytest.raises(RuntimeError, match="needs input 'not_a_variable' which is not in"):
+        model = AOTIModel(str(bad))
+        raw = _inputs()
+        model.forward({k: raw[k] for k in model.input_names if k in raw})
+
+
+def test_a_predictor_output_count_mismatch_is_reported(compiled: Path, tmp_path):
+    """The graph's arity is fixed at compile; metadata claiming otherwise must fail."""
+    from neml2.aoti import Model as AOTIModel
+
+    def mutate(seg):
+        seg["predictor_outputs"] = [*seg["predictor_outputs"], {"name": "phantom_output"}]
+
+    bad = _corrupted(compiled, tmp_path, mutate)
+    with pytest.raises(RuntimeError, match=r"predictor returned \d+ outputs, expected \d+"):
+        model = AOTIModel(str(bad))
+        raw = _inputs()
+        model.forward({k: raw[k] for k in model.input_names if k in raw})
