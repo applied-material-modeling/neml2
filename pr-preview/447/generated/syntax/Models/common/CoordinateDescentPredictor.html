@@ -213,6 +213,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -440,19 +441,23 @@ coordinate descent suits it.</p>
 sub-batch axes – <span class="math notranslate nohighlight">\(b\)</span> over <code class="docutils literal notranslate"><span class="pre">(m,)</span></code> and <span class="math notranslate nohighlight">\(A\)</span> over <code class="docutils literal notranslate"><span class="pre">(m,</span> <span class="pre">m)</span></code>. A matrix of
 scalars is exactly what the sub-batch machinery already represents, so this
 needs no dynamic-base tensor at the model boundary.</p>
+<p>A system with a single coordinate is written without the sub-batch axes, as
+plain scalars. Viscoplasticity is that case: the update condenses onto one
+flow rate, so <span class="math notranslate nohighlight">\(m = 1\)</span> and the sweep is a single exact scalar solve. The two
+layouts are told apart by sub-batch rank and a mismatched pair is rejected.</p>
 <section id="inputs">
 <h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">coupling</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The coupling matrix <span class="math notranslate nohighlight">\(A\)</span>, sub-batched over (m, m), symmetric positive semi-definite. Its diagonal must be non-negative – that is what brackets each coordinate solve.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">coupling</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The coupling matrix <span class="math notranslate nohighlight">\(A\)</span>, sub-batched over (m, m), symmetric positive semi-definite – or a plain scalar for a one-coordinate system. Its diagonal must be non-negative – that is what brackets each coordinate solve.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">trial_driving_force</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The right-hand side <span class="math notranslate nohighlight">\(b\)</span>, sub-batched over (m,): the driving force that would act with every rate at zero (for crystal plasticity, the trial resolved shear).</p>
+<dt><code class="docutils literal notranslate"><span class="pre">trial_driving_force</span></code> — <code class="docutils literal notranslate"><span class="pre">input</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The right-hand side <span class="math notranslate nohighlight">\(b\)</span>, sub-batched over (m,) – or a plain scalar for a one-coordinate system: the driving force that would act with every rate at zero (for crystal plasticity, the trial resolved shear; for viscoplasticity, the trial yield function).</p>
 </dd>
 </dl>
 </section>
 <section id="outputs">
 <h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">#</a></h2>
 <dl class="simple myst">
-<dt><code class="docutils literal notranslate"><span class="pre">rate</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The predicted rate, sub-batched over (m,)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">rate</span></code> — <code class="docutils literal notranslate"><span class="pre">output</span></code> · <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> · <strong>required</strong></dt><dd><p>The predicted rate, laid out like <code class="docutils literal notranslate"><span class="pre">trial_driving_force</span></code></p>
 </dd>
 </dl>
 </section>

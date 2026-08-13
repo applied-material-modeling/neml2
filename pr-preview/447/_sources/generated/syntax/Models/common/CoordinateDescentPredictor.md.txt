@@ -14,19 +14,24 @@ sub-batch axes -- $b$ over ``(m,)`` and $A$ over ``(m, m)``. A matrix of
 scalars is exactly what the sub-batch machinery already represents, so this
 needs no dynamic-base tensor at the model boundary.
 
+A system with a single coordinate is written without the sub-batch axes, as
+plain scalars. Viscoplasticity is that case: the update condenses onto one
+flow rate, so $m = 1$ and the sweep is a single exact scalar solve. The two
+layouts are told apart by sub-batch rank and a mismatched pair is rejected.
+
 ## Inputs
 
 `coupling` &mdash; `input` &middot; `Scalar` &middot; **required**
-: The coupling matrix $A$, sub-batched over (m, m), symmetric positive semi-definite. Its diagonal must be non-negative -- that is what brackets each coordinate solve.
+: The coupling matrix $A$, sub-batched over (m, m), symmetric positive semi-definite -- or a plain scalar for a one-coordinate system. Its diagonal must be non-negative -- that is what brackets each coordinate solve.
 
 `trial_driving_force` &mdash; `input` &middot; `Scalar` &middot; **required**
-: The right-hand side $b$, sub-batched over (m,): the driving force that would act with every rate at zero (for crystal plasticity, the trial resolved shear).
+: The right-hand side $b$, sub-batched over (m,) -- or a plain scalar for a one-coordinate system: the driving force that would act with every rate at zero (for crystal plasticity, the trial resolved shear; for viscoplasticity, the trial yield function).
 
 
 ## Outputs
 
 `rate` &mdash; `output` &middot; `Scalar` &middot; **required**
-: The predicted rate, sub-batched over (m,)
+: The predicted rate, laid out like `trial_driving_force`
 
 
 ## Other options

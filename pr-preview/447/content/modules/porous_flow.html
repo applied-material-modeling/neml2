@@ -213,6 +213,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -472,9 +473,9 @@ log-linear extension below a transition saturation <span class="math notranslate
 <p>Permeability <span class="math notranslate nohighlight">\(K\)</span> is a function of porosity <span class="math notranslate nohighlight">\(\varphi\)</span> (not
 saturation), and three closures are provided. With reference values
 <span class="math notranslate nohighlight">\((\varphi_0, K_0)\)</span> they are</p>
-<div class="math-wrapper amsmath docutils container" id="equation-de7a9c08-d001-4f23-bd0f-2d4cd7aef6e9">
-<div class="amsmath math notranslate nohighlight" id="equation-de7a9c08-d001-4f23-bd0f-2d4cd7aef6e9">
-<span class="eqno">(10)<a class="headerlink" href="#equation-de7a9c08-d001-4f23-bd0f-2d4cd7aef6e9" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-d4b11bfb-5e61-4b91-8a59-8f54e8a5f00f">
+<div class="amsmath math notranslate nohighlight" id="equation-d4b11bfb-5e61-4b91-8a59-8f54e8a5f00f">
+<span class="eqno">(10)<a class="headerlink" href="#equation-d4b11bfb-5e61-4b91-8a59-8f54e8a5f00f" title="Permalink to this equation">#</a></span>\[\begin{align}
 K^{\mathrm{pow}}(\varphi) &amp;= K_0 \left( \frac{\varphi}{\varphi_0} \right)^p, \\
 K^{\mathrm{exp}}(\varphi) &amp;= K_0 \exp\!\left[ -a\,(\varphi - \varphi_0) \right], \\
 K^{\mathrm{KC}}(\varphi)  &amp;= K_0 \, \frac{(\varphi / (1 - \varphi))^n}{(\varphi_0 / (1 - \varphi_0))^m}.

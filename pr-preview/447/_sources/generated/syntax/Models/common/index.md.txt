@@ -41,6 +41,7 @@ R2ParameterToVariable
 R2ToSR2
 R2ToWR2
 R2VariableRate
+RateCondensation
 RotationMatrix
 SR2BackwardEulerTimeIntegration
 SR2BilinearInterpolation

@@ -213,6 +213,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToSR2.html">R2ToSR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2ToWR2.html">R2ToWR2</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/R2VariableRate.html">R2VariableRate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RateCondensation.html">RateCondensation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/RotationMatrix.html">RotationMatrix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BackwardEulerTimeIntegration.html">SR2BackwardEulerTimeIntegration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../generated/syntax/Models/common/SR2BilinearInterpolation.html">SR2BilinearInterpolation</a></li>
@@ -520,9 +521,9 @@ effective scalar separation</p>
 a mixed-mode failure separation <span class="math notranslate nohighlight">\(\delta_f(\beta, \delta_c)\)</span>. Damage is
 then defined piecewise from the historical maximum effective
 separation <span class="math notranslate nohighlight">\(\bar{\delta}_m = \max_{t' \le t} \delta_m(t')\)</span>,</p>
-<div class="math-wrapper amsmath docutils container" id="equation-a54ce22a-69b6-4f76-99b8-621d37afb4fe">
-<div class="amsmath math notranslate nohighlight" id="equation-a54ce22a-69b6-4f76-99b8-621d37afb4fe">
-<span class="eqno">(19)<a class="headerlink" href="#equation-a54ce22a-69b6-4f76-99b8-621d37afb4fe" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-fdaca84a-8a09-4087-8541-782303197379">
+<div class="amsmath math notranslate nohighlight" id="equation-fdaca84a-8a09-4087-8541-782303197379">
+<span class="eqno">(19)<a class="headerlink" href="#equation-fdaca84a-8a09-4087-8541-782303197379" title="Permalink to this equation">#</a></span>\[\begin{align}
 d(\bar{\delta}_m) &amp;= 0,
   &amp; \bar{\delta}_m &amp;\le \delta_c, \\
 d(\bar{\delta}_m) &amp;=
@@ -534,9 +535,9 @@ d(\bar{\delta}_m) &amp;= 1,
 \end{align}\]</div>
 </div>
 <p>so that the traction is</p>
-<div class="math-wrapper amsmath docutils container" id="equation-a4307d25-afbe-4753-a3fd-6042a2992174">
-<div class="amsmath math notranslate nohighlight" id="equation-a4307d25-afbe-4753-a3fd-6042a2992174">
-<span class="eqno">(20)<a class="headerlink" href="#equation-a4307d25-afbe-4753-a3fd-6042a2992174" title="Permalink to this equation">#</a></span>\[\begin{align}
+<div class="math-wrapper amsmath docutils container" id="equation-c1d5b884-0c8a-4c4b-b538-0af7818a8677">
+<div class="amsmath math notranslate nohighlight" id="equation-c1d5b884-0c8a-4c4b-b538-0af7818a8677">
+<span class="eqno">(20)<a class="headerlink" href="#equation-c1d5b884-0c8a-4c4b-b538-0af7818a8677" title="Permalink to this equation">#</a></span>\[\begin{align}
 T_n   &amp;= K\,(1-d)\,\langle \delta_n \rangle_+ \;+\; K\,\langle \delta_n \rangle_-, \notag \\
 T_{si} &amp;= K\,(1-d)\,\delta_{si}, \quad i \in \{1, 2\},
 \end{align}\]</div>
