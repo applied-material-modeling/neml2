@@ -840,7 +840,7 @@ Model::Impl::Impl(const std::filesystem::path & artifact_root,
         {
           const auto & fb = seg_meta["predictor_feedback"];
           auto & f = seg.predictor_feedback;
-          f.input = fb["name"].get<std::string>();
+          f.input = fb["input"].get<std::string>();
           f.output = fb["output"].get<std::string>();
           f.iterations = fb["iterations"].get<int64_t>();
           f.sub_batch_shape = fb["sub_batch_shape"].get<std::vector<int64_t>>();

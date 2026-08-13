@@ -342,23 +342,24 @@ def _iterable_predictor_form(pred):
     from ..models.common import ComposedModel  # noqa: PLC0415
 
     leaves = list(_flatten_composed(pred))
-    found = [(i, m) for i, m in enumerate(leaves) if hasattr(m, "iterable_export_form")]
+    found = [
+        (i, m, form) for i, m in enumerate(leaves) if (form := m.iterable_export_form()) is not None
+    ]
     if not found:
         return ComposedModel([pred]), None
     if len(found) > 1:
-        names = ", ".join(type(m).__name__ for _, m in found)
+        names = ", ".join(type(m).__name__ for _, m, _ in found)
         raise ValueError(
             f"Predictor contains {len(found)} models wanting a runtime loop ({names}); "
             "only one is supported, because the metadata carries a single feedback pair."
         )
-    index, leaf = found[0]
-    iterable = leaf.iterable_export_form()
+    index, _leaf, iterable = found[0]
     leaves[index] = iterable.model
     return ComposedModel(leaves, additional_outputs=[iterable.feedback_output]), iterable
 
 
 def _feedback_var_info(pred, iterable, shapes, dyn_shape, device) -> dict:
-    """Metadata for the feedback variable: name plus the shape to seed it at.
+    """Metadata for the feedback pair: the input name plus the shape to seed it at.
 
     The runtime has to allocate the first iteration's input before it has ever
     run the graph, so it needs the variable's sub-batch and base shape. Neither
@@ -381,7 +382,7 @@ def _feedback_var_info(pred, iterable, shapes, dyn_shape, device) -> dict:
         out = probe(*_example_inputs_for(probe, device, shapes=probe_shapes))
     value = dict(zip(probe.output_spec, out, strict=True))[iterable.feedback_output]
     return {
-        "name": iterable.feedback_input,
+        "input": iterable.feedback_input,
         "sub_batch_shape": list(value.sub_batch_shape),
         "base_shape": [int(s) for s in type(value).BASE_SHAPE],
     }

@@ -999,6 +999,22 @@ class Model(nn.Module, ABC):
     def provided_items(self) -> frozenset[str]:
         return frozenset(self.output_spec)
 
+    def iterable_export_form(self) -> IterableExport | None:
+        """One step of this model's loop, for a runtime to drive itself.
+
+        Override in a model that is a bounded iteration -- a fixed number of
+        sweeps, passes or refinements -- and would rather the compiled routes
+        loop it than unroll every iteration into the graph. Return an
+        :class:`IterableExport`; the default returns ``None``, meaning "export
+        me whole", which is right for every ordinary leaf.
+
+        Declared here rather than left to ``hasattr`` so the hook is
+        discoverable from the base class and type-checkable at the call site.
+        See :class:`IterableExport` for what the exporter and the runtime do
+        with it.
+        """
+        return None
+
     def call_by_name(
         self,
         state: Mapping[str, TensorWrapper | torch.Tensor],

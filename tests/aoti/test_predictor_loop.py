@@ -99,7 +99,7 @@ def test_metadata_carries_the_feedback_pair(compiled: Path):
 
     assert fb["iterations"] == _SWEEPS
     assert fb["output"] == "slip_rates"
-    assert fb["name"] == "slip_rates_in"
+    assert fb["input"] == "slip_rates_in"
     # The seed shape is measured at export, not guessed: the slip-system count
     # reaches the predictor only through the coupling matrix.
     assert fb["sub_batch_shape"] == [_NSLIP]
@@ -108,7 +108,7 @@ def test_metadata_carries_the_feedback_pair(compiled: Path):
     seg = _implicit_seg(meta)
     names_in = [v["name"] for v in seg["predictor_inputs"]]
     names_out = [v["name"] for v in seg["predictor_outputs"]]
-    assert fb["name"] in names_in, "feedback input must be a graph input"
+    assert fb["input"] in names_in, "feedback input must be a graph input"
     assert fb["output"] in names_out, "feedback output must be a graph output"
 
 
