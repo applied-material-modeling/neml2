@@ -22,28 +22,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Solid-mechanics damage models (Mazars CDM family).
 
-"""Native solid-mechanics model packages."""
+One file per registered type; this package re-imports each so the
+``@register_neml2_object`` side effects fire on package import.
 
-from . import (
-    crystal_plasticity,
-    damage,
-    elasticity,
-    kinematics,
-    plasticity,
-    traction_separation_law,
-    viscoelasticity,
-)
-from .TwoStageThermalAnnealing import ScalarTwoStageThermalAnnealing, SR2TwoStageThermalAnnealing
+Registered: DamagedStress (Phase B), MazarsEquivalentStrain (Phase D),
+MazarsDamageStressAlpha (Phase F). MazarsDamage with simplified α
+weighting (would have been Phase E) is intentionally not ported — not
+used in our CDM workflow.
+"""
+
+from .DamagedStress import DamagedStress
+from .MazarsDamageStressAlpha import MazarsDamageStressAlpha
+from .MazarsEquivalentStrain import MazarsEquivalentStrain
 
 __all__ = [
-    "crystal_plasticity",
-    "damage",
-    "elasticity",
-    "kinematics",
-    "plasticity",
-    "traction_separation_law",
-    "viscoelasticity",
-    "ScalarTwoStageThermalAnnealing",
-    "SR2TwoStageThermalAnnealing",
+    "DamagedStress",
+    "MazarsEquivalentStrain",
+    "MazarsDamageStressAlpha",
 ]
