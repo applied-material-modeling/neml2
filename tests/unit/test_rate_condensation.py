@@ -39,7 +39,7 @@ import torch
 
 from neml2.models.common import RateCondensation
 from neml2.models.model import Model
-from neml2.types import Scalar
+from neml2.types import SR2, Scalar
 
 
 class _Path(Model):
@@ -134,3 +134,20 @@ def test_driving_force_must_be_an_output_of_the_path():
 def test_a_path_with_only_the_rate_is_rejected():
     with pytest.raises(ValueError, match="no inputs besides the rate"):
         RateCondensation(model=_RateOnly(), rate="rate", driving_force="drive")
+
+
+class _SR2Path(Model):
+    """A path whose rate is not a scalar -- the zero seed is undefined for it."""
+
+    input_spec = {"rate": SR2, "trial": Scalar}
+    output_spec = {"drive": Scalar}
+
+    def forward(self, *inputs, v=None):  # type: ignore[override]
+        _, trial = inputs
+        return trial
+
+
+def test_a_non_scalar_rate_is_rejected():
+    """`SR2(torch.zeros(()))` is malformed but silent, so catch it at construction."""
+    with pytest.raises(ValueError, match="the zero-rate seed is only defined for a scalar"):
+        RateCondensation(model=_SR2Path(), rate="rate", driving_force="drive")

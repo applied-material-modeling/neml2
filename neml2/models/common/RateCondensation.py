@@ -135,6 +135,19 @@ class RateCondensation(Model):
                 f"RateCondensation: driving_force {driving_force!r} is not an output of "
                 f"the path model {type(model).__name__}; it has {list(model.output_spec)}."
             )
+        # The zero-rate seed below is built at base shape (), which only makes a
+        # well-formed wrapper for a scalar. A wrapper with a real base region
+        # accepts that shape without complaining -- SR2(torch.zeros(())) is
+        # malformed but silent -- and the damage surfaces somewhere inside
+        # ``jvp``. ``rate`` is free-text HIT naming any input of the path model,
+        # so this is reachable by a wiring mistake, not only by a code change.
+        rate_cls = model.input_spec[rate]
+        if tuple(rate_cls.BASE_SHAPE) != ():
+            raise ValueError(
+                f"RateCondensation: rate {rate!r} is {rate_cls.__name__}, whose base "
+                f"shape is {tuple(rate_cls.BASE_SHAPE)}; the zero-rate seed is only "
+                f"defined for a scalar rate."
+            )
         self.model = model
         self._rate = rate
         self._f = driving_force
