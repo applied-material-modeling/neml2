@@ -264,7 +264,15 @@ Model::Impl::_run_predictor(const Segment & seg,
 
   // Seed the feedback input at zero before the first pass -- the graph is one
   // step of a loop, so on entry there is no previous step to read.
-  if (iterating && state.find(fb.input) == state.end())
+  //
+  // Unconditionally, not "only if absent". The feedback variable is internal to
+  // the predictor graph and never a model input, and the substep driver builds
+  // a fresh span map per sub-increment, so on this path the entry is always
+  // absent and the guard was untestable. Worse, the one case that could have
+  // populated it -- two implicit segments sharing a state map and a feedback
+  // name -- is the case where skipping the seed is wrong, because the second
+  // predictor would silently start from the first's last iterate.
+  if (iterating)
   {
     std::vector<int64_t> shape(batch_shape);
     shape.insert(shape.end(), fb.sub_batch_shape.begin(), fb.sub_batch_shape.end());
