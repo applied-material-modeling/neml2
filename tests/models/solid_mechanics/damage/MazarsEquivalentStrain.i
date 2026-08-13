@@ -4,7 +4,7 @@
 # exercises an eigendecomposition with all three principal strains distinct
 # (no degeneracy) and a mix of positive / negative principals (so the
 # Macaulay bracket actually filters). The expected value was computed and
-# verified against v2 to bit-identical precision in Phase H.
+# verified bit-identical against the v2 C++ implementation.
 
 [Drivers]
   [unit]
@@ -25,7 +25,7 @@
     expr = 'SR2(torch.tensor([+5e-4, -3e-4, +1e-4, 2e-5, -1e-5, 3e-5], dtype=torch.float64))'
   []
   # Expected equivalent strain — computed by torch.linalg.eigh + macaulay + norm,
-  # verified bit-identical to v2 in Phase H Layer 1.
+  # verified bit-identical against the v2 C++ implementation.
   [eq_expected]
     type = Python
     expr = 'Scalar(torch.tensor(5.106413411461524e-04, dtype=torch.float64))'

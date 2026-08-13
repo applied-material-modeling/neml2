@@ -213,7 +213,10 @@ class MazarsDamageStressAlpha(Model):
             return damage
 
         # ============================================================
-        # 4. Closed-form JVPs (Phase F derivation; see RESEARCH_LOG §F)
+        # 4. Closed-form JVPs, differentiating the steps above in order:
+        #    the damage laws of §1, the alpha weights of §2, and their
+        #    product. Written out rather than left to autograd because the
+        #    eigendecomposition in §2 makes the reverse pass costly.
         # ============================================================
         # Pre-compute reusable factors once, capture them by default-arg in
         # each closure (avoiding the late-binding pitfall).

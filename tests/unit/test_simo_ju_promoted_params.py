@@ -61,9 +61,9 @@ def _weibull_input(tmp_path: Path) -> Path:
     type = WeibullDamage
     r    = 'r'
     D    = 'D'
-    Y_in = {_WEIBULL_PARAMS['Y_in']}
-    p1   = {_WEIBULL_PARAMS['p1']}
-    p2   = {_WEIBULL_PARAMS['p2']}
+    Y_in = {_WEIBULL_PARAMS["Y_in"]}
+    p1   = {_WEIBULL_PARAMS["p1"]}
+    p2   = {_WEIBULL_PARAMS["p2"]}
   []
 []
 """
@@ -81,7 +81,7 @@ def _viscous_input(tmp_path: Path) -> Path:
     target  = 'target'
     omega   = 'omega'
     time    = 't'
-    mu_visc = {_VISCOUS_PARAMS['mu_visc']}
+    mu_visc = {_VISCOUS_PARAMS["mu_visc"]}
   []
 []
 """

@@ -4,8 +4,10 @@
 # loading-branch relaxation. Most sensitive test of the viscous path
 # under non-monotonic strain.
 #
-# T_total = 1 s => mu_visc * T = 20 (near rate-independent) so the viscous
-# unloading gate reproduces the rate-independent monotone-cap behavior.
+# T_total = 1 s => mu_visc * T = 20. The unloading gate freezes omega at its
+# previous value for any mu_visc, so the no-healing behavior here matches the
+# rate-independent monotone cap. The loading branches do NOT: at this mu*T the
+# trace is tens of percent of peak away from the rate-independent one.
 
 [Tensors]
   # Time axis: 30 (load) + 29 (unload, first pt dropped) + 30 (reload, first dropped) = 89

@@ -14,7 +14,7 @@
 #   - the degenerate-eigenvalue Poisson-laterals case (lambda_2 = lambda_3 = +2e-4)
 #   - both D_t and D_c contributing (alpha_t and alpha_c both nonzero)
 #
-# Expected D = 0.38142603668716824 — verified bit-identical to v2 in Phase H Layer 1.
+# Expected D = 0.38142603668716824 — verified bit-identical to the v2 C++ implementation.
 
 [Drivers]
   [unit]
@@ -50,7 +50,7 @@
     type = Python
     expr = 'SR2(torch.tensor([-30.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=torch.float64))'
   []
-  # Expected damage — verified bit-identical to v2 in Phase H Layer 1
+  # Expected damage — verified bit-identical to the v2 C++ implementation
   [D_expected]
     type = Python
     expr = 'Scalar(torch.tensor(0.38142603668716824, dtype=torch.float64))'

@@ -10,7 +10,7 @@
 # effective_stress output as an additional input.
 #
 # Material parameters: typical concrete from Mazars 1986 §5.1 + the defaults
-# used in mazars.i for Phase 5 verification.
+# used in the mazars verification cases.
 #
 # Data flow:
 #

@@ -2,7 +2,9 @@
 # under equibiaxial in-plane tension. Nominal parameters. Exercises the
 # isotropic energy norm in a non-uniaxial state through the viscous path.
 #
-# T_total = 1 s => mu_visc * T = 20 => near rate-independent limit.
+# T_total = 1 s => mu_visc * T = 20, which is well inside the viscous regime
+# (tens of percent of peak away from the rate-independent trace), not near
+# the rate-independent limit.
 
 [Tensors]
   [times]

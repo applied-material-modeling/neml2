@@ -29,11 +29,14 @@ One file per registered type; this package re-imports each so the
 
 Registered:
 
-* Mazars CDM family: ``DamagedStress`` (Phase B), ``MazarsEquivalentStrain``
-  (Phase D), ``MazarsDamageStressAlpha`` (Phase F). ``MazarsDamage`` with
-  simplified α weighting (would have been Phase E) is intentionally not
-  ported -- not used in our CDM workflow.
-* Simo-Ju CDM family: ``WeibullDamage`` (three-parameter Brandyberry form).
+* Shared: ``DamagedStress`` -- applies sigma = (1 - D) sigma_tilde, the final
+  stage of any scalar-damage composition.
+* Mazars CDM family: ``MazarsEquivalentStrain``, ``MazarsDamageStressAlpha``.
+  ``MazarsDamage`` with the simplified strain-magnitude α weighting is
+  intentionally not ported -- the stress-based α of Mazars (1986) §3.5.1 is
+  the variant in use here.
+* Simo-Ju CDM family: ``WeibullDamage`` (three-parameter Brandyberry form)
+  and ``ViscousDamageRelaxation`` (rate regularization of any damage target).
 """
 
 from .DamagedStress import DamagedStress

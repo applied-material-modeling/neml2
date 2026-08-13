@@ -3,10 +3,12 @@
 # p1=5, p2=2, mu_visc=20). Pins the composed viscous pipeline's output
 # across elastic + damage-onset + softening regimes.
 #
-# T_total = 1 s => mu_visc * T = 20 => near rate-independent limit
-# (the viscous version produces essentially the same trace as the
-# rate-independent monotonic_uniaxial regression, within floating-point
-# rounding of the (1+x)/x update).
+# T_total = 1 s => mu_visc * T = 20. That is NOT the rate-independent limit:
+# against the rate-independent monotonic_uniaxial regression this trace
+# departs by up to 46.7% of peak stress (16.1% RMS). The viscous lag is the
+# whole point of the scenario -- if a change makes this look like the
+# rate-independent trace, the viscous leaf has stopped contributing.
+# Recovering rate-independence needs mu_visc * T in the hundreds.
 
 [Tensors]
   [times]

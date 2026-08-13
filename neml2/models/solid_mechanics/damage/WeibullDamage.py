@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from ....factory import register_neml2_object
 from ....schema import HitSchema, input, output, parameter
-from ....types import Scalar, exp, macaulay, pow
+from ....types import Scalar, exp, gt, macaulay, pow, where
 from ...model import Model
 
 
@@ -114,10 +114,30 @@ class WeibullDamage(Model):
         p1 = self._get_param("p1", promoted_params, Scalar)
         p2 = self._get_param("p2", promoted_params, Scalar)
 
-        # arg = <r - Y_in>_+ / (p1 * Y_in)
-        # Macaulay ensures D = 0 for r < Y_in (damage-onset gate).
+        # arg = <r - Y_in>_+ / (p1 * Y_in), the damage-onset gate.
         arg = macaulay(r - Y_in) / (p1 * Y_in)
-        return Scalar.from_value(1.0, like=r) - exp(-pow(arg, p2))
+
+        # Below onset the primal is D = 0 for any p2, but the DERIVATIVE is not
+        # safe to evaluate there: d/darg (arg^p2) = p2 * arg^(p2-1) diverges as
+        # arg -> 0 whenever p2 < 1, and reverse mode then forms inf * 0 = nan.
+        # (Reproduces at p2 = 0.5 and p2 = 0.01; the sweeps here go to 0.01.)
+        #
+        # Standard double-`where` guard: feed the inactive branch a dummy 1.0 so
+        # the power is never differentiated at the singular point, then select
+        # the true value. Both branches are finite, so the tangent is finite and
+        # correctly zero where the model is flat.
+        #
+        # The comparison must be strict (`gt`, not `ge`): at arg == 0 exactly the
+        # power is still singular for p2 < 1, so that point belongs in the
+        # inactive branch. Consequence at the kink r == Y_in with p2 >= 1: the
+        # tangent is now the left derivative (0) rather than the half-weighted
+        # value the bare Macaulay used to give. Both are valid subgradients of a
+        # function with a corner there, and the point is measure-zero.
+        one = Scalar.from_value(1.0, like=arg)
+        active = gt(arg, Scalar.zeros_like(arg))
+        safe_arg = where(active, arg, one)
+        damage = one - exp(-pow(safe_arg, p2))
+        return where(active, damage, Scalar.zeros_like(damage))
 
 
 __all__ = ["WeibullDamage"]
