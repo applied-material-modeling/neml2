@@ -57,6 +57,7 @@ from .Normality import Normality
 from .OlevskySinteringStress import OlevskySinteringStress
 from .PerzynaPlasticFlowRate import PerzynaPlasticFlowRate
 from .PlasticFlowRate import PlasticFlowRate
+from .PowerLawCreepFlowRate import PowerLawCreepFlowRate
 from .PowerLawIsotropicHardeningStaticRecovery import PowerLawIsotropicHardeningStaticRecovery
 from .PowerLawKinematicHardeningStaticRecovery import PowerLawKinematicHardeningStaticRecovery
 from .SlopeSaturationVoceIsotropicHardening import SlopeSaturationVoceIsotropicHardening
@@ -90,6 +91,7 @@ __all__ = [
     "OlevskySinteringStress",
     "PerzynaPlasticFlowRate",
     "PlasticFlowRate",
+    "PowerLawCreepFlowRate",
     "PowerLawIsotropicHardeningStaticRecovery",
     "PowerLawKinematicHardeningStaticRecovery",
     "SlopeSaturationVoceIsotropicHardening",
