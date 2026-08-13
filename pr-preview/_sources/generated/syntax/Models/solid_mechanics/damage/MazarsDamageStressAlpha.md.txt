@@ -1,0 +1,82 @@
+(models-MazarsDamageStressAlpha)=
+# MazarsDamageStressAlpha
+
+**Source:** `models/solid_mechanics/damage/MazarsDamageStressAlpha.py`
+
+Mazars (1986) scalar damage law with the STRESS-BASED :math:`\alpha`
+weighting from Section 3.5.1 of the original paper.
+
+Distinguished from a strain-magnitude :math:`\alpha` formulation
+(``MazarsDamage``) by computing the tension/compression mixing weights
+from the effective stress's principal-sign decomposition, mapped back
+to a strain contribution via the isotropic compliance:
+
+.. math::
+    \boldsymbol{\sigma}_t = \langle \boldsymbol{\sigma}_i \rangle_+, \qquad
+    \boldsymbol{\sigma}_c = -\langle -\boldsymbol{\sigma}_i \rangle_+
+.. math::
+    \boldsymbol{\varepsilon}_t = \frac{(1+\nu)}{E} \boldsymbol{\sigma}_t
+    - \frac{\nu}{E} \mathrm{tr}(\boldsymbol{\sigma}_t)
+.. math::
+    \alpha_t = \frac{\sum_i \varepsilon_{t,i} \langle \varepsilon_i \rangle_+}
+                    {\sum_i \langle \varepsilon_i \rangle_+^2}, \qquad
+    \alpha_c = \frac{\sum_i \varepsilon_{c,i} \langle \varepsilon_i \rangle_+}
+                    {\sum_i \langle \varepsilon_i \rangle_+^2}
+
+The damage laws are the standard Mazars exponentials:
+
+.. math::
+    D_{t,c}(\tilde\varepsilon_{\max}) = 1 - \frac{\varepsilon_{d0}
+    (1 - A_{t,c})}{\tilde\varepsilon_{\max}}
+    - A_{t,c}\, e^{-B_{t,c} (\tilde\varepsilon_{\max} - \varepsilon_{d0})}
+
+blended as :math:`D = \alpha_t D_t + \alpha_c D_c`.
+
+The compliance constants ``E`` and :math:`\nu` parameterize the back-map
+and MUST match the upstream `LinearIsotropicElasticity` block. The
+input file is responsible for that consistency -- no run-time check.
+
+Reference: Mazars (1986), Engineering Fracture Mechanics 25(5-6):729-737,
+Section 3.5.1 (:math:`\alpha` weighting) and Section 3.5.2 (damage laws).
+
+## Inputs
+
+`equivalent_strain` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Mazars equivalent-strain history max
+
+`strain` &mdash; `input` &middot; `SR2` &middot; **required**
+: Total strain (SR2). Eigendecomposed for the principal-strain alignment weights in the alpha formula.
+
+`effective_stress` &mdash; `input` &middot; `SR2` &middot; **required**
+: Effective (undamaged) stress sigma_tilde = C : strain (SR2). Eigendecomposed and split into +/- parts for alpha.
+
+
+## Outputs
+
+`damage` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Output damage variable D
+
+
+## Parameters
+
+`eps_d0` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Damage onset equivalent strain
+
+`A_t` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Tension damage law shape parameter
+
+`B_t` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Tension damage law rate parameter
+
+`A_c` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Compression damage law shape parameter
+
+`B_c` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Compression damage law rate parameter
+
+`E` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Young's modulus (for compliance back-map)
+
+`nu` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Poisson ratio (for compliance back-map)
+

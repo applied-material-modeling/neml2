@@ -1,0 +1,60 @@
+(models-WeibullDamage)=
+# WeibullDamage
+
+**Source:** `models/solid_mechanics/damage/WeibullDamage.py`
+
+Three-parameter Weibull damage law -- Brandyberry et al. (2022)
+variant of Simo & Ju (1987) isotropic elastic damage.
+
+.. math::
+    D(r) \;=\; 1 \;-\; \exp\!\left[\;-\left(\frac{\langle r-Y_\mathrm{in}\rangle_+}
+                                          {p_1\,Y_\mathrm{in}}\right)^{p_2}\;\right]
+
+Reads the damage-threshold history variable :math:`r` (typically the output
+of `IrreversibleScalar` acting on the elastic strain energy density
+:math:`\psi_0`), returns the isotropic scalar damage :math:`D \in [0, 1)`.
+
+Parameter roles:
+
+* ``Y_in`` -- damage-onset energy threshold. Below :math:`r = Y_\mathrm{in}`
+  the Macaulay bracket zeros the argument, so :math:`D = 0` exactly.
+* ``p_1`` -- Weibull scale, "how quickly damage grows once initiated".
+  Small ``p_1`` (~0.01) gives cliff-like brittle collapse; large ``p_1``
+  (~100) gives very gradual softening.
+* ``p_2`` -- Weibull shape, controls the softening curve shape.
+  ``p_2 = 1`` recovers a pure exponential; ``p_2 > 1`` sharpens the
+  knee into a sigmoidal shape.
+
+Wired downstream to `DamagedStress` to obtain the nominal stress
+:math:`\sigma = (1 - D)\tilde{\sigma}`. All three parameters may be
+promoted to runtime inputs for gradient-based calibration.
+
+Reference: Brandyberry, D. R., Zhang, X., & Geubelle, P. H. (2022),
+"Multiscale design of nonlinear materials using reduced-order modeling",
+*Comput. Methods Appl. Mech. Engrg.* 399, 115388, Appendix A.2 eq (23).
+Underlying framework: Simo, J. C. & Ju, J. W. (1987),
+*Int. J. Solids Struct.* 23(7), 821-869 (Parts I & II).
+
+## Inputs
+
+`r` &mdash; `input` &middot; `Scalar` &middot; **required**
+: Damage threshold history variable (max-history of psi_0)
+
+
+## Outputs
+
+`D` &mdash; `output` &middot; `Scalar` &middot; **required**
+: Isotropic scalar damage in [0, 1)
+
+
+## Parameters
+
+`Y_in` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Damage-onset energy threshold (same units as r)
+
+`p1` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Weibull scale parameter (dimensionless)
+
+`p2` &mdash; `parameter` &middot; `Scalar` &middot; **required**
+: Weibull shape parameter (dimensionless)
+
