@@ -46,7 +46,7 @@ layouts are told apart by sub-batch rank and a mismatched pair is rejected.
 : Gauss-Seidel sweeps. Measured: 16 suffices; more does not help once the coupling linearization dominates the error.
 
 `bisections` &mdash; `int` &middot; default `16`
-: Bisections of the bracket in each coordinate solve, before the Newton polish. Measured: unchanged from 6 upward and broken at 4, so the default carries roughly threefold margin.
+: Bisections of the bracket in each coordinate solve, before the Newton polish. What matters is the width of the bracket $[0, b]$ relative to the root, which is physics-dependent: for crystal plasticity the answer is unchanged from 6 upward and broken at 4, but viscoplasticity at a large time step brackets a root near $0.09$ inside $[0, 90]$, and 8 halvings leave the iterate several times the root -- more than the Newton polish recovers. Measured there, 8 takes the first step from 0 Newton iterations to 3 while 16 holds it at 0, so the default stays at 16. Each bisection costs one evaluation of the rate law, which is scalar arithmetic.
 
 `polish` &mdash; `int` &middot; default `3`
 : Newton steps after bisection, using the rate law's own tangent. Three recovers full relative accuracy from a coarse bracket.
