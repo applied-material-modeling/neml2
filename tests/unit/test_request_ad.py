@@ -307,3 +307,24 @@ def test_request_ad_rejects_sub_batch():
     x = SR2(torch.randn(2, 3, 6, dtype=DT), sub_batch_ndim=1)  # sub-batch axis
     with pytest.raises(NotImplementedError, match="plain-batch only"):
         m(SR2(x.data, sub_batch_ndim=1), v={"x": {}})
+
+
+def test_request_ad_scalar_to_scalar_zero_dim():
+    """0-D Scalar -> 0-D Scalar: every shape list in the reverse-blocks helper
+    is empty at once.
+
+    ``reshape()`` with zero positional arguments raises, so the reverse-blocks
+    assembly has to pass the target shape as a single (possibly empty) list.
+    A transient driver hits this on the step-0 history state of a Scalar->Scalar
+    ``request_AD`` leaf, where batch, output base and input base shapes are all
+    ``()``.
+    """
+    x = Scalar(torch.tensor(2.0, dtype=DT))
+    assert x.data.ndim == 0  # genuinely 0-D, not batch-1
+
+    seed = {"x": {"x": Scalar(torch.tensor(1.0, dtype=DT))}}
+    y, v_out = _ADCube()(Scalar(x.data), v=seed)
+
+    assert y.data.ndim == 0
+    assert torch.allclose(y.data, torch.tensor(8.0, dtype=DT))  # 2^3
+    assert torch.allclose(v_out["y"]["x"].data, torch.tensor(12.0, dtype=DT))  # 3 x^2
